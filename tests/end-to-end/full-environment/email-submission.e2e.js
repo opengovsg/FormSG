@@ -18,6 +18,8 @@ const {
   expectSpcpLogin,
   getAuthFields,
 } = require('../helpers/util')
+const { verifiableEmailField } = require('../helpers/verifiable-email-field')
+const { cloneDeep } = require('lodash')
 const { myInfoFields } = require('../helpers/myinfo-form')
 let db
 let User
@@ -109,6 +111,15 @@ test.before(async (t) => {
   let authData = { testSpNric }
   t.ctx.form = await createForm(t, t.ctx.formData, Form)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
+})
+
+test.before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(verifiableEmailField)
+  t.ctx.formData = formData
+})('Create and submit form with verifiable email field', async (t) => {
+  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Checks that an attachment field's attachment is contained in the email.

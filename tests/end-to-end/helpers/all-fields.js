@@ -17,7 +17,7 @@ const allFieldInfo = [
   {
     title: 'Personal Email',
     fieldType: 'email',
-    isVerifiable: true,
+    isVerifiable: false,
     val: 'test@test.gov.sg',
   },
   {
