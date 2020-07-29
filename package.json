@@ -24,7 +24,7 @@
     "docker-dev": "webpack -w --config webpack.dev.js & ts-node-dev --respawn --transpileOnly --inspect=0.0.0.0 -- src/server.ts",
     "test": "npm run build-backend && npm run test-backend && npm run test-frontend",
     "test-ci": "npm run test-backend && npm run test-frontend",
-    "test-backend": "env-cmd -f .test-env --use-shell \"node tests/end-to-end/helpers/get-mongo-binary.js && jasmine --config=tests/unit/backend/jasmine.json\"",
+    "test-backend": "env-cmd -f .test-common-env --use-shell \"node tests/end-to-end/helpers/get-mongo-binary.js && jasmine --config=tests/unit/backend/jasmine.json\"",
     "test-frontend": "jest --config=tests/unit/frontend/jest.config.js",
     "test-run": "concurrently --success last --kill-others \"mockpass\" \"maildev\" \"node dist/backend/server.js\" \"localstack start --host\"",
     "test-e2e": "env-cmd -f .test-env --use-shell \"node tests/end-to-end/helpers/get-mongo-binary.js && npm run build-backend && webpack --config webpack.dev.js && testcafe\"",
