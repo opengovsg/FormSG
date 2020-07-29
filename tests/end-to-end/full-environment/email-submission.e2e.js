@@ -21,16 +21,16 @@ const {
   expectSpcpLogin,
   getAuthFields,
   verifySubmissionDisabled,
-} = require('./helpers/util')
-const { allFields } = require('./helpers/all-fields')
-const { templateFields } = require('./helpers/template-fields')
+} = require('../helpers/util')
+const { allFields } = require('../helpers/all-fields')
+const { templateFields } = require('../helpers/template-fields')
 const {
   hiddenFieldsData,
   hiddenFieldsLogicData,
-} = require('./helpers/all-hidden-form')
-const { tripleAttachment } = require('./helpers/triple-attachment')
-const chainDisabled = require('./helpers/disabled-form-chained')
-const { myInfoFields } = require('./helpers/myinfo-form')
+} = require('../helpers/all-hidden-form')
+const { tripleAttachment } = require('../helpers/triple-attachment')
+const chainDisabled = require('../helpers/disabled-form-chained')
+const { myInfoFields } = require('../helpers/myinfo-form')
 const { cloneDeep } = require('lodash')
 let db
 let User

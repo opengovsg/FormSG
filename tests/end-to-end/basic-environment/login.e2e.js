@@ -1,4 +1,4 @@
-const { signInPage, formList, landingPage } = require('./helpers/selectors')
+const { signInPage, formList, landingPage } = require('../helpers/selectors')
 const {
   getPageUrl,
   enterEmail,
@@ -9,7 +9,7 @@ const {
   makeModel,
   appUrl,
   deleteDocById,
-} = require('./helpers/util')
+} = require('../helpers/util')
 
 let db
 let User

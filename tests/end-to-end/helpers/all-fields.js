@@ -112,7 +112,7 @@ const allFieldInfo = [
     fieldType: 'attachment',
     attachmentSize: '1',
     val: 'test-att.txt',
-    path: './files/att-folder-1/test-att.txt',
+    path: '../files/att-folder-1/test-att.txt',
     content: 'att-folder-1',
   },
 ]

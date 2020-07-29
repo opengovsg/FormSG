@@ -11,7 +11,7 @@ module.exports = {
       fieldType: 'attachment',
       attachmentSize: '1',
       val: '2-test-att.txt',
-      path: './files/att-folder-1/test-att.txt',
+      path: '../files/att-folder-1/test-att.txt',
       content: 'att-folder-1',
     },
     {
@@ -19,7 +19,7 @@ module.exports = {
       fieldType: 'attachment',
       attachmentSize: '1',
       val: '1-test-att.txt',
-      path: './files/att-folder-2/test-att.txt',
+      path: '../files/att-folder-2/test-att.txt',
       content: 'att-folder-2',
     },
     {
@@ -27,7 +27,7 @@ module.exports = {
       fieldType: 'attachment',
       attachmentSize: '1',
       val: 'test-att.txt',
-      path: './files/att-folder-3/test-att.txt',
+      path: '../files/att-folder-3/test-att.txt',
       content: 'att-folder-3',
     },
   ].map(makeField),

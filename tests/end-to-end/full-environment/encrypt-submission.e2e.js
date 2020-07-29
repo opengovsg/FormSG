@@ -1,4 +1,4 @@
-const { adminTabs, dataTab } = require('./helpers/selectors')
+const { adminTabs, dataTab } = require('../helpers/selectors')
 
 const {
   makeMongooseFixtures,
@@ -20,13 +20,13 @@ const {
   getAuthFields,
   verifySubmissionDisabled,
   getDownloadsFolder,
-} = require('./helpers/util')
-const { allFields } = require('./helpers/all-fields')
+} = require('../helpers/util')
+const { allFields } = require('../helpers/all-fields')
 const {
   hiddenFieldsData,
   hiddenFieldsLogicData,
-} = require('./helpers/all-hidden-form')
-const chainDisabled = require('./helpers/disabled-form-chained')
+} = require('../helpers/all-hidden-form')
+const chainDisabled = require('../helpers/disabled-form-chained')
 
 const { cloneDeep } = require('lodash')
 const aws = require('aws-sdk')
