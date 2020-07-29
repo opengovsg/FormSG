@@ -1,7 +1,3 @@
-SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
-CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
-MOCKPASS_PORT=5156
-
 APP_NAME=FormSG 
 
 SES_PORT=1025 
