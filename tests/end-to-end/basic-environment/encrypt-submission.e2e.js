@@ -13,12 +13,22 @@ const {
   getResponseArray,
   getResponseTitle,
   expectContains,
-  makeField,
+  getOptionalVersion,
+  getBlankVersion,
   expectSpcpLogin,
   getAuthFields,
+  verifySubmissionDisabled,
   getDownloadsFolder,
 } = require('../helpers/util')
+const { allFields } = require('../helpers/all-fields')
+const {
+  hiddenFieldsData,
+  hiddenFieldsLogicData,
+} = require('../helpers/all-hidden-form')
+const chainDisabled = require('../helpers/disabled-form-chained')
 
+const { cloneDeep } = require('lodash')
+const aws = require('aws-sdk')
 const fs = require('fs')
 const parse = require('csv-parse/lib/sync')
 const rimraf = require('rimraf')
@@ -28,9 +38,6 @@ let Form
 let Agency
 let govTech
 let db
-const testSpNric = 'S6005038D'
-const testCpNric = 'S8979373D'
-const testCpUen = '123456789A'
 // Index of the column headers in the exported CSV. The first 4 rows are
 // metadata about the number of responses decrypted.
 const CSV_HEADER_ROW_INDEX = 4
@@ -39,13 +46,22 @@ const CSV_HEADER_ROW_INDEX = 4
 const CSV_ANSWER_COL_INDEX = 2
 const emptyCallback = () => {}
 
-fixture('[Full] Storage mode submissions')
+fixture('[Basic] Storage mode submissions')
   .before(async () => {
     db = await makeMongooseFixtures()
     Agency = makeModel(db, 'agency.server.model', 'Agency')
     User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
     govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
+
+    // Create s3 bucket for attachments
+    const s3 = new aws.S3({
+      endpoint: process.env.FORMSG_LOCALSTACK_ENDPT,
+      s3ForcePathStyle: true,
+    })
+    await s3
+      .createBucket({ Bucket: process.env.ATTACHMENT_S3_BUCKET })
+      .promise()
   })
   .after(async () => {
     // Delete models defined by mongoose and close connection
@@ -76,46 +92,53 @@ fixture('[Full] Storage mode submissions')
     )
   })
 
-// Basic form with only one field and SP authentication
+// Form with all field types available in storage mode
 test.before(async (t) => {
-  const formData = await getDefaultFormOptions({
-    authType: 'SP',
-    status: 'PRIVATE',
-    esrvcId: 'Test-eServiceId-Sp',
-  })
-  formData.formFields = [
-    {
-      title: 'short text',
-      fieldType: 'textfield',
-      val: 'Lorem Ipsum',
-    },
-  ].map(makeField)
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(allFields)
   t.ctx.formData = formData
-})('Create and submit basic form with SingPass authentication', async (t) => {
-  let authData = { testSpNric }
+})('Create and submit form with all field types', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form)
-  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
+  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
-// Basic form with only one field and CP authentication
+// Form where all basic field types are hidden by logic
 test.before(async (t) => {
-  const formData = await getDefaultFormOptions({
-    authType: 'CP',
-    status: 'PRIVATE',
-    esrvcId: 'Test-eServiceId-Cp',
-  })
-  formData.formFields = [
-    {
-      title: 'short text',
-      fieldType: 'textfield',
-      val: 'Lorem Ipsum',
-    },
-  ].map(makeField)
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(hiddenFieldsData)
+  formData.logicData = cloneDeep(hiddenFieldsLogicData)
   t.ctx.formData = formData
-})('Create and submit basic form with CorpPass authentication', async (t) => {
-  let authData = { testCpNric, testCpUen }
+})('Create and submit form with all field types hidden', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form)
-  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
+  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
+})
+
+// Form where all fields are optional and no field is answered
+test.before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = allFields.map((field) => {
+    return getBlankVersion(getOptionalVersion(field))
+  })
+  t.ctx.formData = formData
+})('Create and submit form with all field types optional', async (t) => {
+  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
+})
+
+// Form where submission is prevented using chained logic
+test.before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(chainDisabled.fields)
+  formData.logicData = cloneDeep(chainDisabled.logicData)
+  t.ctx.formData = formData
+})('Create and disable form with chained logic', async (t) => {
+  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  await verifySubmissionDisabled(
+    t,
+    t.ctx.form,
+    t.ctx.formData,
+    chainDisabled.toastMessage,
+  )
 })
 
 // Open form, fill it in, submit, then log in and verify response
