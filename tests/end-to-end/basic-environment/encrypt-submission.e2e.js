@@ -6,6 +6,7 @@ const {
   getOptionalVersion,
   getBlankVersion,
   verifySubmissionDisabled,
+  getFeatureState,
 } = require('../helpers/util')
 const {
   verifySubmissionE2e,
@@ -26,6 +27,7 @@ let Form
 let Agency
 let govTech
 let db
+let captchaEnabled
 
 fixture('[Basic] Storage mode submissions')
   .before(async () => {
@@ -34,6 +36,8 @@ fixture('[Basic] Storage mode submissions')
     User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
     govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
+    // Check whether captcha is enabled in environment
+    captchaEnabled = await getFeatureState('captcha')
 
     // Create s3 bucket for attachments
     const s3 = new aws.S3({
@@ -65,7 +69,7 @@ test.before(async (t) => {
   formData.formFields = cloneDeep(allFields)
   t.ctx.formData = formData
 })('Create and submit form with all field types', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
@@ -76,7 +80,7 @@ test.before(async (t) => {
   formData.logicData = cloneDeep(hiddenFieldsLogicData)
   t.ctx.formData = formData
 })('Create and submit form with all field types hidden', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
@@ -88,7 +92,7 @@ test.before(async (t) => {
   })
   t.ctx.formData = formData
 })('Create and submit form with all field types optional', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
@@ -99,7 +103,7 @@ test.before(async (t) => {
   formData.logicData = cloneDeep(chainDisabled.logicData)
   t.ctx.formData = formData
 })('Create and disable form with chained logic', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionDisabled(
     t,
     t.ctx.form,

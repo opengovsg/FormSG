@@ -7,6 +7,7 @@ const {
   getOptionalVersion,
   getBlankVersion,
   verifySubmissionDisabled,
+  getFeatureState,
 } = require('../helpers/util')
 
 const { verifySubmissionE2e } = require('../helpers/email-mode')
@@ -19,11 +20,13 @@ const {
 const { tripleAttachment } = require('../helpers/triple-attachment')
 const chainDisabled = require('../helpers/disabled-form-chained')
 const { cloneDeep } = require('lodash')
+
 let db
 let User
 let Form
 let Agency
 let govTech
+let captchaEnabled
 fixture('[Basic] Email mode submissions')
   .before(async () => {
     db = await makeMongooseFixtures()
@@ -31,6 +34,8 @@ fixture('[Basic] Email mode submissions')
     User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
     govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
+    // Check whether captcha is enabled in environment
+    captchaEnabled = await getFeatureState('captcha')
   })
   .after(async () => {
     // Delete models defined by mongoose and close connection
@@ -58,7 +63,7 @@ test.before(async (t) => {
   formData.formFields = cloneDeep(allFields)
   t.ctx.formData = formData
 })('Create and submit form with all form fields', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
@@ -69,7 +74,7 @@ test.before(async (t) => {
   formData.logicData = cloneDeep(hiddenFieldsLogicData)
   t.ctx.formData = formData
 })('Create and submit form with all field types hidden', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
@@ -81,7 +86,7 @@ test.before(async (t) => {
   })
   t.ctx.formData = formData
 })('Create and submit form with all field types optional', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
@@ -91,7 +96,7 @@ test.before(async (t) => {
   formData.formFields = cloneDeep(tripleAttachment)
   t.ctx.formData = formData
 })('Create and submit form with identical attachment names', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
@@ -109,7 +114,7 @@ test.before(async (t) => {
 })(
   'Create and submit form with optional and required attachments',
   async (t) => {
-    t.ctx.form = await createForm(t, t.ctx.formData, Form)
+    t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
     await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
   },
 )
@@ -121,7 +126,7 @@ test.before(async (t) => {
   formData.logicData = cloneDeep(chainDisabled.logicData)
   t.ctx.formData = formData
 })('Create and disable form with chained logic', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionDisabled(
     t,
     t.ctx.form,
@@ -136,7 +141,12 @@ test.before(async (t) => {
   // cloneDeep in case other tests in future import and modify templateFields
   t.ctx.formData.formFields = cloneDeep(templateFields)
 })('Create a form from COVID19 Templates', async (t) => {
-  t.ctx.form = await createFormFromTemplate(t, t.ctx.formData, Form)
+  t.ctx.form = await createFormFromTemplate(
+    t,
+    t.ctx.formData,
+    Form,
+    captchaEnabled,
+  )
   t.ctx.endPageTitle = 'Thank you for registering your interest.'
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })

@@ -4,6 +4,7 @@ const {
   deleteDocById,
   createForm,
   makeField,
+  getFeatureState,
 } = require('../helpers/util')
 const {
   verifySubmissionE2e,
@@ -20,6 +21,7 @@ let db
 const testSpNric = 'S6005038D'
 const testCpNric = 'S8979373D'
 const testCpUen = '123456789A'
+let captchaEnabled
 
 fixture('[Full] Storage mode submissions')
   .before(async () => {
@@ -28,6 +30,8 @@ fixture('[Full] Storage mode submissions')
     User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
     govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
+    // Check whether captcha is enabled in environment
+    captchaEnabled = await getFeatureState('captcha')
   })
   .after(async () => {
     // Delete models defined by mongoose and close connection
@@ -61,7 +65,7 @@ test.before(async (t) => {
   t.ctx.formData = formData
 })('Create and submit basic form with SingPass authentication', async (t) => {
   let authData = { testSpNric }
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
 })
 
@@ -82,7 +86,7 @@ test.before(async (t) => {
   t.ctx.formData = formData
 })('Create and submit basic form with CorpPass authentication', async (t) => {
   let authData = { testCpNric, testCpUen }
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
 })
 
@@ -91,7 +95,7 @@ test.before(async (t) => {
   formData.formFields = cloneDeep(verifiableEmailField)
   t.ctx.formData = formData
 })('Create and submit form with verifiable email field', async (t) => {
-  t.ctx.form = await createForm(t, t.ctx.formData, Form)
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
