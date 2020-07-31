@@ -1,6 +1,0 @@
-MONGO_BINARY_VERSION=3.6.12
-CHROMIUM_BIN=/usr/bin/chromium-browser
-IMAGE_S3_BUCKET=local-image-bucket
-LOGO_S3_BUCKET=local-logo-bucket
-ATTACHMENT_S3_BUCKET=local-attachment-bucket
-NODE_ENV=development
