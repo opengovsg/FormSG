@@ -11,7 +11,6 @@ function configureMobileDirective() {
     restrict: 'E',
     scope: {
       field: '=',
-      allowSms: '=',
       name: '=',
       characterLimit: '=',
     },

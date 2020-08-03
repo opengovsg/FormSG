@@ -47,12 +47,7 @@ const compileUserModel = (db: Mongoose) => {
       type: Date,
       default: Date.now,
     },
-    betaFlags: {
-      allowSms: {
-        type: Boolean,
-        default: false,
-      },
-    },
+    betaFlags: {},
   })
 
   return db.model<IUserSchema>(USER_SCHEMA_ID, UserSchema)
