@@ -1,0 +1,140 @@
+'use strict'
+
+const { FilePlatforms } = require('../../../../../shared/constants')
+
+angular.module('forms').component('attachmentFieldComponent', {
+  templateUrl:
+    'modules/forms/base/componentViews/field-attachment.client.view.html',
+  bindings: {
+    field: '<',
+    forms: '<',
+    isadminpreview: '<',
+  },
+  controller: ['FileHandler', '$timeout', attachmentFieldComponentController],
+  controllerAs: 'vm',
+})
+
+function attachmentFieldComponentController(FileHandler, $timeout) {
+  const vm = this
+
+  vm.isAttachmentTouched = false
+  vm.touchAttachment = function () {
+    vm.isAttachmentTouched = true
+  }
+
+  vm.fileAttached = false
+
+  // Used to store fieldIds that are currently resizing
+  vm.buttonResizing = {}
+  vm.beforeResizingImages = function (fieldId) {
+    vm.buttonResizing[fieldId] = true
+    $('#' + fieldId).addClass('btn-pressed')
+  }
+  vm.uploadFile = function (file, errFiles, fieldId) {
+    delete vm.buttonResizing[fieldId]
+    $('#' + fieldId).removeClass('btn-pressed')
+    let err
+    if (errFiles.length > 0) {
+      err = errFiles[0].$error
+      if (err === 'maxSize') {
+        vm.fileError =
+          String((errFiles[0].size / 1000000).toFixed(2)) +
+          ' MB / ' +
+          vm.field.attachmentSize +
+          ' MB: File size exceeded'
+      } else if (err === 'resize') {
+        vm.fileError = `An error has occurred while resizing your image`
+      } else {
+        vm.fileError = err
+      }
+      vm.field.fieldValue = ''
+      return
+    }
+
+    if (!file) return
+
+    let fileExt = FileHandler.getFileExtension(file.name)
+    if (FileHandler.isInvalidFileExtension(fileExt)) {
+      vm.fileError =
+        "Your file's extension ending in *" + fileExt + ' is not allowed'
+      vm.field.fieldValue = ''
+      return
+    }
+
+    const getInvalidFileExtensionsInZip = FileHandler.getInvalidFileExtensionsInZip(
+      FilePlatforms.Browser,
+    )
+    const invalidFilesInZip =
+      fileExt === '.zip'
+        ? getInvalidFileExtensionsInZip(file)
+        : Promise.resolve([])
+    invalidFilesInZip
+      .then((invalidFiles) => {
+        // Use $timeout to trigger digest cycle
+        $timeout(() => {
+          if (invalidFiles.length > 0) {
+            const stringOfInvalidExtensions = invalidFiles.join(', ')
+            vm.fileError =
+              'The following file extensions in your zip are not valid: ' +
+              stringOfInvalidExtensions
+            vm.field.fieldValue = ''
+          } else {
+            vm.fileAttached = true
+            vm.fileError = false
+            vm.fileName = file.name
+            vm.field.fieldValue = file.name
+            vm.fileSize = file.size / 1000
+            if (file.size / 1000 > 1000) {
+              vm.fileSize = String((file.size / 1000000).toFixed(2)) + ' MB'
+            } else {
+              vm.fileSize = String((file.size / 1000).toFixed(2)) + ' KB'
+            }
+            saveFileToField(file)
+          }
+        })
+      })
+      .catch(() => {
+        $timeout(() => {
+          vm.fileError = 'An error has occurred while parsing your zip file'
+          vm.field.fieldValue = ''
+        })
+      })
+  }
+
+  vm.attachmentIsDisabled = (field) => {
+    return (
+      (vm.isadminpreview && !vm.buttonResizing[field._id]) || field.disabled
+    )
+  }
+
+  vm.removeFile = function () {
+    delete vm.field.file
+    vm.fileAttached = false
+    vm.field.fieldValue = ''
+  }
+
+  // Context: iOS seems to clear file attachment content in attached files
+  // after one minute (or more) resulting in an empty content buffer being
+  // sent to the server. This results in an invalid submission if the form has
+  // attachments and the user takes more than one minute to submit the form.
+  // A possibly stupid solution is to convert the file reference into a blob
+  // and back again to create a new reference that does not get inexplicably
+  // cleared on iOS (and that is indeed what is being done here).
+  const saveFileToField = (file) => {
+    const reader = new FileReader()
+
+    reader.onload = function (e) {
+      const blob = new Blob([new Uint8Array(e.target.result)], {
+        type: file.type,
+      })
+
+      // Not using File constructor because IE11 does not support File
+      blob.name = file.name
+      blob.lastModifiedDate = file.lastModifiedDate
+
+      // Assign it to the field.
+      vm.field.file = blob
+    }
+    reader.readAsArrayBuffer(file)
+  }
+}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <% autoReplyBody.forEach(function(line) { %> <%= line %><br />
+    <% }) %> <% if (locals.refNo) { %>
+    <br />
+    <br />
+    ---
+    <br />
+    <br />
+    A summary of your response is shown below. A PDF summary is also attached
+    for your convenience.
+    <br />
+    <br />
+    <%- include('./submit-form-summary-pdf.server.view.html', { refNo: refNo,
+    formTitle: formTitle, submissionTime: submissionTime, formData: formData,
+    formUrl: formUrl, tableOnly: true}) %> <% } %>
+  </body>
+</html>

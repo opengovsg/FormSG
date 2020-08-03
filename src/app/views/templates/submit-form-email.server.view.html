@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head> </head>
+  <body>
+    <p>Hello there,</p>
+    <p>A "<%= formTitle %>" form was submitted on <%= submissionTime %>.</p>
+    <br /><br /><br />
+    <table
+      id="formsg"
+      width="100%"
+      style="border-collapse: collapse;"
+      cellpadding="5"
+    >
+      <tbody>
+        <tr style="border-top: 1px solid #eee;">
+          <td width="40%"><strong>Reference Number</strong></td>
+          <td><%= refNo %></td>
+        </tr>
+        <tr style="border-top: 1px solid #eee;">
+          <td width="40%"><strong>Timestamp</strong></td>
+          <td><%= submissionTime %></td>
+        </tr>
+        <% formData.forEach(function(fieldTuple) { %>
+        <tr style="border-top: 1px solid #eee;">
+          <td width="40%"><strong><%= fieldTuple.question %></strong></td>
+          <td>
+            <% fieldTuple.answerTemplate.forEach(function(answer) { %> <%=
+            answer %><br />
+            <% }) %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <br /><br /><br />
+    <p>The <%= appName %> Support Team</p>
+    <br /><br /><br />
+    ===============
+    <p>
+      Please ignore this section. It is meant for the Data Collation Tool to
+      process.
+    </p>
+    <p>-- Start of JSON --</p>
+    <%= JSON.stringify(jsonData) %>
+    <p>-- End of JSON --</p>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "APP_NAME": "FormSG",
+  "LINKS": {
+    "GUIDE": {
+      "ROOT": "https://guide.form.gov.sg/",
+      "EMAIL_RELIABILITY": "https://go.gov.sg/formsg-email-reliability",
+      "STORAGE_MODE": "https://guide.form.gov.sg/AdvancedGuide.html#storage-mode",
+      "SECRET_KEY_SAFEKEEPING": "https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-make-sure-i-dont-lose-my-secret-key"
+    },
+    "APP": {
+      "ROOT": "https://form.gov.sg"
+    },
+    "COLLATE_TOOL": "https://collate.form.gov.sg",
+    "GO_GOV": "https://go.gov.sg",
+    "SUPPORT_FORM_LINK": "https://go.gov.sg/formsg-support",
+    "WHITELISTED_ATTACHMENT_TYPES": "https://go.gov.sg/formsg-cwl",
+    "SINGPASS_ELIGIBILITY_FAQ": "https://www.ifaq.gov.sg/SINGPASS/apps/Fcd_faqmain.aspx#FAQ_2101385",
+    "ESERVICE_ID_FAQ": "https://go.gov.sg/formsg-spcp",
+    "TERMS_THIRD_PARTY_LIST": "https://s3-ap-southeast-1.amazonaws.com/misc.form.gov.sg/OSS-Legal.pdf"
+  }
+}

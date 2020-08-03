@@ -1,0 +1,16 @@
+// More config options can be found at
+// https://devexpress.github.io/testcafe/documentation/using-testcafe/configuration-file.html
+{
+  "browsers": "chrome:headless",
+  "src": "./tests/end-to-end/*.e2e.js",
+  // Uncomment to use filters, useful to only test certain tests.
+  // "filter": {
+  //   // Runs a test with the specified name.
+  //   "test": // Fill this in
+  //   // Runs a fixture with the specified name.
+  //   "fixture": // Fill this in.
+  // },
+  "appCommand": "env-cmd -f .test-env npm run test-run",
+  "appInitDelay": 10000,
+  "concurrency": 3
+}

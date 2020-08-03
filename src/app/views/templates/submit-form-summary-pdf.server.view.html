@@ -1,0 +1,74 @@
+<!--htmlhint tag-pair:false -->
+<!-- prettier-ignore -->
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<body style="margin: 0; font-weight: 200; word-wrap: break-word;">
+    <% if (!locals.tableOnly) { %>
+    <div class="header" style="background-color: #484848; color: white; text-align: center; padding: 40px;">
+        <span class="form-title" style="font-size: 30px; font-weight: 200;">
+            <%= formTitle %>
+        </span>
+        <br>
+        <a class="form-link"
+            style="font-size: 10px; font-weight: bold; text-decoration: underline; text-decoration-color: white; color: white;"
+            href="<%= formUrl %>">
+            <%= formUrl %>
+        </a>
+    </div>
+    <table style="border-collapse: collapse; table-layout: fixed; width: 90%; font-size: 14px;  margin: 30px 5%;"
+        cellpadding="8">
+        <tbody>
+            <% } else{ %>
+            <table style="border-collapse: collapse; font-size: 14px" cellpadding="4">
+                <tbody>
+                    <tr style="border-top: 1px solid #eee;">
+                        <td class="key-cell" width="50%" style="vertical-align: top;">
+                            <strong>Form Title</strong>
+                        </td>
+                        <td class="value-cell">
+                            <%= formTitle %>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #eee;">
+                        <td class="key-cell" width="50%" style="vertical-align: top;">
+                            <strong>Form Link</strong>
+                        </td>
+                        <td class="value-cell">
+                            <a class="form-link" href="<%= formUrl %>">
+                                <%= formUrl %>
+                            </a>
+                        </td>
+                    </tr>
+                    <% } %>
+                    <tr style="border-top: 1px solid #eee;">
+                        <td class="key-cell" width="50%" style="vertical-align: top;">
+                            <strong>Reference Number</strong>
+                        </td>
+                        <td class="value-cell">
+                            <%= refNo %>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 1px solid #eee;">
+                        <td class="key-cell" width="50%" style="vertical-align: top;">
+                            <strong>Time Submitted</strong>
+                        </td>
+                        <td class="value-cell"><%= submissionTime %></td>
+                    </tr>
+                    <% formData.forEach(function(fieldTuple) { %>
+                    <tr style="border-top: 1px solid #eee;">
+                        <td class="key-cell" width="50%" style="vertical-align: top;">
+                            <strong><%= fieldTuple.question %></strong>
+                        </td>
+                        <td class="value-cell">
+                            <% fieldTuple.answerTemplate.forEach(function(answer) { %>
+                            <%= answer %><br />
+                            <% }) %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+</body>
+
+</html>

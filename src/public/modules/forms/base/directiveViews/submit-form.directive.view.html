@@ -1,0 +1,159 @@
+<div ng-if="!uiState.formSubmitted">
+  <form class="start-end-page text-center">
+    <start-page-component
+      logo-url="{{ logoUrl }}"
+      color-theme="{{ form.startPage.colorTheme }}"
+      est-time-taken="form.startPage.estTimeTaken"
+      paragraph="{{ form.startPage.paragraph }}"
+      logo-state="{{ form.startPage.logo.state }}"
+      form-title="{{ form.title }}"
+      auth-type="form.authType"
+      is-admin-preview="false"
+      has-myinfo-fields="hasMyInfoFields"
+      is-template="form.isTemplate"
+      form-login="formLogin(authType, rememberMe)"
+    >
+    </start-page-component>
+  </form>
+
+  <div
+    ng-if="!myInfoError && (form.authType==='NIL' || (form.authType!=='NIL' && SpcpSession.userName)) || form.isTemplate"
+    id="form-container"
+    class="padded-view"
+  >
+    <!-- Form Fields View -->
+    <div class="form-fields">
+      <!-- Form fields -->
+      <form name="forms.myForm" novalidate class="standard-padding">
+        <div
+          ng-repeat="field in form.form_fields"
+          data-index="{{$index}}"
+          data-id="{{field._id}}"
+          class="row field-directive"
+          ng-class="{ activeField: selected._id === field._id }"
+          ng-if="field.isVisible"
+        >
+          <field-directive
+            field="field"
+            forms="forms"
+            is-validate-date="field.isValidateDate"
+            colortheme="{{ form.startPage.colorTheme }}"
+            is-template="form.isTemplate"
+            transaction-id="transactionId"
+          ></field-directive>
+        </div>
+      </form>
+
+      <!-- Form footer -->
+      <div id="form-submit" class="row">
+        <div class="standard-padding">
+          <!-- Submit button if not in preview mode -->
+          <button
+            class="btn-custom btn-large form-submit-btn {{ form.startPage.colorTheme }}-bg-dark {{ form.startPage.colorTheme }}-border-dark"
+            ng-disabled="disableSubmitButton || isSubmitButtonDisabled()"
+            ng-click="checkCaptchaAndSubmit()"
+            ng-class="uiState.submitButtonClicked ? 'btn-pressed' : ''"
+          >
+            <span ng-if="!uiState.submitButtonClicked">Submit</span>
+            <span ng-if="uiState.submitButtonClicked"
+              ><i class="bx bx-loader bx-spin bx-lg"></i
+            ></span>
+          </button>
+          <div feature-toggle feature-name="captcha">
+            <div
+              id="preview-captcha-notice"
+              class="alert-info alert-custom"
+              ng-if="form.isPreview && form.hasCaptcha"
+            >
+              <i class="bx bx-exclamation bx-md icon-spacing"></i>
+              <div class="alert-msg">
+                You are submitting a form with
+                <strong>captcha enabled</strong> while in
+                <strong>preview mode</strong>. Captcha is not supported on the
+                intranet. Respondents on intranet may not be able to submit this
+                form.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div ng-if="!uiState.formSubmitted">
+    <div
+      ng-if="form.authType==='SP' && !SpcpSession.userName && !form.isTemplate"
+      class="form-locked-msg padded-view"
+    >
+      Login with SingPass to access this form. Your SingPass ID will be included
+      with your form submission.
+    </div>
+    <div
+      ng-if="form.authType==='CP' && !SpcpSession.userName && !form.isTemplate"
+      class="form-locked-msg padded-view"
+    >
+      Login with CorpPass to access this form. Your Entity ID and CorpPass ID
+      will be included with your form submission.
+    </div>
+    <div ng-if="myInfoError" class="form-locked-msg myinfo-error padded-view">
+      <i class="bx bx-exclamation"></i
+      ><span
+        >An error occurred while retrieving your MyInfo details. Kindly refresh
+        your browser, or try again later.</span
+      >
+    </div>
+  </div>
+</div>
+<!-- End Page View -->
+<div ng-if="uiState.formSubmitted">
+  <form class="start-end-page text-center">
+    <end-page-component
+      logo-url="{{ logoUrl }}"
+      title="{{ form.endPage.title }}"
+      paragraph="{{ form.endPage.paragraph }}"
+      button-text="{{ form.endPage.buttonText }}"
+      button-link="{{ form.endPage.buttonLink }}"
+      auth-type="{{ form.authType }}"
+      is-admin-preview="false"
+      color-theme="{{ form.startPage.colorTheme }}"
+    >
+    </end-page-component>
+  </form>
+</div>
+
+<div class="padded-view">
+  <!-- Optional Survey Form -->
+  <div ng-if="uiState.formSubmitted" class="form-fields row">
+    <feedback-form-component
+      is-preview="form.isPreview"
+      form-id="{{ form._id }}"
+      color-theme="{{ form.startPage.colorTheme }}"
+    >
+    </feedback-form-component>
+  </div>
+</div>
+
+<!-- Form disclaimer -->
+<div id="form-footer">
+  <div id="form-footer-logo">
+    <p>Powered By</p>
+    <a ui-sref="landing" target="_blank">
+      <img src="/public/modules/core/img/logo-vertical-light.svg" />
+    </a>
+  </div>
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1 col-sm-12">
+      <div feature-toggle feature-name="captcha">
+        <div
+          vc-recaptcha
+          key="captchaService.publicKey"
+          ng-if="captchaService.create(feature.captcha) && form.hasCaptcha && !disableSubmitButton"
+          size="invisible"
+          on-create="captchaService.setWidget(widgetId)"
+          on-success="captchaService.onSuccess(response, submitForm)"
+          on-expire="captchaService.expire()"
+          data-badge="inline"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>

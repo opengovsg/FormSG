@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head> </head>
+  <body>
+    <p>
+      An email confirmation to one of your form respondents has bounced
+      permanently. This normally happens if the specified email address does not
+      exist. The details are as follows:
+    </p>
+    <ul>
+      <li><strong>Form title: </strong><%= formTitle %></li>
+      <li><strong>Submission reference number: </strong><%= submissionId %></li>
+      <li><strong>Email subject: </strong><%= subject %></li>
+      <li><strong>Bounced email addresses: </strong><%= bouncedEmails %></li>
+    </ul>
+    <p>
+      If you need to contact your form respondents by email, please consider
+      using the "Verified" option for your email field.
+    </p>
+    <br />
+    <p>The <%= appName %> Support Team</p>
+  </body>
+</html>

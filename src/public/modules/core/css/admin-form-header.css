@@ -1,0 +1,425 @@
+/* Form header */
+
+#admin-form .vcenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#admin-form #form-header {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: white;
+}
+
+#admin-form #form-header #header-myforms {
+  padding: 0;
+}
+
+#admin-form #form-header #header-addcollab {
+  padding: 0;
+}
+
+#admin-form #form-header .left-spacer {
+  margin-left: 15px;
+}
+
+#admin-form #form-header .right-spacer {
+  margin-right: 15px;
+}
+
+#admin-form #form-header #header-myforms a {
+  color: #484848;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+#admin-form #form-header #header-myforms #myforms-text {
+  position: absolute;
+  top: 3px;
+}
+
+#admin-form #form-header #header-myforms a:hover {
+  color: #2f60ce;
+  text-decoration-line: none;
+}
+
+#admin-form #form-header #header-myforms .back-arrow {
+  color: #2f60ce;
+}
+
+#admin-form #form-header #header-title {
+  color: #484848;
+  text-align: center;
+  margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#admin-form #form-header #header-last-saved {
+  color: #979797;
+  margin-top: 0;
+  margin-bottom: 5px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media not all and (min-width: 768px) {
+  #admin-form #form-header #header-title {
+    font-size: 22px;
+  }
+
+  #admin-form #form-header #header-last-saved {
+    font-size: 11px;
+  }
+
+  #admin-form #form-header #collab-circle-plus {
+    height: 36px;
+    width: 36px;
+  }
+}
+
+@media all and (min-width: 768px) {
+  #admin-form #form-header #header-title {
+    font-size: 28px;
+  }
+
+  #admin-form #form-header #header-last-saved {
+    font-size: 12px;
+  }
+
+  #admin-form #form-header #collab-circle-plus {
+    height: 44px;
+    width: 44px;
+    margin-right: 6px;
+  }
+}
+
+#admin-form #form-header #collab-circle-plus {
+  color: #484848;
+  border: 2px solid #484848;
+  background-color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+}
+
+#admin-form #form-header #collab-circle-plus i {
+  vertical-align: middle;
+  text-align: center;
+}
+
+#admin-form #form-header #collab-circle-user {
+  display: block;
+  color: #fff;
+  margin-left: 7px;
+  text-transform: uppercase;
+  border: 2px solid #484848;
+  background-color: #484848;
+  border-radius: 50%;
+  cursor: auto;
+  outline: none;
+  height: 44px;
+  width: 44px;
+  font-size: 16px;
+}
+
+#admin-form #form-header #collab-circle-plus:hover,
+#admin-form #form-header #collab-circle-plus.active {
+  border-color: #2f60ce;
+  color: #2f60ce;
+}
+
+/* Form collaborator modal */
+
+#admin-form #collaborator-modal #collab-overlay {
+  position: fixed;
+  z-index: 450;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(50, 50, 50, 0.5);
+}
+
+#admin-form #collab-role #role-dropdown-menu {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-radius: 0;
+  margin-top: 0;
+}
+
+#admin-form #collaborator-modal-body .inputs-container {
+  margin-bottom: 10px;
+}
+
+@media not all and (min-width: 768px) {
+  #admin-form #collaborator-modal-body {
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    overflow-y: scroll;
+  }
+
+  #admin-form #collab-list .role-column {
+    margin-bottom: 15px;
+    margin-left: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  #admin-form #collab-role #role-dropdown-menu {
+    width: inherit;
+  }
+
+  /* These are appended to body, hence no nesting */
+  #existing-role-dropdown-menu {
+    /* Same width as the collab-list itself */
+    width: calc(100vw - 78px);
+  }
+}
+
+@media all and (min-width: 768px) {
+  #admin-form #collaborator-modal-body {
+    position: absolute;
+    width: 700px;
+    top: 125px;
+    left: 50%;
+    transform: translate(-50%);
+    margin-bottom: 105px;
+  }
+
+  #admin-form #top-section .role-column {
+    padding-left: 0;
+  }
+
+  #admin-form #collab-list .role-column {
+    padding-left: 25px;
+    padding-right: 25px;
+    margin-bottom: 10px;
+  }
+
+  #admin-form #collab-role #role-dropdown-menu {
+    width: 287px;
+  }
+
+  #admin-form .non-mobile-hide {
+    display: none !important;
+  }
+}
+
+#admin-form #collaborator-modal .role-dropdown-btn {
+  height: 48px;
+  background-color: #fff;
+}
+
+#admin-form #collaborator-modal-body .remove-left-padding {
+  padding-left: 0;
+}
+
+#admin-form #collaborator-modal-body .remove-right-padding {
+  padding-right: 0;
+}
+
+#admin-form #role-dropdown-menu .role-explanation {
+  color: #888;
+}
+
+#admin-form #collab-role .caret {
+  margin-top: 12px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px dashed;
+}
+
+#admin-form #role-dropdown-menu .spacer {
+  height: 15px;
+}
+
+#admin-form #collaborator-modal-body {
+  z-index: 500;
+  box-shadow: 0 6px 8px 0 rgba(0, 0, 0, 0.24), 0 0 8px 0 rgba(0, 0, 0, 0.12);
+}
+
+#admin-form #collaborator-modal-body #top-section {
+  padding: 30px 39px 40px 39px;
+  background-color: #f0f4f6;
+}
+
+#admin-form #collaborator-modal-body #bottom-section {
+  background-color: #fff;
+}
+
+@media all and (min-width: 768px) {
+  #admin-form #collaborator-modal-body #bottom-section {
+    padding-bottom: 30px;
+  }
+}
+
+@media not all and (min-width: 768px) {
+  #admin-form #collaborator-modal-body #bottom-section {
+    /* This padding is to prevent the last dropdown from getting cut off */
+    padding-bottom: 130px;
+  }
+}
+
+#admin-form #collab-role .dropdown-disabled {
+  background-color: #f0f0f0;
+  border: solid 1px #ccc;
+  cursor: default;
+  color: #484848;
+}
+
+#admin-form #collab-role .dropdown-disabled > span {
+  opacity: 0.5;
+}
+
+#admin-form #collaborator-modal-body #invite-title {
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+#admin-form #collaborator-modal-body button#collab-btn {
+  width: 100%;
+}
+
+#admin-form #collaborator-modal-body #collab-title {
+  padding-top: 30px;
+  padding-left: 39px;
+  padding-bottom: 25px;
+}
+
+#admin-form #collaborator-modal-body .collab-hr {
+  height: 1px;
+  border: solid 0.5px #dcdcdc;
+  margin-bottom: 10px;
+}
+
+#admin-form #collaborator-modal-body #collab-list {
+  /* If they squeeze the screen too small, white screen will appear at the bottom.
+    TODO: Fix if possible. */
+  min-height: 60px;
+  padding-left: 39px;
+  padding-right: 39px;
+}
+
+#admin-form #collaborator-modal-body .secret-key-warning {
+  margin-bottom: 30px;
+}
+
+@media all and (min-width: 768px) {
+  #admin-form #collaborator-modal-body #collab-list {
+    /* Max height should avoid extending the screen, because if the modal + dropdown menu is taller than
+      the current screen's height, the bottom of the page will just appear white and not load. */
+    max-height: calc(100vh - 608px);
+
+    /* Always show the scrollbar, because opening the collaborator dropdowns will introduce a compensating margin
+      (.lock-scroll) to make up for a lost scrollbar to prevent the elements from jumping too much */
+    overflow-y: scroll;
+  }
+
+  #admin-form #collaborator-modal-body .secret-key-warning {
+    font-size: 17px;
+  }
+}
+
+@media not all and (min-width: 768px) {
+  #admin-form #collaborator-modal-body #collab-list {
+    /* For mobile, modal must be full screen, so enforce this minimum height to cover the screen. */
+    min-height: calc(100vh - 452px);
+  }
+
+  #admin-form #collaborator-modal-body .secret-key-warning {
+    font-size: 14px;
+  }
+}
+
+#admin-form #bottom-section .lock-scroll {
+  overflow-y: hidden !important;
+}
+
+/* Add margin to the right because scroll bar will disappear, this compensates to
+  reduce the movement of elements. Not necessary for mobile, because the list for mobile does not
+  scroll; the whole page scrolls. */
+@media all and (min-width: 768px) {
+  #admin-form #bottom-section .lock-scroll {
+    margin-right: 17px;
+  }
+}
+
+#admin-form #collaborator-modal-body #collab-list .collab-email {
+  line-height: 1.67;
+  color: #484848;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#admin-form #collaborator-modal-body .collaborator-list-entry {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#admin-form #collaborator-modal-body #collab-list .btn-delete {
+  float: right;
+  padding-right: 5px;
+}
+
+#admin-form #collaborator-modal-body #collaborators-close-button {
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  display: flex;
+  font-size: 30px;
+  justify-content: center;
+  align-items: center;
+  color: #979797;
+  margin-left: 20px;
+  position: absolute;
+  right: 25px;
+  top: 25px;
+}
+
+#admin-form #collaborator-modal-body #collaborators-close-button:hover {
+  color: #333;
+}
+
+#admin-form #collab-list .spacer {
+  height: 5px;
+}
+
+/* existing-role-dropdown-menus are appended to body, hence no nesting */
+#existing-role-dropdown-menu {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 0;
+}
+
+#admin-form .existing-role-button {
+  cursor: pointer;
+}
+
+#admin-form #collab-list .caret {
+  margin-top: 11px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px dashed;
+}
+
+#admin-form #collab-list .role-dropdown-text {
+  font-size: 16px;
+}
+
+#admin-form #existing-collab-role .dropdown-menu > li > a {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+#admin-form #collab-list .current-role-text {
+  line-height: 1.67;
+}
