@@ -66,3 +66,6 @@ NODE_ENV=development
 FORMSG_SDK_MODE=test
 
 MONGO_BINARY_VERSION=3.6.12
+
+AWS_ACCESS_KEY_ID=fakeAccessKeyId
+AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey

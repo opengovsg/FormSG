@@ -19,3 +19,6 @@ LOGO_S3_BUCKET=local-logo-bucket
 ATTACHMENT_S3_BUCKET=local-attachment-bucket
 NODE_ENV=development
 FORMSG_SDK_MODE=test
+
+AWS_ACCESS_KEY_ID=fakeAccessKeyId
+AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
