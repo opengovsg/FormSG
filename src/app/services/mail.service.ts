@@ -9,7 +9,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../utils/constants'
 
-const logger = createLoggerWithLabel('mail')
+const mailLogger = createLoggerWithLabel('mail')
 
 type NodeMailParams = {
   mail: {
@@ -29,13 +29,13 @@ type NodeMailParams = {
 }
 
 type MailServiceParams = {
-  appName: string
-  transporter: Mail
-  senderEmail: string
-  retryDuration: number
-  maxRetryCount: number
-  maxRetryDuration: number
-  logger: Logger
+  appName?: string
+  transporter?: Mail
+  senderEmail?: string
+  retryDuration?: number
+  maxRetryCount?: number
+  maxRetryDuration?: number
+  logger?: Logger
 }
 
 export class MailService {
@@ -48,14 +48,14 @@ export class MailService {
   #logger: Logger
 
   constructor({
-    appName,
-    transporter,
-    retryDuration,
-    senderEmail,
-    maxRetryCount,
-    maxRetryDuration,
-    logger,
-  }: MailServiceParams) {
+    appName = config.app.title,
+    transporter = config.mail.transporter,
+    retryDuration = config.mail.retry.retryDuration,
+    senderEmail = config.mail.mailer.from,
+    maxRetryCount = config.mail.retry.maxRetryCount,
+    maxRetryDuration = config.mail.retry.maxRetryDuration,
+    logger = mailLogger,
+  }: MailServiceParams = {}) {
     this.#appName = appName
     this.#senderEmail = senderEmail
     this.#transporter = transporter
@@ -122,6 +122,7 @@ export class MailService {
           )
           this.#logger.error(
             `mailError ${err.responseCode} retryCount ${retryEmail.options.retryCount} duration ${duration}ms:\t${emailLogString}`,
+            err,
           )
           retryEmail.options.retryCount--
           return this.#retryNodeMail(retryEmail, duration)
@@ -130,15 +131,19 @@ export class MailService {
           const retryCount = _.get(retryEmail, 'options.retryCount', undefined)
           this.#logger.error(
             `mailError ${err.responseCode} retryCount ${retryCount}:\t${emailLogString}`,
+            err,
           )
           return Promise.reject(err)
         }
       } else if (err && err.responseCode) {
         // Not 4xx error, pass any other errors to the callback
-        this.#logger.error(`mailError ${err.responseCode}:\t${emailLogString}`)
+        this.#logger.error(
+          `mailError ${err.responseCode}:\t${emailLogString}`,
+          err,
+        )
         return Promise.reject(err)
       } else {
-        this.#logger.error(`mailError "${err}":\t${emailLogString}`)
+        this.#logger.error(`mailError:\t${emailLogString}`, err)
         return Promise.reject(err)
       }
     }
@@ -196,18 +201,4 @@ export class MailService {
   }
 }
 
-const {
-  transporter,
-  retry: { retryDuration, maxRetryCount, maxRetryDuration },
-  mailer,
-} = config.mail
-
-export default new MailService({
-  appName: config.app.title,
-  logger,
-  maxRetryCount,
-  maxRetryDuration,
-  retryDuration,
-  transporter,
-  senderEmail: mailer.from,
-})
+export default new MailService()
