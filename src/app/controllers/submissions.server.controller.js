@@ -265,12 +265,9 @@ async function sendOneEmailAutoReply(
     },
   }
   try {
-    return MailService.sendNodeMail({
-      mail,
-      options: {
-        retryCount: config.mail.retry.maxRetryCount,
-        mailId: `${submissionId}-${index}`,
-      },
+    return MailService.sendNodeMail(mail, {
+      retryCount: config.mail.retry.maxRetryCount,
+      mailId: `${submissionId}-${index}`,
     })
   } catch (err) {
     logger.error(`Mail autoreply error:\t ip=${getRequestIp(req)}`, err)

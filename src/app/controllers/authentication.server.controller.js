@@ -244,7 +244,7 @@ exports.sendOtp = async function (req, res) {
         'Error rendering OTP. Please try again later and if the problem persists, contact us.',
       )
   }
-  let mailOptions = {
+  let mail = {
     to: email,
     from: config.mail.mailer.from,
     subject: 'One-Time Password (OTP) for ' + res.app.locals.title,
@@ -254,10 +254,7 @@ exports.sendOtp = async function (req, res) {
     },
   }
   try {
-    await MailService.sendNodeMail({
-      mail: mailOptions,
-      options: { mailId: 'OTP' },
-    })
+    await MailService.sendNodeMail(mail, { mailId: 'OTP' })
     logger.info(`Login OTP sent:\temail=${email} ip=${getRequestIp(req)}`)
     return res.status(HttpStatus.OK).send('OTP sent to ' + email + '!')
   } catch (emailErr) {

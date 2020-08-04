@@ -1,5 +1,3 @@
-import HttpStatus from 'http-status-codes'
-import _ from 'lodash'
 import Mail from 'nodemailer/lib/mailer'
 import validator from 'validator'
 import { Logger } from 'winston'
@@ -11,30 +9,15 @@ import { EMAIL_HEADERS, EMAIL_TYPES } from '../utils/constants'
 
 const mailLogger = createLoggerWithLabel('mail')
 
-type NodeMailParams = {
-  mail: {
-    to: string
-    from: string
-    subject: string
-    html: string
-    headers?: {
-      [x: string]: string
-    }
-  }
-  options: {
-    mailId?: string
-    formId?: string
-    retryCount?: number
-  }
+type SendMailOptions = {
+  mailId?: string
+  formId?: string
 }
 
 type MailServiceParams = {
   appName?: string
   transporter?: Mail
   senderEmail?: string
-  retryDuration?: number
-  maxRetryCount?: number
-  maxRetryDuration?: number
   logger?: Logger
 }
 
@@ -42,127 +25,48 @@ export class MailService {
   #appName: string
   #transporter: Mail
   #senderEmail: string
-  #retryDuration: number
-  #maxRetryCount: number
-  #maxRetryDuration: number
   #logger: Logger
 
   constructor({
     appName = config.app.title,
     transporter = config.mail.transporter,
-    retryDuration = config.mail.retry.retryDuration,
     senderEmail = config.mail.mailer.from,
-    maxRetryCount = config.mail.retry.maxRetryCount,
-    maxRetryDuration = config.mail.retry.maxRetryDuration,
     logger = mailLogger,
   }: MailServiceParams = {}) {
     this.#appName = appName
     this.#senderEmail = senderEmail
     this.#transporter = transporter
-    this.#retryDuration = retryDuration
-    this.#maxRetryCount = maxRetryCount
-    this.#maxRetryDuration = maxRetryDuration
     this.#logger = logger
   }
 
   /**
-   * Exponential backoff with full jitter
-   * @param retryCount the number of email retries left
-   * @returns The duration to await, in milliseconds
-   */
-  #calcEmailRetryDuration = (retryCount: number) => {
-    const attempt = this.#maxRetryCount - retryCount
-    const newDuration = this.#retryDuration * Math.pow(2, attempt)
-    const jitter = newDuration * (Math.random() * 2 - 1)
-    return Math.min(this.#maxRetryDuration, newDuration + jitter)
-  }
-
-  /**
    * Sends email to SES / Direct transport to send out
-   * @param params Email object
-   * @param params.mail Email to send
-   * @param params.mail.to Email address of recipient
-   * @param params.mail.from Email address of sender
-   * @param params.mail.subject Email subject
-   * @param params.mail.html HTML of email
-   * @param params.options.retryCount Number of retries left - must be greater than zero.
+   * @param mail Mail data to send with
+   * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
-  sendNodeMail = async (params: NodeMailParams) => {
+  sendNodeMail = async (mail: Mail.Options, sendOptions?: SendMailOptions) => {
     // In case of missing mail info
-    if (!params.mail || !params.mail.to) {
+    if (!mail || !mail.to) {
       return Promise.reject('Mail undefined error')
     }
 
-    const options = params.options || {}
-
-    const retryEmail =
-      options && options.retryCount ? _.cloneDeep(params) : null
-    const emailLogString = `"Id: ${options.mailId} Email\t from:${params.mail.from}\t subject:${params.mail.subject}\t formId: ${options.formId}"`
+    const emailLogString = `"Id: ${sendOptions.mailId} Email\t from:${mail.from}\t subject:${mail.subject}\t formId: ${sendOptions.formId}"`
 
     this.#logger.info(emailLogString)
     this.#logger.profile(emailLogString)
 
     try {
-      const response = await this.#transporter.sendMail(params.mail)
+      const response = await this.#transporter.sendMail(mail)
       this.#logger.info(`mailSuccess:\t${emailLogString}`)
       return response
     } catch (err) {
-      if (
-        err.responseCode >= HttpStatus.BAD_REQUEST &&
-        err.responseCode < HttpStatus.INTERNAL_SERVER_ERROR
-      ) {
-        // Retry for any emails with retryCount > 0, and 4xx errors
-        if (
-          retryEmail !== null &&
-          this.#maxRetryCount >= retryEmail.options.retryCount &&
-          retryEmail.options.retryCount > 0
-        ) {
-          const duration = this.#calcEmailRetryDuration(
-            retryEmail.options.retryCount,
-          )
-          this.#logger.error(
-            `mailError ${err.responseCode} retryCount ${retryEmail.options.retryCount} duration ${duration}ms:\t${emailLogString}`,
-            err,
-          )
-          retryEmail.options.retryCount--
-          return this.#retryNodeMail(retryEmail, duration)
-        } else {
-          // No retry specified or ran out of retries,
-          const retryCount = _.get(retryEmail, 'options.retryCount', undefined)
-          this.#logger.error(
-            `mailError ${err.responseCode} retryCount ${retryCount}:\t${emailLogString}`,
-            err,
-          )
-          return Promise.reject(err)
-        }
-      } else if (err && err.responseCode) {
-        // Not 4xx error, pass any other errors to the callback
-        this.#logger.error(
-          `mailError ${err.responseCode}:\t${emailLogString}`,
-          err,
-        )
-        return Promise.reject(err)
-      } else {
-        this.#logger.error(`mailError:\t${emailLogString}`, err)
-        return Promise.reject(err)
-      }
+      // Pass errors to the callback
+      this.#logger.error(
+        `mailError ${err.responseCode}:\t${emailLogString}`,
+        err,
+      )
+      return Promise.reject(err)
     }
-  }
-
-  /**
-   * Attempts an email retry after a given duration.
-   * @param retryEmail Info on email to retry. Equivalent to first argument of sendNodeMail
-   * @param duration Duration to wait before attempting retry
-   * @return Response info from email
-   */
-  #retryNodeMail = (retryEmail: NodeMailParams, duration: number) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        this.sendNodeMail(retryEmail)
-          .then((response) => resolve(response))
-          .catch((err) => reject(err))
-      }, duration)
-    })
   }
 
   /**
@@ -178,7 +82,7 @@ export class MailService {
 
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
 
-    const mailOptions: NodeMailParams['mail'] = {
+    const mail: Mail.Options = {
       to: recipient,
       from: this.#senderEmail,
       subject: `Your OTP for submitting a form on ${this.#appName}`,
@@ -194,10 +98,7 @@ export class MailService {
       },
     }
     // Error gets caught in getNewOtp
-    await this.sendNodeMail({
-      mail: mailOptions,
-      options: { mailId: 'verify' },
-    })
+    await this.sendNodeMail(mail, { mailId: 'verify' })
   }
 }
 

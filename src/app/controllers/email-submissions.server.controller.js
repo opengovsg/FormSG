@@ -649,12 +649,9 @@ exports.sendAdminEmail = async function (req, res, next) {
 
   // Send mail
   try {
-    await MailService.sendNodeMail({
-      mail: mailOptions,
-      options: {
-        mailId: submission.id,
-        formId: form._id,
-      },
+    await MailService.sendNodeMail(mailOptions, {
+      mailId: submission.id,
+      formId: form._id,
     })
     return next()
   } catch (err) {
