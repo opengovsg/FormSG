@@ -1,16 +1,16 @@
-const axios = require('axios')
-const _ = require('lodash')
+import axios from 'axios'
+import { get } from 'lodash'
+import mongoose from 'mongoose'
 
-const { WebhookValidationError } = require('../utils/custom-errors')
-const mongoose = require('mongoose')
-const {
-  getEncryptSubmissionModel,
-} = require('../models/submission.server.model')
-const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+import formsgSdk from '../../config/formsg-sdk'
+import { createLoggerWithLabel } from '../../config/logger'
 // Prevents JSON.stringify error for circular JSONs and BigInts
-const { stringifySafe } = require('../../shared/util/stringify-safe')
-const formsgSdk = require('../../config/formsg-sdk')
-const logger = require('../../config/logger').createLoggerWithLabel('webhooks')
+import { stringifySafe } from '../../shared/util/stringify-safe'
+import { getEncryptSubmissionModel } from '../models/submission.server.model'
+import { WebhookValidationError } from '../utils/custom-errors'
+
+const logger = createLoggerWithLabel('webhooks')
+const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 /**
  * Logs webhook failure in console and database.
@@ -89,7 +89,7 @@ const logWebhookSuccess = (
   response,
   { webhookUrl, submissionId, formId, now, signature },
 ) => {
-  const status = _.get(response, 'status')
+  const status = get(response, 'status')
   const loggingParams = {
     status,
     submissionId,
@@ -106,7 +106,7 @@ const logWebhookFailure = (
   error,
   { webhookUrl, submissionId, formId, now, signature },
 ) => {
-  const errorMessage = _.get(error, 'message')
+  const errorMessage = get(error, 'message')
   const loggingParams = {
     submissionId,
     formId,
@@ -118,7 +118,7 @@ const logWebhookFailure = (
   if (error instanceof WebhookValidationError) {
     logger.error(getConsoleMessage('Webhook not attempted', loggingParams))
   } else {
-    loggingParams.status = _.get(error, 'response.status')
+    loggingParams.status = get(error, 'response.status')
     logger.error(getConsoleMessage('Webhook POST failed', loggingParams))
   }
 }
@@ -141,7 +141,7 @@ const updateSubmissionsDb = (formId, submissionId, updateObj) => {
           formId,
           submissionId,
           updateObj: stringifySafe(updateObj),
-          dbErrorMessage: _.get(error, 'message'),
+          dbErrorMessage: get(error, 'message'),
         }),
       )
     })
@@ -164,10 +164,10 @@ const getSuccessDbUpdate = (response, { webhookUrl, signature }) => {
 
 // Formats webhook failure info into an object to update Submissions collection
 const getFailureDbUpdate = (error, { webhookUrl, signature }) => {
-  const errorMessage = _.get(error, 'message')
+  const errorMessage = get(error, 'message')
   const update = { webhookUrl, signature, errorMessage }
   if (!(error instanceof WebhookValidationError)) {
-    update.response = getFormattedResponse(_.get(error, 'response'))
+    update.response = getFormattedResponse(get(error, 'response'))
   }
   return update
 }
