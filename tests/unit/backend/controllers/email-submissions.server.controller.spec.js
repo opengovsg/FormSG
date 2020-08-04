@@ -11,6 +11,8 @@ const mongoose = require('mongoose')
 const dbHandler = require('../helpers/db-handler')
 const { validSnsBody } = require('../resources/valid-sns-body')
 const { getSnsBasestring } = require('../../../../dist/backend/app/utils/sns')
+const MailService = require('../../../../dist/backend/app/services/mail.service')
+  .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
@@ -24,8 +26,7 @@ describe('Email Submissions Controller', () => {
 
   // Declare global variables
   let spyRequest
-  let mockSendNodeMail = jasmine.createSpy()
-
+  let sendNodeMailSpy
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
   // which will be destroyed and re-created for every test
@@ -33,9 +34,6 @@ describe('Email Submissions Controller', () => {
     'dist/backend/app/controllers/email-submissions.server.controller',
     {
       mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      '../services/mail.service': {
-        sendNodeMail: mockSendNodeMail,
-      },
     },
   )
   const submissionsController = spec(
@@ -45,9 +43,6 @@ describe('Email Submissions Controller', () => {
       request: (url, callback) => spyRequest(url, callback),
       '../../config/config': {
         sessionSecret: SESSION_SECRET,
-      },
-      '../services/mail.service': {
-        sendNodeMail: mockSendNodeMail,
       },
     },
   )
@@ -101,11 +96,13 @@ describe('Email Submissions Controller', () => {
     })
 
     beforeEach(() => {
-      mockSendNodeMail.and.callFake(({ mail }) => {
-        if (!mail.to || !mail.from || !mail.subject || !mail.html) {
-          throw new Error('mockSendNodeMail error')
-        }
-      })
+      sendNodeMailSpy = spyOn(MailService, 'sendNodeMail').and.callFake(
+        ({ mail }) => {
+          if (!mail.to || !mail.from || !mail.subject || !mail.html) {
+            throw new Error('mockSendNodeMail error')
+          }
+        },
+      )
       fixtures = {
         autoReplyEmails: [],
         attachments: [
@@ -151,8 +148,8 @@ describe('Email Submissions Controller', () => {
         .get(endpointPath)
         .expect(HttpStatus.OK)
         .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
+          expect(sendNodeMailSpy).toHaveBeenCalled()
+          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0].mail
           console.error('mailOptions.html', mailOptions.html)
           expect(mailOptions.to).toEqual(fixtures.form.emails)
           expect(mailOptions.from).toEqual(config.mail.mailer.from)
@@ -177,8 +174,8 @@ describe('Email Submissions Controller', () => {
         .get(endpointPath)
         .expect(HttpStatus.OK)
         .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
+          expect(sendNodeMailSpy).toHaveBeenCalled()
+          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0].mail
           expect(mailOptions.to).toEqual(fixtures.form.emails)
           expect(mailOptions.from).toEqual(config.mail.mailer.from)
           expect(mailOptions.replyTo).toEqual(
@@ -207,8 +204,8 @@ describe('Email Submissions Controller', () => {
         .get(endpointPath)
         .expect(HttpStatus.OK)
         .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
+          expect(sendNodeMailSpy).toHaveBeenCalled()
+          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0].mail
           expect(mailOptions.to).toEqual(fixtures.form.emails)
           expect(mailOptions.from).toEqual(config.mail.mailer.from)
           expect(mailOptions.replyTo).toEqual()

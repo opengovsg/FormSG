@@ -6,6 +6,8 @@ const request = require('supertest')
 
 const constants = require('../../../../dist/backend/shared/util/verification')
 const dbHandler = require('../helpers/db-handler')
+const MailService = require('../../../../dist/backend/app/services/mail.service')
+  .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
@@ -17,11 +19,11 @@ const Verification = dbHandler.makeModel(
 
 describe('Verification Controller', () => {
   const bcrypt = jasmine.createSpyObj('bcrypt', ['hash'])
-  const sendEmailOtp = jasmine.createSpy('sendEmailOtp')
   const sendSmsOtp = jasmine.createSpy('sendSmsOtp')
   const testOtp = '123456'
 
   let spyRequest = jasmine.createSpy('request')
+  let sendOtpSpy
   let req
   let res
 
@@ -31,9 +33,6 @@ describe('Verification Controller', () => {
     '../../config/config': {
       otpGenerator: () => testOtp,
       logger: console,
-    },
-    './mail.service': {
-      sendVerificationOtp: sendEmailOtp,
     },
     './../factories/sms.factory': {
       sendVerificationOtp: sendSmsOtp,
@@ -60,6 +59,8 @@ describe('Verification Controller', () => {
 
   beforeAll(async (done) => {
     await dbHandler.connect()
+
+    sendOtpSpy = spyOn(MailService, 'sendVerificationOtp')
 
     await Agency.deleteMany({})
     testAgency = new Agency({
@@ -260,7 +261,7 @@ describe('Verification Controller', () => {
         }
         res.sendStatus.and.callFake(function (status) {
           expect(status).toEqual(HttpStatus.CREATED)
-          expect(sendEmailOtp).toHaveBeenCalled()
+          expect(sendOtpSpy).toHaveBeenCalled()
           Verification.findById(transaction._id, function (err, result) {
             // eslint-disable-next-line no-console
             if (err) console.error(err)
