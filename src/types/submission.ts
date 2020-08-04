@@ -15,6 +15,7 @@ export interface ISubmission {
   submissionType: SubmissionType
   created: Date
   lastModified: Date
+  _id: any
 }
 
 export interface ISubmissionSchema extends ISubmission, Document {

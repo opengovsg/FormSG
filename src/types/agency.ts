@@ -7,6 +7,7 @@ export interface IAgency {
   logo: string
   created: Date
   lastModified?: Date
+  _id: any
 }
 
 export interface IAgencySchema extends IAgency, Document {}

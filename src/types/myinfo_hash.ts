@@ -13,6 +13,7 @@ interface IMyInfoHash {
   fields: IHashes
   expireAt: Date
   created: Date
+  _id: any
 }
 
 export interface IMyInfoHashSchema extends IMyInfoHash, Document {}

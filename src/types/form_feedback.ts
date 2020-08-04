@@ -8,6 +8,7 @@ export interface IFormFeedback {
   comment: string
   created: Date
   lastModified?: Date
+  _id: any
 }
 
 export interface IFormFeedbackSchema extends Document {}

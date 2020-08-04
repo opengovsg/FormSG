@@ -6,6 +6,7 @@ export interface IToken {
   expireAt: Date
   numOtpAttempts: number
   numOtpSent: number
+  _id: any
 }
 
 export interface ITokenSchema extends IToken, Document {}
