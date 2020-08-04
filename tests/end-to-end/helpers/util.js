@@ -67,6 +67,16 @@ async function enterEmail(t, email) {
 }
 
 /**
+ * Returns whether a particular bonus feature is enabled
+ * @param {string} feature
+ * @returns boolean
+ */
+async function getFeatureState(feature) {
+  const featureStates = await axios.get(`${appUrl}/frontend/features`)
+  return featureStates.data[feature]
+}
+
+/**
  * Retrieves an email sent by FormSG.
  * @param {string} formName Title of form
  * @returns Object containing subject, sender, recipient and html
@@ -283,11 +293,16 @@ function deleteDocById(collection, id) {
  * }
  * @param {Object} Form Mongoose model of Form
  */
-async function createFormFromTemplate(t, { user, formOptions }, Form) {
+async function createFormFromTemplate(
+  t,
+  { user, formOptions },
+  Form,
+  captchaEnabled,
+) {
   const { email } = user
   await logInWithEmail(t, email)
   await addNewFormBySelectTemplate(t, formOptions)
-  await addSettings(t, formOptions)
+  await addSettings(t, formOptions, captchaEnabled)
   const formId = getFormIdFromUrl(await getPageUrl())
   return Form.findOne({ _id: formId })
 }
@@ -311,12 +326,13 @@ async function createForm(
   t,
   { user, formOptions, formFields, logicData },
   Form,
+  captchaEnabled,
 ) {
   const { email } = user
   await logInWithEmail(t, email)
   await addNewForm(t, formOptions)
   // Need to add settings first so MyInfo fields can be added
-  await addSettings(t, formOptions)
+  await addSettings(t, formOptions, captchaEnabled)
   await addFields(t, formFields)
   if (logicData) {
     await addLogic(t, logicData, formFields)
@@ -578,7 +594,7 @@ function getFormIdFromUrl(url) {
   return getSubstringBetween(url, '#!/', '/admin')
 }
 
-async function addSettings(t, formOptions) {
+async function addSettings(t, formOptions, captchaEnabled) {
   await t.click(adminTabs.settings)
 
   // Expect auth type to be none by default, then change it
@@ -591,10 +607,12 @@ async function addSettings(t, formOptions) {
   // Expect form title to be correct
   await t.expect(settingsTab.formTitleInput.value).eql(formOptions.title)
 
-  // Expect captcha to be active, then set it
-  await t.expect(settingsTab.captchaToggleInput.checked).ok()
-  if (!formOptions.hasCaptcha) {
-    await t.click(settingsTab.captchaToggleLabel)
+  if (captchaEnabled) {
+    // Expect captcha to be active, then set it
+    await t.expect(settingsTab.captchaToggleInput.checked).ok()
+    if (!formOptions.hasCaptcha) {
+      await t.click(settingsTab.captchaToggleLabel)
+    }
   }
 
   // Expect form to be inactive, then activate it
@@ -1227,4 +1245,5 @@ module.exports = {
   getAuthFields,
   verifySubmissionDisabled,
   getDownloadsFolder,
+  getFeatureState,
 }

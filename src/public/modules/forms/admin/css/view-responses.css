@@ -253,7 +253,6 @@
 #secret-key .instructions-caption {
   margin-top: 15px;
   margin-bottom: 15px;
-  padding-left: 16px;
   text-align: center;
 }
 
@@ -327,9 +326,9 @@
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
@@ -366,9 +365,8 @@
 }
 
 #secret-key #enter-secret-key input {
-  width: 513px;
   height: 54px;
-  margin: 0 10px;
+  margin-right: 10px;
 }
 
 #secret-key .input-acknowledgement {
@@ -418,7 +416,6 @@
 
 #secret-key .instructions {
   text-align: left;
-  padding-left: 16px;
 }
 
 #secret-key .warning-acknowledgement {
@@ -434,10 +431,7 @@
 
 @media (min-width: 576px) {
   #secret-key .instructions-container {
-    width: min-content;
-  }
-  #secret-key .input-acknowledgement {
-    margin: 10px 10px 0;
+    width: calc(100% - 115px);
   }
 }
 
