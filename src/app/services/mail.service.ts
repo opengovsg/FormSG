@@ -1,11 +1,14 @@
-const validator = require('validator')
-const HttpStatus = require('http-status-codes')
-const _ = require('lodash')
+import HttpStatus from 'http-status-codes'
+import _ from 'lodash'
+import validator from 'validator'
 
-const mailLogger = require('../../config/logger').createLoggerWithLabel('mail')
-const { HASH_EXPIRE_AFTER_SECONDS } = require('../../shared/util/verification')
-const config = require('../../config/config')
-const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
+import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../utils/constants'
+
+const logger = createLoggerWithLabel('mail')
+
 const {
   transporter,
   retry: { retryDuration, maxRetryCount, maxRetryDuration },
@@ -14,41 +17,60 @@ const {
 
 /**
  * Exponential backoff with full jitter
- * @param {Number} retryCount - Number of email retries left
- * @returns {Number} The duration to await, in milliseconds
+ * @param retryCount the number of email retries left
+ * @returns The duration to await, in milliseconds
  */
-function calcEmailRetryDuration(retryCount) {
+const calcEmailRetryDuration = (retryCount: number) => {
   const attempt = maxRetryCount - retryCount
   const newDuration = retryDuration * Math.pow(2, attempt)
   const jitter = newDuration * (Math.random() * 2 - 1)
   return Math.min(maxRetryDuration, newDuration + jitter)
 }
+
+type NodeMailParams = {
+  mail: {
+    to: string
+    from: string
+    subject: string
+    html: string
+    headers?: {
+      [x: string]: string
+    }
+  }
+  options: {
+    mailId?: string
+    formId?: string
+    retryCount?: number
+  }
+}
+
 /**
  * Sends email to SES / Direct transport to send out
- * @param  {Object} email - Email object
- * @param  {Object} email.mail - Email
- * @param  {String} email.mail.to - Email address of recipient
- * @param  {String} email.mail.from - Email address of sender
- * @param  {String} email.mail.subject - Email subject
- * @param  {String} email.mail.html - HTML of email
- * @param  {Object} email.options.retryCount - Number of retries left - must be greater than zero.
+ * @param params Email object
+ * @param params.mail Email to send
+ * @param params.mail.to Email address of recipient
+ * @param params.mail.from Email address of sender
+ * @param params.mail.subject Email subject
+ * @param params.mail.html HTML of email
+ * @param params.options.retryCount Number of retries left - must be greater than zero.
  */
-async function sendNodeMail(email) {
+export const sendNodeMail = async (params: NodeMailParams) => {
   // In case of missing mail info
-  if (!email.mail || !email.mail.to) {
+  if (!params.mail || !params.mail.to) {
     return Promise.reject('Mail undefined error')
   }
 
-  const { options } = email
-  const retryEmail = options && options.retryCount ? _.cloneDeep(email) : null
-  const emailLogString = `"Id: ${(options || {}).mailId} Email\t from:${
-    email.mail.from
-  }\t subject:${email.mail.subject}\t formId: ${(options || {}).formId}"`
-  mailLogger.info(emailLogString)
-  mailLogger.profile(emailLogString)
+  const options = params.options || {}
+
+  const retryEmail = options && options.retryCount ? _.cloneDeep(params) : null
+  const emailLogString = `"Id: ${options.mailId} Email\t from:${params.mail.from}\t subject:${params.mail.subject}\t formId: ${options.formId}"`
+
+  logger.info(emailLogString)
+  logger.profile(emailLogString)
+
   try {
-    const response = await transporter.sendMail(email.mail)
-    mailLogger.info(`mailSuccess:\t${emailLogString}`)
+    const response = await transporter.sendMail(params.mail)
+    logger.info(`mailSuccess:\t${emailLogString}`)
     return response
   } catch (err) {
     if (
@@ -62,7 +84,7 @@ async function sendNodeMail(email) {
         retryEmail.options.retryCount > 0
       ) {
         const duration = calcEmailRetryDuration(retryEmail.options.retryCount)
-        mailLogger.error(
+        logger.error(
           `mailError ${err.responseCode} retryCount ${retryEmail.options.retryCount} duration ${duration}ms:\t${emailLogString}`,
         )
         retryEmail.options.retryCount--
@@ -70,17 +92,17 @@ async function sendNodeMail(email) {
       } else {
         // No retry specified or ran out of retries,
         const retryCount = _.get(retryEmail, 'options.retryCount', undefined)
-        mailLogger.error(
+        logger.error(
           `mailError ${err.responseCode} retryCount ${retryCount}:\t${emailLogString}`,
         )
         return Promise.reject(err)
       }
     } else if (err && err.responseCode) {
-      // Pass any other errors to the callback
-      mailLogger.error(`mailError ${err.responseCode}:\t${emailLogString}`)
+      // Not 4xx error, pass any other errors to the callback
+      logger.error(`mailError ${err.responseCode}:\t${emailLogString}`)
       return Promise.reject(err)
     } else {
-      mailLogger.error(`mailError "${err}":\t${emailLogString}`)
+      logger.error(`mailError "${err}":\t${emailLogString}`)
       return Promise.reject(err)
     }
   }
@@ -88,11 +110,11 @@ async function sendNodeMail(email) {
 
 /**
  * Attempts an email retry after a given duration.
- * @param {Object} retryEmail Info on email to retry. Equivalent to first argument of sendNodeMail.
- * @param {number} duration Duration to wait before attempting retry.
- * @return {Promise<Object>} Response info from email.
+ * @param retryEmail Info on email to retry. Equivalent to first argument of sendNodeMail
+ * @param duration Duration to wait before attempting retry
+ * @return Response info from email
  */
-const retryNodeMail = (retryEmail, duration) => {
+const retryNodeMail = (retryEmail: NodeMailParams, duration: number) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       sendNodeMail(retryEmail)
@@ -104,14 +126,16 @@ const retryNodeMail = (retryEmail, duration) => {
 
 /**
  * Sends an otp to a valid email
- * @param {string} recipient
- * @param {string} otp
- * @throws {Error} error if mail fails, to be handled by verification service
+ * @param recipient the recipient email address
+ * @param otp the otp to send
+ * @throws error if mail fails, to be handled by verification service
  */
-const sendVerificationOtp = async (recipient, otp) => {
-  if (!validator.isEmail(recipient))
+export const sendVerificationOtp = async (recipient: string, otp: string) => {
+  if (!validator.isEmail(recipient)) {
     throw new Error(`${recipient} is not a valid email`)
-  const mailOptions = {
+  }
+
+  const mailOptions: NodeMailParams['mail'] = {
     to: recipient,
     from: mailer.from,
     subject: `Your OTP for submitting a form on ${config.app.title}`,
@@ -133,9 +157,4 @@ const sendVerificationOtp = async (recipient, otp) => {
     mail: mailOptions,
     options: { mailId: 'verify' },
   })
-}
-
-module.exports = {
-  sendVerificationOtp,
-  sendNodeMail,
 }
