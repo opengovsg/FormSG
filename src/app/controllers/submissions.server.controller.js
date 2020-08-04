@@ -21,7 +21,7 @@ const config = require('../../config/config')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
-const { sendNodeMail } = require('../services/mail.service')
+const MailService = require('../services/mail.service').default
 const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
 
 const GOOGLE_RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
@@ -265,7 +265,7 @@ async function sendOneEmailAutoReply(
     },
   }
   try {
-    return sendNodeMail({
+    return MailService.sendNodeMail({
       mail,
       options: {
         retryCount: config.mail.retry.maxRetryCount,

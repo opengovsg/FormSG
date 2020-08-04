@@ -24,7 +24,7 @@ const { renderPromise } = require('../utils/render-promise')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
-const { sendNodeMail } = require('../services/mail.service')
+const MailService = require('../services/mail.service').default
 const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
 
 const MAX_OTP_ATTEMPTS = 10
@@ -254,7 +254,7 @@ exports.sendOtp = async function (req, res) {
     },
   }
   try {
-    await sendNodeMail({
+    await MailService.sendNodeMail({
       mail: mailOptions,
       options: { mailId: 'OTP' },
     })

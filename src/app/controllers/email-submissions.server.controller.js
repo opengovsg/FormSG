@@ -32,7 +32,7 @@ const logger = require('../../config/logger').createLoggerWithLabel(
 const emailLogger = require('../../config/logger').createCloudWatchLogger(
   'email',
 )
-const { sendNodeMail } = require('../services/mail.service')
+const MailService = require('../services/mail.service').default
 
 const { sessionSecret } = config
 
@@ -649,7 +649,7 @@ exports.sendAdminEmail = async function (req, res, next) {
 
   // Send mail
   try {
-    await sendNodeMail({
+    await MailService.sendNodeMail({
       mail: mailOptions,
       options: {
         mailId: submission.id,

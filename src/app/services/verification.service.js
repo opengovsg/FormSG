@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const _ = require('lodash')
 const { otpGenerator } = require('../../config/config')
-const mailService = require('./mail.service')
+const MailService = require('./mail.service').default
 const smsFactory = require('./../factories/sms.factory')
 const vfnUtil = require('../../shared/util/verification')
 const formsgSdk = require('../../config/formsg-sdk')
@@ -219,7 +219,7 @@ const sendOTPForField = async (formId, field, recipient, otp) => {
       break
     case 'email':
       // call email - it should validate the recipient
-      await mailService.sendVerificationOtp(recipient, otp)
+      await MailService.sendVerificationOtp(recipient, otp)
       break
     default:
       throw new Error(`sendOTPForField: ${fieldType} is unsupported`)
