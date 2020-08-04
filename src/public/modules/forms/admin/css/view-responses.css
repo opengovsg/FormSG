@@ -434,7 +434,7 @@
 
 @media (min-width: 576px) {
   #secret-key .instructions-container {
-    width: min-content;
+    width: calc(100% - 115px);
   }
   #secret-key .input-acknowledgement {
     margin: 10px 10px 0;
