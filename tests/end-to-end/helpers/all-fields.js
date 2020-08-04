@@ -17,7 +17,7 @@ const allFieldInfo = [
   {
     title: 'Personal Email',
     fieldType: 'email',
-    isVerifiable: true,
+    isVerifiable: false,
     val: 'test@test.gov.sg',
   },
   {
@@ -112,7 +112,7 @@ const allFieldInfo = [
     fieldType: 'attachment',
     attachmentSize: '1',
     val: 'test-att.txt',
-    path: './files/att-folder-1/test-att.txt',
+    path: '../files/att-folder-1/test-att.txt',
     content: 'att-folder-1',
   },
 ]
