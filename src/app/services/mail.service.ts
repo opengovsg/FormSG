@@ -1,3 +1,4 @@
+import dedent from 'dedent-js'
 import Mail from 'nodemailer/lib/mailer'
 import validator from 'validator'
 import { Logger } from 'winston'
@@ -85,7 +86,13 @@ export class MailService {
    * @throws error if mail fails, to be handled by verification service
    */
   sendVerificationOtp = async (recipient: string, otp: string) => {
-    // Guard against invalid emails.
+    // TODO(#42): Remove param guards once whole backend is TypeScript.
+    if (!otp) {
+      throw new Error('OTP is missing.')
+    }
+    if (!recipient) {
+      throw new Error('Recipient email is missing')
+    }
     if (!validator.isEmail(recipient)) {
       throw new Error(`${recipient} is not a valid email`)
     }
@@ -96,19 +103,21 @@ export class MailService {
       to: recipient,
       from: this.#senderEmail,
       subject: `Your OTP for submitting a form on ${this.#appName}`,
-      html: `
+      html: dedent`
         <p>You are currently submitting a form on ${this.#appName}.</p>
-        <p> Your OTP is <b>${otp}</b>. 
-        It will expire in ${minutesToExpiry} minutes. 
-        Please use this to verify your submission.</p>
+        <p>
+          Your OTP is <b>${otp}</b>. 
+          It will expire in ${minutesToExpiry} minutes. 
+          Please use this to verify your submission.
+        </p>
         <p>If your OTP does not work, please request for a new OTP.</p>
-        `,
+      `,
       headers: {
         [EMAIL_HEADERS.emailType]: EMAIL_TYPES.verificationOtp,
       },
     }
     // Error gets caught in getNewOtp
-    await this.sendNodeMail(mail, { mailId: 'verify' })
+    return this.sendNodeMail(mail, { mailId: 'verify' })
   }
 }
 

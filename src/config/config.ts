@@ -391,7 +391,7 @@ const otpGenerator = () => {
   return value.join('')
 }
 
-// TODO(#2505): Remove this once no models rely on this and use mongoose's own
+// TODO(#42): Remove this once no models rely on this and use mongoose's own
 // timestamps.
 /**
  * Generates created and last modified fields for several mongo models.

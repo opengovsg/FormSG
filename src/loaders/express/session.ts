@@ -13,7 +13,7 @@ const sessionMiddlewares = (connection: Connection) => {
     saveUninitialized: false,
     resave: false,
     secret: config.sessionSecret,
-    // TODO(#2505): Remove the typecast once `config` has correct types.
+    // TODO(#42): Remove the typecast once `config` has correct types.
     cookie: config.cookieSettings as SessionOptions['cookie'],
     name: 'connect.sid',
     store: new sessionMongoStore({
