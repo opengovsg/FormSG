@@ -487,6 +487,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     title: 'text',
   })
 
+  FormSchema.index({
+    'permissionList.email': 1,
+    lastModified: -1,
+  })
+
+  FormSchema.index({
+    admin: 1,
+    lastModified: -1,
+  })
+
   const FormModel = db.model<IFormSchema, IFormModel>(
     FORM_SCHEMA_ID,
     FormSchema,
