@@ -2527,6 +2527,7 @@ describe('Email Submissions Controller', () => {
                 value: 2,
               },
             ],
+            logicType: 'showFields',
           },
           {
             show: [],
@@ -2679,6 +2680,7 @@ describe('Email Submissions Controller', () => {
                 value: 2,
               },
             ],
+            logicType: 'showFields',
           },
           {
             show: [logicField._id],
@@ -2692,6 +2694,7 @@ describe('Email Submissions Controller', () => {
                 value: 'Others',
               },
             ],
+            logicType: 'showFields',
           },
         ]
         it('shows logic regardless of field order', (done) => {
