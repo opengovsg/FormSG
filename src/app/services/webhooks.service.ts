@@ -9,10 +9,9 @@ import { stringifySafe } from '../../shared/util/stringify-safe'
 import {
   IFormSchema,
   ISubmissionSchema,
-  IWebhookResponseSchema,
+  IWebhookResponse,
   LogWebhookParams,
   WebhookParams,
-  WebhookResponse,
 } from '../../types'
 import { getEncryptSubmissionModel } from '../models/submission.server.model'
 import { WebhookValidationError } from '../utils/custom-errors'
@@ -141,11 +140,10 @@ const logWebhookFailure = (
 const updateSubmissionsDb = (
   formId: IFormSchema['_id'],
   submissionId: ISubmissionSchema['_id'],
-  updateObj: Partial<IWebhookResponseSchema>,
+  updateObj: IWebhookResponse,
 ): void => {
   EncryptSubmission.updateOne(
     { _id: submissionId },
-    //@ts-ignore
     { $push: { webhookResponses: updateObj } },
   )
     .then(({ nModified }) => {
@@ -180,7 +178,7 @@ const getConsoleMessage = (title: string, params: object) => {
 const getSuccessDbUpdate = (
   response: AxiosResponse,
   { webhookUrl, signature }: WebhookParams,
-): Partial<IWebhookResponseSchema> => {
+): IWebhookResponse => {
   return { webhookUrl, signature, ...getFormattedResponse(response) }
 }
 
@@ -188,9 +186,9 @@ const getSuccessDbUpdate = (
 const getFailureDbUpdate = (
   error: Error | AxiosError,
   { webhookUrl, signature }: WebhookParams,
-): Partial<IWebhookResponseSchema> => {
+): IWebhookResponse => {
   const errorMessage = get(error, 'message')
-  let update: Partial<IWebhookResponseSchema> = {
+  let update: IWebhookResponse = {
     webhookUrl,
     signature,
     errorMessage,
@@ -203,7 +201,9 @@ const getFailureDbUpdate = (
 }
 
 // Formats a response object for update in the Submissions collection
-const getFormattedResponse = (response: AxiosResponse): WebhookResponse => {
+const getFormattedResponse = (
+  response: AxiosResponse,
+): Pick<IWebhookResponse, 'response'> => {
   return {
     response: {
       status: get(response, 'status'),

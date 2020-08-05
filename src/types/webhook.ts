@@ -1,9 +1,5 @@
 import { IFormSchema } from './form'
-import {
-  ISubmissionSchema,
-  IWebhookResponseSchema,
-  WebhookView,
-} from './submission'
+import { ISubmissionSchema, WebhookView } from './submission'
 
 export type WebhookParams = {
   webhookUrl: string
@@ -23,5 +19,3 @@ export type LogWebhookParams = {
   status?: number
   errorMessage?: string
 }
-
-export type WebhookResponse = Pick<IWebhookResponseSchema, 'response'>

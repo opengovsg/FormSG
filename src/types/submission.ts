@@ -51,20 +51,22 @@ export interface IEncryptedSubmission extends ISubmission {
   verifiedContent?: string
   version: number
   attachmentMetadata?: Map<string, string>
-  webhookResponses: IWebhookResponseSchema[]
+  webhookResponses: IWebhookResponse[]
 }
 
-export interface IWebhookResponseSchema extends Document {
+export interface IWebhookResponse {
   webhookUrl: string
   signature: string
-  errorMessage: string
-  response: {
+  errorMessage?: string
+  response?: {
     status: number
     statusText: string
     headers: string
     data: string
   }
 }
+
+export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
 
 export interface IEncryptedSubmissionSchema
   extends IEncryptedSubmission,
