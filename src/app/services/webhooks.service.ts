@@ -164,6 +164,7 @@ const updateSubmissionsDb = (
 ): void => {
   EncryptSubmission.updateOne(
     { _id: submissionId },
+    //@ts-ignore
     { $push: { webhookResponses: updateObj } },
   )
     .then(({ nModified }) => {
