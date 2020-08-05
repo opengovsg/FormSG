@@ -45,12 +45,21 @@ export class MailService {
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
   sendNodeMail = async (mail: Mail.Options, sendOptions?: SendMailOptions) => {
-    // In case of missing mail info
+    const emailLogString = `mailId: ${sendOptions?.mailId}\t Email from:${mail?.from}\t subject:${mail?.subject}\t formId: ${sendOptions?.formId}`
+
+    // Guard against missing mail info.
     if (!mail || !mail.to) {
-      return Promise.reject('Mail undefined error')
+      this.#logger.error(`mailError: undefined mail. ${emailLogString}`)
+      return Promise.reject(new Error('Mail undefined error'))
     }
 
-    const emailLogString = `"Id: ${sendOptions.mailId} Email\t from:${mail.from}\t subject:${mail.subject}\t formId: ${sendOptions.formId}"`
+    // Guard against invalid emails.
+    if (!validator.isEmail(String(mail.to))) {
+      this.#logger.error(
+        `mailError: ${mail.to} is not a valid email. ${emailLogString}`,
+      )
+      return Promise.reject(new Error('Invalid email error'))
+    }
 
     this.#logger.info(emailLogString)
     this.#logger.profile(emailLogString)
@@ -76,6 +85,7 @@ export class MailService {
    * @throws error if mail fails, to be handled by verification service
    */
   sendVerificationOtp = async (recipient: string, otp: string) => {
+    // Guard against invalid emails.
     if (!validator.isEmail(recipient)) {
       throw new Error(`${recipient} is not a valid email`)
     }
