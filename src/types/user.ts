@@ -6,9 +6,7 @@ export interface IUser {
   email: string
   agency: IAgencySchema['_id']
   created: Date
-  betaFlag?: {
-    allowSms?: boolean
-  }
+  betaFlag?: {}
   _id: Document['_id']
 }
 
