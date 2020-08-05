@@ -11,7 +11,7 @@ export interface ILogin {
   authType: AuthType
   esrvcId: string
   created: Date
-  _id: any
+  _id: Document['_id']
 }
 
 export interface ILoginSchema extends ILogin, Document {}

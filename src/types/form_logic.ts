@@ -36,7 +36,7 @@ export interface IConditionSchema extends ICondition, Document {
 export interface ILogic {
   conditions: IConditionSchema[]
   logicType: LogicType
-  _id: any
+  _id: Document['_id']
 }
 
 export interface ILogicSchema extends ILogic, Document {}

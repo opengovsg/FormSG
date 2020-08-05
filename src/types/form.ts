@@ -93,7 +93,7 @@ export interface IForm {
 
   responseMode: ResponseMode
 
-  _id: any
+  _id: Document['_id']
 }
 
 export interface IFormSchema extends IForm, Document {
