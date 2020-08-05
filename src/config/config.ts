@@ -332,7 +332,7 @@ const awsConfig: AwsConfig = (function () {
   // Else, the environment variables to instantiate S3 are used.
   const awsEndpoint = isDev
     ? defaults.aws.endpoint
-    : `https://s3.${region}.amazonaws.com/`
+    : `https://s3.${region}.amazonaws.com`
 
   const logoBucketUrl = `${awsEndpoint}/${logoS3Bucket}`
   const imageBucketUrl = `${awsEndpoint}/${imageS3Bucket}`
