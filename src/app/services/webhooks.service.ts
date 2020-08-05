@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 
@@ -6,7 +6,12 @@ import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 // Prevents JSON.stringify error for circular JSONs and BigInts
 import { stringifySafe } from '../../shared/util/stringify-safe'
-import { IFormSchema, ISubmissionSchema, WebhookView } from '../../types'
+import {
+  IFormSchema,
+  ISubmissionSchema,
+  IWebhookResponseSchema,
+  WebhookView,
+} from '../../types'
 import { getEncryptSubmissionModel } from '../models/submission.server.model'
 import { WebhookValidationError } from '../utils/custom-errors'
 
@@ -21,6 +26,18 @@ type WebhookParams = {
   now: number
   signature: string
 }
+
+type LogWebhookParams = {
+  submissionId: ISubmissionSchema['_id']
+  formId: IFormSchema['_id']
+  now: number
+  webhookUrl: string
+  signature: string
+  status?: number
+  errorMessage?: string
+}
+
+type WebhookResponse = Pick<IWebhookResponseSchema, 'response'>
 
 /**
  * Logs webhook failure in console and database.
