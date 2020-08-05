@@ -32,3 +32,7 @@ export interface IFieldSchema extends IField, Document {
   /** Returns this sub-documents parent document. */
   parent(): IFormSchema
 }
+
+export interface IClientFieldSchema extends IFieldSchema {
+  fieldValue: string
+}

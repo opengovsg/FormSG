@@ -1,18 +1,18 @@
 import {
   FieldResponse,
+  IClientFieldSchema,
   IConditionSchema,
-  IFieldSchema,
   IForm,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
   LogicType,
 } from '../../types'
 
-type GroupedLogic = Record<IFieldSchema['_id'], IConditionSchema[][]>
-type FieldIdSet = Set<IFieldSchema['_id']>
+type GroupedLogic = Record<IClientFieldSchema['_id'], IConditionSchema[][]>
+type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
-type LogicField = IFieldSchema | FieldResponse
+type LogicField = IClientFieldSchema | FieldResponse
 type LogicFieldArray = LogicField[]
 
 // Returns typed logic unit
