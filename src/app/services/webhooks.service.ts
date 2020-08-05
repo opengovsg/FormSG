@@ -10,34 +10,15 @@ import {
   IFormSchema,
   ISubmissionSchema,
   IWebhookResponseSchema,
-  WebhookView,
+  LogWebhookParams,
+  WebhookParams,
+  WebhookResponse,
 } from '../../types'
 import { getEncryptSubmissionModel } from '../models/submission.server.model'
 import { WebhookValidationError } from '../utils/custom-errors'
 
 const logger = createLoggerWithLabel('webhooks')
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
-
-type WebhookParams = {
-  webhookUrl: string
-  submissionWebhookView: WebhookView
-  submissionId: ISubmissionSchema['_id']
-  formId: IFormSchema['_id']
-  now: number
-  signature: string
-}
-
-type LogWebhookParams = {
-  submissionId: ISubmissionSchema['_id']
-  formId: IFormSchema['_id']
-  now: number
-  webhookUrl: string
-  signature: string
-  status?: number
-  errorMessage?: string
-}
-
-type WebhookResponse = Pick<IWebhookResponseSchema, 'response'>
 
 /**
  * Logs webhook failure in console and database.
