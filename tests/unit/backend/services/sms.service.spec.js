@@ -13,7 +13,7 @@ const TWILIO_TEST_NUMBER = '+15005550006'
 
 const MOCK_MSG_SRVC_SID = 'mockMsgSrvcSid'
 
-describe('SmsService', () => {
+describe('sms.service', () => {
   const MOCK_VALID_CONFIG = {
     msgSrvcSid: MOCK_MSG_SRVC_SID,
     client: {
@@ -64,7 +64,7 @@ describe('SmsService', () => {
       // Return null on Form method
       spyOn(Form, 'getOtpData').and.returnValue(null)
 
-      expectAsync(
+      await expectAsync(
         SmsService.sendVerificationOtp(
           /* recipient= */ TWILIO_TEST_NUMBER,
           /* otp= */ '111111',
