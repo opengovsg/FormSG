@@ -58,7 +58,7 @@ SmsCountSchema.statics.logSms = async function (
   this: ISmsCountModel,
   { otpData, msgSrvcSid, smsType, logType }: LogSmsParams,
 ) {
-  const schemaData: ISmsCount = {
+  const schemaData: Omit<ISmsCount, '_id'> = {
     ...otpData,
     msgSrvcSid,
     smsType,

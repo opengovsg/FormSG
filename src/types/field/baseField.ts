@@ -22,6 +22,7 @@ export interface IField {
   disabled: boolean
   fieldType: BasicFieldType
   myInfo?: IMyInfo
+  _id: Document['_id']
 }
 
 // Manual override since mongoose types don't have generics yet.

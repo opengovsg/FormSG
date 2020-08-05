@@ -92,6 +92,8 @@ export interface IForm {
   msgSrvcName?: string
 
   responseMode: ResponseMode
+
+  _id: Document['_id']
 }
 
 export interface IFormSchema extends IForm, Document {

@@ -9,6 +9,7 @@ export interface IUser {
   betaFlag?: {
     allowSms?: boolean
   }
+  _id: Document['_id']
 }
 
 export interface IUserSchema extends IUser, Document {}
