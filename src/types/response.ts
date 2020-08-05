@@ -2,40 +2,40 @@ import { BasicFieldType, IFieldSchema, IMyInfo } from './field'
 
 export type AttachmentsMap = Record<IFieldSchema['_id'], File>
 
-interface BaseResponse {
+interface IBaseResponse {
   _id: IFieldSchema['_id']
   fieldType: BasicFieldType
   question: string
   myInfo?: IMyInfo
 }
 
-export interface SingleAnswerResponse extends BaseResponse {
+export interface ISingleAnswerResponse extends IBaseResponse {
   answer: string
 }
 
-export interface CheckboxResponse extends BaseResponse {
+export interface ICheckboxResponse extends IBaseResponse {
   answerArray: string[]
 }
 
-export interface TableResponse extends BaseResponse {
+export interface ITableResponse extends IBaseResponse {
   answerArray: string[][]
 }
 
 export type FieldResponse =
-  | SingleAnswerResponse
-  | CheckboxResponse
-  | TableResponse
+  | ISingleAnswerResponse
+  | ICheckboxResponse
+  | ITableResponse
 
-interface ClientSubmission {
+interface IClientSubmission {
   attachments: AttachmentsMap
   captchaResponse: string
   isPreview: boolean
   responses: FieldResponse[]
 }
 
-export interface ClientEmailSubmission extends ClientSubmission {}
+export interface IClientEmailSubmission extends IClientSubmission {}
 
-export interface ClientEncryptSubmission extends ClientSubmission {
+export interface IClientEncryptSubmission extends IClientSubmission {
   encryptedContent: string
   version: number
 }
