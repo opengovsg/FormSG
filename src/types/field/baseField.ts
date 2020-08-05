@@ -3,7 +3,7 @@ import { Document } from 'mongoose'
 import { IFormSchema } from '../form'
 import { BasicFieldType, MyInfoAttribute } from './fieldTypes'
 
-interface IMyInfo {
+export interface IMyInfo {
   attr: MyInfoAttribute
 }
 

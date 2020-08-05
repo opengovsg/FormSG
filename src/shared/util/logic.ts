@@ -1,4 +1,26 @@
-import { LogicType } from '../../types'
+import {
+  FieldResponse,
+  IConditionSchema,
+  IFieldSchema,
+  IForm,
+  IPreventSubmitLogicSchema,
+  IShowFieldsLogicSchema,
+  LogicType,
+} from '../../types'
+
+type GroupedLogic = Record<IFieldSchema['_id'], IConditionSchema[][]>
+type FieldIdSet = Set<IFieldSchema['_id']>
+// This module handles logic on both the client side (IFieldSchema[])
+// and server side (FieldResponse[])
+type LogicField = IFieldSchema | FieldResponse
+type LogicFieldArray = LogicField[]
+
+// Returns typed logic unit
+const isShowFieldsLogic = (
+  formLogic: IShowFieldsLogicSchema | IPreventSubmitLogicSchema,
+): formLogic is IShowFieldsLogicSchema => {
+  return formLogic.logicType === LogicType.ShowFields
+}
 
 /**
  * Parse logic into a map of fields that are shown/hidden depending on the values of other fields
@@ -33,11 +55,9 @@ import { LogicType } from '../../types'
  * @param {Array} form.form_fields : An array of form fields containing the ids of the fields
  * @returns {Object} Object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
  */
-function groupLogicUnitsByField(form) {
+function groupLogicUnitsByField(form: IForm): GroupedLogic {
   const formId = form._id
-  const formLogics = form.form_logics.filter(
-    (formLogic) => formLogic.logicType === LogicType.ShowFields,
-  )
+  const formLogics = form.form_logics.filter(isShowFieldsLogic)
   const formFieldIds = new Set(
     form.form_fields.map((field) => String(field._id)),
   )
@@ -45,7 +65,7 @@ function groupLogicUnitsByField(form) {
   /**
    * @type {Object.<string, Array<Array<ConditionSchema>>>} An index of logic units keyed by the field id to be shown. See FormLogicSchema
    */
-  let logicUnitsGroupedByField = {}
+  let logicUnitsGroupedByField: GroupedLogic = {}
 
   let hasInvalidLogic = false
   formLogics.forEach(function (logicUnit) {
@@ -75,13 +95,13 @@ function groupLogicUnitsByField(form) {
  * @param {Object} form Form object
  * @returns {Array} Array of conditions to prevent submission
  */
-function getPreventSubmitConditions(form) {
+function getPreventSubmitConditions(form: IForm): IPreventSubmitLogicSchema[] {
   const formFieldIds = new Set(
     form.form_fields.map((field) => String(field._id)),
   )
   return form.form_logics.filter((formLogic) => {
     return (
-      formLogic.logicType === LogicType.PreventSubmit &&
+      !isShowFieldsLogic(formLogic) &&
       allConditionsExist(formLogic.conditions, formFieldIds)
     )
   })
@@ -96,7 +116,11 @@ function getPreventSubmitConditions(form) {
  * provided, the function recomputes it.
  * @returns {Object} Condition if submission is to prevented, otherwise undefined
  */
-function getLogicUnitPreventingSubmit(submission, form, visibleFieldIds) {
+function getLogicUnitPreventingSubmit(
+  submission: LogicFieldArray,
+  form: IForm,
+  visibleFieldIds?: FieldIdSet,
+): IPreventSubmitLogicSchema {
   if (!visibleFieldIds) {
     visibleFieldIds = getVisibleFieldIds(submission, form)
   }
@@ -113,7 +137,10 @@ function getLogicUnitPreventingSubmit(submission, form, visibleFieldIds) {
  * @param {Set} formFieldIds
  * @returns {Boolean}
  */
-function allConditionsExist(conditions, formFieldIds) {
+function allConditionsExist(
+  conditions: IConditionSchema[],
+  formFieldIds: FieldIdSet,
+): boolean {
   return conditions.every((condition) =>
     formFieldIds.has(String(condition.field)),
   )
@@ -129,9 +156,12 @@ function allConditionsExist(conditions, formFieldIds) {
  * @var {Array} logicUnits - Array of logic units
  * @returns {Set} Set of IDs of visible fields
  */
-function getVisibleFieldIds(submission, form) {
+function getVisibleFieldIds(
+  submission: LogicFieldArray,
+  form: IForm,
+): FieldIdSet {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
-  const visibleFieldIds = new Set()
+  const visibleFieldIds: FieldIdSet = new Set()
   // Loop continues until no more changes made
   let changesMade = true
   while (changesMade) {
@@ -165,7 +195,11 @@ function getVisibleFieldIds(submission, form) {
  * @param {Object} logicUnit - Object containing the conditions specified in a single modal of `add new logic` on the form logic tab
  * @param {Set} visibleFieldIds - Set of field IDs that are visible, which is used to ensure that conditions are visible
  */
-function isLogicUnitSatisfied(submission, logicUnit, visibleFieldIds) {
+function isLogicUnitSatisfied(
+  submission: LogicFieldArray,
+  logicUnit: IConditionSchema[],
+  visibleFieldIds: FieldIdSet,
+): boolean {
   return logicUnit.every((condition) => {
     const conditionField = findConditionField(submission, condition.field)
     return (
@@ -176,7 +210,7 @@ function isLogicUnitSatisfied(submission, logicUnit, visibleFieldIds) {
   })
 }
 
-function getCurrentValue(field) {
+function getCurrentValue(field: LogicField): string {
   if ('fieldValue' in field) {
     // client
     return field.fieldValue
@@ -192,7 +226,10 @@ function getCurrentValue(field) {
  * @param {Object} condition
  * @param {String} condition.state - The type of condition
  */
-function isConditionFulfilled(field, condition) {
+function isConditionFulfilled(
+  field: LogicField,
+  condition: IConditionSchema,
+): boolean {
   if (!field || !condition) {
     return false
   }
@@ -252,7 +289,10 @@ function isConditionFulfilled(field, condition) {
  * @param {String} fieldId - id of condition field
  * @returns
  */
-function findConditionField(submission, fieldId) {
+function findConditionField(
+  submission: LogicFieldArray,
+  fieldId: IConditionSchema['field'],
+): LogicField {
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
   )
