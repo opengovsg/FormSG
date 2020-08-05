@@ -16,7 +16,7 @@ const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
 const { ConflictError } = require('../utils/custom-errors')
-const { EMAIL_HEADERS, EMAIL_TYPES } = require('../constants/mail')
+const { EMAIL_TYPES } = require('../constants/mail')
 const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
@@ -612,9 +612,8 @@ exports.sendAdminEmail = async function (req, res, next) {
       answer: submissionTime,
     },
   )
-  let html
   try {
-    html = await renderPromise(res, 'templates/submit-form-email', {
+    const html = await renderPromise(res, 'templates/submit-form-email', {
       refNo: submission.id,
       formTitle: form.title,
       submissionTime,
@@ -622,40 +621,23 @@ exports.sendAdminEmail = async function (req, res, next) {
       jsonData,
       appName: res.app.locals.title,
     })
-  } catch (err) {
-    logger.warn(err)
-    return onSubmissionEmailFailure(err, req, res, submission)
-  }
-  let mailOptions = {
-    to: form.emails,
-    from: config.mail.mailer.from,
-    subject: 'formsg-auto: ' + form.title + ' (Ref: ' + submission.id + ')',
-    html,
-    attachments,
-    headers: {
-      [EMAIL_HEADERS.formId]: String(form._id),
-      [EMAIL_HEADERS.submissionId]: submission.id,
-      [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
-    },
-  }
 
-  // Set reply-to to all email fields that have reply to enabled
-  if (replyToEmails) {
-    let replyTo = replyToEmails.join(', ')
-    if (replyTo) mailOptions.replyTo = replyTo
-  }
+    logger.profile(
+      `Sending admin mail submissionId=${submission.id} formId=${form._id} submissionHash=${submission.responseHash}`,
+    )
 
-  let adminLogstring = `Sending admin mail submissionId=${submission.id} formId=${form._id} submissionHash=${submission.responseHash}`
-  logger.profile(adminLogstring)
-
-  // Send mail
-  try {
-    await MailService.sendNodeMail(mailOptions, {
-      mailId: submission.id,
-      formId: form._id,
+    await MailService.sendSubmissionToAdmin({
+      adminEmails: form.emails,
+      replyToEmails,
+      form,
+      submission,
+      html,
+      attachments,
     })
+
     return next()
   } catch (err) {
+    logger.warn('sendAdminEmail error', err)
     return onSubmissionEmailFailure(err, req, res, submission)
   }
 }

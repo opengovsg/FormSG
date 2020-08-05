@@ -6,6 +6,7 @@ import { Logger } from 'winston'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
+import { IFormSchema, ISubmissionSchema } from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 
 const mailLogger = createLoggerWithLabel('mail')
@@ -138,6 +139,52 @@ export class MailService {
     }
 
     return this.sendNodeMail(mail, { mailId: 'OTP' })
+  }
+
+  /**
+   * Sends a submission response email to the admin of the given form.
+   * @param {object} args the parameter object
+   * @param args.adminEmails the recipients to send the mail to
+   * @param args.replyToEmails emails to set replyTo, if any
+   * @param args.html the body of the email
+   * @param args.form the form document to retrieve some email data from
+   * @param args.submission the submission document to retrieve some email data from
+   * @param args.attachments attachments to append to the email, if any
+   */
+  sendSubmissionToAdmin = async ({
+    adminEmails,
+    replyToEmails,
+    html,
+    form,
+    submission,
+    attachments,
+  }: {
+    adminEmails: string | string[]
+    replyToEmails?: string[]
+    html: string
+    form: IFormSchema
+    submission: ISubmissionSchema
+    attachments?: Mail.Attachment[]
+  }) => {
+    const mail: Mail.Options = {
+      to: adminEmails,
+      from: this.#senderEmail,
+      subject: 'formsg-auto: ' + form.title + ' (Ref: ' + submission.id + ')',
+      html,
+      attachments,
+      headers: {
+        [EMAIL_HEADERS.formId]: String(form._id),
+        [EMAIL_HEADERS.submissionId]: submission.id,
+        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
+      },
+      // replyTo options only allow string format
+      replyTo: replyToEmails?.join(', '),
+    }
+
+    return this.sendNodeMail(mail, {
+      mailId: submission.id,
+      formId: String(form._id),
+    })
   }
 }
 
