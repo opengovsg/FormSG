@@ -80,10 +80,10 @@ export class MailService {
   }
 
   /**
-   * Sends an otp to a valid email
+   * Sends a verification otp to a valid email
    * @param recipient the recipient email address
    * @param otp the otp to send
-   * @throws error if mail fails, to be handled by verification service
+   * @throws error if mail fails, to be handled by the caller
    */
   sendVerificationOtp = async (recipient: string, otp: string) => {
     // TODO(#42): Remove param guards once whole backend is TypeScript.
@@ -118,6 +118,26 @@ export class MailService {
     }
     // Error gets caught in getNewOtp
     return this.sendNodeMail(mail, { mailId: 'verify' })
+  }
+
+  /**
+   * Sends a login otp email to a valid email
+   * @param recipient the recipient email address
+   * @param html the body of the email to send
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendLoginOtp = async (recipient: string, html: string) => {
+    const mail: Mail.Options = {
+      to: recipient,
+      from: this.#senderEmail,
+      subject: `One-Time Password (OTP) for ${this.#appName}`,
+      html,
+      headers: {
+        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.loginOtp,
+      },
+    }
+
+    return this.sendNodeMail(mail, { mailId: 'OTP' })
   }
 }
 
