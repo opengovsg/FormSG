@@ -158,7 +158,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
-    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-env": "^7.11.0",
     "@opengovsg/mockpass": "^2.1.1",
     "@types/compression": "^1.7.0",
     "@types/convict": "^5.2.1",
