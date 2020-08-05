@@ -40,19 +40,12 @@ type AwsConfig = {
   s3: aws.S3
 }
 
-type EmailRetryConfig = {
-  retryDuration: number
-  maxRetryCount: number
-  maxRetryDuration: number
-}
-
 type MailConfig = {
   mailFrom: string
   mailer: {
     from: string
   }
   transporter: Mail
-  retry: EmailRetryConfig
 }
 
 type Config = {
@@ -275,21 +268,10 @@ const mailConfig: MailConfig = (function () {
     transporter = nodemailer.createTransport(directTransport({}))
   }
 
-  const emailRetryConfig: EmailRetryConfig = {
-    retryDuration:
-      Number(process.env.MAIL_RETRY_DURATION) || defaults.mail.retryDuration,
-    maxRetryCount:
-      Number(process.env.MAIL_RETRY_COUNT) || defaults.mail.maxRetryCount,
-    maxRetryDuration:
-      Number(process.env.MAIL_MAX_RETRY_DURATION) ||
-      defaults.mail.maxRetryDuration,
-  }
-
   return {
     mailFrom,
     mailer,
     transporter,
-    retry: emailRetryConfig,
   }
 })()
 
