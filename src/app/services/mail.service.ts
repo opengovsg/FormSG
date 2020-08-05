@@ -6,7 +6,7 @@ import { Logger } from 'winston'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../utils/constants'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 
 const mailLogger = createLoggerWithLabel('mail')
 

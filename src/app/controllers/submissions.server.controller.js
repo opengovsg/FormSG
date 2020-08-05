@@ -22,7 +22,7 @@ const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
 const MailService = require('../services/mail.service').default
-const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+const { EMAIL_HEADERS, EMAIL_TYPES } = require('../constants/mail')
 
 const GOOGLE_RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
 

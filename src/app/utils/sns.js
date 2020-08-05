@@ -1,7 +1,7 @@
 const axios = require('axios')
 const crypto = require('crypto')
 const get = require('lodash/get')
-const { EMAIL_LOWERCASE_HEADER_TO_KEY } = require('./constants')
+const { EMAIL_HEADERS } = require('../constants/mail')
 
 // Note that these need to be ordered in order to generate
 // the correct string to sign
@@ -15,6 +15,17 @@ const snsKeys = [
   { key: 'SigningCertURL', toSign: false },
   { key: 'SignatureVersion', toSign: false },
 ]
+
+const EMAIL_LOWERCASE_HEADER_TO_KEY = (() => {
+  // EMAIL_HEADERS with keys and values swapped and the new keys (e.g. X-Formsg-Form-ID)
+  // changed to lowercase (x-formsg-form-id).
+  // NOTE: ALWAYS DO CASE-INSENSITIVE CHECKS FOR THE HEADERS!
+  const lowercasedHeadersToKey = {}
+  for (const [key, value] of Object.entries(EMAIL_HEADERS)) {
+    lowercasedHeadersToKey[value.toLowerCase()] = key
+  }
+  return lowercasedHeadersToKey
+})()
 
 // Hostname for AWS URLs
 const AWS_HOSTNAME = '.amazonaws.com'

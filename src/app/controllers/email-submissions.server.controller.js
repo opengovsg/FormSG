@@ -16,7 +16,8 @@ const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
 const { ConflictError } = require('../utils/custom-errors')
-const { MB, EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+const { EMAIL_HEADERS, EMAIL_TYPES } = require('../constants/mail')
+const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
   addAttachmentToResponses,
