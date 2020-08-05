@@ -97,7 +97,7 @@ describe('Email Submissions Controller', () => {
 
     beforeEach(() => {
       sendNodeMailSpy = spyOn(MailService, 'sendNodeMail').and.callFake(
-        ({ mail }) => {
+        (mail) => {
           if (!mail.to || !mail.from || !mail.subject || !mail.html) {
             throw new Error('mockSendNodeMail error')
           }
@@ -149,7 +149,7 @@ describe('Email Submissions Controller', () => {
         .expect(HttpStatus.OK)
         .then(() => {
           expect(sendNodeMailSpy).toHaveBeenCalled()
-          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0].mail
+          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0]
           console.error('mailOptions.html', mailOptions.html)
           expect(mailOptions.to).toEqual(fixtures.form.emails)
           expect(mailOptions.from).toEqual(config.mail.mailer.from)
@@ -175,7 +175,7 @@ describe('Email Submissions Controller', () => {
         .expect(HttpStatus.OK)
         .then(() => {
           expect(sendNodeMailSpy).toHaveBeenCalled()
-          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0].mail
+          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0]
           expect(mailOptions.to).toEqual(fixtures.form.emails)
           expect(mailOptions.from).toEqual(config.mail.mailer.from)
           expect(mailOptions.replyTo).toEqual(
@@ -205,7 +205,7 @@ describe('Email Submissions Controller', () => {
         .expect(HttpStatus.OK)
         .then(() => {
           expect(sendNodeMailSpy).toHaveBeenCalled()
-          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0].mail
+          const mailOptions = sendNodeMailSpy.calls.mostRecent().args[0]
           expect(mailOptions.to).toEqual(fixtures.form.emails)
           expect(mailOptions.from).toEqual(config.mail.mailer.from)
           expect(mailOptions.replyTo).toEqual()
