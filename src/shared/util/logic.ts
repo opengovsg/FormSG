@@ -1,10 +1,4 @@
-/**
- * Constant for different logic unit categories
- */
-const LOGIC_TYPES = {
-  showFields: 'showFields',
-  preventSubmit: 'preventSubmit',
-}
+import { LogicType } from '../../types'
 
 /**
  * Parse logic into a map of fields that are shown/hidden depending on the values of other fields
@@ -42,7 +36,7 @@ const LOGIC_TYPES = {
 function groupLogicUnitsByField(form) {
   const formId = form._id
   const formLogics = form.form_logics.filter(
-    (formLogic) => formLogic.logicType === LOGIC_TYPES.showFields,
+    (formLogic) => formLogic.logicType === LogicType.ShowFields,
   )
   const formFieldIds = new Set(
     form.form_fields.map((field) => String(field._id)),
@@ -87,7 +81,7 @@ function getPreventSubmitConditions(form) {
   )
   return form.form_logics.filter((formLogic) => {
     return (
-      formLogic.logicType === LOGIC_TYPES.preventSubmit &&
+      formLogic.logicType === LogicType.PreventSubmit &&
       allConditionsExist(formLogic.conditions, formFieldIds)
     )
   })
@@ -268,5 +262,4 @@ module.exports = {
   groupLogicUnitsByField,
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
-  LOGIC_TYPES,
 }
