@@ -13,7 +13,7 @@ const MOCK_MAIL_PARAMS = {
   html: `<p>You are currently submitting a form.</p>`,
 }
 
-fdescribe('mail.service', () => {
+describe('mail.service', () => {
   const mockTransporter = jasmine.createSpyObj('transporter', ['sendMail'])
   const mailService = new MailService({
     transporter: mockTransporter,
