@@ -19,26 +19,56 @@ type SendMailOptions = {
 type MailServiceParams = {
   appName?: string
   transporter?: Mail
-  senderEmail?: string
+  senderMail?: string
   logger?: Logger
 }
 
 export class MailService {
+  /**
+   * To be shown in some sent emails' fields such as mail subject or mail body.
+   */
   #appName: string
+  /**
+   * The transporter to be used to send mail.
+   */
   #transporter: Mail
-  #senderEmail: string
+  /**
+   * The email string to denote the "from" field of the email.
+   */
+  #senderMail: string
+  /**
+   * The full string that can be shown in the mail's "from" field created from
+   * the given `appName` and `senderMail` arguments.
+   *
+   * E.g. `FormSG <test@example.com>`
+   */
+  #senderFromString: string
+  /**
+   * Logger to log any errors encounted while sending mail.
+   */
   #logger: Logger
 
   constructor({
     appName = config.app.title,
     transporter = config.mail.transporter,
-    senderEmail = config.mail.mailer.from,
+    senderMail = config.mail.mailFrom,
     logger = mailLogger,
   }: MailServiceParams = {}) {
-    this.#appName = appName
-    this.#senderEmail = senderEmail
-    this.#transporter = transporter
     this.#logger = logger
+
+    // Email validation
+    if (!validator.isEmail(senderMail)) {
+      const invalidMailError = new Error(
+        'Invalid senderMail parameter passed to MailService!',
+      )
+      this.#logger.error(invalidMailError)
+      throw invalidMailError
+    }
+
+    this.#appName = appName
+    this.#senderMail = senderMail
+    this.#senderFromString = `${appName} <${senderMail}>`
+    this.#transporter = transporter
   }
 
   /**
@@ -102,7 +132,7 @@ export class MailService {
 
     const mail: Mail.Options = {
       to: recipient,
-      from: this.#senderEmail,
+      from: this.#senderFromString,
       subject: `Your OTP for submitting a form on ${this.#appName}`,
       html: dedent`
         <p>You are currently submitting a form on ${this.#appName}.</p>
@@ -130,7 +160,7 @@ export class MailService {
   sendLoginOtp = async (recipient: string, html: string) => {
     const mail: Mail.Options = {
       to: recipient,
-      from: this.#senderEmail,
+      from: this.#senderFromString,
       subject: `One-Time Password (OTP) for ${this.#appName}`,
       html,
       headers: {
@@ -168,7 +198,7 @@ export class MailService {
   }) => {
     const mail: Mail.Options = {
       to: adminEmails,
-      from: this.#senderEmail,
+      from: this.#senderFromString,
       subject: 'formsg-auto: ' + form.title + ' (Ref: ' + submission.id + ')',
       html,
       attachments,
