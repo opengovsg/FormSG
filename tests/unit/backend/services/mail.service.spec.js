@@ -8,6 +8,7 @@ const MOCK_VALID_EMAIL_2 = 'to2@example.com'
 const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
+const MOCK_HTML = '<p>Mock html</p>'
 
 fdescribe('mail.service', () => {
   const mockTransporter = jasmine.createSpyObj('transporter', ['sendMail'])
@@ -87,6 +88,16 @@ fdescribe('mail.service', () => {
       )
     })
 
+    it('should reject with error when invoked with empty `to` array', async () => {
+      // Arrange
+      const invalidMailParams = { ...MOCK_MAIL_PARAMS, to: [] }
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendNodeMail(invalidMailParams),
+      ).toBeRejectedWithError('Mail undefined error')
+    })
+
     it('should reject with error when invoked with invalid `to` email string', async () => {
       // Arrange
       const invalidMailParams = { ...MOCK_MAIL_PARAMS, to: 'notAnEmailAddress' }
@@ -156,13 +167,11 @@ fdescribe('mail.service', () => {
       // Act + Assert
       await expectAsync(
         mailService.sendVerificationOtp(invalidEmail, MOCK_OTP),
-      ).toBeRejectedWithError(`${invalidEmail} is not a valid email`)
+      ).toBeRejectedWithError('Invalid email error')
     })
   })
 
   describe('sendLoginOtp', () => {
-    const MOCK_HTML = '<p>Mock html</p>'
-
     it('should send login otp successfully', async () => {
       const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
       const mockedResponse = 'mockedSuccessResponse'
@@ -197,7 +206,137 @@ fdescribe('mail.service', () => {
       // Act + Assert
       await expectAsync(
         mailService.sendVerificationOtp(invalidEmail, MOCK_HTML),
-      ).toBeRejectedWithError(`${invalidEmail} is not a valid email`)
+      ).toBeRejectedWithError('Invalid email error')
+    })
+  })
+
+  describe('sendSubmissionToAdmin', () => {
+    const MOCK_VALID_SUBMISSION_PARAMS = {
+      adminEmails: MOCK_VALID_EMAIL,
+      replyToEmails: ['test1@example.com', 'test2@example.com'],
+      html: MOCK_HTML,
+      form: {
+        title: 'Test form title',
+        _id: 'mockFormId',
+      },
+      submission: {
+        id: 'mockSubmissionId',
+      },
+      attachments: [],
+    }
+
+    it('should send submission mail to admin successfully if adminEmail is a single string', async () => {
+      const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      const expectedArguments = [
+        {
+          to: MOCK_VALID_SUBMISSION_PARAMS.adminEmails,
+          from: MOCK_SENDER_STRING,
+          subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+          html: MOCK_HTML,
+          attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
+          headers: {
+            // Hardcode in tests in case something changes this.
+            'X-Formsg-Email-Type': 'Admin (response)',
+            'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
+            'X-Formsg-Submission-ID':
+              MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+          },
+          replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
+        },
+        {
+          mailId: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+          formId: MOCK_VALID_SUBMISSION_PARAMS.form._id,
+        },
+      ]
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendSubmissionToAdmin(MOCK_VALID_SUBMISSION_PARAMS),
+      ).toBeResolvedTo(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy).toHaveBeenCalledWith(...expectedArguments)
+    })
+
+    it('should send submission mail to admin successfully if adminEmail is an array', async () => {
+      const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      const adminEmailArray = [MOCK_VALID_EMAIL, MOCK_VALID_EMAIL_2]
+      const modifiedParams = {
+        ...MOCK_VALID_SUBMISSION_PARAMS,
+        adminEmails: adminEmailArray,
+      }
+
+      const expectedArguments = [
+        {
+          to: adminEmailArray,
+          from: MOCK_SENDER_STRING,
+          subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+          html: MOCK_HTML,
+          attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
+          headers: {
+            // Hardcode in tests in case something changes this.
+            'X-Formsg-Email-Type': 'Admin (response)',
+            'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
+            'X-Formsg-Submission-ID':
+              MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+          },
+          replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
+        },
+        {
+          mailId: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+          formId: MOCK_VALID_SUBMISSION_PARAMS.form._id,
+        },
+      ]
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendSubmissionToAdmin(modifiedParams),
+      ).toBeResolvedTo(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy).toHaveBeenCalledWith(...expectedArguments)
+    })
+
+    it('should reject with error when adminEmail param is an invalid email string', async () => {
+      // Arrange
+      const invalidParams = {
+        ...MOCK_VALID_SUBMISSION_PARAMS,
+        adminEmails: 'notAnEmail',
+      }
+      // Act + Assert
+      await expectAsync(
+        mailService.sendSubmissionToAdmin(invalidParams),
+      ).toBeRejectedWithError('Invalid email error')
+    })
+
+    it('should reject with error when adminEmail param is an empty array', async () => {
+      // Arrange
+      const invalidParams = {
+        ...MOCK_VALID_SUBMISSION_PARAMS,
+        adminEmails: [],
+      }
+      // Act + Assert
+      await expectAsync(
+        mailService.sendSubmissionToAdmin(invalidParams),
+      ).toBeRejectedWithError('Mail undefined error')
+    })
+
+    it('should reject with error when adminEmail param array contains invalid emails', async () => {
+      // Arrange
+      const invalidParams = {
+        ...MOCK_VALID_SUBMISSION_PARAMS,
+        adminEmails: [MOCK_VALID_EMAIL, 'thisIsInvalidEmail'],
+      }
+      // Act + Assert
+      await expectAsync(
+        mailService.sendSubmissionToAdmin(invalidParams),
+      ).toBeRejectedWithError('Invalid email error')
     })
   })
 })
