@@ -63,7 +63,7 @@ const isPreventSubmitLogic = (
  * @param {Array} form.form_fields : An array of form fields containing the ids of the fields
  * @returns {Object} Object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
  */
-function groupLogicUnitsByField(form: IForm): GroupedLogic {
+const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
   const formId = form._id
   const formLogics = form.form_logics.filter(isShowFieldsLogic)
   const formFieldIds = new Set(
@@ -103,7 +103,9 @@ function groupLogicUnitsByField(form: IForm): GroupedLogic {
  * @param {Object} form Form object
  * @returns {Array} Array of conditions to prevent submission
  */
-function getPreventSubmitConditions(form: IForm): IPreventSubmitLogicSchema[] {
+const getPreventSubmitConditions = (
+  form: IForm,
+): IPreventSubmitLogicSchema[] => {
   const formFieldIds = new Set(
     form.form_fields.map((field) => String(field._id)),
   )
@@ -124,11 +126,11 @@ function getPreventSubmitConditions(form: IForm): IPreventSubmitLogicSchema[] {
  * provided, the function recomputes it.
  * @returns {Object} Condition if submission is to prevented, otherwise undefined
  */
-function getLogicUnitPreventingSubmit(
+const getLogicUnitPreventingSubmit = (
   submission: LogicFieldArray,
   form: IForm,
   visibleFieldIds?: FieldIdSet,
-): IPreventSubmitLogicSchema {
+): IPreventSubmitLogicSchema => {
   if (!visibleFieldIds) {
     visibleFieldIds = getVisibleFieldIds(submission, form)
   }
@@ -145,10 +147,10 @@ function getLogicUnitPreventingSubmit(
  * @param {Set} formFieldIds
  * @returns {Boolean}
  */
-function allConditionsExist(
+const allConditionsExist = (
   conditions: IConditionSchema[],
   formFieldIds: FieldIdSet,
-): boolean {
+): boolean => {
   return conditions.every((condition) =>
     formFieldIds.has(String(condition.field)),
   )
@@ -164,10 +166,10 @@ function allConditionsExist(
  * @var {Array} logicUnits - Array of logic units
  * @returns {Set} Set of IDs of visible fields
  */
-function getVisibleFieldIds(
+const getVisibleFieldIds = (
   submission: LogicFieldArray,
   form: IForm,
-): FieldIdSet {
+): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
   const visibleFieldIds: FieldIdSet = new Set()
   // Loop continues until no more changes made
@@ -203,11 +205,11 @@ function getVisibleFieldIds(
  * @param {Object} logicUnit - Object containing the conditions specified in a single modal of `add new logic` on the form logic tab
  * @param {Set} visibleFieldIds - Set of field IDs that are visible, which is used to ensure that conditions are visible
  */
-function isLogicUnitSatisfied(
+const isLogicUnitSatisfied = (
   submission: LogicFieldArray,
   logicUnit: IConditionSchema[],
   visibleFieldIds: FieldIdSet,
-): boolean {
+): boolean => {
   return logicUnit.every((condition) => {
     const conditionField = findConditionField(submission, condition.field)
     return (
@@ -218,7 +220,7 @@ function isLogicUnitSatisfied(
   })
 }
 
-function getCurrentValue(field: LogicField): string {
+const getCurrentValue = (field: LogicField): string => {
   if ('fieldValue' in field) {
     // client
     return field.fieldValue
@@ -234,10 +236,10 @@ function getCurrentValue(field: LogicField): string {
  * @param {Object} condition
  * @param {String} condition.state - The type of condition
  */
-function isConditionFulfilled(
+const isConditionFulfilled = (
   field: LogicField,
   condition: IConditionSchema,
-): boolean {
+): boolean => {
   if (!field || !condition) {
     return false
   }
@@ -297,10 +299,10 @@ function isConditionFulfilled(
  * @param {String} fieldId - id of condition field
  * @returns
  */
-function findConditionField(
+const findConditionField = (
   submission: LogicFieldArray,
   fieldId: IConditionSchema['field'],
-): LogicField {
+): LogicField => {
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
   )
