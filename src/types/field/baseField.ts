@@ -31,6 +31,9 @@ export interface IFieldSchema extends IField, Document {
   ownerDocument(): IFormSchema
   /** Returns this sub-documents parent document. */
   parent(): IFormSchema
+
+  // Instance methods
+  getQuestion(): string
 }
 
 // We don't store a fieldValue in the database, but the client
