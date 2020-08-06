@@ -6,7 +6,12 @@ import { Logger } from 'winston'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
-import { IFormSchema, ISubmissionSchema } from '../../types'
+import {
+  AutoReplyOptions,
+  IFormSchema,
+  IPopulatedForm,
+  ISubmissionSchema,
+} from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 
 const mailLogger = createLoggerWithLabel('mail')
@@ -21,6 +26,14 @@ type MailServiceParams = {
   transporter?: Mail
   senderMail?: string
   logger?: Logger
+}
+
+type AutoReplyData = {
+  email: string
+  subject?: AutoReplyOptions['autoReplySubject']
+  sender?: AutoReplyOptions['autoReplySender']
+  body?: AutoReplyOptions['autoReplyMessage']
+  includeFormSummary?: AutoReplyOptions['includeFormSummary']
 }
 
 export class MailService {
@@ -173,7 +186,7 @@ export class MailService {
 
   /**
    * Sends a submission response email to the admin of the given form.
-   * @param {object} args the parameter object
+   * @param args the parameter object
    * @param args.adminEmails the recipients to send the mail to
    * @param args.replyToEmails emails to set replyTo, if any
    * @param args.html the body of the email
@@ -207,13 +220,71 @@ export class MailService {
         [EMAIL_HEADERS.submissionId]: submission.id,
         [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
       },
-      // replyTo options only allow string format
+      // replyTo options only allow string format.
       replyTo: replyToEmails?.join(', '),
     }
 
     return this.sendNodeMail(mail, {
       mailId: submission.id,
       formId: String(form._id),
+    })
+  }
+
+  /**
+   * Sends an autoreply email to the filler of the given form.
+   * @param args the parameter object
+   * @param args.html the body of the email
+   * @param args.form the form document to retrieve some email data from
+   * @param args.submission the submission document to retrieve some email data from
+   * @param args.index autoreply emails may go out in a batch, and this index helps to differentiate mails with the same mailId
+   * @param args.attachments attachments to append to the email, if any
+   * @param args.autoReplyData object that contains autoreply mail data to override with defaults
+   * @param args.autoReplyData.email contains the recipient of the mail
+   * @param args.autoReplyData.subject if available, sends the mail out with this subject instead of the default subject
+   * @param args.autoReplyData.sender if available, shows the given string as the sender instead of the default sender
+   * @param args.autoReplyData.includeFormSummary if true, adds the given attachments into the sent mail
+   */
+  sendAutoReplyEmail = async ({
+    html,
+    form,
+    submission,
+    attachments,
+    autoReplyData,
+    index,
+  }: {
+    html: string
+    form: IPopulatedForm
+    submission: ISubmissionSchema
+    attachments?: Mail.Attachment[]
+    autoReplyData: AutoReplyData
+    index: number
+  }) => {
+    const emailSubject =
+      autoReplyData.subject || `Thank you for submitting ${form.title}`
+    // Sender's name appearing after "("" symbol gets truncated. Escaping it
+    // solves the problem.
+    const emailSender = (
+      autoReplyData.sender || form.admin.agency.fullName
+    ).replace('(', '\\(')
+
+    const mail: Mail.Options = {
+      to: autoReplyData.email,
+      from: `${emailSender} <${this.#senderMail}>`,
+      subject: emailSubject,
+      // Only send attachments if the admin has the box checked for email
+      // fields.
+      attachments: autoReplyData.includeFormSummary ? attachments : [],
+      html,
+      headers: {
+        [EMAIL_HEADERS.formId]: String(form._id),
+        [EMAIL_HEADERS.submissionId]: submission.id,
+        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.emailConfirmation,
+      },
+    }
+
+    return this.sendNodeMail(mail, {
+      mailId: `${submission.id}-${index}`,
+      formId: form._id,
     })
   }
 }
