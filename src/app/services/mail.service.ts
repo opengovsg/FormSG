@@ -73,7 +73,7 @@ export class MailService {
     // Email validation
     if (!validator.isEmail(senderMail)) {
       const invalidMailError = new Error(
-        'MailService constructor: senderMail parameter is not a valid email',
+        `MailService constructor: senderMail: ${senderMail} is not a valid email`,
       )
       this.#logger.error(invalidMailError)
       throw invalidMailError

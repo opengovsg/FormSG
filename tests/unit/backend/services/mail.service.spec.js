@@ -1,7 +1,7 @@
 const {
   MailService,
 } = require('../../../../dist/backend/app/services/mail.service')
-const { merge } = require('lodash')
+const { merge, cloneDeep } = require('lodash')
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -10,7 +10,7 @@ const MOCK_APP_NAME = 'mockApp'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
 const MOCK_HTML = '<p>Mock html</p>'
 
-fdescribe('mail.service', () => {
+describe('mail.service', () => {
   const mockTransporter = jasmine.createSpyObj('transporter', ['sendMail'])
   const mailService = new MailService({
     transporter: mockTransporter,
@@ -27,7 +27,7 @@ fdescribe('mail.service', () => {
       }
       // Act + Assert
       expect(() => new MailService(invalidParams)).toThrowError(
-        'MailService constructor: senderMail parameter is not a valid email',
+        `MailService constructor: senderMail: ${invalidParams.senderMail} is not a valid email`,
       )
     })
   })
@@ -337,6 +337,146 @@ fdescribe('mail.service', () => {
       await expectAsync(
         mailService.sendSubmissionToAdmin(invalidParams),
       ).toBeRejectedWithError('Invalid email error')
+    })
+  })
+
+  describe('sendAutoReplyEmail', () => {
+    const MOCK_SENDER_NAME = 'John Doe'
+    const MOCK_AUTOREPLY_PARAMS = {
+      html: MOCK_HTML,
+      form: {
+        title: 'Test form title',
+        _id: 'mockFormId',
+        admin: {
+          agency: {
+            fullName: MOCK_SENDER_NAME,
+          },
+        },
+      },
+      submission: {
+        id: 'mockSubmissionId',
+      },
+      attachments: ['something'],
+      autoReplyData: {
+        email: MOCK_VALID_EMAIL_2,
+      },
+      index: 10,
+    }
+
+    const DEFAULT_EXPECTED_ARGS = [
+      {
+        to: MOCK_AUTOREPLY_PARAMS.autoReplyData.email,
+        from: `${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName} <${MOCK_SENDER_EMAIL}>`,
+        subject: `Thank you for submitting ${MOCK_AUTOREPLY_PARAMS.form.title}`,
+        html: MOCK_HTML,
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Email confirmation',
+          'X-Formsg-Form-ID': MOCK_AUTOREPLY_PARAMS.form._id,
+          'X-Formsg-Submission-ID': MOCK_AUTOREPLY_PARAMS.submission.id,
+        },
+        // Note this should be by default empty
+        attachments: [],
+      },
+      {
+        mailId: `${MOCK_AUTOREPLY_PARAMS.submission.id}-${MOCK_AUTOREPLY_PARAMS.index}`,
+        formId: MOCK_AUTOREPLY_PARAMS.form._id,
+      },
+    ]
+
+    it('should send autoreply mail successfully with defaults', async () => {
+      const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendAutoReplyEmail(MOCK_AUTOREPLY_PARAMS),
+      ).toBeResolvedTo(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy).toHaveBeenCalledWith(...DEFAULT_EXPECTED_ARGS)
+    })
+
+    it('should send autoreply mail successfully with custom autoreply subject', async () => {
+      const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      const customSubject = 'customSubject'
+      const customDataParams = merge(
+        { autoReplyData: { subject: customSubject } },
+        MOCK_AUTOREPLY_PARAMS,
+      )
+
+      const expectedArgs = cloneDeep(DEFAULT_EXPECTED_ARGS)
+      expectedArgs[0].subject = customSubject
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendAutoReplyEmail(customDataParams),
+      ).toBeResolvedTo(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy).toHaveBeenCalledWith(...expectedArgs)
+    })
+
+    it('should send autoreply mail successfully with custom autoreply sender', async () => {
+      const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      const customSender = 'customSender@example.com'
+      const customDataParams = merge(
+        { autoReplyData: { sender: customSender } },
+        MOCK_AUTOREPLY_PARAMS,
+      )
+
+      const expectedArgs = cloneDeep(DEFAULT_EXPECTED_ARGS)
+      expectedArgs[0].from = `${customSender} <${MOCK_SENDER_EMAIL}>`
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendAutoReplyEmail(customDataParams),
+      ).toBeResolvedTo(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy).toHaveBeenCalledWith(...expectedArgs)
+    })
+
+    it('should send autoreply mail with attachment if autoReply.includeFormSummary is true', async () => {
+      const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      const customDataParams = merge(
+        { autoReplyData: { includeFormSummary: true } },
+        MOCK_AUTOREPLY_PARAMS,
+      )
+
+      const expectedArgs = cloneDeep(DEFAULT_EXPECTED_ARGS)
+      expectedArgs[0].attachments = MOCK_AUTOREPLY_PARAMS.attachments
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendAutoReplyEmail(customDataParams),
+      ).toBeResolvedTo(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy).toHaveBeenCalledWith(...expectedArgs)
+    })
+
+    it('should reject with error when autoReplyData.email param is an invalid email', async () => {
+      // Arrange
+      const invalidDataParams = merge(
+        { autoReplyData: { email: 'notAnEmail' } },
+        MOCK_AUTOREPLY_PARAMS,
+      )
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendSubmissionToAdmin(invalidDataParams),
+      ).toBeRejectedWithError('Mail undefined error')
     })
   })
 })
