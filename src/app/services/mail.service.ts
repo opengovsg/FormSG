@@ -1,4 +1,5 @@
 import dedent from 'dedent-js'
+import { isEmpty } from 'lodash'
 import Mail from 'nodemailer/lib/mailer'
 import validator from 'validator'
 import { Logger } from 'winston'
@@ -97,13 +98,23 @@ export class MailService {
     const emailLogString = `mailId: ${sendOptions?.mailId}\t Email from:${mail?.from}\t subject:${mail?.subject}\t formId: ${sendOptions?.formId}`
 
     // Guard against missing mail info.
-    if (!mail || !mail.to) {
+    if (!mail || isEmpty(mail.to)) {
       this.#logger.error(`mailError: undefined mail. ${emailLogString}`)
       return Promise.reject(new Error('Mail undefined error'))
     }
 
     // Guard against invalid emails.
-    if (!validator.isEmail(String(mail.to))) {
+    try {
+      if (Array.isArray(mail.to)) {
+        mail.to.forEach((address) => {
+          if (!validator.isEmail(String(address))) {
+            throw new Error()
+          }
+        })
+      } else if (!validator.isEmail(String(mail.to))) {
+        throw new Error()
+      }
+    } catch {
       this.#logger.error(
         `mailError: ${mail.to} is not a valid email. ${emailLogString}`,
       )
@@ -229,7 +240,7 @@ export class MailService {
     const mail: Mail.Options = {
       to: adminEmails,
       from: this.#senderFromString,
-      subject: 'formsg-auto: ' + form.title + ' (Ref: ' + submission.id + ')',
+      subject: `formsg-auto: ${form.title} (Ref: ${submission.id})`,
       html,
       attachments,
       headers: {

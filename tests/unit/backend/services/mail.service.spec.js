@@ -4,6 +4,7 @@ const {
 const { merge } = require('lodash')
 
 const MOCK_VALID_EMAIL = 'to@example.com'
+const MOCK_VALID_EMAIL_2 = 'to2@example.com'
 const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
@@ -38,7 +39,7 @@ fdescribe('mail.service', () => {
       html: `<p>You are currently submitting a form.</p>`,
     }
 
-    it('should receive correct response when mail is sent successfully', async () => {
+    it('should receive correct response when mail is sent successfully with valid `to` email string', async () => {
       // Arrange
       // Mock response
       const mockedResponse = 'mockedSuccessResponse'
@@ -47,6 +48,23 @@ fdescribe('mail.service', () => {
       // Act + Assert
       await expectAsync(
         mailService.sendNodeMail(MOCK_MAIL_PARAMS),
+      ).toBeResolvedTo(mockedResponse)
+    })
+
+    it('should receive correct response when mail is sent successfully with valid `to` email array', async () => {
+      // Arrange
+      const arrayToMailParams = {
+        ...MOCK_MAIL_PARAMS,
+        to: [MOCK_VALID_EMAIL, MOCK_VALID_EMAIL_2],
+      }
+
+      // Mock response
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendNodeMail(arrayToMailParams),
       ).toBeResolvedTo(mockedResponse)
     })
 
@@ -69,9 +87,22 @@ fdescribe('mail.service', () => {
       )
     })
 
-    it('should reject with error when invoked with invalid `to` email', async () => {
+    it('should reject with error when invoked with invalid `to` email string', async () => {
       // Arrange
       const invalidMailParams = { ...MOCK_MAIL_PARAMS, to: 'notAnEmailAddress' }
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendNodeMail(invalidMailParams),
+      ).toBeRejectedWithError('Invalid email error')
+    })
+
+    it('should reject with error when invoked with invalid `to` email array', async () => {
+      // Arrange
+      const invalidMailParams = {
+        ...MOCK_MAIL_PARAMS,
+        to: [MOCK_VALID_EMAIL, 'notAnEmailAddress'],
+      }
 
       // Act + Assert
       await expectAsync(
