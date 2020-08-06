@@ -149,12 +149,6 @@ export class MailService {
     if (!otp) {
       throw new Error('OTP is missing.')
     }
-    if (!recipient) {
-      throw new Error('Recipient email is missing')
-    }
-    if (!validator.isEmail(recipient)) {
-      throw new Error(`${recipient} is not a valid email`)
-    }
 
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
 
@@ -186,10 +180,6 @@ export class MailService {
    * @throws error if mail fails, to be handled by the caller
    */
   sendLoginOtp = async (recipient: string, html: string) => {
-    if (!validator.isEmail(recipient)) {
-      throw new Error(`${recipient} is not a valid email`)
-    }
-
     const mail: Mail.Options = {
       to: recipient,
       from: this.#senderFromString,
@@ -228,15 +218,6 @@ export class MailService {
     submission: ISubmissionSchema
     attachments?: Mail.Attachment[]
   }) => {
-    // Add validation, adminEmails cannot be empty if array
-    if (Array.isArray(adminEmails) && adminEmails.length === 0) {
-      const invalidMailError = new Error(
-        'sendSubmissionToAdmin: adminEmails parameter cannot be an empty array',
-      )
-      this.#logger.error(invalidMailError)
-      throw invalidMailError
-    }
-
     const mail: Mail.Options = {
       to: adminEmails,
       from: this.#senderFromString,
