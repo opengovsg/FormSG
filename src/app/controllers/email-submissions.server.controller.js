@@ -578,7 +578,6 @@ exports.saveMetadataToDb = function (req, res, next) {
  * Generate and send admin email
  * @param {Object} req - the expressjs request. Will be injected with the
  * objects parsed from `req.form` and `req.attachments`
- * @param {Array} req.autoReplyEmails Auto-reply email fields
  * @param {Array} req.replyToEmails Reply-to emails
  * @param {Object} req.form - the form
  * @param {Array} req.formData Field-value tuples for admin email
