@@ -1,7 +1,7 @@
 'use strict'
 
 const HttpStatus = require('http-status-codes')
-const { LOGIC_TYPES } = require('../../../../../shared/util/logic')
+const { LogicType } = require('../../../../../types')
 
 /**
  * @typedef {string} Role
@@ -395,7 +395,7 @@ function AdminFormController(
    * @param {Object} logicUnit
    */
   const hasShowError = (logicUnit) => {
-    if (logicUnit.logicType !== LOGIC_TYPES.showFields) {
+    if (logicUnit.logicType !== LogicType.ShowFields) {
       return false
     }
     return logicUnit.show.some((showField) => !getField(showField))
