@@ -89,7 +89,11 @@ export class MailService {
    * @param mail Mail data to send with
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
-  #sendNodeMail = async (mail: Mail.Options, sendOptions?: SendMailOptions) => {
+  // Private method used instead of # modifier for ease of testing
+  private sendNodeMail = async (
+    mail: Mail.Options,
+    sendOptions?: SendMailOptions,
+  ) => {
     const emailLogString = `mailId: ${sendOptions?.mailId}\t Email from:${mail?.from}\t subject:${mail?.subject}\t formId: ${sendOptions?.formId}`
 
     // Guard against missing mail info.
@@ -161,7 +165,7 @@ export class MailService {
       },
     }
     // Error gets caught in getNewOtp
-    return this.#sendNodeMail(mail, { mailId: 'verify' })
+    return this.sendNodeMail(mail, { mailId: 'verify' })
   }
 
   /**
@@ -181,7 +185,7 @@ export class MailService {
       },
     }
 
-    return this.#sendNodeMail(mail, { mailId: 'OTP' })
+    return this.sendNodeMail(mail, { mailId: 'OTP' })
   }
 
   /**
@@ -233,7 +237,7 @@ export class MailService {
       replyTo: replyToEmails?.join(', '),
     }
 
-    return this.#sendNodeMail(mail, {
+    return this.sendNodeMail(mail, {
       mailId: submission.id,
       formId: String(form._id),
     })
@@ -291,7 +295,7 @@ export class MailService {
       },
     }
 
-    return this.#sendNodeMail(mail, {
+    return this.sendNodeMail(mail, {
       mailId: `${submission.id}-${index}`,
       formId: form._id,
     })
