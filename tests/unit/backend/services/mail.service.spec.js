@@ -6,22 +6,38 @@ const { merge } = require('lodash')
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
-const MOCK_MAIL_PARAMS = {
-  to: MOCK_VALID_EMAIL,
-  from: MOCK_SENDER_EMAIL,
-  subject: 'send node mail in tests',
-  html: `<p>You are currently submitting a form.</p>`,
-}
+const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
 
-describe('mail.service', () => {
+fdescribe('mail.service', () => {
   const mockTransporter = jasmine.createSpyObj('transporter', ['sendMail'])
   const mailService = new MailService({
     transporter: mockTransporter,
-    senderEmail: MOCK_SENDER_EMAIL,
+    senderMail: MOCK_SENDER_EMAIL,
     appName: MOCK_APP_NAME,
   })
 
+  describe('Constructor', () => {
+    it('should throw error when invalid senderMail param is passed ', () => {
+      // Arrange
+      const invalidParams = {
+        transporter: mockTransporter,
+        senderMail: 'notAnEmail',
+      }
+      // Act + Assert
+      expect(() => new MailService(invalidParams)).toThrowError(
+        'MailService constructor: senderMail parameter is not a valid email',
+      )
+    })
+  })
+
   describe('sendNodeMail', () => {
+    const MOCK_MAIL_PARAMS = {
+      to: MOCK_VALID_EMAIL,
+      from: MOCK_SENDER_EMAIL,
+      subject: 'send node mail in tests',
+      html: `<p>You are currently submitting a form.</p>`,
+    }
+
     it('should receive correct response when mail is sent successfully', async () => {
       // Arrange
       // Mock response
@@ -76,7 +92,7 @@ describe('mail.service', () => {
       const expectedArguments = [
         {
           to: MOCK_VALID_EMAIL,
-          from: MOCK_SENDER_EMAIL,
+          from: MOCK_SENDER_STRING,
           subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
           // Can't use dedent here, original seems to work a little differently due to TypeScript compilation.
           html: `<p>You are currently submitting a form on ${MOCK_APP_NAME}.</p>
