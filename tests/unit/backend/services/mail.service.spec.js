@@ -128,4 +128,45 @@ fdescribe('mail.service', () => {
       ).toBeRejectedWithError(`${invalidEmail} is not a valid email`)
     })
   })
+
+  describe('sendLoginOtp', () => {
+    const MOCK_HTML = '<p>Mock html</p>'
+
+    it('should send login otp successfully', async () => {
+      const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
+      const mockedResponse = 'mockedSuccessResponse'
+      mockTransporter.sendMail.and.callFake(() => mockedResponse)
+
+      const expectedArguments = [
+        {
+          to: MOCK_VALID_EMAIL,
+          from: MOCK_SENDER_STRING,
+          subject: `One-Time Password (OTP) for ${MOCK_APP_NAME}`,
+          html: MOCK_HTML,
+          headers: {
+            // Hardcode in tests in case something changes this.
+            'X-Formsg-Email-Type': 'Login OTP',
+          },
+        },
+        { mailId: 'OTP' },
+      ]
+
+      // Act + Assert
+      await expectAsync(
+        mailService.sendLoginOtp(MOCK_VALID_EMAIL, MOCK_HTML),
+      ).toBeResolvedTo(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy).toHaveBeenCalledWith(...expectedArguments)
+    })
+
+    it('should reject with error when email is invalid', async () => {
+      // Arrange
+      const invalidEmail = 'notAnEmail'
+      // Act + Assert
+      await expectAsync(
+        mailService.sendVerificationOtp(invalidEmail, MOCK_HTML),
+      ).toBeRejectedWithError(`${invalidEmail} is not a valid email`)
+    })
+  })
 })

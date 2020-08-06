@@ -175,6 +175,10 @@ export class MailService {
    * @throws error if mail fails, to be handled by the caller
    */
   sendLoginOtp = async (recipient: string, html: string) => {
+    if (!validator.isEmail(recipient)) {
+      throw new Error(`${recipient} is not a valid email`)
+    }
+
     const mail: Mail.Options = {
       to: recipient,
       from: this.#senderFromString,
