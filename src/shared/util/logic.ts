@@ -3,6 +3,7 @@ import {
   IClientFieldSchema,
   IConditionSchema,
   IForm,
+  ILogicSchema,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
   LogicType,
@@ -15,11 +16,18 @@ type FieldIdSet = Set<IClientFieldSchema['_id']>
 type LogicField = IClientFieldSchema | FieldResponse
 type LogicFieldArray = LogicField[]
 
-// Returns typed logic unit
+// Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
-  formLogic: IShowFieldsLogicSchema | IPreventSubmitLogicSchema,
+  formLogic: ILogicSchema,
 ): formLogic is IShowFieldsLogicSchema => {
   return formLogic.logicType === LogicType.ShowFields
+}
+
+// Returns typed PreventSubmit logic unit
+const isPreventSubmitLogic = (
+  formLogic: ILogicSchema,
+): formLogic is IPreventSubmitLogicSchema => {
+  return formLogic.logicType === LogicType.PreventSubmit
 }
 
 /**
@@ -101,7 +109,7 @@ function getPreventSubmitConditions(form: IForm): IPreventSubmitLogicSchema[] {
   )
   return form.form_logics.filter((formLogic) => {
     return (
-      !isShowFieldsLogic(formLogic) &&
+      isPreventSubmitLogic(formLogic) &&
       allConditionsExist(formLogic.conditions, formFieldIds)
     )
   })
