@@ -14,8 +14,12 @@ export const isPhoneNumber = (phoneNumber: string): boolean => {
 
   // Using length validation only for SG numbers due to some valid SG numbers
   // being marked as invalid due to its newness.
+  // Regex checks if the national number starts with 8 or 9, and is of length 8.
   if (parsedNumber.countryCallingCode === '65') {
-    return parsedNumber.isPossible() && parsedNumber.nationalNumber.length === 8
+    return (
+      parsedNumber.isPossible() &&
+      !!parsedNumber.nationalNumber.match(/^[89][0-9]{7}$/g)
+    )
   }
   return parsedNumber.isValid()
 }
