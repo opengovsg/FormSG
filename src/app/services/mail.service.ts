@@ -72,7 +72,7 @@ export class MailService {
     // Email validation
     if (!validator.isEmail(senderMail)) {
       const invalidMailError = new Error(
-        'Invalid senderMail parameter passed to MailService!',
+        'MailService constructor: senderMail parameter is not a valid email',
       )
       this.#logger.error(invalidMailError)
       throw invalidMailError
@@ -209,6 +209,15 @@ export class MailService {
     submission: ISubmissionSchema
     attachments?: Mail.Attachment[]
   }) => {
+    // Add validation, adminEmails cannot be empty if array
+    if (Array.isArray(adminEmails) && adminEmails.length === 0) {
+      const invalidMailError = new Error(
+        'sendSubmissionToAdmin: adminEmails parameter cannot be an empty array',
+      )
+      this.#logger.error(invalidMailError)
+      throw invalidMailError
+    }
+
     const mail: Mail.Options = {
       to: adminEmails,
       from: this.#senderFromString,
