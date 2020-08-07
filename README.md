@@ -160,4 +160,4 @@ We welcome contributions to code open sourced by the Government Technology Agenc
 
 ## Support
 
-Please contact FormSG (formsg@data.gov.sg) for any details.
+Please contact FormSG (formsg@tech.gov.sg) for any details.
