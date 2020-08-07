@@ -1,4 +1,5 @@
 // prettier-ignore
+// This config is the base config used for compilation and IDE support
 {
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
