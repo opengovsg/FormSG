@@ -53,5 +53,9 @@ tmp/
 !.elasticbeanstalk/*.global.yml
 
 # Localstack
+# =======
 .localstack
+
+# @shelf/jest-mongodb generated file
+# =======
 globalConfig.json
