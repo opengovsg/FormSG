@@ -1,5 +1,5 @@
 const HttpStatus = require('http-status-codes')
-const { cloneDeep } = require('lodash')
+const { cloneDeep, times } = require('lodash')
 const axios = require('axios')
 const MockAdapter = require('axios-mock-adapter')
 const crypto = require('crypto')
@@ -11,6 +11,7 @@ const mongoose = require('mongoose')
 const dbHandler = require('../helpers/db-handler')
 const { validSnsBody } = require('../resources/valid-sns-body')
 const { getSnsBasestring } = require('../../../../dist/backend/app/utils/sns')
+const { ObjectID } = require('bson-ext')
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
@@ -554,7 +555,7 @@ describe('Email Submissions Controller', () => {
           authType: 'NIL',
           responseMode: 'email',
           form_fields: [],
-        }).toObject(),
+        }),
         body: {
           responses: [],
         },
@@ -601,11 +602,16 @@ describe('Email Submissions Controller', () => {
     })
 
     it('parses submissions with attachments', (done) => {
+      const requiredAttachmentId = new ObjectID()
+      const optionalAttachmentId = new ObjectID()
+
+      const validAttachmentName = 'valid.pdf'
+
       fixtures.form.form_fields.push({
         title: 'Attachment',
         required: true,
         fieldType: 'attachment',
-        _id: 'attachmentId',
+        _id: requiredAttachmentId,
         attachmentSize: '1',
       })
 
@@ -613,20 +619,20 @@ describe('Email Submissions Controller', () => {
         title: 'NotRequired',
         required: false,
         fieldType: 'attachment',
-        _id: 'notrequired',
+        _id: optionalAttachmentId,
         attachmentSize: '1',
       })
 
       fixtures.body.responses.push({
-        _id: 'attachmentId',
+        _id: String(requiredAttachmentId),
         fieldType: 'attachment',
-        answer: 'valid.pdf',
-        filename: 'valid.pdf',
+        answer: validAttachmentName,
+        filename: validAttachmentName,
         content: Buffer.alloc(1),
       })
 
       fixtures.body.responses.push({
-        _id: 'notrequired',
+        _id: String(optionalAttachmentId),
         fieldType: 'attachment',
         answer: '',
       })
@@ -634,17 +640,17 @@ describe('Email Submissions Controller', () => {
       const expectedResponses = []
 
       expectedResponses.push({
-        _id: 'attachmentId',
+        _id: String(requiredAttachmentId),
         fieldType: 'attachment',
-        answer: 'valid.pdf',
-        filename: 'valid.pdf',
+        answer: validAttachmentName,
+        filename: validAttachmentName,
         content: Buffer.alloc(1),
         isVisible: true,
         question: 'Attachment',
       })
 
       expectedResponses.push({
-        _id: 'notrequired',
+        _id: String(optionalAttachmentId),
         fieldType: 'attachment',
         answer: '',
         isVisible: true,
@@ -659,7 +665,9 @@ describe('Email Submissions Controller', () => {
             body: {
               parsedResponses: expectedResponses,
             },
-            attachments: [{ filename: 'valid.pdf', content: Buffer.alloc(1) }],
+            attachments: [
+              { filename: validAttachmentName, content: Buffer.alloc(1) },
+            ],
           }),
         )
         .end(done)
@@ -924,7 +932,7 @@ describe('Email Submissions Controller', () => {
           title: 'Test Form',
           authType: 'NIL',
           responseMode: 'email',
-        }).toObject(),
+        }),
         body: { form_fields: [], responses: [] },
       }
 
@@ -998,7 +1006,7 @@ describe('Email Submissions Controller', () => {
      * @param {Object} options  other options that can be passed to a field in the field schema
      */
     const makeField = (fieldId, fieldType, title, options) => {
-      return { _id: fieldId, fieldType, title, ...options }
+      return { _id: new ObjectID(fieldId), fieldType, title, ...options }
     }
     /**
      *  Mock a response
@@ -1018,7 +1026,7 @@ describe('Email Submissions Controller', () => {
       isExpectedToBeVisible = true,
     ) => {
       let response = {
-        _id: fieldId,
+        _id: String(fieldId),
         fieldType,
         question,
         answer,
@@ -1203,20 +1211,21 @@ describe('Email Submissions Controller', () => {
     })
 
     it('prefixes MyInfo fields with [MyInfo]', (done) => {
-      const fieldId = 'A0001'
+      const fieldId = new ObjectID()
+
       const attr = 'passportnumber'
       reqFixtures.hashedFields = {
         [attr]: 'foobar',
       }
-      const field = {
-        _id: fieldId,
+      const responseField = {
+        _id: String(fieldId),
         question: 'myinfo',
         fieldType: 'textfield',
         isHeader: false,
         answer: 'bar',
         myInfo: { attr },
       }
-      reqFixtures.body.responses.push(field)
+      reqFixtures.body.responses.push(responseField)
       reqFixtures.form.form_fields.push({
         _id: fieldId,
         title: 'myinfo',
@@ -1254,9 +1263,9 @@ describe('Email Submissions Controller', () => {
     })
 
     it('maps text if isVisible', (done) => {
-      const fieldId = 'A0002'
+      const fieldId = new ObjectID()
       reqFixtures.body.responses.push({
-        _id: fieldId,
+        _id: String(fieldId),
         question: 'regular',
         fieldType: 'textfield',
         isHeader: false,
@@ -1298,24 +1307,24 @@ describe('Email Submissions Controller', () => {
 
     it('excludes field if isVisible is false for autoReplyData', (done) => {
       const nonVisibleField = {
-        _id: 'A0003',
+        _id: new ObjectID(),
         title: 'not visible to autoReplyData',
         fieldType: 'textfield',
       }
       const yesNoField = {
-        _id: 'B0003',
+        _id: new ObjectID(),
         title: 'Show textfield if this field is yes',
         fieldType: 'yes_no',
       }
       const nonVisibleResponse = {
-        _id: nonVisibleField._id,
+        _id: String(nonVisibleField._id),
         question: nonVisibleField.title,
         fieldType: nonVisibleField.fieldType,
         isHeader: false,
         answer: 'abc',
       }
       const yesNoResponse = {
-        _id: yesNoField._id,
+        _id: String(yesNoField._id),
         question: yesNoField.title,
         fieldType: yesNoField.fieldType,
         isHeader: false,
@@ -1380,37 +1389,41 @@ describe('Email Submissions Controller', () => {
     })
 
     it('prefixes attachment fields with [attachment]', (done) => {
-      const fieldId = 'A0004'
+      const validAttachmentName = 'valid.pdf'
+      const fieldId = new ObjectID()
       reqFixtures.body.responses.push({
-        _id: fieldId,
+        _id: String(fieldId),
         question: 'an attachment',
         fieldType: 'attachment',
         isHeader: false,
-        answer: '',
+        answer: validAttachmentName,
+        filename: validAttachmentName,
+        content: Buffer.alloc(1),
       })
       reqFixtures.form.form_fields.push({
         _id: fieldId,
         title: 'an attachment',
         fieldType: 'attachment',
+        attachmentSize: '1',
       })
       const expectedJsonData = [
         {
           question: '[attachment] an attachment',
-          answer: '',
+          answer: validAttachmentName,
         },
       ]
       const expectedFormData = [
         {
           question: '[attachment] an attachment',
-          answerTemplate: [''],
-          answer: '',
+          answerTemplate: [validAttachmentName],
+          answer: validAttachmentName,
           fieldType: 'attachment',
         },
       ]
       const expectedAutoReplyData = [
         {
           question: 'an attachment',
-          answerTemplate: [''],
+          answerTemplate: [validAttachmentName],
         },
       ]
       const expected = {
@@ -1423,9 +1436,9 @@ describe('Email Submissions Controller', () => {
     })
 
     it('prefixes table fields with [table]', (done) => {
-      const fieldId = 'A0005'
+      const fieldId = new ObjectID()
       reqFixtures.body.responses.push({
-        _id: fieldId,
+        _id: String(fieldId),
         question: 'a table',
         fieldType: 'table',
         isHeader: false,
@@ -1478,7 +1491,7 @@ describe('Email Submissions Controller', () => {
         replyToEmails: [],
       }
       for (let i = 0; i < emails.length; i++) {
-        const fieldId = `E00${i}`
+        const fieldId = new ObjectID()
         const field = {
           _id: fieldId,
           fieldType: 'email',
@@ -1492,7 +1505,7 @@ describe('Email Submissions Controller', () => {
           },
         }
         const response = {
-          _id: fieldId,
+          _id: String(fieldId),
           question: 'Some question',
           fieldType: 'email',
           isHeader: false,
@@ -1521,18 +1534,21 @@ describe('Email Submissions Controller', () => {
     })
 
     it('selects only first response for each form field', (done) => {
+      const fieldIds = times(15, () => String(new ObjectID()))
+      const responseIds = fieldIds.map((id) => String(id))
+
       const fields = [
-        makeField('1', 'section', 'Title for section'),
-        makeField('2', 'radiobutton', 'Title for radiobutton', {
+        makeField(fieldIds[0], 'section', 'Title for section'),
+        makeField(fieldIds[1], 'radiobutton', 'Title for radiobutton', {
           fieldOptions: ['rb1', 'rb2'],
         }),
-        makeField('3', 'dropdown', 'Title for dropdown', {
+        makeField(fieldIds[2], 'dropdown', 'Title for dropdown', {
           fieldOptions: ['db1', 'db2'],
         }),
-        makeField('4', 'email', 'Title for email', {
+        makeField(fieldIds[3], 'email', 'Title for email', {
           autoReplyOptions: { hasAutoReply: false },
         }),
-        makeField('5', 'table', 'Title for table', {
+        makeField(fieldIds[4], 'table', 'Title for table', {
           minimumRows: 2,
           addMoreRows: false,
           maximumRows: 2,
@@ -1552,78 +1568,141 @@ describe('Email Submissions Controller', () => {
             },
           ],
         }),
-        makeField('6', 'number', 'Title for number'),
-        makeField('7', 'textfield', 'Title for textfield'),
-        makeField('8', 'textarea', 'Title for textarea'),
-        makeField('9', 'decimal', 'Title for decimal'),
-        makeField('10', 'nric', 'Title for nric'),
-        makeField('11', 'yes_no', 'Title for yes_no'),
-        makeField('12', 'mobile', 'Title for mobile'),
-        makeField('13', 'checkbox', 'Title for checkbox', {
+        makeField(fieldIds[5], 'number', 'Title for number'),
+        makeField(fieldIds[6], 'textfield', 'Title for textfield'),
+        makeField(fieldIds[7], 'textarea', 'Title for textarea'),
+        makeField(fieldIds[8], 'decimal', 'Title for decimal'),
+        makeField(fieldIds[9], 'nric', 'Title for nric'),
+        makeField(fieldIds[10], 'yes_no', 'Title for yes_no'),
+        makeField(fieldIds[11], 'mobile', 'Title for mobile'),
+        makeField(fieldIds[12], 'checkbox', 'Title for checkbox', {
           fieldOptions: ['cb1', 'cb2', 'cb3'],
         }),
-        makeField('14', 'rating', 'Title for rating', {
+        makeField(fieldIds[13], 'rating', 'Title for rating', {
           ratingOptions: { steps: 5, shape: 'Heart' },
         }),
-        makeField('15', 'date', 'Title for date'),
+        makeField(fieldIds[14], 'date', 'Title for date'),
       ]
       const responses = [
-        makeResponse('1', 'section', 'Title for section', ''),
-        makeResponse('2', 'radiobutton', 'Title for radiobutton', 'rb1'),
-        makeResponse('3', 'dropdown', 'Title for dropdown', 'db1'),
-        makeResponse('4', 'email', 'Title for email', 'abc@abc.com'),
-        makeResponse('5', 'table', 'Title for table', 'Option 1, text 1', [
-          ['Option 1', 'text 1'],
-          ['Option 1', 'text 2'],
-        ]),
-        makeResponse('6', 'number', 'Title for number', '9000'),
-        makeResponse('7', 'textfield', 'Title for textfield', 'hola'),
-        makeResponse('8', 'textarea', 'Title for textarea', 'ciao'),
-        makeResponse('9', 'decimal', 'Title for decimal', '10.1'),
-        makeResponse('10', 'nric', 'Title for nric', 'S9912345A'),
-        makeResponse('11', 'yes_no', 'Title for yes_no', 'Yes'),
-        makeResponse('12', 'mobile', 'Title for mobile', '+6583838383'),
-        makeResponse('13', 'checkbox', 'Title for checkbox', 'cb1, cb2, cb3', [
-          'cb1',
-          'cb2',
-          'cb3',
-        ]),
-        makeResponse('14', 'rating', 'Title for rating', '5'),
-        makeResponse('15', 'date', 'Title for date', '15 Nov 2019'),
+        makeResponse(responseIds[0], 'section', 'Title for section', ''),
+        makeResponse(
+          responseIds[1],
+          'radiobutton',
+          'Title for radiobutton',
+          'rb1',
+        ),
+        makeResponse(responseIds[2], 'dropdown', 'Title for dropdown', 'db1'),
+        makeResponse(responseIds[3], 'email', 'Title for email', 'abc@abc.com'),
+        makeResponse(
+          responseIds[4],
+          'table',
+          'Title for table',
+          'Option 1, text 1',
+          [
+            ['Option 1', 'text 1'],
+            ['Option 1', 'text 2'],
+          ],
+        ),
+        makeResponse(responseIds[5], 'number', 'Title for number', '9000'),
+        makeResponse(
+          responseIds[6],
+          'textfield',
+          'Title for textfield',
+          'hola',
+        ),
+        makeResponse(responseIds[7], 'textarea', 'Title for textarea', 'ciao'),
+        makeResponse(responseIds[8], 'decimal', 'Title for decimal', '10.1'),
+        makeResponse(responseIds[9], 'nric', 'Title for nric', 'S9912345A'),
+        makeResponse(responseIds[10], 'yes_no', 'Title for yes_no', 'Yes'),
+        makeResponse(
+          responseIds[11],
+          'mobile',
+          'Title for mobile',
+          '+6583838383',
+        ),
+        makeResponse(
+          responseIds[12],
+          'checkbox',
+          'Title for checkbox',
+          'cb1, cb2, cb3',
+          ['cb1', 'cb2', 'cb3'],
+        ),
+        makeResponse(responseIds[13], 'rating', 'Title for rating', '5'),
+        makeResponse(responseIds[14], 'date', 'Title for date', '15 Nov 2019'),
       ]
 
       const extra = [
         // Add extra responses
-        makeResponse('1', 'section', 'Title for section', ''),
-        makeResponse('2', 'radiobutton', 'Title for radiobutton', 'rb2'),
-        makeResponse('3', 'dropdown', 'Title for dropdown', 'db2'),
-        makeResponse('4', 'email', 'Title for email', 'xyz@xyz.com'),
-        makeResponse('5', 'table', 'Title for table', 'Option 1, text 2', [
-          ['Option 1', 'text 1'],
-          ['Option 1', 'text 2'],
+        makeResponse(responseIds[0], 'section', 'Title for section', ''),
+        makeResponse(
+          responseIds[1],
+          'radiobutton',
+          'Title for radiobutton',
+          'rb2',
+        ),
+        makeResponse(responseIds[2], 'dropdown', 'Title for dropdown', 'db2'),
+        makeResponse(responseIds[3], 'email', 'Title for email', 'xyz@xyz.com'),
+        makeResponse(
+          responseIds[4],
+          'table',
+          'Title for table',
+          'Option 1, text 2',
+          [
+            ['Option 1', 'text 1'],
+            ['Option 1', 'text 2'],
+          ],
+        ),
+        makeResponse(
+          responseIds[4],
+          'table',
+          'Title for table',
+          'Option 2, text 3',
+          [
+            ['Option 1', 'text 1'],
+            ['Option 1', 'text 2'],
+            ['Option 2', 'text 3'],
+            ['Option 2', 'text 4'],
+          ],
+        ),
+        makeResponse(
+          responseIds[4],
+          'table',
+          'Title for table',
+          'Option 2, text 4',
+          [
+            ['Option 1', 'text 1'],
+            ['Option 1', 'text 2'],
+            ['Option 2', 'text 3'],
+            ['Option 2', 'text 4'],
+          ],
+        ),
+        makeResponse(responseIds[5], 'number', 'Title for number', '9999'),
+        makeResponse(
+          responseIds[6],
+          'textfield',
+          'Title for textfield',
+          'hello',
+        ),
+        makeResponse(
+          responseIds[7],
+          'textarea',
+          'Title for textarea',
+          'byebye',
+        ),
+        makeResponse(responseIds[8], 'decimal', 'Title for decimal', '202.12'),
+        makeResponse(responseIds[9], 'nric', 'Title for nric', 'S9634214D'),
+        makeResponse(responseIds[10], 'yes_no', 'Title for yes_no', 'No'),
+        makeResponse(
+          responseIds[11],
+          'mobile',
+          'Title for mobile',
+          '+6584848484',
+        ),
+        makeResponse(responseIds[12], 'checkbox', 'Title for checkbox', 'cb3', [
+          'cb3',
         ]),
-        makeResponse('5', 'table', 'Title for table', 'Option 2, text 3', [
-          ['Option 1', 'text 1'],
-          ['Option 1', 'text 2'],
-          ['Option 2', 'text 3'],
-          ['Option 2', 'text 4'],
-        ]),
-        makeResponse('5', 'table', 'Title for table', 'Option 2, text 4', [
-          ['Option 1', 'text 1'],
-          ['Option 1', 'text 2'],
-          ['Option 2', 'text 3'],
-          ['Option 2', 'text 4'],
-        ]),
-        makeResponse('6', 'number', 'Title for number', '9999'),
-        makeResponse('7', 'textfield', 'Title for textfield', 'hello'),
-        makeResponse('8', 'textarea', 'Title for textarea', 'byebye'),
-        makeResponse('9', 'decimal', 'Title for decimal', '202.12'),
-        makeResponse('10', 'nric', 'Title for nric', 'S9634214D'),
-        makeResponse('11', 'yes_no', 'Title for yes_no', 'No'),
-        makeResponse('12', 'mobile', 'Title for mobile', '+6584848484'),
-        makeResponse('13', 'checkbox', 'Title for checkbox', 'cb3', ['cb3']),
-        makeResponse('14', 'rating', 'Title for rating', '1'),
-        makeResponse('15', 'date', 'Title for date', '15 Dec 2019'),
+        makeResponse(responseIds[13], 'rating', 'Title for rating', '1'),
+        makeResponse(responseIds[14], 'date', 'Title for date', '15 Dec 2019'),
       ]
 
       const expected = getExpectedOutput(fields, responses)
@@ -1633,38 +1712,40 @@ describe('Email Submissions Controller', () => {
     })
 
     it('ignores statement and image fields in submission', (done) => {
+      const fieldIds = times(4, () => new ObjectID())
+      const responseIds = fieldIds.map((id) => String(id))
       const fields = [
-        { _id: '1', fieldType: 'section', title: 'Welcome to my form' },
-        { _id: '2', fieldType: 'statement', title: 'Hello there' },
+        { _id: fieldIds[0], fieldType: 'section', title: 'Welcome to my form' },
+        { _id: fieldIds[1], fieldType: 'statement', title: 'Hello there' },
         {
-          _id: '3',
+          _id: fieldIds[2],
           fieldType: 'image',
           title: 'Does image even have a title?',
           url: 'http://myimage.com/image.jpg',
         },
-        { _id: '4', fieldType: 'number', title: 'Lottery number' },
+        { _id: fieldIds[3], fieldType: 'number', title: 'Lottery number' },
       ]
       const responses = [
         {
-          _id: '1',
+          _id: responseIds[0],
           fieldType: 'section',
           question: 'Welcome to my form',
           answer: '',
         },
         {
-          _id: '2',
+          _id: responseIds[1],
           fieldType: 'statement',
           question: 'Hello there',
           answer: '',
         },
         {
-          _id: '3',
+          _id: responseIds[2],
           fieldType: 'image',
           question: 'Does image even have a title?',
           answer: '',
         },
         {
-          _id: '4',
+          _id: responseIds[3],
           fieldType: 'number',
           question: 'Lottery number',
           answer: '37',
@@ -1719,12 +1800,12 @@ describe('Email Submissions Controller', () => {
     describe('Logic', () => {
       describe('Single-select value', () => {
         const conditionField = makeField(
-          '001',
+          new ObjectID(),
           'yes_no',
           'Show text field if yes',
         )
-        const logicField = makeField('002', 'textfield', 'Text field')
-        const visField = makeField('003', 'nric', 'Nric field')
+        const logicField = makeField(new ObjectID(), 'textfield', 'Text field')
+        const visField = makeField(new ObjectID(), 'nric', 'Nric field')
         const fields = [conditionField, logicField, visField]
         const conditions = [
           {
@@ -1826,12 +1907,12 @@ describe('Email Submissions Controller', () => {
 
       describe('Number value', () => {
         const conditionField = makeField(
-          '001',
+          new ObjectID(),
           'number',
           'Show text field if less than 10',
         )
-        const logicField = makeField('002', 'textfield', 'Text field')
-        const visField = makeField('003', 'nric', 'Nric field')
+        const logicField = makeField(new ObjectID(), 'textfield', 'Text field')
+        const visField = makeField(new ObjectID(), 'nric', 'Nric field')
         const fields = [conditionField, logicField, visField]
         const conditions = [
           {
@@ -1930,15 +2011,15 @@ describe('Email Submissions Controller', () => {
 
       describe('Multi-select value', () => {
         const conditionField = makeField(
-          '001',
+          new ObjectID(),
           'dropdown',
           'Show text field if value is Option 1 or Option 2',
           {
             fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
           },
         )
-        const logicField = makeField('002', 'textfield', 'Text field')
-        const visField = makeField('003', 'nric', 'Nric field')
+        const logicField = makeField(new ObjectID(), 'textfield', 'Text field')
+        const visField = makeField(new ObjectID(), 'nric', 'Nric field')
         const fields = [conditionField, logicField, visField]
         const conditions = [
           {
@@ -2035,19 +2116,19 @@ describe('Email Submissions Controller', () => {
 
       describe('supports multiple AND conditions', () => {
         const conditionField1 = makeField(
-          '001',
+          new ObjectID(),
           'yes_no',
           'Show text field if yes',
         )
         const conditionField2 = makeField(
-          '002',
+          new ObjectID(),
           'dropdown',
           'Show text field if dropdown says Textfield',
           {
             fieldOptions: ['Textfield', 'Radiobutton', 'Email'],
           },
         )
-        const logicField = makeField('003', 'textfield', 'Text field')
+        const logicField = makeField(new ObjectID(), 'textfield', 'Text field')
         const fields = [conditionField1, conditionField2, logicField]
         const conditions = [
           {
@@ -2192,19 +2273,19 @@ describe('Email Submissions Controller', () => {
 
       describe('supports multiple OR conditions', () => {
         const conditionField1 = makeField(
-          '001',
+          new ObjectID(),
           'yes_no',
           'Show text field if yes',
         )
         const conditionField2 = makeField(
-          '002',
+          new ObjectID(),
           'dropdown',
           'Show text field if dropdown says Textfield',
           {
             fieldOptions: ['Textfield', 'Radiobutton', 'Email'],
           },
         )
-        const logicField = makeField('003', 'textfield', 'Text field')
+        const logicField = makeField(new ObjectID(), 'textfield', 'Text field')
         const fields = [conditionField1, conditionField2, logicField]
         const conditionses = [
           [
@@ -2317,12 +2398,16 @@ describe('Email Submissions Controller', () => {
 
       describe('supports multiple showable fields', () => {
         const conditionField = makeField(
-          '001',
+          new ObjectID(),
           'yes_no',
           'Show text field if yes',
         )
-        const logicField1 = makeField('002', 'textfield', 'Text field')
-        const logicField2 = makeField('003', 'textarea', 'Long text field')
+        const logicField1 = makeField(new ObjectID(), 'textfield', 'Text field')
+        const logicField2 = makeField(
+          new ObjectID(),
+          'textarea',
+          'Long text field',
+        )
         const fields = [conditionField, logicField1, logicField2]
         const formLogics = [
           {
@@ -2463,7 +2548,7 @@ describe('Email Submissions Controller', () => {
 
       describe('supports chained logic', () => {
         const conditionField1 = makeField(
-          '001',
+          new ObjectID(),
           'rating',
           'Show radio if rating is more than or equal 2',
           {
@@ -2474,7 +2559,7 @@ describe('Email Submissions Controller', () => {
           },
         )
         const conditionField2 = makeField(
-          '002',
+          new ObjectID(),
           'radiobutton',
           'Show date if radio is others',
           {
@@ -2482,7 +2567,7 @@ describe('Email Submissions Controller', () => {
             othersRadioButton: true,
           },
         )
-        const logicField = makeField('003', 'date', 'Date field')
+        const logicField = makeField(new ObjectID(), 'date', 'Date field')
         const fields = [conditionField1, conditionField2, logicField]
         const showFieldLogics = [
           {
@@ -2646,7 +2731,7 @@ describe('Email Submissions Controller', () => {
 
       describe('supports logic regardless of field order', () => {
         const conditionField1 = makeField(
-          '001',
+          new ObjectID(),
           'rating',
           'Show radio if rating is more than or equal 2',
           {
@@ -2657,7 +2742,7 @@ describe('Email Submissions Controller', () => {
           },
         )
         const conditionField2 = makeField(
-          '002',
+          new ObjectID(),
           'radiobutton',
           'Show date if radio is others',
           {
@@ -2665,7 +2750,7 @@ describe('Email Submissions Controller', () => {
             othersRadioButton: true,
           },
         )
-        const logicField = makeField('003', 'date', 'Date field')
+        const logicField = makeField(new ObjectID(), 'date', 'Date field')
         const fields = [conditionField1, logicField, conditionField2]
         const formLogics = [
           {
@@ -2731,21 +2816,25 @@ describe('Email Submissions Controller', () => {
       })
       describe('circular logic', () => {
         const conditionField1 = makeField(
-          '001',
+          new ObjectID(),
           'yes_no',
           'Show field 2 if yes',
         )
         const conditionField2 = makeField(
-          '002',
+          new ObjectID(),
           'yes_no',
           'Show field 3 if yes',
         )
         const conditionField3 = makeField(
-          '003',
+          new ObjectID(),
           'yes_no',
           'Show field 1 if yes',
         )
-        const visibleField = makeField('004', 'textfield', 'Text field')
+        const visibleField = makeField(
+          new ObjectID(),
+          'textfield',
+          'Text field',
+        )
         const formLogics = [
           {
             show: [conditionField2._id],
