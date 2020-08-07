@@ -33,6 +33,10 @@ export interface IFieldSchema extends IField, Document {
   parent(): IFormSchema
 
   // Instance methods
+  /**
+   * Returns the string to be displayed as the asked question in form
+   * responses.
+   */
   getQuestion(): string
 }
 
