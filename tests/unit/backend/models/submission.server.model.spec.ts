@@ -1,7 +1,9 @@
-const mongoose = require('mongoose')
-const dbHandler = require('../helpers/db-handler')
+import { ObjectID } from 'bson'
+import mongoose from 'mongoose'
 
-const Submission = dbHandler.makeModel('submission.server.model', 'Submission')
+import getSubmissionModel from 'src/app/models/submission.server.model'
+
+const Submission = getSubmissionModel(mongoose)
 
 // TODO: Add more tests for the rest of the submission schema.
 describe('Submission Schema', () => {
@@ -10,7 +12,7 @@ describe('Submission Schema', () => {
   describe('methods.getWebhookView', () => {
     it('should return non-null view with encryptedSubmission type (without verified content)', () => {
       // Arrange
-      const formId = mongoose.Types.ObjectId('000000000001')
+      const formId = new ObjectID()
       const submission = new Submission({
         submissionType: 'encryptSubmission',
         form: formId,
@@ -25,9 +27,9 @@ describe('Submission Schema', () => {
       // Assert
       expect(actualWebhookView).toEqual({
         data: {
-          formId: jasmine.any(String),
-          submissionId: jasmine.any(String),
-          created: jasmine.any(Date),
+          formId: expect.any(String),
+          submissionId: expect.any(String),
+          created: expect.any(Date),
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           verifiedContent: undefined,
           version: 1,
@@ -37,7 +39,7 @@ describe('Submission Schema', () => {
 
     it('should return null view with non-encryptSubmission type', () => {
       // Arrange
-      const formId = mongoose.Types.ObjectId('000000000001')
+      const formId = new ObjectID()
       const submission = new Submission({
         submissionType: 'rubbish',
         form: formId,
