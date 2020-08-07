@@ -1,6 +1,6 @@
 // Enum of actions that can be used to edit a form field
 export enum EditFieldActions {
-  Create = 'Create',
+  Create = 'CREATE',
   Duplicate = 'DUPLICATE',
   Reorder = 'REORDER',
   Update = 'UPDATE',
