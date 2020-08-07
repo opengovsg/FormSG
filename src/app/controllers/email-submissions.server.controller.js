@@ -16,7 +16,8 @@ const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
 const { ConflictError } = require('../utils/custom-errors')
-const { MB, EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+const { EMAIL_TYPES } = require('../constants/mail')
+const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
   addAttachmentToResponses,
@@ -577,7 +578,6 @@ exports.saveMetadataToDb = function (req, res, next) {
  * Generate and send admin email
  * @param {Object} req - the expressjs request. Will be injected with the
  * objects parsed from `req.form` and `req.attachments`
- * @param {Array} req.autoReplyEmails Auto-reply email fields
  * @param {Array} req.replyToEmails Reply-to emails
  * @param {Object} req.form - the form
  * @param {Array} req.formData Field-value tuples for admin email
@@ -611,9 +611,8 @@ exports.sendAdminEmail = async function (req, res, next) {
       answer: submissionTime,
     },
   )
-  let html
   try {
-    html = await renderPromise(res, 'templates/submit-form-email', {
+    const html = await renderPromise(res, 'templates/submit-form-email', {
       refNo: submission.id,
       formTitle: form.title,
       submissionTime,
@@ -621,40 +620,23 @@ exports.sendAdminEmail = async function (req, res, next) {
       jsonData,
       appName: res.app.locals.title,
     })
-  } catch (err) {
-    logger.warn(err)
-    return onSubmissionEmailFailure(err, req, res, submission)
-  }
-  let mailOptions = {
-    to: form.emails,
-    from: config.mail.mailer.from,
-    subject: 'formsg-auto: ' + form.title + ' (Ref: ' + submission.id + ')',
-    html,
-    attachments,
-    headers: {
-      [EMAIL_HEADERS.formId]: String(form._id),
-      [EMAIL_HEADERS.submissionId]: submission.id,
-      [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
-    },
-  }
 
-  // Set reply-to to all email fields that have reply to enabled
-  if (replyToEmails) {
-    let replyTo = replyToEmails.join(', ')
-    if (replyTo) mailOptions.replyTo = replyTo
-  }
+    logger.profile(
+      `Sending admin mail submissionId=${submission.id} formId=${form._id} submissionHash=${submission.responseHash}`,
+    )
 
-  let adminLogstring = `Sending admin mail submissionId=${submission.id} formId=${form._id} submissionHash=${submission.responseHash}`
-  logger.profile(adminLogstring)
-
-  // Send mail
-  try {
-    await MailService.sendNodeMail(mailOptions, {
-      mailId: submission.id,
-      formId: form._id,
+    await MailService.sendSubmissionToAdmin({
+      adminEmails: form.emails,
+      replyToEmails,
+      form,
+      submission,
+      html,
+      attachments,
     })
+
     return next()
   } catch (err) {
+    logger.warn('sendAdminEmail error', err)
     return onSubmissionEmailFailure(err, req, res, submission)
   }
 }

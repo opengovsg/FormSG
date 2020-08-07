@@ -22,7 +22,6 @@ const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
 const MailService = require('../services/mail.service').default
-const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
 
 const GOOGLE_RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
 
@@ -209,13 +208,9 @@ const sendEmailAutoReplies = async function (req, res) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  * @param {Array} autoReplyEmails Auto-reply email fields
- * @param {Object} form Form object
  * @param {Object} renderData Data about the submission and answers to form questions. This is the raw
  *   data that is rendered on the response PDF if the PDF was needed, otherwise it is null.
- * @param {String} submissionId The ObjectId of the submission
  * @param {Array<Object>} attachments The attachments to send to form submitter.
- * @param {String} attachment.filename Name of file
- * @param {Buffer} attachment.buffer Contents of file
  */
 async function sendOneEmailAutoReply(
   req,
@@ -226,9 +221,6 @@ async function sendOneEmailAutoReply(
   index,
 ) {
   const { form, submission } = req
-  const submissionId = submission.id
-  const defaultSubject = 'Thank you for submitting ' + form.title
-  const defaultSender = form.admin.agency.fullName
   const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
   const autoReplyBody = (autoReplyEmail.body || defaultBody).split('\n')
 
@@ -236,38 +228,20 @@ async function sendOneEmailAutoReply(
   const templateData = autoReplyEmail.includeFormSummary
     ? { autoReplyBody, ...renderData }
     : { autoReplyBody }
-  let autoReplyHtml
   try {
-    autoReplyHtml = await renderPromise(
+    const autoReplyHtml = await renderPromise(
       res,
       'templates/submit-form-autoreply',
       templateData,
     )
-  } catch (err) {
-    logger.warn('Render autoreply error', err)
-    return Promise.reject(err)
-  }
-  const senderName = autoReplyEmail.sender || defaultSender
-  // Sender's name appearing after ( symbol gets truncated. Escaping it solves the problem.
-  const escapedSenderName = senderName.replace('(', '\\(')
 
-  const mail = {
-    to: autoReplyEmail.email,
-    from: `${escapedSenderName} <${config.mail.mailFrom}>`,
-    subject: autoReplyEmail.subject || defaultSubject,
-    // Only send attachments if the admin has the box checked for email field
-    attachments: autoReplyEmail.includeFormSummary ? attachments : [],
-    html: autoReplyHtml,
-    headers: {
-      [EMAIL_HEADERS.formId]: String(form._id),
-      [EMAIL_HEADERS.submissionId]: submission.id,
-      [EMAIL_HEADERS.emailType]: EMAIL_TYPES.emailConfirmation,
-    },
-  }
-  try {
-    return MailService.sendNodeMail(mail, {
-      mailId: `${submissionId}-${index}`,
-      formId: form._id,
+    return MailService.sendAutoReplyEmail({
+      form,
+      submission,
+      attachments,
+      index,
+      html: autoReplyHtml,
+      autoReplyData: autoReplyEmail,
     })
   } catch (err) {
     logger.error(`Mail autoreply error:\t ip=${getRequestIp(req)}`, err)

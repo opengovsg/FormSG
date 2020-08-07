@@ -23,6 +23,7 @@ const LOGIN_CONFIG = {
 
 // Config for email sending.
 const MAIL_CONFIG = {
+  // The sender email to display on mail sent.
   mailFrom: 'donotreply@mail.form.gov.sg',
 }
 
