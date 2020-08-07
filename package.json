@@ -69,7 +69,7 @@
     "angular": "~1.7.9",
     "angular-animate": "~1.7.9",
     "angular-aria": "~1.7.9",
-    "angular-cookies": "~1.7.9",
+    "angular-cookies": "~1.8.0",
     "angular-drag-scroll": "^0.2.1",
     "angular-messages": "~1.7.9",
     "angular-moment": "~1.2.0",
