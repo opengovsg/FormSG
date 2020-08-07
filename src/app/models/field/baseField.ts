@@ -10,6 +10,7 @@ import {
   BasicFieldType,
   IFieldSchema,
   IMyInfoSchema,
+  ITableFieldSchema,
   MyInfoAttribute,
   ResponseMode,
 } from '../../../types'
@@ -125,7 +126,24 @@ const createBaseFieldSchema = (db: Mongoose) => {
     return next()
   })
 
+  // Instance methods
+  FieldSchema.methods.getQuestion = function (this: IFieldSchema) {
+    // Return concatenation of all column titles as question string.
+    if (isTableField(this)) {
+      const columnTitles = this.columns.map((col) => col.title)
+      return `${this.title} (${columnTitles.join(', ')})`
+    }
+
+    // Default question is the field title.
+    return this.title
+  }
+
   return FieldSchema
+}
+
+// Typeguards
+const isTableField = (field: IFieldSchema): field is ITableFieldSchema => {
+  return field.fieldType === BasicFieldType.Table
 }
 
 export default createBaseFieldSchema
