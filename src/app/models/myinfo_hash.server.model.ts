@@ -1,6 +1,7 @@
 import { Model, Mongoose, Schema } from 'mongoose'
 
 import { IMyInfoHashSchema } from '../../types'
+
 import { FORM_SCHEMA_ID } from './form.server.model'
 
 export const MYINFO_HASH_SCHEMA_ID = 'MyInfoHash'

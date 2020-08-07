@@ -2,6 +2,7 @@ import { promises as dns } from 'dns'
 import ip from 'ip'
 
 import { WebhookValidationError } from '../../app/utils/custom-errors'
+
 import { isValidHttpsUrl } from './url-validation'
 
 /**

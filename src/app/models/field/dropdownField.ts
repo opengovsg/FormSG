@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 
 import { IDropdownFieldSchema } from '../../../types'
+
 import { MyInfoSchema } from './baseField'
 
 const createDropdownFieldSchema = () => {

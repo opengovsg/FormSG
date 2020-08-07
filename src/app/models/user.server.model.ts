@@ -2,6 +2,7 @@ import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import { IUserSchema } from '../../types'
+
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 
 export const USER_SCHEMA_ID = 'User'

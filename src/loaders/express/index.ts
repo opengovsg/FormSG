@@ -9,6 +9,7 @@ import url from 'url'
 
 import apiRoutes from '../../app/routes'
 import config from '../../config/config'
+
 import errorHandlerMiddlewares from './error-handler'
 import helmetMiddlewares from './helmet'
 import appLocals from './locals'

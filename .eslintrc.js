@@ -26,7 +26,25 @@ module.exports = {
       plugins: ['@typescript-eslint', 'import', 'simple-import-sort'],
       rules: {
         // Rules for auto sort of imports
-        'simple-import-sort/sort': 'error',
+        'simple-import-sort/sort': [
+          'error',
+          {
+            groups: [
+              // Side effect imports.
+              ['^\\u0000'],
+              // Packages.
+              // Things that start with a letter (or digit or underscore), or
+              // `@` followed by a letter.
+              ['^@?\\w'],
+              // Root imports
+              ['^(src)(/.*|$)'],
+              // Parent imports. Put `..` last.
+              ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
+              // Other relative imports. Put same-folder imports and `.` last.
+              ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
+            ],
+          },
+        ],
         'sort-imports': 'off',
         'import/order': 'off',
         'import/first': 'error',
