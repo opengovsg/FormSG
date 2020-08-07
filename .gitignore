@@ -54,3 +54,4 @@ tmp/
 
 # Localstack
 .localstack
+globalConfig.json
