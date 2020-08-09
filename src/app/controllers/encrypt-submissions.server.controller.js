@@ -202,15 +202,25 @@ exports.saveResponseToDb = function (req, res, next) {
  */
 exports.getMetadata = function (req, res) {
   let pageSize = 10
-  let { page } = req.query || {}
+  let { page, filterBySubmissionRefId } = req.query || {}
   let numToSkip = parseInt(page - 1 || 0) * pageSize
+
+  let matchClause = {
+    form: req.form._id,
+    submissionType: 'encryptSubmission',
+  }
+
+  if (filterBySubmissionRefId) {
+    if (mongoose.Types.ObjectId.isValid(filterBySubmissionRefId)) {
+      matchClause._id = mongoose.Types.ObjectId(filterBySubmissionRefId)
+    } else {
+      return res.status(HttpStatus.OK).send({ metadata: [], count: 0 })
+    }
+  }
 
   Submission.aggregate([
     {
-      $match: {
-        form: req.form._id,
-        submissionType: 'encryptSubmission',
-      },
+      $match: matchClause,
     },
     {
       $sort: { created: -1 },
