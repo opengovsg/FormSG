@@ -148,7 +148,7 @@ function SubmissionsFactory(
       }`
 
       if (params.filterBySubmissionRefId) {
-        resUrl += `&filterBySubmissionRefId=${params.filterBySubmissionRefId}`
+        resUrl += `&submissionId=${params.filterBySubmissionRefId}`
       }
 
       $http.get(resUrl).then(
