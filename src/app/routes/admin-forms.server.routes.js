@@ -283,6 +283,24 @@ module.exports = function (app) {
     .get(authActiveForm(PERMISSIONS.READ), adminForms.streamFeedback)
 
   /**
+   * Transfer form ownership to another user
+   * @route POST /{formId}/adminform/transfer-owner
+   * @group forms - endpoints to manage forms
+   * @param {string} formId.path.required - the form id
+   * @param {string} request.body.email.required - the new owner's email address
+   * @produces application/json
+   * @returns {ErrorMessage.model} 500 - Errors while querying for response
+   * @returns {Object} 200 - Response document
+   */
+  app
+    .route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner')
+    .post(
+      authActiveForm(PERMISSIONS.WRITE),
+      adminForms.isFormOwner,
+      adminForms.transferOwner,
+    )
+
+  /**
    * On preview, submit a form response, processing it as an email to be sent to
    * the public servant who created the form. Optionally, email a PDF
    * containing the submission back to the user, if an email address

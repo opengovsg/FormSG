@@ -46,6 +46,7 @@ angular
   .controller('AdminFormController', [
     '$scope',
     '$translate',
+    '$uibModal',
     'FormData',
     'Auth',
     'moment',
@@ -61,6 +62,7 @@ angular
 function AdminFormController(
   $scope,
   $translate,
+  $uibModal,
   FormData,
   Auth,
   moment,
@@ -125,6 +127,7 @@ function AdminFormController(
   // Stores the state of the collab form UI
   $scope.collab = {
     isModalShown: false,
+    isOwnershipTransferModalShown: false,
     hasEmailError: false,
     isAlreadyCollabError: false,
     // Three possible button states
@@ -152,7 +155,18 @@ function AdminFormController(
     } else {
       angular.element('body').removeClass('mobile-scroll-lock')
     }
-    $scope.collab.isModalShown = !$scope.collab.isModalShown
+    $uibModal.open({
+      animation: false,
+      templateUrl:
+        'modules/forms/admin/views/collaborator.client.modal.html',
+      windowClass: 'full-screen-modal-window',
+      controller: 'CollaboratorModalController',
+      scope: $scope,
+    })
+  }
+
+  $scope.toggleTransferOwnershipModal = () => {
+    $scope.collab.isOwnershipTransferModalShown = !$scope.collab.isOwnershipTransferModalShown
   }
 
   /**
@@ -431,7 +445,7 @@ function AdminFormController(
               break
             case HttpStatus.REQUEST_TOO_LONG: // HTTP Payload Too Large
               errorMessage = `
-                  Your form is too large. Reduce the number of fields, or submit a 
+                  Your form is too large. Reduce the number of fields, or submit a
                   <a href="${$scope.supportFormLink}" target="_blank" rel="noopener"><u>Support Form</u></a>.
                 `
               break

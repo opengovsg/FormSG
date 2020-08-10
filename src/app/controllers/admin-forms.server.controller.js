@@ -241,6 +241,24 @@ function makeModule(connection) {
       return next()
     },
     /**
+     * Ensure that req user is form owner
+     * @param  {Object} req - Express request object
+     * @param  {Object} res - Express response object
+     * @param  {Object} next - Express next middleware function
+     */
+    isFormOwner: function (req, res, next) {
+      if (req.session.user._id !== req.form.admin._id.toString()) {
+        const errMsg = 'Error: transfer request made by non-owner'
+        logger.error(
+          `formId="${req.form._id}", ip=${getRequestIp(
+            req,
+          )}, message="${errMsg}"`,
+        )
+        return res.status(HttpStatus.FORBIDDEN).send({ message: errMsg })
+      }
+      return next()
+    },
+    /**
      * Create a new form called on list forms
      * @param  {Object} req - Express request object
      * @param  {Object} res - Express response object
@@ -745,6 +763,39 @@ function makeModule(connection) {
           }
         },
       )
+    },
+    transferOwner: async function (req, res) {
+      const newOwnerEmail = req.body.email
+
+      // Check if new owner's email is specified
+      if (_.isEmpty(newOwnerEmail)) {
+        const errMsg = 'Error: email should exists in req body'
+        logger.error(
+          `formId="${req.form._id}", ip=${getRequestIp(
+            req,
+          )}, message="${errMsg}"`,
+        )
+        return res.status(HttpStatus.BAD_REQUEST).send({ message: errMsg })
+      }
+
+      // Transfer owner and Save the form
+      try {
+        await req.form.transferOwner(req.session.user, newOwnerEmail)
+      } catch (err) {
+        logger.error(
+          `formId="${req.form._id}", ip=${getRequestIp(req)}, message="${
+            err.message
+          }"`,
+        )
+        return res.status(HttpStatus.CONFLICT).send({ message: err.message })
+      }
+      req.form.save(function (err, savedForm) {
+        if (err) return respondOnMongoError(req, res, err)
+        savedForm.populate('admin', (err) => {
+          if (err) return respondOnMongoError(req, res, err)
+          return res.json({ form: savedForm })
+        })
+      })
     },
   }
 }
