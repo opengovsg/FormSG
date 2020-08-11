@@ -10,7 +10,7 @@ import { aws, customCloudWatchGroup } from './config'
 
 // Cannot use config's isDev due to logger being instantiated first, and
 // having circular dependencies.
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = ['development', 'test'].includes(process.env.NODE_ENV)
 
 // Config to make winston logging like console logging, allowing multiple
 // arguments.
@@ -89,7 +89,11 @@ const createLoggerOptions = (label: string): LoggerOptions => {
       format.timestamp(),
       isDev ? format.combine(format.colorize(), customFormat) : format.json(),
     ),
-    transports: [new transports.Console()],
+    transports: [
+      new transports.Console({
+        silent: process.env.NODE_ENV === 'test',
+      }),
+    ],
     exitOnError: false,
   }
 }
