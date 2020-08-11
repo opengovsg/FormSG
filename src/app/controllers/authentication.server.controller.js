@@ -20,7 +20,6 @@ const config = require('../../config/config')
 const defaults = require('../../config/defaults').default
 const PERMISSIONS = require('../utils/permission-levels.js')
 const { getRequestIp } = require('../utils/request')
-const { renderPromise } = require('../utils/render-promise')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
@@ -229,13 +228,7 @@ exports.sendOtp = async function (req, res) {
   let recipient = res.locals.email
 
   try {
-    const emailHtml = await renderPromise(res, 'templates/otp-email', {
-      appName: res.app.locals.title,
-      appUrl: config.app.appUrl,
-      otp: otp,
-    })
-
-    await MailService.sendLoginOtp(recipient, emailHtml)
+    await MailService.sendLoginOtp(recipient, otp)
     logger.info(`Login OTP sent:\temail=${recipient} ip=${getRequestIp(req)}`)
     return res.status(HttpStatus.OK).send(`OTP sent to ${recipient}!`)
   } catch (err) {

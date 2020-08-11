@@ -14,6 +14,7 @@ import {
   ISubmissionSchema,
 } from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
+import { generateLoginOtpHtml } from '../utils/mail'
 
 const mailLogger = createLoggerWithLabel('mail')
 
@@ -24,6 +25,7 @@ type SendMailOptions = {
 
 type MailServiceParams = {
   appName?: string
+  appUrl?: string
   transporter?: Mail
   senderMail?: string
   logger?: Logger
@@ -39,9 +41,15 @@ type AutoReplyData = {
 
 export class MailService {
   /**
-   * To be shown in some sent emails' fields such as mail subject or mail body.
+   * The application name to be shown in some sent emails' fields such as mail
+   * subject or mail body.
    */
   #appName: string
+  /**
+   * The application URL to be shown in some sent emails' fields such as mail
+   * subject or mail body.
+   */
+  #appUrl: string
   /**
    * The transporter to be used to send mail.
    */
@@ -64,6 +72,7 @@ export class MailService {
 
   constructor({
     appName = config.app.title,
+    appUrl = config.app.appUrl,
     transporter = config.mail.transporter,
     senderMail = config.mail.mailFrom,
     logger = mailLogger,
@@ -80,6 +89,7 @@ export class MailService {
     }
 
     this.#appName = appName
+    this.#appUrl = appUrl
     this.#senderMail = senderMail
     this.#senderFromString = `${appName} <${senderMail}>`
     this.#transporter = transporter
@@ -176,15 +186,19 @@ export class MailService {
   /**
    * Sends a login otp email to a valid email
    * @param recipient the recipient email address
-   * @param html the body of the email to send
+   * @param otp the OTP to send
    * @throws error if mail fails, to be handled by the caller
    */
-  sendLoginOtp = async (recipient: string, html: string) => {
+  sendLoginOtp = async (recipient: string, otp: string) => {
     const mail: Mail.Options = {
       to: recipient,
       from: this.#senderFromString,
       subject: `One-Time Password (OTP) for ${this.#appName}`,
-      html,
+      html: generateLoginOtpHtml({
+        appName: this.#appName,
+        appUrl: this.#appUrl,
+        otp,
+      }),
       headers: {
         [EMAIL_HEADERS.emailType]: EMAIL_TYPES.loginOtp,
       },
