@@ -16,6 +16,7 @@ import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 import {
   generateLoginOtpHtml,
   generateVerificationOtpHtml,
+  isToFieldValid,
 } from '../utils/mail'
 
 const mailLogger = createLoggerWithLabel('mail')
@@ -39,6 +40,10 @@ type AutoReplyData = {
   sender?: AutoReplyOptions['autoReplySender']
   body?: AutoReplyOptions['autoReplyMessage']
   includeFormSummary?: AutoReplyOptions['includeFormSummary']
+}
+
+type MailOptions = Omit<Mail.Options, 'to'> & {
+  to: string | string[]
 }
 
 export class MailService {
@@ -102,7 +107,7 @@ export class MailService {
    * @param mail Mail data to send with
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
-  #sendNodeMail = async (mail: Mail.Options, sendOptions?: SendMailOptions) => {
+  #sendNodeMail = async (mail: MailOptions, sendOptions?: SendMailOptions) => {
     const emailLogString = `mailId: ${sendOptions?.mailId}\t Email from:${mail?.from}\t subject:${mail?.subject}\t formId: ${sendOptions?.formId}`
 
     // Guard against missing mail info.
@@ -112,17 +117,7 @@ export class MailService {
     }
 
     // Guard against invalid emails.
-    try {
-      if (Array.isArray(mail.to)) {
-        mail.to.forEach((address) => {
-          if (!validator.isEmail(String(address))) {
-            throw new Error()
-          }
-        })
-      } else if (!validator.isEmail(String(mail.to))) {
-        throw new Error()
-      }
-    } catch {
+    if (!isToFieldValid(mail.to)) {
       this.#logger.error(
         `mailError: ${mail.to} is not a valid email. ${emailLogString}`,
       )
@@ -160,7 +155,7 @@ export class MailService {
 
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
 
-    const mail: Mail.Options = {
+    const mail: MailOptions = {
       to: recipient,
       from: this.#senderFromString,
       subject: `Your OTP for submitting a form on ${this.#appName}`,
@@ -184,7 +179,7 @@ export class MailService {
    * @throws error if mail fails, to be handled by the caller
    */
   sendLoginOtp = async (recipient: string, otp: string) => {
-    const mail: Mail.Options = {
+    const mail: MailOptions = {
       to: recipient,
       from: this.#senderFromString,
       subject: `One-Time Password (OTP) for ${this.#appName}`,
@@ -226,7 +221,7 @@ export class MailService {
     submission: Pick<ISubmissionSchema, 'id'>
     attachments?: Mail.Attachment[]
   }) => {
-    const mail: Mail.Options = {
+    const mail: MailOptions = {
       to: adminEmails,
       from: this.#senderFromString,
       subject: `formsg-auto: ${form.title} (Ref: ${submission.id})`,
@@ -284,7 +279,7 @@ export class MailService {
       autoReplyData.sender || form.admin.agency.fullName
     ).replace('(', '\\(')
 
-    const mail: Mail.Options = {
+    const mail: MailOptions = {
       to: autoReplyData.email,
       from: `${emailSender} <${this.#senderMail}>`,
       subject: emailSubject,

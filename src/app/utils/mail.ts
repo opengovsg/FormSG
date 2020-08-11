@@ -1,4 +1,6 @@
 import dedent from 'dedent-js'
+import { flattenDeep } from 'lodash'
+import validator from 'validator'
 
 export const generateLoginOtpHtml = ({
   otp,
@@ -43,4 +45,23 @@ export const generateVerificationOtpHtml = ({
     <br />
     <p>The ${appName} Support Team</p>
   `
+}
+
+export const isToFieldValid = (addresses: string | string[]) => {
+  // Retrieve all emails from each address.
+  // As addresses can be strings or a string array, cast given addresses param
+  // into an array regardless and flatten deep.
+  // The individual strings may still be an comma separated string, and thus
+  // further splitting is necessary.
+  // The final result is once again flattened.
+  const mails = flattenDeep(
+    flattenDeep([addresses]).map((addrString) =>
+      String(addrString)
+        .split(',')
+        .map((addr) => addr.trim()),
+    ),
+  )
+
+  // Every address must be an email to be valid.
+  return mails.every((addr) => validator.isEmail(addr))
 }
