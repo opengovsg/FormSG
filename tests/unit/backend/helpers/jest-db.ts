@@ -20,7 +20,6 @@ const connect = async () => {
  * Drop database and close the connection.
  */
 const closeDatabase = async () => {
-  await mongoose.connection.dropDatabase()
   await mongoose.connection.close()
 }
 
