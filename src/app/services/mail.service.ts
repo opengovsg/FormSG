@@ -226,8 +226,8 @@ export class MailService {
     adminEmails: string | string[]
     replyToEmails?: string[]
     html: string
-    form: IFormSchema
-    submission: ISubmissionSchema
+    form: Pick<IFormSchema, '_id' | 'title'>
+    submission: Pick<ISubmissionSchema, 'id'>
     attachments?: Mail.Attachment[]
   }) => {
     const mail: Mail.Options = {
@@ -274,8 +274,8 @@ export class MailService {
     index,
   }: {
     html: string
-    form: IPopulatedForm
-    submission: ISubmissionSchema
+    form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
+    submission: Pick<ISubmissionSchema, 'id'>
     attachments?: Mail.Attachment[]
     autoReplyData: AutoReplyData
     index: number
