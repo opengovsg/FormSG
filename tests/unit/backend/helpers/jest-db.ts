@@ -22,7 +22,7 @@ const connect = async () => {
 }
 
 /**
- * Drop database and close the connection.
+ * Disconnect all mongoose connections.
  */
 const closeDatabase = async () => {
   await mongoose.disconnect()
