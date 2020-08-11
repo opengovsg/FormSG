@@ -101,6 +101,15 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
   const saveFileToField = (file) => {
     const reader = new FileReader()
 
+    reader.onerror = () => {
+      $timeout(() => {
+        showAttachmentError(
+          'Upload failed. If you are using online storage such as Google Drive, ' +
+          'download your file from storage then attach the downloaded version'
+        )
+      })
+    }
+
     reader.onload = function (e) {
       $timeout(() => {
         const blob = new Blob([new Uint8Array(e.target.result)], {
