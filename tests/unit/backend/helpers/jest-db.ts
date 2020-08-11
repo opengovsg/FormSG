@@ -1,4 +1,5 @@
 import mongoSetup from '@shelf/jest-mongodb/setup'
+import mongoTeardown from '@shelf/jest-mongodb/teardown'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
@@ -26,6 +27,7 @@ const connect = async () => {
  */
 const closeDatabase = async () => {
   await mongoose.disconnect()
+  await mongoTeardown()
 }
 
 /**
