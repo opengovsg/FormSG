@@ -1,7 +1,7 @@
 import { Document } from 'mongoose'
 
 import { IFormSchema } from '../form'
-import { IField } from './baseField'
+import { IField, IFieldSchema } from './baseField'
 import { BasicFieldType } from './fieldTypes'
 
 export interface IColumn {
@@ -13,6 +13,8 @@ export interface IColumn {
 }
 
 // Manual override since mongoose types don't have generics yet.
+// This is different from the fields since ColumnDocument's parent is the
+// TableField.
 export interface IColumnSchema extends IColumn, Document {
   /** Returns the top level document of this sub-document. */
   ownerDocument(): IFormSchema
@@ -27,10 +29,4 @@ export interface ITableField extends IField {
   columns: IColumn[]
 }
 
-// Manual override since mongoose types don't have generics yet.
-export interface ITableFieldSchema extends ITableField, Document {
-  /** Returns the top level document of this sub-document. */
-  ownerDocument(): IFormSchema
-  /** Returns this sub-documents parent document. */
-  parent(): IFormSchema
-}
+export interface ITableFieldSchema extends ITableField, IFieldSchema {}

@@ -4,6 +4,8 @@ const { ObjectId } = require('bson-ext')
 
 const dbHandler = require('../helpers/db-handler')
 const Form = spec('dist/backend/app/models/form.server.model').default(mongoose)
+const EncryptedForm = mongoose.model('encrypt')
+const EmailForm = mongoose.model('email')
 const Agency = spec('dist/backend/app/models/agency.server.model').default(
   mongoose,
 )
@@ -16,6 +18,14 @@ const MOCK_FORM_PARAMS = {
   title: 'Test Form',
   admin: MOCK_ADMIN_OBJ_ID,
 }
+const MOCK_ENCRYPTED_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
+  publicKey: 'mockPublicKey',
+  responseMode: 'encrypt',
+})
+const MOCK_EMAIL_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
+  emails: ['test@example.com'],
+  responseMode: 'email',
+})
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
@@ -217,14 +227,10 @@ describe('Form Model', () => {
     })
 
     describe('Encrypted form schema', () => {
-      const EncryptedForm = mongoose.model('encrypt')
       const ENCRYPT_FORM_DEFAULTS = merge(
         { responseMode: 'encrypt' },
         FORM_DEFAULTS,
       )
-      const MOCK_ENCRYPTED_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
-        publicKey: 'mockPublicKey',
-      })
 
       it('should create and save successfully', async () => {
         // Arrange + Act
@@ -419,14 +425,10 @@ describe('Form Model', () => {
     })
 
     describe('Email form schema', () => {
-      const EmailForm = mongoose.model('email')
       const EMAIL_FORM_DEFAULTS = merge(
         { responseMode: 'email' },
         FORM_DEFAULTS,
       )
-      const MOCK_EMAIL_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
-        emails: ['test@example.com'],
-      })
 
       it('should create and save successfully', async () => {
         // Arrange + Act
