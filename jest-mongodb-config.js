@@ -1,3 +1,4 @@
+// This file is used to instantiate `@shelf/jest-db`'s setup.
 module.exports = {
   mongodbMemoryServerOptions: {
     binary: {
