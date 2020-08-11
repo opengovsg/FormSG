@@ -26,10 +26,8 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
   vm.isLoading = false
   vm.beforeResizingImages = function (fieldId) {
     vm.isLoading = true
-    $('#' + fieldId).addClass('btn-pressed')
   }
   vm.uploadFile = function (file, errFiles, fieldId) {
-    $('#' + fieldId).removeClass('btn-pressed')
     let err
     if (errFiles.length > 0) {
       err = errFiles[0].$error
