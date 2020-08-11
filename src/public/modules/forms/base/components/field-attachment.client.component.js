@@ -23,15 +23,13 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
   }
 
   vm.fileAttached = false
-
-  // Used to store fieldIds that are currently resizing
-  vm.buttonResizing = {}
+  vm.isLoading = false
   vm.beforeResizingImages = function (fieldId) {
-    vm.buttonResizing[fieldId] = true
+    vm.isLoading = true
     $('#' + fieldId).addClass('btn-pressed')
   }
   vm.uploadFile = function (file, errFiles, fieldId) {
-    delete vm.buttonResizing[fieldId]
+    vm.isLoading = false
     $('#' + fieldId).removeClass('btn-pressed')
     let err
     if (errFiles.length > 0) {
@@ -93,7 +91,7 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
 
   vm.attachmentIsDisabled = (field) => {
     return (
-      (vm.isadminpreview && !vm.buttonResizing[field._id]) || field.disabled
+      (vm.isadminpreview && !vm.isLoading) || field.disabled
     )
   }
 
