@@ -98,6 +98,9 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
   const saveFileToField = (file) => {
     const reader = new FileReader()
 
+    // Context: Android file picker gives an option to upload files directly
+    // from Google Drive, but those cause errors with FileReader and
+    // XMLHttpRequest.
     reader.onerror = () => {
       $timeout(() => {
         showAttachmentError(
