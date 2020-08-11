@@ -84,7 +84,7 @@ enum Environment {
 }
 
 // Environment variables with defaults
-const isDev = process.env.NODE_ENV === Environment.Dev
+const isDev = process.env.NODE_ENV !== Environment.Prod
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 const port = parseInt(process.env.PORT, 10) || defaults.app.port
 const sessionSecret = process.env.SESSION_SECRET || defaults.app.sessionSecret
