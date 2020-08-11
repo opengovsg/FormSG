@@ -1,22 +1,25 @@
-**Table of Contents**
+# FormSG
+
+[![Build Status](https://travis-ci.com/opengovsg/formsg.svg?branch=release)](https://travis-ci.com/opengovsg/formsg)
+
+## Table of Contents
 
 - [FormSG](#formsg)
+  - [Table of Contents](#table-of-contents)
   - [Local Development (Docker)](#local-development-docker)
     - [Prerequisites](#prerequisites)
     - [Running Locally](#running-locally)
     - [Environment variables](#environment-variables)
   - [Testing](#testing)
-    - [Prerequisites](#prerequisites-1)
+    - [Testing Prerequisites](#testing-prerequisites)
     - [Running tests](#running-tests)
+      - [Unit tests](#unit-tests)
+      - [End-to-end tests](#end-to-end-tests)
   - [Architecture](#architecture)
   - [MongoDB Scripts](#mongodb-scripts)
   - [Maintenance Banners](#maintenance-banners)
   - [Contributing](#contributing)
   - [Support](#support)
-
-# FormSG
-
-master: [![Build Status](https://travis-ci.com/datagovsg/formsg.svg?token=3iDBzqD5prSEyiedYGYi&branch=master)](https://travis-ci.com/datagovsg/formsg) release: [![Build Status](https://travis-ci.com/datagovsg/formsg.svg?token=3iDBzqD5prSEyiedYGYi&branch=release)](https://travis-ci.com/datagovsg/formsg)
 
 ## Local Development (Docker)
 
@@ -28,7 +31,7 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 Run
 
-```
+```bash
 npm run dev
 ```
 
@@ -37,7 +40,7 @@ to build the Docker image from scratch. This will usually take 10 or so minutes.
 If there have been no dependency changes in `package.json` or changes in the
 root `server.js` file, you can run
 
-```
+```bash
 docker-compose up
 ```
 
@@ -70,7 +73,7 @@ required values with your own.
 The docker environment has not been configured to run tests. Thus, you will need
 to follow the following local build guide to get tests running locally.
 
-### Prerequisites
+### Testing Prerequisites
 
 The team uses macOS for development.
 
@@ -82,7 +85,7 @@ Make you sure have the following node version & package manager on your machine:
 
 Run
 
-```
+```bash
 nvm install 12.18.0
 npm install
 pip install "localstack[full]"
@@ -95,7 +98,7 @@ to install node modules and Localstack locally to be able to run tests. Note tha
 
 #### Unit tests
 
-```
+```bash
 npm run test
 ```
 
@@ -105,13 +108,13 @@ will build the backend and run both our backend and frontend unit tests. The tes
 
 If the backend is already built, you can run
 
-```
+```bash
 npm run test-ci
 ```
 
 #### End-to-end tests
 
-```
+```bash
 npm run test-e2e
 ```
 
@@ -119,7 +122,7 @@ will build both the frontend and backend then run our end-to-end tests. The test
 
 If you do not need to rebuild the frontend and backend, you can run
 
-```
+```bash
 npm run test-e2e-ci
 ```
 
@@ -160,4 +163,4 @@ We welcome contributions to code open sourced by the Government Technology Agenc
 
 ## Support
 
-Please contact FormSG (formsg@data.gov.sg) for any details.
+Please contact FormSG (formsg@tech.gov.sg) for any details.

@@ -1,10 +1,10 @@
+import FeatureManager from './util/FeatureManager.class'
 import aggregateStats from './aggregate-stats.config'
 import captcha from './captcha.config'
 import googleAnalytics from './google-analytics.config'
 import sentry from './sentry.config'
 import sms from './sms.config'
 import spcpMyInfo from './spcp-myinfo.config'
-import FeatureManager from './util/FeatureManager.class'
 import verifiedFields from './verified-fields.config'
 import webhookVerifiedContent from './webhook-verified-content.config'
 

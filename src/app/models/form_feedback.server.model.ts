@@ -1,6 +1,7 @@
 import { Model, Mongoose, Schema } from 'mongoose'
 
 import { IFormFeedbackSchema } from '../../types'
+
 import { FORM_SCHEMA_ID } from './form.server.model'
 
 export const FORM_FEEDBACK_SCHEMA_ID = 'FormFeedback'

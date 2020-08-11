@@ -1,13 +1,13 @@
-const { omit, cloneDeep } = require('lodash')
-const mongoose = require('mongoose')
-const { ObjectId } = require('bson-ext')
+import { ObjectId } from 'bson'
+import { cloneDeep, merge, omit } from 'lodash'
+import mongoose from 'mongoose'
 
-const dbHandler = require('../helpers/db-handler')
+import getSmsCountModel from 'src/app/models/sms_count.server.model'
+import { ISmsCount, LogType, SmsType } from 'src/types'
 
-// TODO: Stop using spec
-const SmsCount = spec('dist/backend/app/models/sms_count.server.model').default(
-  mongoose,
-)
+import dbHandler from '../helpers/jest-db'
+
+const SmsCount = getSmsCountModel(mongoose)
 
 const MOCK_SMSCOUNT_PARAMS = {
   form: new ObjectId(),
@@ -49,8 +49,9 @@ describe('SmsCount', () => {
 
     it('should save successfully, but not save fields that is not defined in the schema', async () => {
       // Arrange
-      const smsCountParamsWithExtra = createSmsCountParams()
-      smsCountParamsWithExtra.extra = 'somethingExtra'
+      const smsCountParamsWithExtra = merge(createSmsCountParams(), {
+        extra: 'somethingExtra',
+      })
 
       // Act
       const validSmsCount = new SmsCount(smsCountParamsWithExtra)
@@ -61,7 +62,7 @@ describe('SmsCount', () => {
       // Object Id should be defined when successfully saved to MongoDB.
       expect(saved._id).toBeDefined()
       // Extra key should not be saved
-      expect(saved.extra).toBeUndefined()
+      expect(Object.keys(saved)).not.toContain('extra')
       expect(saved.createdAt).toBeInstanceOf(Date)
       // Retrieve object and compare to params, remove indeterministic keys
       const actualSavedObject = omit(saved.toObject(), [
@@ -78,7 +79,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expectAsync(malformedSmsCount.save()).toBeRejectedWithError(
+      await expect(malformedSmsCount.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
@@ -89,7 +90,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expectAsync(malformedSmsCount.save()).toBeRejectedWithError(
+      await expect(malformedSmsCount.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
@@ -100,7 +101,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expectAsync(malformedSmsCount.save()).toBeRejectedWithError(
+      await expect(malformedSmsCount.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
@@ -111,7 +112,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expectAsync(malformedSmsCount.save()).toBeRejectedWithError(
+      await expect(malformedSmsCount.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
@@ -119,11 +120,12 @@ describe('SmsCount', () => {
     it('should reject if logType is invalid', async () => {
       // Arrange
       const malformedParams = createSmsCountParams()
+      // @ts-ignore
       malformedParams.logType = 'INVALID_LOG_TYPE'
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expectAsync(malformedSmsCount.save()).toBeRejectedWithError(
+      await expect(malformedSmsCount.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
@@ -134,7 +136,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expectAsync(malformedSmsCount.save()).toBeRejectedWithError(
+      await expect(malformedSmsCount.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
@@ -142,11 +144,12 @@ describe('SmsCount', () => {
     it('should reject if smsType is invalid', async () => {
       // Arrange
       const malformedParams = createSmsCountParams()
+      // @ts-ignore
       malformedParams.smsType = 'INVALID_SMS_TYPE'
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expectAsync(malformedSmsCount.save()).toBeRejectedWithError(
+      await expect(malformedSmsCount.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
@@ -157,16 +160,19 @@ describe('SmsCount', () => {
       const MOCK_FORM_ID = MOCK_SMSCOUNT_PARAMS.form
 
       it('should successfully log verification successes in the collection', async () => {
+        // Arrange
+        const initialCount = await SmsCount.countDocuments({})
+
         // Act
         const expectedLog = await logAndReturnExpectedLog({
-          smsType: 'VERIFICATION',
-          logType: 'SUCCESS',
+          smsType: SmsType.verification,
+          logType: LogType.success,
         })
 
         // Assert
-        const count = await SmsCount.countDocuments({})
-        // Should have 1 document in the database since it is successful
-        expect(count).toEqual(1)
+        const afterCount = await SmsCount.countDocuments({})
+        // Should have 1 more document in the database since it is successful
+        expect(afterCount).toEqual(initialCount + 1)
 
         // Should contain OTP data and the correct sms/log type.
         const actualLog = await SmsCount.findOne({
@@ -174,23 +180,25 @@ describe('SmsCount', () => {
         }).lean()
 
         expect(actualLog._id).toBeDefined()
-        expect(actualLog.createdAt).toBeInstanceOf(Date)
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
         expect(actualSavedObject).toEqual(expectedLog)
       })
 
       it('should successfully log verification failures in the collection', async () => {
+        // Arrange
+        const initialCount = await SmsCount.countDocuments({})
+
         // Act
         const expectedLog = await logAndReturnExpectedLog({
-          smsType: 'VERIFICATION',
-          logType: 'FAILURE',
+          smsType: SmsType.verification,
+          logType: LogType.failure,
         })
 
         // Assert
-        const count = await SmsCount.countDocuments({})
-        // Should have 1 document in the database since it is successful
-        expect(count).toEqual(1)
+        const afterCount = await SmsCount.countDocuments({})
+        // Should have 1 more document in the database since it is successful
+        expect(afterCount).toEqual(initialCount + 1)
 
         // Should contain OTP data and the correct sms/log type.
         const actualLog = await SmsCount.findOne({
@@ -198,38 +206,42 @@ describe('SmsCount', () => {
         }).lean()
 
         expect(actualLog._id).toBeDefined()
-        expect(actualLog.createdAt).toBeInstanceOf(Date)
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
         expect(actualSavedObject).toEqual(expectedLog)
       })
 
       it('should reject if smsType is invalid', async () => {
-        await expectAsync(
+        await expect(
           logAndReturnExpectedLog({
+            // @ts-ignore
             smsType: 'INVALID',
-            logType: 'FAILURE',
+            logType: LogType.failure,
           }),
-        ).toBeRejectedWithError(mongoose.Error.ValidationError)
+        ).rejects.toThrowError(mongoose.Error.ValidationError)
       })
 
       it('should reject if logType is invalid', async () => {
-        await expectAsync(
+        await expect(
           logAndReturnExpectedLog({
-            smsType: 'VERIFICATION',
+            smsType: SmsType.verification,
+            // @ts-ignore
             logType: 'INVALID',
           }),
-        ).toBeRejectedWithError(mongoose.Error.ValidationError)
+        ).rejects.toThrowError(mongoose.Error.ValidationError)
       })
     })
   })
 })
 
 const createSmsCountParams = ({
-  logType = 'SUCCESS',
-  smsType = 'VERIFICATION',
+  logType = LogType.success,
+  smsType = SmsType.verification,
+}: {
+  logType?: LogType
+  smsType?: SmsType
 } = {}) => {
-  const smsCountParams = cloneDeep(MOCK_SMSCOUNT_PARAMS)
+  const smsCountParams: Partial<ISmsCount> = cloneDeep(MOCK_SMSCOUNT_PARAMS)
   smsCountParams.logType = logType
   smsCountParams.smsType = smsType
   smsCountParams.msgSrvcSid = MOCK_MSG_SRVC_SID
@@ -237,7 +249,13 @@ const createSmsCountParams = ({
   return smsCountParams
 }
 
-const logAndReturnExpectedLog = async ({ logType, smsType }) => {
+const logAndReturnExpectedLog = async ({
+  logType,
+  smsType,
+}: {
+  logType: LogType
+  smsType: SmsType
+}) => {
   await SmsCount.logSms({
     otpData: MOCK_SMSCOUNT_PARAMS,
     msgSrvcSid: MOCK_MSG_SRVC_SID,

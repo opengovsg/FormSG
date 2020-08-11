@@ -21,6 +21,7 @@ import {
   Status,
 } from '../../types'
 import { MB } from '../constants/filesize'
+
 import getAgencyModel from './agency.server.model'
 import {
   createAttachmentFieldSchema,
@@ -485,6 +486,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.index({
     'startPage.paragraph': 'text',
     title: 'text',
+  })
+
+  FormSchema.index({
+    'permissionList.email': 1,
+    lastModified: -1,
+  })
+
+  FormSchema.index({
+    admin: 1,
+    lastModified: -1,
   })
 
   const FormModel = db.model<IFormSchema, IFormModel>(

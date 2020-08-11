@@ -2,11 +2,16 @@ const {
   MailService,
 } = require('../../../../dist/backend/app/services/mail.service')
 const { merge, cloneDeep } = require('lodash')
+const {
+  generateLoginOtpHtml,
+  generateVerificationOtpHtml,
+} = require('../../../../dist/backend/app/utils/mail')
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
 const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
+const MOCK_APP_URL = 'mockApp.example.com'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
 const MOCK_HTML = '<p>Mock html</p>'
 
@@ -16,6 +21,7 @@ describe('mail.service', () => {
     transporter: mockTransporter,
     senderMail: MOCK_SENDER_EMAIL,
     appName: MOCK_APP_NAME,
+    appUrl: MOCK_APP_URL,
   })
 
   describe('Constructor', () => {
@@ -137,13 +143,11 @@ describe('mail.service', () => {
           from: MOCK_SENDER_STRING,
           subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
           // Can't use dedent here, original seems to work a little differently due to TypeScript compilation.
-          html: `<p>You are currently submitting a form on ${MOCK_APP_NAME}.</p>
-<p>
-  Your OTP is <b>${MOCK_OTP}</b>. 
-  It will expire in ${10} minutes. 
-  Please use this to verify your submission.
-</p>
-<p>If your OTP does not work, please request for a new OTP.</p>`,
+          html: generateVerificationOtpHtml({
+            appName: MOCK_APP_NAME,
+            otp: MOCK_OTP,
+            minutesToExpiry: 10,
+          }),
           headers: {
             // Hardcode in tests in case something changes this.
             'X-Formsg-Email-Type': 'Verification OTP',
@@ -172,6 +176,7 @@ describe('mail.service', () => {
   })
 
   describe('sendLoginOtp', () => {
+    const MOCK_OTP = '123456'
     it('should send login otp successfully', async () => {
       const sendSpy = spyOn(mailService, 'sendNodeMail').and.callThrough()
       const mockedResponse = 'mockedSuccessResponse'
@@ -182,7 +187,11 @@ describe('mail.service', () => {
           to: MOCK_VALID_EMAIL,
           from: MOCK_SENDER_STRING,
           subject: `One-Time Password (OTP) for ${MOCK_APP_NAME}`,
-          html: MOCK_HTML,
+          html: generateLoginOtpHtml({
+            otp: MOCK_OTP,
+            appName: MOCK_APP_NAME,
+            appUrl: MOCK_APP_URL,
+          }),
           headers: {
             // Hardcode in tests in case something changes this.
             'X-Formsg-Email-Type': 'Login OTP',
@@ -193,7 +202,7 @@ describe('mail.service', () => {
 
       // Act + Assert
       await expectAsync(
-        mailService.sendLoginOtp(MOCK_VALID_EMAIL, MOCK_HTML),
+        mailService.sendLoginOtp(MOCK_VALID_EMAIL, MOCK_OTP),
       ).toBeResolvedTo(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendSpy).toHaveBeenCalledTimes(1)
@@ -205,7 +214,7 @@ describe('mail.service', () => {
       const invalidEmail = 'notAnEmail'
       // Act + Assert
       await expectAsync(
-        mailService.sendVerificationOtp(invalidEmail, MOCK_HTML),
+        mailService.sendVerificationOtp(invalidEmail, MOCK_OTP),
       ).toBeRejectedWithError('Invalid email error')
     })
   })

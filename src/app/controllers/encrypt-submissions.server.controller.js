@@ -202,15 +202,44 @@ exports.saveResponseToDb = function (req, res, next) {
  */
 exports.getMetadata = function (req, res) {
   let pageSize = 10
-  let { page } = req.query || {}
+  let { page, submissionId } = req.query || {}
   let numToSkip = parseInt(page - 1 || 0) * pageSize
+
+  let matchClause = {
+    form: req.form._id,
+    submissionType: 'encryptSubmission',
+  }
+
+  if (submissionId) {
+    if (mongoose.Types.ObjectId.isValid(submissionId)) {
+      matchClause._id = mongoose.Types.ObjectId(submissionId)
+      Submission.findOne(matchClause, { created: 1 }).exec((err, result) => {
+        if (err) {
+          logger.error(getRequestIp(req), req.url, req.headers, err)
+          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            message: errorHandler.getMongoErrorMessage(err),
+          })
+        }
+        if (!result) {
+          return res.status(HttpStatus.OK).send({ metadata: [], count: 0 })
+        }
+        let entry = {
+          number: 1,
+          refNo: result._id,
+          submissionTime: moment(result.created)
+            .tz('Asia/Singapore')
+            .format('Do MMM YYYY, h:mm:ss a'),
+        }
+        return res.status(HttpStatus.OK).send({ metadata: [entry], count: 1 })
+      })
+    } else {
+      return res.status(HttpStatus.OK).send({ metadata: [], count: 0 })
+    }
+  }
 
   Submission.aggregate([
     {
-      $match: {
-        form: req.form._id,
-        submissionType: 'encryptSubmission',
-      },
+      $match: matchClause,
     },
     {
       $sort: { created: -1 },

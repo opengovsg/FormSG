@@ -1,5 +1,6 @@
-const _ = require('lodash')
-const MyInfoService = require('../../../../dist/backend/app/services/myinfo.service')
+import _ from 'lodash'
+
+import MyInfoService from 'src/app/services/myinfo.service'
 
 const MOCK_MYINFO_SUCCESS_RESPONSE = {
   name: {
@@ -109,9 +110,9 @@ const MOCK_FORM_FIELDS = [
 ]
 
 describe('MyInfoService', () => {
-  const MyInfoGovClient = jasmine.createSpyObj('MyInfoGovClient', [
-    'getPersonBasic',
-  ])
+  const MyInfoGovClient = {
+    getPersonBasic: jest.fn(),
+  }
   const spCookieMaxAge = 200 * 1000
   let myInfoService = new MyInfoService(MyInfoGovClient, spCookieMaxAge)
 
@@ -123,7 +124,7 @@ describe('MyInfoService', () => {
 
   beforeEach(() => {
     myInfoService = new MyInfoService(MyInfoGovClient, spCookieMaxAge)
-    MyInfoGovClient.getPersonBasic.calls.reset()
+    MyInfoGovClient.getPersonBasic.mockReset()
   })
 
   afterEach(() => {
@@ -139,7 +140,7 @@ describe('MyInfoService', () => {
     it('should fire MyInfoGovClient.getPersonBasic if success', async () => {
       // Arrange
       // Inject mock response to be retrieved.
-      MyInfoGovClient.getPersonBasic.and.callFake(() => {
+      MyInfoGovClient.getPersonBasic.mockImplementationOnce(() => {
         return Promise.resolve(MOCK_MYINFO_SUCCESS_RESPONSE)
       })
 
@@ -149,44 +150,44 @@ describe('MyInfoService', () => {
       )
 
       // Assert
-      expect(MyInfoGovClient.getPersonBasic.calls.count()).toBe(1)
+      expect(MyInfoGovClient.getPersonBasic).toBeCalledTimes(1)
       expect(response).toEqual(MOCK_MYINFO_SUCCESS_RESPONSE)
     })
 
     it('should reject promise on first MyInfo fetch failure', async () => {
       // Arrange
       const mockError = new Error('Mock MyInfo server failure')
-      MyInfoGovClient.getPersonBasic.and.callFake(() =>
+      MyInfoGovClient.getPersonBasic.mockImplementationOnce(() =>
         Promise.reject(mockError),
       )
 
       // Act + Assert
-      await expectAsync(
+      await expect(
         myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
-      ).toBeRejectedWith(mockError)
+      ).rejects.toThrowError(mockError)
     })
 
     it('should throw circuit breaker error after first fetch failure', async () => {
       // Arrange
       const mockError = new Error('Mock MyInfo server failure')
-      MyInfoGovClient.getPersonBasic.and.callFake(() =>
+      MyInfoGovClient.getPersonBasic.mockImplementationOnce(() =>
         Promise.reject(mockError),
       )
 
       // Act + Assert
       // Call fetch twice
       // First fetch should be correctly rejected
-      await expectAsync(
+      await expect(
         myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
-      ).toBeRejectedWith(mockError)
+      ).rejects.toThrowError(mockError)
 
       // Second fetch should be circuit broken error, without needing to check
       // MyInfoGovClient.getPersonBasic.
-      await expectAsync(
+      await expect(
         myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
-      ).toBeRejectedWith(new Error('Breaker is open'))
+      ).rejects.toThrowError(new Error('Breaker is open'))
       // Total number of calls to getPersonBasic should be only 1
-      expect(MyInfoGovClient.getPersonBasic.calls.count()).toBe(1)
+      expect(MyInfoGovClient.getPersonBasic).toBeCalledTimes(1)
     })
   })
 
@@ -333,7 +334,7 @@ describe('MyInfoService', () => {
     it('should correctly return prefilledFields and readOnlyHashes', async () => {
       // Arrange
       // Inject mock response to be retrieved.
-      MyInfoGovClient.getPersonBasic.and.callFake(() => {
+      MyInfoGovClient.getPersonBasic.mockImplementationOnce(() => {
         return Promise.resolve(MOCK_MYINFO_SUCCESS_RESPONSE)
       })
       const mockMyInfoData = await myInfoService.fetchMyInfoPersonData(
@@ -359,13 +360,13 @@ describe('MyInfoService', () => {
       // Should have same length as before filled fields
       expect(actualPrefilled.length).toBe(MOCK_FORM_FIELDS.length)
       expect(actualPrefilled[0]).toEqual(
-        jasmine.objectContaining({
+        expect.objectContaining({
           fieldValue: MOCK_MYINFO_SUCCESS_RESPONSE.name.value,
           disabled: true,
         }),
       )
       expect(actualPrefilled[1]).toEqual(
-        jasmine.objectContaining({
+        expect.objectContaining({
           // Should be formatted mobile phone number
           fieldValue: '+65 97324992',
           disabled: false,
@@ -374,14 +375,14 @@ describe('MyInfoService', () => {
       // MyInfoHomeNo is not returned in response, so field value should be
       // blank.
       expect(actualPrefilled[2]).toEqual(
-        jasmine.objectContaining({
+        expect.objectContaining({
           fieldValue: '',
           disabled: false,
         }),
       )
       // Should be formatted mail address
       expect(actualPrefilled[3]).toEqual(
-        jasmine.objectContaining({
+        expect.objectContaining({
           fieldValue: 'TRUMP TOWER, 725 5TH AVENUE, UNITED STATES NY 10022',
           disabled: false,
         }),

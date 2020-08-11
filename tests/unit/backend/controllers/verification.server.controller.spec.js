@@ -593,7 +593,7 @@ describe('Verification Controller', () => {
           .save({ validateBeforeSave: false })
           .then(() => {
             fixtures = {
-              form: testForm.toObject(),
+              form: testForm,
               body: {
                 responses: [],
               },
@@ -603,7 +603,7 @@ describe('Verification Controller', () => {
       })
       it('should allow submission if transaction does not exist for forms that do not contain any fields that have to be verified', (done) => {
         // No transaction created for testForm
-        const field = testForm.toObject().form_fields[0]
+        const field = testForm.form_fields[0]
         const response = {
           _id: String(field._id),
           fieldType: field.fieldType,
@@ -638,7 +638,7 @@ describe('Verification Controller', () => {
       })
       beforeEach(() => {
         fixtures = {
-          form: testForm.toObject(),
+          form: testForm,
           body: {
             responses: [],
           },
@@ -647,7 +647,7 @@ describe('Verification Controller', () => {
 
       describe('No transaction', () => {
         it('should prevent submission if transaction does not exist for a form containing fields that have to be verified', (done) => {
-          const field = testForm.toObject().form_fields[0]
+          const field = testForm.form_fields[0]
           const response = {
             _id: String(field._id),
             fieldType: field.fieldType,
@@ -670,7 +670,7 @@ describe('Verification Controller', () => {
               signedData: 'someData',
             },
           ]).then(() => {
-            const field = testForm.toObject().form_fields[0]
+            const field = testForm.form_fields[0]
             const response = {
               _id: String(field._id),
               fieldType: field.fieldType,
@@ -693,7 +693,7 @@ describe('Verification Controller', () => {
               signedData: null,
             },
           ]).then(() => {
-            const field = testForm.toObject().form_fields[0]
+            const field = testForm.form_fields[0]
             const response = {
               _id: String(field._id),
               fieldType: field.fieldType,
@@ -717,8 +717,8 @@ describe('Verification Controller', () => {
             '5e71ef8b19c1ed04b54cd5f9',
           )
 
-          const field = testForm.toObject().form_fields[0]
-          const formId = testForm.toObject()._id
+          const field = testForm.form_fields[0]
+          const formId = testForm._id
           let response = {
             _id: String(field._id),
             fieldType: field.fieldType,
@@ -815,7 +815,7 @@ describe('Verification Controller', () => {
             fieldType: yesNoField.fieldType,
             answer: fieldIsHidden ? 'No' : 'Yes',
           }
-          fixtures.form = form.toObject()
+          fixtures.form = form
           fixtures.body.responses.push(yesNoResponse)
           fixtures.body.responses.push(response)
           sendAndExpect(expectedStatus).end(done)

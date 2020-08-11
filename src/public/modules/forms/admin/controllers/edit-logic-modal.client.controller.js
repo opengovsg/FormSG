@@ -1,7 +1,7 @@
 'use strict'
 
 const { range } = require('lodash')
-const { LOGIC_TYPES } = require('../../../../../shared/util/logic')
+const { LogicType } = require('../../../../../types')
 
 angular
   .module('forms')
@@ -55,9 +55,9 @@ function EditLogicModalController(
 
   vm.logicTypeSelection = {
     showFields:
-      !externalScope.isNew && vm.logic.logicType === LOGIC_TYPES.showFields,
+      !externalScope.isNew && vm.logic.logicType === LogicType.ShowFields,
     preventSubmit:
-      !externalScope.isNew && vm.logic.logicType === LOGIC_TYPES.preventSubmit,
+      !externalScope.isNew && vm.logic.logicType === LogicType.PreventSubmit,
   }
 
   vm.selectLogicType = (isShowFieldsSelected) => {
@@ -75,7 +75,7 @@ function EditLogicModalController(
    * @param {Logic} logic
    */
   vm.checkIfMissingHiddenFields = function (logic) {
-    if (logic.logicType === LOGIC_TYPES.preventSubmit) {
+    if (logic.logicType === LogicType.PreventSubmit) {
       return false
     }
     return logic.show.some((showField) => !externalScope.getField(showField))
@@ -103,7 +103,7 @@ function EditLogicModalController(
    */
   vm.subsetIfFields = function (logic) {
     // Logic unit preventing submission does not restrict if fields
-    if (logic.logicType === LOGIC_TYPES.preventSubmit) {
+    if (logic.logicType === LogicType.PreventSubmit) {
       return vm.ifFields
     }
     return vm.ifFields.filter((field) => !logic.show.includes(field._id))
@@ -254,10 +254,10 @@ function EditLogicModalController(
   vm.save = function () {
     // Clear data of unselected logic type
     if (vm.logicTypeSelection.showFields) {
-      vm.logic.logicType = LOGIC_TYPES.showFields
+      vm.logic.logicType = LogicType.ShowFields
       delete vm.logic.preventSubmitMessage
     } else {
-      vm.logic.logicType = LOGIC_TYPES.preventSubmit
+      vm.logic.logicType = LogicType.PreventSubmit
       delete vm.logic.show
     }
 

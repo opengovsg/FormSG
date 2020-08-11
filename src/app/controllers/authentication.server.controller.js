@@ -14,7 +14,6 @@ const Agency = getAgencyModel(mongoose)
 const bcrypt = require('bcrypt')
 const validator = require('validator')
 const HttpStatus = require('http-status-codes')
-const _ = require('lodash')
 
 const config = require('../../config/config')
 const defaults = require('../../config/defaults').default
@@ -136,31 +135,6 @@ exports.verifyPermission = (requiredPermission) =>
       })
     }
   }
-
-/**
- * Returns a middleware function that ensures that only admins with the requiredBeta will pass. Note that
- * this verifies permissions for the form admin, regardless of the curernt user.
- * @param {String} requiredBeta - Key of required beta in betaFlags object in user
- * @returns {function({Object}, {Object}, {Object})} - A middleware function that takes req, the express
- *   request object, and res, the express response object.
- */
-exports.verifyAdminBeta = (requiredBeta) => {
-  /**
-   * Middleware function that only allows form admin with the required beta permission.
-   * @param {Object} req - Express request object
-   * @param {Object} req.form - The form object retrieved from the DB
-   * @param {Object} res - Express response object
-   * @param {function} next - Next middleware function
-   */
-  return (req, res, next) => {
-    if (!_.get(req.form, 'admin.betaFlags.' + requiredBeta, false)) {
-      return res.status(HttpStatus.FORBIDDEN).send({
-        message: `User is not authorized to access beta feature: ${requiredBeta}`,
-      })
-    }
-    return next()
-  }
-}
 
 /**
  * Create OTP using bcrypt and save to DB
