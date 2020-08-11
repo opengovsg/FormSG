@@ -68,16 +68,6 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
             const stringOfInvalidExtensions = invalidFiles.join(', ')
             showAttachmentError(`The following file extensions in your zip are not valid: ${stringOfInvalidExtensions}`)
           } else {
-            vm.fileAttached = true
-            vm.fileError = false
-            vm.fileName = file.name
-            vm.field.fieldValue = file.name
-            vm.fileSize = file.size / 1000
-            if (file.size / 1000 > 1000) {
-              vm.fileSize = String((file.size / 1000000).toFixed(2)) + ' MB'
-            } else {
-              vm.fileSize = String((file.size / 1000).toFixed(2)) + ' KB'
-            }
             saveFileToField(file)
           }
         })
@@ -112,16 +102,29 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
     const reader = new FileReader()
 
     reader.onload = function (e) {
-      const blob = new Blob([new Uint8Array(e.target.result)], {
-        type: file.type,
+      $timeout(() => {
+        const blob = new Blob([new Uint8Array(e.target.result)], {
+          type: file.type,
+        })
+
+        // Not using File constructor because IE11 does not support File
+        blob.name = file.name
+        blob.lastModifiedDate = file.lastModifiedDate
+
+        // Assign it to the field.
+        vm.field.file = blob
+
+        vm.fileAttached = true
+        vm.fileError = false
+        vm.fileName = file.name
+        vm.field.fieldValue = file.name
+        vm.fileSize = file.size / 1000
+        if (file.size / 1000 > 1000) {
+          vm.fileSize = String((file.size / 1000000).toFixed(2)) + ' MB'
+        } else {
+          vm.fileSize = String((file.size / 1000).toFixed(2)) + ' KB'
+        }
       })
-
-      // Not using File constructor because IE11 does not support File
-      blob.name = file.name
-      blob.lastModifiedDate = file.lastModifiedDate
-
-      // Assign it to the field.
-      vm.field.file = blob
     }
     reader.readAsArrayBuffer(file)
   }
@@ -133,5 +136,6 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
   const showAttachmentError = (message) => {
     vm.fileError = message
     vm.field.fieldValue = ''
+    vm.fileAttached = false
   }
 }
