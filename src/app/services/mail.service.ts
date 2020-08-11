@@ -1,4 +1,3 @@
-import dedent from 'dedent-js'
 import { isEmpty } from 'lodash'
 import Mail from 'nodemailer/lib/mailer'
 import validator from 'validator'
@@ -14,7 +13,10 @@ import {
   ISubmissionSchema,
 } from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
-import { generateLoginOtpHtml } from '../utils/mail'
+import {
+  generateLoginOtpHtml,
+  generateVerificationOtpHtml,
+} from '../utils/mail'
 
 const mailLogger = createLoggerWithLabel('mail')
 
@@ -166,15 +168,11 @@ export class MailService {
       to: recipient,
       from: this.#senderFromString,
       subject: `Your OTP for submitting a form on ${this.#appName}`,
-      html: dedent`
-        <p>You are currently submitting a form on ${this.#appName}.</p>
-        <p>
-          Your OTP is <b>${otp}</b>. 
-          It will expire in ${minutesToExpiry} minutes. 
-          Please use this to verify your submission.
-        </p>
-        <p>If your OTP does not work, please request for a new OTP.</p>
-      `,
+      html: generateVerificationOtpHtml({
+        appName: this.#appName,
+        minutesToExpiry,
+        otp,
+      }),
       headers: {
         [EMAIL_HEADERS.emailType]: EMAIL_TYPES.verificationOtp,
       },
