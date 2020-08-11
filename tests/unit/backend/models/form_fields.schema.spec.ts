@@ -1,5 +1,4 @@
 import { ObjectID } from 'bson'
-import { merge } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -9,29 +8,27 @@ import dbHandler from '../helpers/jest-db'
 
 const Form = getFormModel(mongoose)
 
+const MOCK_ADMIN_ID = new ObjectID()
 const MOCK_FORM_PARAMS = {
   title: 'Test Form',
-  admin: new ObjectID(),
+  admin: MOCK_ADMIN_ID,
 }
-const MOCK_ENCRYPTED_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
+const MOCK_ENCRYPTED_FORM_PARAMS = {
+  ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
   responseMode: 'encrypt',
-})
-const MOCK_EMAIL_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
+}
+const MOCK_EMAIL_FORM_PARAMS = {
+  ...MOCK_FORM_PARAMS,
   emails: ['test@example.com'],
   responseMode: 'email',
-})
+}
 
 describe('Form Field Schema', () => {
-  beforeAll(async () => await dbHandler.connect())
-  beforeEach(
-    async () =>
-      await dbHandler.preloadCollections({
-        userId: MOCK_FORM_PARAMS.admin,
-        saveForm: false,
-      }),
-  )
-  afterEach(async () => await dbHandler.clearDatabase())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    await dbHandler.insertFormCollectionReqs(MOCK_ADMIN_ID)
+  })
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Methods', () => {
@@ -87,44 +84,44 @@ describe('Form Field Schema', () => {
       })
     })
   })
-
-  const createAndReturnFormField = async (
-    formFieldParams: Record<string, any>,
-    formType?: ResponseMode,
-  ) => {
-    let baseParams
-
-    switch (formType) {
-      case 'email':
-        baseParams = MOCK_EMAIL_FORM_PARAMS
-        break
-      case 'encrypt':
-        baseParams = MOCK_ENCRYPTED_FORM_PARAMS
-        break
-      default:
-        baseParams = MOCK_FORM_PARAMS
-    }
-
-    // Insert required params if they do not exist.
-    if (formFieldParams.fieldType === 'attachment') {
-      formFieldParams = { attachmentSize: 3, ...formFieldParams }
-    }
-    if (formFieldParams.fieldType === 'image') {
-      formFieldParams = {
-        url: 'http://example.com',
-        fileMd5Hash: 'some hash',
-        name: 'test image name',
-        size: 'some size',
-        ...formFieldParams,
-      }
-    }
-
-    const formParam = {
-      ...baseParams,
-      form_fields: [formFieldParams],
-    }
-    const form = await Form.create(formParam)
-
-    return form.form_fields[0]
-  }
 })
+
+const createAndReturnFormField = async (
+  formFieldParams: Record<string, any>,
+  formType: ResponseMode = ResponseMode.Email,
+) => {
+  let baseParams
+
+  switch (formType) {
+    case ResponseMode.Email:
+      baseParams = MOCK_EMAIL_FORM_PARAMS
+      break
+    case ResponseMode.Encrypt:
+      baseParams = MOCK_ENCRYPTED_FORM_PARAMS
+      break
+    default:
+      baseParams = MOCK_FORM_PARAMS
+  }
+
+  // Insert required params if they do not exist.
+  if (formFieldParams.fieldType === 'attachment') {
+    formFieldParams = { attachmentSize: 3, ...formFieldParams }
+  }
+  if (formFieldParams.fieldType === 'image') {
+    formFieldParams = {
+      url: 'http://example.com',
+      fileMd5Hash: 'some hash',
+      name: 'test image name',
+      size: 'some size',
+      ...formFieldParams,
+    }
+  }
+
+  const formParam = {
+    ...baseParams,
+    form_fields: [formFieldParams],
+  }
+  const form = await Form.create(formParam)
+
+  return form.form_fields[0]
+}
