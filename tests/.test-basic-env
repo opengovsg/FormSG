@@ -17,7 +17,7 @@ MONGO_BINARY_VERSION=3.6.12
 IMAGE_S3_BUCKET=local-image-bucket
 LOGO_S3_BUCKET=local-logo-bucket
 ATTACHMENT_S3_BUCKET=local-attachment-bucket
-NODE_ENV=testing
+NODE_ENV=test
 FORMSG_SDK_MODE=test
 
 AWS_ACCESS_KEY_ID=fakeAccessKeyId
