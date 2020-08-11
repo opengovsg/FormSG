@@ -5,7 +5,7 @@ import { IAgencySchema } from './agency'
 export interface IUser {
   email: string
   agency: IAgencySchema['_id']
-  created: Date
+  created?: Date
   betaFlag?: {}
   _id: Document['_id']
 }
