@@ -98,7 +98,7 @@
     "convict": "^6.0.0",
     "convict-format-with-validator": "^6.0.0",
     "cookie-parser": "~1.4.0",
-    "crypto-js": "^3.1.9-1",
+    "crypto-js": "^4.0.0",
     "css-toggle-switch": "^4.1.0",
     "csv-parse": "^4.10.1",
     "csv-string": "^3.1.5",
