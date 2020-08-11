@@ -71,29 +71,32 @@ export type Webhook = {
 
 export interface IForm {
   title: string
-  form_fields: IFieldSchema[]
-  form_logics: ILogicSchema[]
+  form_fields?: IFieldSchema[]
+  form_logics?: ILogicSchema[]
   admin: IUserSchema['_id']
-  permissionList: Permission[]
+  permissionList?: Permission[]
 
-  startPage: StartPage
-  endPage: EndPage
+  startPage?: StartPage
+  endPage?: EndPage
 
-  hasCaptcha: boolean
-  authType: AuthType
+  hasCaptcha?: boolean
+  authType?: AuthType
 
   customLogo?: string
-  status: Status
+  status?: Status
 
-  inactiveMessage: string
-  isListed: boolean
+  inactiveMessage?: string
+  isListed?: boolean
   esrvcId?: string
-  webhook: Webhook
+  webhook?: Webhook
   msgSrvcName?: string
 
-  responseMode: ResponseMode
+  responseMode?: ResponseMode
 
   _id: Document['_id']
+
+  publicKey?: string
+  emails?: string[]
 }
 
 export interface IFormSchema extends IForm, Document {
@@ -108,12 +111,14 @@ export interface IPopulatedForm extends IFormSchema {
 
 export interface IEncryptedForm extends IForm {
   publicKey: string
+  emails: never
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
 
 export interface IEmailForm extends IForm {
   emails: string[]
+  publicKey: never
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema

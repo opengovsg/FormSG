@@ -1,6 +1,7 @@
 import { Model, Mongoose, Schema } from 'mongoose'
 
 import { AuthType, ILoginSchema } from '../../types'
+
 import { AGENCY_SCHEMA_ID } from './agency.server.model'
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { USER_SCHEMA_ID } from './user.server.model'

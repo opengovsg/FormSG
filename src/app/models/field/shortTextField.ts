@@ -4,6 +4,7 @@ import {
   IShortTextFieldSchema,
   ShortTextSelectedValidation,
 } from '../../../types'
+
 import { MyInfoSchema } from './baseField'
 
 const createShortTextFieldSchema = () => {

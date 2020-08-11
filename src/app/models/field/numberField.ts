@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 
 import { INumberFieldSchema, NumberSelectedValidation } from '../../../types'
+
 import { MyInfoSchema } from './baseField'
 
 const createNumberFieldSchema = () => {

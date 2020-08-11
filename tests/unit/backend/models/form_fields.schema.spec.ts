@@ -1,28 +1,42 @@
-const { merge } = require('lodash')
-const mongoose = require('mongoose')
+import { ObjectID } from 'bson'
+import { merge } from 'lodash'
+import mongoose from 'mongoose'
 
-const dbHandler = require('../helpers/db-handler')
-const Form = require('../../../../dist/backend/app/models/form.server.model').default(
-  mongoose,
-)
+import getFormModel from 'src/app/models/form.server.model'
+import { BasicFieldType, ResponseMode } from 'src/types'
+
+import dbHandler from '../helpers/jest-db'
+
+const Form = getFormModel(mongoose)
+
+const MOCK_FORM_PARAMS = {
+  title: 'Test Form',
+  admin: new ObjectID(),
+}
+const MOCK_ENCRYPTED_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
+  publicKey: 'mockPublicKey',
+  responseMode: 'encrypt',
+})
+const MOCK_EMAIL_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
+  emails: ['test@example.com'],
+  responseMode: 'email',
+})
 
 describe('Form Field Schema', () => {
-  let collections
-
   beforeAll(async () => await dbHandler.connect())
-  beforeEach(async () => {
-    collections = await dbHandler.preloadCollections({ saveForm: false })
-  })
+  beforeEach(
+    async () =>
+      await dbHandler.preloadCollections({
+        userId: MOCK_FORM_PARAMS.admin,
+        saveForm: false,
+      }),
+  )
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Methods', () => {
     describe('getQuestion', () => {
       it('should return field title when field type is not a table field', async () => {
-        const {
-          BasicFieldType,
-        } = require('../../../../dist/backend/types/field/fieldTypes')
-
         // Arrange
         // Get all field types
         const fieldTypes = Object.values(BasicFieldType)
@@ -30,7 +44,7 @@ describe('Form Field Schema', () => {
         // Asserts
         fieldTypes.forEach(async (type) => {
           // Skip table field.
-          if (type === 'table') return
+          if (type === BasicFieldType.Table) return
           const fieldTitle = `test ${type} field title`
           const field = await createAndReturnFormField({
             fieldType: type,
@@ -74,20 +88,10 @@ describe('Form Field Schema', () => {
     })
   })
 
-  const createAndReturnFormField = async (formFieldParams, formType) => {
-    const MOCK_FORM_PARAMS = {
-      title: 'Test Form',
-      admin: collections.user,
-    }
-    const MOCK_ENCRYPTED_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
-      publicKey: 'mockPublicKey',
-      responseMode: 'encrypt',
-    })
-    const MOCK_EMAIL_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
-      emails: ['test@example.com'],
-      responseMode: 'email',
-    })
-
+  const createAndReturnFormField = async (
+    formFieldParams: Record<string, any>,
+    formType?: ResponseMode,
+  ) => {
     let baseParams
 
     switch (formType) {
@@ -119,7 +123,7 @@ describe('Form Field Schema', () => {
       ...baseParams,
       form_fields: [formFieldParams],
     }
-    const form = await new Form(formParam).save()
+    const form = await Form.create(formParam)
 
     return form.form_fields[0]
   }
