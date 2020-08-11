@@ -29,7 +29,6 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
     $('#' + fieldId).addClass('btn-pressed')
   }
   vm.uploadFile = function (file, errFiles, fieldId) {
-    vm.isLoading = false
     $('#' + fieldId).removeClass('btn-pressed')
     let err
     if (errFiles.length > 0) {
@@ -133,6 +132,7 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
         } else {
           vm.fileSize = String((file.size / 1000).toFixed(2)) + ' KB'
         }
+        vm.isLoading = false
       })
     }
     reader.readAsArrayBuffer(file)
@@ -146,5 +146,6 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
     vm.fileError = message
     vm.field.fieldValue = ''
     vm.fileAttached = false
+    vm.isLoading = false
   }
 }
