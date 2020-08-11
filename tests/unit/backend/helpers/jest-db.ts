@@ -2,7 +2,6 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
-import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 
 /**
@@ -35,16 +34,15 @@ const clearDatabase = async () => {
   }
 }
 
-const preloadCollections = async (
-  { userId, saveForm }: { userId?: ObjectID; saveForm?: boolean } = {
-    saveForm: true,
-  },
-) => {
+/**
+ * Inserts a default agency and user document into their respective collections.
+ * This is required to create a Form document, as Form pre-validation hook
+ * requires a valid user to be found in the collection
+ * @param userId if provided, the User document will be created with the given user id
+ */
+const insertFormCollectionReqs = async (userId?: ObjectID) => {
   const Agency = getAgencyModel(mongoose)
   const User = getUserModel(mongoose)
-  const Form = getFormModel(mongoose)
-
-  const adminId = userId ?? new ObjectID()
 
   const agency = await Agency.create({
     shortName: 'govtest',
@@ -52,32 +50,21 @@ const preloadCollections = async (
     emailDomain: ['test.gov.sg'],
     logo: '/invalid-path/test.jpg',
   })
+
   const user = await User.create({
     email: 'test@test.gov.sg',
-    _id: adminId,
+    _id: userId,
     agency: agency.id,
   })
 
-  const form = saveForm
-    ? await Form.create({
-        title: 'Test Form',
-        emails: ['test@test.gov.sg'],
-        admin: user.id,
-      })
-    : undefined
-
-  return {
-    agency,
-    user,
-    form,
-  }
+  return { agency, user }
 }
 
 const dbHandler = {
   connect,
   closeDatabase,
   clearDatabase,
-  preloadCollections,
+  insertFormCollectionReqs,
 }
 
 export default dbHandler
