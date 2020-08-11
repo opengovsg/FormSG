@@ -89,7 +89,12 @@ const createLoggerOptions = (label: string): LoggerOptions => {
       format.timestamp(),
       isDev ? format.combine(format.colorize(), customFormat) : format.json(),
     ),
-    transports: [new transports.Console()],
+    transports: [
+      new transports.Console({
+        // Turn off logging if silent flag is passed into process during tests
+        silent: process.env.NODE_ENV === 'testing',
+      }),
+    ],
     exitOnError: false,
   }
 }
