@@ -10,6 +10,7 @@ import { IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
+const MOCK_VALID_EMAIL_3 = 'to3@example.com'
 const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
 const MOCK_APP_URL = 'mockApp.example.com'
@@ -178,6 +179,41 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
+    it('should send submission mail to admin successfully if adminEmail is a single comma separated string', async () => {
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      const adminEmailCommaSeparated = `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`
+      const modifiedParams = {
+        ...MOCK_VALID_SUBMISSION_PARAMS,
+        adminEmails: adminEmailCommaSeparated,
+      }
+
+      const expectedArgument = {
+        to: adminEmailCommaSeparated,
+        from: MOCK_SENDER_STRING,
+        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+        html: MOCK_HTML,
+        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Admin (response)',
+          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
+          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+        },
+        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
+      }
+
+      // Act + Assert
+      await expect(
+        mailService.sendSubmissionToAdmin(modifiedParams),
+      ).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
     it('should send submission mail to admin successfully if adminEmail is an array', async () => {
       // Arrange
       const mockedResponse = 'mockedSuccessResponse'
@@ -191,6 +227,77 @@ describe('mail.service', () => {
 
       const expectedArgument = {
         to: adminEmailArray,
+        from: MOCK_SENDER_STRING,
+        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+        html: MOCK_HTML,
+        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Admin (response)',
+          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
+          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+        },
+        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
+      }
+      // Act + Assert
+      await expect(
+        mailService.sendSubmissionToAdmin(modifiedParams),
+      ).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should send submission mail to admin successfully if adminEmail is an array with comma separated strings', async () => {
+      // Arrange
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      const adminEmailArray = [`${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`]
+      const modifiedParams = {
+        ...MOCK_VALID_SUBMISSION_PARAMS,
+        adminEmails: adminEmailArray,
+      }
+
+      const expectedArgument = {
+        to: adminEmailArray,
+        from: MOCK_SENDER_STRING,
+        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+        html: MOCK_HTML,
+        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Admin (response)',
+          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
+          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+        },
+        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
+      }
+      // Act + Assert
+      await expect(
+        mailService.sendSubmissionToAdmin(modifiedParams),
+      ).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should send submission mail to admin successfully if adminEmail is mixture of strings and arrays', async () => {
+      // Arrange
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      const adminEmailMixture = [
+        `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
+        MOCK_VALID_EMAIL_3,
+      ]
+      const modifiedParams = {
+        ...MOCK_VALID_SUBMISSION_PARAMS,
+        adminEmails: adminEmailMixture,
+      }
+
+      const expectedArgument = {
+        to: adminEmailMixture,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: MOCK_HTML,
