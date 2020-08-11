@@ -4,9 +4,7 @@ module.exports = {
       version: process.env.MONGO_BINARY_VERSION || '3.6.12',
       checkMD5: true,
     },
-    instance: {
-      dbName: 'jest',
-    },
+    instance: {},
     autoStart: false,
   },
 }
