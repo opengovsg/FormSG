@@ -1,11 +1,23 @@
-const axios = require('axios')
-const crypto = require('crypto')
-const { get, isEmpty } = require('lodash')
-const { EMAIL_HEADERS } = require('../constants/mail')
+import axios from 'axios'
+import crypto from 'crypto'
+import { get, isEmpty } from 'lodash'
+
+import { EMAIL_HEADERS } from '../constants/mail'
+
+interface ISnsBody {
+  Message: string
+  MessageId: string
+  Timestamp: string
+  TopicArn: string
+  Type: string
+  Signature: string
+  SigningCertURL: string
+  SignatureVersion: string
+}
 
 // Note that these need to be ordered in order to generate
 // the correct string to sign
-const snsKeys = [
+const snsKeys: { key: keyof ISnsBody; toSign: boolean }[] = [
   { key: 'Message', toSign: true },
   { key: 'MessageId', toSign: true },
   { key: 'Timestamp', toSign: true },
@@ -34,7 +46,7 @@ const AWS_HOSTNAME = '.amazonaws.com'
  * Checks that a request body has all the required keys for a message from SNS.
  * @param {Object} body body from Express request object
  */
-const hasRequiredKeys = (body) => {
+const hasRequiredKeys = (body: any): body is ISnsBody => {
   return !isEmpty(body) && snsKeys.every((keyObj) => body[keyObj.key])
 }
 
@@ -42,7 +54,7 @@ const hasRequiredKeys = (body) => {
  * Validates that a URL points to a certificate belonging to AWS.
  * @param {String} url URL to check
  */
-const isValidCertUrl = (certUrl) => {
+const isValidCertUrl = (certUrl: string): boolean => {
   const parsed = new URL(certUrl)
   return (
     parsed.protocol === 'https:' &&
@@ -54,7 +66,7 @@ const isValidCertUrl = (certUrl) => {
 /**
  * Returns an ordered list of keys to include in SNS signing string.
  */
-const getSnsKeysToSign = () => {
+const getSnsKeysToSign = (): (keyof ISnsBody)[] => {
   return snsKeys.filter((keyObj) => keyObj.toSign).map((keyObj) => keyObj.key)
 }
 
@@ -62,7 +74,7 @@ const getSnsKeysToSign = () => {
  * Generates the string to sign.
  * @param {Object} body body from Express request object
  */
-const getSnsBasestring = (body) => {
+export const getSnsBasestring = (body: ISnsBody): string => {
   return getSnsKeysToSign().reduce((result, key) => {
     return result + key + '\n' + body[key] + '\n'
   }, '')
@@ -72,10 +84,10 @@ const getSnsBasestring = (body) => {
  * Verify signature for SNS request
  * @param {Object} body body from Express request object
  */
-const isValidSnsSignature = async (body) => {
+const isValidSnsSignature = async (body: ISnsBody): Promise<boolean> => {
   const { data: cert } = await axios.get(body.SigningCertURL)
   const verifier = crypto.createVerify('RSA-SHA1')
-  verifier.update(getSnsBasestring(body), 'utf-8')
+  verifier.update(getSnsBasestring(body), 'utf8')
   return verifier.verify(cert, body.Signature, 'base64')
 }
 
@@ -83,13 +95,45 @@ const isValidSnsSignature = async (body) => {
  * Verifies if a request object is correctly signed by Amazon SNS.
  * @param {Object} body Body of Express request object
  */
-const isValidSnsRequest = async (body) => {
+export const isValidSnsRequest = async (body: any): Promise<boolean> => {
   const isValid =
     hasRequiredKeys(body) &&
     body.SignatureVersion === '1' && // We only check for SHA1-RSA signatures
     isValidCertUrl(body.SigningCertURL) &&
     (await isValidSnsSignature(body))
   return isValid
+}
+
+interface IParsedSnsBase {
+  to: string[]
+  subject: string
+  notificationType: string
+  emailType?: string
+  formId?: string
+  submissionId?: string
+}
+
+interface IParsedSnsBounce extends IParsedSnsBase {
+  bounceType: string
+  bouncedEmails: string[]
+  notificationType: 'Bounce'
+}
+
+interface IParsedSnsDelivery extends IParsedSnsBase {
+  deliveredEmails: string[]
+  notificationType: 'Delivery'
+}
+
+export const isParsedSnsBounce = (
+  parsed: IParsedSnsBase,
+): parsed is IParsedSnsBounce => {
+  return parsed.notificationType === 'Bounce'
+}
+
+export const isParsedSnsDelivery = (
+  parsed: IParsedSnsBase,
+): parsed is IParsedSnsDelivery => {
+  return parsed.notificationType === 'Delivery'
 }
 
 /**
@@ -100,21 +144,16 @@ const isValidSnsRequest = async (body) => {
  * @param {Object} body POST body of SNS request
  * @returns {Object} Object containing keys parsed from POST body or empty object if parsing fails
  */
-const parseSns = (body) => {
+export const parseSns = (
+  body: ISnsBody,
+): IParsedSnsBounce | IParsedSnsDelivery | {} => {
   try {
     // Extract relevant values
     const content = JSON.parse(body.Message)
-    const parsed = {}
-    parsed.to = get(content, 'mail.commonHeaders.to')
-    parsed.subject = get(content, 'mail.commonHeaders.subject')
-    parsed.notificationType = content.notificationType
-    if (parsed.notificationType === 'Bounce') {
-      parsed.bounceType = get(content, 'bounce.bounceType')
-      parsed.bouncedEmails = get(content, 'bounce.bouncedRecipients').map(
-        (info) => info.emailAddress,
-      )
-    } else if (parsed.notificationType === 'Delivery') {
-      parsed.deliveredEmails = get(content, 'delivery.recipients')
+    const parsed: IParsedSnsBase = {
+      to: get(content, 'mail.commonHeaders.to'),
+      subject: get(content, 'mail.commonHeaders.subject'),
+      notificationType: content.notificationType,
     }
     // Custom headers which we send with all emails, such as form ID, submission ID
     // and email type (admin response, email confirmation OTP etc).
@@ -128,15 +167,17 @@ const parseSns = (body) => {
         parsed[customHeaderKey] = header.value
       }
     })
+    if (isParsedSnsBounce(parsed)) {
+      parsed.bounceType = get(content, 'bounce.bounceType')
+      parsed.bouncedEmails = get(content, 'bounce.bouncedRecipients').map(
+        (info) => info.emailAddress,
+      )
+    } else if (isParsedSnsDelivery(parsed)) {
+      parsed.deliveredEmails = get(content, 'delivery.recipients')
+    }
     return parsed
   } catch (err) {
     // Could not parse
     return {}
   }
-}
-
-module.exports = {
-  getSnsBasestring,
-  isValidSnsRequest,
-  parseSns,
 }
