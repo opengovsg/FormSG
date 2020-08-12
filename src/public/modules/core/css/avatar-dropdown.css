@@ -1,14 +1,87 @@
-.navbar__avatar--avatar {
+.navbar__avatar {
+  position: relative;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  height: 80px;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.navbar__avatar__avatar {
   display: block;
   color: #fff;
-  margin-left: 7px;
   text-transform: uppercase;
   border: 2px solid #484848;
   background-color: #484848;
   border-radius: 50%;
-  cursor: auto;
   outline: none;
   height: 44px;
   width: 44px;
   font-size: 16px;
+  cursor: pointer;
+}
+
+.navbar__avatar--focused {
+  background-color: #f0f0f0;
+}
+
+.navbar__dropdown {
+  z-index: 1000;
+  position: absolute;
+  right: 0;
+  top: 80px;
+  -webkit-box-shadow: 1px 3px 5px 0 rgba(48, 51, 54, 0.2);
+  box-shadow: 1px 3px 5px 0 rgba(48, 51, 54, 0.2);
+  background-color: #fff;
+}
+
+.navbar__dropdown--clickable {
+  cursor: pointer;
+}
+
+.navbar__dropdown--clickable:hover,
+.navbar__dropdown--clickable:focus,
+.navbar__dropdown--clickable:active {
+  background-color: #fdfdfd;
+}
+
+.navbar__dropdown--separator {
+  border-bottom: 1px solid #dcdcdc;
+}
+
+.navbar__dropdown--logout {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  font-size: 18px;
+  color: #2f60ce;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.navbar__dropdown--logout__text {
+  padding-right: 9px;
+}
+
+.navbar__dropdown--logout:hover {
+  color: #264da4;
+}
+
+.navbar__dropdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar__dropdown ul li {
+  padding: 18px 24px;
 }

@@ -13,11 +13,12 @@
   <div ng-show="vm.isDropdownOpen" class="navbar__dropdown">
     <ul>
       <li class="navbar__dropdown--separator">Hello</li>
-      <li>
-        <span class="navbar__dropdown--logout" ng-click="vm.signOut()">
-          <span class="navbar__dropdown--logout__text hidden-xs">Logout</span>
-          <i class="bx bx-log-out bx-md"></i>
-        </span>
+      <li
+        class="navbar__dropdown--clickable navbar__dropdown--logout"
+        ng-click="vm.signOut()"
+      >
+        <span class="navbar__dropdown--logout__text hidden-xs">Logout</span>
+        <i class="bx bx-log-out bx-md"></i>
       </li>
     </ul>
   </div>
