@@ -89,7 +89,7 @@ The following env variables are set in Travis:
 |`STAGING_ALT_DEPLOY_ENV`|The name of the Elastic Beanstalk environment the staging-alt application will be deployed to.|
 |`SENTRY_ORG`|Organisation that source-maps should be linked to on sentry dashboard.|
 |`SENTRY_AUTH_TOKEN`|Authentication token used by sentry cli to authenticate with sentry service.|
-|`SENTRY_PROJECT`|Project that source-maps should be linked to on sentry dashboard.| 
+|`SENTRY_PROJECT`|Project that source-maps should be linked to on sentry dashboard.|
 |`SENTRY_URL`|Sentry service that source-maps should be pushed to.|
 
 ## Environment Variables
@@ -98,48 +98,50 @@ The following env variables are set in Travis:
 
 #### App and Database
 
-| Variable                 | Description                                                                                                                                                                                                 |
-| :----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `APP_NAME`               | Application name in window title; also used as an identifier for MyInfo. Defaults to `'FormSG'`.                                                                                                            |
-| `APP_DESC`               | Defaults to `'Form Manager for Government'`.                                                                                                                                                                |
-| `APP_URL`                | Defaults to `'https://form.gov.sg'`.                                                                                                                                                                        |
-| `APP_KEYWORDS`           | Defaults to `'forms, formbuilder, nodejs'`.                                                                                                                                                                 |
-| `APP_IMAGES`             | Defaults to `'/public/modules/core/img/og/img_metatag.png,/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                            |
-| `APP_TWITTER_IMAGE`      | ath to Twitter image. Defaults to `'/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                                  |
-| `DB_HOST`                | A MongoDB URI.                                                                                                                                                                                              |
-| `OTP_LIFE_SPAN`          | Time in milliseconds that admin login OTP is valid for. Defaults to 900000ms or 15 minutes                                                                                                                  |
-| `PORT`                   | Server port. Defaults to `5000`.                                                                                                                                                                            |
-| `NODE_ENV`               | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'development'`. This should always be set to a production environment |
-| `SESSION_SECRET`         | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment                                                                                     |
-| `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`                                                                                                       |
-| `IS_SP_MAINTENANCE`      | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`                                                                                                                          |
-| `IS_CP_MAINTENANCE`      | If set, displays a banner message on SingPass forms.                                                                                                                                                        |
-| `SUBMISSIONS_TOP_UP`    | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`. |
+| Variable                 | Description                                                                                                                                                                                                   |
+| :----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_NAME`               | Application name in window title; also used as an identifier for MyInfo. Defaults to `'FormSG'`.                                                                                                              |
+| `APP_DESC`               | Defaults to `'Form Manager for Government'`.                                                                                                                                                                  |
+| `APP_URL`                | Defaults to `'https://form.gov.sg'`.                                                                                                                                                                          |
+| `APP_KEYWORDS`           | Defaults to `'forms, formbuilder, nodejs'`.                                                                                                                                                                   |
+| `APP_IMAGES`             | Defaults to `'/public/modules/core/img/og/img_metatag.png,/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                              |
+| `APP_TWITTER_IMAGE`      | ath to Twitter image. Defaults to `'/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                                    |
+| `DB_HOST`                | A MongoDB URI.                                                                                                                                                                                                |
+| `OTP_LIFE_SPAN`          | Time in milliseconds that admin login OTP is valid for. Defaults to 900000ms or 15 minutes                                                                                                                    |
+| `PORT`                   | Server port. Defaults to `5000`.                                                                                                                                                                              |
+| `NODE_ENV`               | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'development'`. This should always be set to a production environment   |
+| `SESSION_SECRET`         | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment.                                                                                      |
+| `SITE_BANNER_CONTENT`    | If set, displays a banner message on both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. Overrides all other banner environment variables |
+| `ADMIN_BANNER_CONTENT`   | If set, displays a banner message on private admin routes such as the form list page as well as form builder pages.                                                                                           |
+| `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`.                                                                                                        |
+| `IS_SP_MAINTENANCE`      | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                                           |
+| `IS_CP_MAINTENANCE`      | If set, displays a banner message on SingPass forms.                                                                                                                                                          |
+| `SUBMISSIONS_TOP_UP`     | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                                 |
 
 #### AWS services
 
 | Variable                      | Description                                                                                                                         |
 | :---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `AWS_REGION`                  | AWS region.                                                                                                                         |
-| `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads                                                                                           |
-| `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads                                                                                             |
-| `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads                                                                                             |
+| `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads.                                                                                          |
+| `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
+| `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
 | `CUSTOM_CLOUDWATCH_LOG_GROUP` | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
 
 #### [FormSG JavaScript SDK](https://www.npmjs.com/package/@opengovsg/formsg-sdk)
 
-| Variable                  | Description                                                           |
-| :------------------------ | --------------------------------------------------------------------- |
-| `FORMSG_SDK_MODE`         | The mode to instantiate the sdk with.                                 |
+| Variable          | Description                           |
+| :---------------- | ------------------------------------- |
+| `FORMSG_SDK_MODE` | The mode to instantiate the sdk with. |
 
 #### Email and Nodemailer
 
 | Variable                  | Description                                                                                                                                                                                    |
 | :------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SES_HOST`                | SMTP hostname                                                                                                                                                                                  |
-| `SES_PORT`                | SMTP port number                                                                                                                                                                               |
-| `SES_USER`                | SMTP username                                                                                                                                                                                  |
-| `SES_PASS`                | SMTP password                                                                                                                                                                                  |
+| `SES_HOST`                | SMTP hostname.                                                                                                                                                                                 |
+| `SES_PORT`                | SMTP port number.                                                                                                                                                                              |
+| `SES_USER`                | SMTP username.                                                                                                                                                                                 |
+| `SES_PASS`                | SMTP password.                                                                                                                                                                                 |
 | `SES_MAX_MESSAGES`        | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`. |
 | `SES_POOL`                | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                |
 | `SES_RATE`                | Maximum email to send per second, or per `rateDelta` if supplied.                                                                                                                              |
@@ -151,7 +153,7 @@ The following env variables are set in Travis:
 | `MAIL_SOCKET_TIMEOUT`     | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                          |
 | `MAIL_LOGGER`             | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                   |
 | `MAIL_DEBUG`              | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                              |
-| `CHROMIUM_BIN`            | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.   
+| `CHROMIUM_BIN`            | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                       |
 
 ### Additional Features
 
@@ -161,18 +163,18 @@ The app supports a number of additional features like Captcha protection, Sentry
 
 If this feature is enabled, forms with be protected with [recaptcha](https://www.google.com/recaptcha/about/), preventing submissions from being made by bots.
 
-| Variable                | Description                                                                                   |
-| :---------------------- | --------------------------------------------------------------------------------------------- |
-| `GOOGLE_CAPTCHA`        | Google Captcha private key                                                                    |
-| `GOOGLE_CAPTCHA_PUBLIC` | Google Captcha public key.                                                                    |
+| Variable                | Description                |
+| :---------------------- | -------------------------- |
+| `GOOGLE_CAPTCHA`        | Google Captcha private key |
+| `GOOGLE_CAPTCHA_PUBLIC` | Google Captcha public key. |
 
 #### Google Analytics
 
 If this feature is enabled, [google analytics](https://analytics.google.com/analytics/web) will be used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
 
-| Variable                | Description                                                                                   |
-| :---------------------- | --------------------------------------------------------------------------------------------- |
-| `GA_TRACKING_ID`        | Google Analytics tracking ID                                                                  |
+| Variable         | Description                   |
+| :--------------- | ----------------------------- |
+| `GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### Sentry.io
 
@@ -180,7 +182,7 @@ If this feature is enabled, client-side error events will be piped to [sentry.io
 
 | Variable            | Description                                                                                           |
 | :------------------ | ----------------------------------------------------------------------------------------------------- |
-| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK                                                           |
+| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK.                                                          |
 | `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
 #### Examples page Using Pre-Computed Results
@@ -189,15 +191,15 @@ If this feature is enabled, the submission statistics associated with forms load
 
 If this feature is not enabled, the submission statistics associated with forms loaded on the examples page will be calculated on the fly from the Submissions collection. This may be sub-optimal when submissions are in the millions.
 
-| Variable               | Description                                                          |
-| :--------------------- | -------------------------------------------------------------------- |
-| `AGGREGATE_COLLECTION` | Has to be defined (i.e. =true) if FormStats collection is to be used |
+| Variable               | Description                                                           |
+| :--------------------- | --------------------------------------------------------------------- |
+| `AGGREGATE_COLLECTION` | Has to be defined (i.e. =true) if FormStats collection is to be used. |
 
 #### SMS with Twilio
 
 If this feature is enabled, the Mobile Number field will support form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones and will also support an SMS confirmation of successful submission being sent out to their said mobile numbers. All messages are sent using [twilio](https://www.twilio.com/) messaging APIs.
 
-Note that verifiying mobile numbers also requires [Verified Emails/SMSes](#verified-emailssmses ) to be enabled.
+Note that verifiying mobile numbers also requires [Verified Emails/SMSes](#verified-emailssmses) to be enabled.
 
 | Variable                       | Description              |
 | :----------------------------- | ------------------------ |
@@ -208,7 +210,7 @@ Note that verifiying mobile numbers also requires [Verified Emails/SMSes](#verif
 
 #### SingPass/CorpPass and MyInfo
 
-If this feature is enabled, forms will support authentication via [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus) (Singapore's Digital Identity for Citizens) and 
+If this feature is enabled, forms will support authentication via [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus) (Singapore's Digital Identity for Citizens) and
 [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus) (Singapore's Digital Identity for Organizations). Forms will also support pre-filling using [MyInfo](https://www.singpass.gov.sg/myinfo/intro) after a citizen has successfully authenticated using SingPass.
 
 Note that MyInfo is currently not supported for storage mode forms and enabling SingPass/CorpPass on storage mode forms also requires [SingPass/CorpPass for Storage Mode](#webhooks-and-singpasscorppass-for-storage-mode) to be enabled.
@@ -216,35 +218,35 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | Variable                        | Description                                                                                                                                                            |
 | :------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SPCP_COOKIE_MAX_AGE_PRESERVED` | Duration of SingPass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                           |
-| `SINGPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for SingPass authentication                                                                              |
-| `SINGPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for SingPass authentication                                                                                |
-| `SINGPASS_IDP_LOGIN_URL`        | URL of SingPass Login Page                                                                                                                                             |
-| `SINGPASS_IDP_ENDPOINT`         | URL to retrieve NRIC of SingPass-validated user from                                                                                                                   |
-| `SINGPASS_IDP_ID`               | Partner ID of National Digital Identity Office for SingPass authentication                                                                                             |
-| `CORPPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for CorpPass authentication                                                                              |
-| `CORPPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for CorpPass authentication                                                                                |
-| `CORPPASS_IDP_LOGIN_URL`        | URL of CorpPass Login Page                                                                                                                                             |
-| `CORPPASS_IDP_ENDPOINT`         | URL to retrieve UEN of CorpPass-validated user from                                                                                                                    |
-| `CORPPASS_IDP_ID`               | Partner ID of National Digital Identity Office for CorpPass authentication                                                                                             |
-| `SP_FORMSG_KEY_PATH`            | Path to X.509 key used for SingPass related communication with National Digital Identity office                                                                        |
-| `SP_FORMSG_CERT_PATH`           | Path to X.509 cert used for SingPass related communication with National Digital Identity office                                                                       |
-| `SP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for SingPass related communication                                                                          |
-| `CP_FORMSG_KEY_PATH`            | Path to X.509 key used for CorpPass related communication with National Digital Identity office                                                                        |
-| `CP_FORMSG_CERT_PATH`           | Path to X.509 cert used for CorpPass related communication with National Digital Identity office                                                                       |
-| `CP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for CorpPass related communication                                                                          |
+| `SINGPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for SingPass authentication.                                                                             |
+| `SINGPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for SingPass authentication.                                                                               |
+| `SINGPASS_IDP_LOGIN_URL`        | URL of SingPass Login Page.                                                                                                                                            |
+| `SINGPASS_IDP_ENDPOINT`         | URL to retrieve NRIC of SingPass-validated user from.                                                                                                                  |
+| `SINGPASS_IDP_ID`               | Partner ID of National Digital Identity Office for SingPass authentication.                                                                                            |
+| `CORPPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for CorpPass authentication.                                                                             |
+| `CORPPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for CorpPass authentication.                                                                               |
+| `CORPPASS_IDP_LOGIN_URL`        | URL of CorpPass Login Page.                                                                                                                                            |
+| `CORPPASS_IDP_ENDPOINT`         | URL to retrieve UEN of CorpPass-validated user from.                                                                                                                   |
+| `CORPPASS_IDP_ID`               | Partner ID of National Digital Identity Office for CorpPass authentication.                                                                                            |
+| `SP_FORMSG_KEY_PATH`            | Path to X.509 key used for SingPass related communication with National Digital Identity office.                                                                       |
+| `SP_FORMSG_CERT_PATH`           | Path to X.509 cert used for SingPass related communication with National Digital Identity office.                                                                      |
+| `SP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for SingPass related communication.                                                                         |
+| `CP_FORMSG_KEY_PATH`            | Path to X.509 key used for CorpPass related communication with National Digital Identity office.                                                                       |
+| `CP_FORMSG_CERT_PATH`           | Path to X.509 cert used for CorpPass related communication with National Digital Identity office.                                                                      |
+| `CP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for CorpPass related communication.                                                                         |
 | `MYINFO_CLIENT_CONFIG`          | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints. |
 | `MYINFO_FORMSG_KEY_PATH`        | Filepath to MyInfo private key, which is used to decrypt returned responses.                                                                                           |
-| `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`                                              |
+| `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                             |
 
 #### Verified Emails/SMSes
 
 If this feature is enabled, the Mobile Number field will support form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones and the Email field will support form-fillers verifying their email addresses via a One-Time-Pin sent to their email boxes.
 
-Note that verified SMSes also requires [SMS with Twilio](#sms-with-twilio ) to be enabled.
+Note that verified SMSes also requires [SMS with Twilio](#sms-with-twilio) to be enabled.
 
-| Variable                  | Description                                                           |
-| :------------------------ | --------------------------------------------------------------------- |
-| `VERIFICATION_SECRET_KEY` | The secret key for signing verified responses (email, mobile).        |
+| Variable                  | Description                                                    |
+| :------------------------ | -------------------------------------------------------------- |
+| `VERIFICATION_SECRET_KEY` | The secret key for signing verified responses (email, mobile). |
 
 #### Webhooks and SingPass/CorpPass for Storage Mode
 
@@ -252,9 +254,9 @@ If this feature is enabled, storage mode forms will support posting encrypted fo
 
 If this feature is enabled, storage mode forms will also support authentication via SingPass or CorpPass. Note that this also requires [SingPass/CorpPass and MyInfo](#singpasscorppass-and-myinfo) to be enabled.
 
-| Variable                  | Description                                                           |
-| :------------------------ | --------------------------------------------------------------------- |
-| `SIGNING_SECRET_KEY`      | The secret key for signing verified content passed into the database. |
+| Variable             | Description                                                           |
+| :------------------- | --------------------------------------------------------------------- |
+| `SIGNING_SECRET_KEY` | The secret key for signing verified content passed into the database. |
 
 ### Tests
 

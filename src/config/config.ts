@@ -332,11 +332,12 @@ const awsConfig: AwsConfig = (function () {
   // Else, the environment variables to instantiate S3 are used.
   const awsEndpoint = isDev
     ? defaults.aws.endpoint
-    : `https://s3.${region}.amazonaws.com/`
+    : `https://s3.${region}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
 
   const logoBucketUrl = `${awsEndpoint}/${logoS3Bucket}`
   const imageBucketUrl = `${awsEndpoint}/${imageS3Bucket}`
-  const attachmentBucketUrl = `${awsEndpoint}/${attachmentS3Bucket}`
+  // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
+  const attachmentBucketUrl = `${awsEndpoint}/${attachmentS3Bucket}/`
 
   const s3 = new aws.S3({
     region,
