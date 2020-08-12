@@ -13,6 +13,7 @@
 @import './../../node_modules/intl-tel-input/build/css/intlTelInput.css';
 @import './modules/core/css/core.css';
 @import './modules/core/css/navbar.css';
+@import './modules/core/css/avatar-dropdown.css';
 @import './modules/core/css/admin-form-header.css';
 @import './modules/core/css/sg-govt-banner.css';
 @import './modules/core/css/landing.css';

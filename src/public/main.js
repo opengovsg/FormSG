@@ -156,6 +156,7 @@ require('./modules/core/config/core.client.routes.js')
 
 // Core components
 require('./modules/core/components/navbar.client.component.js')
+require('./modules/core/components/avatar-dropdown.client.component')
 require('./modules/core/components/banner.client.component.js')
 require('./modules/core/components/sg-govt-banner.client.component.js')
 
@@ -322,6 +323,12 @@ app.run([
       'modules/core/componentViews/navbar.html',
       require('./modules/core/componentViews/navbar.html'),
     )
+
+    $templateCache.put(
+      'modules/core/componentViews/avatar-dropdown.html',
+      require('./modules/core/componentViews/avatar-dropdown.html'),
+    )
+
     $templateCache.put(
       'modules/core/views/landing.client.view.html',
       require('./modules/core/views/landing.client.view.html'),
