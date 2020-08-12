@@ -1,5 +1,6 @@
 export * from './field'
 export * from './agency'
+export * from './bounce'
 export * from './form_feedback'
 export * from './form_logic'
 export * from './form_logo'
