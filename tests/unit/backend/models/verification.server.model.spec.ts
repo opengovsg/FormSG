@@ -1,10 +1,12 @@
-const dbHandler = require('../helpers/db-handler')
-const mongoose = require('mongoose')
-const Verification = spec(
-  'dist/backend/app/models/verification.server.model',
-).default(mongoose)
-const { omit, merge, pick } = require('lodash')
-const { ObjectId } = require('bson-ext')
+import { ObjectID } from 'bson'
+import { merge, omit, pick } from 'lodash'
+import mongoose from 'mongoose'
+
+import getVerificationModel from 'src/app/models/verification.server.model'
+
+import dbHandler from '../helpers/jest-db'
+
+const Verification = getVerificationModel(mongoose)
 
 const VFN_FIELD_DEFAULTS = {
   signedData: null,
@@ -16,13 +18,13 @@ const VFN_FIELD_DEFAULTS = {
 const generateFieldParams = () => {
   const mockParams = {
     fieldType: 'mockField',
-    _id: String(new ObjectId()),
+    _id: String(new ObjectID()),
   }
   return merge({}, VFN_FIELD_DEFAULTS, mockParams)
 }
 
 const VFN_PARAMS = {
-  formId: new ObjectId(),
+  formId: new ObjectID(),
 }
 
 const VFN_DEFAULTS = {
@@ -31,7 +33,7 @@ const VFN_DEFAULTS = {
 
 describe('Verification Model', () => {
   beforeAll(async () => await dbHandler.connect())
-  afterEach(async () => await dbHandler.clearDatabase())
+  beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {
@@ -79,12 +81,13 @@ describe('Verification Model', () => {
     })
 
     it('should create and save successfully with field keys specified', async () => {
-      const field = merge({}, generateFieldParams(), {
+      const field = {
+        ...generateFieldParams(),
         signedData: 'signedData',
         hashedOtp: 'hashedOtp',
         hashCreatedAt: new Date(),
         hashRetries: 5,
-      })
+      }
       const vfnParams = merge({}, VFN_PARAMS, { fields: [field] })
       const verification = new Verification(vfnParams)
       const verificationSaved = await verification.save()
@@ -104,7 +107,9 @@ describe('Verification Model', () => {
         fields: [field, field],
       })
       const verification = new Verification(vfnParams)
-      await expectAsync(verification.save()).toBeRejected()
+      await expect(verification.save()).rejects.toThrowError(
+        'No duplicate field ids allowed for the same transaction',
+      )
     })
   })
 
