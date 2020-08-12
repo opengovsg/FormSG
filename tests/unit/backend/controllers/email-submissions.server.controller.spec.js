@@ -10,7 +10,9 @@ const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
 const { validSnsBody } = require('../resources/valid-sns-body')
-const { getSnsBasestring } = require('../../../../dist/backend/app/utils/sns')
+const {
+  getSnsBasestring,
+} = require('../../../../dist/backend/app/services/sns.service')
 const { ObjectID } = require('bson-ext')
 const MailService = require('../../../../dist/backend/app/services/mail.service')
   .default

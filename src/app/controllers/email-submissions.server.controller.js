@@ -10,7 +10,7 @@ const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const HttpStatus = require('http-status-codes')
 
-const { isValidSnsRequest, parseSns } = require('../utils/sns')
+const { isValidSnsRequest, parseSns } = require('../services/sns.service')
 const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
