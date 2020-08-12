@@ -145,6 +145,7 @@ require('./modules/core/services/feature.client.factory')
 
 // Core controllers
 require('./modules/core/controllers/landing.client.controller.js')
+require('./modules/core/controllers/edit-contact-number-modal.client.controller')
 
 // Core directives
 require('./modules/core/directives/on-click-outside.client.directive')
