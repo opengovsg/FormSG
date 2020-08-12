@@ -1,3 +1,19 @@
-<button class="navbar__avatar--avatar">
-  {{vm.avatarText}}
-</button>
+<div>
+  <button
+    class="navbar__avatar--avatar"
+    ng-click="vm.isClickedAvatar=true"
+    click-outside="vm.isClickedAvatar=false"
+    ng-mouseenter="vm.isHoverAvatar=true"
+    ng-mouseleave="vm.isHoverAvatar=false"
+  >
+    {{vm.avatarText}}
+  </button>
+  <div
+    ng-show="vm.isClickedAvatar || vm.isHoverAvatar"
+    class="navbar__avatar--dropdown"
+  >
+    <ul>
+      <li>Hello</li>
+    </ul>
+  </div>
+</div>

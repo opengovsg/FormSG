@@ -12,8 +12,10 @@ function avatarDropdownController($state, Auth) {
 
   // Redirect to signin if unable to get user
   vm.user = Auth.getUser() || $state.go('signin')
-
   vm.avatarText = generateAvatarText()
+
+  vm.isClickedAvatar = false
+  vm.isHoverAvatar = false
 
   function generateAvatarText() {
     const userEmail = get(vm.user, 'email')
