@@ -1,0 +1,51 @@
+import { Model, Mongoose, Schema } from 'mongoose'
+import validator from 'validator'
+
+import { IBounceSchema } from 'src/types'
+
+import { FORM_SCHEMA_ID } from './form.server.model'
+
+export const BOUNCE_SCHEMA_ID = 'Bounce'
+
+export interface IBounceModel extends Model<IBounceSchema> {}
+
+const BounceSchema = new Schema<IBounceSchema>({
+  formId: {
+    type: Schema.Types.ObjectId,
+    ref: FORM_SCHEMA_ID,
+    required: 'Form ID is required',
+  },
+  hasAlarmed: {
+    type: Boolean,
+    default: false,
+  },
+  bounces: {
+    type: [
+      {
+        email: {
+          type: String,
+          trim: true,
+          required: true,
+          validate: {
+            validator: validator.isEmail,
+            message: 'Bounced email must be a valid email address',
+          },
+        },
+        hasBounced: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
+  },
+})
+
+const getBounceModel = (db: Mongoose) => {
+  try {
+    return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
+  } catch {
+    return db.model<IBounceSchema>(BOUNCE_SCHEMA_ID, BounceSchema)
+  }
+}
+
+export default getBounceModel
