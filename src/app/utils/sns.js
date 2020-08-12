@@ -1,6 +1,6 @@
 const axios = require('axios')
 const crypto = require('crypto')
-const get = require('lodash/get')
+const { get, isEmpty } = require('lodash')
 const { EMAIL_HEADERS } = require('../constants/mail')
 
 // Note that these need to be ordered in order to generate
@@ -85,6 +85,7 @@ const isValidSnsSignature = async (body) => {
  */
 const isValidSnsRequest = async (body) => {
   const isValid =
+    !isEmpty(body) &&
     hasRequiredKeys(body) &&
     body.SignatureVersion === '1' && // We only check for SHA1-RSA signatures
     isValidCertUrl(body.SigningCertURL) &&
