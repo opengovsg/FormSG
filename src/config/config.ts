@@ -88,10 +88,13 @@ type Config = {
 enum Environment {
   Dev = 'development',
   Prod = 'production',
+  Test = 'test',
 }
 
 // Environment variables with defaults
-const isDev = process.env.NODE_ENV !== Environment.Prod
+const isDev =
+  process.env.NODE_ENV === Environment.Dev ||
+  process.env.NODE_ENV === Environment.Test
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 const port = parseInt(process.env.PORT, 10) || defaults.app.port
 const sessionSecret = process.env.SESSION_SECRET || defaults.app.sessionSecret
