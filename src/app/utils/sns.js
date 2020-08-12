@@ -114,6 +114,8 @@ const parseSns = (body) => {
       parsed.bouncedEmails = get(content, 'bounce.bouncedRecipients').map(
         (info) => info.emailAddress,
       )
+    } else if (parsed.notificationType === 'Delivery') {
+      parsed.deliveredEmails = get(content, 'delivery.recipients')
     }
     // Custom headers which we send with all emails, such as form ID, submission ID
     // and email type (admin response, email confirmation OTP etc).
