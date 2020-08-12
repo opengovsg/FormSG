@@ -35,7 +35,7 @@ const AWS_HOSTNAME = '.amazonaws.com'
  * @param {Object} body body from Express request object
  */
 const hasRequiredKeys = (body) => {
-  return snsKeys.every((keyObj) => body[keyObj.key])
+  return !isEmpty(body) && snsKeys.every((keyObj) => body[keyObj.key])
 }
 
 /**
@@ -85,7 +85,6 @@ const isValidSnsSignature = async (body) => {
  */
 const isValidSnsRequest = async (body) => {
   const isValid =
-    !isEmpty(body) &&
     hasRequiredKeys(body) &&
     body.SignatureVersion === '1' && // We only check for SHA1-RSA signatures
     isValidCertUrl(body.SigningCertURL) &&
