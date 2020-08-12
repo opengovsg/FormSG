@@ -1,4 +1,5 @@
 import { FieldType } from '../basic'
+
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'

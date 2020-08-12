@@ -2,6 +2,7 @@ import { DocumentQuery, Model, Mongoose, Schema } from 'mongoose'
 
 import * as vfnConstants from '../../shared/util/verification'
 import { IVerificationFieldSchema, IVerificationSchema } from '../../types'
+
 import { FORM_SCHEMA_ID } from './form.server.model'
 
 const { getExpiryDate } = vfnConstants

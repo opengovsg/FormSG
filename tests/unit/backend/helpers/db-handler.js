@@ -69,12 +69,17 @@ const makeModel = (modelFilename, modelName) => {
   // TypeScript and use default exports instead, or does not require a
   // connection
   try {
-    return spec(`dist/backend/app/models/${modelFilename}`)(mongoose)
+    return require(`../../../../dist/backend/app/models/${modelFilename}`)(
+      mongoose,
+    )
   } catch (e) {
     try {
-      return spec(`dist/backend/app/models/${modelFilename}`).default(mongoose)
+      return require(`../../../../dist/backend/app/models/${modelFilename}`).default(
+        mongoose,
+      )
     } catch (e) {
-      return spec(`dist/backend/app/models/${modelFilename}`).default
+      return require(`../../../../dist/backend/app/models/${modelFilename}`)
+        .default
     }
   }
 }

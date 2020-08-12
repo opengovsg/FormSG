@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
 
 import {
@@ -64,6 +65,9 @@ const createTableFieldSchema = () => {
   })
 
   TableFieldSchema.pre<ITableFieldSchema>('validate', function (next) {
+    if (isEmpty(this.columns)) {
+      return next(Error('There must be at least 1 column in a Table field.'))
+    }
     if (!this.addMoreRows && !!this.maximumRows) {
       this.maximumRows = undefined
     }

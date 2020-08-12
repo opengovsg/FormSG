@@ -371,27 +371,28 @@ describe('Authentication Controller', () => {
   })
 
   describe('doesUserBeta', () => {
+    const mockBetaFlag = 'fakeBetaFlag'
     it('should return 200 when user is beta for a given betaType', (done) => {
       req.session.user.betaFlags = {
-        allowSms: true,
+        [mockBetaFlag]: true,
       }
       let next = jasmine.createSpy().and.callFake(() => {
         expect(next).toHaveBeenCalled()
         done()
       })
-      Controller.doesUserBeta('allowSms')(req, res, next)
+      Controller.doesUserBeta(mockBetaFlag)(req, res, next)
     })
 
     it('should return 403 when user is not beta for a given betaType', (done) => {
       req.session.user.betaFlags = {
-        allowSms: false,
+        [mockBetaFlag]: false,
       }
       res.status.and.callFake(() => {
         expect(res.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
         done()
         return res
       })
-      Controller.doesUserBeta('allowSms')(req, res, () => {})
+      Controller.doesUserBeta(mockBetaFlag)(req, res, () => {})
     })
 
     it('should return 403 when user is undefined', (done) => {
@@ -401,7 +402,7 @@ describe('Authentication Controller', () => {
         done()
         return res
       })
-      Controller.doesUserBeta('allowSms')(req, res, () => {})
+      Controller.doesUserBeta(mockBetaFlag)(req, res, () => {})
     })
   })
 })

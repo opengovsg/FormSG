@@ -30,6 +30,7 @@ export interface ISmsCount {
   logType: LogType
   smsType: SmsType
   createdAt?: Date
+  _id: Document['_id']
 }
 
 export interface ISmsCountSchema extends ISmsCount, Document {}
