@@ -25,6 +25,37 @@
   width: 44px;
   font-size: 16px;
   cursor: pointer;
+  position: relative;
+}
+
+.navbar__avatar__avatar--alert {
+  position: absolute;
+  bottom: 12px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #a94442;
+  border-radius: 50%;
+  background-color: #a94442;
+  color: white;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.navbar__avatar__avatar--alert::after {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border: 2px solid white;
+  border-radius: 50%;
+  position: absolute;
 }
 
 .navbar__avatar--focused {
