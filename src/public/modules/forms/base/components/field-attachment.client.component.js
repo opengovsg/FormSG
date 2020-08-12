@@ -122,11 +122,11 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
 
         // Assign it to the field.
         vm.field.file = blob
+        vm.field.fieldValue = file.name
 
         vm.fileAttached = true
         vm.fileError = false
         vm.fileName = file.name
-        vm.field.fieldValue = file.name
         vm.fileSize = file.size / 1000
         if (file.size / 1000 > 1000) {
           vm.fileSize = String((file.size / 1000000).toFixed(2)) + ' MB'
