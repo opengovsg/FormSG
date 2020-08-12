@@ -2,13 +2,12 @@ import axios from 'axios'
 import crypto from 'crypto'
 import { get, isEmpty } from 'lodash'
 
+import { createCloudWatchLogger } from '../../config/logger'
+import { stringifySafe } from '../../shared/util/stringify-safe'
 // import mongoose from 'mongoose'
-// import getBounceModel from 'src/app/models/bounce.server.model'
-import { createCloudWatchLogger } from 'src/config/logger'
-import { stringifySafe } from 'src/shared/util/stringify-safe'
-
-// import { IBounceSchema } from 'src/types'
+// import getBounceModel from '../models/bounce.server.model'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
+// import { IBounceSchema } from '../../types'
 
 const logger = createCloudWatchLogger('email')
 // const Bounce = getBounceModel(mongoose)

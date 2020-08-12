@@ -1,7 +1,7 @@
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
-import { IBounceSchema } from 'src/types'
+import { IBounceSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 
