@@ -38,6 +38,7 @@
           </div>
           <div
             ng-show="!vm.user.contact"
+            ng-click="vm.openContactNumberModal()"
             class="navbar__dropdown__user__contact__details--link"
           >
             Add Contact
@@ -47,7 +48,10 @@
             class="navbar__dropdown__user__contact__details--value"
           >
             <div>{{vm.user.contact}}</div>
-            <div class="navbar__dropdown__user__contact__details--link">
+            <div
+              class="navbar__dropdown__user__contact__details--link"
+              ng-click="vm.openContactNumberModal()"
+            >
               Edit
             </div>
           </div>
