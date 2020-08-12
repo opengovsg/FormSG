@@ -1,9 +1,11 @@
 import { merge } from 'lodash'
+import moment from 'moment-timezone'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
 
 import { MailService } from 'src/app/services/mail.service'
 import {
   generateLoginOtpHtml,
+  generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
 } from 'src/app/utils/mail'
 import { IPopulatedForm, ISubmissionSchema } from 'src/types'
@@ -136,19 +138,59 @@ describe('mail.service', () => {
   })
 
   describe('sendSubmissionToAdmin', () => {
+    let expectedHtml: string
+
     const MOCK_VALID_SUBMISSION_PARAMS = {
       adminEmails: MOCK_VALID_EMAIL,
       replyToEmails: ['test1@example.com', 'test2@example.com'],
-      html: MOCK_HTML,
       form: {
         title: 'Test form title',
         _id: 'mockFormId',
       },
       submission: {
         id: 'mockSubmissionId',
+        created: new Date(),
       },
       attachments: [],
+      jsonData: [
+        {
+          question: 'some question',
+          answer: 'some answer',
+        },
+      ],
+      formData: [],
     }
+
+    const FORMATTED_SUBMISSION_TIME = moment(
+      MOCK_VALID_SUBMISSION_PARAMS.submission.created,
+    )
+      .tz('Asia/Singapore')
+      .format('ddd, DD MMM YYYY hh:mm:ss A')
+
+    // Should include the metadata in the front.
+    const EXPECTED_JSON_DATA = [
+      {
+        question: 'Reference Number',
+        answer: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+      },
+      {
+        question: 'Timestamp',
+        answer: FORMATTED_SUBMISSION_TIME,
+      },
+      ...MOCK_VALID_SUBMISSION_PARAMS.jsonData,
+    ]
+
+    beforeAll(async () => {
+      const htmlData = {
+        appName: MOCK_APP_NAME,
+        formData: MOCK_VALID_SUBMISSION_PARAMS.formData,
+        formTitle: MOCK_VALID_SUBMISSION_PARAMS.form.title,
+        jsonData: EXPECTED_JSON_DATA,
+        refNo: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+        submissionTime: FORMATTED_SUBMISSION_TIME,
+      }
+      expectedHtml = await generateSubmissionToAdminHtml(htmlData)
+    })
 
     it('should send submission mail to admin successfully if adminEmail is a single string', async () => {
       // sendMail should return mocked success response
@@ -159,7 +201,7 @@ describe('mail.service', () => {
         to: MOCK_VALID_SUBMISSION_PARAMS.adminEmails,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: MOCK_HTML,
+        html: expectedHtml,
         attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
         headers: {
           // Hardcode in tests in case something changes this.
@@ -194,7 +236,7 @@ describe('mail.service', () => {
         to: adminEmailCommaSeparated,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: MOCK_HTML,
+        html: expectedHtml,
         attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
         headers: {
           // Hardcode in tests in case something changes this.
@@ -229,7 +271,7 @@ describe('mail.service', () => {
         to: adminEmailArray,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: MOCK_HTML,
+        html: expectedHtml,
         attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
         headers: {
           // Hardcode in tests in case something changes this.
@@ -263,7 +305,7 @@ describe('mail.service', () => {
         to: adminEmailArray,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: MOCK_HTML,
+        html: expectedHtml,
         attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
         headers: {
           // Hardcode in tests in case something changes this.
@@ -300,7 +342,7 @@ describe('mail.service', () => {
         to: adminEmailMixture,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: MOCK_HTML,
+        html: expectedHtml,
         attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
         headers: {
           // Hardcode in tests in case something changes this.
