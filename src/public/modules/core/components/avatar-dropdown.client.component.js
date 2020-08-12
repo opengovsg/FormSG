@@ -14,8 +14,9 @@ function avatarDropdownController($state, Auth) {
   vm.user = Auth.getUser() || $state.go('signin')
   vm.avatarText = generateAvatarText()
 
-  vm.isClickedAvatar = false
-  vm.isHoverAvatar = false
+  vm.isDropdownOpen = false
+
+  vm.signOut = () => Auth.signOut()
 
   function generateAvatarText() {
     const userEmail = get(vm.user, 'email')

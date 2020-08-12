@@ -1,18 +1,24 @@
 <div
-  on-click-outside="vm.isClickedAvatar=false"
-  on-click-watcher="vm.isClickedAvatar"
-  ng-mouseenter="vm.isHoverAvatar=true"
-  ng-mouseleave="vm.isHoverAvatar=false"
+  tabindex="0"
+  class="navbar__avatar"
+  ng-class="vm.isDropdownOpen ? 'navbar__avatar--focused' : ''"
+  on-click-outside="vm.isDropdownOpen=false"
+  on-click-watcher="vm.isDropdownOpen"
+  ng-focus="vm.isDropdownOpen=true"
+  ng-mouseenter="vm.isDropdownOpen=true"
 >
-  <button class="navbar__avatar--avatar" ng-click="vm.isClickedAvatar=true">
+  <button class="navbar__avatar__avatar">
     {{vm.avatarText}}
   </button>
-  <div
-    ng-show="vm.isClickedAvatar || vm.isHoverAvatar"
-    class="navbar__avatar--dropdown"
-  >
+  <div ng-show="vm.isDropdownOpen" class="navbar__dropdown">
     <ul>
-      <li>Hello</li>
+      <li class="navbar__dropdown--separator">Hello</li>
+      <li>
+        <span class="navbar__dropdown--logout" ng-click="vm.signOut()">
+          <span class="navbar__dropdown--logout__text hidden-xs">Logout</span>
+          <i class="bx bx-log-out bx-md"></i>
+        </span>
+      </li>
     </ul>
   </div>
 </div>
