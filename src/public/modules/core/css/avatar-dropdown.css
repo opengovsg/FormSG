@@ -33,6 +33,7 @@
 
 .navbar__dropdown {
   z-index: 1000;
+  width: 280px;
   position: absolute;
   right: 0;
   top: 80px;
@@ -94,6 +95,67 @@
   overflow-wrap: break-word;
 }
 
+.navbar__dropdown__user__contact {
+  padding: 0 !important;
+}
+
+.navbar__dropdown__user__contact--missing {
+  padding: 6px 16px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  background-color: #f2dede;
+  font-size: 14px;
+  letter-spacing: -0.04px;
+  color: #a94442;
+}
+
+.navbar__dropdown__user__contact--missing i {
+  margin-right: 16px;
+}
+
+.navbar__dropdown__user__contact__details {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 16px 24px;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.navbar__dropdown__user__contact__details--label {
+  font-size: 16px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.25;
+  letter-spacing: normal;
+  color: #323232;
+  margin-right: 16px;
+}
+
+.navbar__dropdown__user__contact__details--link {
+  font-size: 16px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  color: #2f60ce;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.navbar__dropdown__user__contact__details--link:focus,
+.navbar__dropdown__user__contact__details--link:active,
+.navbar__dropdown__user__contact__details--link:hover {
+  color: #264da4;
+}
+
 .navbar__dropdown__logout {
   display: -webkit-inline-box;
   display: -ms-inline-flexbox;
@@ -111,6 +173,8 @@
   padding-right: 9px;
 }
 
+.navbar__dropdown__logout:focus,
+.navbar__dropdown__logout:active,
 .navbar__dropdown__logout:hover {
   color: #264da4;
 }
