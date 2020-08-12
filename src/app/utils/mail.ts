@@ -1,4 +1,5 @@
 import dedent from 'dedent-js'
+import ejs from 'ejs'
 import { flattenDeep } from 'lodash'
 import validator from 'validator'
 
@@ -45,6 +46,26 @@ export const generateVerificationOtpHtml = ({
     <br />
     <p>The ${appName} Support Team</p>
   `
+}
+
+type SubmissionToAdminHtmlData = {
+  refNo: string
+  formTitle: string
+  submissionTime: string
+  // TODO (#42): Add proper types once the type is determined.
+  formData: any[]
+  jsonData: {
+    question: string
+    answer: string | number
+  }[]
+  appName: string
+}
+
+export const generateSubmissionToAdminHtml = async (
+  htmlData: SubmissionToAdminHtmlData,
+) => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
+  return ejs.renderFile(pathToTemplate, htmlData)
 }
 
 export const isToFieldValid = (addresses: string | string[]) => {

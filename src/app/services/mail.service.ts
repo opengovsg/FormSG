@@ -1,4 +1,5 @@
 import { isEmpty } from 'lodash'
+import moment from 'moment-timezone'
 import Mail from 'nodemailer/lib/mailer'
 import validator from 'validator'
 import { Logger } from 'winston'
@@ -15,6 +16,7 @@ import {
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 import {
   generateLoginOtpHtml,
+  generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
   isToFieldValid,
 } from '../utils/mail'
@@ -201,35 +203,72 @@ export class MailService {
    * @param args the parameter object
    * @param args.adminEmails the recipients to send the mail to
    * @param args.replyToEmails emails to set replyTo, if any
-   * @param args.html the body of the email
    * @param args.form the form document to retrieve some email data from
    * @param args.submission the submission document to retrieve some email data from
    * @param args.attachments attachments to append to the email, if any
+   * @param args.jsonData the data to use in the data collation tool to be appended to the end of the email
+   * @param args.formData the form data to display to in the body in table form
    */
   sendSubmissionToAdmin = async ({
     adminEmails,
     replyToEmails,
-    html,
     form,
     submission,
     attachments,
+    jsonData,
+    formData,
   }: {
     adminEmails: string | string[]
     replyToEmails?: string[]
-    html: string
     form: Pick<IFormSchema, '_id' | 'title'>
-    submission: Pick<ISubmissionSchema, 'id'>
+    submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
+    formData: any[]
+    jsonData: {
+      question: string
+      answer: string | number
+    }[]
   }) => {
+    const refNo = submission.id
+    const formTitle = form.title
+    const submissionTime = moment(submission.created)
+      .tz('Asia/Singapore')
+      .format('ddd, DD MMM YYYY hh:mm:ss A')
+
+    // Add in additional metadata to jsonData.
+    // Unshift is not used as it mutates the array.
+    const fullJsonData = [
+      {
+        question: 'Reference Number',
+        answer: refNo,
+      },
+      {
+        question: 'Timestamp',
+        answer: submissionTime,
+      },
+      ...jsonData,
+    ]
+
+    const htmlData = {
+      appName: this.#appName,
+      formTitle,
+      refNo,
+      submissionTime,
+      jsonData: fullJsonData,
+      formData,
+    }
+
+    const mailHtml = await generateSubmissionToAdminHtml(htmlData)
+
     const mail: MailOptions = {
       to: adminEmails,
       from: this.#senderFromString,
-      subject: `formsg-auto: ${form.title} (Ref: ${submission.id})`,
-      html,
+      subject: `formsg-auto: ${formTitle} (Ref: ${refNo})`,
+      html: mailHtml,
       attachments,
       headers: {
         [EMAIL_HEADERS.formId]: String(form._id),
-        [EMAIL_HEADERS.submissionId]: submission.id,
+        [EMAIL_HEADERS.submissionId]: refNo,
         [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
       },
       // replyTo options only allow string format.
@@ -237,7 +276,7 @@ export class MailService {
     }
 
     return this.#sendNodeMail(mail, {
-      mailId: submission.id,
+      mailId: refNo,
       formId: String(form._id),
     })
   }

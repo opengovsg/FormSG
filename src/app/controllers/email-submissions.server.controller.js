@@ -1,6 +1,5 @@
 'use strict'
 
-const moment = require('moment-timezone')
 const Busboy = require('busboy')
 const { Buffer } = require('buffer')
 const _ = require('lodash')
@@ -25,7 +24,6 @@ const {
   handleDuplicatesInAttachments,
   mapAttachmentsFromParsedResponses,
 } = require('../utils/attachment')
-const { renderPromise } = require('../utils/render-promise')
 const config = require('../../config/config')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'email-submissions',
@@ -597,30 +595,7 @@ exports.sendAdminEmail = async function (req, res, next) {
     attachments,
   } = req
 
-  let submissionTime = moment(submission.created)
-    .tz('Asia/Singapore')
-    .format('ddd, DD MMM YYYY hh:mm:ss A')
-
-  jsonData.unshift(
-    {
-      question: 'Reference Number',
-      answer: submission.id,
-    },
-    {
-      question: 'Timestamp',
-      answer: submissionTime,
-    },
-  )
   try {
-    const html = await renderPromise(res, 'templates/submit-form-email', {
-      refNo: submission.id,
-      formTitle: form.title,
-      submissionTime,
-      formData,
-      jsonData,
-      appName: res.app.locals.title,
-    })
-
     logger.profile(
       `Sending admin mail submissionId=${submission.id} formId=${form._id} submissionHash=${submission.responseHash}`,
     )
@@ -630,8 +605,9 @@ exports.sendAdminEmail = async function (req, res, next) {
       replyToEmails,
       form,
       submission,
-      html,
       attachments,
+      jsonData,
+      formData,
     })
 
     return next()
