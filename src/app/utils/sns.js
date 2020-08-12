@@ -81,14 +81,14 @@ const isValidSnsSignature = async (body) => {
 
 /**
  * Verifies if a request object is correctly signed by Amazon SNS.
- * @param {Object} req Express request object
+ * @param {Object} body Body of Express request object
  */
-const isValidSnsRequest = async (req) => {
+const isValidSnsRequest = async (body) => {
   const isValid =
-    hasRequiredKeys(req.body) &&
-    req.body.SignatureVersion === '1' && // We only check for SHA1-RSA signatures
-    isValidCertUrl(req.body.SigningCertURL) &&
-    (await isValidSnsSignature(req.body))
+    hasRequiredKeys(body) &&
+    body.SignatureVersion === '1' && // We only check for SHA1-RSA signatures
+    isValidCertUrl(body.SigningCertURL) &&
+    (await isValidSnsSignature(body))
   return isValid
 }
 

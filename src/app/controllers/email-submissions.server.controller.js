@@ -630,7 +630,7 @@ exports.sendAdminEmail = async function (req, res, next) {
  * @param {Object} next - the next expressjs callback, invoked once attachments
  */
 exports.verifySns = async (req, res, next) => {
-  if (await isValidSnsRequest(req)) {
+  if (await isValidSnsRequest(req.body)) {
     return next()
   }
   return res.sendStatus(HttpStatus.FORBIDDEN)
