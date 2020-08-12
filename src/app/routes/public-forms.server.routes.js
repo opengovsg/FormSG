@@ -137,9 +137,7 @@ module.exports = function (app) {
    * @produces application/json
    * @returns {string} 200 - notification acknowledged
    */
-  app
-    .route('/emailnotifications')
-    .post(emailSubmissions.verifySns, emailSubmissions.confirmOnNotification)
+  app.route('/emailnotifications').post(emailSubmissions.handleSns)
 
   /**
    * @typedef SubmissionResponse
