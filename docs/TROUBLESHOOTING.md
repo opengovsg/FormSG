@@ -20,5 +20,5 @@ rm -r node_modules
 npm install
 ```
 
-
-
+## JavaScript out of memory error
+On your Docker application, go to Preferences > Resources and increase the amount of memory allocated for Docker.
