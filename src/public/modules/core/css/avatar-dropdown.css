@@ -51,11 +51,50 @@
   background-color: #fdfdfd;
 }
 
-.navbar__dropdown--separator {
-  border-bottom: 1px solid #dcdcdc;
+.navbar__dropdown__user {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 26px 24px !important;
 }
 
-.navbar__dropdown--logout {
+.navbar__dropdown__user__avatar {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  color: #fff;
+  text-transform: uppercase;
+  height: 40px;
+  width: 40px;
+  font-size: 14px;
+  border: 2px solid #484848;
+  background-color: #484848;
+  border-radius: 50%;
+  outline: none;
+  margin-right: 16px;
+}
+
+.navbar__dropdown__user__details {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+.navbar__dropdown__user__details--email {
+  max-width: 250px;
+  overflow-wrap: break-word;
+}
+
+.navbar__dropdown__logout {
   display: -webkit-inline-box;
   display: -ms-inline-flexbox;
   display: inline-flex;
@@ -68,11 +107,11 @@
   cursor: pointer;
 }
 
-.navbar__dropdown--logout__text {
+.navbar__dropdown__logout--text {
   padding-right: 9px;
 }
 
-.navbar__dropdown--logout:hover {
+.navbar__dropdown__logout:hover {
   color: #264da4;
 }
 
@@ -84,4 +123,5 @@
 
 .navbar__dropdown ul li {
   padding: 18px 24px;
+  border-bottom: 1px solid #dcdcdc;
 }
