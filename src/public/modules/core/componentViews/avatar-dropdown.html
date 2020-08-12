@@ -42,6 +42,15 @@
           >
             Add Contact
           </div>
+          <div
+            ng-show="vm.user.contact"
+            class="navbar__dropdown__user__contact__details--value"
+          >
+            <div>{{vm.user.contact}}</div>
+            <div class="navbar__dropdown__user__contact__details--link">
+              Edit
+            </div>
+          </div>
         </div>
       </li>
       <!-- End emergency contact block -->

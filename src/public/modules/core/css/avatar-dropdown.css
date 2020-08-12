@@ -187,6 +187,22 @@
   color: #264da4;
 }
 
+.navbar__dropdown__user__contact__details--value {
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+}
+
+.navbar__dropdown__user__contact__details--value div:first-child {
+  margin-right: 8px;
+}
+
 .navbar__dropdown__logout {
   display: -webkit-inline-box;
   display: -ms-inline-flexbox;
