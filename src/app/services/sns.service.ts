@@ -2,11 +2,16 @@ import axios from 'axios'
 import crypto from 'crypto'
 import { get, isEmpty } from 'lodash'
 
+// import mongoose from 'mongoose'
+// import getBounceModel from 'src/app/models/bounce.server.model'
 import { createCloudWatchLogger } from 'src/config/logger'
+import { stringifySafe } from 'src/shared/util/stringify-safe'
 
-import { EMAIL_HEADERS } from '../constants/mail'
+// import { IBounceSchema } from 'src/types'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 
 const logger = createCloudWatchLogger('email')
+// const Bounce = getBounceModel(mongoose)
 
 export interface ISnsBody {
   Message: string
@@ -140,6 +145,12 @@ const isParsedSnsDelivery = (
   return parsed.notificationType === 'Delivery'
 }
 
+const isParsedSns = (
+  parsed: IParsedSnsBase | IParsedSnsDelivery | {},
+): parsed is IParsedSnsBase | IParsedSnsDelivery => {
+  return !isEmpty(parsed)
+}
+
 /**
  * Parses the POST body of an SNS notification for SES
  * emails. Returns an object with the important keys.
@@ -192,5 +203,11 @@ const parseSns = (
  */
 export const updateBounces = async (body: ISnsBody): Promise<void> => {
   const parsed = parseSns(body)
+  if (!isParsedSns(parsed)) {
+    logger.error(`Error parsing notification body: ${stringifySafe(parsed)}`)
+    return
+  }
   logger.info(parsed)
+  const { formId, emailType } = parsed
+  if (emailType !== EMAIL_TYPES.adminResponse || !formId) return
 }
