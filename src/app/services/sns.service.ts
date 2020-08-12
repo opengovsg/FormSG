@@ -2,9 +2,13 @@ import axios from 'axios'
 import crypto from 'crypto'
 import { get, isEmpty } from 'lodash'
 
+import { createCloudWatchLogger } from 'src/config/logger'
+
 import { EMAIL_HEADERS } from '../constants/mail'
 
-interface ISnsBody {
+const logger = createCloudWatchLogger('email')
+
+export interface ISnsBody {
   Message: string
   MessageId: string
   Timestamp: string
@@ -124,13 +128,13 @@ interface IParsedSnsDelivery extends IParsedSnsBase {
   notificationType: 'Delivery'
 }
 
-export const isParsedSnsBounce = (
+const isParsedSnsBounce = (
   parsed: IParsedSnsBase,
 ): parsed is IParsedSnsBounce => {
   return parsed.notificationType === 'Bounce'
 }
 
-export const isParsedSnsDelivery = (
+const isParsedSnsDelivery = (
   parsed: IParsedSnsBase,
 ): parsed is IParsedSnsDelivery => {
   return parsed.notificationType === 'Delivery'
@@ -144,7 +148,7 @@ export const isParsedSnsDelivery = (
  * @param {Object} body POST body of SNS request
  * @returns {Object} Object containing keys parsed from POST body or empty object if parsing fails
  */
-export const parseSns = (
+const parseSns = (
   body: ISnsBody,
 ): IParsedSnsBounce | IParsedSnsDelivery | {} => {
   try {
@@ -180,4 +184,13 @@ export const parseSns = (
     // Could not parse
     return {}
   }
+}
+
+/**
+ * Parses an SNS notification and updates the Bounce collection.
+ * @param body The request body of the notification
+ */
+export const updateBounces = async (body: ISnsBody): Promise<void> => {
+  const parsed = parseSns(body)
+  logger.info(parsed)
 }
