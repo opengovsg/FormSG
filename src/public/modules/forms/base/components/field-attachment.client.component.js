@@ -105,7 +105,7 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
       $timeout(() => {
         showAttachmentError(
           'Upload failed. If you are using online storage such as Google Drive, ' +
-          'download your file from storage then attach the downloaded version'
+          'download your file before attaching the downloaded version.'
         )
       })
     }
