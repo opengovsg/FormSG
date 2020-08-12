@@ -1,16 +1,22 @@
 import axios from 'axios'
 import crypto from 'crypto'
 import { get, isEmpty } from 'lodash'
+import mongoose from 'mongoose'
 
 import { createCloudWatchLogger } from '../../config/logger'
-import { IEmailNotification, ISnsNotification } from '../../types'
-// import mongoose from 'mongoose'
-// import getBounceModel from '../models/bounce.server.model'
+import {
+  IBounceNotification,
+  IBounceSchema,
+  IDeliveryNotification,
+  IEmailNotification,
+  ISingleBounce,
+  ISnsNotification,
+} from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
-// import { IBounceSchema } from '../../types'
+import getBounceModel from '../models/bounce.server.model'
 
 const logger = createCloudWatchLogger('email')
-// const Bounce = getBounceModel(mongoose)
+const Bounce = getBounceModel(mongoose)
 
 // Note that these need to be ordered in order to generate
 // the correct string to sign
@@ -24,17 +30,6 @@ const snsKeys: { key: keyof ISnsNotification; toSign: boolean }[] = [
   { key: 'SigningCertURL', toSign: false },
   { key: 'SignatureVersion', toSign: false },
 ]
-
-const EMAIL_LOWERCASE_HEADER_TO_KEY = (() => {
-  // EMAIL_HEADERS with keys and values swapped and the new keys (e.g. X-Formsg-Form-ID)
-  // changed to lowercase (x-formsg-form-id).
-  // NOTE: ALWAYS DO CASE-INSENSITIVE CHECKS FOR THE HEADERS!
-  const lowercasedHeadersToKey = {}
-  for (const [key, value] of Object.entries(EMAIL_HEADERS)) {
-    lowercasedHeadersToKey[value.toLowerCase()] = key
-  }
-  return lowercasedHeadersToKey
-})()
 
 // Hostname for AWS URLs
 const AWS_HOSTNAME = '.amazonaws.com'
@@ -104,6 +99,14 @@ export const isValidSnsRequest = async (body: any): Promise<boolean> => {
   return isValid
 }
 
+const isBounceNotification = (
+  body: IEmailNotification,
+): body is IBounceNotification => body.notificationType === 'Bounce'
+
+const isDeliveryNotification = (
+  body: IEmailNotification,
+): body is IDeliveryNotification => body.notificationType === 'Delivery'
+
 // Extracts custom headers which we send with all emails, such as form ID, submission ID
 // and email type (admin response, email confirmation OTP etc).
 // e.g. if header.name === 'X-Formsg-Form-ID', we want to set
@@ -112,6 +115,65 @@ const extractHeader = (body: IEmailNotification, header: string): string => {
   return get(body, 'mail.headers').find(
     (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
   )?.value
+}
+
+const hasEmailBounced = (
+  bounceInfo: IBounceNotification,
+  email: string,
+): boolean => {
+  return get(bounceInfo, 'bounce.bouncedRecipients').some(
+    (emailInfo) => emailInfo.emailAddress === email,
+  )
+}
+
+const extractBounceDoc = (
+  snsInfo: IEmailNotification,
+  formId?: string,
+): IBounceSchema => {
+  const isBounce = isBounceNotification(snsInfo)
+  const bounces: ISingleBounce[] = get(snsInfo, 'mail.commonHeaders.to').map(
+    (email) => {
+      if (isBounce && hasEmailBounced(snsInfo as IBounceNotification, email)) {
+        return { email, hasBounced: true }
+      } else {
+        return { email, hasBounced: false }
+      }
+    },
+  )
+  return new Bounce({ formId, bounces })
+}
+
+const updateBounceDoc = (
+  oldBounces: IBounceSchema,
+  latestBounces: IBounceSchema,
+  snsInfo: IEmailNotification,
+): void => {
+  const isDelivery = isDeliveryNotification(snsInfo)
+  oldBounces.bounces.forEach((oldBounce) => {
+    if (oldBounce.hasBounced) {
+      const matchedLatestBounce = latestBounces.bounces.find(
+        (newBounce) => newBounce.email === oldBounce.email,
+      )
+      const hasSubsequentlySucceeded =
+        isDelivery &&
+        get(snsInfo, 'delivery.recipients').contains(oldBounce.email)
+      if (matchedLatestBounce) {
+        matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
+      }
+    }
+  })
+}
+
+const logCriticalBounce = (bounceInfo: IBounceSchema, formId: string): void => {
+  if (
+    !bounceInfo.hasAlarmed &&
+    bounceInfo.bounces.every((emailInfo) => emailInfo.hasBounced)
+  ) {
+    logger.warn(
+      `CRITICAL BOUNCE: All email deliveries for the following form were unsuccessful: ${formId}`,
+    )
+    bounceInfo.hasAlarmed = true
+  }
 }
 
 /**
@@ -125,4 +187,14 @@ export const updateBounces = async (
   const emailType = extractHeader(body, EMAIL_HEADERS.emailType)
   const formId = extractHeader(body, EMAIL_HEADERS.formId)
   if (emailType !== EMAIL_TYPES.adminResponse || !formId) return
+  const latestBounces = extractBounceDoc(body, formId)
+  const oldBounces = await Bounce.findOne({ formId })
+  if (oldBounces) {
+    updateBounceDoc(oldBounces, latestBounces, body)
+    logCriticalBounce(oldBounces, formId)
+    oldBounces.save()
+  } else {
+    logCriticalBounce(latestBounces, formId)
+    latestBounces.save()
+  }
 }

@@ -2,7 +2,7 @@ import { Document } from 'mongoose'
 
 import { IFormSchema } from './form'
 
-interface ISingleBounce {
+export interface ISingleBounce {
   email: string
   hasBounced: boolean
 }
