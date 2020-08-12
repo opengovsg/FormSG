@@ -1,11 +1,10 @@
-<div>
-  <button
-    class="navbar__avatar--avatar"
-    ng-click="vm.isClickedAvatar=true"
-    click-outside="vm.isClickedAvatar=false"
-    ng-mouseenter="vm.isHoverAvatar=true"
-    ng-mouseleave="vm.isHoverAvatar=false"
-  >
+<div
+  on-click-outside="vm.isClickedAvatar=false"
+  on-click-watcher="vm.isClickedAvatar"
+  ng-mouseenter="vm.isHoverAvatar=true"
+  ng-mouseleave="vm.isHoverAvatar=false"
+>
+  <button class="navbar__avatar--avatar" ng-click="vm.isClickedAvatar=true">
     {{vm.avatarText}}
   </button>
   <div

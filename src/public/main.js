@@ -147,6 +147,7 @@ require('./modules/core/services/feature.client.factory')
 require('./modules/core/controllers/landing.client.controller.js')
 
 // Core directives
+require('./modules/core/directives/on-click-outside.client.directive')
 require('./modules/core/directives/route-loading-indicator.client.directive.js')
 require('./modules/core/services/features.client.factory.js')
 require('./modules/core/directives/feature-toggle.client.directive.js')
