@@ -99,24 +99,25 @@ export const isValidSnsRequest = async (body: any): Promise<boolean> => {
   return isValid
 }
 
+// If an email notification is for bounces
 const isBounceNotification = (
   body: IEmailNotification,
 ): body is IBounceNotification => body.notificationType === 'Bounce'
 
+// If an email notification is for successful delivery
 const isDeliveryNotification = (
   body: IEmailNotification,
 ): body is IDeliveryNotification => body.notificationType === 'Delivery'
 
 // Extracts custom headers which we send with all emails, such as form ID, submission ID
 // and email type (admin response, email confirmation OTP etc).
-// e.g. if header.name === 'X-Formsg-Form-ID', we want to set
-// parsed.formId = header.value
 const extractHeader = (body: IEmailNotification, header: string): string => {
   return get(body, 'mail.headers').find(
     (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
   )?.value
 }
 
+// Whether a bounce notification says a given email has bounced
 const hasEmailBounced = (
   bounceInfo: IBounceNotification,
   email: string,
@@ -126,6 +127,7 @@ const hasEmailBounced = (
   )
 }
 
+// Extracts a Bounce document from the info in a notification
 const extractBounceDoc = (
   snsInfo: IEmailNotification,
   formId?: string,
@@ -143,6 +145,8 @@ const extractBounceDoc = (
   return new Bounce({ formId, bounces })
 }
 
+// Updates an old bounce document with info from a new bounce document as well
+// as an SNS notification
 const updateBounceDoc = (
   oldBounces: IBounceSchema,
   latestBounces: IBounceSchema,
@@ -150,20 +154,28 @@ const updateBounceDoc = (
 ): void => {
   const isDelivery = isDeliveryNotification(snsInfo)
   oldBounces.bounces.forEach((oldBounce) => {
+    // If we were previously notified that a given email has bounced,
+    // we want to retain that information
     if (oldBounce.hasBounced) {
+      // Check if the latest recipient list contains that email
       const matchedLatestBounce = latestBounces.bounces.find(
         (newBounce) => newBounce.email === oldBounce.email,
       )
+      // Check if the latest notification indicates that this email
+      // actually succeeded
       const hasSubsequentlySucceeded =
         isDelivery &&
         get(snsInfo, 'delivery.recipients').contains(oldBounce.email)
       if (matchedLatestBounce) {
+        // Set the latest bounce status based on the latest notification
         matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
       }
     }
   })
+  oldBounces.bounces = latestBounces.bounces
 }
 
+// Writes a log message if all recipients have bounced
 const logCriticalBounce = (bounceInfo: IBounceSchema, formId: string): void => {
   if (
     !bounceInfo.hasAlarmed &&
@@ -172,6 +184,8 @@ const logCriticalBounce = (bounceInfo: IBounceSchema, formId: string): void => {
     logger.warn(
       `CRITICAL BOUNCE: All email deliveries for the following form were unsuccessful: ${formId}`,
     )
+    // We don't want a flood of logs and alarms, so we use this to limit the rate of
+    // critical bounce logs for each form ID
     bounceInfo.hasAlarmed = true
   }
 }
@@ -186,6 +200,7 @@ export const updateBounces = async (
   logger.info(body)
   const emailType = extractHeader(body, EMAIL_HEADERS.emailType)
   const formId = extractHeader(body, EMAIL_HEADERS.formId)
+  // We only care about admin emails
   if (emailType !== EMAIL_TYPES.adminResponse || !formId) return
   const latestBounces = extractBounceDoc(body, formId)
   const oldBounces = await Bounce.findOne({ formId })
