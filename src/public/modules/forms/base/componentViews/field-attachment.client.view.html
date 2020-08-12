@@ -34,6 +34,7 @@
         id="{{ vm.field._id || 'defaultID' }}"
         type="file"
         class="attachment-upload-input"
+        ng-class="vm.isLoading ? btn-pressed : ''"
         name="{{ vm.field._id || 'defaultID' }}"
         ng-required="vm.field.required"
         ngf-before-model-change="vm.beforeResizingImages(vm.field._id)"
@@ -45,10 +46,10 @@
         ngf-select="vm.uploadFile($file, $invalidFiles, vm.field._id)"
         ng-model="vm.field.fieldValue"
       />
-      <span ng-if="vm.buttonResizing[vm.field._id]">
+      <span ng-if="vm.isLoading">
         <i class="bx bx-loader bx-spin bx-md icon-spacing"></i>Loading...
       </span>
-      <span ng-if="!vm.buttonResizing[vm.field._id]">
+      <span ng-if="!vm.isLoading">
         <i class="fa fa-cloud-upload attachment-upload"></i>Upload File
       </span>
     </label>

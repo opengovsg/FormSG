@@ -23,31 +23,22 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
   }
 
   vm.fileAttached = false
-
-  // Used to store fieldIds that are currently resizing
-  vm.buttonResizing = {}
+  vm.isLoading = false
   vm.beforeResizingImages = function (fieldId) {
-    vm.buttonResizing[fieldId] = true
-    $('#' + fieldId).addClass('btn-pressed')
+    vm.isLoading = true
   }
   vm.uploadFile = function (file, errFiles, fieldId) {
-    delete vm.buttonResizing[fieldId]
-    $('#' + fieldId).removeClass('btn-pressed')
     let err
     if (errFiles.length > 0) {
       err = errFiles[0].$error
       if (err === 'maxSize') {
-        vm.fileError =
-          String((errFiles[0].size / 1000000).toFixed(2)) +
-          ' MB / ' +
-          vm.field.attachmentSize +
-          ' MB: File size exceeded'
+        const currentSize = (errFiles[0].size / 1000000).toFixed(2)
+        showAttachmentError(`${currentSize} MB / ${vm.field.attachmentSize} MB: File size exceeded`)
       } else if (err === 'resize') {
-        vm.fileError = `An error has occurred while resizing your image`
+        showAttachmentError(`An error has occurred while resizing your image`)
       } else {
-        vm.fileError = err
+        showAttachmentError(err)
       }
-      vm.field.fieldValue = ''
       return
     }
 
@@ -55,9 +46,7 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
 
     let fileExt = FileHandler.getFileExtension(file.name)
     if (FileHandler.isInvalidFileExtension(fileExt)) {
-      vm.fileError =
-        "Your file's extension ending in *" + fileExt + ' is not allowed'
-      vm.field.fieldValue = ''
+      showAttachmentError(`Your file's extension ending in *${fileExt} is not allowed`)
       return
     }
 
@@ -74,36 +63,22 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
         $timeout(() => {
           if (invalidFiles.length > 0) {
             const stringOfInvalidExtensions = invalidFiles.join(', ')
-            vm.fileError =
-              'The following file extensions in your zip are not valid: ' +
-              stringOfInvalidExtensions
-            vm.field.fieldValue = ''
+            showAttachmentError(`The following file extensions in your zip are not valid: ${stringOfInvalidExtensions}`)
           } else {
-            vm.fileAttached = true
-            vm.fileError = false
-            vm.fileName = file.name
-            vm.field.fieldValue = file.name
-            vm.fileSize = file.size / 1000
-            if (file.size / 1000 > 1000) {
-              vm.fileSize = String((file.size / 1000000).toFixed(2)) + ' MB'
-            } else {
-              vm.fileSize = String((file.size / 1000).toFixed(2)) + ' KB'
-            }
             saveFileToField(file)
           }
         })
       })
       .catch(() => {
         $timeout(() => {
-          vm.fileError = 'An error has occurred while parsing your zip file'
-          vm.field.fieldValue = ''
+          showAttachmentError('An error has occurred while parsing your zip file')
         })
       })
   }
 
   vm.attachmentIsDisabled = (field) => {
     return (
-      (vm.isadminpreview && !vm.buttonResizing[field._id]) || field.disabled
+      (vm.isadminpreview && !vm.isLoading) || field.disabled
     )
   }
 
@@ -123,18 +98,55 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
   const saveFileToField = (file) => {
     const reader = new FileReader()
 
-    reader.onload = function (e) {
-      const blob = new Blob([new Uint8Array(e.target.result)], {
-        type: file.type,
+    // Context: Android file picker gives an option to upload files directly
+    // from Google Drive, but those cause errors with FileReader and
+    // XMLHttpRequest.
+    reader.onerror = () => {
+      $timeout(() => {
+        showAttachmentError(
+          'Upload failed. If you are using online storage such as Google Drive, ' +
+          'download your file before attaching the downloaded version'
+        )
       })
+    }
 
-      // Not using File constructor because IE11 does not support File
-      blob.name = file.name
-      blob.lastModifiedDate = file.lastModifiedDate
+    reader.onload = function (e) {
+      $timeout(() => {
+        const blob = new Blob([new Uint8Array(e.target.result)], {
+          type: file.type,
+        })
 
-      // Assign it to the field.
-      vm.field.file = blob
+        // Not using File constructor because IE11 does not support File
+        blob.name = file.name
+        blob.lastModifiedDate = file.lastModifiedDate
+
+        // Assign it to the field.
+        vm.field.file = blob
+        vm.field.fieldValue = file.name
+
+        vm.fileAttached = true
+        vm.fileError = false
+        vm.fileName = file.name
+        vm.fileSize = file.size / 1000
+        if (file.size / 1000 > 1000) {
+          vm.fileSize = String((file.size / 1000000).toFixed(2)) + ' MB'
+        } else {
+          vm.fileSize = String((file.size / 1000).toFixed(2)) + ' KB'
+        }
+        vm.isLoading = false
+      })
     }
     reader.readAsArrayBuffer(file)
+  }
+
+  /**
+   * Shows an error message and erases file.
+   * @param {string} message Error message to show. Should not include period as period is hardcoded in view.
+   */
+  const showAttachmentError = (message) => {
+    vm.fileError = message
+    vm.field.fieldValue = ''
+    vm.fileAttached = false
+    vm.isLoading = false
   }
 }
