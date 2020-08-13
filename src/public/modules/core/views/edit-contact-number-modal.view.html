@@ -23,7 +23,7 @@
             allow-intl-numbers="true"
             ng-change="vm.resetVfnState()"
           />
-          <!-- Error -->
+          <!-- Errors -->
           <div
             ng-messages="verifyForm.contact.$error"
             ng-show="verifyForm.contact.$touched"
@@ -61,10 +61,89 @@
       <!-- Verification Block -->
       <form
         ng-show="vm.vfnState === vm.VERIFY_STATE.AWAIT"
-        class="vfn__form"
+        class="otp__form"
         name="otpForm"
       >
-        hello
+        <img
+          src="/public/modules/core/img/otp-mobile-illustration.svg"
+          alt=""
+        />
+        <div class="ecm__otp">
+          <div class="ecm__otp__header">
+            Verify your mobile number
+          </div>
+          <div class="ecm__otp__subheader">
+            A text message with a verification code was just sent to you. The
+            code will be valid for 10 minutes.
+          </div>
+          <div class="ecm__otp__input">
+            <!-- OTP input box-->
+            <div class="ecm__otp__input--input">
+              <input
+                name="otp"
+                class="input-medium input-custom"
+                type="text"
+                maxlength="6"
+                ng-required="true"
+                ng-model="vm.otp.value"
+                ng-pattern="/^\d{6}$/"
+                ng-disabled="vm.isFetching"
+              />
+              <!-- Errors -->
+              <!-- Input errors -->
+              <div
+                ng-messages="otpForm.otp.$error"
+                ng-show="otpForm.otp.$touched"
+              >
+                <div class="alert-custom alert-error" ng-message="required">
+                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                  <span class="alert-msg">Please fill in required field</span>
+                </div>
+                <div ng-message="pattern" class="alert-custom alert-error">
+                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                  <span class="alert-msg">OTP must be 6 digits</span>
+                </div>
+              </div>
+              <!--'invalidOtp' message-->
+              <div ng-show="vm.otp.error">
+                <div class="alert-custom alert-error">
+                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                  <span class="alert-msg">{{vm.otp.error}}</span>
+                </div>
+              </div>
+              <!-- End 'invalidOtp' message -->
+              <!-- End errors -->
+            </div>
+            <!-- End OTP input box -->
+            <!-- OTP Submit button-->
+            <div class="">
+              <button
+                type="button"
+                class="btn-custom btn-small"
+                ng-click="vm.verifyOtp()"
+                ng-disabled="!otpForm.otp.$valid || vm.isFetching"
+              >
+                <div class="btn--loading" ng-show="vm.isFetching">
+                  <i class="bx bx-loader bx-spin"></i>
+                </div>
+                <span ng-show="!vm.isFetching">Submit</span>
+              </button>
+            </div>
+          </div>
+
+          <!--Resend button-->
+          <div class="ecm__otp__resend">
+            <button
+              ng-disabled="vm.isFetching || vm.otp.countdown > 0"
+              ng-click="vm.getNewOtp()"
+            >
+              Resend OTP
+            </button>
+            <span ng-if="vm.otp.countdown > 0">
+              in {{ vm.otp.countdown}} seconds
+            </span>
+          </div>
+        </div>
       </form>
       <!-- End verification block -->
     </div>

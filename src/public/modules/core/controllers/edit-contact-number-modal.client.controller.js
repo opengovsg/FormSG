@@ -31,6 +31,11 @@ function EditContactNumberModalController($uibModalInstance, Auth) {
     signature: undefined,
   }
 
+  vm.otp = {
+    value: '',
+    countdown: 0
+  }
+
   vm.lastVerifiedContact = vm.user.contact
 
   vm.resetVfnState = () => {
