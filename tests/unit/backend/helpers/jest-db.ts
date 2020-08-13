@@ -4,7 +4,11 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
+import { getEncryptedFormModel } from 'src/app/models/form.server.model'
+import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
+
+import { ResponseMode, SubmissionType } from '../../../../src/types'
 
 /**
  * Connect to the in-memory database using MONGO_URL exposed by
@@ -52,13 +56,23 @@ const insertFormCollectionReqs = async ({
   userId,
   mailDomain = 'test.gov.sg',
   mailName = 'test',
+  encryptedContent = 'encrypted-content',
+  verifiedContent = 'verified-content',
+  publicKey = 'fake-public-key',
+  title = 'Test Form',
 }: {
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
-} = {}) => {
+  encryptedContent?: string
+  verifiedContent?: string
+  publicKey?: string
+  title?: string
+}) => {
   const Agency = getAgencyModel(mongoose)
   const User = getUserModel(mongoose)
+  const EncryptForm = getEncryptedFormModel(mongoose)
+  const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
   const agency = await Agency.create({
     shortName: 'govtest',
@@ -73,7 +87,25 @@ const insertFormCollectionReqs = async ({
     agency: agency.id,
   })
 
-  return { agency, user }
+  const encryptForm = await EncryptForm.create({
+    title,
+    admin: user._id,
+    responseMode: ResponseMode.Encrypt,
+    publicKey,
+  })
+
+  const encryptSubmission = await EncryptSubmission.create({
+    form: encryptForm._id,
+    submissionType: SubmissionType.Encrypt,
+    encryptedContent,
+    verifiedContent,
+    version: 1,
+    authType: encryptForm.authType,
+    myInfoFields: [],
+    webhookResponses: [],
+  })
+
+  return { agency, user, encryptForm, encryptSubmission }
 }
 
 const dbHandler = {
