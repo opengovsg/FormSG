@@ -1,3 +1,4 @@
+import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
@@ -46,6 +47,18 @@ const compileUserModel = (db: Mongoose) => {
     created: {
       type: Date,
       default: Date.now,
+    },
+    contact: {
+      type: String,
+      validate: {
+        // Check if phone number is valid.
+        validator: function (value: string) {
+          const phoneNumber = parsePhoneNumberFromString(value)
+          if (!phoneNumber) return false
+          return phoneNumber.isValid()
+        },
+        message: (props) => `${props.value} is not a valid mobile number`,
+      },
     },
     betaFlags: {},
   })
