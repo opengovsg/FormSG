@@ -197,18 +197,17 @@ const logCriticalBounce = (bounceInfo: IBounceSchema, formId: string): void => {
  * Parses an SNS notification and updates the Bounce collection.
  * @param body The request body of the notification
  */
-export const updateBounces = async (
-  body: IEmailNotification,
-): Promise<void> => {
-  logger.info(body)
-  const emailType = extractHeader(body, EMAIL_HEADERS.emailType)
-  const formId = extractHeader(body, EMAIL_HEADERS.formId)
+export const updateBounces = async (body: ISnsNotification): Promise<void> => {
+  const notification: IEmailNotification = JSON.parse(body.Message)
+  logger.info(notification)
+  const emailType = extractHeader(notification, EMAIL_HEADERS.emailType)
+  const formId = extractHeader(notification, EMAIL_HEADERS.formId)
   // We only care about admin emails
   if (emailType !== EMAIL_TYPES.adminResponse || !formId) return
-  const latestBounces = extractBounceDoc(body, formId)
+  const latestBounces = extractBounceDoc(notification, formId)
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
-    updateBounceDoc(oldBounces, latestBounces, body)
+    updateBounceDoc(oldBounces, latestBounces, notification)
     logCriticalBounce(oldBounces, formId)
     oldBounces.save()
   } else {
