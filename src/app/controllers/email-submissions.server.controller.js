@@ -552,19 +552,25 @@ exports.saveMetadataToDb = function (req, res, next) {
 
   // Create submission hash
   let concatenatedResponse = concatResponse(formData, attachments)
-  let submissionLogstring
+  let submissionLog
 
   createHash(concatenatedResponse)
     .then((result) => {
       submission.responseHash = result.hash
       submission.responseSalt = result.salt
-      submissionLogstring = `Saving submission ${submission.id} to MongoDB with hash ${submission.responseHash}`
+      submissionLog = {
+        message: 'Saving submission to MongoDB',
+        submissionId: submission.id,
+        formId: form._id,
+        ip: getRequestIp(req),
+        responseHash: submission.responseHash,
+      }
       // Save submission to database
-      logger.profile(submissionLogstring)
+      logger.profile(submissionLog)
       return submission.save()
     })
     .then((submission) => {
-      logger.profile(submissionLogstring)
+      logger.profile(submissionLog)
       req.submission = submission
       return next()
     })
