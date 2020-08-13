@@ -85,10 +85,67 @@
   flex: 1;
 }
 
+#edit-contact-modal .ecm__otp {
+  color: #2f60ce;
+  margin-left: 24px;
+}
+
+#edit-contact-modal .ecm__otp__header {
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.67;
+}
+
+#edit-contact-modal .ecm__otp__subheader {
+  font-size: 18px;
+  line-height: 1.28;
+  margin-bottom: 16px;
+}
+
+#edit-contact-modal .ecm__otp__input {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-bottom: 8px;
+}
+
+#edit-contact-modal .ecm__otp__input--input {
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  margin-right: 12px;
+}
+
+#edit-contact-modal .ecm__otp__resend button {
+  font-size: 18px;
+  line-height: 1.67;
+  color: #2f60ce;
+  background: none;
+  border: none;
+  text-decoration: underline;
+}
+
+#edit-contact-modal .ecm__otp__resend button:hover,
+#edit-contact-modal .ecm__otp__resend button:active,
+#edit-contact-modal .ecm__otp__resend button:focus {
+  color: #264da4;
+}
+
 #edit-contact-modal .ecm__vfn-button--success {
   background-color: #04aa80;
 }
 
 #edit-contact-modal .ecm__vfn-button--success:disabled {
   opacity: 1;
+}
+
+#edit-contact-modal .otp__form {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  background-color: #e9ecf5;
+  padding: 32px;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: flex-start;
 }
