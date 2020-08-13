@@ -26,6 +26,13 @@
 
 #admin-form #form-header .right-spacer {
   margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#admin-form #form-header .right-spacer .navbar__avatar {
+  margin: -10px 0;
 }
 
 #admin-form #form-header #header-myforms a {
