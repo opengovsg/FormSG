@@ -182,7 +182,10 @@ const logCriticalBounce = (bounceInfo: IBounceSchema, formId: string): void => {
     bounceInfo.bounces.every((emailInfo) => emailInfo.hasBounced)
   ) {
     logger.warn(
-      `CRITICAL BOUNCE: All email deliveries for the following form were unsuccessful: ${formId}`,
+      `CRITICAL BOUNCE: All email deliveries for the following form were unsuccessful: ${formId}.
+      The email recipients are ${bounceInfo.bounces
+        .map((emailInfo) => emailInfo.email)
+        .join(', ')}`,
     )
     // We don't want a flood of logs and alarms, so we use this to limit the rate of
     // critical bounce logs for each form ID
