@@ -37,14 +37,18 @@ export interface IEmailNotification {
 
 export interface IBounceNotification extends IEmailNotification {
   notificationType: 'Bounce'
-  bounceType: string
-  bounceSubType: string
-  bouncedRecipients: {
-    emailAddress: string
-  }[]
+  bounce: {
+    bounceType: string
+    bounceSubType: string
+    bouncedRecipients: {
+      emailAddress: string
+    }[]
+  }
 }
 
 export interface IDeliveryNotification extends IEmailNotification {
   notificationType: 'Delivery'
-  recipients: string[]
+  delivery: {
+    recipients: string[]
+  }
 }
