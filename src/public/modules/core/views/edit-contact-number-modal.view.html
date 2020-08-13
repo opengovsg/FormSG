@@ -1,1 +1,72 @@
-<div>Hello world</div>
+<div id="edit-contact-modal">
+  <div class="ecm__content">
+    <div class="ecm__content__header">
+      Please enter an emergency mobile number
+    </div>
+    <div class="ecm__content__subheader">
+      We'll contact you here in the unlikely event of urgent issues with your
+      form(s). You can update this number later.
+    </div>
+    <div class="ecm__content__input">
+      <!-- Verification input -->
+      <form class="ecm__form" name="verifyForm">
+        <!-- Creating a custom input as opposed to using field-mobile as the
+      required parameters are different. -->
+        <div class="ecm__form__input">
+          <input
+            name="contact"
+            type="tel"
+            ng-model="vm.contact.number"
+            aria-label="Emergency contact number field"
+            ng-required="true"
+            ng-intl-tel-input
+            allow-intl-numbers="true"
+            ng-change="vm.resetVfnState()"
+          />
+          <!-- Error -->
+          <div
+            ng-messages="verifyForm.contact.$error"
+            ng-show="verifyForm.contact.$touched"
+          >
+            <div
+              class="alert-custom alert-error"
+              ng-message="isValidPhoneNumber"
+            >
+              <i class="bx bx-exclamation bx-md icon-spacing"></i>
+              <span class="alert-msg">Invalid mobile number</span>
+            </div>
+            <div class="alert-custom alert-error" ng-message="required">
+              <i class="bx bx-exclamation bx-md icon-spacing"></i>
+              <span class="alert-msg">Please fill in required field</span>
+            </div>
+            <div ng-message="verified" class="alert-custom alert-error">
+              <i class="bx bx-exclamation bx-md icon-spacing"></i>
+              <span class="alert-msg">Please verify your mobile number.</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <button
+            ng-disabled="!vm.contact.number || vm.vfnState !==
+          vm.VERIFY_STATE.IDLE || vm.isFetching"
+            class="vfn-btn btn-custom btn-large field-group"
+            ng-click="vm.verifyNumber()"
+          >
+            <span ng-if="!vm.isFetching">Verify</span>
+            <i ng-if="vm.isFetching" class="bx bx-loader bx-spin"></i>
+          </button>
+        </div>
+      </form>
+      <!-- End verification input -->
+      <!-- Verification Block -->
+      <form
+        ng-show="vm.vfnState === vm.VERIFY_STATE.AWAIT"
+        class="vfn__form"
+        name="otpForm"
+      >
+        hello
+      </form>
+      <!-- End verification block -->
+    </div>
+  </div>
+</div>
