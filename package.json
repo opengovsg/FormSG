@@ -118,7 +118,7 @@
     "font-awesome": "4.6.1",
     "glob": "^7.1.2",
     "has-ansi": "^4.0.0",
-    "helmet": "^3.21.3",
+    "helmet": "^4.0.0",
     "http-status-codes": "^1.4.0",
     "intl-tel-input": "~12.1.6",
     "json-stringify-deterministic": "^1.0.1",
