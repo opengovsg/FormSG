@@ -63,6 +63,7 @@ type Config = {
   cspReportUri: string
   chromiumBin: string
   otpLifeSpan: number
+  bounceLifeSpan: number
   formsgSdkMode: PackageMode
   submissionsTopUp: number
   customCloudWatchGroup?: string
@@ -97,6 +98,12 @@ const sessionSecret = process.env.SESSION_SECRET || defaults.app.sessionSecret
  */
 const otpLifeSpan =
   parseInt(process.env.OTP_LIFE_SPAN, 10) || defaults.login.otpLifeSpan
+
+/**
+ * TTL of bounce documents in milliseconds.
+ */
+const bounceLifeSpan =
+  parseInt(process.env.BOUNCE_LIFE_SPAN, 10) || defaults.bounce.bounceLifeSpan
 
 /**
  * Number of submissions to top up submissions statistic by
@@ -406,6 +413,7 @@ const config: Config = {
   customCloudWatchGroup,
   sessionSecret,
   otpLifeSpan,
+  bounceLifeSpan,
   formsgSdkMode,
   chromiumBin,
   cspReportUri,

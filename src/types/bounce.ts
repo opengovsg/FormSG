@@ -11,6 +11,7 @@ export interface IBounce {
   formId: IFormSchema['_id']
   bounces: ISingleBounce[]
   hasAlarmed: boolean
+  expireAt: Date
   _id: Document['_id']
 }
 

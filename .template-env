@@ -30,6 +30,7 @@ FORMSG_SDK_MODE=
 ## App Config
 # APP_NAME=FormSG
 # OTP_LIFE_SPAN=900000
+# BOUNCE_LIFE_SPAN=1800000
 # AGGREGATE_COLLECTION=
 
 # If provided, a banner with the provided message will show up in every form.

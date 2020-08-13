@@ -1,6 +1,7 @@
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
+import { bounceLifeSpan } from '../../config/config'
 import { IBounceSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -38,7 +39,12 @@ const BounceSchema = new Schema<IBounceSchema>({
       },
     ],
   },
+  expireAt: {
+    type: Date,
+    default: () => new Date(Date.now() + bounceLifeSpan),
+  },
 })
+BounceSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
 const getBounceModel = (db: Mongoose) => {
   try {
