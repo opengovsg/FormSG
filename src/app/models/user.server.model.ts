@@ -16,7 +16,7 @@ const compileUserModel = (db: Mongoose) => {
     email: {
       type: String,
       trim: true,
-      unique: 'Account already exists with this email',
+      unique: true,
       required: 'Please enter your email',
       validate: {
         // Check if email entered exists in the Agency collection
@@ -48,6 +48,16 @@ const compileUserModel = (db: Mongoose) => {
       default: Date.now,
     },
     betaFlags: {},
+  })
+
+  // Hooks
+  // Unique key violation custom error middleware
+  UserSchema.post<IUserSchema>('save', function (err, doc, next) {
+    if (err.name === 'MongoError' && err.code === 11000) {
+      next(new Error('Account already exists with this email'))
+    } else {
+      next()
+    }
   })
 
   return db.model<IUserSchema>(USER_SCHEMA_ID, UserSchema)
