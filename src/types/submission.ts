@@ -11,15 +11,20 @@ export enum SubmissionType {
 export interface ISubmission {
   form: IFormSchema['_id']
   authType: AuthType
-  myInfoFields: MyInfoAttribute
+  myInfoFields: MyInfoAttribute[] | []
   submissionType: SubmissionType
-  created: Date
-  lastModified: Date
+  created?: Date
+  lastModified?: Date
   _id: Document['_id']
-}
-
-export interface ISubmissionSchema extends ISubmission, Document {
-  getWebhookView(): WebhookView | null
+  recipientEmails?: string[]
+  responseHash?: string
+  responseSalt?: string
+  hasBounced?: boolean
+  encryptedContent?: string
+  verifiedContent?: string
+  version?: number
+  attachmentMetadata?: Map<string, string>
+  webhookResponses?: IWebhookResponse[] | []
 }
 
 export interface WebhookData {
@@ -35,24 +40,40 @@ export interface WebhookView {
   data: WebhookData
 }
 
+export interface ISubmissionSchema extends ISubmission, Document {
+  getWebhookView(): WebhookView | null
+}
+
 export interface IEmailSubmission extends ISubmission {
-  recipientEmails?: string[]
+  recipientEmails: string[] | []
   responseHash: string
   responseSalt: string
   hasBounced: boolean
+  encryptedContent: never
+  verifiedContent: never
+  version: never
+  attachmentMetadata: never
+  webhookResponses: never
+  getWebhookView(): WebhookView | null
 }
 
-export interface IEmailSubmissionSchema
-  extends IEmailSubmission,
-    ISubmissionSchema {}
+export type IEmailSubmissionSchema = IEmailSubmission & ISubmissionSchema
 
 export interface IEncryptedSubmission extends ISubmission {
+  recipientEmails: never
+  responseHash: never
+  responseSalt: never
+  hasBounced: never
   encryptedContent: string
   verifiedContent?: string
   version: number
   attachmentMetadata?: Map<string, string>
-  webhookResponses: IWebhookResponse[]
+  webhookResponses: IWebhookResponse[] | []
+  getWebhookView(): WebhookView | null
 }
+
+export type IEncryptedSubmissionSchema = IEncryptedSubmission &
+  ISubmissionSchema
 
 export interface IWebhookResponse {
   webhookUrl: string
@@ -67,7 +88,3 @@ export interface IWebhookResponse {
 }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
-
-export interface IEncryptedSubmissionSchema
-  extends IEncryptedSubmission,
-    ISubmissionSchema {}
