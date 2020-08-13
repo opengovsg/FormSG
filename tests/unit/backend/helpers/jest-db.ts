@@ -42,6 +42,22 @@ const clearDatabase = async () => {
   }
 }
 
+const insertDefaultAgency = async ({
+  mailDomain = 'test.gov.sg',
+}: {
+  mailDomain?: string
+} = {}) => {
+  const Agency = getAgencyModel(mongoose)
+  const agency = await Agency.create({
+    shortName: 'govtest',
+    fullName: 'Government Testing Agency',
+    emailDomain: [mailDomain],
+    logo: '/invalid-path/test.jpg',
+  })
+
+  return agency
+}
+
 /**
  * Inserts a default agency and user document into their respective collections.
  * This is required to create a Form document, as Form pre-validation hook
@@ -57,15 +73,9 @@ const insertFormCollectionReqs = async ({
   mailName?: string
   mailDomain?: string
 }) => {
-  const Agency = getAgencyModel(mongoose)
   const User = getUserModel(mongoose)
 
-  const agency = await Agency.create({
-    shortName: 'govtest',
-    fullName: 'Government Testing Agency',
-    emailDomain: [mailDomain],
-    logo: '/invalid-path/test.jpg',
-  })
+  const agency = await insertDefaultAgency({ mailDomain })
 
   const user = await User.create({
     email: `${mailName}@${mailDomain}`,
@@ -80,6 +90,7 @@ const dbHandler = {
   connect,
   closeDatabase,
   clearDatabase,
+  insertDefaultAgency,
   insertFormCollectionReqs,
 }
 
