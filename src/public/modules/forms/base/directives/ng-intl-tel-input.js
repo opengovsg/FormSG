@@ -94,7 +94,12 @@ function ngIntlTelInput(ngIntlTelInput, $log, $window, $parse) {
         const onlyNumRegex = /^[0-9]*$/
 
         if (scope.allowIntlNumbers || !value || value.match(onlyNumRegex)) {
-          return value
+          // Allow international numbers and thus only remove alphabets.
+          // Only allow phone like digits
+          const transformedValue = value.replace(/([^\d+()-])/g, '')
+          ctrl.$setViewValue(transformedValue)
+          ctrl.$render()
+          return transformedValue
         }
 
         // Remove all non-digit characters from value
