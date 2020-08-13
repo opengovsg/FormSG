@@ -332,16 +332,23 @@ app.run([
     )
 
     $templateCache.put(
-      'modules/core/views/landing.client.view.html',
-      require('./modules/core/views/landing.client.view.html'),
-    )
-    $templateCache.put(
       'modules/core/componentViews/banner.html',
       require('./modules/core/componentViews/banner.html'),
     )
     $templateCache.put(
       'modules/core/componentViews/sg-govt-banner.html',
       require('./modules/core/componentViews/sg-govt-banner.html'),
+    )
+
+    // Core views
+    $templateCache.put(
+      'modules/core/views/landing.client.view.html',
+      require('./modules/core/views/landing.client.view.html'),
+    )
+
+    $templateCache.put(
+      'modules/core/views/edit-contact-number-modal.view.html',
+      require('./modules/core/views/edit-contact-number-modal.view.html'),
     )
 
     // Forms module

@@ -22,7 +22,7 @@ function avatarDropdownController($state, $uibModal, Auth) {
   vm.openContactNumberModal = () => {
     $uibModal.open({
       animation: false,
-      template: '<div>Hello world</div>',
+      templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
       windowClass: 'full-screen-modal-window',
       controller: 'EditContactNumberModalController',
       controllerAs: 'vm',
