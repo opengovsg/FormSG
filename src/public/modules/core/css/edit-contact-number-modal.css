@@ -1,0 +1,84 @@
+#edit-contact-modal {
+  height: 100vh;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+#edit-contact-modal .ecm__content {
+  max-width: 575px;
+  color: #323232;
+}
+
+#edit-contact-modal .ecm__content__header {
+  font-size: 24px;
+  font-weight: bold;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: -0.4px;
+  text-align: center;
+}
+
+#edit-contact-modal .ecm__content__subheader {
+  margin-top: 8px;
+  margin-bottom: 48px;
+  font-size: 18px;
+  line-height: 1.39;
+  letter-spacing: -0.3px;
+  text-align: center;
+}
+
+#edit-contact-modal .ecm__form {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+
+#edit-contact-modal .ecm__form__input {
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  margin-right: 12px;
+}
+
+#edit-contact-modal .ecm__form__input .intl-tel-input {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+#edit-contact-modal .ecm__form__input input {
+  width: 100%;
+  line-height: 1.5;
+  color: #484848;
+  border: solid 2px #b8b8b8;
+  height: 54px;
+  display: block;
+  border-radius: 0;
+  outline: none;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+}
+
+#edit-contact-modal .ecm__form__input input.ng-touched.ng-invalid {
+  border: 2px solid #a94442;
+}
+
+#edit-contact-modal .ecm__form__input input:focus,
+#edit-contact-modal .ecm__form__input input:active {
+  border: 2px solid #2f60ce;
+}
