@@ -20,16 +20,15 @@ const compileUserModel = (db: Mongoose) => {
       required: 'Please enter your email',
       validate: {
         // Check if email entered exists in the Agency collection
-        validator: async (value: string) => {
-          return new Promise<boolean>((resolve, reject) => {
+        validator: (value: string) => {
+          return new Promise<boolean>((resolve) => {
             if (!validator.isEmail(value)) {
               return resolve(false)
             }
             const emailDomain = value.split('@').pop()
-
             Agency.findOne({ emailDomain }, (err, agency) => {
               if (err || !agency) {
-                return reject(err)
+                return resolve(false)
               } else {
                 return resolve(true)
               }
