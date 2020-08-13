@@ -165,7 +165,7 @@ const updateBounceDoc = (
       // actually succeeded
       const hasSubsequentlySucceeded =
         isDelivery &&
-        get(snsInfo, 'delivery.recipients').contains(oldBounce.email)
+        get(snsInfo, 'delivery.recipients').includes(oldBounce.email)
       if (matchedLatestBounce) {
         // Set the latest bounce status based on the latest notification
         matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
