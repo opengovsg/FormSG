@@ -8,7 +8,7 @@
       form(s). You can update this number later.
     </div>
     <div class="ecm__content__input">
-      <!-- Verification input -->
+      <!-- Contact input -->
       <form class="ecm__form" name="verifyForm">
         <!-- Creating a custom input as opposed to using field-mobile as the
       required parameters are different. -->
@@ -16,12 +16,12 @@
           <input
             name="contact"
             type="tel"
-            ng-model="vm.contact.number"
+            ng-model="vm.contact"
             aria-label="Emergency contact number field"
             ng-required="true"
             ng-intl-tel-input
             allow-intl-numbers="true"
-            ng-change="vm.resetVfnState()"
+            ng-change="vm.resetSubmissionState()"
           />
           <!-- Errors -->
           <div
@@ -39,122 +39,22 @@
               <i class="bx bx-exclamation bx-md icon-spacing"></i>
               <span class="alert-msg">Please fill in required field</span>
             </div>
-            <div ng-message="verified" class="alert-custom alert-error">
-              <i class="bx bx-exclamation bx-md icon-spacing"></i>
-              <span class="alert-msg">Please verify your mobile number.</span>
-            </div>
           </div>
         </div>
         <div>
           <button
-            ng-disabled="!vm.contact.number || vm.vfnState !==
-          vm.VERIFY_STATE.IDLE || vm.isFetching"
+            ng-disabled="!vm.contact || vm.isLoading || vm.isSuccess"
             class="ecm__vfn-button vfn-btn btn-custom btn-large field-group"
-            ng-class="vm.vfnState === vm.VERIFY_STATE.SUCCESS ?
-          'ecm__vfn-button--success' : ''"
-            ng-click="vm.vfnState !== vm.VERIFY_STATE.SUCCESS && vm.sendOtp()"
+            ng-class="vm.isSuccess ? 'ecm__vfn-button--success' : ''"
+            ng-click="!vm.isSuccess && vm.updateContactNumber()"
           >
-            <span
-              ng-if="!vm.isFetching && vm.vfnState !== vm.VERIFY_STATE.SUCCESS"
-              >Verify</span
-            >
-            <span
-              ng-if="!vm.isFetching && vm.vfnState === vm.VERIFY_STATE.SUCCESS"
-              >Verified</span
-            >
-            <i ng-if="vm.isFetching" class="bx bx-loader bx-spin"></i>
+            <span ng-if="!vm.isLoading && !vm.isSuccess">Submit</span>
+            <span ng-if="!vm.isLoading && vm.isSuccess">Saved</span>
+            <i ng-if="vm.isLoading" class="bx bx-loader bx-spin"></i>
           </button>
         </div>
       </form>
-      <!-- End verification input -->
-      <!-- Verification Block -->
-      <form
-        ng-show="vm.vfnState === vm.VERIFY_STATE.AWAIT"
-        class="otp__form"
-        name="otpForm"
-      >
-        <img
-          src="/public/modules/core/img/otp-mobile-illustration.svg"
-          alt=""
-        />
-        <div class="ecm__otp">
-          <div class="ecm__otp__header">
-            Verify your mobile number
-          </div>
-          <div class="ecm__otp__subheader">
-            A text message with a verification code was just sent to you. The
-            code will be valid for 10 minutes.
-          </div>
-          <div class="ecm__otp__input">
-            <!-- OTP input box-->
-            <div class="ecm__otp__input--input">
-              <input
-                name="otp"
-                class="input-medium input-custom"
-                type="text"
-                maxlength="6"
-                ng-required="true"
-                ng-model="vm.otp.value"
-                ng-pattern="/^\d{6}$/"
-                ng-disabled="vm.isFetching"
-              />
-              <!-- Errors -->
-              <!-- Input errors -->
-              <div
-                ng-messages="otpForm.otp.$error"
-                ng-show="otpForm.otp.$touched"
-              >
-                <div class="alert-custom alert-error" ng-message="required">
-                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
-                  <span class="alert-msg">Please fill in required field</span>
-                </div>
-                <div ng-message="pattern" class="alert-custom alert-error">
-                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
-                  <span class="alert-msg">OTP must be 6 digits</span>
-                </div>
-              </div>
-              <!--'invalidOtp' message-->
-              <div ng-show="vm.otp.error">
-                <div class="alert-custom alert-error">
-                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
-                  <span class="alert-msg">{{vm.otp.error}}</span>
-                </div>
-              </div>
-              <!-- End 'invalidOtp' message -->
-              <!-- End errors -->
-            </div>
-            <!-- End OTP input box -->
-            <!-- OTP Submit button-->
-            <div class="">
-              <button
-                type="button"
-                class="btn-custom btn-small"
-                ng-click="vm.verifyOtp()"
-                ng-disabled="!otpForm.otp.$valid || vm.isFetching"
-              >
-                <div class="btn--loading" ng-show="vm.isFetching">
-                  <i class="bx bx-loader bx-spin"></i>
-                </div>
-                <span ng-show="!vm.isFetching">Submit</span>
-              </button>
-            </div>
-          </div>
-
-          <!--Resend button-->
-          <div class="ecm__otp__resend">
-            <button
-              ng-disabled="vm.isFetching || vm.otp.countdown > 0"
-              ng-click="vm.getNewOtp()"
-            >
-              Resend OTP
-            </button>
-            <span ng-if="vm.otp.countdown > 0">
-              in {{ vm.otp.countdown}} seconds
-            </span>
-          </div>
-        </div>
-      </form>
-      <!-- End verification block -->
+      <!-- End contact input -->
     </div>
   </div>
 </div>
