@@ -627,10 +627,18 @@ exports.sendAdminEmail = async function (req, res, next) {
  * @param {Object} res - Express response object
  */
 exports.handleSns = async (req, res) => {
-  const isValid = await snsService.isValidSnsRequest(req.body)
-  if (!isValid) {
-    return res.sendStatus(HttpStatus.FORBIDDEN)
+  // Since this function is for a public endpoint, catch all possible errors
+  // so we never fail on malformed input. The response code is meaningless since
+  // it is meant to go back to AWS.
+  try {
+    const isValid = await snsService.isValidSnsRequest(req.body)
+    if (!isValid) {
+      return res.sendStatus(HttpStatus.FORBIDDEN)
+    }
+    snsService.updateBounces(req.body)
+    return res.sendStatus(HttpStatus.OK)
+  } catch (err) {
+    logger.warn(err)
+    return res.sendStatus(HttpStatus.BAD_REQUEST)
   }
-  snsService.updateBounces(req.body)
-  return res.sendStatus(HttpStatus.OK)
 }
