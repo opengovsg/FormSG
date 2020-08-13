@@ -49,10 +49,19 @@
           <button
             ng-disabled="!vm.contact.number || vm.vfnState !==
           vm.VERIFY_STATE.IDLE || vm.isFetching"
-            class="vfn-btn btn-custom btn-large field-group"
-            ng-click="vm.verifyNumber()"
+            class="ecm__vfn-button vfn-btn btn-custom btn-large field-group"
+            ng-class="vm.vfnState === vm.VERIFY_STATE.SUCCESS ?
+          'ecm__vfn-button--success' : ''"
+            ng-click="vm.vfnState !== vm.VERIFY_STATE.SUCCESS && vm.sendOtp()"
           >
-            <span ng-if="!vm.isFetching">Verify</span>
+            <span
+              ng-if="!vm.isFetching && vm.vfnState !== vm.VERIFY_STATE.SUCCESS"
+              >Verify</span
+            >
+            <span
+              ng-if="!vm.isFetching && vm.vfnState === vm.VERIFY_STATE.SUCCESS"
+              >Verified</span
+            >
             <i ng-if="vm.isFetching" class="bx bx-loader bx-spin"></i>
           </button>
         </div>

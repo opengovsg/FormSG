@@ -131,6 +131,14 @@
   color: #264da4;
 }
 
+#edit-contact-modal .ecm__vfn-button--success {
+  background-color: #04aa80;
+}
+
+#edit-contact-modal .ecm__vfn-button--success:disabled {
+  opacity: 1;
+}
+
 #edit-contact-modal .otp__form {
   display: -webkit-box;
   display: -ms-flexbox;

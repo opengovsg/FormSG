@@ -1,12 +1,13 @@
 angular
   .module('core')
   .controller('EditContactNumberModalController', [
+    '$scope',
     '$uibModalInstance',
     'Auth',
     EditContactNumberModalController,
   ])
 
-function EditContactNumberModalController($uibModalInstance, Auth) {
+function EditContactNumberModalController($scope, $uibModalInstance, Auth) {
   const vm = this
 
   // The various states of verification
@@ -24,11 +25,10 @@ function EditContactNumberModalController($uibModalInstance, Auth) {
   // Redirect to signin if unable to get user
   vm.user = Auth.getUser() || $state.go('signin')
 
-  vm.vfnState = VERIFY_STATE.IDLE
+  vm.vfnState = vm.user.contact ? VERIFY_STATE.SUCCESS : VERIFY_STATE.IDLE
 
   vm.contact = {
-    number: '',
-    signature: undefined,
+    number: vm.user.contact || '',
   }
 
   vm.otp = {
@@ -40,7 +40,7 @@ function EditContactNumberModalController($uibModalInstance, Auth) {
 
   vm.resetVfnState = () => {
     // Reset to success state if the number is what is currently stored.
-    if (vm.contact.number === vm.lastVerifiedContact) {
+    if (vm.contact.number && vm.contact.number === vm.lastVerifiedContact) {
       vm.vfnState = VERIFY_STATE.SUCCESS
       return
     }
@@ -51,7 +51,7 @@ function EditContactNumberModalController($uibModalInstance, Auth) {
     }
   }
 
-  vm.verifyNumber = async () => {
+  vm.sendOtp = async () => {
     const userId = vm.user._id
     vm.isFetching = true
     try {
@@ -64,6 +64,21 @@ function EditContactNumberModalController($uibModalInstance, Auth) {
       // Show error message
     } finally {
       vm.isFetching = false
+    }
+  }
+
+  vm.verifyOtp = async () => {
+    vm.isFetching = true
+    try {
+      // Check with backend if the otp is correct
+      vm.vfnState = VERIFY_STATE.SUCCESS
+    } catch (err) {
+      // Show error message
+    } finally {
+      vm.isFetching = false
+      vm.otp.value = ''
+      $scope.otpForm.otp.$setPristine()
+      $scope.otpForm.otp.$setUntouched()
     }
   }
 
