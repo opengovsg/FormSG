@@ -143,6 +143,7 @@
 #edit-contact-modal .ecm__otp {
   color: #2f60ce;
   margin-left: 24px;
+  text-align: left;
 }
 
 #edit-contact-modal .ecm__otp__header {
