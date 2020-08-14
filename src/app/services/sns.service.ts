@@ -67,7 +67,7 @@ const getSnsKeysToSign = (): (keyof ISnsNotification)[] => {
  * Generates the string to sign.
  * @param {Object} body body from Express request object
  */
-export const getSnsBasestring = (body: ISnsNotification): string => {
+const getSnsBasestring = (body: ISnsNotification): string => {
   return getSnsKeysToSign().reduce((result, key) => {
     return result + key + '\n' + body[key] + '\n'
   }, '')
