@@ -601,7 +601,6 @@ exports.sendAdminEmail = async function (req, res, next) {
     )
 
     await MailService.sendSubmissionToAdmin({
-      adminEmails: form.emails,
       replyToEmails,
       form,
       submission,

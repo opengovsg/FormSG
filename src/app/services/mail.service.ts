@@ -9,6 +9,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
 import {
   AutoReplyOptions,
+  IEmailFormSchema,
   IFormSchema,
   IPopulatedForm,
   ISubmissionSchema,
@@ -285,7 +286,6 @@ export class MailService {
   /**
    * Sends a submission response email to the admin of the given form.
    * @param args the parameter object
-   * @param args.adminEmails the recipients to send the mail to
    * @param args.replyToEmails emails to set replyTo, if any
    * @param args.form the form document to retrieve some email data from
    * @param args.submission the submission document to retrieve some email data from
@@ -294,7 +294,6 @@ export class MailService {
    * @param args.formData the form data to display to in the body in table form
    */
   sendSubmissionToAdmin = async ({
-    adminEmails,
     replyToEmails,
     form,
     submission,
@@ -302,9 +301,8 @@ export class MailService {
     jsonData,
     formData,
   }: {
-    adminEmails: string | string[]
     replyToEmails?: string[]
-    form: Pick<IFormSchema, '_id' | 'title'>
+    form: Pick<IEmailFormSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
     formData: any[]
@@ -345,7 +343,7 @@ export class MailService {
     const mailHtml = await generateSubmissionToAdminHtml(htmlData)
 
     const mail: MailOptions = {
-      to: adminEmails,
+      to: form.emails,
       from: this.#senderFromString,
       subject: `formsg-auto: ${formTitle} (Ref: ${refNo})`,
       html: mailHtml,

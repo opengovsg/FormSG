@@ -147,11 +147,11 @@ describe('mail.service', () => {
     let expectedHtml: string
 
     const MOCK_VALID_SUBMISSION_PARAMS = {
-      adminEmails: MOCK_VALID_EMAIL,
       replyToEmails: ['test1@example.com', 'test2@example.com'],
       form: {
         title: 'Test form title',
         _id: 'mockFormId',
+        emails: [MOCK_VALID_EMAIL],
       },
       submission: {
         id: 'mockSubmissionId',
@@ -198,13 +198,13 @@ describe('mail.service', () => {
       expectedHtml = await MailUtils.generateSubmissionToAdminHtml(htmlData)
     })
 
-    it('should send submission mail to admin successfully if adminEmail is a single string', async () => {
+    it('should send submission mail to admin successfully if form.emails is an array with a single string', async () => {
       // sendMail should return mocked success response
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
       const expectedArgument = {
-        to: MOCK_VALID_SUBMISSION_PARAMS.adminEmails,
+        to: MOCK_VALID_SUBMISSION_PARAMS.form.emails,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: expectedHtml,
@@ -227,19 +227,19 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
-    it('should send submission mail to admin successfully if adminEmail is a single comma separated string', async () => {
+    it('should send submission mail to admin successfully if form.emails is an array with a single comma separated string', async () => {
       // sendMail should return mocked success response
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
-      const adminEmailCommaSeparated = `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`
-      const modifiedParams = {
-        ...MOCK_VALID_SUBMISSION_PARAMS,
-        adminEmails: adminEmailCommaSeparated,
-      }
+      const formEmailsCommaSeparated = [
+        `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
+      ]
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formEmailsCommaSeparated
 
       const expectedArgument = {
-        to: adminEmailCommaSeparated,
+        to: formEmailsCommaSeparated,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: expectedHtml,
@@ -262,19 +262,17 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
-    it('should send submission mail to admin successfully if adminEmail is an array', async () => {
+    it('should send submission mail to admin successfully if form.emails is an array with multiple emails', async () => {
       // Arrange
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
-      const adminEmailArray = [MOCK_VALID_EMAIL, MOCK_VALID_EMAIL_2]
-      const modifiedParams = {
-        ...MOCK_VALID_SUBMISSION_PARAMS,
-        adminEmails: adminEmailArray,
-      }
+      const formMultipleEmailsArray = [MOCK_VALID_EMAIL, MOCK_VALID_EMAIL_2]
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formMultipleEmailsArray
 
       const expectedArgument = {
-        to: adminEmailArray,
+        to: formMultipleEmailsArray,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: expectedHtml,
@@ -296,56 +294,20 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
-    it('should send submission mail to admin successfully if adminEmail is an array with comma separated strings', async () => {
+    it('should send submission mail to admin successfully if form.emails is an array with a mixture of emails and comma separated emails strings', async () => {
       // Arrange
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
-      const adminEmailArray = [`${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`]
-      const modifiedParams = {
-        ...MOCK_VALID_SUBMISSION_PARAMS,
-        adminEmails: adminEmailArray,
-      }
-
-      const expectedArgument = {
-        to: adminEmailArray,
-        from: MOCK_SENDER_STRING,
-        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: expectedHtml,
-        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Admin (response)',
-          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
-          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
-        },
-        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
-      }
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(modifiedParams),
-      ).resolves.toEqual(mockedResponse)
-      // Check arguments passed to sendNodeMail
-      expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
-    })
-
-    it('should send submission mail to admin successfully if adminEmail is mixture of strings and arrays', async () => {
-      // Arrange
-      const mockedResponse = 'mockedSuccessResponse'
-      sendMailSpy.mockResolvedValueOnce(mockedResponse)
-
-      const adminEmailMixture = [
+      const formEmailsMixture = [
         `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
         MOCK_VALID_EMAIL_3,
       ]
-      const modifiedParams = {
-        ...MOCK_VALID_SUBMISSION_PARAMS,
-        adminEmails: adminEmailMixture,
-      }
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formEmailsMixture
 
       const expectedArgument = {
-        to: adminEmailMixture,
+        to: formEmailsMixture,
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: expectedHtml,
@@ -367,40 +329,25 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
-    it('should reject with error when adminEmail param is an invalid email string', async () => {
+    it('should reject with error when form.emails array contains an invalid email string', async () => {
       // Arrange
-      const invalidParams = {
-        ...MOCK_VALID_SUBMISSION_PARAMS,
-        adminEmails: 'notAnEmail',
-      }
+      const invalidParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      invalidParams.form.emails = ['notAnEmail', MOCK_VALID_EMAIL]
+
       // Act + Assert
       await expect(
         mailService.sendSubmissionToAdmin(invalidParams),
       ).rejects.toThrowError('Invalid email error')
     })
 
-    it('should reject with error when adminEmail param is an empty array', async () => {
+    it('should reject with error when form.emails param is an empty array', async () => {
       // Arrange
-      const invalidParams = {
-        ...MOCK_VALID_SUBMISSION_PARAMS,
-        adminEmails: [],
-      }
+      const invalidParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      invalidParams.form.emails = []
       // Act + Assert
       await expect(
         mailService.sendSubmissionToAdmin(invalidParams),
       ).rejects.toThrowError('Mail undefined error')
-    })
-
-    it('should reject with error when adminEmail param array contains invalid emails', async () => {
-      // Arrange
-      const invalidParams = {
-        ...MOCK_VALID_SUBMISSION_PARAMS,
-        adminEmails: [MOCK_VALID_EMAIL, 'thisIsInvalidEmail'],
-      }
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(invalidParams),
-      ).rejects.toThrowError('Invalid email error')
     })
   })
 
