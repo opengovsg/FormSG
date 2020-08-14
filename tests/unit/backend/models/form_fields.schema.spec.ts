@@ -25,10 +25,12 @@ const MOCK_EMAIL_FORM_PARAMS = {
 }
 
 describe('Form Field Schema', () => {
-  beforeAll(async () => {
-    await dbHandler.connect()
-    await dbHandler.insertFormCollectionReqs(MOCK_ADMIN_ID)
-  })
+  beforeAll(async () => await dbHandler.connect())
+  beforeEach(
+    async () =>
+      await dbHandler.insertFormCollectionReqs({ userId: MOCK_ADMIN_ID }),
+  )
+  afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Methods', () => {

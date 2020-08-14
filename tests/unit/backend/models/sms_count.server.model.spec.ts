@@ -21,7 +21,7 @@ const MOCK_MSG_SRVC_SID = 'mockMsgSrvcSid'
 
 describe('SmsCount', () => {
   beforeAll(async () => await dbHandler.connect())
-  afterEach(async () => await dbHandler.clearDatabase())
+  beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {

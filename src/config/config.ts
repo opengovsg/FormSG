@@ -2,7 +2,7 @@ import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
 import crypto from 'crypto'
 import { SessionOptions } from 'express-session'
-import { ConnectionOptions, Schema } from 'mongoose'
+import { ConnectionOptions } from 'mongoose'
 import nodemailer from 'nodemailer'
 import directTransport from 'nodemailer-direct-transport'
 import Mail from 'nodemailer/lib/mailer'
@@ -74,17 +74,19 @@ type Config = {
   // Functions
   configureAws: () => Promise<void>
   otpGenerator: () => string
-  mongoTimestamp: (schema: Schema, options: any) => void
 }
 
 // Enums
 enum Environment {
   Dev = 'development',
   Prod = 'production',
+  Test = 'test',
 }
 
 // Environment variables with defaults
-const isDev = process.env.NODE_ENV !== Environment.Prod
+const isDev =
+  process.env.NODE_ENV === Environment.Dev ||
+  process.env.NODE_ENV === Environment.Test
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 const port = parseInt(process.env.PORT, 10) || defaults.app.port
 const sessionSecret = process.env.SESSION_SECRET || defaults.app.sessionSecret
@@ -314,11 +316,12 @@ const awsConfig: AwsConfig = (function () {
   // Else, the environment variables to instantiate S3 are used.
   const awsEndpoint = isDev
     ? defaults.aws.endpoint
-    : `https://s3.${region}.amazonaws.com/`
+    : `https://s3.${region}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
 
   const logoBucketUrl = `${awsEndpoint}/${logoS3Bucket}`
   const imageBucketUrl = `${awsEndpoint}/${imageS3Bucket}`
-  const attachmentBucketUrl = `${awsEndpoint}/${attachmentS3Bucket}`
+  // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
+  const attachmentBucketUrl = `${awsEndpoint}/${attachmentS3Bucket}/`
 
   const s3 = new aws.S3({
     region,
@@ -391,43 +394,6 @@ const otpGenerator = () => {
   return value.join('')
 }
 
-// TODO(#42): Remove this once no models rely on this and use mongoose's own
-// timestamps.
-/**
- * Generates created and last modified fields for several mongo models.
- * Taken from mongoose-utilities's timestamp function.
- * Should really be inside a utils.js file.
- * @param  schema  Mongoose schema
- * @param  options Dictionary of created and modified
- */
-const mongoTimestamp = (schema: Schema, options: any) => {
-  options || (options = {})
-
-  // Options
-  let fields = {}
-  let createdPath = options.createdPath || 'created'
-  let modifiedPath = options.modifiedPath || 'modified'
-
-  // Add paths to schema if not present
-  if (!schema.paths[createdPath]) {
-    fields[modifiedPath] = { type: Date }
-  }
-  if (!schema.paths[createdPath]) {
-    fields[createdPath] = {
-      type: Date,
-      default: Date.now,
-    }
-  }
-
-  schema.add(fields)
-
-  // Update the modified timestamp on save
-  schema.pre('save', function (next) {
-    this[modifiedPath] = new Date()
-    return next()
-  })
-}
-
 const config: Config = {
   app: appConfig,
   db: dbConfig,
@@ -450,7 +416,6 @@ const config: Config = {
   adminBannerContent,
   configureAws,
   otpGenerator,
-  mongoTimestamp,
 }
 
 export = config

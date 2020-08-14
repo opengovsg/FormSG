@@ -11,10 +11,7 @@ const VERIFICATION_SCHEMA_ID = 'Verification'
 interface IVerificationModel extends Model<IVerificationSchema> {
   findTransactionMetadata(
     id: IVerificationSchema['_id'],
-  ): DocumentQuery<
-    Pick<IVerificationSchema, 'formId' | 'expireAt'>,
-    IVerificationSchema
-  >
+  ): DocumentQuery<Omit<IVerificationSchema, 'fields'>, IVerificationSchema>
 }
 
 const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({

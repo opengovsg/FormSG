@@ -68,6 +68,10 @@ We provide a [`.template-env`](./.template-env) file with the secrets blanked ou
 paste the variables described into a self-created `.env` file, replacing the
 required values with your own.
 
+### Trouble-shooting
+
+You can consult [TROUBLESHOOTING.md](/docs/TROUBLESHOOTING.md) for common issues that developers face and how to resolve them.
+
 ## Testing
 
 The docker environment has not been configured to run tests. Thus, you will need

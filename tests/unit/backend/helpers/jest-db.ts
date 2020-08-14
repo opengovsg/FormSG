@@ -1,3 +1,5 @@
+import mongoSetup from '@shelf/jest-mongodb/setup'
+import mongoTeardown from '@shelf/jest-mongodb/teardown'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
@@ -9,17 +11,23 @@ import getUserModel from 'src/app/models/user.server.model'
  * \@shelf/jest-mongodb.
  */
 const connect = async () => {
-  return mongoose.connect(process.env.MONGO_URL, {
+  // Do it here so each test can have it's own mongoose instance.
+  await mongoSetup()
+  // process.env.MONGO_URL is now set by jest-mongodb.
+  const conn = await mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
   })
+  return conn
 }
 
 /**
- * Drop database and close the connection.
+ * Disconnect all mongoose connections.
  */
 const closeDatabase = async () => {
-  await mongoose.connection.close()
+  await mongoose.disconnect()
+  await mongoTeardown()
 }
 
 /**
@@ -40,19 +48,27 @@ const clearDatabase = async () => {
  * requires a valid user to be found in the collection
  * @param userId if provided, the User document will be created with the given user id
  */
-const insertFormCollectionReqs = async (userId?: ObjectID) => {
+const insertFormCollectionReqs = async ({
+  userId,
+  mailDomain = 'test.gov.sg',
+  mailName = 'test',
+}: {
+  userId?: ObjectID
+  mailName?: string
+  mailDomain?: string
+}) => {
   const Agency = getAgencyModel(mongoose)
   const User = getUserModel(mongoose)
 
   const agency = await Agency.create({
     shortName: 'govtest',
     fullName: 'Government Testing Agency',
-    emailDomain: ['test.gov.sg'],
+    emailDomain: [mailDomain],
     logo: '/invalid-path/test.jpg',
   })
 
   const user = await User.create({
-    email: 'test@test.gov.sg',
+    email: `${mailName}@${mailDomain}`,
     _id: userId,
     agency: agency.id,
   })
