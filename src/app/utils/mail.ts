@@ -1,7 +1,12 @@
 import dedent from 'dedent-js'
 import ejs from 'ejs'
 import { flattenDeep } from 'lodash'
+import puppeteer from 'puppeteer-core'
 import validator from 'validator'
+
+import { IFormSchema, ISubmissionSchema } from 'src/types'
+
+import config from '../../config/config'
 
 export const generateLoginOtpHtml = ({
   otp,
@@ -65,6 +70,50 @@ export const generateSubmissionToAdminHtml = async (
   htmlData: SubmissionToAdminHtmlData,
 ) => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
+  return ejs.renderFile(pathToTemplate, htmlData)
+}
+
+type AutoreplySummaryRenderData = {
+  refNo: ISubmissionSchema['_id']
+  formTitle: IFormSchema['title']
+  submissionTime: string
+  formData: any
+  formUrl: string
+}
+
+export const generateAutoreplyPdf = async (
+  renderData: AutoreplySummaryRenderData,
+) => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-summary-pdf.server.view.html`
+
+  const summaryHtml = await ejs.renderFile(pathToTemplate, renderData)
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox'],
+    headless: true,
+    executablePath: config.chromiumBin,
+  })
+  const page = await browser.newPage()
+  await page.setContent(summaryHtml, {
+    waitUntil: 'networkidle0',
+  })
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: {
+      top: '20px',
+      bottom: '40px',
+    },
+  })
+  await browser.close()
+  return pdfBuffer
+}
+
+type AutoreplyHtmlData = {
+  autoReplyBody: string[]
+} & (AutoreplySummaryRenderData | {})
+
+export const generateAutoreplyHtml = async (htmlData: AutoreplyHtmlData) => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-autoreply.server.view.html`
   return ejs.renderFile(pathToTemplate, htmlData)
 }
 

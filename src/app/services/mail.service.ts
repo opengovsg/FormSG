@@ -15,6 +15,8 @@ import {
 } from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 import {
+  generateAutoreplyHtml,
+  generateAutoreplyPdf,
   generateLoginOtpHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
@@ -28,6 +30,23 @@ type SendMailOptions = {
   formId?: string
 }
 
+type SendSingleAutoreplyMailArgs = {
+  form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
+  submission: Pick<ISubmissionSchema, 'id' | 'created'>
+  autoReplyMailData: AutoReplyMailData
+  attachments: Mail.Attachment[]
+  formSummaryRenderData: AutoreplySummaryRenderData
+  index: number
+}
+
+export type SendAutoReplyEmailsArgs = {
+  form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
+  submission: Pick<ISubmissionSchema, 'id' | 'created'>
+  attachments?: Mail.Attachment[]
+  responsesData: { question: string; answerTemplate: string[] }[]
+  autoReplyMailDatas: AutoReplyMailData[]
+}
+
 type MailServiceParams = {
   appName?: string
   appUrl?: string
@@ -36,12 +55,20 @@ type MailServiceParams = {
   logger?: Logger
 }
 
-type AutoReplyData = {
+type AutoReplyMailData = {
   email: string
   subject?: AutoReplyOptions['autoReplySubject']
   sender?: AutoReplyOptions['autoReplySender']
   body?: AutoReplyOptions['autoReplyMessage']
   includeFormSummary?: AutoReplyOptions['includeFormSummary']
+}
+
+export type AutoreplySummaryRenderData = {
+  refNo: ISubmissionSchema['_id']
+  formTitle: IFormSchema['title']
+  submissionTime: string
+  formData: any
+  formUrl: string
 }
 
 type MailOptions = Omit<Mail.Options, 'to'> & {
@@ -105,7 +132,7 @@ export class MailService {
   }
 
   /**
-   * Sends email to SES / Direct transport to send out
+   * Private function to send email using SES / Direct transport.
    * @param mail Mail data to send with
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
@@ -141,6 +168,63 @@ export class MailService {
       )
       return Promise.reject(err)
     }
+  }
+
+  /**
+   * Private function to send a single autoreply mail to recipients.
+   * @param arg the autoreply mail arguments
+   * @param arg.autoReplyMailData the main mail data to populate mail params
+   * @param arg.attachments the attachments to add to the mail
+   * @param arg.form the form mongoose object to populate the email subject or to retrieve the sender from
+   * @param arg.submission the submission mongoose object to retrieve id from for metadata
+   * @param arg.index the index metadata of this mail for logging purposes
+   */
+  #sendSingleAutoreplyMail = async ({
+    autoReplyMailData,
+    attachments,
+    formSummaryRenderData,
+    form,
+    submission,
+    index,
+  }: SendSingleAutoreplyMailArgs) => {
+    const emailSubject =
+      autoReplyMailData.subject || `Thank you for submitting ${form.title}`
+    // Sender's name appearing after "("" symbol gets truncated. Escaping it
+    // solves the problem.
+    const emailSender = (
+      autoReplyMailData.sender || form.admin.agency.fullName
+    ).replace('(', '\\(')
+
+    const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
+    const autoReplyBody = (autoReplyMailData.body || defaultBody).split('\n')
+
+    const templateData = {
+      autoReplyBody,
+      // Only destructure formSummaryRenderData if form summary is included.
+      ...(autoReplyMailData.includeFormSummary && formSummaryRenderData),
+    }
+
+    const mailHtml = await generateAutoreplyHtml(templateData)
+
+    const mail: MailOptions = {
+      to: autoReplyMailData.email,
+      from: `${emailSender} <${this.#senderMail}>`,
+      subject: emailSubject,
+      // Only send attachments if the admin has the box checked for email
+      // fields.
+      attachments: autoReplyMailData.includeFormSummary ? attachments : [],
+      html: mailHtml,
+      headers: {
+        [EMAIL_HEADERS.formId]: String(form._id),
+        [EMAIL_HEADERS.submissionId]: submission.id,
+        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.emailConfirmation,
+      },
+    }
+
+    return this.#sendNodeMail(mail, {
+      mailId: `${submission.id}-${index}`,
+      formId: form._id,
+    })
   }
 
   /**
@@ -282,61 +366,65 @@ export class MailService {
   }
 
   /**
-   * Sends an autoreply email to the filler of the given form.
-   * @param args the parameter object
-   * @param args.html the body of the email
+   * Sends an autoreply emails to the filler of the given form.
+   * @param args the arguments object
    * @param args.form the form document to retrieve some email data from
    * @param args.submission the submission document to retrieve some email data from
-   * @param args.index autoreply emails may go out in a batch, and this index helps to differentiate mails with the same mailId
    * @param args.attachments attachments to append to the email, if any
-   * @param args.autoReplyData object that contains autoreply mail data to override with defaults
-   * @param args.autoReplyData.email contains the recipient of the mail
-   * @param args.autoReplyData.subject if available, sends the mail out with this subject instead of the default subject
-   * @param args.autoReplyData.sender if available, shows the given string as the sender instead of the default sender
-   * @param args.autoReplyData.includeFormSummary if true, adds the given attachments into the sent mail
+   * @param args.responsesData the array of response data to use in rendering
+   * the mail body or summary pdf
+   * @param args.autoReplyMailDatas array of objects that contains autoreply mail data to override with defaults
+   * @param args.autoReplyMailDatas[].email contains the recipient of the mail
+   * @param args.autoReplyMailDatas[].subject if available, sends the mail out with this subject instead of the default subject
+   * @param args.autoReplyMailDatas[].sender if available, shows the given string as the sender instead of the default sender
+   * @param args.autoReplyMailDatas[].includeFormSummary if true, adds the given attachments into the sent mail
    */
-  sendAutoReplyEmail = async ({
-    html,
+  sendAutoReplyEmails = async ({
     form,
     submission,
-    attachments,
-    autoReplyData,
-    index,
-  }: {
-    html: string
-    form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
-    submission: Pick<ISubmissionSchema, 'id'>
-    attachments?: Mail.Attachment[]
-    autoReplyData: AutoReplyData
-    index: number
-  }) => {
-    const emailSubject =
-      autoReplyData.subject || `Thank you for submitting ${form.title}`
-    // Sender's name appearing after "("" symbol gets truncated. Escaping it
-    // solves the problem.
-    const emailSender = (
-      autoReplyData.sender || form.admin.agency.fullName
-    ).replace('(', '\\(')
-
-    const mail: MailOptions = {
-      to: autoReplyData.email,
-      from: `${emailSender} <${this.#senderMail}>`,
-      subject: emailSubject,
-      // Only send attachments if the admin has the box checked for email
-      // fields.
-      attachments: autoReplyData.includeFormSummary ? attachments : [],
-      html,
-      headers: {
-        [EMAIL_HEADERS.formId]: String(form._id),
-        [EMAIL_HEADERS.submissionId]: submission.id,
-        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.emailConfirmation,
-      },
+    responsesData,
+    autoReplyMailDatas,
+    attachments = [],
+  }: SendAutoReplyEmailsArgs) => {
+    // Data to render both the submission details mail HTML body PDF.
+    const renderData: AutoreplySummaryRenderData = {
+      refNo: submission.id,
+      formTitle: form.title,
+      submissionTime: moment(submission.created)
+        .tz('Asia/Singapore')
+        .format('ddd, DD MMM YYYY hh:mm:ss A'),
+      formData: responsesData,
+      formUrl: `${this.#appUrl}/${form._id}`,
     }
 
-    return this.#sendNodeMail(mail, {
-      mailId: `${submission.id}-${index}`,
-      formId: form._id,
-    })
+    // Create a copy of attachments for attaching of autoreply pdf if needed.
+    const attachmentsWithAutoreplyPdf = [...attachments]
+
+    // Generate autoreply pdf and append into attachments if any of the mail has
+    // to include a form summary.
+    if (autoReplyMailDatas.some((data) => data.includeFormSummary)) {
+      const pdfBuffer = await generateAutoreplyPdf(renderData)
+      attachmentsWithAutoreplyPdf.push({
+        filename: 'response.pdf',
+        content: pdfBuffer,
+      })
+    }
+
+    // Prepare mail sending for each autoreply mail.
+    return Promise.allSettled(
+      autoReplyMailDatas.map((mailData, index) => {
+        return this.#sendSingleAutoreplyMail({
+          form,
+          submission,
+          attachments: mailData.includeFormSummary
+            ? attachmentsWithAutoreplyPdf
+            : attachments,
+          autoReplyMailData: mailData,
+          formSummaryRenderData: renderData,
+          index,
+        })
+      }),
+    )
   }
 }
 

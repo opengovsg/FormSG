@@ -1,7 +1,6 @@
 'use strict'
 
 const axios = require('axios')
-const _ = require('lodash')
 
 const mongoose = require('mongoose')
 const errorHandler = require('./errors.server.controller')
@@ -12,12 +11,6 @@ const HttpStatus = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
-const {
-  parseAutoReplyData,
-  generateAutoReplyPdf,
-} = require('../utils/autoreply-pdf')
-const { renderPromise } = require('../utils/render-promise')
-const config = require('../../config/config')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
@@ -155,97 +148,33 @@ exports.injectAutoReplyInfo = function (req, res, next) {
  * Long waterfall to send autoreply
  * @param {Object} req - Express request object
  * @param {Array<Object>} req.autoReplyEmails Auto-reply email fields
- * @param {Array} req.replyToEmails Reply-to emails
  * @param {Object} req.form - the form
  * @param {Array<Array<string>>} req.autoReplyData Field-value tuples for auto-replies
  * @param {Object} req.submission Mongodb Submission object
  * @param {Object} req.attachments - submitted attachments, parsed by
- * @param {Object} res - Express response object
  */
-const sendEmailAutoReplies = async function (req, res) {
+const sendEmailAutoReplies = async function (req) {
   const { form, attachments, autoReplyEmails, autoReplyData, submission } = req
   if (autoReplyEmails.length === 0) {
     return Promise.resolve()
   }
-  const renderData = parseAutoReplyData(
-    form,
-    submission,
-    autoReplyData,
-    req.get('origin') || config.app.appUrl,
-  )
+
   try {
-    if (_.some(autoReplyEmails, ['includeFormSummary', true])) {
-      const pdfBuffer = await generateAutoReplyPdf({ renderData, res })
-      attachments.push({
-        filename: 'response.pdf',
-        content: pdfBuffer,
-      })
-    }
-    // If one promise is rejected, carry on with the rest
-    return Promise.allSettled(
-      autoReplyEmails.map((autoReplyEmail, index) =>
-        sendOneEmailAutoReply(
-          req,
-          res,
-          autoReplyEmail,
-          renderData,
-          attachments,
-          index,
-        ),
-      ),
-    )
-  } catch (err) {
-    logger.error(
-      `Email autoreply error for formId=${form._id} submissionId=${submission.id}:\t${err}`,
-    )
-    // We do not deal with failed autoreplies
-    return Promise.resolve()
-  }
-}
-
-/**
- * Render and send auto-reply emails to the form submitter
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- * @param {Array} autoReplyEmails Auto-reply email fields
- * @param {Object} renderData Data about the submission and answers to form questions. This is the raw
- *   data that is rendered on the response PDF if the PDF was needed, otherwise it is null.
- * @param {Array<Object>} attachments The attachments to send to form submitter.
- */
-async function sendOneEmailAutoReply(
-  req,
-  res,
-  autoReplyEmail,
-  renderData,
-  attachments,
-  index,
-) {
-  const { form, submission } = req
-  const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
-  const autoReplyBody = (autoReplyEmail.body || defaultBody).split('\n')
-
-  // Only include the form response if the flag is set
-  const templateData = autoReplyEmail.includeFormSummary
-    ? { autoReplyBody, ...renderData }
-    : { autoReplyBody }
-  try {
-    const autoReplyHtml = await renderPromise(
-      res,
-      'templates/submit-form-autoreply',
-      templateData,
-    )
-
-    return MailService.sendAutoReplyEmail({
+    return MailService.sendAutoReplyEmails({
       form,
       submission,
       attachments,
-      index,
-      html: autoReplyHtml,
-      autoReplyData: autoReplyEmail,
+      responsesData: autoReplyData,
+      autoReplyMailDatas: autoReplyEmails,
     })
   } catch (err) {
-    logger.error(`Mail autoreply error:\t ip=${getRequestIp(req)}`, err)
-    return Promise.reject(err)
+    logger.error(
+      `Mail autoreply error for formId=${form._id} submissionId=${
+        submission.id
+      } ip=${getRequestIp(req)}:\t${err}`,
+    )
+    // We do not deal with failed autoreplies
+    return Promise.resolve()
   }
 }
 
