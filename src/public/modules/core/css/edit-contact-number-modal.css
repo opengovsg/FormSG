@@ -1,3 +1,33 @@
+.ecm-modal-window {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
+  display: flex !important;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+.ecm-modal-window .modal-content {
+  border-radius: 0;
+  border-width: 0;
+}
+
+.ecm-modal-window .modal-dialog {
+  width: 50%;
+}
+
+@media screen and (max-width: 1024px) {
+  .ecm-modal-window .modal-dialog {
+    width: 80%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .ecm-modal-window .modal-dialog {
+    width: 90%;
+  }
+}
+
 #edit-contact-modal {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -8,6 +38,24 @@
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
+}
+
+#edit-contact-modal .close-modal {
+  text-align: right;
+  font-size: 28px;
+  color: #979797;
+  padding: 12px;
+  background: none;
+  border: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+#edit-contact-modal .close-modal:focus,
+#edit-contact-modal .close-modal:hover,
+#edit-contact-modal .close-modal:active {
+  color: #7e7e7e;
 }
 
 #edit-contact-modal input {
@@ -32,6 +80,13 @@
 #edit-contact-modal .ecm__content {
   max-width: 575px;
   color: #323232;
+  text-align: center;
+  padding: 24px;
+}
+
+#edit-contact-modal .ecm__content__image {
+  width: 80px;
+  margin: 20px;
 }
 
 #edit-contact-modal .ecm__content__header {

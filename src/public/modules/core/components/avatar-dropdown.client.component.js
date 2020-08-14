@@ -12,7 +12,6 @@ function avatarDropdownController($state, $uibModal, Auth) {
 
   // Redirect to signin if unable to get user
   vm.user = Auth.getUser() || $state.go('signin')
-  vm.user.contact = '+65 83221353'
   vm.avatarText = generateAvatarText()
 
   vm.isDropdownOpen = false
@@ -20,10 +19,14 @@ function avatarDropdownController($state, $uibModal, Auth) {
   vm.signOut = () => Auth.signOut()
 
   vm.openContactNumberModal = () => {
+    vm.isDropdownOpen = false
+
     $uibModal.open({
       animation: false,
+      keyboard: false,
+      backdrop: 'static',
+      windowClass: 'ecm-modal-window',
       templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
-      windowClass: 'full-screen-modal-window',
       controller: 'EditContactNumberModalController',
       controllerAs: 'vm',
     }).result.finally(angular.noop).then(angular.noop, angular.noop)

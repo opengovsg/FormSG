@@ -1,11 +1,19 @@
 <div id="edit-contact-modal">
+  <button class="close-modal" ng-click="vm.closeModal()">
+    <i class="bx bx-x"></i>
+  </button>
   <div class="ecm__content">
+    <img
+      class="ecm__content__image"
+      src="/public/modules/core/img/emergency-contact.svg"
+      alt=""
+    />
     <div class="ecm__content__header">
-      Please enter an emergency mobile number
+      Emergency mobile number
     </div>
     <div class="ecm__content__subheader">
-      We'll contact you here in the unlikely event of urgent issues with your
-      form(s). You can update this number later.
+      We will only contact you in case of urgent issues with your form. You can
+      change this number later in your user settings.
     </div>
     <div class="ecm__content__input">
       <!-- Verification input -->
