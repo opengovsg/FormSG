@@ -3,11 +3,17 @@ angular
   .controller('EditContactNumberModalController', [
     '$scope',
     '$uibModalInstance',
+    '$window',
     'Auth',
     EditContactNumberModalController,
   ])
 
-function EditContactNumberModalController($scope, $uibModalInstance, Auth) {
+function EditContactNumberModalController(
+  $scope,
+  $uibModalInstance,
+  $window,
+  Auth,
+) {
   const vm = this
 
   // The various states of verification
@@ -33,7 +39,7 @@ function EditContactNumberModalController($scope, $uibModalInstance, Auth) {
 
   vm.otp = {
     value: '',
-    countdown: 0
+    countdown: 0,
   }
 
   vm.lastVerifiedContact = vm.user.contact
@@ -83,6 +89,9 @@ function EditContactNumberModalController($scope, $uibModalInstance, Auth) {
   }
 
   vm.closeModal = function () {
+    // Add flag into localstorage so the banner does not open again.
+    // The flag will be cleared on user logout.
+    $window.localStorage.setItem('contactBannerDismissed', true)
     $uibModalInstance.close()
   }
 }

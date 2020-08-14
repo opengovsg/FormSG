@@ -97,6 +97,10 @@ function Auth($q, $http, $state, $window) {
     $http.get('/auth/signout').then(
       function () {
         $window.localStorage.removeItem('user')
+        // Clear contact banner on logout
+        $window.localStorage.removeItem(
+          'contactBannerDismissed',
+        )
         $state.go('landing')
       },
       function (error) {

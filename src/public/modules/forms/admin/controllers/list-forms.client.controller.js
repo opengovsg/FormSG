@@ -31,14 +31,29 @@ function ListFormsController(
 ) {
   const vm = this
 
-
   vm.bannerContent = $window.siteBannerContent || $window.adminBannerContent
 
   // Hidden buttons on forms that appear after clicking more
   vm.showFormBtns = []
   // Duplicated form outline on newly dup forms
   vm.duplicatedForms = []
-  vm.user = Auth.getUser()
+  // Redirect to signin if unable to get user
+  vm.user = Auth.getUser() || $state.go('signin')
+
+  vm.openContactNumberModal = () => {
+    $uibModal
+      .open({
+        animation: false,
+        keyboard: false,
+        backdrop: 'static',
+        windowClass: 'ecm-modal-window',
+        templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
+        controller: 'EditContactNumberModalController',
+        controllerAs: 'vm',
+      })
+      .result.finally(angular.noop)
+      .then(angular.noop, angular.noop)
+  }
 
   // Brings user to edit form page
   vm.editForm = function (form) {
@@ -210,4 +225,21 @@ function ListFormsController(
       },
     })
   }
+
+  // Wrap in angular.element so that this function is only ran after everything
+  // else has ran.
+  // Without this, the modal will open and disrupt some digest cycles such as
+  // changing of links.
+  angular.element(function () {
+    // Open contact number modal immediately if user does not have contact saved.
+    if (!vm.user.contact) {
+      // If user has the key in the browser's storage the modal will not be shown.
+      const hasBeenDismissed = $window.localStorage.getItem(
+        'contactBannerDismissed',
+      )
+      if (!hasBeenDismissed) {
+        vm.openContactNumberModal()
+      }
+    }
+  })
 }
