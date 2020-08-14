@@ -152,13 +152,9 @@ describe('Email Submissions Controller', () => {
           const mailOptions = sendSubmissionMailSpy.calls.mostRecent().args[0]
           expect(mailOptions.adminEmails).toEqual(fixtures.form.emails)
           expect(mailOptions.replyToEmails).toEqual(fixtures.replyToEmails)
-          expect(mailOptions.html).toContain(fixtures.formData[0].question)
-          expect(mailOptions.html).toContain(
-            fixtures.formData[0].answerTemplate,
-          )
+          expect(mailOptions.formData).toEqual(fixtures.formData)
           expect(mailOptions.form).toEqual(fixtures.form)
           expect(mailOptions.submission).toEqual(fixtures.submission)
-          expect(mailOptions.attachments).toEqual(fixtures.attachments)
           expect(mailOptions.attachments).toEqual(fixtures.attachments)
         })
         .then(done)
