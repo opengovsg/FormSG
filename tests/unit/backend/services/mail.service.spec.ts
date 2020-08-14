@@ -1,13 +1,14 @@
-import { merge } from 'lodash'
+import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
+import { ImportMock } from 'ts-mock-imports'
 
-import { MailService } from 'src/app/services/mail.service'
 import {
-  generateLoginOtpHtml,
-  generateSubmissionToAdminHtml,
-  generateVerificationOtpHtml,
-} from 'src/app/utils/mail'
+  AutoreplySummaryRenderData,
+  MailService,
+  SendAutoReplyEmailsArgs,
+} from 'src/app/services/mail.service'
+import * as MailUtils from 'src/app/utils/mail'
 import { IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
@@ -17,7 +18,7 @@ const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
 const MOCK_APP_URL = 'mockApp.example.com'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
-const MOCK_HTML = '<p>Mock html</p>'
+const MOCK_PDF = 'fake pdf'
 
 describe('mail.service', () => {
   const sendMailSpy = jest.fn()
@@ -25,7 +26,12 @@ describe('mail.service', () => {
     sendMail: sendMailSpy,
   } as unknown) as Mail
 
+  // Set up mocks for MailUtils
+  beforeAll(() => {
+    ImportMock.mockFunction(MailUtils, 'generateAutoreplyPdf', MOCK_PDF)
+  })
   beforeEach(() => sendMailSpy.mockReset())
+  afterAll(() => ImportMock.restore())
 
   const mailService = new MailService({
     transporter: mockTransporter,
@@ -65,7 +71,7 @@ describe('mail.service', () => {
         to: MOCK_VALID_EMAIL,
         from: MOCK_SENDER_STRING,
         subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
-        html: generateVerificationOtpHtml({
+        html: MailUtils.generateVerificationOtpHtml({
           appName: MOCK_APP_NAME,
           otp: MOCK_OTP,
           minutesToExpiry: 10,
@@ -107,7 +113,7 @@ describe('mail.service', () => {
         to: MOCK_VALID_EMAIL,
         from: MOCK_SENDER_STRING,
         subject: `One-Time Password (OTP) for ${MOCK_APP_NAME}`,
-        html: generateLoginOtpHtml({
+        html: MailUtils.generateLoginOtpHtml({
           otp: MOCK_OTP,
           appName: MOCK_APP_NAME,
           appUrl: MOCK_APP_URL,
@@ -189,7 +195,7 @@ describe('mail.service', () => {
         refNo: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
         submissionTime: FORMATTED_SUBMISSION_TIME,
       }
-      expectedHtml = await generateSubmissionToAdminHtml(htmlData)
+      expectedHtml = await MailUtils.generateSubmissionToAdminHtml(htmlData)
     })
 
     it('should send submission mail to admin successfully if adminEmail is a single string', async () => {
@@ -398,10 +404,12 @@ describe('mail.service', () => {
     })
   })
 
-  describe('sendAutoReplyEmail', () => {
+  describe('sendAutoReplyEmails', () => {
+    let defaultHtml: string
+    let defaultExpectedArg
+
     const MOCK_SENDER_NAME = 'John Doe'
-    const MOCK_AUTOREPLY_PARAMS = {
-      html: MOCK_HTML,
+    const MOCK_AUTOREPLY_PARAMS: SendAutoReplyEmailsArgs = {
       form: {
         title: 'Test form title',
         _id: 'mockFormId',
@@ -414,106 +422,181 @@ describe('mail.service', () => {
       submission: ({
         id: 'mockSubmissionId',
       } as unknown) as ISubmissionSchema,
+      responsesData: [
+        {
+          question: 'some question',
+          answerTemplate: ['some answer template'],
+        },
+      ],
       attachments: ['something'] as Attachment[],
-      autoReplyData: {
-        email: MOCK_VALID_EMAIL_2,
-      },
-      index: 10,
+      autoReplyMailDatas: [
+        {
+          email: MOCK_VALID_EMAIL_2,
+        },
+      ],
     }
+    const DEFAULT_AUTO_REPLY_BODY = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}`.split(
+      '\n',
+    )
 
-    const DEFAULT_EXPECTED_ARG = {
-      to: MOCK_AUTOREPLY_PARAMS.autoReplyData.email,
-      from: `${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName} <${MOCK_SENDER_EMAIL}>`,
-      subject: `Thank you for submitting ${MOCK_AUTOREPLY_PARAMS.form.title}`,
-      html: MOCK_HTML,
-      headers: {
-        // Hardcode in tests in case something changes this.
-        'X-Formsg-Email-Type': 'Email confirmation',
-        'X-Formsg-Form-ID': MOCK_AUTOREPLY_PARAMS.form._id,
-        'X-Formsg-Submission-ID': MOCK_AUTOREPLY_PARAMS.submission.id,
-      },
-      // Note this should be by default empty
-      attachments: [],
-    }
+    beforeAll(async () => {
+      defaultHtml = await MailUtils.generateAutoreplyHtml({
+        autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
+      })
 
-    it('should send autoreply mail successfully with defaults', async () => {
+      defaultExpectedArg = {
+        to: MOCK_AUTOREPLY_PARAMS.autoReplyMailDatas[0].email,
+        from: `${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName} <${MOCK_SENDER_EMAIL}>`,
+        subject: `Thank you for submitting ${MOCK_AUTOREPLY_PARAMS.form.title}`,
+        html: defaultHtml,
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Email confirmation',
+          'X-Formsg-Form-ID': MOCK_AUTOREPLY_PARAMS.form._id,
+          'X-Formsg-Submission-ID': MOCK_AUTOREPLY_PARAMS.submission.id,
+        },
+        // Note this should be by default empty
+        attachments: [],
+      }
+    })
+
+    it('should send single autoreply mail successfully with defaults', async () => {
       // Arrange
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
       // Act + Assert
+      const expectedResponse = await Promise.allSettled([
+        Promise.resolve(mockedResponse),
+      ])
       await expect(
-        mailService.sendAutoReplyEmail(MOCK_AUTOREPLY_PARAMS),
-      ).resolves.toEqual(mockedResponse)
+        mailService.sendAutoReplyEmails(MOCK_AUTOREPLY_PARAMS),
+      ).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(DEFAULT_EXPECTED_ARG)
+      expect(sendMailSpy).toHaveBeenCalledWith(defaultExpectedArg)
     })
 
-    it('should send autoreply mail successfully with custom autoreply subject', async () => {
+    it('should send array of multiple autoreply mails successfully with defaults', async () => {
+      const firstMockedResponse = 'mockedSuccessResponse1'
+      const secondMockedResponse = 'mockedSuccessResponse1'
+      sendMailSpy
+        .mockResolvedValueOnce(firstMockedResponse)
+        .mockResolvedValueOnce(secondMockedResponse)
+
+      const multipleEmailParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      multipleEmailParams.autoReplyMailDatas.push({
+        email: MOCK_VALID_EMAIL_3,
+      })
+
+      const secondExpectedArg = cloneDeep(defaultExpectedArg)
+      secondExpectedArg.to = MOCK_VALID_EMAIL_3
+
+      // Act + Assert
+      const expectedResponse = await Promise.allSettled([
+        Promise.resolve(firstMockedResponse),
+        Promise.resolve(secondMockedResponse),
+      ])
+      await expect(
+        mailService.sendAutoReplyEmails(multipleEmailParams),
+      ).resolves.toEqual(expectedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenNthCalledWith(1, defaultExpectedArg)
+      // Second call should be for a different email
+      expect(sendMailSpy).toHaveBeenNthCalledWith(2, secondExpectedArg)
+    })
+
+    it('should send single autoreply mail successfully with custom autoreply subject', async () => {
       // Arrange
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
       const customSubject = 'customSubject'
-      const customDataParams = merge(
-        { autoReplyData: { subject: customSubject } },
-        MOCK_AUTOREPLY_PARAMS,
-      )
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].subject = customSubject
 
-      const expectedArg = { ...DEFAULT_EXPECTED_ARG, subject: customSubject }
+      const expectedArg = { ...defaultExpectedArg, subject: customSubject }
 
       // Act + Assert
+      const expectedResponse = await Promise.allSettled([
+        Promise.resolve(mockedResponse),
+      ])
       await expect(
-        mailService.sendAutoReplyEmail(customDataParams),
-      ).resolves.toEqual(mockedResponse)
+        mailService.sendAutoReplyEmails(customDataParams),
+      ).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
-    it('should send autoreply mail successfully with custom autoreply sender', async () => {
+    it('should send single autoreply mail successfully with custom autoreply sender', async () => {
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
       const customSender = 'customSender@example.com'
-      const customDataParams = merge(
-        { autoReplyData: { sender: customSender } },
-        MOCK_AUTOREPLY_PARAMS,
-      )
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].sender = customSender
 
       const expectedArg = {
-        ...DEFAULT_EXPECTED_ARG,
+        ...defaultExpectedArg,
         from: `${customSender} <${MOCK_SENDER_EMAIL}>`,
       }
 
       // Act + Assert
+      const expectedResponse = await Promise.allSettled([
+        Promise.resolve(mockedResponse),
+      ])
       await expect(
-        mailService.sendAutoReplyEmail(customDataParams),
-      ).resolves.toEqual(mockedResponse)
+        mailService.sendAutoReplyEmails(customDataParams),
+      ).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
-    it('should send autoreply mail with attachment if autoReply.includeFormSummary is true', async () => {
+    it('should send single autoreply mail with attachment if autoReply.includeFormSummary is true', async () => {
+      // Arrange
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
-      const customDataParams = merge(
-        { autoReplyData: { includeFormSummary: true } },
-        MOCK_AUTOREPLY_PARAMS,
-      )
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].includeFormSummary = true
+
+      const expectedRenderData: AutoreplySummaryRenderData = {
+        formData: MOCK_AUTOREPLY_PARAMS.responsesData,
+        formTitle: MOCK_AUTOREPLY_PARAMS.form.title,
+        formUrl: `${MOCK_APP_URL}/${MOCK_AUTOREPLY_PARAMS.form._id}`,
+        refNo: MOCK_AUTOREPLY_PARAMS.submission.id,
+        submissionTime: moment(MOCK_AUTOREPLY_PARAMS.submission.created)
+          .tz('Asia/Singapore')
+          .format('ddd, DD MMM YYYY hh:mm:ss A'),
+      }
+      const expectedMailBody = await MailUtils.generateAutoreplyHtml({
+        autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
+        ...expectedRenderData,
+      })
 
       const expectedArg = {
-        ...DEFAULT_EXPECTED_ARG,
-        attachments: MOCK_AUTOREPLY_PARAMS.attachments,
+        ...defaultExpectedArg,
+        html: expectedMailBody,
+        // Attachments should be concatted with mock pdf response
+        attachments: [
+          ...MOCK_AUTOREPLY_PARAMS.attachments,
+          {
+            content: MOCK_PDF,
+            filename: 'response.pdf',
+          },
+        ],
       }
 
       // Act + Assert
+      const expectedResponse = await Promise.allSettled([
+        Promise.resolve(mockedResponse),
+      ])
       await expect(
-        mailService.sendAutoReplyEmail(customDataParams),
-      ).resolves.toEqual(mockedResponse)
+        mailService.sendAutoReplyEmails(customDataParams),
+      ).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
@@ -521,14 +604,16 @@ describe('mail.service', () => {
 
     it('should reject with error when autoReplyData.email param is an invalid email', async () => {
       // Arrange
-      const invalidDataParams = merge({}, MOCK_AUTOREPLY_PARAMS, {
-        autoReplyData: { email: 'notAnEmail' },
-      })
+      const invalidDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      invalidDataParams.autoReplyMailDatas[0].email = 'notAnEmail'
 
       // Act + Assert
+      const expectedResponse = await Promise.allSettled([
+        Promise.reject(Error('Invalid email error')),
+      ])
       await expect(
-        mailService.sendAutoReplyEmail(invalidDataParams),
-      ).rejects.toThrowError('Invalid email error')
+        mailService.sendAutoReplyEmails(invalidDataParams),
+      ).resolves.toEqual(expectedResponse)
     })
   })
 })
