@@ -22,7 +22,7 @@ export interface IEmailNotification {
   notificationType: 'Bounce' | 'Complaint' | 'Delivery'
   mail: {
     source: string
-    destination: string
+    destination: string[]
     headers: {
       name: string
       value: string
