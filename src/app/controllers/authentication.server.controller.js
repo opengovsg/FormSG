@@ -386,6 +386,7 @@ exports.signIn = function (req, res) {
       let userObj = {
         agency: agency,
         email: user.email,
+        contact: user.contact,
         _id: user._id,
         betaFlags: user.betaFlags,
       }
