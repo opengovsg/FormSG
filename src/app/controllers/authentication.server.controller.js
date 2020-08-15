@@ -24,9 +24,62 @@ exports.authenticateUser = function (req, res, next) {
 }
 
 /**
+ * Checks if domain is from a whitelisted agency
+ * @param  {Object} req - Express request object
+ * @param  {Object} res - Express response object
+ */
+exports.validateDomain = function (req, res, next) {
+  let email = req.body.email
+  let emailDomain = String(validator.isEmail(email) && email.split('@').pop())
+  Agency.findOne({ emailDomain }, function (err, agency) {
+    // Database issues
+    if (err) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send(
+          `Unable to validate email domain. If this issue persists, please submit a Support Form (${LINKS.supportFormLink}).`,
+        )
+    }
+    // Agency not found
+    if (!agency) {
+      logger.error({
+        message: 'Agency not found',
+        meta: {
+          action: 'validateDomain',
+          email,
+          emailDomain,
+          ip: getRequestIp(req),
+        },
+        error: err,
+      })
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .send(
+          'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
+        )
+    }
+    // Agency whitelisted
+    res.locals = {
+      agency,
+      email,
+    }
+    return next()
+  })
+}
+
+/**
+ * Returns the error message when a user cannot perform an action on a form
+ * @param {String} user -  user email
+ * @param {String} title -  form title
+ * @returns {String} - the error message
+ */
+const makeUnauthorizedMessage = (user, title) => {
+  return `User ${user} is not authorized to perform this operation on Form: ${title}.`
+}
+
+/**
  * Returns a middleware function that ensures that only users with the requiredPermission will pass.
- * @param {String} requiredPermission - Either 'write' or 'delete', indicating what level of authorization
- *                                   the user needs
+ * @param {String} requiredPermission - one of PERMISSION_LEVELS, indicating the level of authorization required
  * @returns {function({Object}, {Object}, {Object})} - A middleware function that takes req, the express
  *   request object, and res, the express response object.
  */
@@ -40,9 +93,22 @@ exports.verifyPermission = (requiredPermission) =>
    * @param {function} next - Next middleware function
    */
   (req, res, next) => {
-    // Admins always have sufficient permission
-    let hasSufficientPermission =
+    const isFormAdmin =
       String(req.form.admin.id) === String(req.session.user._id)
+
+    // Forbidden if requiredPersmission is admin but user is not
+    if (!isFormAdmin && requiredPermission === PERMISSIONS.ADMIN) {
+      return res.status(HttpStatus.FORBIDDEN).send({
+        message: makeUnauthorizedMessage(
+          req.session.user.email,
+          req.form.title,
+        ),
+      })
+    }
+
+    // Admins always have sufficient permission
+    let hasSufficientPermission = isFormAdmin
+
     // Write users can access forms that require write/read
     if (
       requiredPermission === PERMISSIONS.WRITE ||
@@ -64,16 +130,13 @@ exports.verifyPermission = (requiredPermission) =>
         )
     }
 
-    if (hasSufficientPermission) {
-      return next()
-    } else {
-      return res.status(StatusCodes.FORBIDDEN).send({
-        message:
-          'User ' +
-          req.session.user.email +
-          ' is not authorized to perform this operation on Form: ' +
-          req.form.title +
-          '.',
+    if (!hasSufficientPermission) {
+      return res.status(HttpStatus.FORBIDDEN).send({
+        message: makeUnauthorizedMessage(
+          req.session.user.email,
+          req.form.title,
+        ),
       })
     }
+    return next()
   }

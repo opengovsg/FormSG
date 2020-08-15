@@ -294,11 +294,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner')
-    .post(
-      authActiveForm(PERMISSIONS.WRITE),
-      adminForms.isFormOwner,
-      adminForms.transferOwner,
-    )
+    .post(authActiveForm(PERMISSIONS.ADMIN), adminForms.transferOwner)
 
   /**
    * On preview, submit a form response, processing it as an email to be sent to

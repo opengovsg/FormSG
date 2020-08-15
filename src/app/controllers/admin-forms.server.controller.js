@@ -241,24 +241,6 @@ function makeModule(connection) {
       return next()
     },
     /**
-     * Ensure that req user is form owner
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     * @param  {Object} next - Express next middleware function
-     */
-    isFormOwner: function (req, res, next) {
-      if (req.session.user._id !== req.form.admin._id.toString()) {
-        const errMsg = 'Error: transfer request made by non-owner'
-        logger.error(
-          `formId="${req.form._id}", ip=${getRequestIp(
-            req,
-          )}, message="${errMsg}"`,
-        )
-        return res.status(HttpStatus.FORBIDDEN).send({ message: errMsg })
-      }
-      return next()
-    },
-    /**
      * Create a new form called on list forms
      * @param  {Object} req - Express request object
      * @param  {Object} res - Express response object
