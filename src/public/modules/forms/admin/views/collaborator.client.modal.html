@@ -110,7 +110,7 @@
                 </button>
                 <ul
                   id="role-dropdown-menu"
-                  class="dropdown-menu"
+                  class="dropdown-menu dropdown-menu-right"
                   role="menu"
                   aria-labelledby="change-role-button"
                   uib-dropdown-menu
@@ -201,10 +201,10 @@
           </div>
         </div>
       </div>
-      <!-- Bottom section contains the collaborators list -->
 
       <hr />
 
+      <!-- Bottom section contains the collaborators list -->
       <div
         id="bottom-section"
         ng-class="myform.permissionList.length <= 0 ? 'non-mobile-hide' : ''"
@@ -249,6 +249,7 @@
             ></div>
           </div>
           <div class="collab-hr"></div>
+
           <!-- List of other collaborators -->
           <div ng-repeat="userObj in myform.permissionList track by $index">
             <div class="row collaborator-list-entry">
@@ -292,9 +293,8 @@
                   </span>
                   <ul
                     id="existing-role-dropdown-menu"
-                    class="dropdown-menu"
+                    class="dropdown-menu dropdown-menu-right"
                     uib-dropdown-menu
-                    dropdown-append-to-body
                     role="menu"
                     aria-labelledby="existing-role-button"
                   >

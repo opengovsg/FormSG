@@ -196,7 +196,6 @@
     top: 125px;
     left: 50%;
     transform: translate(-50%);
-    margin-bottom: 105px;
   }
 
   #admin-form #top-section .role-column {
@@ -207,10 +206,6 @@
     padding-left: 25px;
     padding-right: 25px;
     margin-bottom: 10px;
-  }
-
-  #collab-role #role-dropdown-menu {
-    width: 287px;
   }
 
   #admin-form .non-mobile-hide {
@@ -248,16 +243,6 @@
 
 #collaborator-modal-body {
   z-index: 750;
-  box-shadow: 0 6px 8px 0 rgba(0, 0, 0, 0.24), 0 0 8px 0 rgba(0, 0, 0, 0.12);
-}
-
-#collaborator-modal-body #top-section {
-  padding: 30px 39px 40px 39px;
-  background-color: #f0f4f6;
-}
-
-#collaborator-modal-body #bottom-section {
-  background-color: #fff;
 }
 
 @media all and (min-width: 768px) {
@@ -295,8 +280,6 @@
 }
 
 #collaborator-modal-body #collab-title {
-  padding-top: 30px;
-  padding-left: 39px;
   padding-bottom: 25px;
 }
 
@@ -310,7 +293,6 @@
   /* If they squeeze the screen too small, white screen will appear at the bottom.
     TODO: Fix if possible. */
   min-height: 60px;
-  padding-left: 39px;
   padding-right: 39px;
 }
 
@@ -323,10 +305,7 @@
     /* Max height should avoid extending the screen, because if the modal + dropdown menu is taller than
       the current screen's height, the bottom of the page will just appear white and not load. */
     max-height: calc(100vh - 608px);
-
-    /* Always show the scrollbar, because opening the collaborator dropdowns will introduce a compensating margin
-      (.lock-scroll) to make up for a lost scrollbar to prevent the elements from jumping too much */
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   #collaborator-modal-body .secret-key-warning {
