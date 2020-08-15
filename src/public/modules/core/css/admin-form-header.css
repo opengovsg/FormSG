@@ -384,6 +384,7 @@
   padding-top: 5px;
   padding-bottom: 5px;
   border-radius: 0;
+  z-index: 1050;
 }
 
 .existing-role-button {

@@ -280,6 +280,7 @@
                   ng-if="userCanEdit && myform.responseMode === 'encrypt' && user.email !== userObj.email.toLowerCase()"
                   uib-dropdown
                   uib-dropdown-toggle
+                  dropdown-append-to-body
                   is-open="collab.collaboratorDropdownsOpen[$index]"
                   on-toggle="toggleScrollLock(open, $index)"
                   ng-click="toggleScrollLock(collab.collaboratorDropdownsOpen[$index], $index)"
