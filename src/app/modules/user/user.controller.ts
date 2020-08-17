@@ -2,13 +2,17 @@ import to from 'await-to-js'
 import { RequestHandler } from 'express'
 import HttpStatus from 'http-status-codes'
 
+import { createLoggerWithLabel } from '../../../config/logger'
 import SmsFactory from '../../factories/sms.factory'
+import { ApplicationError } from '../core/core.errors'
 
 import {
   createContactOtp,
   updateUserContact,
   verifyContactOtp,
 } from './user.service'
+
+const logger = createLoggerWithLabel('user-controller')
 
 export const handleContactSendOtp: RequestHandler<
   {},
@@ -23,7 +27,7 @@ export const handleContactSendOtp: RequestHandler<
 
     return res.sendStatus(HttpStatus.OK)
   } catch (err) {
-    // Send different error messages according to error.
+    // TODO: Send different error messages according to error.
     return res.status(HttpStatus.BAD_REQUEST).send(err.message)
   }
 }
@@ -39,10 +43,15 @@ export const handleContactVerifyOtp: RequestHandler<
 > = async (req, res) => {
   const { userId, otp, contact } = req.body
 
-  const [verifyErr] = await to(verifyContactOtp(otp, contact, userId))
-  if (verifyErr) {
-    // Handle vfn error
-    return
+  try {
+    await verifyContactOtp(otp, contact, userId)
+  } catch (err) {
+    logger.warn(err.meta ?? err)
+    if (err instanceof ApplicationError) {
+      return res.status(err.status).send(err.message)
+    } else {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(err.message)
+    }
   }
 
   // No error, update user with given contact.
