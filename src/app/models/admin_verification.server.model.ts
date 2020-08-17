@@ -4,7 +4,9 @@ import {
   IAdminVerificationModel,
   IAdminVerificationSchema,
   UpsertOtpParams,
-} from 'src/types/admin_verification'
+} from '../../types/admin_verification'
+
+import { USER_SCHEMA_ID } from './user.server.model'
 
 export const ADMIN_VERIFICATION_SCHEMA_ID = 'AdminVerification'
 
@@ -12,7 +14,7 @@ const AdminVerificationSchema = new Schema<IAdminVerificationSchema>(
   {
     admin: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: USER_SCHEMA_ID,
       required: 'AdminVerificationSchema must have an Admin',
     },
     hashedContact: {
