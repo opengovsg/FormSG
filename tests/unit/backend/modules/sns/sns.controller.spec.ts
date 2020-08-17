@@ -10,7 +10,7 @@ const mockSnsService = mocked(snsService, true)
 describe('handleSns', () => {
   let req, res
   beforeEach(() => {
-    req = { body: null }
+    req = { body: 'somebody' }
     res = { sendStatus: jest.fn() }
   })
   afterEach(() => {
@@ -32,7 +32,7 @@ describe('handleSns', () => {
     )
     await handleSns(req, res)
     expect(mockSnsService.isValidSnsRequest).toHaveBeenCalledWith(req.body)
-    expect(mockSnsService.updateBounces).toHaveBeenCalled()
+    expect(mockSnsService.updateBounces).toHaveBeenCalledWith(req.body)
     expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
   })
 })
