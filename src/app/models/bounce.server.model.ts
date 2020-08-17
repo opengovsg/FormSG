@@ -35,6 +35,7 @@ const BounceSchema = new Schema<IBounceSchema>({
           type: Boolean,
           default: false,
         },
+        _id: false,
       },
     ],
   },
