@@ -635,7 +635,7 @@ exports.handleSns = async (req, res) => {
     if (!isValid) {
       return res.sendStatus(HttpStatus.FORBIDDEN)
     }
-    snsService.updateBounces(req.body)
+    await snsService.updateBounces(req.body)
     return res.sendStatus(HttpStatus.OK)
   } catch (err) {
     logger.warn(err)
