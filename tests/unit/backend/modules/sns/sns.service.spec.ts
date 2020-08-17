@@ -5,18 +5,17 @@ import dedent from 'dedent'
 import { cloneDeep, merge, omit, pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
-import * as loggerModule from 'src/config/logger'
 import {
-  IBounce,
   IBounceNotification,
-  IBounceSchema,
   IDeliveryNotification,
   IEmailNotification,
   ISnsNotification,
-} from 'src/types'
+} from 'src/app/modules/sns/sns.types'
+import * as loggerModule from 'src/config/logger'
+import { IBounce, IBounceSchema } from 'src/types'
 
-import dbHandler from '../helpers/db-handler'
-import getMockLogger, { resetMockLogger } from '../helpers/jest-logger'
+import dbHandler from '../../helpers/db-handler'
+import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 
 const Bounce = dbHandler.makeModel('bounce.server.model', 'Bounce')
 
@@ -30,7 +29,10 @@ mockLoggerModule.createLoggerWithLabel.mockImplementation(() => getMockLogger())
 
 // Import the service last so that mocks get imported correctly
 // eslint-disable-next-line import/first
-import { isValidSnsRequest, updateBounces } from 'src/app/services/sns.service'
+import {
+  isValidSnsRequest,
+  updateBounces,
+} from 'src/app/modules/sns/sns.service'
 
 const MOCK_SNS_BODY: ISnsNotification = {
   Type: 'type',

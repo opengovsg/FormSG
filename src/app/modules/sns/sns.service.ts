@@ -3,18 +3,18 @@ import crypto from 'crypto'
 import { get, isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
-import { bounceLifeSpan } from '../../config/config'
-import { createCloudWatchLogger } from '../../config/logger'
+import { bounceLifeSpan } from '../../../config/config'
+import { createCloudWatchLogger } from '../../../config/logger'
+import { IBounceSchema, ISingleBounce } from '../../../types'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
+import getBounceModel from '../../models/bounce.server.model'
+
 import {
   IBounceNotification,
-  IBounceSchema,
   IDeliveryNotification,
   IEmailNotification,
-  ISingleBounce,
   ISnsNotification,
-} from '../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
-import getBounceModel from '../models/bounce.server.model'
+} from './sns.types'
 
 const logger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)

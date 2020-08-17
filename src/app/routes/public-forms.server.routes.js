@@ -114,32 +114,6 @@ module.exports = function (app) {
     )
 
   /**
-   * @typedef Mail
-   * @property {Array.<string>} headers - an array of mail headers
-   */
-
-  /**
-   * @typedef BouncedMessage
-   * @property {Mail.model} mail - the bounced mail
-   */
-
-  /**
-   * When email bounces, SNS calls this function to mark the
-   * submission as having bounced.
-   *
-   * Note that if anything errors in between, just return a 200
-   * to SNS, as the error code to them doesn't really matter.
-   *
-   * @route POST /emailnotifications
-   * @group forms - endpoints to serve forms
-   * @param {BouncedMessage.model} Message.body.required - the bounced message
-   * @consumes application/json
-   * @produces application/json
-   * @returns {string} 200 - notification acknowledged
-   */
-  app.route('/emailnotifications').post(emailSubmissions.handleSns)
-
-  /**
    * @typedef SubmissionResponse
    * @property {string} message.required - a human-readable message
    * @property {string} submissionId - the id of the submission made

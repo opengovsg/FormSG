@@ -9,8 +9,6 @@ const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const HttpStatus = require('http-status-codes')
-
-const snsService = require('../services/sns.service')
 const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
@@ -617,28 +615,5 @@ exports.sendAdminEmail = async function (req, res, next) {
   } catch (err) {
     logger.warn('sendAdminEmail error', err)
     return onSubmissionEmailFailure(err, req, res, submission)
-  }
-}
-
-/**
- * Validates that a request came from Amazon SNS, then updates the Bounce
- * collection.
- * @param {Object} req Express request object
- * @param {Object} res - Express response object
- */
-exports.handleSns = async (req, res) => {
-  // Since this function is for a public endpoint, catch all possible errors
-  // so we never fail on malformed input. The response code is meaningless since
-  // it is meant to go back to AWS.
-  try {
-    const isValid = await snsService.isValidSnsRequest(req.body)
-    if (!isValid) {
-      return res.sendStatus(HttpStatus.FORBIDDEN)
-    }
-    await snsService.updateBounces(req.body)
-    return res.sendStatus(HttpStatus.OK)
-  } catch (err) {
-    logger.warn(err)
-    return res.sendStatus(HttpStatus.BAD_REQUEST)
   }
 }
