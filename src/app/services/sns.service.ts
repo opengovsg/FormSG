@@ -212,9 +212,9 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   if (oldBounces) {
     updateBounceDoc(oldBounces, latestBounces, notification)
     logCriticalBounce(oldBounces, formId)
-    oldBounces.save()
+    await oldBounces.save()
   } else {
     logCriticalBounce(latestBounces, formId)
-    latestBounces.save()
+    await latestBounces.save()
   }
 }
