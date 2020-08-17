@@ -37,9 +37,7 @@ const AdminVerificationSchema = new Schema<IAdminVerificationSchema>(
     },
   },
   {
-    timestamps: {
-      updatedAt: false,
-    },
+    timestamps: true,
   },
 )
 AdminVerificationSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
