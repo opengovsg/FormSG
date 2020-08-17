@@ -42,14 +42,6 @@ export const createContactOtp = async (
 }
 
 /**
- * Sends the given OTP to the given contact
- * @param otp the OTP to send
- * @param contact the contact number to send the OTP to
- * @throws error if sending of OTP fails
- */
-export const sendContactOtp = async (otp: string, contact: string) => {}
-
-/**
  * Compares the otpToVerify and contact number with their hashed counterparts in
  * the database to be retrieved with the userId.
  *

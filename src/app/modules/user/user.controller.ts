@@ -2,9 +2,10 @@ import to from 'await-to-js'
 import { RequestHandler } from 'express'
 import HttpStatus from 'http-status-codes'
 
+import SmsFactory from '../../factories/sms.factory'
+
 import {
   createContactOtp,
-  sendContactOtp,
   updateUserContact,
   verifyContactOtp,
 } from './user.service'
@@ -18,7 +19,7 @@ export const handleContactSendOtp: RequestHandler<
 
   try {
     const generatedOtp = await createContactOtp(userId, contact)
-    await sendContactOtp(generatedOtp, contact)
+    await SmsFactory.sendAdminContactOtp(contact, generatedOtp, userId)
 
     return res.sendStatus(HttpStatus.OK)
   } catch (err) {
