@@ -1,3 +1,16 @@
+import bcrypt from 'bcrypt'
+import mongoose from 'mongoose'
+
+import getAdminVerificationModel from '../../../app/models/admin_verification.server.model'
+import getUserModel from '../../../app/models/user.server.model'
+import { generateOtp } from '../../../app/utils/otp'
+import config from '../../../config/config'
+
+const AdminVerification = getAdminVerificationModel(mongoose)
+const User = getUserModel(mongoose)
+
+const DEFAULT_SALT_ROUNDS = 10
+
 /**
  * Creates a contact OTP and saves it into the AdminVerification collection.
  * @param userId the user ID the contact is to be linked to
@@ -9,7 +22,23 @@ export const createContactOtp = async (
   userId: string,
   contact: string,
 ): Promise<string> => {
-  return '123456'
+  // Verify existence of userId
+  const admin = await User.findById(userId)
+  if (!admin) {
+    throw new Error('User id is invalid')
+  }
+
+  const otp = generateOtp()
+  const hashedOtp = await bcrypt.hash(otp, DEFAULT_SALT_ROUNDS)
+
+  await AdminVerification.upsertOtp({
+    admin: userId,
+    contact,
+    expireAt: new Date(Date.now() + config.otpLifeSpan),
+    hashedOtp,
+  })
+
+  return otp
 }
 
 /**

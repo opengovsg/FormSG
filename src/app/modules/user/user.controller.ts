@@ -19,12 +19,12 @@ export const handleContactSendOtp: RequestHandler<
   try {
     const generatedOtp = await createContactOtp(userId, contact)
     await sendContactOtp(generatedOtp, contact)
+
+    return res.sendStatus(HttpStatus.OK)
   } catch (err) {
     // Send different error messages according to error.
-    return res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    return res.status(HttpStatus.BAD_REQUEST).send(err.message)
   }
-
-  return res.sendStatus(HttpStatus.OK)
 }
 
 export const handleContactVerifyOtp: RequestHandler<

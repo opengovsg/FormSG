@@ -164,6 +164,7 @@
     "@babel/preset-env": "^7.11.0",
     "@opengovsg/mockpass": "^2.1.1",
     "@shelf/jest-mongodb": "^1.2.2",
+    "@types/bcrypt": "^3.0.0",
     "@types/compression": "^1.7.0",
     "@types/convict": "^5.2.1",
     "@types/cookie-parser": "^1.4.2",
