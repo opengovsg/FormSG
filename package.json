@@ -32,7 +32,7 @@
     "test-ci": "npm run test-backend && npm run test-frontend",
     "test": "npm run build-backend && npm run test-backend && npm run test-frontend",
     "test-e2e-build": "npm run build-backend && npm run build-frontend-dev",
-    "test-run": "concurrently --success last --kill-others \"mockpass\" \"maildev\" \"node dist/backend/server.js\" \"localstack start --host\"",
+    "test-run": "concurrently --success last --kill-others \"mockpass\" \"maildev\" \"node dist/backend/server.js\" \"localstack start --host\" \"node ./tests/mock-webhook-server.js\"",
     "testcafe-full-env": "testcafe -c 3 chrome:headless ./tests/end-to-end --test-meta full-env=true --app \"npm run test-run\" --app-init-delay 10000",
     "testcafe-basic-env": "testcafe -c 3 chrome:headless ./tests/end-to-end --test-meta basic-env=true --app \"npm run test-run\" --app-init-delay 10000",
     "download-binary": "node tests/end-to-end/helpers/get-mongo-binary.js",
