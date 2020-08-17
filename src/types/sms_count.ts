@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
 import { IFormSchema, OtpData } from './form'
 import { IUserSchema } from './user'
@@ -34,3 +34,7 @@ export interface ISmsCount {
 }
 
 export interface ISmsCountSchema extends ISmsCount, Document {}
+
+export interface ISmsCountModel extends Model<ISmsCountSchema> {
+  logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
+}

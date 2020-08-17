@@ -1,7 +1,8 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
 import {
   ISmsCount,
+  ISmsCountModel,
   ISmsCountSchema,
   LogSmsParams,
   LogType,
@@ -12,10 +13,6 @@ import { FORM_SCHEMA_ID } from './form.server.model'
 import { USER_SCHEMA_ID } from './user.server.model'
 
 const SMS_COUNT_SCHEMA_NAME = 'SmsCount'
-
-interface ISmsCountModel extends Model<ISmsCountSchema> {
-  logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
-}
 
 const SmsCountSchema = new Schema<ISmsCountSchema>(
   {

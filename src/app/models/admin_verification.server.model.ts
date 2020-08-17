@@ -1,7 +1,11 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
-import { IAdminVerificationSchema } from 'src/types/admin_verification'
+import {
+  IAdminVerificationModel,
+  IAdminVerificationSchema,
+  UpsertOtpParams,
+} from 'src/types/admin_verification'
 
 export const ADMIN_VERIFICATION_SCHEMA_ID = 'AdminVerification'
 
@@ -14,6 +18,7 @@ const AdminVerificationSchema = new Schema<IAdminVerificationSchema>(
     },
     contact: {
       type: String,
+      required: true,
       validate: {
         // Check if phone number is valid.
         validator: function (value: string) {
@@ -26,9 +31,11 @@ const AdminVerificationSchema = new Schema<IAdminVerificationSchema>(
     },
     hashedOtp: {
       type: String,
+      required: true,
     },
     expireAt: {
       type: Date,
+      required: true,
     },
     numOtpAttempts: {
       type: Number,
@@ -47,8 +54,23 @@ const AdminVerificationSchema = new Schema<IAdminVerificationSchema>(
 )
 AdminVerificationSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
+// Statics
+/**
+ * Upserts given OTP into AdminVerification collection.
+ */
+AdminVerificationSchema.statics.upsertOtp = async function (
+  this: IAdminVerificationModel,
+  upsertParams: UpsertOtpParams,
+) {
+  return this.findOneAndUpdate(
+    { admin: upsertParams.admin },
+    { $set: upsertParams },
+    { upsert: true, new: true },
+  )
+}
+
 const compileAdminVerificationModel = (db: Mongoose) =>
-  db.model<IAdminVerificationSchema>(
+  db.model<IAdminVerificationSchema, IAdminVerificationModel>(
     ADMIN_VERIFICATION_SCHEMA_ID,
     AdminVerificationSchema,
   )
@@ -61,9 +83,7 @@ const compileAdminVerificationModel = (db: Mongoose) =>
  */
 const getAdminVerificationModel = (db: Mongoose) => {
   try {
-    return db.model(ADMIN_VERIFICATION_SCHEMA_ID) as Model<
-      IAdminVerificationSchema
-    >
+    return db.model(ADMIN_VERIFICATION_SCHEMA_ID) as IAdminVerificationModel
   } catch {
     return compileAdminVerificationModel(db)
   }
