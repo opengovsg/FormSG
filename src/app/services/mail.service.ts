@@ -68,6 +68,7 @@ export type AutoreplySummaryRenderData = {
   refNo: ISubmissionSchema['_id']
   formTitle: IFormSchema['title']
   submissionTime: string
+  // TODO (#42): Add proper types once the type is determined.
   formData: any
   formUrl: string
 }
