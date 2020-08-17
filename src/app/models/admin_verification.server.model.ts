@@ -54,8 +54,11 @@ AdminVerificationSchema.statics.upsertOtp = async function (
 ) {
   return this.findOneAndUpdate(
     { admin: upsertParams.admin },
-    { $set: upsertParams },
-    { upsert: true, new: true },
+    {
+      $set: { ...upsertParams, numOtpAttempts: 0 },
+      $inc: { numOtpSent: 1 },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
   )
 }
 
