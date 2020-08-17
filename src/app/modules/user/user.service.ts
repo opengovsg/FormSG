@@ -125,4 +125,11 @@ export const verifyContactOtp = async (
 export const updateUserContact = async (contact: string, userId: string) => {
   // Retrieve user from database.
   // Update user's contact details.
+  const admin = await User.findById(userId)
+  if (!admin) {
+    throw new Error('User id is invalid')
+  }
+
+  admin.contact = contact
+  return admin.save()
 }
