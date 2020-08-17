@@ -426,7 +426,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return item.email !== newOwnerEmail
     })
     this.permissionList.push({ email: currentOwner.email, write: true })
-    return await this.save()
   }
 
   // Statics
