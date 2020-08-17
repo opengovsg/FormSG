@@ -1,3 +1,4 @@
+import to from 'await-to-js'
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
 
@@ -6,10 +7,13 @@ import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
 
+import { InvalidOtpError, MalformedOtpError } from './user.errors'
+
 const AdminVerification = getAdminVerificationModel(mongoose)
 const User = getUserModel(mongoose)
 
 const DEFAULT_SALT_ROUNDS = 10
+const MAX_OTP_ATTEMPTS = 10
 
 /**
  * Creates a contact OTP and saves it into the AdminVerification collection.
@@ -51,14 +55,67 @@ export const createContactOtp = async (
  * @param otpToVerify the OTP to verify with the hashed counterpart
  * @param contactToVerify the contact number to verify with the hashed counterpart
  * @param userId the id of the user used to retrieve the verification document from the database
- * @returns
+ * @returns true on success
  * @throws HashMismatchError if hashes do not match, or any other errors that may occur.
  */
 export const verifyContactOtp = async (
   otpToVerify: string,
   contactToVerify: string,
   userId: string,
-) => {}
+) => {
+  const updatedDocument = await AdminVerification.incrementAttemptsByAdminId(
+    userId,
+  )
+
+  // Does not exist, return expired error message.
+  if (!updatedDocument) {
+    throw new InvalidOtpError(
+      'OTP has expired. Please request for a new OTP.',
+      `OTP for ${userId} not found in AdminVerification collection.`,
+    )
+  }
+
+  // Too many attempts.
+  if (updatedDocument.numOtpAttempts > MAX_OTP_ATTEMPTS) {
+    throw new InvalidOtpError(
+      'You have hit the max number of attempts. Please request for a new OTP.',
+      `${userId} exceeded max OTP attempts`,
+    )
+  }
+
+  // Compare contact number with saved hash.
+  const [contactHashErr, isContactMatch] = await to(
+    bcrypt.compare(contactToVerify, updatedDocument.hashedContact),
+  )
+
+  // Compare otp with saved hash.
+  const [otpHashError, isOtpMatch] = await to(
+    bcrypt.compare(otpToVerify, updatedDocument.hashedOtp),
+  )
+
+  if (contactHashErr || otpHashError) {
+    throw new MalformedOtpError(null, `bcrypt error for ${userId}`)
+  }
+
+  if (!isOtpMatch) {
+    throw new InvalidOtpError(
+      'OTP is invalid. Please try again.',
+      `Invalid OTP attempted for ${userId}`,
+    )
+  }
+
+  if (!isContactMatch) {
+    throw new InvalidOtpError(
+      'Contact number given does not match the number the OTP is sent to. Please try again with the correct contact number.',
+      `Invalid contact number for ${userId}`,
+    )
+  }
+
+  // Hashed OTP matches, remove from collection.
+  await AdminVerification.findOneAndRemove({ admin: userId })
+  // Finally return true (as success).
+  return true
+}
 
 /**
  * Updates the user document with the userId with the given contact.
