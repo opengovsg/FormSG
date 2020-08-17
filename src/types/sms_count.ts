@@ -20,11 +20,6 @@ export type LogSmsParams = {
 }
 
 export interface ISmsCount {
-  form: IFormSchema['_id']
-  formAdmin: {
-    email: string
-    userId: IUserSchema['_id']
-  }
   // The Twilio SID used to send the SMS. Not to be confused with msgSrvcName.
   msgSrvcSid: string
   logType: LogType
@@ -34,6 +29,16 @@ export interface ISmsCount {
 }
 
 export interface ISmsCountSchema extends ISmsCount, Document {}
+
+export interface IVerificationSmsCount extends ISmsCount {
+  form: IFormSchema['_id']
+  formAdmin: {
+    email: string
+    userId: IUserSchema['_id']
+  }
+}
+
+export interface IVerificationSmsCountSchema extends ISmsCountSchema {}
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
