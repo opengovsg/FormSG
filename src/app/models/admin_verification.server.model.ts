@@ -1,4 +1,3 @@
-import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { Mongoose, Schema } from 'mongoose'
 
 import {
@@ -16,18 +15,9 @@ const AdminVerificationSchema = new Schema<IAdminVerificationSchema>(
       ref: 'User',
       required: 'AdminVerificationSchema must have an Admin',
     },
-    contact: {
+    hashedContact: {
       type: String,
       required: true,
-      validate: {
-        // Check if phone number is valid.
-        validator: function (value: string) {
-          const phoneNumber = parsePhoneNumberFromString(value)
-          if (!phoneNumber) return false
-          return phoneNumber.isValid()
-        },
-        message: (props) => `${props.value} is not a valid mobile number`,
-      },
     },
     hashedOtp: {
       type: String,

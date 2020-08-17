@@ -4,7 +4,7 @@ import { IUserSchema } from './user'
 
 export interface IAdminVerification {
   admin: IUserSchema['_id']
-  contact: string
+  hashedContact: string
   hashedOtp: string
   expireAt: Date
   numOtpAttempts?: number
@@ -18,13 +18,13 @@ export interface IAdminVerificationSchema extends IAdminVerification, Document {
 
 export type UpsertOtpParams = Pick<
   IAdminVerificationSchema,
-  'hashedOtp' | 'contact' | 'admin' | 'expireAt'
+  'hashedOtp' | 'hashedContact' | 'admin' | 'expireAt'
 >
 export interface IAdminVerificationModel
   extends Model<IAdminVerificationSchema> {
   upsertOtp: ({
     admin,
-    contact,
+    hashedContact,
     hashedOtp,
     expireAt,
   }: UpsertOtpParams) => Promise<IAdminVerificationSchema>

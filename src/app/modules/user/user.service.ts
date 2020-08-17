@@ -30,11 +30,12 @@ export const createContactOtp = async (
 
   const otp = generateOtp()
   const hashedOtp = await bcrypt.hash(otp, DEFAULT_SALT_ROUNDS)
+  const hashedContact = await bcrypt.hash(contact, DEFAULT_SALT_ROUNDS)
 
   await AdminVerification.upsertOtp({
     admin: userId,
-    contact,
     expireAt: new Date(Date.now() + config.otpLifeSpan),
+    hashedContact,
     hashedOtp,
   })
 
