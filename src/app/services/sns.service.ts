@@ -148,7 +148,13 @@ const extractBounceDoc = (
 }
 
 // Updates an old bounce document with info from a new bounce document as well
-// as an SNS notification
+// as an SNS notification. This function does 3 things:
+// 1) If the old bounce document indicates that an email bounced, set hasBounced
+// to true for that email.
+// 2) If the new delivery notification indicates that an email was delivered
+// successfully, set hasBounced to false for that email, even if the old bounce
+// document indicates that that email previously bounced.
+// 3) Update the old recipient list according to the newest bounce notification.
 const updateBounceDoc = (
   oldBounces: IBounceSchema,
   latestBounces: IBounceSchema,
