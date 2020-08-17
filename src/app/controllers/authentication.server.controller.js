@@ -209,6 +209,7 @@ exports.sendOtp = async function (req, res) {
       appName: res.app.locals.title,
       appUrl: config.app.appUrl,
       otp: otp,
+      ipAddress: getRequestIp(req),
     })
   } catch (renderErr) {
     logger.error(getRequestIp(req), req.url, req.headers, renderErr)
