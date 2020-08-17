@@ -1,10 +1,11 @@
 import { Document, Model } from 'mongoose'
 
 import { FormOtpData, IFormSchema } from './form'
-import { IUserSchema } from './user'
+import { AdminContactOtpData, IUserSchema } from './user'
 
 export enum SmsType {
   verification = 'VERIFICATION',
+  adminContact = 'ADMIN_CONTACT',
 }
 
 export enum LogType {
@@ -13,7 +14,7 @@ export enum LogType {
 }
 
 export type LogSmsParams = {
-  otpData: FormOtpData
+  otpData: FormOtpData | AdminContactOtpData
   msgSrvcSid: string
   smsType: SmsType
   logType: LogType
@@ -39,6 +40,12 @@ export interface IVerificationSmsCount extends ISmsCount {
 }
 
 export interface IVerificationSmsCountSchema extends ISmsCountSchema {}
+
+export interface IAdminContactSmsCount extends ISmsCount {
+  admin: IUserSchema['_id']
+}
+
+export interface IAdminContactSmsCountSchema extends ISmsCountSchema {}
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>

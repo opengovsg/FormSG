@@ -2,6 +2,10 @@ import { Document } from 'mongoose'
 
 import { IAgencySchema } from './agency'
 
+export type AdminContactOtpData = {
+  admin: IUserSchema['_id']
+}
+
 export interface IUser {
   email: string
   agency: IAgencySchema['_id']

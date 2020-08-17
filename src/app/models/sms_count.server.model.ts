@@ -1,6 +1,7 @@
 import { Mongoose, Schema } from 'mongoose'
 
 import {
+  IAdminContactSmsCountSchema,
   ISmsCount,
   ISmsCountModel,
   ISmsCountSchema,
@@ -28,6 +29,14 @@ const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
       ref: USER_SCHEMA_ID,
       required: true,
     },
+  },
+})
+
+const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
+  admin: {
+    type: Schema.Types.ObjectId,
+    ref: USER_SCHEMA_ID,
+    required: true,
   },
 })
 
@@ -81,6 +90,7 @@ const compileSmsCountModel = (db: Mongoose) => {
 
   // Adding Discriminators
   SmsCountModel.discriminator(SmsType.verification, VerificationSmsCountSchema)
+  SmsCountModel.discriminator(SmsType.adminContact, AdminContactSmsCountSchema)
 
   return SmsCountModel
 }
