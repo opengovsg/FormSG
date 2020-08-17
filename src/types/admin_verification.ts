@@ -23,4 +23,7 @@ export type UpsertOtpParams = Pick<
 export interface IAdminVerificationModel
   extends Model<IAdminVerificationSchema> {
   upsertOtp: (params: UpsertOtpParams) => Promise<IAdminVerificationSchema>
+  incrementAttemptsByAdminId: (
+    adminId: string,
+  ) => Promise<IAdminVerificationSchema>
 }

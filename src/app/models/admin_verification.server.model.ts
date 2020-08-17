@@ -57,6 +57,17 @@ AdminVerificationSchema.statics.upsertOtp = async function (
   )
 }
 
+AdminVerificationSchema.statics.incrementAttemptsByAdminId = async function (
+  this: IAdminVerificationModel,
+  adminId: string,
+) {
+  return this.findOneAndUpdate(
+    { admin: adminId },
+    { $inc: { numOtpAttempts: 1 } },
+    { new: true },
+  )
+}
+
 const compileAdminVerificationModel = (db: Mongoose) =>
   db.model<IAdminVerificationSchema, IAdminVerificationModel>(
     ADMIN_VERIFICATION_SCHEMA_ID,
