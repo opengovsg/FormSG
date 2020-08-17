@@ -57,7 +57,9 @@ export const handleContactVerifyOtp: RequestHandler<
   // No error, update user with given contact.
   const [updateErr] = await to(updateUserContact(contact, userId))
   if (updateErr) {
-    // Handle update error
+    // Handle update error.
+    logger.warn(updateErr)
+    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(updateErr.message)
   }
 
   return res.sendStatus(HttpStatus.OK)
