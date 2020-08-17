@@ -7,7 +7,13 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { isPhoneNumber } from '../../shared/util/phone-num-validation'
 import { VfnErrors } from '../../shared/util/verification'
-import { FormOtpData, LogSmsParams, LogType, SmsType } from '../../types'
+import {
+  AdminContactOtpData,
+  FormOtpData,
+  LogSmsParams,
+  LogType,
+  SmsType,
+} from '../../types'
 import getFormModel from '../models/form.server.model'
 import getSmsCountModel from '../models/sms_count.server.model'
 
@@ -134,7 +140,7 @@ const getOtpDataFromForm = async (formId: string) => {
  */
 const send = async (
   twilioConfig: TwilioConfig,
-  otpData: FormOtpData,
+  otpData: FormOtpData | AdminContactOtpData,
   recipient: string,
   message: string,
   smsType: SmsType,
@@ -224,6 +230,23 @@ const sendVerificationOtp = async (
   return send(twilioData, otpData, recipient, message, SmsType.verification)
 }
 
+const sendAdminContactOtp = async (
+  recipient: string,
+  otp: string,
+  userId: string,
+  defaultConfig: TwilioConfig,
+) => {
+  logger.info(`sendAdminContactOtp: userId="${userId}"`)
+
+  const message = `Use the OTP ${otp} to verify your emergency contact number.`
+
+  const otpData: AdminContactOtpData = {
+    admin: userId,
+  }
+
+  return send(defaultConfig, otpData, recipient, message, SmsType.adminContact)
+}
+
 class TwilioError extends Error {
   code: number
   status: string
@@ -242,4 +265,5 @@ class TwilioError extends Error {
 
 module.exports = {
   sendVerificationOtp,
+  sendAdminContactOtp,
 }
