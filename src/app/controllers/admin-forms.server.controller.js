@@ -746,6 +746,12 @@ function makeModule(connection) {
         },
       )
     },
+
+    /**
+     * Transfer a form to another user
+     * @param  {Object} req - Express request object
+     * @param  {Object} res - Express response object
+     */
     transferOwner: async function (req, res) {
       const newOwnerEmail = req.body.email
 

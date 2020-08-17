@@ -246,6 +246,51 @@ describe('Admin-Forms Controller', () => {
     })
   })
 
+  describe('transferOwner', () => {
+    it('should update admin id and set current owner as editor', async (done) => {
+      const collabAdmin = await User.create({
+        email: 'original@test.gov.sg',
+        _id: mongoose.Types.ObjectId('000000000002'),
+        agency: testAgency._id,
+      })
+
+      const newOwner = await User.create({
+        email: 'newOwner@test.gov.sg',
+        _id: mongoose.Types.ObjectId('000000000003'),
+        agency: testAgency._id,
+      })
+
+      const form1 = new Form({
+        title: 'Transfer Owner Form',
+        admin: collabAdmin._id,
+      })
+      await form1.save()
+
+      req.session.user = collabAdmin
+      req.body.email = newOwner.email
+      req.form = form1
+
+      res.json.and.callFake((args) => {
+        expect(args.form.admin._id.toString()).toEqual(newOwner._id.toString())
+        expect(args.form.permissionList.length).toEqual(1)
+        expect(args.form.permissionList[0].email).toEqual(collabAdmin.email)
+        expect(args.form.permissionList[0].write).toEqual(true)
+
+        Form.findOne({ _id: args.form._id }, (err, foundForm) => {
+          if (!err) {
+            let form = foundForm.toObject()
+            expect(form.admin.toString()).toEqual(newOwner._id.toString())
+            expect(form.permissionList.length).toEqual(1)
+            expect(form.permissionList[0].email).toEqual(collabAdmin.email)
+            expect(form.permissionList[0].write).toEqual(true)
+          }
+          done(err)
+        })
+      })
+      Controller.transferOwner(req, res)
+    })
+  })
+
   describe('list', () => {
     it('should fetch forms with corresponding admin or collaborators and sorted by last modified', async (done) => {
       const currentAdmin = testUser
