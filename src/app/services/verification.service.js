@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const _ = require('lodash')
-const { otpGenerator } = require('../../config/config')
 const mailService = require('./mail.service')
 const smsFactory = require('./../factories/sms.factory')
 const vfnUtil = require('../../shared/util/verification')
 const formsgSdk = require('../../config/formsg-sdk')
+const { generateOtp } = require('../utils/otp')
 
 const getFormModel = require('../models/form.server.model').default
 const getVerificationModel = require('../models/verification.server.model')
@@ -111,7 +111,7 @@ const getNewOtp = async (transaction, fieldId, answer) => {
     )
   } else {
     const hashCreatedAt = new Date()
-    const otp = otpGenerator()
+    const otp = generateOtp()
     const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS)
     const signedData = formsgSdk.verification.generateSignature({
       transactionId,

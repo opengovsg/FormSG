@@ -1,6 +1,5 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
-import crypto from 'crypto'
 import { SessionOptions } from 'express-session'
 import { ConnectionOptions } from 'mongoose'
 import nodemailer from 'nodemailer'
@@ -80,7 +79,6 @@ type Config = {
 
   // Functions
   configureAws: () => Promise<void>
-  otpGenerator: () => string
 }
 
 // Enums
@@ -394,24 +392,6 @@ const configureAws = async () => {
   }
 }
 
-/**
- * Generates OTP for passwordless login
- * @return 6 digit OTP string
- */
-const otpGenerator = () => {
-  let length = 6
-  let chars = '0123456789'
-  // Generates cryptographically strong pseudo-random data.
-  // The size argument is a number indicating the number of bytes to generate.
-  const rnd = crypto.randomBytes(length)
-  const d = chars.length / 256
-  const value = new Array(length)
-  for (let i = 0; i < length; i++) {
-    value[i] = chars[Math.floor(rnd[i] * d)]
-  }
-  return value.join('')
-}
-
 const config: Config = {
   app: appConfig,
   db: dbConfig,
@@ -433,7 +413,6 @@ const config: Config = {
   siteBannerContent,
   adminBannerContent,
   configureAws,
-  otpGenerator,
 }
 
 export = config

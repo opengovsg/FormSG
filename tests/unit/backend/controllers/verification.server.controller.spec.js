@@ -28,8 +28,8 @@ describe('Verification Controller', () => {
   const service = spec('dist/backend/app/services/verification.service', {
     mongoose: Object.assign(mongoose, { '@noCallThru': true }),
     bcrypt,
-    '../../config/config': {
-      otpGenerator: () => testOtp,
+    '../utils/otp': {
+      generateOtp: () => testOtp,
       logger: console,
     },
     './mail.service': {
