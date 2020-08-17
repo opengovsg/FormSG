@@ -7,7 +7,7 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { isPhoneNumber } from '../../shared/util/phone-num-validation'
 import { VfnErrors } from '../../shared/util/verification'
-import { LogSmsParams, LogType, OtpData, SmsType } from '../../types'
+import { FormOtpData, LogSmsParams, LogType, SmsType } from '../../types'
 import getFormModel from '../models/form.server.model'
 import getSmsCountModel from '../models/sms_count.server.model'
 
@@ -134,7 +134,7 @@ const getOtpDataFromForm = async (formId: string) => {
  */
 const send = async (
   twilioConfig: TwilioConfig,
-  otpData: OtpData,
+  otpData: FormOtpData,
   recipient: string,
   message: string,
   smsType: SmsType,

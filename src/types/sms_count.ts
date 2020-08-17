@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose'
 
-import { IFormSchema, OtpData } from './form'
+import { FormOtpData, IFormSchema } from './form'
 import { IUserSchema } from './user'
 
 export enum SmsType {
@@ -13,7 +13,7 @@ export enum LogType {
 }
 
 export type LogSmsParams = {
-  otpData: OtpData
+  otpData: FormOtpData
   msgSrvcSid: string
   smsType: SmsType
   logType: LogType
