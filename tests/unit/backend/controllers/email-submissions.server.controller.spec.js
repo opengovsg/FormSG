@@ -22,6 +22,11 @@ describe('Email Submissions Controller', () => {
   // Declare global variables
   let spyRequest
   let sendSubmissionMailSpy
+  let mockSnsService = jasmine.createSpyObj('snsService', [
+    'isValidSnsRequest',
+    'updateBounces',
+  ])
+
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
   // which will be destroyed and re-created for every test
@@ -29,6 +34,7 @@ describe('Email Submissions Controller', () => {
     'dist/backend/app/controllers/email-submissions.server.controller',
     {
       mongoose: Object.assign(mongoose, { '@noCallThru': true }),
+      '../services/sns.service': mockSnsService,
     },
   )
   const submissionsController = spec(
@@ -2724,6 +2730,34 @@ describe('Email Submissions Controller', () => {
           prepareSubmissionThenCompare(expected, done)
         })
       })
+    })
+  })
+
+  describe('handleSns', () => {
+    let req, res
+    beforeEach(() => {
+      req = { body: null }
+      res = { sendStatus: jasmine.createSpy() }
+    })
+    afterEach(() => {
+      mockSnsService.updateBounces.calls.reset()
+      mockSnsService.isValidSnsRequest.calls.reset()
+    })
+    it('does not call updateBounces for invalid requests', async () => {
+      mockSnsService.isValidSnsRequest.and.callFake(() =>
+        Promise.resolve(false),
+      )
+      await controller.handleSns(req, res)
+      expect(mockSnsService.isValidSnsRequest).toHaveBeenCalledWith(req.body)
+      expect(mockSnsService.updateBounces).not.toHaveBeenCalled()
+      expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
+    })
+    it('calls updateBounces for valid requests', async () => {
+      mockSnsService.isValidSnsRequest.and.callFake(() => Promise.resolve(true))
+      await controller.handleSns(req, res)
+      expect(mockSnsService.isValidSnsRequest).toHaveBeenCalledWith(req.body)
+      expect(mockSnsService.updateBounces).toHaveBeenCalled()
+      expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
     })
   })
 })
