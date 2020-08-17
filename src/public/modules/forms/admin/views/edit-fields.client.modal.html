@@ -567,7 +567,7 @@
           <br />
           <div class="toggle-option">
             <div class="col-xs-8 label-custom label-medium">
-              Verified?
+              Verification via OTP
               <i
                 class="glyphicon glyphicon-question-sign"
                 uib-tooltip="When enabled, users will need to verify their email before they can submit the form"
@@ -587,6 +587,81 @@
                   ></i>
                 </div>
               </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" ng-show="vm.field.fieldType === 'email'">
+          <br />
+          <div class="toggle-option">
+            <div class="col-xs-8 label-custom label-medium">
+              Restrict email domain?<i
+                class="glyphicon glyphicon-question-sign"
+                uib-tooltip="When enabled, users must enter an email address of an allowed email domain before their submission is accepted."
+                tooltip-trigger="'click mouseenter'"
+              ></i>
+            </div>
+            <div class="col-xs-4 field-input">
+              <label
+                class="toggle-selector pull-right"
+                ng-class="vm.field.hasAllowedEmailDomains ? 'toggle-selector-on' : ''"
+                onclick=""
+              >
+                <input
+                  type="checkbox"
+                  ng-model="vm.field.hasAllowedEmailDomains"
+                />
+                <div class="toggle-selector-switch">
+                  <i
+                    ng-class="vm.field.hasAllowedEmailDomains ? 'bx bx-check' : 'bx bx-x' "
+                  ></i>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div ng-show="vm.field.fieldType === 'email'">
+          <br />
+          <div class="row label-custom label-medium">
+            <div class="col-md-12">
+              Email domain restriction
+              <i
+                class="glyphicon glyphicon-question-sign"
+                uib-tooltip="You must enable verification via OTP and enable the switch for restricting email domain in order to update and enforce allowed email domains."
+                tooltip-trigger="'click mouseenter'"
+              ></i>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <textarea
+                class="input-custom input-medium"
+                ng-disabled="!vm.field.isVerifiable || !vm.field.hasAllowedEmailDomains"
+                ng-model="vm.field.allowedEmailDomainsFromText"
+                name="allowedEmailDomainsFromText"
+                validate-email-domain-from-text
+                placeholder="@example.com, @nextexample.com"
+              >
+              </textarea>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div
+                ng-messages="vm.editFieldForm.allowedEmailDomainsFromText.$error"
+              >
+                <div
+                  ng-message="emailDomainFromTextValidator"
+                  class="alert-custom alert-error"
+                >
+                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                  <span class="alert-msg">
+                    You may have duplicate or invalid email domains. Please
+                    check.
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

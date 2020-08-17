@@ -14,9 +14,9 @@ const DATE_VALIDATION_OPTIONS = {
   custom: 'Custom date range',
 }
 
-angular
-  .module('forms')
-  .controller('EditFieldsModalController', [
+const app = angular.module('forms')
+
+app.controller('EditFieldsModalController', [
     '$uibModalInstance',
     'externalScope',
     'responseModeEnum',
@@ -29,6 +29,26 @@ angular
     'Auth',
     EditFieldsModalController,
   ])
+
+app.directive('validateEmailDomainFromText', () => {
+   return {
+      require: 'ngModel',
+      link: (scope, elem, attr, ngModel) => {
+        ngModel.$validators.emailDomainFromTextValidator = (allowedEmailDomainsFromText) => {
+          if (allowedEmailDomainsFromText) {
+            const emailDomains = allowedEmailDomainsFromText.split('\n').map(s => s.trim()).filter(s => s)
+            return (
+              !emailDomains.length ||
+              (new Set(emailDomains).size === emailDomains.length &&
+                emailDomains.filter((s) => s.match(/@.+\..+/)).length ===
+                  emailDomains.length)
+            )
+          }
+          return true
+        }
+      }
+   }
+})
 
 function EditFieldsModalController(
   $uibModalInstance,
@@ -55,6 +75,11 @@ function EditFieldsModalController(
     vm.field.fieldOptionsFromText = vm.field.fieldOptions.join('\n')
   } else if (['radiobutton', 'checkbox'].includes(vm.field.fieldType)) {
     vm.field.manualOptions = vm.field.fieldOptions
+  }
+
+  // Serialize allowed email domains
+  if (vm.field.fieldType === 'email' && vm.field.allowedEmailDomains.length > 0) {
+    vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join('\n')
   }
 
   // Set Validation Options on older paragraph fields - This ensures backward compatibility
@@ -244,7 +269,7 @@ function EditFieldsModalController(
       selectedDateValidation: temp,
     }
   }
-  
+
   vm.triggerDateChangeTracker = function () {
     const field = vm.field
     field.isValidateDate = !field.isValidateDate
@@ -418,6 +443,16 @@ function EditFieldsModalController(
     } else {
       field.fieldOptions = field.manualOptions
     }
+
+    // Deserialize allowed email domains
+    if (field.fieldType === 'email') {
+      if (!field.allowedEmailDomainsFromText) {
+        field.allowedEmailDomains = []
+      } else {
+        field.allowedEmailDomains = field.allowedEmailDomainsFromText.split('\n').map(s => s.trim()).filter(s => s)
+      }
+    }
+
     // set total attachment size left
     if (field.fieldType === 'attachment') {
       Attachment.attachmentsTotal =

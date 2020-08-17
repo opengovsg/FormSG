@@ -39,6 +39,41 @@ const createEmailFieldSchema = () => {
       type: Boolean,
       default: false,
     },
+    hasAllowedEmailDomains: {
+      type: Boolean,
+      default: false,
+    },
+    allowedEmailDomains: {
+      type: [String],
+      required: false,
+      // If there allowedEmailDomains is empty, then all email domains should be allowed.
+      default: [],
+      validate: {
+        validator: (emailDomains) => {
+          return (
+            !emailDomains.length ||
+            (new Set(emailDomains).size === emailDomains.length &&
+              emailDomains.filter((s) => s.match(/@.+\..+/)).length ===
+                emailDomains.length)
+          )
+        },
+        message: ({ value }) => {
+          const uniqueEmailDomains = new Set(value)
+          const duplicateEmailDomains = new Set()
+          value.forEach((emailDomain) => {
+            if (uniqueEmailDomains.has(emailDomain)) {
+              uniqueEmailDomains.delete(emailDomain)
+            } else {
+              duplicateEmailDomains.add(emailDomain)
+            }
+          })
+          if (duplicateEmailDomains.size) {
+            return 'There are one or more duplicate email domains.'
+          }
+          return 'There are one or more invalid email domains.'
+        },
+      },
+    },
   })
 
   // PDF response not allowed if autoreply is set in encrypted forms. If

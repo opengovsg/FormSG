@@ -1,6 +1,8 @@
 'use strict'
 
-angular.module('forms').component('emailFieldComponent', {
+const app = angular.module('forms')
+
+app.component('emailFieldComponent', {
   templateUrl: 'modules/forms/base/componentViews/field-email.client.view.html',
   bindings: {
     field: '<',
@@ -9,6 +11,22 @@ angular.module('forms').component('emailFieldComponent', {
   },
   controller: emailFieldComponentController,
   controllerAs: 'vm',
+})
+
+app.directive('validateEmailDomain', () => {
+  return {
+    require: 'ngModel',
+    link: (scope, elem, attr, ngModel) => {
+      const allowedEmailDomains = scope.vm.field.isVerifiable && scope.vm.field.hasAllowedEmailDomains ? new Set(scope.vm.field.allowedEmailDomains) : new Set()
+      ngModel.$validators.emailDomainValidator = (emailAddress) => {
+        if (allowedEmailDomains.size) {
+          const emailDomain = emailAddress.split('@').pop()
+          return allowedEmailDomains.has('@' + emailDomain)
+        }
+        return true
+      }
+    }
+  }
 })
 
 function emailFieldComponentController() {
