@@ -35,7 +35,7 @@ describe('handleSns', () => {
     expect(mockSnsService.updateBounces).toHaveBeenCalledWith(req.body)
     expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
   })
-  test('catches errors throw in isValidSnsRequest', async () => {
+  test('catches errors thrown in isValidSnsRequest', async () => {
     mockSnsService.isValidSnsRequest.mockImplementation(() => {
       throw new Error()
     })
@@ -44,7 +44,7 @@ describe('handleSns', () => {
     expect(mockSnsService.updateBounces).not.toHaveBeenCalled()
     expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
   })
-  test('catches errors throw in updateBounces', async () => {
+  test('catches errors thrown in updateBounces', async () => {
     mockSnsService.isValidSnsRequest.mockImplementation(() =>
       Promise.resolve(true),
     )
