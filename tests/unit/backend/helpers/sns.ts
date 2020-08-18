@@ -56,10 +56,10 @@ const makeEmailNotification = (
 }
 
 export const makeBounceNotification = (
-  formId: ObjectId,
-  submissionId: ObjectId,
-  recipientList: string[],
-  bouncedList: string[],
+  formId: ObjectId = new ObjectId(),
+  submissionId: ObjectId = new ObjectId(),
+  recipientList: string[] = [],
+  bouncedList: string[] = [],
   bounceType: 'Transient' | 'Permanent' = 'Permanent',
 ): ISnsNotification => {
   const Message = merge(
@@ -79,10 +79,10 @@ export const makeBounceNotification = (
 }
 
 export const makeDeliveryNotification = (
-  formId: ObjectId,
-  submissionId: ObjectId,
-  recipientList: string[],
-  deliveredList: string[],
+  formId: ObjectId = new ObjectId(),
+  submissionId: ObjectId = new ObjectId(),
+  recipientList: string[] = [],
+  deliveredList: string[] = [],
 ): ISnsNotification => {
   const Message = merge(
     makeEmailNotification('Delivery', formId, submissionId, recipientList),
