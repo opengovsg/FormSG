@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
 
 import getAdminVerificationModel from '../../../app/models/admin_verification.server.model'
+import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
 import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
@@ -119,9 +120,12 @@ export const verifyContactOtp = async (
 }
 
 /**
- * Updates the user document with the userId with the given contact.
+ * Updates the user document with the userId with the given contact and returns
+ * the populated updated user.
  * @param contact the contact to update
  * @param userId the user id of the user document to update
+ * @returns the updated user with populated references
+ * @throws error if any db actions fail
  */
 export const updateUserContact = async (
   contact: string,
@@ -135,5 +139,11 @@ export const updateUserContact = async (
   }
 
   admin.contact = contact
-  return admin.save()
+  const updatedAdmin = await admin.save()
+
+  updatedAdmin.populate({
+    path: 'agency',
+    model: AGENCY_SCHEMA_ID,
+  })
+  return updatedAdmin
 }
