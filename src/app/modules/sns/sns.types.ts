@@ -52,3 +52,13 @@ export interface IDeliveryNotification extends IEmailNotification {
     recipients: string[]
   }
 }
+
+// If an email notification is for bounces
+export const isBounceNotification = (
+  body: IEmailNotification,
+): body is IBounceNotification => body.notificationType === 'Bounce'
+
+// If an email notification is for successful delivery
+export const isDeliveryNotification = (
+  body: IEmailNotification,
+): body is IDeliveryNotification => body.notificationType === 'Delivery'

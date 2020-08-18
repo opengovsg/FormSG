@@ -10,8 +10,9 @@ import getBounceModel from '../../models/bounce.server.model'
 
 import {
   IBounceNotification,
-  IDeliveryNotification,
   IEmailNotification,
+  isBounceNotification,
+  isDeliveryNotification,
   ISnsNotification,
 } from './sns.types'
 
@@ -100,16 +101,6 @@ export const isValidSnsRequest = async (
     (await isValidSnsSignature(body))
   return isValid
 }
-
-// If an email notification is for bounces
-const isBounceNotification = (
-  body: IEmailNotification,
-): body is IBounceNotification => body.notificationType === 'Bounce'
-
-// If an email notification is for successful delivery
-const isDeliveryNotification = (
-  body: IEmailNotification,
-): body is IDeliveryNotification => body.notificationType === 'Delivery'
 
 // Extracts custom headers which we send with all emails, such as form ID, submission ID
 // and email type (admin response, email confirmation OTP etc).
