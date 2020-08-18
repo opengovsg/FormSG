@@ -58,7 +58,7 @@ AdminVerificationSchema.statics.upsertOtp = async function (
       $set: { ...upsertParams, numOtpAttempts: 0 },
       $inc: { numOtpSent: 1 },
     },
-    { upsert: true, new: true, setDefaultsOnInsert: true },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
   )
 }
 
