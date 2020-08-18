@@ -21,12 +21,8 @@ const LOGIN_CONFIG = {
   otpLifeSpan: 900000,
 }
 
-// Config for email sending/retrying.
+// Config for email sending.
 const MAIL_CONFIG = {
-  // Number is in miliseconds.
-  retryDuration: 60000, // 1 min in ms.
-  maxRetryCount: 2,
-  maxRetryDuration: 4800000, // 80 min in ms.
   // The sender email to display on mail sent.
   mailFrom: 'donotreply@mail.form.gov.sg',
 }

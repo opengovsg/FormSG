@@ -1,6 +1,5 @@
 'use strict'
 
-const moment = require('moment-timezone')
 const Busboy = require('busboy')
 const { Buffer } = require('buffer')
 const _ = require('lodash')
@@ -16,7 +15,8 @@ const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
 const { ConflictError } = require('../utils/custom-errors')
-const { MB, EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+const { EMAIL_TYPES } = require('../constants/mail')
+const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
   addAttachmentToResponses,
@@ -24,7 +24,6 @@ const {
   handleDuplicatesInAttachments,
   mapAttachmentsFromParsedResponses,
 } = require('../utils/attachment')
-const { renderPromise } = require('../utils/render-promise')
 const config = require('../../config/config')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'email-submissions',
@@ -32,7 +31,7 @@ const logger = require('../../config/logger').createLoggerWithLabel(
 const emailLogger = require('../../config/logger').createCloudWatchLogger(
   'email',
 )
-const { sendNodeMail } = require('../services/mail.service')
+const MailService = require('../services/mail.service').default
 
 const { sessionSecret } = config
 
@@ -580,7 +579,6 @@ exports.saveMetadataToDb = function (req, res, next) {
  * Generate and send admin email
  * @param {Object} req - the expressjs request. Will be injected with the
  * objects parsed from `req.form` and `req.attachments`
- * @param {Array} req.autoReplyEmails Auto-reply email fields
  * @param {Array} req.replyToEmails Reply-to emails
  * @param {Object} req.form - the form
  * @param {Array} req.formData Field-value tuples for admin email
@@ -600,72 +598,27 @@ exports.sendAdminEmail = async function (req, res, next) {
     attachments,
   } = req
 
-  let submissionTime = moment(submission.created)
-    .tz('Asia/Singapore')
-    .format('ddd, DD MMM YYYY hh:mm:ss A')
-
-  jsonData.unshift(
-    {
-      question: 'Reference Number',
-      answer: submission.id,
-    },
-    {
-      question: 'Timestamp',
-      answer: submissionTime,
-    },
-  )
-  let html
   try {
-    html = await renderPromise(res, 'templates/submit-form-email', {
-      refNo: submission.id,
-      formTitle: form.title,
-      submissionTime,
-      formData,
+    logger.info({
+      message: 'Sending admin mail',
+      submissionId: submission.id,
+      formId: form._id,
+      ip: getRequestIp(req),
+      submissionHash: submission.responseHash,
+    })
+
+    await MailService.sendSubmissionToAdmin({
+      replyToEmails,
+      form,
+      submission,
+      attachments,
       jsonData,
-      appName: res.app.locals.title,
+      formData,
     })
-  } catch (err) {
-    logger.warn(err)
-    return onSubmissionEmailFailure(err, req, res, submission)
-  }
-  let mailOptions = {
-    to: form.emails,
-    from: config.mail.mailer.from,
-    subject: 'formsg-auto: ' + form.title + ' (Ref: ' + submission.id + ')',
-    html,
-    attachments,
-    headers: {
-      [EMAIL_HEADERS.formId]: String(form._id),
-      [EMAIL_HEADERS.submissionId]: submission.id,
-      [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
-    },
-  }
 
-  // Set reply-to to all email fields that have reply to enabled
-  if (replyToEmails) {
-    let replyTo = replyToEmails.join(', ')
-    if (replyTo) mailOptions.replyTo = replyTo
-  }
-
-  logger.info({
-    message: 'Sending admin mail',
-    submissionId: submission.id,
-    formId: form._id,
-    ip: getRequestIp(req),
-    submissionHash: submission.responseHash,
-  })
-
-  // Send mail
-  try {
-    await sendNodeMail({
-      mail: mailOptions,
-      options: {
-        mailId: submission.id,
-        formId: form._id,
-      },
-    })
     return next()
   } catch (err) {
+    logger.warn('sendAdminEmail error', err)
     return onSubmissionEmailFailure(err, req, res, submission)
   }
 }

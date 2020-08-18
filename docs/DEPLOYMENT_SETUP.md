@@ -136,24 +136,21 @@ The following env variables are set in Travis:
 
 #### Email and Nodemailer
 
-| Variable                  | Description                                                                                                                                                                                    |
-| :------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SES_HOST`                | SMTP hostname.                                                                                                                                                                                 |
-| `SES_PORT`                | SMTP port number.                                                                                                                                                                              |
-| `SES_USER`                | SMTP username.                                                                                                                                                                                 |
-| `SES_PASS`                | SMTP password.                                                                                                                                                                                 |
-| `SES_MAX_MESSAGES`        | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`. |
-| `SES_POOL`                | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                |
-| `SES_RATE`                | Maximum email to send per second, or per `rateDelta` if supplied.                                                                                                                              |
-| `SES_RATEDELTA`           | Defines the time measuring period in milliseconds for rate limiting. Defaults to `1000`.                                                                                                       |
-| `MAIL_FROM`               | Sender email address. Defaults to `'donotreply@mail.form.gov.sg'`.                                                                                                                             |
-| `MAIL_RETRY_DURATION`     | Base duration for retries, in milliseconds. Defaults to `60000`.                                                                                                                               |
-| `MAIL_RETRY_COUNT`        | Maximum number of resends for emails. Defaults to `2`.                                                                                                                                         |
-| `MAIL_MAX_RETRY_DURATION` | The maximum duration to wait before trying again, in milliseconds. Defaults to `4800000`.                                                                                                      |
-| `MAIL_SOCKET_TIMEOUT`     | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                          |
-| `MAIL_LOGGER`             | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                   |
-| `MAIL_DEBUG`              | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                              |
-| `CHROMIUM_BIN`            | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                       |
+| Variable              | Description                                                                                                                                                                                    |
+| :-------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SES_HOST`            | SMTP hostname.                                                                                                                                                                                 |
+| `SES_PORT`            | SMTP port number.                                                                                                                                                                              |
+| `SES_USER`            | SMTP username.                                                                                                                                                                                 |
+| `SES_PASS`            | SMTP password.                                                                                                                                                                                 |
+| `SES_MAX_MESSAGES`    | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`. |
+| `SES_POOL`            | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                |
+| `SES_RATE`            | Maximum email to send per second, or per `rateDelta` if supplied.                                                                                                                              |
+| `SES_RATEDELTA`       | Defines the time measuring period in milliseconds for rate limiting. Defaults to `1000`.                                                                                                       |
+| `MAIL_FROM`           | Sender email address. Defaults to `'donotreply@mail.form.gov.sg'`.                                                                                                                             |  |
+| `MAIL_SOCKET_TIMEOUT` | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                          |
+| `MAIL_LOGGER`         | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                   |
+| `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                              |
+| `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                       |
 
 ### Additional Features
 

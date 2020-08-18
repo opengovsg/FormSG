@@ -20,7 +20,7 @@ import {
   ResponseMode,
   Status,
 } from '../../types'
-import { MB } from '../utils/constants'
+import { MB } from '../constants/filesize'
 
 import getAgencyModel from './agency.server.model'
 import {

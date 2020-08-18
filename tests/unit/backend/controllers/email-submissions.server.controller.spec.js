@@ -12,6 +12,8 @@ const dbHandler = require('../helpers/db-handler')
 const { validSnsBody } = require('../resources/valid-sns-body')
 const { getSnsBasestring } = require('../../../../dist/backend/app/utils/sns')
 const { ObjectID } = require('bson-ext')
+const MailService = require('../../../../dist/backend/app/services/mail.service')
+  .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
@@ -25,8 +27,7 @@ describe('Email Submissions Controller', () => {
 
   // Declare global variables
   let spyRequest
-  let mockSendNodeMail = jasmine.createSpy()
-
+  let sendSubmissionMailSpy
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
   // which will be destroyed and re-created for every test
@@ -34,9 +35,6 @@ describe('Email Submissions Controller', () => {
     'dist/backend/app/controllers/email-submissions.server.controller',
     {
       mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      '../services/mail.service': {
-        sendNodeMail: mockSendNodeMail,
-      },
     },
   )
   const submissionsController = spec(
@@ -46,9 +44,6 @@ describe('Email Submissions Controller', () => {
       request: (url, callback) => spyRequest(url, callback),
       '../../config/config': {
         sessionSecret: SESSION_SECRET,
-      },
-      '../services/mail.service': {
-        sendNodeMail: mockSendNodeMail,
       },
     },
   )
@@ -68,7 +63,6 @@ describe('Email Submissions Controller', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('notifyParties', () => {
-    const config = spec('dist/backend/config/config')
     const originalConsoleError = console.error
 
     let fixtures
@@ -95,20 +89,19 @@ describe('Email Submissions Controller', () => {
         .get(injectFixtures, controller.sendAdminEmail, (req, res) =>
           res.status(200).send(),
         )
+
+      sendSubmissionMailSpy = spyOn(MailService, 'sendSubmissionToAdmin')
     })
 
     afterAll(() => {
       console.error = originalConsoleError
     })
 
+    afterEach(() => sendSubmissionMailSpy.calls.reset())
+
     beforeEach(() => {
-      mockSendNodeMail.and.callFake(({ mail }) => {
-        if (!mail.to || !mail.from || !mail.subject || !mail.html) {
-          throw new Error('mockSendNodeMail error')
-        }
-      })
       fixtures = {
-        autoReplyEmails: [],
+        replyToEmails: [],
         attachments: [
           {
             filename: 'file.txt',
@@ -148,84 +141,26 @@ describe('Email Submissions Controller', () => {
     })
 
     it('sends mail with correct parameters', (done) => {
-      request(app)
-        .get(endpointPath)
-        .expect(HttpStatus.OK)
-        .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
-          console.error('mailOptions.html', mailOptions.html)
-          expect(mailOptions.to).toEqual(fixtures.form.emails)
-          expect(mailOptions.from).toEqual(config.mail.mailer.from)
-          expect(mailOptions.subject).toContain(fixtures.form.title)
-          expect(mailOptions.subject).toContain(fixtures.submission.id)
-          expect(mailOptions.attachments).toEqual(fixtures.attachments)
-          expect(mailOptions.html).toContain(fixtures.formData[0].question)
-          expect(mailOptions.html).toContain(
-            fixtures.formData[0].answerTemplate,
-          )
-        })
-        .then(done)
-        .catch(done)
-    })
+      // Arrange
+      const mockSuccessResponse = 'mockSuccessResponse'
+      sendSubmissionMailSpy.and.callFake(() => mockSuccessResponse)
 
-    it('sends mail with reply-to emails', (done) => {
-      fixtures.replyToEmails = [
-        'reply-to-1@test.gov.sg',
-        'reply-to-2@test.gov.sg',
-      ]
       request(app)
         .get(endpointPath)
         .expect(HttpStatus.OK)
         .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
-          expect(mailOptions.to).toEqual(fixtures.form.emails)
-          expect(mailOptions.from).toEqual(config.mail.mailer.from)
-          expect(mailOptions.replyTo).toEqual(
-            'reply-to-1@test.gov.sg, reply-to-2@test.gov.sg',
-          )
-          expect(mailOptions.subject).toContain(fixtures.form.title)
-          expect(mailOptions.subject).toContain(fixtures.submission.id)
-          expect(mailOptions.attachments).toEqual(fixtures.attachments)
-          expect(mailOptions.html).toContain(fixtures.formData[0].question)
-          expect(mailOptions.html).toContain(
-            fixtures.formData[0].answerTemplate,
-          )
-        })
-        .then(done)
-        .catch(done)
-    })
-
-    // TODO: This merely tests admin mail being sent out if there is autoreply,
-    // but has yet to test if autoreply emails are being sent out.
-    it('ensures mail is still sent out with autoreply emails', (done) => {
-      fixtures.autoReplyEmails.push(
-        { email: 'no-reply@test.gov.sg' },
-        { email: 'nobody@test.gov.sg' },
-      )
-      request(app)
-        .get(endpointPath)
-        .expect(HttpStatus.OK)
-        .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
-          expect(mailOptions.to).toEqual(fixtures.form.emails)
-          expect(mailOptions.from).toEqual(config.mail.mailer.from)
-          expect(mailOptions.replyTo).toEqual()
-          expect(mailOptions.subject).toContain(fixtures.form.title)
-          expect(mailOptions.subject).toContain(fixtures.submission.id)
-          expect(mailOptions.attachments).toEqual(fixtures.attachments)
-          expect(mailOptions.html).toContain(fixtures.formData[0].question)
-          expect(mailOptions.html).toContain(
-            fixtures.formData[0].answerTemplate,
-          )
+          const mailOptions = sendSubmissionMailSpy.calls.mostRecent().args[0]
+          expect(mailOptions).toEqual(fixtures)
         })
         .then(done)
         .catch(done)
     })
 
     it('errors with 400 on send failure', (done) => {
+      // Arrange
+      sendSubmissionMailSpy.and.callFake(() =>
+        Promise.reject(new Error('mockErrorResponse')),
+      )
       // Trigger error by deleting recipient list
       delete fixtures.form.emails
       request(app)
