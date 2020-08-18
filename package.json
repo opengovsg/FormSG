@@ -154,7 +154,7 @@
     "uid-generator": "^1.0.0",
     "uuid": "^8.3.0",
     "validator": "^11.1.0",
-    "web-streams-polyfill": "^2.1.1",
+    "web-streams-polyfill": "^3.0.0",
     "whatwg-fetch": "^3.0.0",
     "winston": "^3.2.1",
     "winston-cloudwatch": "^2.3.2"
