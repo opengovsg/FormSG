@@ -1,6 +1,7 @@
 import { Document } from 'mongoose'
 
 import { IFormSchema } from './form'
+import { IEmailNotification } from './sns'
 
 export interface ISingleBounce {
   email: string
@@ -15,4 +16,6 @@ export interface IBounce {
   _id: Document['_id']
 }
 
-export interface IBounceSchema extends IBounce, Document {}
+export interface IBounceSchema extends IBounce, Document {
+  merge: (latestBounces: IBounceSchema, snsInfo: IEmailNotification) => void
+}

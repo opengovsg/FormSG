@@ -8,6 +8,7 @@ import {
   IBounceSchema,
   IEmailNotification,
   isBounceNotification,
+  isDeliveryNotification,
   ISingleBounce,
 } from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
@@ -101,6 +102,42 @@ BounceSchema.statics.fromSnsNotification = function (
     },
   )
   return new this({ formId, bounces })
+}
+
+// Updates an old bounce document with info from a new bounce document as well
+// as an SNS notification. This function does 3 things:
+// 1) If the old bounce document indicates that an email bounced, set hasBounced
+// to true for that email.
+// 2) If the new delivery notification indicates that an email was delivered
+// successfully, set hasBounced to false for that email, even if the old bounce
+// document indicates that that email previously bounced.
+// 3) Update the old recipient list according to the newest bounce notification.
+BounceSchema.methods.merge = function (
+  this: IBounceSchema,
+  latestBounces: IBounceSchema,
+  snsInfo: IEmailNotification,
+): void {
+  const isDelivery = isDeliveryNotification(snsInfo)
+  this.bounces.forEach((oldBounce) => {
+    // If we were previously notified that a given email has bounced,
+    // we want to retain that information
+    if (oldBounce.hasBounced) {
+      // Check if the latest recipient list contains that email
+      const matchedLatestBounce = latestBounces.bounces.find(
+        (newBounce) => newBounce.email === oldBounce.email,
+      )
+      // Check if the latest notification indicates that this email
+      // actually succeeded
+      const hasSubsequentlySucceeded =
+        isDelivery &&
+        get(snsInfo, 'delivery.recipients').includes(oldBounce.email)
+      if (matchedLatestBounce) {
+        // Set the latest bounce status based on the latest notification
+        matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
+      }
+    }
+  })
+  this.bounces = latestBounces.bounces
 }
 
 const getBounceModel = (db: Mongoose) => {

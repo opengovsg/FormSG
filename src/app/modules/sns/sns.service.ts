@@ -1,13 +1,12 @@
 import axios from 'axios'
 import crypto from 'crypto'
-import { get, isEmpty } from 'lodash'
+import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
 import { createCloudWatchLogger } from '../../../config/logger'
 import {
   IBounceSchema,
   IEmailNotification,
-  isDeliveryNotification,
   ISnsNotification,
 } from '../../../types'
 import getBounceModel from '../../models/bounce.server.model'
@@ -98,42 +97,6 @@ export const isValidSnsRequest = async (
   return isValid
 }
 
-// Updates an old bounce document with info from a new bounce document as well
-// as an SNS notification. This function does 3 things:
-// 1) If the old bounce document indicates that an email bounced, set hasBounced
-// to true for that email.
-// 2) If the new delivery notification indicates that an email was delivered
-// successfully, set hasBounced to false for that email, even if the old bounce
-// document indicates that that email previously bounced.
-// 3) Update the old recipient list according to the newest bounce notification.
-const updateBounceDoc = (
-  oldBounces: IBounceSchema,
-  latestBounces: IBounceSchema,
-  snsInfo: IEmailNotification,
-): void => {
-  const isDelivery = isDeliveryNotification(snsInfo)
-  oldBounces.bounces.forEach((oldBounce) => {
-    // If we were previously notified that a given email has bounced,
-    // we want to retain that information
-    if (oldBounce.hasBounced) {
-      // Check if the latest recipient list contains that email
-      const matchedLatestBounce = latestBounces.bounces.find(
-        (newBounce) => newBounce.email === oldBounce.email,
-      )
-      // Check if the latest notification indicates that this email
-      // actually succeeded
-      const hasSubsequentlySucceeded =
-        isDelivery &&
-        get(snsInfo, 'delivery.recipients').includes(oldBounce.email)
-      if (matchedLatestBounce) {
-        // Set the latest bounce status based on the latest notification
-        matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
-      }
-    }
-  })
-  oldBounces.bounces = latestBounces.bounces
-}
-
 // Writes a log message if all recipients have bounced
 const logCriticalBounce = (bounceInfo: IBounceSchema, formId: string): void => {
   if (
@@ -165,7 +128,7 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const formId = latestBounces.formId
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
-    updateBounceDoc(oldBounces, latestBounces, notification)
+    oldBounces.merge(latestBounces, notification)
     logCriticalBounce(oldBounces, formId)
     await oldBounces.save()
   } else {
