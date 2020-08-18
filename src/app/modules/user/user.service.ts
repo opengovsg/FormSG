@@ -52,7 +52,7 @@ export const createContactOtp = async (
  * the database to be retrieved with the userId.
  *
  * If the both hashes matches, the saved document in the database is removed and
- * returned. Else, the document is kept in the database and a HashMismatchError is thrown.
+ * returned. Else, the document is kept in the database and an error is thrown.
  * @param otpToVerify the OTP to verify with the hashed counterpart
  * @param contactToVerify the contact number to verify with the hashed counterpart
  * @param userId the id of the user used to retrieve the verification document from the database
