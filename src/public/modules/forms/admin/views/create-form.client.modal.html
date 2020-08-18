@@ -122,8 +122,13 @@
               >
               <ul>
                 <li>
-                  <a ng-href="{{ vm.mailToUri }}" target="_blank">Email</a> your
-                  secret key to collaborators for safekeeping
+                  <a
+                    ng-href="{{ vm.mailToUri }}"
+                    target="_blank"
+                    ng-click="vm.handleMailToClick()"
+                    >Email</a
+                  >
+                  your secret key to collaborators for safekeeping
                 </li>
                 <li>Organise multiple keys in a spreadsheet</li>
               </ul>

@@ -321,6 +321,10 @@ function CreateFormModalController(
       )
   }
 
+  vm.handleMailToClick = () => {
+    GTag.clickSecretKeyMailto(vm.formData.title)
+  }
+
   // Whether user has copied secret key
   vm.isCopied = false
   vm.copied = () => {
