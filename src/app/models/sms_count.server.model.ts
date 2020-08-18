@@ -7,6 +7,7 @@ import {
   LogType,
   SmsType,
 } from '../../types'
+
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { USER_SCHEMA_ID } from './user.server.model'
 
@@ -58,7 +59,7 @@ SmsCountSchema.statics.logSms = async function (
   this: ISmsCountModel,
   { otpData, msgSrvcSid, smsType, logType }: LogSmsParams,
 ) {
-  const schemaData: ISmsCount = {
+  const schemaData: Omit<ISmsCount, '_id'> = {
     ...otpData,
     msgSrvcSid,
     smsType,

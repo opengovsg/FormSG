@@ -1,6 +1,6 @@
 'use strict'
 
-const { LOGIC_TYPES } = require('../../../../../shared/util/logic')
+const { LogicType } = require('../../../../../types')
 
 angular.module('forms').component('editLogicComponent', {
   templateUrl: 'modules/forms/admin/componentViews/edit-logic.client.view.html',
@@ -15,7 +15,7 @@ angular.module('forms').component('editLogicComponent', {
 
 function editLogicComponentController($uibModal, FormFields) {
   const vm = this
-  vm.LOGIC_TYPES = LOGIC_TYPES
+  vm.LogicType = LogicType
   const getNewCondition = function () {
     return {
       _id: Math.floor(100000 * Math.random()),

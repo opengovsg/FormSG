@@ -7,5 +7,6 @@
     "sinon": true,
     "spec": true,
     "expectAsync": true
-  }
+  },
+  "overrides": [{ "files": ["*.ts"], "extends": ["plugin:jest/recommended"] }]
 }

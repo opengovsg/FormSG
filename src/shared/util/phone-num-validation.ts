@@ -12,10 +12,10 @@ export const isPhoneNumber = (phoneNumber: string): boolean => {
     return false
   }
 
-  // Using length validation only for SG numbers due to some valid SG numbers
+  // Using isPossible() only for SG numbers due to some valid SG numbers
   // being marked as invalid due to its newness.
   if (parsedNumber.countryCallingCode === '65') {
-    return parsedNumber.isPossible() && parsedNumber.nationalNumber.length === 8
+    return parsedNumber.isPossible()
   }
   return parsedNumber.isValid()
 }
@@ -30,14 +30,21 @@ export const isMobilePhoneNumber = (mobileNumber: string): boolean => {
 
   if (!parsedNumber) return false
 
+  if (parsedNumber.countryCallingCode === '65') {
+    return (
+      isPhoneNumber(mobileNumber) &&
+      // Regex checks if the national number starts with 8 or 9, and is of
+      // length 8.
+      !!parsedNumber.nationalNumber.match(/^[89][0-9]{7}$/g)
+    )
+  }
+
+  // All other countries uses number type to check for validity.
   return (
     isPhoneNumber(mobileNumber) &&
-    // Have to include both MOBILE, FIXED_LINE_OR_MOBILE and unknown (as
-    // `undefined`) as some countries lump the types together, or the number is
-    // too new (in SG's case).
-    ['FIXED_LINE_OR_MOBILE', 'MOBILE', undefined].includes(
-      parsedNumber.getType(),
-    )
+    // Have to include both MOBILE, FIXED_LINE_OR_MOBILE as some countries lump
+    // the types together.
+    ['FIXED_LINE_OR_MOBILE', 'MOBILE'].includes(parsedNumber.getType())
   )
 }
 

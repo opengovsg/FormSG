@@ -4,13 +4,13 @@ angular.module('forms').factory('Betas', [Betas])
 
 function Betas() {
   const BETA_FEATURES_FIELD = {
-    sms: {
-      // This is not a field type -- when the mobile field is verifiable or the mobile field has autoreply, the flag is required
-      flag: 'allowSms',
-      matches: (field) =>
-        field.fieldType === 'mobile' &&
-        (field.isVerifiable === true),
-    },
+    // This is an example of how to add fields to this object
+    // featureName: {
+    //   flag: 'betaFlagName',
+    //   matches: (field) =>
+    //     field.fieldType === 'mobile' &&
+    //     (field.isVerifiable === true),
+    // },
   }
 
   const getBetaFeaturesForFields = (formFields) => {

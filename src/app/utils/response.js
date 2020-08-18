@@ -1,5 +1,4 @@
 const validateField = require('./field-validation')
-const getQuestionFromField = require('./question')
 const logicUtil = require('../../shared/util/logic')
 const _ = require('lodash')
 const { ConflictError } = require('./custom-errors.js')
@@ -71,12 +70,16 @@ const getParsedResponses = function (form, bodyResponses, modeFilter) {
   // Validate each field in the form and construct parsed responses for downstream processing
   const parsedResponses = responses.map((response) => {
     const { _id } = response
-    const formField = fieldMap[_id] // In FormValidator, we have checked that all the form field ids exist, so this wont be null
+    // In FormValidator, we have checked that all the form field ids exist, so
+    // this wont be null.
+    const formField = fieldMap[_id]
     response.isVisible = visibleFieldIds.has(_id)
     validateField(form._id, formField, response)
-    response.question = getQuestionFromField(formField)
+    // Instance method of base field schema.
+    response.question = formField.getQuestion()
     if (formField.isVerifiable) {
-      // This is only correct because validateField should have thrown an error if the signature was wrong.
+      // This is only correct because validateField should have thrown an error
+      // if the signature was wrong.
       response.isUserVerified = true
     }
 

@@ -91,7 +91,7 @@
           </div>
           <div
             class="logic-panel-section logic-panel-outcomes outcome-show-fields"
-            ng-if="logic.logicType === vm.LOGIC_TYPES.showFields"
+            ng-if="logic.logicType === vm.LogicType.ShowFields"
           >
             <div class="if-then-text then-show">THEN SHOW</div>
 
@@ -118,7 +118,7 @@
           </div>
           <div
             class="logic-panel-section logic-panel-outcomes outcome-prevent-submit"
-            ng-if="logic.logicType === vm.LOGIC_TYPES.preventSubmit"
+            ng-if="logic.logicType === vm.LogicType.PreventSubmit"
           >
             <div class="if-then-text then-show">THEN DISABLE FORM</div>
             <div class="field-panel">
