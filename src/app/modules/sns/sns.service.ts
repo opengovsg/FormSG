@@ -90,7 +90,9 @@ const isValidSnsSignature = async (
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
  * @param {Object} body Body of Express request object
  */
-export const isValidSnsRequest = async (body: any): Promise<boolean> => {
+export const isValidSnsRequest = async (
+  body: ISnsNotification,
+): Promise<boolean> => {
   const isValid =
     hasRequiredKeys(body) &&
     body.SignatureVersion === '1' && // We only check for SHA1-RSA signatures

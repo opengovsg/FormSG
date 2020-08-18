@@ -4,6 +4,7 @@ import HttpStatus from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../config/logger'
 
 import * as snsService from './sns.service'
+import { ISnsNotification } from './sns.types'
 
 const logger = createLoggerWithLabel('sns-controller')
 /**
@@ -12,7 +13,10 @@ const logger = createLoggerWithLabel('sns-controller')
  * @param req Express request object
  * @param res - Express response object
  */
-const handleSns = async (req: Request, res: Response) => {
+const handleSns = async (
+  req: Request<{}, {}, ISnsNotification>,
+  res: Response,
+) => {
   // Since this function is for a public endpoint, catch all possible errors
   // so we never fail on malformed input. The response code is meaningless since
   // it is meant to go back to AWS.
