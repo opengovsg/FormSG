@@ -3,18 +3,12 @@ const moment = require('moment-timezone')
 const isMalformedDate = (date) =>
   date && !moment(date, 'YYYY-MM-DD', true).isValid()
 
-const createQueryWithDateParam = (query, req) => {
-  const augmentedQuery = { ...query }
-  if (req.query.startDate && req.query.endDate) {
+const createQueryWithDateParam = (startDate, endDate) => {
+  const augmentedQuery = {}
+  if (startDate && endDate) {
     augmentedQuery.created = {
-      $gte: moment
-        .tz(req.query.startDate, 'Asia/Singapore')
-        .startOf('day')
-        .toDate(),
-      $lte: moment
-        .tz(req.query.endDate, 'Asia/Singapore')
-        .endOf('day')
-        .toDate(),
+      $gte: moment.tz(startDate, 'Asia/Singapore').startOf('day').toDate(),
+      $lte: moment.tz(endDate, 'Asia/Singapore').endOf('day').toDate(),
     }
   }
   return augmentedQuery
