@@ -206,6 +206,8 @@ const logCriticalBounce = (bounceInfo: IBounceSchema, formId: string): void => {
  */
 export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const notification: IEmailNotification = JSON.parse(body.Message)
+  // This is the crucial log statement which allows us to debug bounce-related
+  // issues, as it logs all the details about deliveries and bounces
   logger.info(notification)
   const emailType = extractHeader(notification, EMAIL_HEADERS.emailType)
   const formId = extractHeader(notification, EMAIL_HEADERS.formId)
