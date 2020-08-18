@@ -98,7 +98,7 @@ export const makeDeliveryNotification = (
 }
 
 // Omit mongoose values from Bounce document
-export const extractExpectedBounce = (
+export const extractBounceObject = (
   bounce: IBounceSchema,
 ): Omit<IBounce, '_id'> => {
   const extracted = pick(bounce.toObject(), [

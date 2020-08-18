@@ -11,7 +11,7 @@ import { ISnsNotification } from 'src/types'
 import dbHandler from '../../helpers/db-handler'
 import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 import {
-  extractExpectedBounce,
+  extractBounceObject,
   makeBounceNotification,
   makeDeliveryNotification,
   MOCK_SNS_BODY,
@@ -117,7 +117,7 @@ describe('updateBounces', () => {
     )
     await updateBounces(notification)
     const actualBounceDoc = await Bounce.findOne({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceDoc)
+    const actualBounce = extractBounceObject(actualBounceDoc)
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: false,
@@ -150,7 +150,7 @@ describe('updateBounces', () => {
     )
     await updateBounces(notification)
     const actualBounceDoc = await Bounce.findOne({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceDoc)
+    const actualBounce = extractBounceObject(actualBounceDoc)
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: bounces[email],
@@ -178,7 +178,7 @@ describe('updateBounces', () => {
     )
     await updateBounces(notification)
     const actualBounceDoc = await Bounce.findOne({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceDoc)
+    const actualBounce = extractBounceObject(actualBounceDoc)
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: true,
@@ -215,7 +215,7 @@ describe('updateBounces', () => {
     await updateBounces(notification1)
     await updateBounces(notification2)
     const actualBounceCursor = await Bounce.find({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const actualBounce = extractBounceObject(actualBounceCursor[0])
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: false,
@@ -260,7 +260,7 @@ describe('updateBounces', () => {
     await updateBounces(notification1)
     await updateBounces(notification2)
     const actualBounceCursor = await Bounce.find({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const actualBounce = extractBounceObject(actualBounceCursor[0])
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: bounces[email],
@@ -300,7 +300,7 @@ describe('updateBounces', () => {
     await updateBounces(notification1)
     await updateBounces(notification2)
     const actualBounceCursor = await Bounce.find({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const actualBounce = extractBounceObject(actualBounceCursor[0])
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: true,
@@ -347,7 +347,7 @@ describe('updateBounces', () => {
     await updateBounces(notification1)
     await updateBounces(notification2)
     const actualBounceCursor = await Bounce.find({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const actualBounce = extractBounceObject(actualBounceCursor[0])
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: bounces[email],
@@ -392,7 +392,7 @@ describe('updateBounces', () => {
     await updateBounces(notification1)
     await updateBounces(notification2)
     const actualBounceCursor = await Bounce.find({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const actualBounce = extractBounceObject(actualBounceCursor[0])
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: bounces[email],
@@ -432,7 +432,7 @@ describe('updateBounces', () => {
     await updateBounces(notification1)
     await updateBounces(notification2)
     const actualBounceCursor = await Bounce.find({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const actualBounce = extractBounceObject(actualBounceCursor[0])
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: false,
@@ -473,7 +473,7 @@ describe('updateBounces', () => {
     await updateBounces(notification1)
     await updateBounces(notification2)
     const actualBounceCursor = await Bounce.find({ formId })
-    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const actualBounce = extractBounceObject(actualBounceCursor[0])
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: true,
