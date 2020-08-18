@@ -1,12 +1,13 @@
 import moment from 'moment-timezone'
 
-export const isMalformedDate = (date?: Date): Boolean =>
-  date && !moment(date, 'YYYY-MM-DD', true).isValid()
+export const isMalformedDate = (date?: string): Boolean => {
+  return Boolean(date) && !moment(date, 'YYYY-MM-DD', true).isValid()
+}
 
 export const createQueryWithDateParam = (
-  startDate?: Date,
-  endDate?: Date,
-): Object => {
+  startDate?: string,
+  endDate?: string,
+): { created?: { $gte: Date; $lte: Date } } => {
   if (startDate && endDate) {
     return {
       created: {
