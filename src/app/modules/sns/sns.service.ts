@@ -4,14 +4,13 @@ import { get, isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
 import { createCloudWatchLogger } from '../../../config/logger'
-import { IBounceSchema } from '../../../types'
-import getBounceModel from '../../models/bounce.server.model'
-
 import {
+  IBounceSchema,
   IEmailNotification,
   isDeliveryNotification,
   ISnsNotification,
-} from './sns.types'
+} from '../../../types'
+import getBounceModel from '../../models/bounce.server.model'
 
 const logger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)

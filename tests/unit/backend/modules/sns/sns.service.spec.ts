@@ -5,14 +5,15 @@ import dedent from 'dedent'
 import { cloneDeep, merge, omit, pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
+import * as loggerModule from 'src/config/logger'
 import {
+  IBounce,
   IBounceNotification,
+  IBounceSchema,
   IDeliveryNotification,
   IEmailNotification,
   ISnsNotification,
-} from 'src/app/modules/sns/sns.types'
-import * as loggerModule from 'src/config/logger'
-import { IBounce, IBounceSchema } from 'src/types'
+} from 'src/types'
 
 import dbHandler from '../../helpers/db-handler'
 import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'

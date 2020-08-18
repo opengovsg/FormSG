@@ -3,13 +3,14 @@ import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import { bounceLifeSpan } from '../../config/config'
-import { IBounceSchema, ISingleBounce } from '../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 import {
   IBounceNotification,
+  IBounceSchema,
   IEmailNotification,
   isBounceNotification,
-} from '../modules/sns/sns.types'
+  ISingleBounce,
+} from '../../types'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 

@@ -2,9 +2,9 @@ import { Request, Response } from 'express'
 import HttpStatus from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { ISnsNotification } from '../../../types'
 
 import * as snsService from './sns.service'
-import { ISnsNotification } from './sns.types'
 
 const logger = createLoggerWithLabel('sns-controller')
 /**
