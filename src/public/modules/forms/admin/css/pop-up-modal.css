@@ -196,3 +196,7 @@
   content: '-';
   margin-right: 0.5em;
 }
+
+#create-form-modal .secret-key-safekeeping a {
+  color: #2f60ce;
+}
