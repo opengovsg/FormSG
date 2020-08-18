@@ -3,7 +3,6 @@
 const processDecryptedContent = require('../../helpers/process-decrypted-content')
 const { triggerFileDownload } = require('../../helpers/util')
 const JSZip = require('jszip')
-const { decode: decodeBase64 } = require('@stablelib/base64')
 
 const SHOW_PROGRESS_DELAY_MS = 3000
 
