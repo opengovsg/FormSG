@@ -127,7 +127,9 @@ BounceSchema.methods.merge = function (
         (newBounce) => newBounce.email === oldBounce.email,
       )
       // Check if the latest notification indicates that this email
-      // actually succeeded
+      // actually succeeded. We can't just use latestBounces because
+      // a false in latestBounces doesn't guarantee that the email was
+      // delivered, only that the email has not bounced yet.
       const hasSubsequentlySucceeded =
         isDelivery &&
         get(snsInfo, 'delivery.recipients').includes(oldBounce.email)
