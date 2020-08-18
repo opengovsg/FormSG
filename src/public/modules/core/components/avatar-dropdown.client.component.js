@@ -33,18 +33,21 @@ function avatarDropdownController($scope, $state, $uibModal, Auth) {
   vm.signOut = () => Auth.signOut()
 
   vm.openContactNumberModal = () => {
-    $uibModal
-      .open({
-        animation: false,
-        keyboard: false,
-        backdrop: 'static',
-        windowClass: 'ecm-modal-window',
-        templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
-        controller: 'EditContactNumberModalController',
-        controllerAs: 'vm',
-      })
-      .result.finally(angular.noop)
-      .then(angular.noop, angular.noop)
+    $uibModal.open({
+      animation: false,
+      keyboard: false,
+      backdrop: 'static',
+      windowClass: 'ecm-modal-window',
+      templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
+      controller: 'EditContactNumberModalController',
+      controllerAs: 'vm',
+    }).result.then((returnVal) => {
+      // Update success, update user.
+      if (returnVal) {
+        vm.user = returnVal
+        Auth.setUser(returnVal)
+      }
+    }).finally(angular.noop)
   }
 
   function generateAvatarText() {

@@ -130,12 +130,12 @@ function EditContactNumberModalController(
       .then((response) => {
         vm.otp.isFetching = false
         vm.vfnState = VERIFY_STATE.SUCCESS
-        Auth.setUser(response.data)
 
         // Close modal after lag to show success and show toast.
+        // Return user back to main controller to update.
         $timeout(() => {
           Toastr.success('Emergency contact successfully added')
-          vm.closeModal()
+          vm.closeModal(response.data)
         }, 1000)
       })
       .catch((err) => {
@@ -150,10 +150,10 @@ function EditContactNumberModalController(
       })
   }
 
-  vm.closeModal = function () {
+  vm.closeModal = function (data) {
     // Add flag into localstorage so the banner does not open again.
     // The flag will be cleared on user logout.
     $window.localStorage.setItem('contactBannerDismissed', true)
-    $uibModalInstance.close()
+    $uibModalInstance.close(data)
   }
 }
