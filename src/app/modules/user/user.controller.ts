@@ -22,6 +22,13 @@ export const handleContactSendOtp: RequestHandler<
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { contact, userId } = req.body
+  const sessionUserId = getUserIdFromSession(req.session)
+
+  // Guard against user updating for a different user, or if user is not logged
+  // in.
+  if (!sessionUserId || sessionUserId !== userId) {
+    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+  }
 
   try {
     const generatedOtp = await createContactOtp(userId, contact)
@@ -45,6 +52,13 @@ export const handleContactVerifyOtp: RequestHandler<
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { userId, otp, contact } = req.body
+  const sessionUserId = getUserIdFromSession(req.session)
+
+  // Guard against user updating for a different user, or if user is not logged
+  // in.
+  if (!sessionUserId || sessionUserId !== userId) {
+    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+  }
 
   try {
     await verifyContactOtp(otp, contact, userId)
@@ -69,12 +83,10 @@ export const handleContactVerifyOtp: RequestHandler<
 }
 
 export const handleFetchUser: RequestHandler = async (req, res) => {
-  if (!req.session?.user) {
+  const sessionUserId = getUserIdFromSession(req.session)
+  if (!sessionUserId) {
     return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
   }
-
-  // TODO: Save userId instead of entire user collection in session.
-  const sessionUserId = req.session?.user?._id
 
   // Retrieve user with id in session
   const [dbErr, retrievedUser] = await to(getPopulatedUserById(sessionUserId))
@@ -90,4 +102,9 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
   }
 
   return res.send(retrievedUser)
+}
+
+// TODO: Save userId instead of entire user collection in session.
+const getUserIdFromSession = (session?: Express.Session) => {
+  return session?.user?._id as string | undefined
 }
