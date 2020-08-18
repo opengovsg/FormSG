@@ -103,6 +103,7 @@ describe('mail.service', () => {
 
   describe('sendLoginOtp', () => {
     const MOCK_OTP = '123456'
+    const MOCK_IP = 'mock:5000'
     it('should send login otp successfully', async () => {
       // Arrange
       // sendMail should return mocked success response
@@ -113,10 +114,11 @@ describe('mail.service', () => {
         to: MOCK_VALID_EMAIL,
         from: MOCK_SENDER_STRING,
         subject: `One-Time Password (OTP) for ${MOCK_APP_NAME}`,
-        html: MailUtils.generateLoginOtpHtml({
+        html: await MailUtils.generateLoginOtpHtml({
           otp: MOCK_OTP,
           appName: MOCK_APP_NAME,
           appUrl: MOCK_APP_URL,
+          ipAddress: MOCK_IP,
         }),
         headers: {
           // Hardcode in tests in case something changes this.
@@ -126,7 +128,11 @@ describe('mail.service', () => {
 
       // Act + Assert
       await expect(
-        mailService.sendLoginOtp(MOCK_VALID_EMAIL, MOCK_OTP),
+        mailService.sendLoginOtp({
+          recipient: MOCK_VALID_EMAIL,
+          otp: MOCK_OTP,
+          ipAddress: MOCK_IP,
+        }),
       ).resolves.toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)

@@ -8,26 +8,14 @@ import { IFormSchema, ISubmissionSchema } from 'src/types'
 
 import config from '../../config/config'
 
-export const generateLoginOtpHtml = ({
-  otp,
-  appName,
-  appUrl,
-}: {
+export const generateLoginOtpHtml = (htmlData: {
   otp: string
   appName: string
   appUrl: string
+  ipAddress: string
 }) => {
-  return dedent`
-    <p>
-      Your OTP is <b>${otp}</b>. Please use this to login to 
-      your ${appName} account.
-    </p>
-    <p>If your OTP does not work, please request for a new OTP at ${appUrl}.</p>
-    <br />
-    <p>If you did not make this request, you may ignore this email.</p>
-    <br />
-    <p>The ${appName} Support Team</p>
-  `
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
+  return ejs.renderFile(pathToTemplate, htmlData)
 }
 
 export const generateVerificationOtpHtml = ({

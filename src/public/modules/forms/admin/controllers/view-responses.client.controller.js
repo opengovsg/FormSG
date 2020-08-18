@@ -38,8 +38,6 @@ function ViewResponsesController(
   vm.isEncryptResponseMode = vm.myform.responseMode === responseModeEnum.ENCRYPT
   vm.encryptionKey = null // will be set to an instance of EncryptionKey when form is unlocked successfully
   vm.csvDownloading = false // whether CSV export is in progress
-  vm.filterBySubmissionRefId = '' // whether to filter submissions by a specific ID
-  vm.filterBySubmissionRefIdTextbox = ''
 
   // Three views:
   // 1 - Unlock view for verifying form password
@@ -238,15 +236,12 @@ function ViewResponsesController(
     }
   })
 
-  vm.filterBySubmissionChanged = function () {
-    vm.filterBySubmissionRefId = vm.filterBySubmissionRefIdTextbox
-    vm.tableParams.reload()
-  }
-
   // Called by child directive unlockResponsesForm after key is verified to get responses
-  vm.loadResponses = function () {
+  vm.loadResponses = function (formPassword) {
+    vm.formPassword = formPassword
     vm.currentView = 2
     vm.loading = true
+
     vm.tableParams = new NgTableParams(
       {
         page: 1, // show first page
@@ -257,7 +252,6 @@ function ViewResponsesController(
           let { page } = params.url()
           return Submissions.getMetadata({
             formId: vm.myform._id,
-            filterBySubmissionRefId: vm.filterBySubmissionRefId,
             page,
           })
             .then((data) => {

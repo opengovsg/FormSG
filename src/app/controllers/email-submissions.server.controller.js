@@ -551,19 +551,22 @@ exports.saveMetadataToDb = function (req, res, next) {
 
   // Create submission hash
   let concatenatedResponse = concatResponse(formData, attachments)
-  let submissionLogstring
 
   createHash(concatenatedResponse)
     .then((result) => {
       submission.responseHash = result.hash
       submission.responseSalt = result.salt
-      submissionLogstring = `Saving submission ${submission.id} to MongoDB with hash ${submission.responseHash}`
       // Save submission to database
-      logger.profile(submissionLogstring)
       return submission.save()
     })
     .then((submission) => {
-      logger.profile(submissionLogstring)
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        submissionId: submission.id,
+        formId: form._id,
+        ip: getRequestIp(req),
+        responseHash: submission.responseHash,
+      })
       req.submission = submission
       return next()
     })
@@ -596,9 +599,13 @@ exports.sendAdminEmail = async function (req, res, next) {
   } = req
 
   try {
-    logger.profile(
-      `Sending admin mail submissionId=${submission.id} formId=${form._id} submissionHash=${submission.responseHash}`,
-    )
+    logger.info({
+      message: 'Sending admin mail',
+      submissionId: submission.id,
+      formId: form._id,
+      ip: getRequestIp(req),
+      submissionHash: submission.responseHash,
+    })
 
     await MailService.sendSubmissionToAdmin({
       replyToEmails,

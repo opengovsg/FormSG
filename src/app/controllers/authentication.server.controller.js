@@ -202,7 +202,11 @@ exports.sendOtp = async function (req, res) {
   let recipient = res.locals.email
 
   try {
-    await MailService.sendLoginOtp(recipient, otp)
+    await MailService.sendLoginOtp({
+      recipient,
+      otp,
+      ipAddress: getRequestIp(req),
+    })
     logger.info(`Login OTP sent:\temail=${recipient} ip=${getRequestIp(req)}`)
     return res.status(HttpStatus.OK).send(`OTP sent to ${recipient}!`)
   } catch (err) {

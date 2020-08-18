@@ -266,14 +266,23 @@ export class MailService {
    * @param otp the OTP to send
    * @throws error if mail fails, to be handled by the caller
    */
-  sendLoginOtp = async (recipient: string, otp: string) => {
+  sendLoginOtp = async ({
+    recipient,
+    otp,
+    ipAddress,
+  }: {
+    recipient: string
+    otp: string
+    ipAddress: string
+  }) => {
     const mail: MailOptions = {
       to: recipient,
       from: this.#senderFromString,
       subject: `One-Time Password (OTP) for ${this.#appName}`,
-      html: generateLoginOtpHtml({
+      html: await generateLoginOtpHtml({
         appName: this.#appName,
         appUrl: this.#appUrl,
+        ipAddress: ipAddress,
         otp,
       }),
       headers: {
