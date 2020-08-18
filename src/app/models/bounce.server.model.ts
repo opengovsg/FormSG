@@ -1,14 +1,23 @@
+import { get } from 'lodash'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import { bounceLifeSpan } from '../../config/config'
-import { IBounceSchema } from '../../types'
+import { IBounceSchema, ISingleBounce } from '../../types'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
+import {
+  IBounceNotification,
+  IEmailNotification,
+  isBounceNotification,
+} from '../modules/sns/sns.types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 
-export interface IBounceModel extends Model<IBounceSchema> {}
+export interface IBounceModel extends Model<IBounceSchema> {
+  fromSnsNotification: (snsInfo: IEmailNotification) => IBounceSchema | null
+}
 
 const BounceSchema = new Schema<IBounceSchema>({
   formId: {
@@ -47,11 +56,60 @@ const BounceSchema = new Schema<IBounceSchema>({
 })
 BounceSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
+// Helper function for methods.
+// Extracts custom headers which we send with all emails, such as form ID, submission ID
+// and email type (admin response, email confirmation OTP etc).
+const extractHeader = (body: IEmailNotification, header: string): string => {
+  return get(body, 'mail.headers').find(
+    (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
+  )?.value
+}
+
+// Helper function for methods.
+// Whether a bounce notification says a given email has bounced
+const hasEmailBounced = (
+  bounceInfo: IBounceNotification,
+  email: string,
+): boolean => {
+  return get(bounceInfo, 'bounce.bouncedRecipients').some(
+    (emailInfo) => emailInfo.emailAddress === email,
+  )
+}
+
+// Create a new Bounce document from an SNS notification.
+// More info on format of SNS notifications:
+// https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
+BounceSchema.statics.fromSnsNotification = function (
+  this: IBounceModel,
+  snsInfo: IEmailNotification,
+): IBounceSchema | null {
+  const emailType = extractHeader(snsInfo, EMAIL_HEADERS.emailType)
+  const formId = extractHeader(snsInfo, EMAIL_HEADERS.formId)
+  // We only care about admin emails
+  if (emailType !== EMAIL_TYPES.adminResponse || !formId) {
+    return null
+  }
+  const isBounce = isBounceNotification(snsInfo)
+  const bounces: ISingleBounce[] = get(snsInfo, 'mail.commonHeaders.to').map(
+    (email) => {
+      if (isBounce && hasEmailBounced(snsInfo as IBounceNotification, email)) {
+        return { email, hasBounced: true }
+      } else {
+        return { email, hasBounced: false }
+      }
+    },
+  )
+  return new this({ formId, bounces })
+}
+
 const getBounceModel = (db: Mongoose) => {
   try {
     return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
   } catch {
-    return db.model<IBounceSchema>(BOUNCE_SCHEMA_ID, BounceSchema)
+    return db.model<IBounceSchema>(
+      BOUNCE_SCHEMA_ID,
+      BounceSchema,
+    ) as IBounceModel
   }
 }
 

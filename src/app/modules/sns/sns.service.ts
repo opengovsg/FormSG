@@ -4,14 +4,11 @@ import { get, isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
 import { createCloudWatchLogger } from '../../../config/logger'
-import { IBounceSchema, ISingleBounce } from '../../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
+import { IBounceSchema } from '../../../types'
 import getBounceModel from '../../models/bounce.server.model'
 
 import {
-  IBounceNotification,
   IEmailNotification,
-  isBounceNotification,
   isDeliveryNotification,
   ISnsNotification,
 } from './sns.types'
@@ -102,42 +99,6 @@ export const isValidSnsRequest = async (
   return isValid
 }
 
-// Extracts custom headers which we send with all emails, such as form ID, submission ID
-// and email type (admin response, email confirmation OTP etc).
-const extractHeader = (body: IEmailNotification, header: string): string => {
-  return get(body, 'mail.headers').find(
-    (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
-  )?.value
-}
-
-// Whether a bounce notification says a given email has bounced
-const hasEmailBounced = (
-  bounceInfo: IBounceNotification,
-  email: string,
-): boolean => {
-  return get(bounceInfo, 'bounce.bouncedRecipients').some(
-    (emailInfo) => emailInfo.emailAddress === email,
-  )
-}
-
-// Extracts a Bounce document from the info in a notification
-const extractBounceDoc = (
-  snsInfo: IEmailNotification,
-  formId?: string,
-): IBounceSchema => {
-  const isBounce = isBounceNotification(snsInfo)
-  const bounces: ISingleBounce[] = get(snsInfo, 'mail.commonHeaders.to').map(
-    (email) => {
-      if (isBounce && hasEmailBounced(snsInfo as IBounceNotification, email)) {
-        return { email, hasBounced: true }
-      } else {
-        return { email, hasBounced: false }
-      }
-    },
-  )
-  return new Bounce({ formId, bounces })
-}
-
 // Updates an old bounce document with info from a new bounce document as well
 // as an SNS notification. This function does 3 things:
 // 1) If the old bounce document indicates that an email bounced, set hasBounced
@@ -200,11 +161,9 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   // This is the crucial log statement which allows us to debug bounce-related
   // issues, as it logs all the details about deliveries and bounces
   logger.info(notification)
-  const emailType = extractHeader(notification, EMAIL_HEADERS.emailType)
-  const formId = extractHeader(notification, EMAIL_HEADERS.formId)
-  // We only care about admin emails
-  if (emailType !== EMAIL_TYPES.adminResponse || !formId) return
-  const latestBounces = extractBounceDoc(notification, formId)
+  const latestBounces = Bounce.fromSnsNotification(notification)
+  if (!latestBounces) return
+  const formId = latestBounces.formId
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
     updateBounceDoc(oldBounces, latestBounces, notification)
