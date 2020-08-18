@@ -25,6 +25,7 @@ services:
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
       - FORMSG_SDK_MODE=development
+      - BOUNCE_LIFE_SPAN=1800000
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
@@ -36,7 +37,6 @@ services:
       - SES_USER
       - SES_PORT
       - OTP_LIFE_SPAN
-      - BOUNCE_LIFE_SPAN
       - AWS_REGION
       - GOOGLE_CAPTCHA
       - GOOGLE_CAPTCHA_PUBLIC
