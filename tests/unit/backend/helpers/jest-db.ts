@@ -18,6 +18,7 @@ const connect = async () => {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    useFindAndModify: false,
   })
   return conn
 }
@@ -40,6 +41,10 @@ const clearDatabase = async () => {
     const collection = collections[key]
     await collection.deleteMany({})
   }
+}
+
+const clearCollection = async (collection: string) => {
+  await mongoose.connection.collections[collection].deleteMany({})
 }
 
 const insertDefaultAgency = async ({
@@ -92,6 +97,7 @@ const dbHandler = {
   clearDatabase,
   insertDefaultAgency,
   insertFormCollectionReqs,
+  clearCollection,
 }
 
 export default dbHandler
