@@ -93,7 +93,10 @@ export interface IForm {
 
   responseMode?: ResponseMode
 
+  // Schema properties
   _id: Document['_id']
+  created?: Date
+  lastModified?: Date
 
   publicKey?: string
   emails?: string[]

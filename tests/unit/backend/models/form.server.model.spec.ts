@@ -1,31 +1,37 @@
-const { omit, merge } = require('lodash')
-const mongoose = require('mongoose')
-const { ObjectId } = require('bson-ext')
+import { ObjectID } from 'bson'
+import { merge, omit } from 'lodash'
+import mongoose from 'mongoose'
 
-const dbHandler = require('../helpers/db-handler')
-const Form = spec('dist/backend/app/models/form.server.model').default(mongoose)
-const EncryptedForm = mongoose.model('encrypt')
-const EmailForm = mongoose.model('email')
-const Agency = spec('dist/backend/app/models/agency.server.model').default(
-  mongoose,
-)
-const User = spec('dist/backend/app/models/user.server.model').default(mongoose)
+import getFormModel, {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
+import { IAgencySchema, IEncryptedForm, IUserSchema } from 'src/types'
 
-const MOCK_ADMIN_OBJ_ID = new ObjectId()
-const MOCK_ADMIN_EMAIL = 'test@example.com'
+import dbHandler from '../helpers/jest-db'
+
+const Form = getFormModel(mongoose)
+const EncryptedForm = getEncryptedFormModel(mongoose)
+const EmailForm = getEmailFormModel(mongoose)
+
+const MOCK_ADMIN_OBJ_ID = new ObjectID()
+const MOCK_ADMIN_DOMAIN = 'example.com'
+const MOCK_ADMIN_EMAIL = `test@${MOCK_ADMIN_DOMAIN}`
 
 const MOCK_FORM_PARAMS = {
   title: 'Test Form',
   admin: MOCK_ADMIN_OBJ_ID,
 }
-const MOCK_ENCRYPTED_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
+const MOCK_ENCRYPTED_FORM_PARAMS = {
+  ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
   responseMode: 'encrypt',
-})
-const MOCK_EMAIL_FORM_PARAMS = merge({}, MOCK_FORM_PARAMS, {
-  emails: ['test@example.com'],
+}
+const MOCK_EMAIL_FORM_PARAMS = {
+  ...MOCK_FORM_PARAMS,
+  emails: [MOCK_ADMIN_EMAIL],
   responseMode: 'email',
-})
+}
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
@@ -50,13 +56,22 @@ const FORM_DEFAULTS = {
 }
 
 describe('Form Model', () => {
+  let preloadedAdmin: IUserSchema, preloadedAgency: IAgencySchema
+
   beforeAll(async () => await dbHandler.connect())
+  beforeEach(async () => {
+    const preloaded = await dbHandler.insertFormCollectionReqs({
+      userId: MOCK_ADMIN_OBJ_ID,
+      mailDomain: MOCK_ADMIN_DOMAIN,
+    })
+
+    preloadedAdmin = preloaded.user
+    preloadedAgency = preloaded.agency
+  })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {
-    beforeEach(async () => await preloadUserAndAgency())
-
     describe('Base Schema', () => {
       it('should create and save successfully', async () => {
         // Arrange + Act
@@ -107,7 +122,7 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Extra key should not be saved
-        expect(saved.extra).toBeUndefined()
+        expect(Object.keys(saved)).not.toContain('extra')
       })
 
       it('should create and save successfully with valid permissionList emails', async () => {
@@ -153,7 +168,7 @@ describe('Form Model', () => {
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectId()
+        const invalidAdminId = new ObjectID()
         const paramsWithInvalidAdmin = merge({}, MOCK_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -162,7 +177,9 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithInvalidAdmin)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejected()
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Admin for this form is not found.',
+        )
       })
 
       it('should reject when form title is missing', async () => {
@@ -173,7 +190,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithoutTitle)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -186,7 +203,9 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithoutAdmin)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejected()
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Admin for this form is not found.',
+        )
       })
 
       it('should reject when form permissionList[].email is missing', async () => {
@@ -201,7 +220,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(malformedParams)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -220,7 +239,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(malformedParams)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -289,7 +308,7 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Extra key should not be saved
-        expect(saved.extra).toBeUndefined()
+        expect(Object.keys(saved)).not.toContain('extra')
       })
 
       it('should create and save successfully with valid permissionList emails', async () => {
@@ -327,9 +346,9 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Remove indeterministic id from actual permission list
-        const actualPermissionList = saved
-          .toObject()
-          .permissionList.map((permission) => omit(permission, '_id'))
+        const actualPermissionList = (saved.toObject() as IEncryptedForm).permissionList.map(
+          (permission) => omit(permission, '_id'),
+        )
         expect(actualPermissionList).toEqual(permissionList)
       })
 
@@ -344,14 +363,14 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutPublicKey)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectId()
+        const invalidAdminId = new ObjectID()
         const paramsWithInvalidAdmin = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -360,7 +379,9 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithInvalidAdmin)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejected()
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Admin for this form is not found.',
+        )
       })
 
       it('should reject when form title is missing', async () => {
@@ -371,7 +392,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutTitle)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -384,7 +405,9 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutAdmin)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejected()
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Admin for this form is not found.',
+        )
       })
 
       it('should reject when form permissionList[].email is missing', async () => {
@@ -399,7 +422,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(malformedParams)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -418,7 +441,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(malformedParams)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -487,7 +510,7 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Extra key should not be saved
-        expect(saved.extra).toBeUndefined()
+        expect(Object.keys(saved)).not.toContain('extra')
       })
 
       it('should create and save successfully with valid permissionList emails', async () => {
@@ -539,7 +562,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutEmailsArray)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -555,14 +578,14 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithEmptyEmailsArray)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectId()
+        const invalidAdminId = new ObjectID()
         const paramsWithInvalidAdmin = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -571,7 +594,9 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithInvalidAdmin)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejected()
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Admin for this form is not found.',
+        )
       })
 
       it('should reject when form title is missing', async () => {
@@ -582,7 +607,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutTitle)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -595,7 +620,9 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutAdmin)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejected()
+        await expect(invalidForm.save()).rejects.toThrowError(
+          'Admin for this form is not found.',
+        )
       })
 
       it('should reject when form permissionList[].email is missing', async () => {
@@ -610,7 +637,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(malformedParams)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -629,7 +656,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(malformedParams)
 
         // Assert
-        await expectAsync(invalidForm.save()).toBeRejectedWithError(
+        await expect(invalidForm.save()).rejects.toThrowError(
           mongoose.Error.ValidationError,
         )
       })
@@ -637,21 +664,13 @@ describe('Form Model', () => {
   })
 
   describe('Statics', () => {
-    let preloadedAdmin, preloadedAgency
-
-    beforeEach(async () => {
-      const preloaded = await preloadUserAndAgency()
-      preloadedAdmin = preloaded.admin
-      preloadedAgency = preloaded.agency
-    })
-
     describe('getFullFormById', () => {
       it('should return null when the formId is invalid', async () => {
         // Arrange
-        const invalidFormId = new ObjectId()
+        const invalidFormId = new ObjectID()
 
         // Act
-        const form = await Form.getFullFormById(invalidFormId)
+        const form = await Form.getFullFormById(String(invalidFormId))
 
         // Assert
         expect(form).toBeNull()
@@ -684,7 +703,7 @@ describe('Form Model', () => {
           '__v',
         ])
         expect(actualForm.admin.agency).toEqual(
-          jasmine.objectContaining(expectedAgency),
+          expect.objectContaining(expectedAgency),
         )
       })
     })
@@ -692,10 +711,10 @@ describe('Form Model', () => {
     describe('getOtpData', () => {
       it('should return null when formId does not exist', async () => {
         // Arrange
-        const invalidFormId = new ObjectId()
+        const invalidFormId = new ObjectID()
 
         // Act
-        const form = await Form.getOtpData(invalidFormId)
+        const form = await Form.getOtpData(String(invalidFormId))
 
         // Assert
         expect(form).toBeNull()
@@ -729,20 +748,3 @@ describe('Form Model', () => {
     })
   })
 })
-
-const preloadUserAndAgency = async () => {
-  const agency = await Agency.create({
-    shortName: 'mock',
-    fullName: 'Mock Agency',
-    emailDomain: ['example.com'],
-    logo: 'mock',
-  })
-
-  const admin = await User.create({
-    email: MOCK_ADMIN_EMAIL,
-    agency: agency._id,
-    _id: MOCK_ADMIN_OBJ_ID,
-  })
-
-  return { agency, admin }
-}
