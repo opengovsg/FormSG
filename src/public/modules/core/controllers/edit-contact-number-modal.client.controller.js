@@ -5,20 +5,24 @@ angular
   .controller('EditContactNumberModalController', [
     '$interval',
     '$http',
+    '$timeout',
     '$scope',
     '$uibModalInstance',
     '$window',
     'Auth',
+    'Toastr',
     EditContactNumberModalController,
   ])
 
 function EditContactNumberModalController(
   $interval,
   $http,
+  $timeout,
   $scope,
   $uibModalInstance,
   $window,
   Auth,
+  Toastr,
 ) {
   const vm = this
 
@@ -59,7 +63,7 @@ function EditContactNumberModalController(
     if (vm.contact.number && vm.contact.number === vm.lastVerifiedContact) {
       vm.vfnState = VERIFY_STATE.SUCCESS
     } else if (vm.vfnState !== VERIFY_STATE.IDLE) {
-        // Reset to idle state otherwise so user can verify another number.
+      // Reset to idle state otherwise so user can verify another number.
       vm.vfnState = VERIFY_STATE.IDLE
     }
 
@@ -68,8 +72,8 @@ function EditContactNumberModalController(
     }
 
     if (angular.isDefined(countdownPromise)) {
-      $interval.cancel(countdownPromise);
-      countdownPromise = undefined;
+      $interval.cancel(countdownPromise)
+      countdownPromise = undefined
       vm.otp.countdown = 0
     }
   }
@@ -123,9 +127,16 @@ function EditContactNumberModalController(
         otp: vm.otp.value,
         userId: vm.user._id,
       })
-      .then(() => {
+      .then((response) => {
         vm.otp.isFetching = false
         vm.vfnState = VERIFY_STATE.SUCCESS
+        Auth.setUser(response.data)
+
+        // Close modal after lag to show success and show toast.
+        $timeout(() => {
+          Toastr.success('Emergency contact successfully added')
+          vm.closeModal()
+        }, 1000)
       })
       .catch((err) => {
         // Show error message
