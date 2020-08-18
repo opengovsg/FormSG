@@ -3,7 +3,6 @@ import crypto from 'crypto'
 import { get, isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
-import { bounceLifeSpan } from '../../../config/config'
 import { createCloudWatchLogger } from '../../../config/logger'
 import { IBounceSchema, ISingleBounce } from '../../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
@@ -143,8 +142,7 @@ const extractBounceDoc = (
       }
     },
   )
-  const expireAt = new Date(Date.now() + bounceLifeSpan)
-  return new Bounce({ formId, bounces, expireAt })
+  return new Bounce({ formId, bounces })
 }
 
 // Updates an old bounce document with info from a new bounce document as well
