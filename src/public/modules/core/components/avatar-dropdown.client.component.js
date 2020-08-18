@@ -16,12 +16,27 @@ angular.module('core').component('avatarDropdownComponent', {
 function avatarDropdownController($scope, $state, $uibModal, Auth) {
   const vm = this
 
-  // Redirect to signin if unable to get user
+  // Preload user with current details, redirect to signin if unable to get user
   vm.user = Auth.getUser() || $state.go('signin')
   vm.avatarText = generateAvatarText()
 
   vm.isDropdownHover = false
   vm.isDropdownFocused = false
+  
+  // Attempt to retrieve the most updated user.
+  retrieveUser()
+
+  function retrieveUser() {
+    return Auth.refreshUser().then(user => {
+      // Redirect to signin if unable to get user
+      if (!user) {
+        $state.go('signin')
+      } else {
+        vm.user = user
+      }
+    })
+  }
+
   vm.isDropdownOpen = false
 
   $scope.$watchGroup(['vm.isDropdownHover', 'vm.isDropdownFocused'], function (
