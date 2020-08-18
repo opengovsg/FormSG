@@ -2,21 +2,20 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import dedent from 'dedent'
-import { cloneDeep, merge, omit, pick } from 'lodash'
+import { cloneDeep, omit } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
 import * as loggerModule from 'src/config/logger'
-import {
-  IBounce,
-  IBounceNotification,
-  IBounceSchema,
-  IDeliveryNotification,
-  IEmailNotification,
-  ISnsNotification,
-} from 'src/types'
+import { ISnsNotification } from 'src/types'
 
 import dbHandler from '../../helpers/db-handler'
 import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
+import {
+  extractExpectedBounce,
+  makeBounceNotification,
+  makeDeliveryNotification,
+  MOCK_SNS_BODY,
+} from '../../helpers/sns'
 
 const Bounce = dbHandler.makeModel('bounce.server.model', 'Bounce')
 
@@ -34,17 +33,6 @@ import {
   isValidSnsRequest,
   updateBounces,
 } from 'src/app/modules/sns/sns.service'
-
-const MOCK_SNS_BODY: ISnsNotification = {
-  Type: 'type',
-  MessageId: 'message-id',
-  TopicArn: 'topic-arn',
-  Message: 'message',
-  Timestamp: 'timestamp',
-  SignatureVersion: '1',
-  Signature: 'signature',
-  SigningCertURL: 'https://fakeawsurl.amazonaws.com/cert.pem',
-}
 
 describe('isValidSnsRequest', () => {
   let keys, body: ISnsNotification
@@ -508,90 +496,3 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 })
-
-const makeEmailNotification = (
-  notificationType: 'Bounce' | 'Delivery',
-  formId: ObjectId,
-  submissionId: ObjectId,
-  recipientList: string[],
-): IEmailNotification => {
-  return {
-    notificationType,
-    mail: {
-      source: 'donotreply@form.gov.sg',
-      destination: recipientList,
-      headers: [
-        {
-          name: 'X-Formsg-Form-ID',
-          value: String(formId),
-        },
-        {
-          name: 'X-Formsg-Submission-ID',
-          value: String(submissionId),
-        },
-        {
-          name: 'X-Formsg-Email-Type',
-          value: 'Admin (response)',
-        },
-      ],
-      commonHeaders: {
-        subject: `Title (Ref: ${submissionId})`,
-        to: recipientList,
-        from: 'donotreply@form.gov.sg',
-      },
-    },
-  }
-}
-
-const makeBounceNotification = (
-  formId: ObjectId,
-  submissionId: ObjectId,
-  recipientList: string[],
-  bouncedList: string[],
-  bounceType: 'Transient' | 'Permanent' = 'Permanent',
-): ISnsNotification => {
-  const Message = merge(
-    makeEmailNotification('Bounce', formId, submissionId, recipientList),
-    {
-      bounce: {
-        bounceType,
-        bouncedRecipients: bouncedList.map((emailAddress) => ({
-          emailAddress,
-        })),
-      },
-    },
-  ) as IBounceNotification
-  const body = cloneDeep(MOCK_SNS_BODY)
-  body.Message = JSON.stringify(Message)
-  return body
-}
-
-const makeDeliveryNotification = (
-  formId: ObjectId,
-  submissionId: ObjectId,
-  recipientList: string[],
-  deliveredList: string[],
-): ISnsNotification => {
-  const Message = merge(
-    makeEmailNotification('Delivery', formId, submissionId, recipientList),
-    {
-      delivery: {
-        recipients: deliveredList,
-      },
-    },
-  ) as IDeliveryNotification
-  const body = cloneDeep(MOCK_SNS_BODY)
-  body.Message = JSON.stringify(Message)
-  return body
-}
-
-// Omit mongoose values from Bounce document
-const extractExpectedBounce = (bounce: IBounceSchema): Omit<IBounce, '_id'> => {
-  const extracted = pick(bounce.toObject(), [
-    'formId',
-    'hasAlarmed',
-    'expireAt',
-    'bounces',
-  ])
-  return extracted
-}
