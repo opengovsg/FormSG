@@ -6,6 +6,7 @@ import getAdminVerificationModel from '../../../app/models/admin_verification.se
 import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
+import { IUserSchema } from '../../../types'
 
 import { InvalidOtpError, MalformedOtpError } from './user.errors'
 
@@ -13,7 +14,7 @@ const AdminVerification = getAdminVerificationModel(mongoose)
 const User = getUserModel(mongoose)
 
 const DEFAULT_SALT_ROUNDS = 10
-const MAX_OTP_ATTEMPTS = 10
+export const MAX_OTP_ATTEMPTS = 10
 
 /**
  * Creates a contact OTP and saves it into the AdminVerification collection.
@@ -23,7 +24,7 @@ const MAX_OTP_ATTEMPTS = 10
  * @throws error if any error occur whilst creating the OTP or insertion of OTP into the database.
  */
 export const createContactOtp = async (
-  userId: string,
+  userId: IUserSchema['_id'],
   contact: string,
 ): Promise<string> => {
   // Verify existence of userId
@@ -61,7 +62,7 @@ export const createContactOtp = async (
 export const verifyContactOtp = async (
   otpToVerify: string,
   contactToVerify: string,
-  userId: string,
+  userId: IUserSchema['_id'],
 ) => {
   const updatedDocument = await AdminVerification.incrementAttemptsByAdminId(
     userId,
@@ -122,7 +123,10 @@ export const verifyContactOtp = async (
  * @param contact the contact to update
  * @param userId the user id of the user document to update
  */
-export const updateUserContact = async (contact: string, userId: string) => {
+export const updateUserContact = async (
+  contact: string,
+  userId: IUserSchema['_id'],
+) => {
   // Retrieve user from database.
   // Update user's contact details.
   const admin = await User.findById(userId)
