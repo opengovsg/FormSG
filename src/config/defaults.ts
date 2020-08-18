@@ -47,6 +47,11 @@ const LINKS = {
   supportFormLink: 'https://go.gov.sg/formsg-support',
 }
 
+const BOUNCE_CONFIG = {
+  // TTL of Bounce document in milliseconds
+  bounceLifeSpan: 1800000,
+}
+
 export default {
   app: APP_CONFIG,
   login: LOGIN_CONFIG,
@@ -54,4 +59,5 @@ export default {
   aws: AWS_CONFIG,
   ses: SES_CONFIG,
   links: LINKS,
+  bounce: BOUNCE_CONFIG,
 }

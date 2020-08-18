@@ -1,16 +1,12 @@
 const HttpStatus = require('http-status-codes')
-const { cloneDeep, times } = require('lodash')
-const axios = require('axios')
-const MockAdapter = require('axios-mock-adapter')
-const crypto = require('crypto')
+const { times } = require('lodash')
 const ejs = require('ejs')
 const express = require('express')
 const request = require('supertest')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
-const { validSnsBody } = require('../resources/valid-sns-body')
-const { getSnsBasestring } = require('../../../../dist/backend/app/utils/sns')
+
 const { ObjectID } = require('bson-ext')
 const MailService = require('../../../../dist/backend/app/services/mail.service')
   .default
@@ -19,8 +15,6 @@ const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
 const EmailForm = mongoose.model('email')
-const Submission = dbHandler.makeModel('submission.server.model', 'Submission')
-const emailSubmission = mongoose.model('emailSubmission')
 
 describe('Email Submissions Controller', () => {
   const SESSION_SECRET = 'secret'
@@ -28,6 +22,7 @@ describe('Email Submissions Controller', () => {
   // Declare global variables
   let spyRequest
   let sendSubmissionMailSpy
+
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
   // which will be destroyed and re-created for every test
@@ -168,176 +163,6 @@ describe('Email Submissions Controller', () => {
         .expect(HttpStatus.BAD_REQUEST)
         .then(done)
         .catch(done)
-    })
-  })
-
-  describe('verifySNS', () => {
-    let req, res, next, privateKey
-    let mockAxios
-    beforeAll(() => {
-      mockAxios = new MockAdapter(axios)
-      const keys = crypto.generateKeyPairSync('rsa', {
-        modulusLength: 2048,
-        publicKeyEncoding: {
-          type: 'pkcs1',
-          format: 'pem',
-        },
-        privateKeyEncoding: {
-          type: 'pkcs8',
-          format: 'pem',
-        },
-      })
-      privateKey = keys.privateKey
-      mockAxios.onGet(validSnsBody.SigningCertURL).reply(200, keys.publicKey)
-    })
-    beforeEach(() => {
-      req = { body: cloneDeep(validSnsBody) }
-      res = jasmine.createSpyObj('res', ['sendStatus'])
-      next = jasmine.createSpy()
-    })
-    afterAll(() => {
-      mockAxios.restore()
-    })
-    const verifyFailure = async () => {
-      await controller.verifySns(req, res, next)
-      expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
-      expect(next).not.toHaveBeenCalled()
-    }
-    const verifySuccess = async () => {
-      await controller.verifySns(req, res, next)
-      expect(res.sendStatus).not.toHaveBeenCalled()
-      expect(next).toHaveBeenCalled()
-    }
-    it('should reject requests without valid structure', async () => {
-      delete req.body.Type
-      await verifyFailure()
-    })
-    it('should reject requests with invalid certificate URL', async () => {
-      req.body.SigningCertURL = 'http://www.example.com'
-      await verifyFailure()
-    })
-    it('should reject requests with invalid signature version', async () => {
-      req.body.SignatureVersion = 'wrongSignatureVersion'
-      await verifyFailure()
-    })
-    it('should reject requests with invalid signature', async () => {
-      await verifyFailure()
-    })
-    it('should accept valid requests', async () => {
-      const signer = crypto.createSign('RSA-SHA1')
-      signer.write(getSnsBasestring(req.body))
-      req.body.Signature = signer.sign(privateKey, 'base64')
-      await verifySuccess()
-    })
-  })
-
-  describe('confirmOnNotification', () => {
-    let submission
-    let content
-    const bodyParser = require('body-parser')
-    const app = express()
-    const endpointPath = '/emailnotifications'
-    const message = (json) => ({ Message: JSON.stringify(json) })
-
-    beforeAll(() => {
-      app
-        .route(endpointPath)
-        .post(bodyParser.json(), controller.confirmOnNotification, (req, res) =>
-          res.sendStatus(HttpStatus.OK),
-        )
-    })
-
-    beforeEach(async () => {
-      // Clear mock db and insert test form before each test
-      await dbHandler.clearDatabase()
-      const { form } = await dbHandler.preloadCollections()
-
-      submission = await emailSubmission.create({
-        form: form._id,
-        responseHash: 'hash',
-        responseSalt: 'salt',
-      })
-
-      content = {
-        notificationType: 'Bounce',
-        mail: {
-          headers: [
-            {
-              name: 'X-Formsg-Form-ID',
-              value: form._id,
-            },
-            {
-              name: 'X-Formsg-Submission-ID',
-              value: submission._id,
-            },
-            {
-              name: 'X-Formsg-Email-Type',
-              value: 'Admin (response)',
-            },
-          ],
-          commonHeaders: { subject: `Title (Ref: ${submission._id})` },
-        },
-        bounce: {
-          bounceType: 'Transient',
-          bouncedRecipients: [{ emailAddress: 'fake@email.gov.sg' }],
-        },
-      }
-    })
-
-    afterAll(async () => await dbHandler.clearDatabase())
-
-    const expectNotifySubmissionHasBounced = (json, hasBounced, done) => {
-      request(app)
-        .post(endpointPath)
-        .send(message(json))
-        .expect(HttpStatus.OK)
-        .then(() => Submission.findOne({ _id: submission._id }))
-        .then((s) => {
-          expect(s.hasBounced).toEqual(hasBounced)
-        })
-        .then(done)
-        .catch(done)
-    }
-
-    it('fails silently on bad payload', (done) => {
-      request(app).post(endpointPath).expect(HttpStatus.OK).end(done)
-    })
-
-    it('exits early on irrelevant payload', (done) => {
-      expectNotifySubmissionHasBounced(
-        { notificationType: 'Success' },
-        false,
-        done,
-      )
-    })
-
-    it('exits early by malformed bounce missing mail key', (done) => {
-      delete content.mail
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing headers', (done) => {
-      delete content.mail.headers
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing bounce key', (done) => {
-      delete content.bounce
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing submission ID', (done) => {
-      content.mail.headers.splice(1, 1)
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing email type', (done) => {
-      content.mail.headers.splice(2, 1)
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('marks submission has bounced', (done) => {
-      expectNotifySubmissionHasBounced(content, true, done)
     })
   })
 

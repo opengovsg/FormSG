@@ -9,13 +9,10 @@ const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const HttpStatus = require('http-status-codes')
-
-const { isValidSnsRequest, parseSns } = require('../utils/sns')
 const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
 const { ConflictError } = require('../utils/custom-errors')
-const { EMAIL_TYPES } = require('../constants/mail')
 const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
@@ -27,9 +24,6 @@ const {
 const config = require('../../config/config')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'email-submissions',
-)
-const emailLogger = require('../../config/logger').createCloudWatchLogger(
-  'email',
 )
 const MailService = require('../services/mail.service').default
 
@@ -621,54 +615,4 @@ exports.sendAdminEmail = async function (req, res, next) {
     logger.warn('sendAdminEmail error', err)
     return onSubmissionEmailFailure(err, req, res, submission)
   }
-}
-
-/**
- * Validates that a request came from Amazon SNS.
- * @param {Object} req Express request object
- * @param {Object} res - Express response object
- * @param {Object} next - the next expressjs callback, invoked once attachments
- */
-exports.verifySns = async (req, res, next) => {
-  if (await isValidSnsRequest(req)) {
-    return next()
-  }
-  return res.sendStatus(HttpStatus.FORBIDDEN)
-}
-
-/**
- * When email bounces, SNS calls this function to mark the
- * submission as having bounced.
- *
- * Note that if anything errors in between, just return a 200
- * to SNS, as the error code to them doesn't really matter.
- *
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- */
-exports.confirmOnNotification = function (req, res) {
-  const parsed = parseSns(req.body)
-  // Log to short-lived CloudWatch log group
-  emailLogger.info(parsed)
-  const { submissionId, notificationType, emailType } = parsed
-  if (
-    notificationType !== 'Bounce' ||
-    emailType !== EMAIL_TYPES.adminResponse ||
-    !submissionId
-  ) {
-    return res.sendStatus(HttpStatus.OK)
-  }
-  // Mark submission ID as having bounced
-  emailSubmission.findOneAndUpdate(
-    { _id: submissionId },
-    {
-      hasBounced: true,
-    },
-    function (err) {
-      if (err) {
-        logger.warn(err)
-      }
-    },
-  )
-  return res.sendStatus(HttpStatus.OK)
 }
