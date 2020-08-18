@@ -8,6 +8,7 @@ import { ApplicationError } from '../core/core.errors'
 
 import {
   createContactOtp,
+  getPopulatedUserById,
   updateUserContact,
   verifyContactOtp,
 } from './user.service'
@@ -65,4 +66,28 @@ export const handleContactVerifyOtp: RequestHandler<
   }
 
   return res.status(HttpStatus.OK).send(updatedUser)
+}
+
+export const handleFetchUser: RequestHandler = async (req, res) => {
+  if (!req.session?.user) {
+    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+  }
+
+  // TODO: Save userId instead of entire user collection in session.
+  const sessionUserId = req.session?.user?._id
+
+  // Retrieve user with id in session
+  const [dbErr, retrievedUser] = await to(getPopulatedUserById(sessionUserId))
+
+  if (dbErr || !retrievedUser) {
+    logger.warn(
+      `handleFetchUser: Unable to retrieve user ${sessionUserId}`,
+      dbErr,
+    )
+    return res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .send('Unable to retrieve user')
+  }
+
+  return res.send(retrievedUser)
 }

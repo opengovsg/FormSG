@@ -133,17 +133,21 @@ export const updateUserContact = async (
 ) => {
   // Retrieve user from database.
   // Update user's contact details.
-  const admin = await User.findById(userId)
+  const admin = await User.findById(userId).populate({
+    path: 'agency',
+    model: AGENCY_SCHEMA_ID,
+  })
   if (!admin) {
     throw new Error('User id is invalid')
   }
 
   admin.contact = contact
-  const updatedAdmin = await admin.save()
+  return admin.save()
+}
 
-  updatedAdmin.populate({
+export const getPopulatedUserById = async (userId: string) => {
+  return User.findById(userId).populate({
     path: 'agency',
     model: AGENCY_SCHEMA_ID,
   })
-  return updatedAdmin
 }
