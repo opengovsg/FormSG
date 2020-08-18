@@ -226,15 +226,14 @@ function ViewResponsesController(
     let downloadPromises = []
 
     for (const [questionNum, metadata] of vm.attachmentDownloadUrls) {
-      downloadPromises.push(fetch(metadata.url).then((response) => response.json()).then((data) => {
-        data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
-        return FormSgSdk.crypto.decryptFile(
-          vm.encryptionKey.secretKey,
-          data.encryptedFile,
-        )
-      }).then((bytesArray) => {
-        zip.file('Question ' + questionNum + ' - ' + metadata.filename, bytesArray)
-      }))
+      downloadPromises.push(
+        Submissions.downloadAndDecryptAttachment(
+          metadata.url,
+          vm.encryptionKey.secretKey
+        ).then((bytesArray) => {
+          zip.file('Question ' + questionNum + ' - ' + metadata.filename, bytesArray)
+        })
+      )
     }
 
     Promise.all(downloadPromises).then((promises) => {
@@ -242,6 +241,7 @@ function ViewResponsesController(
         triggerFileDownload(blob, 'Response ' + vm.tableParams.data[vm.currentResponse.index].refNo + '.zip')
       })
     }).catch((error) => {
+      console.error(error)
       Toastr.error('An error occurred while downloading the attachments in a ZIP file. Try downloading them separately.')
     })
   }

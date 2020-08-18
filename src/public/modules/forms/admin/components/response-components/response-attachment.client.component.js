@@ -1,5 +1,4 @@
 const { triggerFileDownload } = require('../../../helpers/util')
-const { decode: decodeBase64 } = require('@stablelib/base64')
 
 angular.module('forms').component('responseAttachmentComponent', {
   templateUrl:
@@ -9,23 +8,15 @@ angular.module('forms').component('responseAttachmentComponent', {
     encryptionKey: '<',
   },
   controllerAs: 'vm',
-  controller: ['FormSgSdk', '$timeout', responseAttachmentComponentController],
+  controller: ['Submissions', '$timeout', responseAttachmentComponentController],
 })
 
-function responseAttachmentComponentController(FormSgSdk, $timeout) {
+function responseAttachmentComponentController(Submissions, $timeout) {
   const vm = this
 
   vm.downloadAndDecryptAttachment = function () {
     vm.hasDownloadError = false
-    fetch(vm.field.downloadUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
-        return FormSgSdk.crypto.decryptFile(
-          vm.encryptionKey.secretKey,
-          data.encryptedFile,
-        )
-      })
+    Submissions.downloadAndDecryptAttachment(vm.field.downloadUrl, vm.encryptionKey.secretKey)
       .then((bytesArray) => {
         // Construct a downloadable link and click on it to download the file
         let blob = new Blob([bytesArray])
