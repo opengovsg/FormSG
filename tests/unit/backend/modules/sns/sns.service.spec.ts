@@ -464,6 +464,48 @@ describe('updateBounces', () => {
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
+
+  test('should not log critical bounces if hasAlarmed is true', async () => {
+    const formId = new ObjectId()
+    const submissionId1 = new ObjectId()
+    const submissionId2 = new ObjectId()
+    const notification1 = makeBounceNotification(
+      formId,
+      submissionId1,
+      recipientList,
+      recipientList,
+    )
+    const notification2 = makeBounceNotification(
+      formId,
+      submissionId2,
+      recipientList,
+      recipientList,
+    )
+    await updateBounces(notification1)
+    await updateBounces(notification2)
+    const actualBounceCursor = await Bounce.find({ formId })
+    const actualBounce = extractExpectedBounce(actualBounceCursor[0])
+    const expectedBounces = recipientList.map((email) => ({
+      email,
+      hasBounced: true,
+    }))
+    // There should only be one document after 2 notifications
+    expect(actualBounceCursor.length).toBe(1)
+    expect(mockLogger.info.mock.calls[0][0]).toEqual(
+      JSON.parse(notification1.Message),
+    )
+    expect(mockLogger.info.mock.calls[1][0]).toEqual(
+      JSON.parse(notification2.Message),
+    )
+    // Expect only 1 call to logger.warn
+    expect(mockLogger.warn.mock.calls.length).toBe(1)
+    expect(omit(actualBounce, 'expireAt')).toEqual({
+      formId,
+      hasAlarmed: true,
+      bounces: expectedBounces,
+    })
+    expect(actualBounce.expireAt).toBeInstanceOf(Date)
+  })
 })
 
 const makeEmailNotification = (
