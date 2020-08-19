@@ -3,12 +3,13 @@ import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import dedent from 'dedent'
 import { cloneDeep, omit } from 'lodash'
+import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
 import * as loggerModule from 'src/config/logger'
 import { ISnsNotification } from 'src/types'
 
-import dbHandler from '../../helpers/db-handler'
+import dbHandler from '../../helpers/jest-db'
 import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 import {
   extractBounceObject,
@@ -16,8 +17,6 @@ import {
   makeDeliveryNotification,
   MOCK_SNS_BODY,
 } from '../../helpers/sns'
-
-const Bounce = dbHandler.makeModel('bounce.server.model', 'Bounce')
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
@@ -27,12 +26,16 @@ const mockLogger = getMockLogger()
 mockLoggerModule.createCloudWatchLogger.mockImplementation(() => mockLogger)
 mockLoggerModule.createLoggerWithLabel.mockImplementation(() => getMockLogger())
 
-// Import the service last so that mocks get imported correctly
+// Import modules which depend on config last so that mocks get imported correctly
+// eslint-disable-next-line import/first
+import getBounceModel from 'src/app/models/bounce.server.model'
 // eslint-disable-next-line import/first
 import {
   isValidSnsRequest,
   updateBounces,
 } from 'src/app/modules/sns/sns.service'
+
+const Bounce = getBounceModel(mongoose)
 
 describe('isValidSnsRequest', () => {
   let keys, body: ISnsNotification
