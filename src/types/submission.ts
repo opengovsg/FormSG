@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
 import { MyInfoAttribute } from './field'
 import { AuthType, IFormSchema } from './form'
@@ -86,5 +86,8 @@ export interface IWebhookResponse {
     data: string
   }
 }
+
+export type IEmailSubmissionModel = Model<IEmailSubmissionSchema>
+export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema>
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

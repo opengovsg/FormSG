@@ -2,8 +2,10 @@ import { Model, Mongoose, Schema } from 'mongoose'
 
 import {
   AuthType,
+  IEmailSubmissionModel,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
+  IEncryptSubmissionModel,
   ISubmissionSchema,
   IWebhookResponseSchema,
   MyInfoAttribute,
@@ -154,9 +156,6 @@ encryptSubmissionSchema.methods.getWebhookView = function (
     data: webhookData,
   }
 }
-
-type IEmailSubmissionModel = Model<IEmailSubmissionSchema>
-type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema>
 
 export const getEmailSubmissionModel = (db: Mongoose) => {
   try {
