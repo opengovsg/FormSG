@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 const { celebrate, Joi } = require('celebrate')
-const verifiedFieldsFactory = require('../factories/verified-fields.factory')
+const verifiedFieldsFactory = require('../../factories/verified-fields.factory')
 
 module.exports = function (app) {
   const formatOfId = Joi.string().length(24).hex().required()
