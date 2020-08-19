@@ -1,6 +1,7 @@
 import HttpStatus from 'http-status-codes'
 
 import featureManager from '../../../config/feature-manager'
+import { FeatureNames } from '../../../config/feature-manager/types'
 
 import * as verification from './verification.controller'
 
@@ -30,4 +31,6 @@ const verifiedFieldsFactory = ({ isEnabled }) => {
   }
 }
 
-export default verifiedFieldsFactory(featureManager.get('verified-fields'))
+export default verifiedFieldsFactory(
+  featureManager.get(FeatureNames.VerifiedFields),
+)
