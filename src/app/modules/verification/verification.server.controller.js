@@ -1,9 +1,9 @@
 const HttpStatus = require('http-status-codes')
-const verificationService = require('../services/verification.service')
-const logger = require('../../config/logger').createLoggerWithLabel(
+const verificationService = require('../../services/verification.service')
+const logger = require('../../../config/logger').createLoggerWithLabel(
   'verification',
 )
-const { VfnErrors } = require('../../shared/util/verification')
+const { VfnErrors } = require('../../../shared/util/verification')
 /**
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.

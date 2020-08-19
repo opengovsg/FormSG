@@ -1,5 +1,5 @@
 const featureManager = require('../../../config/feature-manager').default
-const verification = require('../../controllers/verification.server.controller')
+const verification = require('./verification.server.controller')
 const HttpStatus = require('http-status-codes')
 
 const verifiedFieldsFactory = ({ isEnabled }) => {
