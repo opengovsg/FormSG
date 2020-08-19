@@ -127,7 +127,7 @@ function SubmissionsFactory(
     count: function (params) {
       const deferred = $q.defer()
       let resUrl = fixParamsToUrl(params, submitAdminUrl) + '/count'
-      resUrl += `/?user=${params.userId}&email=${params.userEmail}` // Log user id and email
+      resUrl += `?user=${params.userId}&email=${params.userEmail}` // Log user id and email
       if (params.startDate && params.endDate) {
         resUrl += `&startDate=${params.startDate}&endDate=${params.endDate}`
       }
