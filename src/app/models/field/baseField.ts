@@ -7,7 +7,7 @@ import {
 } from '../../../app/utils/beta-permissions'
 import {
   AuthType,
-  BasicFieldType,
+  BasicField,
   IFieldSchema,
   IMyInfoSchema,
   ITableFieldSchema,
@@ -18,7 +18,7 @@ import getUserModel from '../user.server.model'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)
 
-const VALID_FIELD_TYPES = Object.values(BasicFieldType)
+const VALID_FIELD_TYPES = Object.values(BasicField)
 
 export const MyInfoSchema = new Schema<IMyInfoSchema>(
   {
@@ -67,7 +67,7 @@ const createBaseFieldSchema = (db: Mongoose) => {
       },
       fieldType: {
         type: String,
-        enum: Object.values(BasicFieldType),
+        enum: Object.values(BasicField),
         required: true,
       },
     },
@@ -143,7 +143,7 @@ const createBaseFieldSchema = (db: Mongoose) => {
 
 // Typeguards
 const isTableField = (field: IFieldSchema): field is ITableFieldSchema => {
-  return field.fieldType === BasicFieldType.Table
+  return field.fieldType === BasicField.Table
 }
 
 export default createBaseFieldSchema
