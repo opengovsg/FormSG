@@ -1,6 +1,7 @@
-const { decode: decodeBase64 } = require('@stablelib/base64')
+import { decode as decodeBase64 } from '@stablelib/base64'
 
-const checkIsEncryptedEncoding = (encryptedStr) => {
+export const checkIsEncryptedEncoding = (encryptedStr: string): boolean => {
+  // TODO (#42): Remove this type check once whole backend is in TypeScript.
   if (typeof encryptedStr !== 'string') {
     throw new Error('encryptedStr is not of type `string`')
   }
@@ -19,8 +20,4 @@ const checkIsEncryptedEncoding = (encryptedStr) => {
   } catch (err) {
     return false
   }
-}
-
-module.exports = {
-  checkIsEncryptedEncoding,
 }
