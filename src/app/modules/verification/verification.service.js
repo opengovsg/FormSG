@@ -1,14 +1,14 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const _ = require('lodash')
-const { otpGenerator } = require('../../config/config')
-const MailService = require('./mail.service').default
-const smsFactory = require('./../factories/sms.factory')
-const vfnUtil = require('../../shared/util/verification')
-const formsgSdk = require('../../config/formsg-sdk')
+const { otpGenerator } = require('../../../config/config')
+const MailService = require('../../services/mail.service').default
+const smsFactory = require('../../factories/sms.factory')
+const vfnUtil = require('../../../shared/util/verification')
+const formsgSdk = require('../../../config/formsg-sdk')
 
-const getFormModel = require('../models/form.server.model').default
-const getVerificationModel = require('../models/verification.server.model')
+const getFormModel = require('../../models/form.server.model').default
+const getVerificationModel = require('../../models/verification.server.model')
   .default
 
 const Form = getFormModel(mongoose)

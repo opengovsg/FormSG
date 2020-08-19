@@ -1,5 +1,5 @@
 const HttpStatus = require('http-status-codes')
-const verificationService = require('../../services/verification.service')
+const verificationService = require('./verification.service')
 const logger = require('../../../config/logger').createLoggerWithLabel(
   'verification',
 )
