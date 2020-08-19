@@ -17,7 +17,7 @@ const Verification = dbHandler.makeModel(
   'Verification',
 )
 
-fdescribe('Verification Controller', () => {
+describe('Verification Controller', () => {
   const bcrypt = jasmine.createSpyObj('bcrypt', ['hash'])
   const sendSmsOtp = jasmine.createSpy('sendSmsOtp')
   const testOtp = '123456'
