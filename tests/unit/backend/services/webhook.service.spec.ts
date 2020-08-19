@@ -68,20 +68,11 @@ describe('WebhooksService', () => {
     }
   })
 
-  function delay(delayInms) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve()
-      }, delayInms)
-    })
-  }
-
   describe('handleWebhookFailure', () => {
     it('should update submission document with failed webhook response', async () => {
       // Act
       const error = new AxiosError(ERROR_MSG, MOCK_SUCCESS_RESPONSE)
-      handleWebhookFailure(error, testWebhookParam)
-      await delay(3000)
+      await handleWebhookFailure(error, testWebhookParam)
       // Assert
       let submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
@@ -98,8 +89,7 @@ describe('WebhooksService', () => {
     it('should update submission document with failed webhook validation', async () => {
       // Act
       const error = new WebhookValidationError(ERROR_MSG)
-      handleWebhookFailure(error, testWebhookParam)
-      await delay(3000)
+      await handleWebhookFailure(error, testWebhookParam)
       // Assert
       let submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
@@ -117,8 +107,7 @@ describe('WebhooksService', () => {
   describe('handleWebhookSuccess', () => {
     it('should update submission document with successful webhook response', async () => {
       // Act
-      handleWebhookSuccess(MOCK_SUCCESS_RESPONSE, testWebhookParam)
-      await delay(3000)
+      await handleWebhookSuccess(MOCK_SUCCESS_RESPONSE, testWebhookParam)
       // Assert
       let submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
