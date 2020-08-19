@@ -4,9 +4,9 @@ const mongoose = require('mongoose')
 const express = require('express')
 const request = require('supertest')
 
-const constants = require('../../../../dist/backend/shared/util/verification')
-const dbHandler = require('../helpers/db-handler')
-const MailService = require('../../../../dist/backend/app/services/mail.service')
+const constants = require('../../../../../dist/backend/shared/util/verification')
+const dbHandler = require('../../helpers/db-handler')
+const MailService = require('../../../../../dist/backend/app/services/mail.service')
   .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')
@@ -17,7 +17,7 @@ const Verification = dbHandler.makeModel(
   'Verification',
 )
 
-describe('Verification Controller', () => {
+fdescribe('Verification Controller', () => {
   const bcrypt = jasmine.createSpyObj('bcrypt', ['hash'])
   const sendSmsOtp = jasmine.createSpy('sendSmsOtp')
   const testOtp = '123456'
@@ -27,24 +27,24 @@ describe('Verification Controller', () => {
   let req
   let res
 
-  const service = spec('dist/backend/app/services/verification.service', {
-    mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-    bcrypt,
-    '../../config/config': {
-      otpGenerator: () => testOtp,
-      logger: console,
-    },
-    './../factories/sms.factory': {
-      sendVerificationOtp: sendSmsOtp,
-    },
-  })
-  const controller = spec(
-    'dist/backend/app/controllers/verification.server.controller',
+  const service = spec(
+    'dist/backend/app/modules/verification/verification.service',
     {
-      '../services/verification.service': service,
-      '../../config/config': {
+      mongoose: Object.assign(mongoose, { '@noCallThru': true }),
+      bcrypt,
+      '../../../config/config': {
+        otpGenerator: () => testOtp,
         logger: console,
       },
+      '../../factories/sms.factory': {
+        sendVerificationOtp: sendSmsOtp,
+      },
+    },
+  )
+  const controller = spec(
+    'dist/backend/app/modules/verification/verification.controller',
+    {
+      './verification.service': service,
     },
   )
   const submissionController = spec(
@@ -189,11 +189,9 @@ describe('Verification Controller', () => {
     })
 
     it('should create a transaction for forms that contain fields that have to be verified', (done) => {
-      const spyOnCreate = spyOn(Verification, 'create').and.callThrough()
       req.body.formId = testForm._id
       res.status.and.callFake(expectStatus(HttpStatus.CREATED))
       res.json.and.callFake(function (json) {
-        expect(spyOnCreate).toHaveBeenCalled()
         Verification.findById(json.transactionId, function (err, result) {
           // eslint-disable-next-line no-console
           if (err) console.error(err)
