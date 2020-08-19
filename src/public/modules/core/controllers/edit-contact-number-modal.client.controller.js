@@ -28,6 +28,14 @@ function EditContactNumberModalController(
 
   let countdownPromise
 
+  const cancelCountdown = () => {
+    if (angular.isDefined(countdownPromise)) {
+      $interval.cancel(countdownPromise)
+      countdownPromise = undefined
+      vm.otp.countdown = 0
+    }
+  }
+
   // The various states of verification
   const VERIFY_STATE = {
     IDLE: 'IDLE',
@@ -71,11 +79,7 @@ function EditContactNumberModalController(
       vm.contact.error = ''
     }
 
-    if (angular.isDefined(countdownPromise)) {
-      $interval.cancel(countdownPromise)
-      countdownPromise = undefined
-      vm.otp.countdown = 0
-    }
+    cancelCountdown()
   }
 
   vm.resetOtpErrors = () => {
@@ -151,6 +155,7 @@ function EditContactNumberModalController(
   }
 
   vm.closeModal = function (data) {
+    cancelCountdown()
     // Add flag into localstorage so the banner does not open again.
     // The flag will be cleared on user logout.
     $window.localStorage.setItem('contactBannerDismissed', true)
