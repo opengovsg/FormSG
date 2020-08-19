@@ -1,26 +1,24 @@
-const mongoose = require('mongoose')
-const bcrypt = require('bcrypt')
-const _ = require('lodash')
-const { otpGenerator } = require('../../../config/config')
-const MailService = require('../../services/mail.service').default
-const smsFactory = require('../../factories/sms.factory')
-const vfnUtil = require('../../../shared/util/verification')
-const formsgSdk = require('../../../config/formsg-sdk')
+import bcrypt from 'bcrypt'
+import _ from 'lodash'
+import mongoose from 'mongoose'
 
-const getFormModel = require('../../models/form.server.model').default
-const getVerificationModel = require('../../models/verification.server.model')
-  .default
+import { otpGenerator } from '../../../config/config'
+import formsgSdk from '../../../config/formsg-sdk'
+import * as vfnUtil from '../../../shared/util/verification'
+import smsFactory from '../../factories/sms.factory'
+import getFormModel from '../../models/form.server.model'
+import getVerificationModel from '../../models/verification.server.model'
+import MailService from '../../services/mail.service'
 
 const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
-
 const {
-  VERIFIED_FIELDTYPES,
-  SALT_ROUNDS,
   HASH_EXPIRE_AFTER_SECONDS,
-  WAIT_FOR_OTP_SECONDS,
   NUM_OTP_RETRIES,
+  SALT_ROUNDS,
+  VERIFIED_FIELDTYPES,
   VfnErrors,
+  WAIT_FOR_OTP_SECONDS,
 } = vfnUtil
 
 /**
@@ -28,7 +26,7 @@ const {
  * @param {string} formId
  * @returns {object}
  */
-const createTransaction = async (formId) => {
+export const createTransaction = async (formId) => {
   const form = await Form.findById(formId)
   const fields = initializeVerifiableFields(form)
   if (!_.isEmpty(fields)) {
@@ -45,7 +43,7 @@ const createTransaction = async (formId) => {
  * @returns {transaction.formId}
  * @returns {transaction.expireAt}
  */
-const getTransactionMetadata = async (transactionId) => {
+export const getTransactionMetadata = async (transactionId) => {
   const transaction = await Verification.findTransactionMetadata(transactionId)
   if (transaction === null) {
     throwError(VfnErrors.TransactionNotFound)
@@ -57,7 +55,7 @@ const getTransactionMetadata = async (transactionId) => {
  * Retrieves an entire transaction
  * @param {string} transactionId
  */
-const getTransaction = async (transactionId) => {
+export const getTransaction = async (transactionId) => {
   const transaction = await Verification.findById(transactionId)
   if (transaction === null) {
     throwError(VfnErrors.TransactionNotFound)
@@ -70,7 +68,7 @@ const getTransaction = async (transactionId) => {
  *  @param {Mongoose.Document} transaction
  *  @param {string} fieldId
  */
-const resetFieldInTransaction = async (transaction, fieldId) => {
+export const resetFieldInTransaction = async (transaction, fieldId) => {
   const { _id: transactionId } = transaction
   const { n } = await Verification.updateOne(
     { _id: transactionId, 'fields._id': fieldId },
@@ -94,7 +92,7 @@ const resetFieldInTransaction = async (transaction, fieldId) => {
  * @param {string} fieldId
  * @param {string} answer
  */
-const getNewOtp = async (transaction, fieldId, answer) => {
+export const getNewOtp = async (transaction, fieldId, answer) => {
   if (isTransactionExpired(transaction.expireAt)) {
     throwError(VfnErrors.TransactionNotFound)
   }
@@ -144,7 +142,7 @@ const getNewOtp = async (transaction, fieldId, answer) => {
  * @param {string} fieldId
  * @param {string} inputOtp
  */
-const verifyOtp = async (transaction, fieldId, inputOtp) => {
+export const verifyOtp = async (transaction, fieldId, inputOtp) => {
   if (isTransactionExpired(transaction.expireAt)) {
     throwError(VfnErrors.TransactionNotFound)
   }
@@ -285,13 +283,4 @@ const throwError = (message, name) => {
   let error = new Error(message)
   error.name = name || message
   throw error
-}
-
-module.exports = {
-  createTransaction,
-  getTransactionMetadata,
-  getTransaction,
-  resetFieldInTransaction,
-  getNewOtp,
-  verifyOtp,
 }

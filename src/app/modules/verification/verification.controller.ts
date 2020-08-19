@@ -1,9 +1,11 @@
-const HttpStatus = require('http-status-codes')
-const verificationService = require('./verification.service')
-const logger = require('../../../config/logger').createLoggerWithLabel(
-  'verification',
-)
-const { VfnErrors } = require('../../../shared/util/verification')
+import HttpStatus from 'http-status-codes'
+
+import { createLoggerWithLabel } from '../../../config/logger'
+import { VfnErrors } from '../../../shared/util/verification'
+
+import * as verificationService from './verification.service'
+
+const logger = createLoggerWithLabel('verification')
 /**
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
@@ -12,7 +14,7 @@ const { VfnErrors } = require('../../../shared/util/verification')
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-const createTransaction = async (req, res) => {
+export const createTransaction = async (req, res) => {
   try {
     const { formId } = req.body
     const transaction = await verificationService.createTransaction(formId)
@@ -29,7 +31,7 @@ const createTransaction = async (req, res) => {
  * @param {Express.Request} req
  * @param {Express.Response} res
  */
-const getTransactionMetadata = async (req, res) => {
+export const getTransactionMetadata = async (req, res) => {
   try {
     const { transactionId } = req.params
     const transaction = await verificationService.getTransactionMetadata(
@@ -47,7 +49,7 @@ const getTransactionMetadata = async (req, res) => {
  * @param {Express.Request} req
  * @param {Express.Response} res
  */
-const resetFieldInTransaction = async (req, res) => {
+export const resetFieldInTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId } = req.body
@@ -65,7 +67,7 @@ const resetFieldInTransaction = async (req, res) => {
  * @param {Express.Request} req
  * @param {Express.Response} res
  */
-const getNewOtp = async (req, res) => {
+export const getNewOtp = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { answer, fieldId } = req.body
@@ -84,7 +86,7 @@ const getNewOtp = async (req, res) => {
  * @param {Express.Request} req
  * @param {Express.Response} res
  */
-const verifyOtp = async (req, res) => {
+export const verifyOtp = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId, otp } = req.body
@@ -123,12 +125,4 @@ const handleError = (error, res) => {
       message = 'An error occurred'
   }
   return res.status(status).json(message)
-}
-
-module.exports = {
-  createTransaction,
-  getTransactionMetadata,
-  resetFieldInTransaction,
-  getNewOtp,
-  verifyOtp,
 }
