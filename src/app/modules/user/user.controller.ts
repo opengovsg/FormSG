@@ -19,6 +19,7 @@ export const handleContactSendOtp: RequestHandler<
   {},
   { contact: string; userId: string }
 > = async (req, res) => {
+  // Joi validation ensures existence.
   const { contact, userId } = req.body
 
   try {
@@ -41,6 +42,7 @@ export const handleContactVerifyOtp: RequestHandler<
     contact: string
   }
 > = async (req, res) => {
+  // Joi validation ensures existence.
   const { userId, otp, contact } = req.body
 
   try {
