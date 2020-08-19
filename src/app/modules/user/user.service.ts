@@ -130,7 +130,7 @@ export const verifyContactOtp = async (
 export const updateUserContact = async (
   contact: string,
   userId: IUserSchema['_id'],
-) => {
+): Promise<IPopulatedUser> => {
   // Retrieve user from database.
   // Update user's contact details.
   const admin = await User.findById(userId).populate({
@@ -146,7 +146,7 @@ export const updateUserContact = async (
 }
 
 export const getPopulatedUserById = async (
-  userId: string,
+  userId: IUserSchema['_id'],
 ): Promise<IPopulatedUser> => {
   return User.findById(userId).populate({
     path: 'agency',
