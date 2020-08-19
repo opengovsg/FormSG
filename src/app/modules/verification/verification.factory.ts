@@ -1,3 +1,4 @@
+import { RequestHandler } from 'express'
 import HttpStatus from 'http-status-codes'
 
 import featureManager from '../../../config/feature-manager'
@@ -5,7 +6,19 @@ import { FeatureNames } from '../../../config/feature-manager/types'
 
 import * as verification from './verification.controller'
 
-const verifiedFieldsFactory = ({ isEnabled }) => {
+interface IVerifiedFieldsFactory {
+  createTransaction: RequestHandler
+  getTransactionMetadata: RequestHandler
+  resetFieldInTransaction: RequestHandler
+  getNewOtp: RequestHandler
+  verifyOtp: RequestHandler
+}
+
+const verifiedFieldsFactory = ({
+  isEnabled,
+}: {
+  isEnabled: boolean
+}): IVerifiedFieldsFactory => {
   if (isEnabled) {
     return {
       createTransaction: verification.createTransaction,
