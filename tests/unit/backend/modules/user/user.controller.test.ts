@@ -4,7 +4,7 @@ import SmsFactory from 'src/app/factories/sms.factory'
 import * as UserController from 'src/app/modules/user/user.controller'
 import { InvalidOtpError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
-import { IUser, IUserSchema } from 'src/types'
+import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
 
 import expressHandler from '../../helpers/jest-express'
 
@@ -21,6 +21,7 @@ describe('user.controller', () => {
 
   const VALID_SESSION_USER_ID = 'mockSessionUserId'
   const INVALID_SESSION_USER = 'invalidSessionUser'
+
   describe('handleContactSendOtp', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       body: {
@@ -281,6 +282,74 @@ describe('user.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(HttpStatus.INTERNAL_SERVER_ERROR)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
+    })
+  })
+
+  describe('handleFetchUser', () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: {},
+      session: {
+        user: {
+          _id: VALID_SESSION_USER_ID,
+        },
+      },
+    })
+    it('should fetch user in session successfully', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const mockPopulatedUser = {
+        agency: {},
+        email: 'mockEmail',
+        _id: VALID_SESSION_USER_ID,
+      }
+
+      // Mock resolved value.
+      jest
+        .spyOn(UserService, 'getPopulatedUserById')
+        .mockResolvedValueOnce(mockPopulatedUser as IPopulatedUser)
+
+      // Act
+      await UserController.handleFetchUser(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.send).toBeCalledWith(mockPopulatedUser)
+    })
+
+    it('should return 401 when user id is not in session', async () => {
+      // Arrange
+      const reqWithoutSession = expressHandler.mockRequest({
+        body: {},
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await UserController.handleFetchUser(
+        reqWithoutSession,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Should trigger unauthorized response.
+      expect(mockRes.status).toBeCalledWith(HttpStatus.UNAUTHORIZED)
+      expect(mockRes.send).toBeCalledWith('User is unauthorized.')
+    })
+
+    it('should return 500 when retrieved user is null', async () => {
+      // Arrange
+      // Mock resolve to null.
+      jest
+        .spyOn(UserService, 'getPopulatedUserById')
+        .mockResolvedValueOnce(null)
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await UserController.handleFetchUser(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(HttpStatus.INTERNAL_SERVER_ERROR)
+      expect(mockRes.send).toBeCalledWith('Unable to retrieve user')
     })
   })
 })

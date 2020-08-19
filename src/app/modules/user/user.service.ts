@@ -7,7 +7,7 @@ import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
 import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
-import { IUserSchema } from '../../../types'
+import { IPopulatedUser, IUserSchema } from '../../../types'
 
 import { InvalidOtpError, MalformedOtpError } from './user.errors'
 
@@ -145,7 +145,9 @@ export const updateUserContact = async (
   return admin.save()
 }
 
-export const getPopulatedUserById = async (userId: string) => {
+export const getPopulatedUserById = async (
+  userId: string,
+): Promise<IPopulatedUser> => {
   return User.findById(userId).populate({
     path: 'agency',
     model: AGENCY_SCHEMA_ID,
