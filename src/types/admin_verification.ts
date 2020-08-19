@@ -14,6 +14,8 @@ export interface IAdminVerification {
 
 export interface IAdminVerificationSchema extends IAdminVerification, Document {
   _id: Document['_id']
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 export type UpsertOtpParams = Pick<
@@ -24,6 +26,6 @@ export interface IAdminVerificationModel
   extends Model<IAdminVerificationSchema> {
   upsertOtp: (params: UpsertOtpParams) => Promise<IAdminVerificationSchema>
   incrementAttemptsByAdminId: (
-    adminId: string,
+    adminId: IUserSchema['_id'],
   ) => Promise<IAdminVerificationSchema>
 }

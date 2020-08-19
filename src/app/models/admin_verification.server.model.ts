@@ -1,5 +1,7 @@
 import { Mongoose, Schema } from 'mongoose'
 
+import { IUserSchema } from 'src/types'
+
 import {
   IAdminVerificationModel,
   IAdminVerificationSchema,
@@ -64,7 +66,7 @@ AdminVerificationSchema.statics.upsertOtp = async function (
 
 AdminVerificationSchema.statics.incrementAttemptsByAdminId = async function (
   this: IAdminVerificationModel,
-  adminId: string,
+  adminId: IUserSchema['_id'],
 ) {
   return this.findOneAndUpdate(
     { admin: adminId },
