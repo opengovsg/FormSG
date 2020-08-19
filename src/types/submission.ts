@@ -11,7 +11,7 @@ export enum SubmissionType {
 export interface ISubmission {
   form: IFormSchema['_id']
   authType: AuthType
-  myInfoFields: MyInfoAttribute[] | []
+  myInfoFields: MyInfoAttribute[]
   submissionType: SubmissionType
   created?: Date
   lastModified?: Date
@@ -24,7 +24,7 @@ export interface ISubmission {
   verifiedContent?: string
   version?: number
   attachmentMetadata?: Map<string, string>
-  webhookResponses?: IWebhookResponse[] | []
+  webhookResponses?: IWebhookResponse[]
 }
 
 export interface WebhookData {
@@ -45,7 +45,7 @@ export interface ISubmissionSchema extends ISubmission, Document {
 }
 
 export interface IEmailSubmission extends ISubmission {
-  recipientEmails: string[] | []
+  recipientEmails: string[]
   responseHash: string
   responseSalt: string
   hasBounced: boolean
@@ -68,7 +68,7 @@ export interface IEncryptedSubmission extends ISubmission {
   verifiedContent?: string
   version: number
   attachmentMetadata?: Map<string, string>
-  webhookResponses: IWebhookResponse[] | []
+  webhookResponses: IWebhookResponse[]
   getWebhookView(): WebhookView | null
 }
 
