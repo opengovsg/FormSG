@@ -7,13 +7,24 @@ angular.module('core').component('avatarDropdownComponent', {
     '$scope',
     '$state',
     '$uibModal',
+    '$window',
     'Auth',
+    'Features',
+    'Toastr',
     avatarDropdownController,
   ],
   controllerAs: 'vm',
 })
 
-function avatarDropdownController($scope, $state, $uibModal, Auth) {
+function avatarDropdownController(
+  $scope,
+  $state,
+  $uibModal,
+  $window,
+  Auth,
+  Features,
+  Toastr,
+) {
   const vm = this
 
   // Preload user with current details, redirect to signin if unable to get user
@@ -26,15 +37,35 @@ function avatarDropdownController($scope, $state, $uibModal, Auth) {
   // Attempt to retrieve the most updated user.
   retrieveUser()
 
-  function retrieveUser() {
-    return Auth.refreshUser().then(user => {
-      // Redirect to signin if unable to get user
-      if (!user) {
+  async function retrieveUser() {
+    try {
+      const trueUser = await Auth.refreshUser()
+      if (!trueUser) {
         $state.go('signin')
-      } else {
-        vm.user = user
+        return
       }
-    })
+
+      vm.user = trueUser
+
+      // Early return if user already has contact information.
+      if (trueUser.contact) return
+
+      const features = await Features.getfeatureStates()
+      // Do not proceed if sms feature is not available.
+      if (!features.sms) return
+
+      // If retrieved user does not have contact, prompt user to add one.
+      // If user has the key in the browser's storage the modal will not be
+      // shown.
+      const hasBeenDismissed = $window.localStorage.getItem(
+        'contactBannerDismissed',
+      )
+      if (!hasBeenDismissed) {
+        vm.openContactNumberModal()
+      }
+    } catch (err) {
+      Toastr.error(err)
+    }
   }
 
   vm.isDropdownOpen = false
@@ -48,21 +79,24 @@ function avatarDropdownController($scope, $state, $uibModal, Auth) {
   vm.signOut = () => Auth.signOut()
 
   vm.openContactNumberModal = () => {
-    $uibModal.open({
-      animation: false,
-      keyboard: false,
-      backdrop: 'static',
-      windowClass: 'ecm-modal-window',
-      templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
-      controller: 'EditContactNumberModalController',
-      controllerAs: 'vm',
-    }).result.then((returnVal) => {
-      // Update success, update user.
-      if (returnVal) {
-        vm.user = returnVal
-        Auth.setUser(returnVal)
-      }
-    }).finally(angular.noop)
+    $uibModal
+      .open({
+        animation: false,
+        keyboard: false,
+        backdrop: 'static',
+        windowClass: 'ecm-modal-window',
+        templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
+        controller: 'EditContactNumberModalController',
+        controllerAs: 'vm',
+      })
+      .result.then((returnVal) => {
+        // Update success, update user.
+        if (returnVal) {
+          vm.user = returnVal
+          Auth.setUser(returnVal)
+        }
+      })
+      .finally(angular.noop)
   }
 
   function generateAvatarText() {
