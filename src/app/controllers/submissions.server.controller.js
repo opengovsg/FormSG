@@ -197,7 +197,12 @@ exports.count = function (req, res) {
     })
   }
 
-  query = createQueryWithDateParam(query, req)
+  const augmentedQuery = createQueryWithDateParam(
+    req.query.startDate,
+    req.query.endDate,
+  )
+
+  query = { ...query, ...augmentedQuery }
 
   Submission.countDocuments(query, function (err, count) {
     if (err) {
