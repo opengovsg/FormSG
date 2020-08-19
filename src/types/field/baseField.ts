@@ -33,6 +33,9 @@ export interface IFieldSchema extends IField, Document {
   /** Returns this sub-documents parent document. */
   parent(): IFormSchema
 
+  // Discriminatable parameter
+  isVerifiable?: boolean
+
   // Instance methods
   /**
    * Returns the string to be displayed as the asked question in form
