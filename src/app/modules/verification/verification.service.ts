@@ -320,8 +320,8 @@ const getFieldFromTransaction = (
 
 /**
  * Helper method to throw an error
- * message
- * name
+ * @param message
+ * @param name
  */
 const throwError = (message: string, name?: string): never => {
   let error = new Error(message)
