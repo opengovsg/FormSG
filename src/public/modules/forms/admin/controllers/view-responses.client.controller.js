@@ -16,6 +16,7 @@ angular
     '$timeout',
     'moment',
     'FormSgSdk',
+    '$window',
     ViewResponsesController,
   ])
 
@@ -29,6 +30,7 @@ function ViewResponsesController(
   $timeout,
   moment,
   FormSgSdk,
+  $window,
 ) {
   const vm = this
 
@@ -61,11 +63,13 @@ function ViewResponsesController(
 
   // Trigger for export CSV
   vm.exportCsv = function () {
+    const userDetails = JSON.parse($window.localStorage.getItem("user"))
     let params = {
       formId: vm.myform._id,
       formTitle: vm.myform.title,
+      userId: userDetails._id,
+      userEmail: userDetails.email,
     }
-
     if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
       params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
         'YYYY-MM-DD',
