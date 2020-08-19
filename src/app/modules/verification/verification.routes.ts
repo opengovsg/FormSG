@@ -1,8 +1,9 @@
 import { celebrate, Joi } from 'celebrate'
+import { Express } from 'express'
 
 import verifiedFieldsFactory from './verification.factory'
 
-export default function (app) {
+const mountVfnRoutes = (app: Express): void => {
   const formatOfId = Joi.string().length(24).hex().required()
   app.route('/transaction').post(
     celebrate({
@@ -60,3 +61,5 @@ export default function (app) {
     verifiedFieldsFactory.verifyOtp,
   )
 }
+
+export default mountVfnRoutes
