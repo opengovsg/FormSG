@@ -84,13 +84,9 @@ const emailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
 })
 
 /**
- * Returns an object which represents the encrypted submission
- * which will be posted to the webhook URL.
+ * Returns null as email submission does not have a webhook view
  */
-
-emailSubmissionSchema.methods.getWebhookView = function (
-  this: ISubmissionSchema,
-): null {
+emailSubmissionSchema.methods.getWebhookView = function (): null {
   return null
 }
 
@@ -139,7 +135,6 @@ const encryptSubmissionSchema = new Schema<IEncryptedSubmissionSchema>({
  * Returns an object which represents the encrypted submission
  * which will be posted to the webhook URL.
  */
-
 encryptSubmissionSchema.methods.getWebhookView = function (
   this: ISubmissionSchema,
 ): WebhookView {
