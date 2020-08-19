@@ -1,23 +1,16 @@
 import { Request, Response } from 'express'
 
-interface MockResponse extends Response {
-  sendStatus: jest.Mock
-  send: jest.Mock
-  status: jest.Mock
-  json: jest.Mock
-}
-
-const mockRequest = ({ body }: { body: Record<string, string> }) => {
+const mockRequest = ({
+  body,
+  session,
+}: {
+  body: Record<string, string>
+  session?: any
+}) => {
   return {
     body,
+    session,
   } as Request
-}
-
-interface MockResponse extends Response {
-  sendStatus: jest.Mock
-  send: jest.Mock
-  status: jest.Mock
-  json: jest.Mock
 }
 
 const mockResponse = () => {
