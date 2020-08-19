@@ -9,7 +9,6 @@ const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const HttpStatus = require('http-status-codes')
-const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
 const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
 const { ConflictError } = require('../utils/custom-errors')
@@ -22,6 +21,7 @@ const {
   mapAttachmentsFromParsedResponses,
 } = require('../utils/attachment')
 const config = require('../../config/config')
+const { ResponseMode } = require('../../types')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'email-submissions',
 )
@@ -209,12 +209,10 @@ exports.validateEmailSubmission = function (req, res, next) {
 
   if (req.body.responses) {
     try {
-      const emailModeFilter = (arr) =>
-        arr.filter(({ fieldType }) => !FIELDS_TO_REJECT.includes(fieldType))
       req.body.parsedResponses = getParsedResponses(
         form,
         req.body.responses,
-        emailModeFilter,
+        ResponseMode.Email,
       )
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
     } catch (err) {

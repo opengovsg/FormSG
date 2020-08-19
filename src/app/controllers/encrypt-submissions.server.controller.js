@@ -24,6 +24,7 @@ const logger = require('../../config/logger').createLoggerWithLabel(
 const {
   aws: { attachmentS3Bucket, s3 },
 } = require('../../config/config')
+const { ResponseMode } = require('../../types')
 
 /**
  * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
@@ -51,12 +52,10 @@ exports.validateEncryptSubmission = function (req, res, next) {
 
   if (req.body.responses) {
     try {
-      const encryptModeFilter = (arr) =>
-        arr.filter(({ fieldType }) => ['mobile', 'email'].includes(fieldType)) // For autoreplies
       req.body.parsedResponses = getParsedResponses(
         form,
         req.body.responses,
-        encryptModeFilter,
+        ResponseMode.Encrypt,
       )
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
     } catch (err) {
