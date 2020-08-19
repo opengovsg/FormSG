@@ -1,3 +1,4 @@
+import { RequestHandler, Response } from 'express'
 import HttpStatus from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -9,12 +10,16 @@ const logger = createLoggerWithLabel('verification')
 /**
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const createTransaction = async (req, res) => {
+export const createTransaction: RequestHandler<
+  {},
+  {},
+  { formId: string }
+> = async (req, res) => {
   try {
     const { formId } = req.body
     const transaction = await verificationService.createTransaction(formId)
@@ -28,10 +33,12 @@ export const createTransaction = async (req, res) => {
 }
 /**
  * Returns a transaction's id and expiry time if it exists
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-export const getTransactionMetadata = async (req, res) => {
+export const getTransactionMetadata: RequestHandler<{
+  transactionId: string
+}> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const transaction = await verificationService.getTransactionMetadata(
@@ -46,10 +53,14 @@ export const getTransactionMetadata = async (req, res) => {
 /**
  *  When user changes the input value in the verifiable field,
  *  we reset the field in the transaction, removing the previously saved signature.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-export const resetFieldInTransaction = async (req, res) => {
+export const resetFieldInTransaction: RequestHandler<
+  { transactionId: string },
+  {},
+  { fieldId: string }
+> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId } = req.body
@@ -64,10 +75,14 @@ export const resetFieldInTransaction = async (req, res) => {
 /**
  * When user requests to verify a field, an otp is generated.
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-export const getNewOtp = async (req, res) => {
+export const getNewOtp: RequestHandler<
+  { transactionId: string },
+  {},
+  { answer: string; fieldId: string }
+> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { answer, fieldId } = req.body
@@ -83,10 +98,14 @@ export const getNewOtp = async (req, res) => {
  * When user submits their otp for the field, the otp is validated.
  * If it is correct, we return the signature that was saved.
  * This signature will be appended to the response when the form is submitted.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-export const verifyOtp = async (req, res) => {
+export const verifyOtp: RequestHandler<
+  { transactionId: string },
+  {},
+  { otp: string; fieldId: string }
+> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId, otp } = req.body
@@ -100,10 +119,10 @@ export const verifyOtp = async (req, res) => {
 }
 /**
  * Returns relevant http status code for different verification failures
- * @param {Error} error
- * @param {Express.Response} res
+ * @param error
+ * @param res
  */
-const handleError = (error, res) => {
+const handleError = (error: Error, res: Response) => {
   let status = HttpStatus.INTERNAL_SERVER_ERROR
   let message = error.message
   switch (error.name) {
