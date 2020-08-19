@@ -7,7 +7,9 @@ function featureToggle(Features) {
     restrict: 'A',
     link: function (scope, element, attrs) {
       Features.getfeatureStates().then(function (response) {
-        element.css('display', response[attrs.featureName] ? '' : 'none')
+        if (!response[attrs.featureName]) {
+          element.remove()
+        }
         scope.feature = response
       })
     },
