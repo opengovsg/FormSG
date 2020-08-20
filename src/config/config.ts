@@ -214,6 +214,12 @@ const configuration = convict({
     default: '',
     env: 'ADMIN_BANNER_CONTENT',
   },
+  dbHost: {
+    doc: 'Database URI',
+    format: String,
+    default: '',
+    env: 'DB_HOST',
+  },
 })
 
 // Construct bucket URLs depending on node environment
@@ -254,7 +260,7 @@ configuration.validate({ allowed: 'strict' })
 const logger = createLoggerWithLabel(module)
 
 const dbConfig: DbConfig = {
-  uri: process.env.DB_HOST || undefined,
+  uri: configuration.get('dbHost'),
   options: {
     user: '',
     pass: '',
