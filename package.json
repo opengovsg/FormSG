@@ -203,7 +203,7 @@
     "html-loader": "~0.5.5",
     "htmlhint": "^0.14.1",
     "husky": "^4.2.5",
-    "jasmine": "^3.1.0",
+    "jasmine": "^3.6.1",
     "jasmine-core": "^3.1.0",
     "jasmine-sinon": "^0.4.0",
     "jasmine-spec-reporter": "^5.0.2",
