@@ -16,6 +16,12 @@ import { Config, DbConfig, Environment, MailConfig } from '../types'
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
 
+// Environment variables with defaults
+const isDev =
+  process.env.NODE_ENV === Environment.Dev ||
+  process.env.NODE_ENV === Environment.Test
+const nodeEnv = isDev ? Environment.Dev : Environment.Prod
+
 convict.addFormat(require('convict-format-with-validator').url)
 
 convict.addFormat({
@@ -132,7 +138,7 @@ const configuration = convict({
     },
     attachmentBucketUrl: {
       format: (val) => {
-        if (!validator.isURL(val)) {
+        if (!validator.isURL(val, { require_tld: !isDev })) {
           throw new Error('must be a url')
         }
         if (!/[/]$/.test(val)) {
@@ -143,7 +149,7 @@ const configuration = convict({
     },
     logoBucketUrl: {
       format: (val) => {
-        if (!validator.isURL(val)) {
+        if (!validator.isURL(val, { require_tld: !isDev })) {
           throw new Error('must be a url')
         }
         if (/[/]$/.test(val)) {
@@ -154,7 +160,7 @@ const configuration = convict({
     },
     imageBucketUrl: {
       format: (val) => {
-        if (!validator.isURL(val)) {
+        if (!validator.isURL(val, { require_tld: !isDev })) {
           throw new Error('must be a url')
         }
         if (/[/]$/.test(val)) {
@@ -173,16 +179,10 @@ const configuration = convict({
   chromiumBin: {
     doc: 'Path to chromium executable for PDF generation',
     format: String,
-    default: null, // HelmetJS reportUri param requires non-empty string
-    env: 'CSP_REPORT_URI',
+    default: null,
+    env: 'CHROMIUM_BIN',
   },
 })
-
-// Environment variables with defaults
-const isDev =
-  process.env.NODE_ENV === Environment.Dev ||
-  process.env.NODE_ENV === Environment.Test
-const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 
 // Construct bucket URLs depending on node environment
 // If in development env, endpoint communicates with localstack, a fully
@@ -193,16 +193,18 @@ const awsEndpoint = isDev
   : `https://s3.${configuration.get('awsConfig.region')}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
 
 configuration.load({
-  'awsConfig.logoBucketUrl': `${awsEndpoint}/${configuration.get(
-    'awsConfig.logoS3Bucket',
-  )}`,
-  'awsConfig.imageBucketUrl': `${awsEndpoint}/${configuration.get(
-    'awsConfig.imageS3Bucket',
-  )}`,
-  // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
-  'awsConfig.attachmentBucketUrl': `${awsEndpoint}/${configuration.get(
-    'awsConfig.attachmentS3Bucket',
-  )}/`,
+  awsConfig: {
+    logoBucketUrl: `${awsEndpoint}/${configuration.get(
+      'awsConfig.logoS3Bucket',
+    )}`,
+    imageBucketUrl: `${awsEndpoint}/${configuration.get(
+      'awsConfig.imageS3Bucket',
+    )}`,
+    // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
+    attachmentBucketUrl: `${awsEndpoint}/${configuration.get(
+      'awsConfig.attachmentS3Bucket',
+    )}/`,
+  },
 })
 
 const s3 = new aws.S3({
