@@ -3,19 +3,24 @@ import { cloneDeep } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import * as ResponseUtil from 'src/app/utils/response'
+import * as SubmissionService from 'src/app/modules/submission/submission.service'
+import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+import { FIELDS_TO_REJECT } from 'src/app/utils/field-validation/config'
+import * as LogicUtil from 'src/shared/util/logic'
 import {
   AttachmentSize,
   BasicField,
   FieldResponse,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  IPreventSubmitLogicSchema,
   ISingleAnswerResponse,
+  LogicType,
   PossibleField,
   ResponseMode,
 } from 'src/types'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from '../../helpers/jest-db'
 
 const Form = getFormModel(mongoose)
 
@@ -45,7 +50,7 @@ const TYPE_TO_INDEX_MAP = (() => {
   return map
 })()
 
-describe('Response Util', () => {
+describe('submission.service', () => {
   let defaultEmailForm: IEmailFormSchema
   let defaultEmailResponses: FieldResponse[]
   let defaultEncryptForm: IEncryptedFormSchema
@@ -86,7 +91,7 @@ describe('Response Util', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('getParsedResponses', () => {
+  describe('getProcessedResponses', () => {
     it('should return list of parsed responses for encrypted form submission successfully', async () => {
       // Arrange
       // Only mobile and email fields are parsed, since the other fields are
@@ -108,18 +113,18 @@ describe('Response Util', () => {
       updatedResponses[emailFieldIndex] = newEmailResponse
 
       // Act
-      const actual = ResponseUtil.getParsedResponses(
+      const actual = SubmissionService.getProcessedResponses(
         defaultEncryptForm,
         updatedResponses,
-        ResponseMode.Encrypt,
       )
 
       // Assert
-      const expectedParsed: ResponseUtil.ParsedFieldResponse[] = [
+      const expectedParsed: ProcessedFieldResponse[] = [
         { ...newEmailResponse, isVisible: true },
         { ...newMobileResponse, isVisible: true },
       ]
-      expect(actual).toEqual(expect.arrayContaining(expectedParsed))
+      // Should only have email and mobile fields for encrypted forms.
+      expect(actual).toEqual(expectedParsed)
     })
 
     it('should return list of parsed responses for email form submission successfully', async () => {
@@ -142,19 +147,67 @@ describe('Response Util', () => {
       updatedResponses[decimalFieldIndex] = newDecimalResponse
 
       // Act
-      const actual = ResponseUtil.getParsedResponses(
+      const actual = SubmissionService.getProcessedResponses(
         defaultEmailForm,
         updatedResponses,
-        ResponseMode.Email,
       )
 
       // Assert
-      // Should only return the responses that have been submitted.
-      const expectedParsed: ResponseUtil.ParsedFieldResponse[] = [
-        { ...newShortTextResponse, isVisible: true },
-        { ...newDecimalResponse, isVisible: true },
-      ]
-      expect(actual).toEqual(expect.arrayContaining(expectedParsed))
+      // Expect metadata to be injected to all responses (except fields to
+      // reject).
+      const expectedParsed: ProcessedFieldResponse[] = []
+      updatedResponses.forEach((response, index) => {
+        if (FIELDS_TO_REJECT.includes(response.fieldType)) {
+          return
+        }
+        const expectedProcessed: ProcessedFieldResponse = {
+          ...response,
+          isVisible: true,
+        }
+
+        if (defaultEmailForm.form_fields[index].isVerifiable) {
+          expectedProcessed.isUserVerified = true
+        }
+        expectedParsed.push(expectedProcessed)
+      })
+
+      expect(actual).toEqual(expectedParsed)
+    })
+
+    it('should throw error when email form has more fields than responses', async () => {
+      // Arrange
+      const extraFieldForm = cloneDeep(defaultEmailForm)
+      const secondMobileField = cloneDeep(
+        extraFieldForm.form_fields[TYPE_TO_INDEX_MAP[BasicField.Mobile]],
+      )
+      secondMobileField._id = new ObjectID()
+      extraFieldForm.form_fields.push(secondMobileField)
+
+      // Act + Assert
+      expect(() =>
+        SubmissionService.getProcessedResponses(
+          extraFieldForm,
+          defaultEmailResponses,
+        ),
+      ).toThrowError('Some form fields are missing')
+    })
+
+    it('should throw error when encrypt form has more fields than responses', async () => {
+      // Arrange
+      const extraFieldForm = cloneDeep(defaultEncryptForm)
+      const secondMobileField = cloneDeep(
+        extraFieldForm.form_fields[TYPE_TO_INDEX_MAP[BasicField.Mobile]],
+      )
+      secondMobileField._id = new ObjectID()
+      extraFieldForm.form_fields.push(secondMobileField)
+
+      // Act + Assert
+      expect(() =>
+        SubmissionService.getProcessedResponses(
+          extraFieldForm,
+          defaultEncryptResponses,
+        ),
+      ).toThrowError('Some form fields are missing')
     })
 
     it('should throw error when any responses are not valid for encrypted form submission ', async () => {
@@ -168,10 +221,9 @@ describe('Response Util', () => {
 
       // Act + Assert
       expect(() =>
-        ResponseUtil.getParsedResponses(
+        SubmissionService.getProcessedResponses(
           requireMobileEncryptForm,
           defaultEncryptResponses,
-          ResponseMode.Encrypt,
         ),
       ).toThrowError('Invalid answer submitted')
     })
@@ -185,17 +237,54 @@ describe('Response Util', () => {
 
       // Act + Assert
       expect(() =>
-        ResponseUtil.getParsedResponses(
+        SubmissionService.getProcessedResponses(
           requireNricEmailForm,
           defaultEmailResponses,
-          ResponseMode.Email,
         ),
       ).toThrowError('Invalid answer submitted')
     })
 
-    it.skip('should throw error when encrypted form submission is prevented by logic', async () => {})
+    it('should throw error when encrypted form submission is prevented by logic', async () => {
+      // Arrange
+      // Mock logic util to return non-empty to check if error is thrown
+      jest
+        .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
+        .mockReturnValueOnce({
+          preventSubmitMessage: 'mock prevent submit',
+          conditions: [],
+          logicType: LogicType.PreventSubmit,
+          _id: 'some id',
+        } as IPreventSubmitLogicSchema)
 
-    it.skip('should throw error when email form submission is prevented by logic', async () => {})
+      // Act + Assert
+      expect(() =>
+        SubmissionService.getProcessedResponses(
+          defaultEncryptForm,
+          defaultEncryptResponses,
+        ),
+      ).toThrowError('Submission prevented by form logic')
+    })
+
+    it('should throw error when email form submission is prevented by logic', async () => {
+      // Arrange
+      // Mock logic util to return non-empty to check if error is thrown
+      jest
+        .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
+        .mockReturnValueOnce({
+          preventSubmitMessage: 'mock prevent submit',
+          conditions: [],
+          logicType: LogicType.PreventSubmit,
+          _id: 'some id',
+        } as IPreventSubmitLogicSchema)
+
+      // Act + Assert
+      expect(() =>
+        SubmissionService.getProcessedResponses(
+          defaultEmailForm,
+          defaultEmailResponses,
+        ),
+      ).toThrowError('Submission prevented by form logic')
+    })
   })
 })
 
