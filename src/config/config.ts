@@ -164,6 +164,18 @@ const configuration = convict({
       default: null,
     },
   },
+  cspReportUri: {
+    doc: 'Endpoint for content security policy reporting',
+    format: String,
+    default: 'undefined', // HelmetJS reportUri param requires non-empty string
+    env: 'CSP_REPORT_URI',
+  },
+  chromiumBin: {
+    doc: 'Path to chromium executable for PDF generation',
+    format: String,
+    default: null, // HelmetJS reportUri param requires non-empty string
+    env: 'CSP_REPORT_URI',
+  },
 })
 
 // Environment variables with defaults
@@ -206,37 +218,6 @@ const s3 = new aws.S3({
 configuration.validate({ allowed: 'strict' })
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Content Security Policy reporting
- * HelmetJS reportUri param requires non-empty string, so 'undefined' is
- * declared.
- */
-const cspReportUri = process.env.CSP_REPORT_URI || 'undefined'
-if (!process.env.CSP_REPORT_URI) {
-  logger.warn({
-    message: 'Content Security Policy reporting is not configured.',
-    meta: {
-      action: 'init',
-    },
-  })
-}
-
-/**
- * Chromium executable for PDF generation
- */
-const chromiumBin = process.env.CHROMIUM_BIN
-if (!chromiumBin) {
-  const errMsg =
-    'Path to Chromium executable missing - please specify in CHROMIUM_BIN environment variable'
-  logger.error({
-    message: errMsg,
-    meta: {
-      action: 'init',
-    },
-  })
-  throw new Error(errMsg)
-}
 
 // Optional environment variables
 /**
@@ -405,8 +386,8 @@ const config: Config = {
   otpLifeSpan: configuration.get('otpLifeSpan'),
   bounceLifeSpan: configuration.get('bounceLifeSpan'),
   formsgSdkMode: configuration.get('formsgSdkMode'),
-  chromiumBin,
-  cspReportUri,
+  chromiumBin: configuration.get('chromiumBin'),
+  cspReportUri: configuration.get('cspReportUri'),
   submissionsTopUp: configuration.get('submissionsTopUp'),
   isGeneralMaintenance,
   isLoginBanner,
