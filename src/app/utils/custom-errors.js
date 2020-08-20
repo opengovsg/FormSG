@@ -12,16 +12,7 @@ class WebhookValidationError extends Error {
   }
 }
 
-class AxiosError extends Error {
-  constructor(msg, response) {
-    super(msg)
-    this.name = 'AxiosError'
-    this.response = response
-  }
-}
-
 module.exports = {
   ConflictError,
   WebhookValidationError,
-  AxiosError,
 }
