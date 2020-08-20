@@ -219,11 +219,9 @@ describe('Verification service', () => {
         ],
         expireAt: new Date(Date.now() + 6e5), // so it won't expire in tests
       })
-      mockOtpGenerator.mockImplementationOnce(() => mockOtp)
-      mockBcrypt.hash.mockImplementationOnce(() => Promise.resolve(hashedOtp))
-      mockFormsgSdk.verification.generateSignature.mockImplementationOnce(
-        () => signedData,
-      )
+      mockOtpGenerator.mockReturnValue(mockOtp)
+      mockBcrypt.hash.mockReturnValue(Promise.resolve(hashedOtp))
+      mockFormsgSdk.verification.generateSignature.mockReturnValue(signedData)
     })
 
     afterEach(async () => await dbHandler.clearDatabase())
@@ -462,7 +460,7 @@ describe('Verification service', () => {
     })
 
     test('should reject invalid OTP', async () => {
-      mockBcrypt.compare.mockImplementationOnce(() => Promise.resolve(false))
+      mockBcrypt.compare.mockReturnValueOnce(Promise.resolve(false))
       await transaction.save()
       await expect(
         verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
@@ -475,7 +473,7 @@ describe('Verification service', () => {
     })
 
     test('should accept valid OTP', async () => {
-      mockBcrypt.compare.mockImplementationOnce(() => Promise.resolve(true))
+      mockBcrypt.compare.mockReturnValueOnce(Promise.resolve(true))
       await transaction.save()
       await expect(
         verifyOtp(transaction, transaction.fields[0]._id, mockOtp),

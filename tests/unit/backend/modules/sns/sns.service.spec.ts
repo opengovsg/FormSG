@@ -23,8 +23,8 @@ const mockAxios = mocked(axios, true)
 jest.mock('src/config/logger')
 const mockLoggerModule = mocked(loggerModule, true)
 const mockLogger = getMockLogger()
-mockLoggerModule.createCloudWatchLogger.mockImplementation(() => mockLogger)
-mockLoggerModule.createLoggerWithLabel.mockImplementation(() => getMockLogger())
+mockLoggerModule.createCloudWatchLogger.mockReturnValue(mockLogger)
+mockLoggerModule.createLoggerWithLabel.mockReturnValue(getMockLogger())
 
 // Import modules which depend on config last so that mocks get imported correctly
 // eslint-disable-next-line import/first
