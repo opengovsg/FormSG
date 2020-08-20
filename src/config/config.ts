@@ -26,6 +26,25 @@ const configuration = convict({
     default: defaults.app.port,
     env: 'PORT',
   },
+  otpLifeSpan: {
+    doc:
+      'OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15 mins)',
+    format: 'int',
+    default: defaults.login.otpLifeSpan,
+    env: 'OTP_LIFE_SPAN',
+  },
+  bounceLifeSpan: {
+    doc: 'TTL of bounce documents in milliseconds',
+    format: 'int',
+    default: defaults.bounce.bounceLifeSpan,
+    env: 'BOUNCE_LIFE_SPAN',
+  },
+  submissionsTopUp: {
+    doc: 'Number of submissions to top up submissions statistic by',
+    format: 'int',
+    default: 0,
+    env: 'SUBMISSIONS_TOP_UP',
+  },
 })
 
 // Perform validation
@@ -108,24 +127,6 @@ const isDev =
   process.env.NODE_ENV === Environment.Dev ||
   process.env.NODE_ENV === Environment.Test
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
-
-/**
- * OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15
- * mins).
- */
-const otpLifeSpan =
-  parseInt(process.env.OTP_LIFE_SPAN, 10) || defaults.login.otpLifeSpan
-
-/**
- * TTL of bounce documents in milliseconds.
- */
-const bounceLifeSpan =
-  parseInt(process.env.BOUNCE_LIFE_SPAN, 10) || defaults.bounce.bounceLifeSpan
-
-/**
- * Number of submissions to top up submissions statistic by
- */
-const submissionsTopUp = parseInt(process.env.SUBMISSIONS_TOP_UP, 10) || 0
 
 /**
  * Content Security Policy reporting
@@ -412,12 +413,12 @@ const config: Config = {
   port: configuration.get('port'),
   customCloudWatchGroup,
   sessionSecret: configuration.get('sessionSecret'),
-  otpLifeSpan,
-  bounceLifeSpan,
+  otpLifeSpan: configuration.get('otpLifeSpan'),
+  bounceLifeSpan: configuration.get('bounceLifeSpan'),
   formsgSdkMode,
   chromiumBin,
   cspReportUri,
-  submissionsTopUp,
+  submissionsTopUp: configuration.get('submissionsTopUp'),
   isGeneralMaintenance,
   isLoginBanner,
   siteBannerContent,
