@@ -182,6 +182,38 @@ const configuration = convict({
     default: null,
     env: 'CHROMIUM_BIN',
   },
+  customCloudWatchGroup: {
+    doc:
+      'Name of CloudWatch log group to store short-term logs. Log streams are separated by date.',
+    format: String,
+    default: '',
+    env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
+  },
+  isGeneralMaintenance: {
+    doc: 'Load env variable with General Maintenance banner text.',
+    format: String,
+    default: '',
+    env: 'IS_GENERAL_MAINTENANCE',
+  },
+  isLoginBanner: {
+    doc: 'The banner message on login page. Allows for HTML.',
+    format: String,
+    default: '',
+    env: 'IS_LOGIN_BANNER',
+  },
+  siteBannerContent: {
+    doc:
+      'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists.',
+    format: String,
+    default: '',
+    env: 'SITE_BANNER_CONTENT',
+  },
+  adminBannerContent: {
+    doc: 'The banner message to show on on admin pages. Allows for HTML.',
+    format: String,
+    default: '',
+    env: 'ADMIN_BANNER_CONTENT',
+  },
 })
 
 // Construct bucket URLs depending on node environment
@@ -220,34 +252,6 @@ const s3 = new aws.S3({
 configuration.validate({ allowed: 'strict' })
 
 const logger = createLoggerWithLabel(module)
-
-// Optional environment variables
-/**
- * Name of CloudWatch log group to store short-term logs. Log streams are
- * separated by date.
- */
-const customCloudWatchGroup = process.env.CUSTOM_CLOUDWATCH_LOG_GROUP
-
-/**
- * Load env variable with General Maintenance banner text.
- */
-const isGeneralMaintenance = process.env.IS_GENERAL_MAINTENANCE
-
-/**
- * The banner message on login page. Allows for HTML.
- */
-const isLoginBanner = process.env.IS_LOGIN_BANNER
-
-/**
- * The banner message to show on all pages. Allows for HTML. Will supersede
- * all other banner content if it exists.
- */
-const siteBannerContent = process.env.SITE_BANNER_CONTENT
-
-/**
- * The banner message to show on on admin pages. Allows for HTML.
- */
-const adminBannerContent = process.env.ADMIN_BANNER_CONTENT
 
 const dbConfig: DbConfig = {
   uri: process.env.DB_HOST || undefined,
@@ -383,7 +387,7 @@ const config: Config = {
   isDev,
   nodeEnv,
   port: configuration.get('port'),
-  customCloudWatchGroup,
+  customCloudWatchGroup: configuration.get('customCloudWatchGroup'),
   sessionSecret: configuration.get('sessionSecret'),
   otpLifeSpan: configuration.get('otpLifeSpan'),
   bounceLifeSpan: configuration.get('bounceLifeSpan'),
@@ -391,10 +395,10 @@ const config: Config = {
   chromiumBin: configuration.get('chromiumBin'),
   cspReportUri: configuration.get('cspReportUri'),
   submissionsTopUp: configuration.get('submissionsTopUp'),
-  isGeneralMaintenance,
-  isLoginBanner,
-  siteBannerContent,
-  adminBannerContent,
+  isGeneralMaintenance: configuration.get('isGeneralMaintenance'),
+  isLoginBanner: configuration.get('isLoginBanner'),
+  siteBannerContent: configuration.get('siteBannerContent'),
+  adminBannerContent: configuration.get('adminBannerContent'),
   configureAws,
 }
 
