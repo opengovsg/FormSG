@@ -317,7 +317,6 @@ const mailConfig: MailConfig = (function () {
       // events.
       debug: String(process.env.MAIL_DEBUG).toLowerCase() === 'true',
     }
-
     transporter = nodemailer.createTransport(options)
   } else if (process.env.SES_PORT) {
     logger.warn({
