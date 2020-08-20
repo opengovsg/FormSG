@@ -6,9 +6,9 @@ import {
 } from '../../shared/util/logic'
 import {
   BasicField,
+  FieldResponse,
   IFieldSchema,
   IFormSchema,
-  IMyInfo,
   ResponseMode,
 } from '../../types'
 
@@ -16,21 +16,7 @@ import { FIELDS_TO_REJECT } from './field-validation/config'
 import { ConflictError } from './custom-errors'
 import validateField from './field-validation'
 
-// TODO(#42): Move this typing to a more appropriate place, either routes or
-// controller types when they have been migrated to Typescript.
-export type FormResponse = {
-  _id: string
-  question: string
-  fieldType: BasicField
-  isHeader?: boolean
-  myInfo?: IMyInfo
-  signature?: string
-} & (
-  | { answer: string; answerArray?: never }
-  | { answer?: never; answerArray: string[] }
-)
-
-type ParsedFormResponse = FormResponse & {
+type ParsedFieldResponse = FieldResponse & {
   isVisible?: boolean
   isUserVerified?: boolean
 }
@@ -50,7 +36,7 @@ type ModeFilterParam = {
  */
 export const getParsedResponses = (
   form: IFormSchema,
-  bodyResponses: FormResponse[],
+  bodyResponses: FieldResponse[],
   responseMode: ResponseMode,
 ) => {
   const responses = getResponsesForEachField(form, bodyResponses, responseMode)
@@ -76,7 +62,7 @@ export const getParsedResponses = (
   // downstream processing.
   const parsedResponses = responses.map((response) => {
     const responseId = response._id
-    const parsedResponse: ParsedFormResponse = { ...response }
+    const parsedResponse: ParsedFieldResponse = { ...response }
     // In FormValidator, we have checked that all the form field ids exist, so
     // this wont be null.
     const formField = fieldMap[responseId]
@@ -111,7 +97,7 @@ export const getParsedResponses = (
  */
 const getResponsesForEachField = (
   form: IFormSchema,
-  responses: FormResponse[],
+  responses: FieldResponse[],
   responseMode: ResponseMode,
 ) => {
   const modeFilter = getModeFilter(responseMode)
