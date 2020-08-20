@@ -8,8 +8,10 @@ const APP_CONFIG = {
   url: 'https://form.gov.sg',
   desc: 'Form Manager for Government',
   keywords: 'forms, formbuilder, nodejs',
-  images:
-    '/public/modules/core/img/og/img_metatag.png,/public/modules/core/img/og/logo-vertical-color.png',
+  images: [
+    '/public/modules/core/img/og/img_metatag.png',
+    '/public/modules/core/img/og/logo-vertical-color.png',
+  ],
   twitterImage: '/public/modules/core/img/og/logo-vertical-color.png',
   port: 5000,
   sessionSecret: 'sandcrawler-138577',

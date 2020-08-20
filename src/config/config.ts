@@ -12,6 +12,24 @@ import SMTPPool from 'nodemailer/lib/smtp-pool'
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
 
+convict.addFormat(require('convict-format-with-validator').url)
+
+convict.addFormat({
+  name: 'array-string',
+  validate: (val) => {
+    if (!Array.isArray(val)) {
+      throw new Error('must be of type Array')
+    }
+    let isAllStrings = val.every((i) => typeof i === 'string')
+    if (!isAllStrings) {
+      throw new Error('Elements must be of type string')
+    }
+  },
+  coerce: (val) => {
+    return val.split(',')
+  },
+})
+
 const configuration = convict({
   sessionSecret: {
     doc: 'Session Secret',
@@ -43,6 +61,38 @@ const configuration = convict({
     format: 'int',
     default: 0,
     env: 'SUBMISSIONS_TOP_UP',
+  },
+  appConfig: {
+    title: {
+      format: String,
+      default: defaults.app.name,
+      env: 'APP_NAME',
+    },
+    description: {
+      format: String,
+      default: defaults.app.desc,
+      env: 'APP_DESC',
+    },
+    appUrl: {
+      format: 'url',
+      default: defaults.app.url,
+      env: 'APP_URL',
+    },
+    keywords: {
+      format: String,
+      default: defaults.app.keywords,
+      env: 'APP_KEYWORDS',
+    },
+    twitterImage: {
+      format: String,
+      default: defaults.app.twitterImage,
+      env: 'APP_TWITTER_IMAGE',
+    },
+    images: {
+      format: 'array-string',
+      default: defaults.app.images,
+      env: 'APP_IMAGES',
+    },
   },
 })
 
@@ -211,16 +261,6 @@ const siteBannerContent = process.env.SITE_BANNER_CONTENT
  */
 const adminBannerContent = process.env.ADMIN_BANNER_CONTENT
 
-// Configs
-const appConfig: AppConfig = {
-  title: process.env.APP_NAME || defaults.app.name,
-  description: process.env.APP_DESC || defaults.app.desc,
-  appUrl: process.env.APP_URL || defaults.app.url,
-  keywords: process.env.APP_KEYWORDS || defaults.app.keywords,
-  images: (process.env.APP_IMAGES || defaults.app.images).split(','),
-  twitterImage: process.env.APP_TWITTER_IMAGE || defaults.app.twitterImage,
-}
-
 const dbConfig: DbConfig = {
   uri: process.env.DB_HOST || undefined,
   options: {
@@ -243,7 +283,7 @@ const dbConfig: DbConfig = {
 const mailConfig: MailConfig = (function () {
   const mailFrom = process.env.MAIL_FROM || defaults.mail.mailFrom
   const mailer = {
-    from: `${appConfig.title} <${mailFrom}>`,
+    from: `${configuration.get('appConfig.title')} <${mailFrom}>`,
   }
 
   // Creating mail transport
@@ -411,7 +451,7 @@ const configureAws = async () => {
 }
 
 const config: Config = {
-  app: appConfig,
+  app: configuration.get('appConfig'),
   db: dbConfig,
   aws: awsConfig,
   mail: mailConfig,
