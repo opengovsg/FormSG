@@ -1,5 +1,7 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
+import convict from 'convict'
+import crypto from 'crypto'
 import { SessionOptions } from 'express-session'
 import { ConnectionOptions } from 'mongoose'
 import nodemailer from 'nodemailer'
@@ -9,6 +11,18 @@ import SMTPPool from 'nodemailer/lib/smtp-pool'
 
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
+
+const configuration = convict({
+  sessionSecret: {
+    doc: 'Session Secret',
+    format: String,
+    default: defaults.app.sessionSecret,
+    env: 'SESSION_SECRET',
+  },
+})
+
+// Perform validation
+configuration.validate({ allowed: 'strict' })
 
 const logger = createLoggerWithLabel(module)
 
@@ -88,7 +102,6 @@ const isDev =
   process.env.NODE_ENV === Environment.Test
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 const port = parseInt(process.env.PORT, 10) || defaults.app.port
-const sessionSecret = process.env.SESSION_SECRET || defaults.app.sessionSecret
 
 /**
  * OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15
@@ -401,7 +414,7 @@ const config: Config = {
   nodeEnv,
   port,
   customCloudWatchGroup,
-  sessionSecret,
+  sessionSecret: configuration.get('sessionSecret'),
   otpLifeSpan,
   bounceLifeSpan,
   formsgSdkMode,
