@@ -20,6 +20,12 @@ const configuration = convict({
     default: defaults.app.sessionSecret,
     env: 'SESSION_SECRET',
   },
+  port: {
+    doc: 'Application Port',
+    format: 'port',
+    default: defaults.app.port,
+    env: 'PORT',
+  },
 })
 
 // Perform validation
@@ -102,7 +108,6 @@ const isDev =
   process.env.NODE_ENV === Environment.Dev ||
   process.env.NODE_ENV === Environment.Test
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
-const port = parseInt(process.env.PORT, 10) || defaults.app.port
 
 /**
  * OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15
@@ -404,7 +409,7 @@ const config: Config = {
   cookieSettings,
   isDev,
   nodeEnv,
-  port,
+  port: configuration.get('port'),
   customCloudWatchGroup,
   sessionSecret: configuration.get('sessionSecret'),
   otpLifeSpan,
