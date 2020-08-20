@@ -16,7 +16,9 @@ import { FIELDS_TO_REJECT } from './field-validation/config'
 import { ConflictError } from './custom-errors'
 import validateField from './field-validation'
 
-type FormResponse = {
+// TODO(#42): Move this typing to a more appropriate place, either routes or
+// controller types when they have been migrated to Typescript.
+export type FormResponse = {
   _id: string
   question: string
   fieldType: BasicField
@@ -63,24 +65,21 @@ export const getParsedResponses = (
   }
 
   // Create a map keyed by field._id for easier access
-  const fieldMap = form.form_fields.reduce<{ [fieldId: string]: IFieldSchema }>(
-    (acc, field) => {
-      acc[field._id] = field
-      return acc
-    },
-    {},
-  )
+  const fieldMap = form.form_fields.reduce<{
+    [fieldId: string]: IFieldSchema
+  }>((acc, field) => {
+    acc[field._id] = field
+    return acc
+  }, {})
 
-  // Validate each field in the form and construct parsed responses for downstream processing
+  // Validate each field in the form and construct parsed responses for
+  // downstream processing.
   const parsedResponses = responses.map((response) => {
     const responseId = response._id
     const parsedResponse: ParsedFormResponse = { ...response }
     // In FormValidator, we have checked that all the form field ids exist, so
     // this wont be null.
     const formField = fieldMap[responseId]
-    // Error will be thrown if field is not valid.
-    validateField(form._id, formField, response)
-
     parsedResponse.isVisible = visibleFieldIds.has(responseId)
 
     // Instance method of base field schema.
@@ -91,6 +90,10 @@ export const getParsedResponses = (
       parsedResponse.isUserVerified = true
     }
 
+    // Error will be thrown if field is not valid.
+    // Must be after parsedResponse has been fully built, or it will not
+    // validate correctly.
+    validateField(form._id, formField, parsedResponse)
     return parsedResponse
   })
 
@@ -113,12 +116,13 @@ const getResponsesForEachField = (
 ) => {
   const modeFilter = getModeFilter(responseMode)
 
+  // _id must be transformed to string as form response is jsonified.
   const fieldIds = modeFilter(form.form_fields).map((field) => ({
     _id: String(field._id),
   }))
-
   const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
   const results = _.intersectionBy(uniqueResponses, fieldIds, '_id')
+
   if (results.length < fieldIds.length) {
     const onlyInForm = _.differenceBy(fieldIds, results, '_id').map(
       ({ _id }) => _id,
