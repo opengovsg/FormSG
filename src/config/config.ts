@@ -41,6 +41,21 @@ convict.addFormat({
   },
 })
 
+const validateBucketUrl = (val, { isDev, hasTrailingSlash }) => {
+  if (!validator.isURL(val, { require_tld: !isDev })) {
+    throw new Error('must be a url')
+  }
+  if (hasTrailingSlash) {
+    if (!/[/]$/.test(val)) {
+      throw new Error('must end with a slash')
+    }
+  } else {
+    if (/[/]$/.test(val)) {
+      throw new Error('must not end with a slash')
+    }
+  }
+}
+
 const configuration = convict({
   sessionSecret: {
     doc: 'Session Secret',
@@ -138,36 +153,18 @@ const configuration = convict({
       env: 'AWS_REGION',
     },
     attachmentBucketUrl: {
-      format: (val) => {
-        if (!validator.isURL(val, { require_tld: !isDev })) {
-          throw new Error('must be a url')
-        }
-        if (!/[/]$/.test(val)) {
-          throw new Error('must end with a slash')
-        }
-      },
+      format: (val) =>
+        validateBucketUrl(val, { isDev, hasTrailingSlash: true }),
       default: null,
     },
     logoBucketUrl: {
-      format: (val) => {
-        if (!validator.isURL(val, { require_tld: !isDev })) {
-          throw new Error('must be a url')
-        }
-        if (/[/]$/.test(val)) {
-          throw new Error('must not end with a slash')
-        }
-      },
+      format: (val) =>
+        validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
       default: null,
     },
     imageBucketUrl: {
-      format: (val) => {
-        if (!validator.isURL(val, { require_tld: !isDev })) {
-          throw new Error('must be a url')
-        }
-        if (/[/]$/.test(val)) {
-          throw new Error('must not end with a slash')
-        }
-      },
+      format: (val) =>
+        validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
       default: null,
     },
   },
