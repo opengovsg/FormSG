@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
+import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import {
   handleWebhookFailure,
@@ -10,8 +11,10 @@ import {
 } from 'src/app/services/webhooks.service'
 import { WebhookValidationError } from 'src/app/utils/custom-errors'
 
+import { ResponseMode, SubmissionType } from '../../../../src/types'
 import dbHandler from '../helpers/jest-db'
 
+const EncryptForm = getEncryptedFormModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 describe('WebhooksService', () => {
@@ -49,8 +52,23 @@ describe('WebhooksService', () => {
     const preloaded = await dbHandler.insertFormCollectionReqs({
       userId: MOCK_ADMIN_OBJ_ID,
     })
-    testEncryptForm = preloaded.encryptForm
-    testEncryptSubmission = preloaded.encryptSubmission
+    testEncryptForm = await EncryptForm.create({
+      title: 'Test Form',
+      admin: preloaded.user._id,
+      responseMode: ResponseMode.Encrypt,
+      publicKey: 'fake-public-key',
+    })
+    testEncryptSubmission = await EncryptSubmission.create({
+      form: testEncryptForm._id,
+      submissionType: SubmissionType.Encrypt,
+      encryptedContent: 'encrypted-content',
+      verifiedContent: 'verified-content',
+      version: 1,
+      authType: testEncryptForm.authType,
+      myInfoFields: [],
+      webhookResponses: [],
+    })
+
     testSubmissionWebhookView = testEncryptSubmission.getWebhookView()
     testWebhookParam = {
       webhookUrl: MOCK_WEBHOOK_URL,
