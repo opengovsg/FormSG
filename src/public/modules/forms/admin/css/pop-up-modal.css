@@ -193,7 +193,8 @@
 }
 
 #create-form-modal .secret-key-safekeeping li::before {
-  content: '-';
+  /* Add a space here because otherwise there's a weird spacing before the first word */
+  content: '- ';
   margin-right: 0.5em;
 }
 
