@@ -16,6 +16,8 @@ function GTag($rootScope, $window) {
         custom_map: {
           dimension1: 'form_id',
           dimension2: 'message',
+          dimension3: 'user_id',
+          dimension4: 'user_email',
           metric1: 'duration',
           metric2: 'num_workers',
           metric3: 'num_submissions',
@@ -380,7 +382,6 @@ function GTag($rootScope, $window) {
    * @return {Void}
    */
   gtagService.downloadResponseSuccess = (
-    // (#42)
     params,
     downloadedNumSubmissions,
     numWorkers,
@@ -459,6 +460,8 @@ function GTag($rootScope, $window) {
    * Logs partial (or full) decryption failure when downloading responses.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
+   * @param {String} params.userId The id of the user downloading
+   * @param {String} params.userEmail The email of the user downloading
    * @param {String} params.formTitle The title of the form
    * @param {number} numWorkers The number of decryption workers
    * @param {number} expectedNumSubmissions The expected number of submissions
@@ -477,6 +480,8 @@ function GTag($rootScope, $window) {
       event_category: 'Storage Mode Form',
       event_action: 'Partial decrypt error',
       event_label: params.formTitle,
+      user_id: params.userId,
+      user_email: params.userEmail,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
