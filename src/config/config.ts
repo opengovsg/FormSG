@@ -187,30 +187,32 @@ const configuration = convict({
     default: '',
     env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
   },
-  isGeneralMaintenance: {
-    doc: 'Load env variable with General Maintenance banner text.',
-    format: String,
-    default: '',
-    env: 'IS_GENERAL_MAINTENANCE',
-  },
-  isLoginBanner: {
-    doc: 'The banner message on login page. Allows for HTML.',
-    format: String,
-    default: '',
-    env: 'IS_LOGIN_BANNER',
-  },
-  siteBannerContent: {
-    doc:
-      'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists.',
-    format: String,
-    default: '',
-    env: 'SITE_BANNER_CONTENT',
-  },
-  adminBannerContent: {
-    doc: 'The banner message to show on on admin pages. Allows for HTML.',
-    format: String,
-    default: '',
-    env: 'ADMIN_BANNER_CONTENT',
+  banner: {
+    isGeneralMaintenance: {
+      doc: 'Load env variable with General Maintenance banner text.',
+      format: String,
+      default: '',
+      env: 'IS_GENERAL_MAINTENANCE',
+    },
+    isLoginBanner: {
+      doc: 'The banner message on login page. Allows for HTML.',
+      format: String,
+      default: '',
+      env: 'IS_LOGIN_BANNER',
+    },
+    siteBannerContent: {
+      doc:
+        'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists.',
+      format: String,
+      default: '',
+      env: 'SITE_BANNER_CONTENT',
+    },
+    adminBannerContent: {
+      doc: 'The banner message to show on on admin pages. Allows for HTML.',
+      format: String,
+      default: '',
+      env: 'ADMIN_BANNER_CONTENT',
+    },
   },
   dbHost: {
     doc: 'Database URI',
@@ -453,10 +455,10 @@ const config: Config = {
   chromiumBin: configuration.get('chromiumBin'),
   cspReportUri: configuration.get('cspReportUri'),
   submissionsTopUp: configuration.get('submissionsTopUp'),
-  isGeneralMaintenance: configuration.get('isGeneralMaintenance'),
-  isLoginBanner: configuration.get('isLoginBanner'),
-  siteBannerContent: configuration.get('siteBannerContent'),
-  adminBannerContent: configuration.get('adminBannerContent'),
+  isGeneralMaintenance: configuration.get('banner.isGeneralMaintenance'),
+  isLoginBanner: configuration.get('banner.isLoginBanner'),
+  siteBannerContent: configuration.get('banner.siteBannerContent'),
+  adminBannerContent: configuration.get('banner.adminBannerContent'),
   configureAws,
 }
 

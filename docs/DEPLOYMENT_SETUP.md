@@ -112,12 +112,16 @@ The following env variables are set in Travis:
 | `PORT`                   | Server port. Defaults to `5000`.                                                                                                                                                                                      |
 | `NODE_ENV`               | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'development'`. This should always be set to a production environment           |
 | `SESSION_SECRET`         | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment.                                                                                              |
+| `SUBMISSIONS_TOP_UP`     | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                                         |
+
+#### Banners
+
+| Variable                 | Description                                                                                                                                                                                                           |
+| :----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SITE_BANNER_CONTENT`    | If set, displays a banner message on both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. Overrides all other banner environment variables         |
 | `ADMIN_BANNER_CONTENT`   | If set, displays a banner message on private admin routes such as the form list page as well as form builder pages.                                                                                                   |
+| `IS_LOGIN_BANNER`   | If set, displays a banner message on the login page                              |
 | `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`.                                                                                                                |
-| `IS_SP_MAINTENANCE`      | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                                                   |
-| `IS_CP_MAINTENANCE`      | If set, displays a banner message on SingPass forms.                                                                                                                                                                  |
-| `SUBMISSIONS_TOP_UP`     | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                                         |
 
 #### AWS services
 
@@ -235,6 +239,8 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `MYINFO_CLIENT_CONFIG`          | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints. |
 | `MYINFO_FORMSG_KEY_PATH`        | Filepath to MyInfo private key, which is used to decrypt returned responses.                                                                                           |
 | `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                             |
+| `IS_SP_MAINTENANCE`      | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                                                   |
+| `IS_CP_MAINTENANCE`      | If set, displays a banner message on CorpPass forms.                                                                                                                                                                  |
 
 #### Verified Emails/SMSes
 
