@@ -345,7 +345,8 @@ function GTag($rootScope, $window) {
    * Logs the start of a storage mode responses download.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
-   * @param {String} params.formTitle The title of the form @param {String} params.userEmail The email of the user downloading
+   * @param {String} params.formTitle The title of the form 
+   * @param {String} params.userEmail The email of the user downloading
    * @param {number} expectedNumSubmissions The expected number of submissions to download
    * @param {number} numWorkers The number of decryption workers
    * @return {Void}
@@ -369,7 +370,8 @@ function GTag($rootScope, $window) {
    * Logs a successful storage mode responses download.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
-   * @param {String} params.formTitle The title of the form @param {String} params.userEmail The email of the user downloading
+   * @param {String} params.formTitle The title of the form 
+   * @param {String} params.userEmail The email of the user downloading
    * @param {number} downloadedNumSubmissions The number of submissions downloaded
    * @param {number} numWorkers The number of decryption workers
    * @param {number} duration The duration taken by the download
@@ -396,7 +398,8 @@ function GTag($rootScope, $window) {
    * Logs a failed storage mode responses download.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
-   * @param {String} params.formTitle The title of the form @param {String} params.userEmail The email of the user downloading
+   * @param {String} params.formTitle The title of the form 
+   * @param {String} params.userEmail The email of the user downloading
    * @param {number} numWorkers The number of decryption workers
    * @param {number} expectedNumSubmissions The expected number of submissions
    * @param  {number} duration The duration taken by the download
