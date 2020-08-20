@@ -23,6 +23,7 @@ const isDev =
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 
 convict.addFormat(require('convict-format-with-validator').url)
+convict.addFormat(require('convict-format-with-validator').email)
 
 convict.addFormat({
   name: 'string[]',
@@ -220,6 +221,77 @@ const configuration = convict({
     default: '',
     env: 'DB_HOST',
   },
+  mail: {
+    from: {
+      doc: 'Sender email address',
+      format: 'email',
+      default: defaults.mail.mailFrom,
+      env: 'MAIL_FROM',
+    },
+    logger: {
+      doc: 'If set to true then logs to console',
+      format: 'Boolean',
+      default: false,
+      env: 'MAIL_LOGGER',
+    },
+    debug: {
+      doc:
+        'If set to true, then logs SMTP traffic, otherwise logs only transaction events.',
+      format: 'Boolean',
+      default: false,
+      env: 'MAIL_DEBUG',
+    },
+  },
+  ses: {
+    maxMessages: {
+      doc:
+        'Nodemailer config to help to keep the connection up-to-date for long-running messaging',
+      format: 'int',
+      default: defaults.ses.maxMessages,
+      env: 'SES_MAX_MESSAGES',
+    },
+    maxConnections: {
+      doc: 'Connection pool to send email in parallel to the SMTP server',
+      format: 'int',
+      default: defaults.ses.maxConnections,
+      env: 'SES_POOL',
+    },
+    socketTimeout: {
+      doc: 'Milliseconds of inactivity to allow before killing a connection',
+      format: 'int',
+      default: defaults.ses.socketTimeout,
+      env: 'MAIL_SOCKET_TIMEOUT',
+    },
+  },
+})
+
+const prodOnlyConfig = convict({
+  ses: {
+    port: {
+      doc: 'SMTP port number',
+      format: 'port',
+      default: null,
+      env: 'SES_PORT',
+    },
+    host: {
+      doc: 'SMTP hostname',
+      format: String,
+      default: null,
+      env: 'SES_HOST',
+    },
+    user: {
+      doc: 'SMTP username',
+      format: String,
+      default: null,
+      env: 'SES_USER',
+    },
+    pass: {
+      doc: 'SMTP password',
+      format: String,
+      default: null,
+      env: 'SES_PASS',
+    },
+  },
 })
 
 // Construct bucket URLs depending on node environment
@@ -279,46 +351,39 @@ const dbConfig: DbConfig = {
 }
 
 const mailConfig: MailConfig = (function () {
-  const mailFrom = process.env.MAIL_FROM || defaults.mail.mailFrom
+  const mailFrom = configuration.get('mail.from')
   const mailer = {
     from: `${configuration.get('appConfig.title')} <${mailFrom}>`,
   }
 
   // Creating mail transport
-  const hasAllSesCredentials =
-    process.env.SES_HOST &&
-    process.env.SES_PORT &&
-    process.env.SES_USER &&
-    process.env.SES_PASS
-
   let transporter: Mail
+  if (!isDev) {
+    // Throw error if env vars not present
+    prodOnlyConfig.validate({ allowed: 'strict' })
 
-  if (hasAllSesCredentials) {
     const options: SMTPPool.Options = {
-      host: process.env.SES_HOST,
+      host: prodOnlyConfig.get('ses.host'),
       auth: {
-        user: process.env.SES_USER,
-        pass: process.env.SES_PASS,
+        user: prodOnlyConfig.get('ses.user'),
+        pass: prodOnlyConfig.get('ses.pass'),
       },
-      port: Number(process.env.SES_PORT),
+      port: prodOnlyConfig.get('ses.port'),
       // Options as advised from https://nodemailer.com/usage/bulk-mail/
       // pool connections instead of creating fresh one for each email
       pool: true,
-      maxMessages:
-        Number(process.env.SES_MAX_MESSAGES) || defaults.ses.maxMessages,
-      maxConnections:
-        Number(process.env.SES_POOL) || defaults.ses.maxConnections,
-      socketTimeout:
-        Number(process.env.MAIL_SOCKET_TIMEOUT) || defaults.ses.socketTimeout,
+      maxMessages: configuration.get('ses.maxMessages'),
+      maxConnections: configuration.get('ses.maxConnections'),
+      socketTimeout: configuration.get('ses.socketTimeout'),
       // If set to true then logs to console. If value is not set or is false
       // then nothing is logged.
-      logger: String(process.env.MAIL_LOGGER).toLowerCase() === 'true',
+      logger: configuration.get('mail.logger'),
       // If set to true, then logs SMTP traffic, otherwise logs only transaction
       // events.
-      debug: String(process.env.MAIL_DEBUG).toLowerCase() === 'true',
+      debug: configuration.get('mail.debug'),
     }
     transporter = nodemailer.createTransport(options)
-  } else if (process.env.SES_PORT) {
+  } else if (prodOnlyConfig.get('ses.port')) {
     logger.warn({
       message:
         '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer to send to local SMTP server instead.\nThis should NEVER be seen in production.',
@@ -327,7 +392,7 @@ const mailConfig: MailConfig = (function () {
       },
     })
     transporter = nodemailer.createTransport({
-      port: Number(process.env.SES_PORT),
+      port: prodOnlyConfig.get('ses.port'),
       ignoreTLS: true,
     })
   } else {
