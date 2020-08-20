@@ -4,13 +4,14 @@ import aws from 'aws-sdk'
 import convict from 'convict'
 import crypto from 'crypto'
 import { SessionOptions } from 'express-session'
-import { ConnectionOptions } from 'mongoose'
 import nodemailer from 'nodemailer'
 import directTransport from 'nodemailer-direct-transport'
 import Mail from 'nodemailer/lib/mailer'
 import SMTPPool from 'nodemailer/lib/smtp-pool'
 import { promisify } from 'util'
 import validator from 'validator'
+
+import { Config, DbConfig, Environment, MailConfig } from '../types'
 
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
@@ -165,13 +166,6 @@ const configuration = convict({
   },
 })
 
-// Enums
-enum Environment {
-  Dev = 'development',
-  Prod = 'production',
-  Test = 'test',
-}
-
 // Environment variables with defaults
 const isDev =
   process.env.NODE_ENV === Environment.Dev ||
@@ -212,69 +206,6 @@ const s3 = new aws.S3({
 configuration.validate({ allowed: 'strict' })
 
 const logger = createLoggerWithLabel(module)
-
-// Typings
-type AppConfig = {
-  title: string
-  description: string
-  appUrl: string
-  keywords: string
-  images: string[]
-  twitterImage: string
-}
-
-type DbConfig = {
-  uri: string
-  options: ConnectionOptions
-}
-
-type AwsConfig = {
-  imageS3Bucket: string
-  logoS3Bucket: string
-  attachmentS3Bucket: string
-  region: string
-
-  logoBucketUrl: string
-  imageBucketUrl: string
-  attachmentBucketUrl: string
-  s3: aws.S3
-}
-
-type MailConfig = {
-  mailFrom: string
-  mailer: {
-    from: string
-  }
-  transporter: Mail
-}
-
-type Config = {
-  app: AppConfig
-  db: DbConfig
-  aws: AwsConfig
-  mail: MailConfig
-
-  cookieSettings: SessionOptions['cookie']
-  // Consts
-  isDev: boolean
-  nodeEnv: Environment
-  port: number
-  sessionSecret: string
-  cspReportUri: string
-  chromiumBin: string
-  otpLifeSpan: number
-  bounceLifeSpan: number
-  formsgSdkMode: PackageMode
-  submissionsTopUp: number
-  customCloudWatchGroup?: string
-  isGeneralMaintenance?: string
-  isLoginBanner?: string
-  siteBannerContent?: string
-  adminBannerContent?: string
-
-  // Functions
-  configureAws: () => Promise<void>
-}
 
 /**
  * Content Security Policy reporting
