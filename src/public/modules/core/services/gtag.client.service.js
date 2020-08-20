@@ -16,8 +16,6 @@ function GTag($rootScope, $window) {
         custom_map: {
           dimension1: 'form_id',
           dimension2: 'message',
-          dimension3: 'user_id',
-          dimension4: 'user_email',
           metric1: 'duration',
           metric2: 'num_workers',
           metric3: 'num_submissions',
