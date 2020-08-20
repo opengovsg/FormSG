@@ -67,7 +67,6 @@ function ViewResponsesController(
     let params = {
       formId: vm.myform._id,
       formTitle: vm.myform.title,
-      userId: userDetails._id,
       userEmail: userDetails.email,
     }
     if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
