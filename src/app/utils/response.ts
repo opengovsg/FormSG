@@ -16,7 +16,7 @@ import { FIELDS_TO_REJECT } from './field-validation/config'
 import { ConflictError } from './custom-errors'
 import validateField from './field-validation'
 
-type ParsedFieldResponse = FieldResponse & {
+export type ParsedFieldResponse = FieldResponse & {
   isVisible?: boolean
   isUserVerified?: boolean
 }

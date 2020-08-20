@@ -7,8 +7,10 @@ import * as ResponseUtil from 'src/app/utils/response'
 import {
   AttachmentSize,
   BasicField,
+  FieldResponse,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  ISingleAnswerResponse,
   PossibleField,
   ResponseMode,
 } from 'src/types'
@@ -45,9 +47,9 @@ const TYPE_TO_INDEX_MAP = (() => {
 
 describe('Response Util', () => {
   let defaultEmailForm: IEmailFormSchema
-  let defaultEmailResponses: ResponseUtil.FormResponse[]
+  let defaultEmailResponses: FieldResponse[]
   let defaultEncryptForm: IEncryptedFormSchema
-  let defaultEncryptResponses: ResponseUtil.FormResponse[]
+  let defaultEncryptResponses: FieldResponse[]
 
   beforeAll(async () => {
     await dbHandler.connect()
@@ -85,9 +87,75 @@ describe('Response Util', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('getParsedResponses', () => {
-    it('should return list of parsed responses for encrypted form submission successfully', async () => {})
+    it('should return list of parsed responses for encrypted form submission successfully', async () => {
+      // Arrange
+      // Only mobile and email fields are parsed, since the other fields are
+      // e2e encrypted from the browser.
+      const mobileFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Mobile]
+      const emailFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Email]
 
-    it('should return list of parsed responses for email form submission successfully', async () => {})
+      // Add answers to both mobile and email fields
+      const updatedResponses = cloneDeep(defaultEncryptResponses)
+      const newEmailResponse: ISingleAnswerResponse = {
+        ...updatedResponses[emailFieldIndex],
+        answer: 'test@example.com',
+      }
+      const newMobileResponse: ISingleAnswerResponse = {
+        ...updatedResponses[mobileFieldIndex],
+        answer: '+6587654321',
+      }
+      updatedResponses[mobileFieldIndex] = newMobileResponse
+      updatedResponses[emailFieldIndex] = newEmailResponse
+
+      // Act
+      const actual = ResponseUtil.getParsedResponses(
+        defaultEncryptForm,
+        updatedResponses,
+        ResponseMode.Encrypt,
+      )
+
+      // Assert
+      const expectedParsed: ResponseUtil.ParsedFieldResponse[] = [
+        { ...newEmailResponse, isVisible: true },
+        { ...newMobileResponse, isVisible: true },
+      ]
+      expect(actual).toEqual(expect.arrayContaining(expectedParsed))
+    })
+
+    it('should return list of parsed responses for email form submission successfully', async () => {
+      // Arrange
+      // Add answer to subset of field types
+      const shortTextFieldIndex = TYPE_TO_INDEX_MAP[BasicField.ShortText]
+      const decimalFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Decimal]
+
+      // Add answers to both selected fields.
+      const updatedResponses = cloneDeep(defaultEmailResponses)
+      const newShortTextResponse: ISingleAnswerResponse = {
+        ...updatedResponses[shortTextFieldIndex],
+        answer: 'the quick brown fox jumps over the lazy dog',
+      }
+      const newDecimalResponse: ISingleAnswerResponse = {
+        ...updatedResponses[decimalFieldIndex],
+        answer: '3.142',
+      }
+      updatedResponses[shortTextFieldIndex] = newShortTextResponse
+      updatedResponses[decimalFieldIndex] = newDecimalResponse
+
+      // Act
+      const actual = ResponseUtil.getParsedResponses(
+        defaultEmailForm,
+        updatedResponses,
+        ResponseMode.Email,
+      )
+
+      // Assert
+      // Should only return the responses that have been submitted.
+      const expectedParsed: ResponseUtil.ParsedFieldResponse[] = [
+        { ...newShortTextResponse, isVisible: true },
+        { ...newDecimalResponse, isVisible: true },
+      ]
+      expect(actual).toEqual(expect.arrayContaining(expectedParsed))
+    })
 
     it('should throw error when any responses are not valid for encrypted form submission ', async () => {
       // Arrange
@@ -125,9 +193,9 @@ describe('Response Util', () => {
       ).toThrowError('Invalid answer submitted')
     })
 
-    it('should throw error when encrypted form submission is prevented by logic', async () => {})
+    it.skip('should throw error when encrypted form submission is prevented by logic', async () => {})
 
-    it('should throw error when email form submission is prevented by logic', async () => {})
+    it.skip('should throw error when email form submission is prevented by logic', async () => {})
   })
 })
 
