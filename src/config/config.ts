@@ -16,19 +16,6 @@ import { Config, DbConfig, Environment, MailConfig } from '../types'
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
 
-// Environment variables with defaults
-const isDev =
-  process.env.NODE_ENV === Environment.Dev ||
-  process.env.NODE_ENV === Environment.Test
-const nodeEnv = isDev ? Environment.Dev : Environment.Prod
-
-// nodeEnv: {
-//   doc: 'Express environment mode',
-//   format: 'int',
-//   default: 0,
-//   env: 'NODE_ENV',
-// }
-
 convict.addFormat(require('convict-format-with-validator').url)
 convict.addFormat(require('convict-format-with-validator').email)
 
@@ -133,6 +120,12 @@ const configuration = convict({
       format: String,
       default: 'undefined', // HelmetJS reportUri param requires non-empty string
       env: 'CSP_REPORT_URI',
+    },
+    nodeEnv: {
+      doc: 'Express environment mode',
+      format: Environment,
+      default: Environment.Prod,
+      env: 'NODE_ENV',
     },
   },
   banner: {
@@ -299,6 +292,14 @@ const prodOnlyConfig = convict({
     },
   },
 })
+
+// Perform validation after env vars loaded
+configuration.validate({ allowed: 'strict' })
+
+const isDev =
+  configuration.get('core.nodeEnv') === Environment.Dev ||
+  configuration.get('core.nodeEnv') === Environment.Test
+const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 
 // Construct bucket URLs depending on node environment
 // If in development env, endpoint communicates with localstack, a fully
