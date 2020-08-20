@@ -17,7 +17,7 @@ convict.addFormat(require('convict-format-with-validator').url)
 
 convict.addFormat({
   name: 'array-string',
-  validate: (val) => {
+  validate: (val: string[]) => {
     if (!Array.isArray(val)) {
       throw new Error('must be of type Array')
     }
@@ -26,7 +26,7 @@ convict.addFormat({
       throw new Error('Elements must be of type string')
     }
   },
-  coerce: (val) => {
+  coerce: (val: string): string[] => {
     return val.split(',')
   },
 })
@@ -94,6 +94,13 @@ const configuration = convict({
       default: defaults.app.images,
       env: 'APP_IMAGES',
     },
+  },
+  formsgSdkMode: {
+    doc:
+      'Inform SDK which public keys are to be used to sign, encrypt, or decrypt data that is passed to it',
+    format: ['staging', 'production', 'development', 'test'],
+    default: 'production' as PackageMode,
+    env: 'FORMSG_SDK_MODE',
   },
 })
 
@@ -200,31 +207,6 @@ const chromiumBin = process.env.CHROMIUM_BIN
 if (!chromiumBin) {
   const errMsg =
     'Path to Chromium executable missing - please specify in CHROMIUM_BIN environment variable'
-  logger.error({
-    message: errMsg,
-    meta: {
-      action: 'init',
-    },
-  })
-  throw new Error(errMsg)
-}
-
-/**
- * FormSG SDK mode.
- * Needed due to the SDK having multiple modes - staging, production,
- * development, and test, whilst the backend only has 2 modes (prod and dev).
- *
- * The SDK modes are required to be set properly so that the correct public keys
- * are used to sign, encrypt, or decrypt data that is passed into the SDK.
- */
-const formsgSdkMode = process.env.FORMSG_SDK_MODE as PackageMode
-if (
-  !formsgSdkMode ||
-  !['staging', 'production', 'development', 'test'].includes(formsgSdkMode)
-) {
-  const errMsg =
-    'FORMSG_SDK_MODE not found or invalid. Please specify one of: "staging" | "production" | "development" | "test" in the environment variable.'
-
   logger.error({
     message: errMsg,
     meta: {
@@ -455,7 +437,7 @@ const config: Config = {
   sessionSecret: configuration.get('sessionSecret'),
   otpLifeSpan: configuration.get('otpLifeSpan'),
   bounceLifeSpan: configuration.get('bounceLifeSpan'),
-  formsgSdkMode,
+  formsgSdkMode: configuration.get('formsgSdkMode'),
   chromiumBin,
   cspReportUri,
   submissionsTopUp: configuration.get('submissionsTopUp'),
