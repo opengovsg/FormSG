@@ -207,8 +207,8 @@ const getFormattedResponse = (
     response: {
       status: get(response, 'status'),
       statusText: get(response, 'statusText'),
-      headers: stringifySafe(get(response, 'headers', {})),
-      data: stringifySafe(get(response, 'data', {})),
+      headers: stringifySafe(get(response, 'headers')),
+      data: stringifySafe(get(response, 'data')),
     },
   }
 }

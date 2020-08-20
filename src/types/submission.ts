@@ -80,10 +80,10 @@ export interface IWebhookResponse {
   signature: string
   errorMessage?: string
   response?: {
-    status: number
-    statusText: string
-    headers: string
-    data: string
+    status?: number
+    statusText?: string
+    headers?: string
+    data?: string
   }
 }
 
