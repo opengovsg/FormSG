@@ -1,4 +1,5 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
+import awsInfo from 'aws-info'
 import aws from 'aws-sdk'
 import convict from 'convict'
 import crypto from 'crypto'
@@ -9,6 +10,7 @@ import directTransport from 'nodemailer-direct-transport'
 import Mail from 'nodemailer/lib/mailer'
 import SMTPPool from 'nodemailer/lib/smtp-pool'
 import { promisify } from 'util'
+import validator from 'validator'
 
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
@@ -16,7 +18,7 @@ import { createLoggerWithLabel } from './logger'
 convict.addFormat(require('convict-format-with-validator').url)
 
 convict.addFormat({
-  name: 'array-string',
+  name: 'string[]',
   validate: (val: string[]) => {
     if (!Array.isArray(val)) {
       throw new Error('must be of type Array')
@@ -90,7 +92,7 @@ const configuration = convict({
       env: 'APP_TWITTER_IMAGE',
     },
     images: {
-      format: 'array-string',
+      format: 'string[]',
       default: defaults.app.images,
       env: 'APP_IMAGES',
     },
@@ -102,9 +104,111 @@ const configuration = convict({
     default: 'production' as PackageMode,
     env: 'FORMSG_SDK_MODE',
   },
+  awsConfig: {
+    imageS3Bucket: {
+      doc: 'S3 Bucket to upload images to',
+      format: String,
+      default: null,
+      env: 'IMAGE_S3_BUCKET',
+    },
+    logoS3Bucket: {
+      doc: 'S3 Bucket to upload logos to',
+      format: String,
+      default: null,
+      env: 'LOGO_S3_BUCKET',
+    },
+    attachmentS3Bucket: {
+      doc: 'S3 Bucket to upload encrypted attachments to',
+      format: String,
+      default: null,
+      env: 'ATTACHMENT_S3_BUCKET',
+    },
+    region: {
+      doc: 'Region that S3 bucket is located in',
+      format: Object.keys(awsInfo.data.regions),
+      default: defaults.aws.region,
+      env: 'AWS_REGION',
+    },
+    attachmentBucketUrl: {
+      format: (val) => {
+        if (!validator.isURL(val)) {
+          throw new Error('must be a url')
+        }
+        if (!/[/]$/.test(val)) {
+          throw new Error('must end with a slash')
+        }
+      },
+      default: null,
+    },
+    logoBucketUrl: {
+      format: (val) => {
+        if (!validator.isURL(val)) {
+          throw new Error('must be a url')
+        }
+        if (/[/]$/.test(val)) {
+          throw new Error('must not end with a slash')
+        }
+      },
+      default: null,
+    },
+    imageBucketUrl: {
+      format: (val) => {
+        if (!validator.isURL(val)) {
+          throw new Error('must be a url')
+        }
+        if (/[/]$/.test(val)) {
+          throw new Error('must not end with a slash')
+        }
+      },
+      default: null,
+    },
+  },
 })
 
-// Perform validation
+// Enums
+enum Environment {
+  Dev = 'development',
+  Prod = 'production',
+  Test = 'test',
+}
+
+// Environment variables with defaults
+const isDev =
+  process.env.NODE_ENV === Environment.Dev ||
+  process.env.NODE_ENV === Environment.Test
+const nodeEnv = isDev ? Environment.Dev : Environment.Prod
+
+// Construct bucket URLs depending on node environment
+// If in development env, endpoint communicates with localstack, a fully
+// functional local AWS cloud stack for hosting images/logos/attachments.
+// Else, the environment variables to instantiate S3 are used.
+const awsEndpoint = isDev
+  ? defaults.aws.endpoint
+  : `https://s3.${configuration.get('awsConfig.region')}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
+
+configuration.load({
+  'awsConfig.logoBucketUrl': `${awsEndpoint}/${configuration.get(
+    'awsConfig.logoS3Bucket',
+  )}`,
+  'awsConfig.imageBucketUrl': `${awsEndpoint}/${configuration.get(
+    'awsConfig.imageS3Bucket',
+  )}`,
+  // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
+  'awsConfig.attachmentBucketUrl': `${awsEndpoint}/${configuration.get(
+    'awsConfig.attachmentS3Bucket',
+  )}/`,
+})
+
+const s3 = new aws.S3({
+  region: configuration.get('awsConfig.region'),
+  // Unset and use default if not in development mode
+  // Endpoint and path style overrides are needed only in development mode for
+  // localstack to work.
+  endpoint: isDev ? defaults.aws.endpoint : undefined,
+  s3ForcePathStyle: isDev ? true : undefined,
+})
+
+// Perform validation after env vars loaded
 configuration.validate({ allowed: 'strict' })
 
 const logger = createLoggerWithLabel(module)
@@ -171,19 +275,6 @@ type Config = {
   // Functions
   configureAws: () => Promise<void>
 }
-
-// Enums
-enum Environment {
-  Dev = 'development',
-  Prod = 'production',
-  Test = 'test',
-}
-
-// Environment variables with defaults
-const isDev =
-  process.env.NODE_ENV === Environment.Dev ||
-  process.env.NODE_ENV === Environment.Test
-const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 
 /**
  * Content Security Policy reporting
@@ -335,73 +426,6 @@ const mailConfig: MailConfig = (function () {
   }
 })()
 
-// Run function instead of a constant so errors can be thrown.
-const awsConfig: AwsConfig = (function () {
-  const imageS3Bucket = process.env.IMAGE_S3_BUCKET
-  if (!imageS3Bucket) {
-    throw new Error(
-      'Image S3 Bucket configuration missing - please specify in IMAGE_S3_BUCKET environment variable',
-    )
-  }
-  /**
-   * S3 Bucket to upload logos to
-   */
-  const logoS3Bucket = process.env.LOGO_S3_BUCKET
-  if (!logoS3Bucket) {
-    throw new Error(
-      'Logo S3 Bucket configuration missing - please specify in LOGO_S3_BUCKET environment variable',
-    )
-  }
-
-  /**
-   * S3 Bucket to upload encrypted attachments to
-   */
-  const attachmentS3Bucket = process.env.ATTACHMENT_S3_BUCKET
-  if (!attachmentS3Bucket) {
-    throw new Error(
-      'Attachment S3 Bucket configuration missing - please specify in ATTACHMENT_S3_BUCKET environment variable',
-    )
-  }
-
-  /**
-   * Region that S3 bucket is located in
-   */
-  const region = process.env.AWS_REGION || defaults.aws.region
-
-  // Construct bucket URLs depending on node environment
-  // If in development env, endpoint communicates with localstack, a fully
-  // functional local AWS cloud stack for hosting images/logos/attachments.
-  // Else, the environment variables to instantiate S3 are used.
-  const awsEndpoint = isDev
-    ? defaults.aws.endpoint
-    : `https://s3.${region}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
-
-  const logoBucketUrl = `${awsEndpoint}/${logoS3Bucket}`
-  const imageBucketUrl = `${awsEndpoint}/${imageS3Bucket}`
-  // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
-  const attachmentBucketUrl = `${awsEndpoint}/${attachmentS3Bucket}/`
-
-  const s3 = new aws.S3({
-    region,
-    // Unset and use default if not in development mode
-    // Endpoint and path style overrides are needed only in development mode for
-    // localstack to work.
-    endpoint: isDev ? defaults.aws.endpoint : undefined,
-    s3ForcePathStyle: isDev ? true : undefined,
-  })
-
-  return {
-    imageS3Bucket,
-    logoS3Bucket,
-    attachmentS3Bucket,
-    region,
-    logoBucketUrl,
-    imageBucketUrl,
-    attachmentBucketUrl,
-    s3,
-  }
-})()
-
 const cookieSettings: SessionOptions['cookie'] = {
   httpOnly: true, // JavaScript will not be able to read the cookie in case of XSS exploitation
   secure: !isDev, // true prevents cookie from being accessed over http
@@ -427,7 +451,10 @@ const configureAws = async () => {
 const config: Config = {
   app: configuration.get('appConfig'),
   db: dbConfig,
-  aws: awsConfig,
+  aws: {
+    ...configuration.get('awsConfig'),
+    s3,
+  },
   mail: mailConfig,
   cookieSettings,
   isDev,
