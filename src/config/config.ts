@@ -187,21 +187,6 @@ const configuration = convict({
       default: '',
       env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
     },
-    attachmentBucketUrl: {
-      format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: true }),
-      default: null,
-    },
-    logoBucketUrl: {
-      format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
-      default: null,
-    },
-    imageBucketUrl: {
-      format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
-      default: null,
-    },
   },
   formsgSdkMode: {
     doc:
@@ -309,8 +294,22 @@ const awsEndpoint = isDev
   ? defaults.aws.endpoint
   : `https://s3.${configuration.get('awsConfig.region')}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
 
-configuration.load({
-  awsConfig: {
+const derivedConfig = convict({
+  attachmentBucketUrl: {
+    format: (val) => validateBucketUrl(val, { isDev, hasTrailingSlash: true }),
+    default: null,
+  },
+  logoBucketUrl: {
+    format: (val) => validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
+    default: null,
+  },
+  imageBucketUrl: {
+    format: (val) => validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
+    default: null,
+  },
+})
+derivedConfig
+  .load({
     logoBucketUrl: `${awsEndpoint}/${configuration.get(
       'awsConfig.logoS3Bucket',
     )}`,
@@ -321,8 +320,8 @@ configuration.load({
     attachmentBucketUrl: `${awsEndpoint}/${configuration.get(
       'awsConfig.attachmentS3Bucket',
     )}/`,
-  },
-})
+  })
+  .validate()
 
 const s3 = new aws.S3({
   region: configuration.get('awsConfig.region'),
@@ -456,6 +455,7 @@ const config: Config = {
   app: configuration.get('appConfig'),
   db: dbConfig,
   aws: {
+    ...derivedConfig.getProperties(),
     ...configuration.get('awsConfig'),
     s3,
   },
