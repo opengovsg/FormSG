@@ -2,6 +2,7 @@
 const { triggerFileDownload } = require('../../helpers/util')
 const { templates } = require('../constants/covid19')
 const Form = require('../../viewmodels/Form.class')
+const dedent = require('dedent-js')
 
 /**
  * Determine the form title when duplicating a form
@@ -33,6 +34,7 @@ angular
     '$state',
     '$timeout',
     '$uibModal',
+    '$window',
     'Toastr',
     'responseModeEnum',
     'createFormModalOptions',
@@ -50,6 +52,7 @@ function CreateFormModalController(
   $state,
   $timeout,
   $uibModal,
+  $window,
   Toastr,
   responseModeEnum,
   createFormModalOptions,
@@ -221,6 +224,7 @@ function CreateFormModalController(
         const { publicKey, secretKey } = FormSgSdk.crypto.generate()
         vm.publicKey = publicKey
         vm.secretKey = secretKey
+        vm.mailToUri = generateMailToUri(vm.formData.title, secretKey)
         vm.formStatus = 3
       })
     } else if (
@@ -295,6 +299,30 @@ function CreateFormModalController(
     } else {
       Toastr.error('An error occurred creating the form, please try again')
     }
+  }
+
+  const generateMailToUri = (title, secretKey) => {
+    return 'mailto:?subject=' +
+      $window.encodeURIComponent(`Shared Secret Key for ${title}`) +
+      '&body=' +
+      $window.encodeURIComponent(
+        dedent`
+          Dear collaborator,
+
+          I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
+
+          Form title: ${title}
+          Secret key: ${secretKey}
+
+          All you need to do is keep this email as a record, and please do not share this key with anyone else.
+
+          Thank you for helping to safekeep my form!
+        `
+      )
+  }
+
+  vm.handleMailToClick = () => {
+    GTag.clickSecretKeyMailto(vm.formData.title)
   }
 
   // Whether user has copied secret key

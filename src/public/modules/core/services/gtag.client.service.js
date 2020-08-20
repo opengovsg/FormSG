@@ -468,5 +468,16 @@ function GTag($rootScope, $window) {
     })
   }
 
+  /**
+   * Logs clicking on mailto link to share form secret key with collaborators.
+   */
+  gtagService.clickSecretKeyMailto = (formTitle) => {
+    _gtagEvents('storage', {
+      event_category: 'Storage Mode Form',
+      event_action: 'Secret key mailto clicked',
+      event_label: formTitle
+    })
+  }
+
   return gtagService
 }
