@@ -138,7 +138,7 @@ function EditContactNumberModalController(
         // Close modal after lag to show success and show toast.
         // Return user back to main controller to update.
         $timeout(() => {
-          Toastr.success('Emergency contact successfully added')
+          Toastr.success('Emergency contact number successfully added')
           vm.closeModal(response.data)
         }, 1000)
       })
