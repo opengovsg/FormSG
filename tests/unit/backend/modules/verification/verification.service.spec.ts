@@ -189,7 +189,7 @@ describe('Verification service', () => {
     let hashedOtp: string, signedData: string, hashRetries: number
     let hashCreatedAt: Date
     beforeEach(() => {
-      jest.resetAllMocks()
+      jest.clearAllMocks()
       mockAnswer = 'answer'
       mockOtp = '123456'
       hashedOtp = 'hash'
@@ -349,7 +349,7 @@ describe('Verification service', () => {
     let mockOtp: string, transaction: IVerificationSchema, hashRetries: number
     let signedData: string
     beforeEach(() => {
-      jest.resetAllMocks()
+      jest.clearAllMocks()
       mockOtp = '123456'
       hashRetries = 0
       signedData = 'signedData'
