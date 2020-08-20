@@ -96,7 +96,7 @@ The following env variables are set in Travis:
 
 ### Core Features
 
-#### App and Database
+#### App Config
 
 | Variable                 | Description                                                                                                                                                                                                           |
 | :----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -106,13 +106,18 @@ The following env variables are set in Travis:
 | `APP_KEYWORDS`           | Defaults to `'forms, formbuilder, nodejs'`.                                                                                                                                                                           |
 | `APP_IMAGES`             | Defaults to `'/public/modules/core/img/og/img_metatag.png,/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                      |
 | `APP_TWITTER_IMAGE`      | ath to Twitter image. Defaults to `'/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                                            |
+
+#### App and Database
+
+| Variable                 | Description                                                                                                                                                                                                           |
+| :----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DB_HOST`                | A MongoDB URI.                                                                                                                                                                                                        |
 | `OTP_LIFE_SPAN`          | Time in milliseconds that admin login OTP is valid for. Defaults to 900000ms or 15 minutes.                                                                                                                           |
-| `BOUNCE_LIFE_SPAN`       | Time in milliseconds that bounces are tracked for each form. Defaults to 1800000ms or 30 minutes. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
 | `PORT`                   | Server port. Defaults to `5000`.                                                                                                                                                                                      |
 | `NODE_ENV`               | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'development'`. This should always be set to a production environment           |
 | `SESSION_SECRET`         | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment.                                                                                              |
 | `SUBMISSIONS_TOP_UP`     | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                                         |
+| `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
 #### Banners
 
@@ -156,6 +161,7 @@ The following env variables are set in Travis:
 | `MAIL_LOGGER`         | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                   |
 | `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                              |
 | `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                       |
+| `BOUNCE_LIFE_SPAN`       | Time in milliseconds that bounces are tracked for each form. Defaults to 1800000ms or 30 minutes. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
 
 ### Additional Features
 
@@ -184,8 +190,8 @@ If this feature is enabled, client-side error events will be piped to [sentry.io
 
 | Variable            | Description                                                                                           |
 | :------------------ | ----------------------------------------------------------------------------------------------------- |
-| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Sentry SDK.                                                         |
 | `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
+| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK.                                                          |
 
 #### Examples page Using Pre-Computed Results
 
