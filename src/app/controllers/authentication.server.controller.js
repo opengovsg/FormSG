@@ -98,6 +98,9 @@ exports.verifyPermission = (requiredPermission) =>
 
     // Forbidden if requiredPersmission is admin but user is not
     if (!isFormAdmin && requiredPermission === PERMISSIONS.ADMIN) {
+      logger.error(
+        `User ${req.session.uer} not authorized to perform ${requiredPermission} operation on Form: ${req.form.title}.`,
+      )
       return res.status(HttpStatus.FORBIDDEN).send({
         message: makeUnauthorizedMessage(
           req.session.user.email,
@@ -131,6 +134,9 @@ exports.verifyPermission = (requiredPermission) =>
     }
 
     if (!hasSufficientPermission) {
+      logger.error(
+        `User ${req.session.uer} not authorized to perform ${requiredPermission} operation on Form: ${req.form.title}.`,
+      )
       return res.status(HttpStatus.FORBIDDEN).send({
         message: makeUnauthorizedMessage(
           req.session.user.email,
