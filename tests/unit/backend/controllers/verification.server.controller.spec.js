@@ -147,6 +147,7 @@ describe('Verification Controller', () => {
   describe('No verified fields in form', () => {
     beforeEach((done) => {
       testForm = new Form({
+        responseMode: 'email',
         title: 'Test Form',
         emails: 'test@test.gov.sg',
         admin: testUser._id,
@@ -172,6 +173,7 @@ describe('Verification Controller', () => {
     let createTransaction
     beforeAll((done) => {
       testForm = new Form({
+        responseMode: 'email',
         title: 'Test Form',
         emails: 'test@test.gov.sg',
         admin: testUser._id,
@@ -584,6 +586,7 @@ describe('Verification Controller', () => {
     describe('No verified fields in form', () => {
       beforeEach((done) => {
         testForm = new Form({
+          responseMode: 'email',
           title: 'Test Form',
           emails: 'test@test.gov.sg',
           admin: testUser._id,
@@ -622,6 +625,7 @@ describe('Verification Controller', () => {
       let createTransaction
       beforeAll((done) => {
         testForm = new Form({
+          responseMode: 'email',
           title: 'Test Form',
           emails: 'test@test.gov.sg',
           admin: testUser._id,
@@ -781,6 +785,7 @@ describe('Verification Controller', () => {
           fieldType: 'yes_no',
         }
         let form = new Form({
+          responseMode: 'email',
           title: 'Test Form',
           emails: 'test@test.gov.sg',
           admin: testUser._id,
