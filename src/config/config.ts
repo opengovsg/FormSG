@@ -17,11 +17,12 @@ import { basicSchema, loadS3BucketUrlSchema, sesSchema } from './schema'
 
 // Perform validation before accessing basic env vars
 const basicVars = convict(basicSchema)
-basicVars.validate({ allowed: 'strict' })
+  .validate({ allowed: 'strict' })
+  .getProperties()
 
 const isDev =
-  basicVars.get('core.nodeEnv') === Environment.Dev ||
-  basicVars.get('core.nodeEnv') === Environment.Test
+  basicVars.core.nodeEnv === Environment.Dev ||
+  basicVars.core.nodeEnv === Environment.Test
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 
 // Construct bucket URLs depending on node environment
@@ -31,23 +32,22 @@ const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 
 const awsEndpoint = isDev
   ? defaults.aws.endpoint
-  : `https://s3.${basicVars.get('awsConfig.region')}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
+  : `https://s3.${basicVars.awsConfig.region}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
 
 // Perform validation before accessing s3 Bucket Urls
 const s3BucketUrlSchema = loadS3BucketUrlSchema(isDev)
 const s3BucketUrlVars = convict(s3BucketUrlSchema)
-s3BucketUrlVars.load({
-  logoBucketUrl: `${awsEndpoint}/${basicVars.get('awsConfig.logoS3Bucket')}`,
-  imageBucketUrl: `${awsEndpoint}/${basicVars.get('awsConfig.imageS3Bucket')}`,
-  // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
-  attachmentBucketUrl: `${awsEndpoint}/${basicVars.get(
-    'awsConfig.attachmentS3Bucket',
-  )}/`,
-})
-s3BucketUrlVars.validate({ allowed: 'strict' })
+  .load({
+    logoBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.logoS3Bucket}`,
+    imageBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.imageS3Bucket}`,
+    // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
+    attachmentBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.attachmentS3Bucket}/`,
+  })
+  .validate({ allowed: 'strict' })
+  .getProperties()
 
 const s3 = new aws.S3({
-  region: basicVars.get('awsConfig.region'),
+  region: basicVars.awsConfig.region,
   // Unset and use default if not in development mode
   // Endpoint and path style overrides are needed only in development mode for
   // localstack to work.
@@ -56,15 +56,15 @@ const s3 = new aws.S3({
 })
 
 const awsConfig: AwsConfig = {
-  ...s3BucketUrlVars.getProperties(),
-  ...basicVars.get('awsConfig'),
+  ...s3BucketUrlVars,
+  ...basicVars.awsConfig,
   s3,
 }
 
 const logger = createLoggerWithLabel(module)
 
 const dbConfig: DbConfig = {
-  uri: basicVars.get('core.dbHost') || undefined,
+  uri: basicVars.core.dbHost || undefined,
   options: {
     user: '',
     pass: '',
@@ -83,43 +83,45 @@ const dbConfig: DbConfig = {
 }
 
 // Perform validation before accessing ses config
-const sesVars = convict(sesSchema)
+let sesVars
 if (!isDev) {
-  sesVars.validate({ allowed: 'strict' })
+  sesVars = convict(sesSchema).validate({ allowed: 'strict' }).getProperties()
+} else {
+  sesVars = convict(sesSchema).validate({ allowed: 'warn' }).getProperties()
 }
 
 const mailConfig: MailConfig = (function () {
-  const mailFrom = basicVars.get('mail.from')
+  const mailFrom = basicVars.mail.from
   const mailer = {
-    from: `${basicVars.get('appConfig.title')} <${mailFrom}>`,
+    from: `${basicVars.appConfig.title} <${mailFrom}>`,
   }
 
   // Creating mail transport
   let transporter: Mail
   if (!isDev) {
     const options: SMTPPool.Options = {
-      host: sesVars.get('host'),
+      host: sesVars.host,
       auth: {
-        user: sesVars.get('user'),
-        pass: sesVars.get('pass'),
+        user: sesVars.user,
+        pass: sesVars.pass,
       },
-      port: sesVars.get('port'),
+      port: sesVars.port,
       // Options as advised from https://nodemailer.com/usage/bulk-mail/
       // pool connections instead of creating fresh one for each email
       pool: true,
-      maxMessages: basicVars.get('mail.maxMessages'),
-      maxConnections: basicVars.get('mail.maxConnections'),
-      socketTimeout: basicVars.get('mail.socketTimeout'),
+      maxMessages: basicVars.mail.maxMessages,
+      maxConnections: basicVars.mail.maxConnections,
+      socketTimeout: basicVars.mail.socketTimeout,
       // If set to true then logs to console. If value is not set or is false
       // then nothing is logged.
-      logger: basicVars.get('mail.logger'),
+      logger: basicVars.mail.logger,
       // If set to true, then logs SMTP traffic, otherwise logs only transaction
       // events.
-      debug: basicVars.get('mail.debug'),
+      debug: basicVars.mail.debug,
     }
     transporter = nodemailer.createTransport(options)
   } else {
-    if (basicVars.get('core.nodeEnv') === Environment.Dev) {
+    if (basicVars.core.nodeEnv === Environment.Dev) {
       logger.warn({
         message:
           '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer to send to local SMTP server instead.\nThis should NEVER be seen in production.',
@@ -129,10 +131,7 @@ const mailConfig: MailConfig = (function () {
       })
       // Falls back to direct transport
       transporter = nodemailer.createTransport(directTransport({}))
-    } else if (
-      basicVars.get('core.nodeEnv') === Environment.Test &&
-      sesVars.get('port')
-    ) {
+    } else if (basicVars.core.nodeEnv === Environment.Test && sesVars.port) {
       logger.warn({
         message:
           '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer Direct Transport instead.\nThis should NEVER be seen in production.',
@@ -141,7 +140,7 @@ const mailConfig: MailConfig = (function () {
         },
       })
       transporter = nodemailer.createTransport({
-        port: sesVars.get('port'),
+        port: sesVars.port,
         ignoreTLS: true,
       })
     } else {
@@ -191,26 +190,26 @@ const configureAws = async () => {
 }
 
 const config: Config = {
-  app: basicVars.get('appConfig'),
+  app: basicVars.appConfig,
   db: dbConfig,
   aws: awsConfig,
   mail: mailConfig,
   cookieSettings,
   isDev,
   nodeEnv,
-  formsgSdkMode: basicVars.get('formsgSdkMode'),
-  customCloudWatchGroup: basicVars.get('awsConfig.customCloudWatchGroup'),
-  bounceLifeSpan: basicVars.get('mail.bounceLifeSpan'),
-  chromiumBin: basicVars.get('mail.chromiumBin'),
-  port: basicVars.get('core.port'),
-  sessionSecret: basicVars.get('core.sessionSecret'),
-  otpLifeSpan: basicVars.get('core.otpLifeSpan'),
-  cspReportUri: basicVars.get('core.cspReportUri'),
-  submissionsTopUp: basicVars.get('core.submissionsTopUp'),
-  isGeneralMaintenance: basicVars.get('banner.isGeneralMaintenance'),
-  isLoginBanner: basicVars.get('banner.isLoginBanner'),
-  siteBannerContent: basicVars.get('banner.siteBannerContent'),
-  adminBannerContent: basicVars.get('banner.adminBannerContent'),
+  formsgSdkMode: basicVars.formsgSdkMode,
+  customCloudWatchGroup: basicVars.awsConfig.customCloudWatchGroup,
+  bounceLifeSpan: basicVars.mail.bounceLifeSpan,
+  chromiumBin: basicVars.mail.chromiumBin,
+  port: basicVars.core.port,
+  sessionSecret: basicVars.core.sessionSecret,
+  otpLifeSpan: basicVars.core.otpLifeSpan,
+  cspReportUri: basicVars.core.cspReportUri,
+  submissionsTopUp: basicVars.core.submissionsTopUp,
+  isGeneralMaintenance: basicVars.banner.isGeneralMaintenance,
+  isLoginBanner: basicVars.banner.isLoginBanner,
+  siteBannerContent: basicVars.banner.siteBannerContent,
+  adminBannerContent: basicVars.banner.adminBannerContent,
   configureAws,
 }
 
