@@ -118,28 +118,35 @@ const mailConfig: MailConfig = (function () {
       debug: basicConfig.get('mail.debug'),
     }
     transporter = nodemailer.createTransport(options)
-  } else if (sesConfig.get('ses.port')) {
-    logger.warn({
-      message:
-        '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer to send to local SMTP server instead.\nThis should NEVER be seen in production.',
-      meta: {
-        action: 'init.mailConfig',
-      },
-    })
-    transporter = nodemailer.createTransport({
-      port: sesConfig.get('ses.port'),
-      ignoreTLS: true,
-    })
   } else {
-    logger.warn({
-      message:
-        '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer Direct Transport instead.\nThis should NEVER be seen in production.',
-      meta: {
-        action: 'init.mailConfig',
-      },
-    })
-    // Falls back to direct transport
-    transporter = nodemailer.createTransport(directTransport({}))
+    if (basicConfig.get('core.nodeEnv') === Environment.Dev) {
+      logger.warn({
+        message:
+          '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer to send to local SMTP server instead.\nThis should NEVER be seen in production.',
+        meta: {
+          action: 'init.mailConfig',
+        },
+      })
+      // Falls back to direct transport
+      transporter = nodemailer.createTransport(directTransport({}))
+    } else if (
+      basicConfig.get('core.nodeEnv') === Environment.Test &&
+      sesConfig.get('ses.port')
+    ) {
+      logger.warn({
+        message:
+          '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer Direct Transport instead.\nThis should NEVER be seen in production.',
+        meta: {
+          action: 'init.mailConfig',
+        },
+      })
+      transporter = nodemailer.createTransport({
+        port: sesConfig.get('ses.port'),
+        ignoreTLS: true,
+      })
+    } else {
+      throw new Error('Nodemailer configuration is missing')
+    }
   }
 
   return {
