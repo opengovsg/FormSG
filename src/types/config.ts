@@ -76,7 +76,7 @@ export type Config = {
 
 // Interface
 export interface ISesSchema {
-  port: string
+  port: number
   host: string
   user: string
   pass: string
