@@ -1,18 +1,25 @@
-const HttpStatus = require('http-status-codes')
-const verificationService = require('../services/verification.service')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'verification',
-)
-const { VfnErrors } = require('../../shared/util/verification')
+import { RequestHandler, Response } from 'express'
+import HttpStatus from 'http-status-codes'
+
+import { createLoggerWithLabel } from '../../../config/logger'
+import { VfnErrors } from '../../../shared/util/verification'
+
+import * as verificationService from './verification.service'
+
+const logger = createLoggerWithLabel('verification')
 /**
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-const createTransaction = async (req, res) => {
+export const createTransaction: RequestHandler<
+  {},
+  {},
+  { formId: string }
+> = async (req, res) => {
   try {
     const { formId } = req.body
     const transaction = await verificationService.createTransaction(formId)
@@ -26,10 +33,12 @@ const createTransaction = async (req, res) => {
 }
 /**
  * Returns a transaction's id and expiry time if it exists
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-const getTransactionMetadata = async (req, res) => {
+export const getTransactionMetadata: RequestHandler<{
+  transactionId: string
+}> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const transaction = await verificationService.getTransactionMetadata(
@@ -44,10 +53,14 @@ const getTransactionMetadata = async (req, res) => {
 /**
  *  When user changes the input value in the verifiable field,
  *  we reset the field in the transaction, removing the previously saved signature.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-const resetFieldInTransaction = async (req, res) => {
+export const resetFieldInTransaction: RequestHandler<
+  { transactionId: string },
+  {},
+  { fieldId: string }
+> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId } = req.body
@@ -62,10 +75,14 @@ const resetFieldInTransaction = async (req, res) => {
 /**
  * When user requests to verify a field, an otp is generated.
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-const getNewOtp = async (req, res) => {
+export const getNewOtp: RequestHandler<
+  { transactionId: string },
+  {},
+  { answer: string; fieldId: string }
+> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { answer, fieldId } = req.body
@@ -81,10 +98,14 @@ const getNewOtp = async (req, res) => {
  * When user submits their otp for the field, the otp is validated.
  * If it is correct, we return the signature that was saved.
  * This signature will be appended to the response when the form is submitted.
- * @param {Express.Request} req
- * @param {Express.Response} res
+ * @param req
+ * @param res
  */
-const verifyOtp = async (req, res) => {
+export const verifyOtp: RequestHandler<
+  { transactionId: string },
+  {},
+  { otp: string; fieldId: string }
+> = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId, otp } = req.body
@@ -98,10 +119,10 @@ const verifyOtp = async (req, res) => {
 }
 /**
  * Returns relevant http status code for different verification failures
- * @param {Error} error
- * @param {Express.Response} res
+ * @param error
+ * @param res
  */
-const handleError = (error, res) => {
+const handleError = (error: Error, res: Response) => {
   let status = HttpStatus.INTERNAL_SERVER_ERROR
   let message = error.message
   switch (error.name) {
@@ -123,12 +144,4 @@ const handleError = (error, res) => {
       message = 'An error occurred'
   }
   return res.status(status).json(message)
-}
-
-module.exports = {
-  createTransaction,
-  getTransactionMetadata,
-  resetFieldInTransaction,
-  getNewOtp,
-  verifyOtp,
 }

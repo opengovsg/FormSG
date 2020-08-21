@@ -1,51 +1,66 @@
-const mongoose = require('mongoose')
-const bcrypt = require('bcrypt')
-const _ = require('lodash')
-const { otpGenerator } = require('../../config/config')
-const MailService = require('./mail.service').default
-const smsFactory = require('./../factories/sms.factory')
-const vfnUtil = require('../../shared/util/verification')
-const formsgSdk = require('../../config/formsg-sdk')
+import bcrypt from 'bcrypt'
+import _ from 'lodash'
+import mongoose from 'mongoose'
 
-const getFormModel = require('../models/form.server.model').default
-const getVerificationModel = require('../models/verification.server.model')
-  .default
+import { otpGenerator } from '../../../config/config'
+import formsgSdk from '../../../config/formsg-sdk'
+import * as vfnUtil from '../../../shared/util/verification'
+import {
+  IEmailFieldSchema,
+  IFieldSchema,
+  IFormSchema,
+  IMobileFieldSchema,
+  IVerificationFieldSchema,
+  IVerificationSchema,
+} from '../../../types'
+import smsFactory from '../../factories/sms.factory'
+import getFormModel from '../../models/form.server.model'
+import getVerificationModel from '../../models/verification.server.model'
+import MailService from '../../services/mail.service'
 
 const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
-
 const {
-  VERIFIED_FIELDTYPES,
-  SALT_ROUNDS,
   HASH_EXPIRE_AFTER_SECONDS,
-  WAIT_FOR_OTP_SECONDS,
   NUM_OTP_RETRIES,
+  SALT_ROUNDS,
+  VERIFIED_FIELDTYPES,
   VfnErrors,
+  WAIT_FOR_OTP_SECONDS,
 } = vfnUtil
+
+interface ITransaction {
+  transactionId: IVerificationSchema['_id']
+  expireAt: IVerificationSchema['expireAt']
+}
 
 /**
  *  Creates a transaction for a form that has verifiable fields
- * @param {string} formId
- * @returns {object}
+ * @param formId
  */
-const createTransaction = async (formId) => {
+export const createTransaction = async (
+  formId: string,
+): Promise<ITransaction | null> => {
   const form = await Form.findById(formId)
   const fields = initializeVerifiableFields(form)
   if (!_.isEmpty(fields)) {
-    const doc = await Verification.create({ formId, fields })
+    const verification = new Verification({ formId, fields })
+    const doc = await verification.save()
     return { transactionId: doc._id, expireAt: doc.expireAt }
   }
   return null
 }
 
+type TransactionMetadata = ReturnType<
+  typeof Verification.findTransactionMetadata
+>
 /**
  *  Retrieves a transaction's metadata by id
- * @param {string} transactionId
- * @returns {transaction._id}
- * @returns {transaction.formId}
- * @returns {transaction.expireAt}
+ * @param transactionId
  */
-const getTransactionMetadata = async (transactionId) => {
+export const getTransactionMetadata = async (
+  transactionId: string,
+): Promise<TransactionMetadata> => {
   const transaction = await Verification.findTransactionMetadata(transactionId)
   if (transaction === null) {
     throwError(VfnErrors.TransactionNotFound)
@@ -55,9 +70,11 @@ const getTransactionMetadata = async (transactionId) => {
 
 /**
  * Retrieves an entire transaction
- * @param {string} transactionId
+ * @param transactionId
  */
-const getTransaction = async (transactionId) => {
+export const getTransaction = async (
+  transactionId: string,
+): Promise<IVerificationSchema> => {
   const transaction = await Verification.findById(transactionId)
   if (transaction === null) {
     throwError(VfnErrors.TransactionNotFound)
@@ -67,10 +84,13 @@ const getTransaction = async (transactionId) => {
 
 /**
  *  Sets signedData, hashedOtp, hashCreatedAt to null for that field in that transaction
- *  @param {Mongoose.Document} transaction
- *  @param {string} fieldId
+ *  @param transaction
+ *  @param fieldId
  */
-const resetFieldInTransaction = async (transaction, fieldId) => {
+export const resetFieldInTransaction = async (
+  transaction: IVerificationSchema,
+  fieldId: string,
+): Promise<void> => {
   const { _id: transactionId } = transaction
   const { n } = await Verification.updateOne(
     { _id: transactionId, 'fields._id': fieldId },
@@ -90,11 +110,15 @@ const resetFieldInTransaction = async (transaction, fieldId) => {
 
 /**
  *  Generates hashed otp and signed data for the given transaction, fieldId, and answer
- * @param {Mongoose.Document} transaction
- * @param {string} fieldId
- * @param {string} answer
+ * @param transaction
+ * @param fieldId
+ * @param answer
  */
-const getNewOtp = async (transaction, fieldId, answer) => {
+export const getNewOtp = async (
+  transaction: IVerificationSchema,
+  fieldId: string,
+  answer: string,
+): Promise<void> => {
   if (isTransactionExpired(transaction.expireAt)) {
     throwError(VfnErrors.TransactionNotFound)
   }
@@ -140,11 +164,15 @@ const getNewOtp = async (transaction, fieldId, answer) => {
 
 /**
  * Compares the given otp. If correct, returns signedData, else returns an error
- * @param {Mongoose.Document} transaction
- * @param {string} fieldId
- * @param {string} inputOtp
+ * @param transaction
+ * @param fieldId
+ * @param inputOtp
  */
-const verifyOtp = async (transaction, fieldId, inputOtp) => {
+export const verifyOtp = async (
+  transaction: IVerificationSchema,
+  fieldId: string,
+  inputOtp: string,
+): Promise<string> => {
   if (isTransactionExpired(transaction.expireAt)) {
     throwError(VfnErrors.TransactionNotFound)
   }
@@ -175,10 +203,11 @@ const verifyOtp = async (transaction, fieldId, inputOtp) => {
 
 /**
  * Gets verifiable fields from form and initializes the values to be stored in a transaction
- * @param {Mongoose.Document} form
- * @returns Array<object>
+ * @param form
  */
-const initializeVerifiableFields = (form) => {
+const initializeVerifiableFields = (
+  form: IFormSchema,
+): Pick<IFieldSchema, '_id' | 'fieldType'>[] => {
   return _.get(form, 'form_fields', [])
     .filter(isFieldVerifiable)
     .map(({ _id, fieldType }) => {
@@ -190,27 +219,38 @@ const initializeVerifiableFields = (form) => {
 }
 
 /**
- * Evaluates whether a field is verifiable
- * @param {object} field
- * @param {string} field.fieldType
- * @param {boolean} field.isVerifiable
+ * Whether a field is of a type that can be verified.
+ * @param field
  */
-const isFieldVerifiable = (field) => {
-  return (
-    VERIFIED_FIELDTYPES.includes(field.fieldType) && field.isVerifiable === true
-  )
+const isPossiblyVerifiable = (
+  field: IFieldSchema,
+): field is IEmailFieldSchema | IMobileFieldSchema => {
+  return VERIFIED_FIELDTYPES.includes(field.fieldType)
+}
+
+/**
+ * Evaluates whether a field is verifiable
+ * @param field
+ */
+const isFieldVerifiable = (field: IFieldSchema): boolean => {
+  return isPossiblyVerifiable(field) && field.isVerifiable === true
 }
 
 /**
  * Send otp to recipient
  *
- * @param {string} formId
- * @param {object} field
- * @param {string} field.fieldType
- * @param {string} recipient
- * @param {string} otp
+ * @param formId
+ * @param field
+ * @param field.fieldType
+ * @param recipient
+ * @param otp
  */
-const sendOTPForField = async (formId, field, recipient, otp) => {
+const sendOTPForField = async (
+  formId: string,
+  field: IVerificationFieldSchema,
+  recipient: string,
+  otp: string,
+): Promise<void> => {
   const { fieldType } = field
   switch (fieldType) {
     case 'mobile':
@@ -227,20 +267,20 @@ const sendOTPForField = async (formId, field, recipient, otp) => {
 }
 
 /**
- *  Checks if expireAt is in the past -- ie transaction has expired
- * @param {Date} expireAt
+ * Checks if expireAt is in the past -- ie transaction has expired
+ * @param expireAt
  * @returns boolean
  */
-const isTransactionExpired = (expireAt) => {
+const isTransactionExpired = (expireAt: Date): boolean => {
   const currentDate = new Date()
   return expireAt < currentDate
 }
 
 /**
- *  Checks if HASH_EXPIRE_AFTER_SECONDS has elapsed since the hash was created - ie hash has expired
- * @param {Date} hashCreatedAt
+ * Checks if HASH_EXPIRE_AFTER_SECONDS has elapsed since the hash was created - ie hash has expired
+ * @param hashCreatedAt
  */
-const isHashedOtpExpired = (hashCreatedAt) => {
+const isHashedOtpExpired = (hashCreatedAt: Date): boolean => {
   const currentDate = new Date()
   const expireAt = vfnUtil.getExpiryDate(
     HASH_EXPIRE_AFTER_SECONDS,
@@ -251,10 +291,9 @@ const isHashedOtpExpired = (hashCreatedAt) => {
 
 /**
  * Checks how many seconds remain before a new otp can be generated
- * @param {Date} hashCreatedAt
- * @returns {Number}
+ * @param hashCreatedAt
  */
-const waitToResendOtpSeconds = (hashCreatedAt) => {
+const waitToResendOtpSeconds = (hashCreatedAt: Date): number => {
   if (!hashCreatedAt) {
     // Hash has not been created
     return 0
@@ -268,30 +307,24 @@ const waitToResendOtpSeconds = (hashCreatedAt) => {
 
 /**
  *  Finds a field by id in a transaction
- * @param {Mongoose.Document} transaction
- * @param {string} fieldId
+ * @param transaction
+ * @param fieldId
  * @returns verification field
  */
-const getFieldFromTransaction = (transaction, fieldId) => {
+const getFieldFromTransaction = (
+  transaction: IVerificationSchema,
+  fieldId: string,
+): IVerificationFieldSchema | undefined => {
   return transaction.fields.find((field) => field._id === fieldId)
 }
 
 /**
- *  Helper method to throw an error
- * @param {string} message
- * @param {string} name
+ * Helper method to throw an error
+ * @param message
+ * @param name
  */
-const throwError = (message, name) => {
+const throwError = (message: string, name?: string): never => {
   let error = new Error(message)
   error.name = name || message
   throw error
-}
-
-module.exports = {
-  createTransaction,
-  getTransactionMetadata,
-  getTransaction,
-  resetFieldInTransaction,
-  getNewOtp,
-  verifyOtp,
 }
