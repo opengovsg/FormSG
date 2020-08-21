@@ -18,6 +18,7 @@ const connect = async () => {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    useFindAndModify: false,
   })
   return conn
 }
@@ -42,6 +43,10 @@ const clearDatabase = async () => {
   }
 }
 
+const clearCollection = async (collection: string) => {
+  await mongoose.connection.collections[collection].deleteMany({})
+}
+
 const insertDefaultAgency = async ({
   mailDomain = 'test.gov.sg',
 }: {
@@ -56,6 +61,26 @@ const insertDefaultAgency = async ({
   })
 
   return agency
+}
+
+const insertUser = async ({
+  agencyId,
+  userId,
+  mailDomain = 'test.gov.sg',
+  mailName = 'test',
+}: {
+  agencyId: ObjectID
+  userId?: ObjectID
+  mailName?: string
+  mailDomain?: string
+}) => {
+  const User = getUserModel(mongoose)
+
+  return User.create({
+    email: `${mailName}@${mailDomain}`,
+    _id: userId,
+    agency: agencyId,
+  })
 }
 
 /**
@@ -91,7 +116,9 @@ const dbHandler = {
   closeDatabase,
   clearDatabase,
   insertDefaultAgency,
+  insertUser,
   insertFormCollectionReqs,
+  clearCollection,
 }
 
 export default dbHandler

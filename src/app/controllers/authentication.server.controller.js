@@ -25,6 +25,7 @@ const logger = require('../../config/logger').createLoggerWithLabel(
 )
 const { sendNodeMail } = require('../services/mail.service')
 const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+const { generateOtp } = require('../utils/otp')
 
 const MAX_OTP_ATTEMPTS = 10
 
@@ -150,7 +151,7 @@ exports.createOtp = function (req, res, next) {
   // 3. Save OTP to DB
 
   let email = res.locals.email
-  let otp = config.otpGenerator()
+  let otp = generateOtp()
   bcrypt.hash(otp, 10, function (bcryptErr, hashedOtp) {
     if (bcryptErr) {
       return res
