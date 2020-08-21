@@ -64,7 +64,7 @@ const awsConfig: AwsConfig = {
 const logger = createLoggerWithLabel(module)
 
 const dbConfig: DbConfig = {
-  uri: basicVars.get('core.dbHost'),
+  uri: basicVars.get('core.dbHost') || undefined,
   options: {
     user: '',
     pass: '',
