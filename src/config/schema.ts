@@ -114,7 +114,7 @@ export const basicSchema = {
     },
     nodeEnv: {
       doc: 'Express environment mode',
-      format: Environment,
+      format: [Environment.Prod, Environment.Dev, Environment.Test],
       default: Environment.Prod,
       env: 'NODE_ENV',
     },
