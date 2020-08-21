@@ -115,7 +115,7 @@
     "fetch-readablestream": "^0.2.0",
     "file-loader": "^4.0.0",
     "file-saver": "^2.0.2",
-    "font-awesome": "4.6.1",
+    "font-awesome": "4.7.0",
     "glob": "^7.1.2",
     "has-ansi": "^4.0.0",
     "helmet": "^3.21.3",
