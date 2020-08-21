@@ -82,12 +82,12 @@ const dbConfig: DbConfig = {
   },
 }
 
-// Perform validation before accessing ses config
 let sesVars
 if (!isDev) {
+  // Perform validation before accessing ses config
   sesVars = convict(sesSchema).validate({ allowed: 'strict' }).getProperties()
 } else {
-  sesVars = convict(sesSchema).validate({ allowed: 'warn' }).getProperties()
+  sesVars = convict(sesSchema).getProperties()
 }
 
 const mailConfig: MailConfig = (function () {
