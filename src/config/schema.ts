@@ -1,10 +1,15 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import awsInfo from 'aws-info'
-import convict from 'convict'
+import convict, { Schema } from 'convict'
 import { email, url } from 'convict-format-with-validator'
 import validator from 'validator'
 
-import { Environment } from '../types'
+import {
+  Environment,
+  IBasicSchema,
+  IBucketUrlSchema,
+  ISesSchema,
+} from '../types'
 
 import defaults from './defaults'
 
@@ -26,7 +31,13 @@ convict.addFormat({
   },
 })
 
-const validateBucketUrl = (val, { isDev, hasTrailingSlash }) => {
+/**
+ * Verifies that S3 bucket url is a valid url with or without trailing slash
+ */
+const validateBucketUrl = (
+  val: string,
+  { isDev, hasTrailingSlash }: { isDev: boolean; hasTrailingSlash: boolean },
+) => {
   if (!validator.isURL(val, { require_tld: !isDev })) {
     throw new Error('must be a url')
   }
@@ -41,7 +52,7 @@ const validateBucketUrl = (val, { isDev, hasTrailingSlash }) => {
   }
 }
 
-export const basicSchema = {
+export const basicSchema: Schema<IBasicSchema> = {
   appConfig: {
     title: {
       format: String,
@@ -240,36 +251,36 @@ export const basicSchema = {
   },
 }
 
-export const sesSchema = {
-  ses: {
-    port: {
-      doc: 'SMTP port number',
-      format: 'port',
-      default: null,
-      env: 'SES_PORT',
-    },
-    host: {
-      doc: 'SMTP hostname',
-      format: String,
-      default: null,
-      env: 'SES_HOST',
-    },
-    user: {
-      doc: 'SMTP username',
-      format: String,
-      default: null,
-      env: 'SES_USER',
-    },
-    pass: {
-      doc: 'SMTP password',
-      format: String,
-      default: null,
-      env: 'SES_PASS',
-    },
+export const sesSchema: Schema<ISesSchema> = {
+  port: {
+    doc: 'SMTP port number',
+    format: 'port',
+    default: null,
+    env: 'SES_PORT',
+  },
+  host: {
+    doc: 'SMTP hostname',
+    format: String,
+    default: null,
+    env: 'SES_HOST',
+  },
+  user: {
+    doc: 'SMTP username',
+    format: String,
+    default: null,
+    env: 'SES_USER',
+  },
+  pass: {
+    doc: 'SMTP password',
+    format: String,
+    default: null,
+    env: 'SES_PASS',
   },
 }
 
-export const loadS3BucketUrlSchema = (isDev) => {
+export const loadS3BucketUrlSchema = (
+  isDev: boolean,
+): Schema<IBucketUrlSchema> => {
   return {
     attachmentBucketUrl: {
       format: (val) =>
