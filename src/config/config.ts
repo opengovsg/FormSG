@@ -100,12 +100,12 @@ const mailConfig: MailConfig = (function () {
   let transporter: Mail
   if (!isDev) {
     const options: SMTPPool.Options = {
-      host: sesVars.get('ses.host'),
+      host: sesVars.get('host'),
       auth: {
-        user: sesVars.get('ses.user'),
-        pass: sesVars.get('ses.pass'),
+        user: sesVars.get('user'),
+        pass: sesVars.get('pass'),
       },
-      port: sesVars.get('ses.port'),
+      port: sesVars.get('port'),
       // Options as advised from https://nodemailer.com/usage/bulk-mail/
       // pool connections instead of creating fresh one for each email
       pool: true,
@@ -133,7 +133,7 @@ const mailConfig: MailConfig = (function () {
       transporter = nodemailer.createTransport(directTransport({}))
     } else if (
       basicVars.get('core.nodeEnv') === Environment.Test &&
-      sesVars.get('ses.port')
+      sesVars.get('port')
     ) {
       logger.warn({
         message:
@@ -143,7 +143,7 @@ const mailConfig: MailConfig = (function () {
         },
       })
       transporter = nodemailer.createTransport({
-        port: sesVars.get('ses.port'),
+        port: sesVars.get('port'),
         ignoreTLS: true,
       })
     } else {
