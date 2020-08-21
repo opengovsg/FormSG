@@ -29,13 +29,13 @@ const nodeEnv = isDev ? Environment.Dev : Environment.Prod
 // functional local AWS cloud stack for hosting images/logos/attachments.
 // Else, the environment variables to instantiate S3 are used.
 
-const s3BucketUrlSchema = loadS3BucketUrlSchema(isDev)
-const s3BucketUrlVars = convict(s3BucketUrlSchema)
-
 const awsEndpoint = isDev
   ? defaults.aws.endpoint
   : `https://s3.${basicVars.get('awsConfig.region')}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
 
+// Perform validation before accessing s3 Bucket Urls
+const s3BucketUrlSchema = loadS3BucketUrlSchema(isDev)
+const s3BucketUrlVars = convict(s3BucketUrlSchema)
 s3BucketUrlVars.load({
   logoBucketUrl: `${awsEndpoint}/${basicVars.get('awsConfig.logoS3Bucket')}`,
   imageBucketUrl: `${awsEndpoint}/${basicVars.get('awsConfig.imageS3Bucket')}`,
@@ -44,8 +44,6 @@ s3BucketUrlVars.load({
     'awsConfig.attachmentS3Bucket',
   )}/`,
 })
-
-// Perform validation before accessing s3 Bucket Urls
 s3BucketUrlVars.validate({ allowed: 'strict' })
 
 const s3 = new aws.S3({
@@ -84,9 +82,9 @@ const dbConfig: DbConfig = {
   },
 }
 
+// Perform validation before accessing ses config
 const sesVars = convict(sesSchema)
 if (!isDev) {
-  // Throw error if ses env vars not present
   sesVars.validate({ allowed: 'strict' })
 }
 
