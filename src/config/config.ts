@@ -9,7 +9,7 @@ import SMTPPool from 'nodemailer/lib/smtp-pool'
 import { promisify } from 'util'
 import validator from 'validator'
 
-import { Config, DbConfig, Environment, MailConfig } from '../types'
+import { AwsConfig, Config, DbConfig, Environment, MailConfig } from '../types'
 
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
@@ -59,8 +59,11 @@ const s3 = new aws.S3({
   s3ForcePathStyle: isDev ? true : undefined,
 })
 
-// Perform validation after env vars loaded
-configuration.validate({ allowed: 'strict' })
+const awsConfig: AwsConfig = {
+  ...s3BucketUrlConfig.getProperties(),
+  ...basicConfig.get('awsConfig'),
+  s3,
+}
 
 const logger = createLoggerWithLabel(module)
 
@@ -84,6 +87,10 @@ const dbConfig: DbConfig = {
 }
 
 const sesConfig = convict(sesSchema)
+if (!isDev) {
+  // Throw error if ses env vars not present
+  sesConfig.validate({ allowed: 'strict' })
+}
 
 const mailConfig: MailConfig = (function () {
   const mailFrom = basicConfig.get('mail.from')
@@ -94,9 +101,6 @@ const mailConfig: MailConfig = (function () {
   // Creating mail transport
   let transporter: Mail
   if (!isDev) {
-    // Throw error if ses env vars not present
-    sesConfig.validate({ allowed: 'strict' })
-
     const options: SMTPPool.Options = {
       host: sesConfig.get('ses.host'),
       auth: {
@@ -156,6 +160,7 @@ const mailConfig: MailConfig = (function () {
   }
 })()
 
+// Cookie settings needed for express-session configuration
 const cookieSettings: SessionOptions['cookie'] = {
   httpOnly: true, // JavaScript will not be able to read the cookie in case of XSS exploitation
   secure: !isDev, // true prevents cookie from being accessed over http
@@ -163,7 +168,9 @@ const cookieSettings: SessionOptions['cookie'] = {
   sameSite: 'strict', // Cookie will not be sent if navigating from another domain
 }
 
-// Functions
+/**
+ * Fetches AWS credentials
+ */
 const configureAws = async () => {
   if (!isDev) {
     // Convert to async function, then call and await
@@ -181,11 +188,7 @@ const configureAws = async () => {
 const config: Config = {
   app: basicConfig.get('appConfig'),
   db: dbConfig,
-  aws: {
-    ...s3BucketUrlConfig.getProperties(),
-    ...basicConfig.get('awsConfig'),
-    s3,
-  },
+  aws: awsConfig,
   mail: mailConfig,
   cookieSettings,
   isDev,
