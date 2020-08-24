@@ -141,7 +141,7 @@
     "nodemailer-direct-transport": "~3.3.2",
     "opossum": "^5.0.0",
     "proxyquire": "^2.1.0",
-    "puppeteer-core": "^4.0.0",
+    "puppeteer-core": "^5.2.1",
     "raven-js": "^3.27.0",
     "rimraf": "^3.0.2",
     "selectize": "0.12.4",
