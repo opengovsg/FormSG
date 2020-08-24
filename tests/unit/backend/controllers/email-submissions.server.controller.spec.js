@@ -1,31 +1,32 @@
 const HttpStatus = require('http-status-codes')
-const { cloneDeep, times } = require('lodash')
-const axios = require('axios')
-const MockAdapter = require('axios-mock-adapter')
-const crypto = require('crypto')
+const { times } = require('lodash')
 const ejs = require('ejs')
 const express = require('express')
 const request = require('supertest')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
-const { validSnsBody } = require('../resources/valid-sns-body')
-const { getSnsBasestring } = require('../../../../dist/backend/app/utils/sns')
+
 const { ObjectID } = require('bson-ext')
+const MailService = require('../../../../dist/backend/app/services/mail.service')
+  .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
+const Verification = dbHandler.makeModel(
+  'verification.server.model',
+  'Verification',
+)
 const EmailForm = mongoose.model('email')
-const Submission = dbHandler.makeModel('submission.server.model', 'Submission')
-const emailSubmission = mongoose.model('emailSubmission')
+const vfnConstants = require('../../../../dist/backend/shared/util/verification')
 
 describe('Email Submissions Controller', () => {
   const SESSION_SECRET = 'secret'
 
   // Declare global variables
   let spyRequest
-  let mockSendNodeMail = jasmine.createSpy()
+  let sendSubmissionMailSpy
 
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
@@ -34,9 +35,7 @@ describe('Email Submissions Controller', () => {
     'dist/backend/app/controllers/email-submissions.server.controller',
     {
       mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      '../services/mail.service': {
-        sendNodeMail: mockSendNodeMail,
-      },
+      request: (url, callback) => spyRequest(url, callback),
     },
   )
   const submissionsController = spec(
@@ -46,9 +45,6 @@ describe('Email Submissions Controller', () => {
       request: (url, callback) => spyRequest(url, callback),
       '../../config/config': {
         sessionSecret: SESSION_SECRET,
-      },
-      '../services/mail.service': {
-        sendNodeMail: mockSendNodeMail,
       },
     },
   )
@@ -68,7 +64,6 @@ describe('Email Submissions Controller', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('notifyParties', () => {
-    const config = spec('dist/backend/config/config')
     const originalConsoleError = console.error
 
     let fixtures
@@ -95,20 +90,19 @@ describe('Email Submissions Controller', () => {
         .get(injectFixtures, controller.sendAdminEmail, (req, res) =>
           res.status(200).send(),
         )
+
+      sendSubmissionMailSpy = spyOn(MailService, 'sendSubmissionToAdmin')
     })
 
     afterAll(() => {
       console.error = originalConsoleError
     })
 
+    afterEach(() => sendSubmissionMailSpy.calls.reset())
+
     beforeEach(() => {
-      mockSendNodeMail.and.callFake(({ mail }) => {
-        if (!mail.to || !mail.from || !mail.subject || !mail.html) {
-          throw new Error('mockSendNodeMail error')
-        }
-      })
       fixtures = {
-        autoReplyEmails: [],
+        replyToEmails: [],
         attachments: [
           {
             filename: 'file.txt',
@@ -148,84 +142,26 @@ describe('Email Submissions Controller', () => {
     })
 
     it('sends mail with correct parameters', (done) => {
-      request(app)
-        .get(endpointPath)
-        .expect(HttpStatus.OK)
-        .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
-          console.error('mailOptions.html', mailOptions.html)
-          expect(mailOptions.to).toEqual(fixtures.form.emails)
-          expect(mailOptions.from).toEqual(config.mail.mailer.from)
-          expect(mailOptions.subject).toContain(fixtures.form.title)
-          expect(mailOptions.subject).toContain(fixtures.submission.id)
-          expect(mailOptions.attachments).toEqual(fixtures.attachments)
-          expect(mailOptions.html).toContain(fixtures.formData[0].question)
-          expect(mailOptions.html).toContain(
-            fixtures.formData[0].answerTemplate,
-          )
-        })
-        .then(done)
-        .catch(done)
-    })
+      // Arrange
+      const mockSuccessResponse = 'mockSuccessResponse'
+      sendSubmissionMailSpy.and.callFake(() => mockSuccessResponse)
 
-    it('sends mail with reply-to emails', (done) => {
-      fixtures.replyToEmails = [
-        'reply-to-1@test.gov.sg',
-        'reply-to-2@test.gov.sg',
-      ]
       request(app)
         .get(endpointPath)
         .expect(HttpStatus.OK)
         .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
-          expect(mailOptions.to).toEqual(fixtures.form.emails)
-          expect(mailOptions.from).toEqual(config.mail.mailer.from)
-          expect(mailOptions.replyTo).toEqual(
-            'reply-to-1@test.gov.sg, reply-to-2@test.gov.sg',
-          )
-          expect(mailOptions.subject).toContain(fixtures.form.title)
-          expect(mailOptions.subject).toContain(fixtures.submission.id)
-          expect(mailOptions.attachments).toEqual(fixtures.attachments)
-          expect(mailOptions.html).toContain(fixtures.formData[0].question)
-          expect(mailOptions.html).toContain(
-            fixtures.formData[0].answerTemplate,
-          )
-        })
-        .then(done)
-        .catch(done)
-    })
-
-    // TODO: This merely tests admin mail being sent out if there is autoreply,
-    // but has yet to test if autoreply emails are being sent out.
-    it('ensures mail is still sent out with autoreply emails', (done) => {
-      fixtures.autoReplyEmails.push(
-        { email: 'no-reply@test.gov.sg' },
-        { email: 'nobody@test.gov.sg' },
-      )
-      request(app)
-        .get(endpointPath)
-        .expect(HttpStatus.OK)
-        .then(() => {
-          expect(mockSendNodeMail).toHaveBeenCalled()
-          const mailOptions = mockSendNodeMail.calls.mostRecent().args[0].mail
-          expect(mailOptions.to).toEqual(fixtures.form.emails)
-          expect(mailOptions.from).toEqual(config.mail.mailer.from)
-          expect(mailOptions.replyTo).toEqual()
-          expect(mailOptions.subject).toContain(fixtures.form.title)
-          expect(mailOptions.subject).toContain(fixtures.submission.id)
-          expect(mailOptions.attachments).toEqual(fixtures.attachments)
-          expect(mailOptions.html).toContain(fixtures.formData[0].question)
-          expect(mailOptions.html).toContain(
-            fixtures.formData[0].answerTemplate,
-          )
+          const mailOptions = sendSubmissionMailSpy.calls.mostRecent().args[0]
+          expect(mailOptions).toEqual(fixtures)
         })
         .then(done)
         .catch(done)
     })
 
     it('errors with 400 on send failure', (done) => {
+      // Arrange
+      sendSubmissionMailSpy.and.callFake(() =>
+        Promise.reject(new Error('mockErrorResponse')),
+      )
       // Trigger error by deleting recipient list
       delete fixtures.form.emails
       request(app)
@@ -233,176 +169,6 @@ describe('Email Submissions Controller', () => {
         .expect(HttpStatus.BAD_REQUEST)
         .then(done)
         .catch(done)
-    })
-  })
-
-  describe('verifySNS', () => {
-    let req, res, next, privateKey
-    let mockAxios
-    beforeAll(() => {
-      mockAxios = new MockAdapter(axios)
-      const keys = crypto.generateKeyPairSync('rsa', {
-        modulusLength: 2048,
-        publicKeyEncoding: {
-          type: 'pkcs1',
-          format: 'pem',
-        },
-        privateKeyEncoding: {
-          type: 'pkcs8',
-          format: 'pem',
-        },
-      })
-      privateKey = keys.privateKey
-      mockAxios.onGet(validSnsBody.SigningCertURL).reply(200, keys.publicKey)
-    })
-    beforeEach(() => {
-      req = { body: cloneDeep(validSnsBody) }
-      res = jasmine.createSpyObj('res', ['sendStatus'])
-      next = jasmine.createSpy()
-    })
-    afterAll(() => {
-      mockAxios.restore()
-    })
-    const verifyFailure = async () => {
-      await controller.verifySns(req, res, next)
-      expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
-      expect(next).not.toHaveBeenCalled()
-    }
-    const verifySuccess = async () => {
-      await controller.verifySns(req, res, next)
-      expect(res.sendStatus).not.toHaveBeenCalled()
-      expect(next).toHaveBeenCalled()
-    }
-    it('should reject requests without valid structure', async () => {
-      delete req.body.Type
-      await verifyFailure()
-    })
-    it('should reject requests with invalid certificate URL', async () => {
-      req.body.SigningCertURL = 'http://www.example.com'
-      await verifyFailure()
-    })
-    it('should reject requests with invalid signature version', async () => {
-      req.body.SignatureVersion = 'wrongSignatureVersion'
-      await verifyFailure()
-    })
-    it('should reject requests with invalid signature', async () => {
-      await verifyFailure()
-    })
-    it('should accept valid requests', async () => {
-      const signer = crypto.createSign('RSA-SHA1')
-      signer.write(getSnsBasestring(req.body))
-      req.body.Signature = signer.sign(privateKey, 'base64')
-      await verifySuccess()
-    })
-  })
-
-  describe('confirmOnNotification', () => {
-    let submission
-    let content
-    const bodyParser = require('body-parser')
-    const app = express()
-    const endpointPath = '/emailnotifications'
-    const message = (json) => ({ Message: JSON.stringify(json) })
-
-    beforeAll(() => {
-      app
-        .route(endpointPath)
-        .post(bodyParser.json(), controller.confirmOnNotification, (req, res) =>
-          res.sendStatus(HttpStatus.OK),
-        )
-    })
-
-    beforeEach(async () => {
-      // Clear mock db and insert test form before each test
-      await dbHandler.clearDatabase()
-      const { form } = await dbHandler.preloadCollections()
-
-      submission = await emailSubmission.create({
-        form: form._id,
-        responseHash: 'hash',
-        responseSalt: 'salt',
-      })
-
-      content = {
-        notificationType: 'Bounce',
-        mail: {
-          headers: [
-            {
-              name: 'X-Formsg-Form-ID',
-              value: form._id,
-            },
-            {
-              name: 'X-Formsg-Submission-ID',
-              value: submission._id,
-            },
-            {
-              name: 'X-Formsg-Email-Type',
-              value: 'Admin (response)',
-            },
-          ],
-          commonHeaders: { subject: `Title (Ref: ${submission._id})` },
-        },
-        bounce: {
-          bounceType: 'Transient',
-          bouncedRecipients: [{ emailAddress: 'fake@email.gov.sg' }],
-        },
-      }
-    })
-
-    afterAll(async () => await dbHandler.clearDatabase())
-
-    const expectNotifySubmissionHasBounced = (json, hasBounced, done) => {
-      request(app)
-        .post(endpointPath)
-        .send(message(json))
-        .expect(HttpStatus.OK)
-        .then(() => Submission.findOne({ _id: submission._id }))
-        .then((s) => {
-          expect(s.hasBounced).toEqual(hasBounced)
-        })
-        .then(done)
-        .catch(done)
-    }
-
-    it('fails silently on bad payload', (done) => {
-      request(app).post(endpointPath).expect(HttpStatus.OK).end(done)
-    })
-
-    it('exits early on irrelevant payload', (done) => {
-      expectNotifySubmissionHasBounced(
-        { notificationType: 'Success' },
-        false,
-        done,
-      )
-    })
-
-    it('exits early by malformed bounce missing mail key', (done) => {
-      delete content.mail
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing headers', (done) => {
-      delete content.mail.headers
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing bounce key', (done) => {
-      delete content.bounce
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing submission ID', (done) => {
-      content.mail.headers.splice(1, 1)
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('exits early by malformed bounce missing email type', (done) => {
-      content.mail.headers.splice(2, 1)
-      expectNotifySubmissionHasBounced(content, false, done)
-    })
-
-    it('marks submission has bounced', (done) => {
-      expectNotifySubmissionHasBounced(content, true, done)
     })
   })
 
@@ -2963,6 +2729,378 @@ describe('Email Submissions Controller', () => {
             reqFixtures.body.responses,
           )
           prepareSubmissionThenCompare(expected, done)
+        })
+      })
+    })
+  })
+
+  describe('Verified fields', () => {
+    let fixtures
+    let testAgency, testUser, testForm
+
+    const expireAt = new Date()
+    expireAt.setTime(
+      expireAt.getTime() + vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS * 1000,
+    ) // Expires 4 hours later
+    const hasExpired = new Date()
+    hasExpired.setTime(
+      hasExpired.getTime() -
+        vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS * 2000,
+    ) // Expired 2 days ago
+
+    const endpointPath = '/submissions'
+    const injectFixtures = (req, res, next) => {
+      Object.assign(req, fixtures)
+      next()
+    }
+    const sendSubmissionBack = (req, res) => {
+      res.status(200).send({
+        body: req.body,
+      })
+    }
+
+    const app = express()
+
+    const sendAndExpect = (status, expectedResponse = null) => {
+      let send = request(app).post(endpointPath).expect(status)
+      if (expectedResponse) {
+        send = send.expect(expectedResponse)
+      }
+      return send
+    }
+
+    const createTransactionForForm = (form) => {
+      return (expireAt, verifiableFields) => {
+        let t = {
+          formId: String(form._id),
+          expireAt,
+        }
+        t.fields = verifiableFields.map((field, i) => {
+          const {
+            fieldType,
+            hashCreatedAt,
+            hashedOtp,
+            signedData,
+            hashRetries,
+          } = field
+          return {
+            _id: form.form_fields[i]._id,
+            fieldType,
+            hashCreatedAt: hashCreatedAt === undefined ? null : hashCreatedAt,
+            hashedOtp: hashedOtp === undefined ? null : hashedOtp,
+            signedData: signedData === undefined ? null : signedData,
+            hashRetries: hashRetries === undefined ? 0 : hashRetries,
+          }
+        })
+        return Verification.create(t)
+      }
+    }
+
+    beforeAll((done) => {
+      app
+        .route(endpointPath)
+        .post(
+          injectFixtures,
+          controller.validateEmailSubmission,
+          sendSubmissionBack,
+        )
+      testAgency = new Agency({
+        shortName: 'govtest',
+        fullName: 'Government Testing Agency',
+        emailDomain: 'test.gov.sg',
+        logo: '/invalid-path/test.jpg',
+      })
+      testAgency
+        .save()
+        .then(() => {
+          return User.deleteMany({})
+        })
+        .then(() => {
+          testUser = new User({
+            email: 'test@test.gov.sg',
+            agency: testAgency._id,
+          })
+          return testUser.save()
+        })
+        .then(done)
+    })
+
+    // Submission
+    describe('No verified fields in form', () => {
+      beforeEach((done) => {
+        testForm = new Form({
+          title: 'Test Form',
+          emails: 'test@test.gov.sg',
+          admin: testUser._id,
+          form_fields: [{ title: 'Email', fieldType: 'email' }],
+        })
+        testForm
+          .save({ validateBeforeSave: false })
+          .then(() => {
+            fixtures = {
+              form: testForm,
+              body: {
+                responses: [],
+              },
+            }
+          })
+          .then(done)
+      })
+      it('should allow submission if transaction does not exist for forms that do not contain any fields that have to be verified', (done) => {
+        // No transaction created for testForm
+        const field = testForm.form_fields[0]
+        const response = {
+          _id: String(field._id),
+          fieldType: field.fieldType,
+          question: field.title,
+          answer: 'test@abc.com',
+        }
+        fixtures.body.responses.push(response)
+        sendAndExpect(HttpStatus.OK, {
+          body: {
+            parsedResponses: [Object.assign(response, { isVisible: true })],
+          },
+        }).end(done)
+      })
+    })
+    describe('Verified fields', () => {
+      let createTransaction
+      beforeAll((done) => {
+        testForm = new Form({
+          title: 'Test Form',
+          emails: 'test@test.gov.sg',
+          admin: testUser._id,
+          form_fields: [
+            { title: 'Email', fieldType: 'email', isVerifiable: true },
+          ],
+        })
+        testForm
+          .save({ validateBeforeSave: false })
+          .then(() => {
+            createTransaction = createTransactionForForm(testForm)
+          })
+          .then(done)
+      })
+      beforeEach(() => {
+        fixtures = {
+          form: testForm,
+          body: {
+            responses: [],
+          },
+        }
+      })
+
+      describe('No transaction', () => {
+        it('should prevent submission if transaction does not exist for a form containing fields that have to be verified', (done) => {
+          const field = testForm.form_fields[0]
+          const response = {
+            _id: String(field._id),
+            fieldType: field.fieldType,
+            question: field.title,
+            answer: 'test@abc.com',
+          }
+          fixtures.body.responses.push(response)
+
+          sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+        })
+      })
+
+      describe('Has transaction', () => {
+        it('should prevent submission if transaction has expired for a form containing fields that have to be verified', (done) => {
+          createTransaction(hasExpired, [
+            {
+              fieldType: 'email',
+              hashCreatedAt: new Date(),
+              hashedOtp: 'someHashValue',
+              signedData: 'someData',
+            },
+          ]).then(() => {
+            const field = testForm.form_fields[0]
+            const response = {
+              _id: String(field._id),
+              fieldType: field.fieldType,
+              question: field.title,
+              answer: 'test@abc.com',
+              signature: 'someData',
+            }
+            fixtures.body.responses.push(response)
+
+            sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+          })
+        })
+
+        it('should prevent submission if any of the transaction fields are not verified', (done) => {
+          createTransaction(expireAt, [
+            {
+              fieldType: 'email',
+              hashCreatedAt: null,
+              hashedOtp: null,
+              signedData: null,
+            },
+          ]).then(() => {
+            const field = testForm.form_fields[0]
+            const response = {
+              _id: String(field._id),
+              fieldType: field.fieldType,
+              question: field.title,
+              answer: 'test@abc.com',
+            }
+            fixtures.body.responses.push(response)
+
+            sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+          })
+        })
+
+        it('should allow submission if all of the transaction fields are verified', (done) => {
+          const formsg = require('@opengovsg/formsg-sdk')({
+            mode: 'test',
+            verificationOptions: {
+              secretKey: process.env.VERIFICATION_SECRET_KEY,
+            },
+          })
+          const transactionId = mongoose.Types.ObjectId(
+            '5e71ef8b19c1ed04b54cd5f9',
+          )
+
+          const field = testForm.form_fields[0]
+          const formId = testForm._id
+          let response = {
+            _id: String(field._id),
+            fieldType: field.fieldType,
+            question: field.title,
+            answer: 'test@abc.com',
+          }
+          const signature = formsg.verification.generateSignature({
+            transactionId: String(transactionId),
+            formId: String(formId),
+            fieldId: response._id,
+            answer: response.answer,
+          })
+          response.signature = signature
+
+          createTransaction(expireAt, [
+            {
+              fieldType: 'email',
+              hashCreatedAt: new Date(),
+              hashedOtp: 'someHashValue',
+              signedData: signature,
+            },
+          ]).then(() => {
+            fixtures.body.responses.push(response)
+            sendAndExpect(HttpStatus.OK).end(done)
+          })
+        })
+      })
+    })
+
+    describe('Hidden and optional fields', () => {
+      const expireAt = new Date()
+      expireAt.setTime(expireAt.getTime() + 86400)
+
+      beforeEach(() => {
+        fixtures = {
+          form: {},
+          body: {
+            responses: [],
+          },
+        }
+      })
+
+      const test = ({
+        fieldValue,
+        fieldIsRequired,
+        fieldIsHidden,
+        expectedStatus,
+        done,
+      }) => {
+        const field = {
+          _id: '5e719d5b62a2c4aa5d9789e2',
+          title: 'Email',
+          fieldType: 'email',
+          isVerifiable: true,
+          required: fieldIsRequired,
+        }
+        const yesNoField = {
+          _id: '5e719d5b62a2c4aa5d9789e3',
+          title: 'Show email if this field is yes',
+          fieldType: 'yes_no',
+        }
+        let form = new Form({
+          title: 'Test Form',
+          emails: 'test@test.gov.sg',
+          admin: testUser._id,
+          form_fields: [field, yesNoField],
+          form_logics: [
+            {
+              show: [field._id],
+              conditions: [
+                {
+                  ifValueType: 'single-select',
+                  _id: '58169',
+                  field: yesNoField._id,
+                  state: 'is equals to',
+                  value: 'Yes',
+                },
+              ],
+              _id: '5db00a15af2ffb29487d4eb1',
+              logicType: 'showFields',
+            },
+          ],
+        })
+        form.save({ validateBeforeSave: false }).then(() => {
+          const response = {
+            _id: String(field._id),
+            fieldType: field.fieldType,
+            question: field.title,
+            answer: fieldValue,
+          }
+          const yesNoResponse = {
+            _id: yesNoField._id,
+            question: yesNoField.title,
+            fieldType: yesNoField.fieldType,
+            answer: fieldIsHidden ? 'No' : 'Yes',
+          }
+          fixtures.form = form
+          fixtures.body.responses.push(yesNoResponse)
+          fixtures.body.responses.push(response)
+          sendAndExpect(expectedStatus).end(done)
+        })
+      }
+      it('should verify fields that are optional and filled in', (done) => {
+        test({
+          fieldValue: 'test@abc.com',
+          fieldIsRequired: false,
+          fieldIsHidden: false,
+          expectedStatus: HttpStatus.BAD_REQUEST,
+          done,
+        })
+      })
+      it('should not verify fields that are optional and not filled in', (done) => {
+        test({
+          fieldValue: '',
+          fieldIsRequired: false,
+          fieldIsHidden: false,
+          expectedStatus: HttpStatus.OK,
+          done,
+        })
+      })
+      it('should verify fields that are required and not hidden by logic', (done) => {
+        test({
+          fieldValue: 'test@abc.com',
+          fieldIsRequired: true,
+          fieldIsHidden: false,
+          expectedStatus: HttpStatus.BAD_REQUEST,
+          done,
+        })
+      })
+
+      it('should not verify fields that are required and hidden by logic', (done) => {
+        test({
+          fieldValue: '',
+          fieldIsRequired: true,
+          fieldIsHidden: true,
+          expectedStatus: HttpStatus.OK,
+          done,
         })
       })
     })

@@ -152,7 +152,12 @@ const send = async (
   const { client, msgSrvcSid } = twilioConfig
 
   return client.messages
-    .create({ to: recipient, body: message, from: msgSrvcSid })
+    .create({
+      to: recipient,
+      body: message,
+      from: msgSrvcSid,
+      forceDelivery: true,
+    })
     .then(({ status, sid, errorCode, errorMessage }) => {
       // Sent but with error code.
       // Throw error to be caught in catch block.

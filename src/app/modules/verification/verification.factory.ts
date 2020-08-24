@@ -1,8 +1,24 @@
-const featureManager = require('../../config/feature-manager').default
-const verification = require('../../app/controllers/verification.server.controller')
-const HttpStatus = require('http-status-codes')
+import { RequestHandler } from 'express'
+import HttpStatus from 'http-status-codes'
 
-const verifiedFieldsFactory = ({ isEnabled }) => {
+import featureManager from '../../../config/feature-manager'
+import { FeatureNames } from '../../../config/feature-manager/types'
+
+import * as verification from './verification.controller'
+
+interface IVerifiedFieldsFactory {
+  createTransaction: RequestHandler
+  getTransactionMetadata: RequestHandler
+  resetFieldInTransaction: RequestHandler
+  getNewOtp: RequestHandler
+  verifyOtp: RequestHandler
+}
+
+const verifiedFieldsFactory = ({
+  isEnabled,
+}: {
+  isEnabled: boolean
+}): IVerifiedFieldsFactory => {
   if (isEnabled) {
     return {
       createTransaction: verification.createTransaction,
@@ -28,4 +44,6 @@ const verifiedFieldsFactory = ({ isEnabled }) => {
   }
 }
 
-module.exports = verifiedFieldsFactory(featureManager.get('verified-fields'))
+export default verifiedFieldsFactory(
+  featureManager.get(FeatureNames.VerifiedFields),
+)

@@ -19,13 +19,11 @@ const config = require('../../config/config')
 const defaults = require('../../config/defaults').default
 const PERMISSIONS = require('../utils/permission-levels.js')
 const { getRequestIp } = require('../utils/request')
-const { renderPromise } = require('../utils/render-promise')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
-const { sendNodeMail } = require('../services/mail.service')
-const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
 const { generateOtp } = require('../utils/otp')
+const MailService = require('../services/mail.service').default
 
 const MAX_OTP_ATTEMPTS = 10
 
@@ -202,47 +200,18 @@ exports.sendOtp = async function (req, res) {
   // 2. Return success statement to front end
 
   let otp = res.locals.otp
-  let email = res.locals.email
+  let recipient = res.locals.email
 
-  let emailHTML
   try {
-    emailHTML = await renderPromise(res, 'templates/otp-email', {
-      appName: res.app.locals.title,
-      appUrl: config.app.appUrl,
-      otp: otp,
+    await MailService.sendLoginOtp({
+      recipient,
+      otp,
+      ipAddress: getRequestIp(req),
     })
-  } catch (renderErr) {
-    logger.error(getRequestIp(req), req.url, req.headers, renderErr)
-    return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
-      .send(
-        'Error rendering OTP. Please try again later and if the problem persists, contact us.',
-      )
-  }
-  let mailOptions = {
-    to: email,
-    from: config.mail.mailer.from,
-    subject: 'One-Time Password (OTP) for ' + res.app.locals.title,
-    html: emailHTML,
-    headers: {
-      [EMAIL_HEADERS.emailType]: EMAIL_TYPES.loginOtp,
-    },
-  }
-  try {
-    await sendNodeMail({
-      mail: mailOptions,
-      options: { mailId: 'OTP' },
-    })
-    logger.info(`Login OTP sent:\temail=${email} ip=${getRequestIp(req)}`)
-    return res.status(HttpStatus.OK).send('OTP sent to ' + email + '!')
-  } catch (emailErr) {
-    logger.error(
-      'Mail otp error',
-      getRequestIp(req),
-      req.url,
-      req.headers,
-      emailErr,
-    )
+    logger.info(`Login OTP sent:\temail=${recipient} ip=${getRequestIp(req)}`)
+    return res.status(HttpStatus.OK).send(`OTP sent to ${recipient}!`)
+  } catch (err) {
+    logger.error('Mail otp error', getRequestIp(req), req.url, req.headers, err)
     return res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .send(

@@ -20,7 +20,7 @@ import {
   ResponseMode,
   Status,
 } from '../../types'
-import { MB } from '../utils/constants'
+import { MB } from '../constants/filesize'
 
 import getAgencyModel from './agency.server.model'
 import {
@@ -145,7 +145,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
         match: [
-          /^[a-zA-Z0-9_\-./() ]*$/,
+          /^[a-zA-Z0-9_\-./() &`;'"]*$/,
           'Form name cannot contain special characters',
         ],
       },

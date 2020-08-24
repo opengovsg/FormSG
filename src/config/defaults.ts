@@ -21,12 +21,8 @@ const LOGIN_CONFIG = {
   otpLifeSpan: 900000,
 }
 
-// Config for email sending/retrying.
+// Config for email sending.
 const MAIL_CONFIG = {
-  // Number is in miliseconds.
-  retryDuration: 60000, // 1 min in ms.
-  maxRetryCount: 2,
-  maxRetryDuration: 4800000, // 80 min in ms.
   // The sender email to display on mail sent.
   mailFrom: 'donotreply@mail.form.gov.sg',
 }
@@ -51,6 +47,11 @@ const LINKS = {
   supportFormLink: 'https://go.gov.sg/formsg-support',
 }
 
+const BOUNCE_CONFIG = {
+  // TTL of Bounce document in milliseconds
+  bounceLifeSpan: 1800000,
+}
+
 export default {
   app: APP_CONFIG,
   login: LOGIN_CONFIG,
@@ -58,4 +59,5 @@ export default {
   aws: AWS_CONFIG,
   ses: SES_CONFIG,
   links: LINKS,
+  bounce: BOUNCE_CONFIG,
 }
