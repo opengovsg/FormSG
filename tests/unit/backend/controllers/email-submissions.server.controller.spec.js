@@ -2832,6 +2832,7 @@ describe('Email Submissions Controller', () => {
           title: 'Test Form',
           emails: 'test@test.gov.sg',
           admin: testUser._id,
+          responseMode: 'email',
           form_fields: [{ title: 'Email', fieldType: 'email' }],
         })
         testForm
@@ -2869,6 +2870,7 @@ describe('Email Submissions Controller', () => {
         testForm = new Form({
           title: 'Test Form',
           emails: 'test@test.gov.sg',
+          responseMode: 'email',
           admin: testUser._id,
           form_fields: [
             { title: 'Email', fieldType: 'email', isVerifiable: true },
@@ -3028,6 +3030,7 @@ describe('Email Submissions Controller', () => {
         let form = new Form({
           title: 'Test Form',
           emails: 'test@test.gov.sg',
+          responseMode: 'email',
           admin: testUser._id,
           form_fields: [field, yesNoField],
           form_logics: [

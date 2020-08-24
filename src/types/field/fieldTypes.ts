@@ -1,4 +1,4 @@
-export enum BasicFieldType {
+export enum BasicField {
   Section = 'section',
   Statement = 'statement',
   Email = 'email',

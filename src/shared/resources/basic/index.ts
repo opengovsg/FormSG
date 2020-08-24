@@ -1,123 +1,104 @@
-export type FieldType =
-  | 'section'
-  | 'statement'
-  | 'email'
-  | 'mobile'
-  | 'homeno'
-  | 'number'
-  | 'decimal'
-  | 'image'
-  | 'textfield'
-  | 'textarea'
-  | 'dropdown'
-  | 'yes_no'
-  | 'checkbox'
-  | 'radiobutton'
-  | 'attachment'
-  | 'date'
-  | 'rating'
-  | 'nric'
-  | 'table'
+import { BasicField } from '../../../types'
 
 interface IBasicFieldType {
-  name: FieldType
+  name: BasicField
   value: string
   submitted: boolean
 }
 
 export const types: IBasicFieldType[] = [
   {
-    name: 'section',
+    name: BasicField.Section,
     value: 'Header',
     submitted: true,
   },
   {
-    name: 'statement',
+    name: BasicField.Statement,
     value: 'Statement',
     submitted: false,
   },
   {
-    name: 'email',
+    name: BasicField.Email,
     value: 'Email',
     submitted: true,
   },
   {
-    name: 'mobile',
+    name: BasicField.Mobile,
     value: 'Mobile Number',
     submitted: true,
   },
   {
-    name: 'homeno',
+    name: BasicField.HomeNo,
     value: 'Home Number',
     submitted: true,
   },
   {
-    name: 'number',
+    name: BasicField.Number,
     value: 'Number',
     submitted: true,
   },
   {
-    name: 'decimal',
+    name: BasicField.Decimal,
     value: 'Decimal',
     submitted: true,
   },
   {
-    name: 'image',
+    name: BasicField.Image,
     value: 'Image',
     submitted: false,
   },
   {
-    name: 'textfield',
+    name: BasicField.ShortText,
     value: 'Short Text',
     submitted: true,
   },
   {
-    name: 'textarea',
+    name: BasicField.LongText,
     value: 'Long Text',
     submitted: true,
   },
   {
-    name: 'dropdown',
+    name: BasicField.Dropdown,
     value: 'Dropdown',
     submitted: true,
   },
   {
-    name: 'yes_no',
+    name: BasicField.YesNo,
     value: 'Yes/No',
     submitted: true,
   },
   {
-    name: 'checkbox',
+    name: BasicField.Checkbox,
     value: 'Checkbox',
     submitted: true,
   },
   {
-    name: 'radiobutton',
+    name: BasicField.Radio,
     value: 'Radio',
     submitted: true,
   },
   {
-    name: 'attachment',
+    name: BasicField.Attachment,
     value: 'Attachment',
     submitted: true,
   },
   {
-    name: 'date',
+    name: BasicField.Date,
     value: 'Date',
     submitted: true,
   },
   {
-    name: 'rating',
+    name: BasicField.Rating,
     value: 'Rating',
     submitted: true,
   },
   {
-    name: 'nric',
+    name: BasicField.Nric,
     value: 'NRIC',
     submitted: true,
   },
   {
-    name: 'table',
+    name: BasicField.Table,
     value: 'Table',
     submitted: true,
   },
