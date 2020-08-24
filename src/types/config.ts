@@ -75,19 +75,29 @@ export type Config = {
 }
 
 // Interface
-export interface ISesSchema {
+export interface IProdOnlyVarsSchema {
   port: number
   host: string
   user: string
   pass: string
+  dbHost: string
 }
 
-export interface IBasicSchema {
+export interface ICompulsoryVarsSchema {
+  core: {
+    sessionSecret: string
+  }
+  awsConfig: {
+    imageS3Bucket: string
+    logoS3Bucket: string
+    attachmentS3Bucket: string
+  }
+}
+
+export interface IOptionalVarsSchema {
   appConfig: AppConfig
   formsgSdkMode: PackageMode
   core: {
-    sessionSecret: string
-    dbHost: string
     port: number
     otpLifeSpan: number
     submissionsTopUp: number
@@ -101,9 +111,6 @@ export interface IBasicSchema {
     adminBannerContent: string
   }
   awsConfig: {
-    imageS3Bucket: string
-    logoS3Bucket: string
-    attachmentS3Bucket: string
     region: string
     customCloudWatchGroup: string
   }
