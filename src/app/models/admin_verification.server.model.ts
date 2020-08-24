@@ -6,7 +6,7 @@ import {
   IAdminVerificationModel,
   IAdminVerificationSchema,
   UpsertOtpParams,
-} from '../../types/admin_verification'
+} from '../../types'
 
 import { USER_SCHEMA_ID } from './user.server.model'
 
