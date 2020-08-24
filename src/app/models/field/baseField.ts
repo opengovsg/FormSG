@@ -110,10 +110,11 @@ const createBaseFieldSchema = (db: Mongoose) => {
             ),
           )
         }
+        return next()
       })
+    } else {
+      return next()
     }
-
-    return next()
   })
 
   FieldSchema.pre<IFieldSchema>('save', function (next) {
