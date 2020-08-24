@@ -2,10 +2,6 @@ import { Mongoose, Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
 import {
-  isBetaField,
-  userCanCreateField,
-} from '../../../app/utils/beta-permissions'
-import {
   AuthType,
   BasicField,
   IFieldSchema,
@@ -14,6 +10,7 @@ import {
   MyInfoAttribute,
   ResponseMode,
 } from '../../../types'
+import { isBetaField, userCanCreateField } from '../../utils/beta-permissions'
 import getUserModel from '../user.server.model'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)
@@ -99,7 +96,7 @@ const createBaseFieldSchema = (db: Mongoose) => {
     // Check if user is allowed to add this field.
     if (isBetaField(thisField)) {
       User.findById(admin, function (err, user) {
-        if (err) {
+        if (err || !user) {
           return next(
             Error(
               `Error validating user permissions for ${thisField.fieldType} fields`,
