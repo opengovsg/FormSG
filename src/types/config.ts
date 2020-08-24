@@ -57,7 +57,6 @@ export type Config = {
   nodeEnv: Environment
   port: number
   sessionSecret: string
-  cspReportUri: string
   chromiumBin: string
   otpLifeSpan: number
   bounceLifeSpan: number
@@ -101,7 +100,6 @@ export interface IOptionalVarsSchema {
     port: number
     otpLifeSpan: number
     submissionsTopUp: number
-    cspReportUri: string
     nodeEnv: Environment
   }
   banner: {
