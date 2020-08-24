@@ -322,6 +322,14 @@ function ViewResponsesController(
     }
   }
 
+  // Refresh responses if responses have already been unlocked, and 
+  // user navigates to Data tab or Responses subtab
+  vm.refreshResponses = function() {
+    if (vm.encryptionKey) {
+      vm.loadResponses()
+    }
+  }
+
   // Triggers the download progress modal after SHOW_PROGRESS_DELAY_MS has
   // passed and is still downloading after export button click.
   let timeoutPromise
