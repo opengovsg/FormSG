@@ -3,33 +3,48 @@ const get = require('lodash/get')
 angular.module('core').component('avatarDropdownComponent', {
   templateUrl: 'modules/core/componentViews/avatar-dropdown.html',
   bindings: {},
-  controller: ['$state', '$uibModal', 'Auth', avatarDropdownController],
+  controller: [
+    '$scope',
+    '$state',
+    '$uibModal',
+    'Auth',
+    avatarDropdownController,
+  ],
   controllerAs: 'vm',
 })
 
-function avatarDropdownController($state, $uibModal, Auth) {
+function avatarDropdownController($scope, $state, $uibModal, Auth) {
   const vm = this
 
   // Redirect to signin if unable to get user
   vm.user = Auth.getUser() || $state.go('signin')
   vm.avatarText = generateAvatarText()
 
+  vm.isDropdownHover = false
+  vm.isDropdownFocused = false
   vm.isDropdownOpen = false
+
+  $scope.$watchGroup(['vm.isDropdownHover', 'vm.isDropdownFocused'], function (
+    newValues,
+  ) {
+    vm.isDropdownOpen = newValues[0] || newValues[1]
+  })
 
   vm.signOut = () => Auth.signOut()
 
   vm.openContactNumberModal = () => {
-    vm.isDropdownOpen = false
-
-    $uibModal.open({
-      animation: false,
-      keyboard: false,
-      backdrop: 'static',
-      windowClass: 'ecm-modal-window',
-      templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
-      controller: 'EditContactNumberModalController',
-      controllerAs: 'vm',
-    }).result.finally(angular.noop).then(angular.noop, angular.noop)
+    $uibModal
+      .open({
+        animation: false,
+        keyboard: false,
+        backdrop: 'static',
+        windowClass: 'ecm-modal-window',
+        templateUrl: 'modules/core/views/edit-contact-number-modal.view.html',
+        controller: 'EditContactNumberModalController',
+        controllerAs: 'vm',
+      })
+      .result.finally(angular.noop)
+      .then(angular.noop, angular.noop)
   }
 
   function generateAvatarText() {

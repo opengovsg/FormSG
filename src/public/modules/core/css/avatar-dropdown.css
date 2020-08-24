@@ -63,6 +63,7 @@
 }
 
 .navbar__dropdown {
+  cursor: initial;
   z-index: 1000;
   width: 280px;
   position: absolute;

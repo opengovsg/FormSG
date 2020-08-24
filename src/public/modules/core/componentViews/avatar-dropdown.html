@@ -2,10 +2,13 @@
   tabindex="0"
   class="navbar__avatar"
   ng-class="vm.isDropdownOpen ? 'navbar__avatar--focused' : ''"
-  on-click-outside="vm.isDropdownOpen=false"
-  on-click-watcher="vm.isDropdownOpen"
-  ng-focus="vm.isDropdownOpen=true"
-  ng-mouseenter="vm.isDropdownOpen=true"
+  on-click-outside="vm.isDropdownFocused=false"
+  on-click-watcher="vm.isDropdownFocused"
+  ng-focus="vm.isDropdownFocused=true"
+  ng-blur="vm.isDropdownFocused=false"
+  ng-click="vm.isDropdownFocused=true"
+  ng-mouseenter="vm.isDropdownHover=true"
+  ng-mouseleave="vm.isDropdownHover=false"
 >
   <button class="navbar__avatar__avatar">
     {{vm.avatarText}}
