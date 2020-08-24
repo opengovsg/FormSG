@@ -33,7 +33,7 @@ function avatarDropdownController(
 
   vm.isDropdownHover = false
   vm.isDropdownFocused = false
-  
+
   // Attempt to retrieve the most updated user.
   retrieveUser()
 

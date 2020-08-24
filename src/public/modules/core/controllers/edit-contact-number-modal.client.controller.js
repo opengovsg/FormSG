@@ -1,5 +1,3 @@
-const { version } = require('os')
-
 angular
   .module('core')
   .controller('EditContactNumberModalController', [
