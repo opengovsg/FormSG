@@ -19,3 +19,4 @@ FORMSG_SDK_MODE=test
 
 AWS_ACCESS_KEY_ID=fakeAccessKeyId
 AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
+SESSION_SECRET=sandcrawler-138577
