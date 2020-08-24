@@ -1,10 +1,11 @@
+const get = require('lodash/get')
+
 angular.module('core').factory('GTag', ['$rootScope', '$window', GTag])
 
 function GTag($rootScope, $window) {
   // Google Analytics tracking ID provided on signup.
   const GATrackingID = $window.GATrackingID
   let gtagService = {}
-  const userEmail = JSON.parse($window.localStorage.getItem('user')).email
 
   /**
    * Internal wrapper function to initialise GA with some globals
@@ -51,7 +52,11 @@ function GTag($rootScope, $window) {
    * start with a slash (/) character.
    * @return {Void}
    */
-  const _gtagPageview = ({ pageTitle, pagePath, pageLocation }) => {
+  const _gtagPageview = ({
+    pageTitle,
+    pagePath,
+    pageLocation
+  }) => {
     if (GATrackingID) {
       $window.gtag('config', GATrackingID, {
         page_title: pageTitle,
@@ -355,6 +360,8 @@ function GTag($rootScope, $window) {
     expectedNumSubmissions,
     numWorkers,
   ) => {
+    const userDetails = JSON.parse($window.localStorage.getItem('user'))
+    const userEmail = get(userDetails, 'email', null)
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download start',
@@ -364,6 +371,7 @@ function GTag($rootScope, $window) {
       num_submissions: expectedNumSubmissions,
     })
   }
+
 
   /**
    * Logs a successful storage mode responses download.
@@ -382,6 +390,8 @@ function GTag($rootScope, $window) {
     numWorkers,
     duration,
   ) => {
+    const userDetails = JSON.parse($window.localStorage.getItem('user'))
+    const userEmail = get(userDetails, 'email', null)
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download success',
@@ -412,6 +422,8 @@ function GTag($rootScope, $window) {
     duration,
     errorMessage,
   ) => {
+    const userDetails = JSON.parse($window.localStorage.getItem('user'))
+    const userEmail = get(userDetails, 'email', null)
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download failure',
@@ -434,6 +446,8 @@ function GTag($rootScope, $window) {
    * @return {Void}
    */
   gtagService.downloadNetworkFailure = (params, errorMessage) => {
+    const userDetails = JSON.parse($window.localStorage.getItem('user'))
+    const userEmail = get(userDetails, 'email', null)
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Network failure',
@@ -462,6 +476,8 @@ function GTag($rootScope, $window) {
     errorCount,
     duration,
   ) => {
+    const userDetails = JSON.parse($window.localStorage.getItem('user'))
+    const userEmail = get(userDetails, 'email', null)
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Partial decrypt error',
