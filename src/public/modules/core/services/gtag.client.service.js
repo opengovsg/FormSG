@@ -8,9 +8,14 @@ function GTag($rootScope, $window) {
   let gtagService = {}
 
   const getUserEmail = () => {
-    const userDetails = JSON.parse($window.localStorage.getItem('user'))
-    const userEmail = get(userDetails, 'email', null)
-    return userEmail
+    let user = $window.localStorage.getItem('user')
+    try {
+      let userDetails = JSON.parse(user)
+      let userEmail = get(userDetails, 'email', null)
+      return userEmail
+    } catch (error) {
+      return null
+    }
   }
 
   /**
