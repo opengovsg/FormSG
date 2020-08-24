@@ -3,7 +3,7 @@ import { flattenDeep, sumBy } from 'lodash'
 
 import { FilePlatforms } from '../../shared/constants'
 import * as fileValidation from '../../shared/util/file-validation'
-import { BasicFieldType, FieldResponse, IAttachmentResponse } from '../../types'
+import { BasicField, FieldResponse, IAttachmentResponse } from '../../types'
 
 export interface IAttachmentInfo {
   filename: string
@@ -131,7 +131,7 @@ const isAttachmentResponse = (
   response: FieldResponse,
 ): response is IAttachmentResponse => {
   return (
-    response.fieldType === BasicFieldType.Attachment &&
+    response.fieldType === BasicField.Attachment &&
     (response as IAttachmentResponse).content !== undefined
   )
 }
