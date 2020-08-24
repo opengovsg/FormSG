@@ -13,7 +13,7 @@ function onClickOutside($document, $parse, $timeout) {
   return {
     restrict: 'A',
     compile: function (tElement, tAttrs) {
-      var fn = $parse(tAttrs.onClickOutside)
+      const fn = $parse(tAttrs.onClickOutside)
 
       return function (scope, iElement, iAttrs) {
         function eventHandler(ev) {
