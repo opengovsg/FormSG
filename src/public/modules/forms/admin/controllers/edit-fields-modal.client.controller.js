@@ -14,9 +14,8 @@ const DATE_VALIDATION_OPTIONS = {
   custom: 'Custom date range',
 }
 
-const app = angular.module('forms')
-
-app.controller('EditFieldsModalController', [
+angular.module('forms')
+  .controller('EditFieldsModalController', [
     '$uibModalInstance',
     'externalScope',
     'responseModeEnum',
@@ -29,26 +28,6 @@ app.controller('EditFieldsModalController', [
     'Auth',
     EditFieldsModalController,
   ])
-
-app.directive('validateEmailDomainFromText', () => {
-   return {
-      require: 'ngModel',
-      link: (scope, elem, attr, ngModel) => {
-        ngModel.$validators.emailDomainFromTextValidator = (allowedEmailDomainsFromText) => {
-          if (allowedEmailDomainsFromText) {
-            const emailDomains = allowedEmailDomainsFromText.split('\n').map(s => s.trim()).filter(s => s)
-            return (
-              !emailDomains.length ||
-              (new Set(emailDomains).size === emailDomains.length &&
-                emailDomains.filter((s) => s.match(/@.+\..+/)).length ===
-                  emailDomains.length)
-            )
-          }
-          return true
-        }
-      }
-   }
-})
 
 function EditFieldsModalController(
   $uibModalInstance,
