@@ -241,7 +241,6 @@ const config: Config = {
   port: basicVars.core.port,
   sessionSecret: basicVars.core.sessionSecret,
   otpLifeSpan: basicVars.core.otpLifeSpan,
-  cspReportUri: basicVars.core.cspReportUri,
   submissionsTopUp: basicVars.core.submissionsTopUp,
   isGeneralMaintenance: basicVars.banner.isGeneralMaintenance,
   isLoginBanner: basicVars.banner.isLoginBanner,

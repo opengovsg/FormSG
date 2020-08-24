@@ -117,7 +117,6 @@ The following env variables are set in Travis:
 | `NODE_ENV`               | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'development'`. This should always be set to a production environment           |
 | `SESSION_SECRET`         | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment.                                                                                              |
 | `SUBMISSIONS_TOP_UP`     | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                                         |
-| `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
 #### Banners
 
@@ -192,6 +191,7 @@ If this feature is enabled, client-side error events will be piped to [sentry.io
 | :------------------ | ----------------------------------------------------------------------------------------------------- |
 | `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 | `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK.                                                          |
+| `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
 #### Examples page Using Pre-Computed Results
 

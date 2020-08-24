@@ -240,12 +240,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 0,
       env: 'SUBMISSIONS_TOP_UP',
     },
-    cspReportUri: {
-      doc: 'Endpoint for content security policy reporting',
-      format: String,
-      default: 'undefined', // HelmetJS reportUri param requires non-empty string
-      env: 'CSP_REPORT_URI',
-    },
     nodeEnv: {
       doc: 'Express environment mode',
       format: [Environment.Prod, Environment.Dev, Environment.Test],
