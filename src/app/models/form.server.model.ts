@@ -24,8 +24,8 @@ import { MB } from '../constants/filesize'
 
 import getAgencyModel from './agency.server.model'
 import {
+  BaseFieldSchema,
   createAttachmentFieldSchema,
-  createBaseFieldSchema,
   createCheckboxFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
@@ -132,8 +132,6 @@ const EmailFormSchema = new Schema<IEmailFormSchema>({
 const compileFormModel = (db: Mongoose): IFormModel => {
   const Agency = getAgencyModel(db)
   const User = getUserModel(db)
-
-  const BaseFieldSchema = createBaseFieldSchema(db)
 
   // Schema
   const FormSchema = new Schema<IFormSchema>(
