@@ -1,5 +1,6 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { Model, Mongoose, Schema } from 'mongoose'
+import uniqueValidator from 'mongoose-unique-validator'
 import validator from 'validator'
 
 import { IUserSchema } from '../../types'
@@ -63,14 +64,8 @@ const compileUserModel = (db: Mongoose) => {
     betaFlags: {},
   })
 
-  // Hooks
-  // Unique key violation custom error middleware
-  UserSchema.post<IUserSchema>('save', function (err, doc, next) {
-    if (err.name === 'MongoError' && err.code === 11000) {
-      next(new Error('Account already exists with this email'))
-    } else {
-      next()
-    }
+  UserSchema.plugin(uniqueValidator, {
+    message: 'Account already exists with this email',
   })
 
   return db.model<IUserSchema>(USER_SCHEMA_ID, UserSchema)
