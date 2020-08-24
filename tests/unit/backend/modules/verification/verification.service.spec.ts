@@ -16,7 +16,7 @@ import {
 import MailService from 'src/app/services/mail.service'
 import { generateOtp } from 'src/app/utils/otp'
 import formsgSdk from 'src/config/formsg-sdk'
-import { BasicFieldType, IUserSchema, IVerificationSchema } from 'src/types'
+import { BasicField, IUserSchema, IVerificationSchema } from 'src/types'
 
 import dbHandler from '../../helpers/jest-db'
 
@@ -65,7 +65,7 @@ describe('Verification service', () => {
 
     test('should return null when there are no verifiable fields', async () => {
       const testForm = new Form({
-        form_fields: [{ fieldType: BasicFieldType.YesNo }],
+        form_fields: [{ fieldType: BasicField.YesNo }],
         admin: user,
         title: MOCK_FORM_TITLE,
       })
@@ -79,7 +79,7 @@ describe('Verification service', () => {
 
     test('should correctly save and return transaction', async () => {
       const testForm = new Form({
-        form_fields: [{ fieldType: BasicFieldType.Email, isVerifiable: true }],
+        form_fields: [{ fieldType: BasicField.Email, isVerifiable: true }],
         admin: user,
         title: MOCK_FORM_TITLE,
       })
@@ -127,8 +127,8 @@ describe('Verification service', () => {
         admin: user,
         title: MOCK_FORM_TITLE,
         form_fields: [
-          { fieldType: BasicFieldType.Email, isVerifiable: true },
-          { fieldType: BasicFieldType.Mobile, isVerifiable: true },
+          { fieldType: BasicField.Email, isVerifiable: true },
+          { fieldType: BasicField.Mobile, isVerifiable: true },
         ],
       })
       const formId = testForm._id
@@ -207,12 +207,12 @@ describe('Verification service', () => {
         formId: new ObjectId(),
         fields: [
           {
-            fieldType: BasicFieldType.Email,
+            fieldType: BasicField.Email,
             ...defaultParams,
             _id: new ObjectId(),
           },
           {
-            fieldType: BasicFieldType.Mobile,
+            fieldType: BasicField.Mobile,
             ...defaultParams,
             _id: new ObjectId(),
           },
@@ -364,12 +364,12 @@ describe('Verification service', () => {
         formId: new ObjectId(),
         fields: [
           {
-            fieldType: BasicFieldType.Email,
+            fieldType: BasicField.Email,
             ...defaultParams,
             _id: new ObjectId(),
           },
           {
-            fieldType: BasicFieldType.Mobile,
+            fieldType: BasicField.Mobile,
             ...defaultParams,
             _id: new ObjectId(),
           },

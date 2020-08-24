@@ -1,11 +1,7 @@
 import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
 
-import {
-  BasicFieldType,
-  IColumnSchema,
-  ITableFieldSchema,
-} from '../../../types'
+import { BasicField, IColumnSchema, ITableFieldSchema } from '../../../types'
 
 const createColumnSchema = () => {
   const ColumnSchema = new Schema<IColumnSchema>(
@@ -27,7 +23,7 @@ const createColumnSchema = () => {
   )
 
   ColumnSchema.pre<IColumnSchema>('validate', function (next) {
-    let columnTypes = [BasicFieldType.ShortText, BasicFieldType.Dropdown]
+    let columnTypes = [BasicField.ShortText, BasicField.Dropdown]
     let index = columnTypes.indexOf(this.columnType)
     if (index > -1) {
       return next()
