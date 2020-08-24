@@ -1,10 +1,10 @@
-import { BasicField, IFieldSchema, IUserSchema } from '../../types'
+import { IFieldSchema, IUserSchema } from '../../types'
 
 /**
  * Array contains all current beta fields. Add or remove field types as the beta
  * fields change.
  */
-const BETA_FIELDS = [BasicField.Mobile]
+const BETA_FIELDS = []
 
 /**
  * Checks whether the given user can create the given field.
