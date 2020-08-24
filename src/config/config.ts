@@ -2,6 +2,7 @@ import aws from 'aws-sdk'
 import convict from 'convict'
 import crypto from 'crypto'
 import { SessionOptions } from 'express-session'
+import { merge } from 'lodash'
 import nodemailer from 'nodemailer'
 import directTransport from 'nodemailer-direct-transport'
 import Mail from 'nodemailer/lib/mailer'
@@ -13,17 +14,45 @@ import { AwsConfig, Config, DbConfig, Environment, MailConfig } from '../types'
 
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
-import { basicSchema, loadS3BucketUrlSchema, sesSchema } from './schema'
+import {
+  compulsoryVarsSchema,
+  loadS3BucketUrlSchema,
+  optionalVarsSchema,
+  prodOnlyVarsSchema,
+} from './schema'
 
-// Perform validation before accessing basic env vars
-const basicVars = convict(basicSchema)
+// Load and validate optional configuration values
+// If environment variables are not present, defaults are loaded
+const optionalVars = convict(optionalVarsSchema)
   .validate({ allowed: 'strict' })
   .getProperties()
+
+// Load and validate compulsory configuration values
+// If environment variables are not present, an error will be thrown
+const compulsoryVars = convict(compulsoryVarsSchema)
+  .validate({ allowed: 'strict' })
+  .getProperties()
+
+// Deep merge nested objects optionalVars and compulsoryVars
+const basicVars = merge(optionalVars, compulsoryVars)
 
 const isDev =
   basicVars.core.nodeEnv === Environment.Dev ||
   basicVars.core.nodeEnv === Environment.Test
 const nodeEnv = isDev ? Environment.Dev : Environment.Prod
+
+// Load and validate configuration values which are compulsory only in production
+// If environment variables are not present, an error will be thrown
+// They may still be referenced in development
+let prodOnlyVars
+if (isDev) {
+  prodOnlyVars = convict(prodOnlyVarsSchema).getProperties()
+} else {
+  // Perform validation before accessing ses config
+  prodOnlyVars = convict(prodOnlyVarsSchema)
+    .validate({ allowed: 'strict' })
+    .getProperties()
+}
 
 // Construct bucket URLs depending on node environment
 // If in development env, endpoint communicates with localstack, a fully
@@ -63,8 +92,21 @@ const awsConfig: AwsConfig = {
 
 const logger = createLoggerWithLabel(module)
 
+let dbUri
+if (isDev) {
+  if (basicVars.core.nodeEnv === Environment.Dev && prodOnlyVars.dbHost) {
+    dbUri = prodOnlyVars.dbHost
+  } else if (basicVars.core.nodeEnv === Environment.Test) {
+    dbUri = undefined
+  } else {
+    throw new Error('Database configuration missing')
+  }
+} else {
+  dbUri = prodOnlyVars.dbHost
+}
+
 const dbConfig: DbConfig = {
-  uri: basicVars.core.dbHost || undefined,
+  uri: dbUri,
   options: {
     user: '',
     pass: '',
@@ -82,14 +124,6 @@ const dbConfig: DbConfig = {
   },
 }
 
-let sesVars
-if (!isDev) {
-  // Perform validation before accessing ses config
-  sesVars = convict(sesSchema).validate({ allowed: 'strict' }).getProperties()
-} else {
-  sesVars = convict(sesSchema).getProperties()
-}
-
 const mailConfig: MailConfig = (function () {
   const mailFrom = basicVars.mail.from
   const mailer = {
@@ -100,12 +134,12 @@ const mailConfig: MailConfig = (function () {
   let transporter: Mail
   if (!isDev) {
     const options: SMTPPool.Options = {
-      host: sesVars.host,
+      host: prodOnlyVars.host,
       auth: {
-        user: sesVars.user,
-        pass: sesVars.pass,
+        user: prodOnlyVars.user,
+        pass: prodOnlyVars.pass,
       },
-      port: sesVars.port,
+      port: prodOnlyVars.port,
       // Options as advised from https://nodemailer.com/usage/bulk-mail/
       // pool connections instead of creating fresh one for each email
       pool: true,
@@ -131,7 +165,10 @@ const mailConfig: MailConfig = (function () {
       })
       // Falls back to direct transport
       transporter = nodemailer.createTransport(directTransport({}))
-    } else if (basicVars.core.nodeEnv === Environment.Test && sesVars.port) {
+    } else if (
+      basicVars.core.nodeEnv === Environment.Test &&
+      prodOnlyVars.port
+    ) {
       logger.warn({
         message:
           '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer Direct Transport instead.\nThis should NEVER be seen in production.',
@@ -140,7 +177,7 @@ const mailConfig: MailConfig = (function () {
         },
       })
       transporter = nodemailer.createTransport({
-        port: sesVars.port,
+        port: prodOnlyVars.port,
         ignoreTLS: true,
       })
     } else {
