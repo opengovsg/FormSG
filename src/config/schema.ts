@@ -89,31 +89,37 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
 export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   appConfig: {
     title: {
+      doc: 'Application name in window title',
       format: String,
       default: defaults.app.name,
       env: 'APP_NAME',
     },
     description: {
+      doc: 'Application description in meta tag',
       format: String,
       default: defaults.app.desc,
       env: 'APP_DESC',
     },
     appUrl: {
+      doc: 'Application url in meta tag',
       format: 'url',
       default: defaults.app.url,
       env: 'APP_URL',
     },
     keywords: {
+      doc: 'Application keywords in meta tag',
       format: String,
       default: defaults.app.keywords,
       env: 'APP_KEYWORDS',
     },
     twitterImage: {
+      doc: 'Application image in twitter meta tag',
       format: String,
       default: defaults.app.twitterImage,
       env: 'APP_TWITTER_IMAGE',
     },
     images: {
+      doc: 'Application images in meta tag',
       format: 'string[]',
       default: defaults.app.images,
       env: 'APP_IMAGES',
@@ -309,16 +315,20 @@ export const loadS3BucketUrlSchema = (
 ): Schema<IBucketUrlSchema> => {
   return {
     attachmentBucketUrl: {
+      doc:
+        'Url of attachment S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
         validateBucketUrl(val, { isDev, hasTrailingSlash: true }),
       default: null,
     },
     logoBucketUrl: {
+      doc: 'Url of logo S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
         validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
       default: null,
     },
     imageBucketUrl: {
+      doc: 'Url of images S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
         validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
       default: null,

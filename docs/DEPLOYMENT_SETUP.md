@@ -105,7 +105,7 @@ The following env variables are set in Travis:
 | `APP_URL`                | Defaults to `'https://form.gov.sg'`.                                                                                                                                                                                  |
 | `APP_KEYWORDS`           | Defaults to `'forms, formbuilder, nodejs'`.                                                                                                                                                                           |
 | `APP_IMAGES`             | Defaults to `'/public/modules/core/img/og/img_metatag.png,/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                      |
-| `APP_TWITTER_IMAGE`      | ath to Twitter image. Defaults to `'/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                                            |
+| `APP_TWITTER_IMAGE`      | Path to Twitter image. Defaults to `'/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                                            |
 
 #### App and Database
 
