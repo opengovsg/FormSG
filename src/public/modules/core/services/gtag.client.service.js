@@ -1,21 +1,13 @@
-const get = require('lodash/get')
+angular.module('core').factory('GTag', ['Auth', '$rootScope', '$window', GTag])
 
-angular.module('core').factory('GTag', ['$rootScope', '$window', GTag])
-
-function GTag($rootScope, $window) {
+function GTag(Auth, $rootScope, $window) {
   // Google Analytics tracking ID provided on signup.
   const GATrackingID = $window.GATrackingID
   let gtagService = {}
 
   const getUserEmail = () => {
-    let user = $window.localStorage.getItem('user')
-    try {
-      let userDetails = JSON.parse(user)
-      let userEmail = get(userDetails, 'email', null)
-      return userEmail
-    } catch (error) {
-      return null
-    }
+    const user = Auth.getUser()
+    return user && user.email
   }
 
   /**
