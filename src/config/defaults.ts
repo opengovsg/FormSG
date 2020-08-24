@@ -26,6 +26,8 @@ const LOGIN_CONFIG = {
 const MAIL_CONFIG = {
   // The sender email to display on mail sent.
   mailFrom: 'donotreply@mail.form.gov.sg',
+  // Path to chromium executable for PDF generation in auto-reply emails
+  chromiumBin: '/usr/bin/chromium-browser',
 }
 
 // Config for AWS.
