@@ -2,6 +2,8 @@ import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import awsInfo from 'aws-info'
 import convict, { Schema } from 'convict'
 import { email, url } from 'convict-format-with-validator'
+import { isNil } from 'lodash'
+import mongodbUri from 'mongodb-uri'
 import validator from 'validator'
 
 import {
@@ -275,6 +277,34 @@ export const sesSchema: Schema<ISesSchema> = {
     format: String,
     default: null,
     env: 'SES_PASS',
+  },
+  dbHost: {
+    doc: 'Database URI',
+    format: (val) => {
+      // Will throw error if scheme and hosts are not present
+      const uriObject = mongodbUri.parse(val)
+      /*
+        e.g. mongodb://database:27017/formsg will be parsed into:
+        {
+          scheme: 'mongodb',
+          database: 'formsg',
+          hosts: [ { host: 'database', port: 27017 } ]
+        }
+        e.g. https://form.gov.sg will be parsed into: 
+        { 
+          scheme: 'https', 
+          hosts: [ { host: 'form.gov.sg' } ] 
+        }
+      */
+      if (uriObject.scheme !== 'mongodb') {
+        throw new Error('Scheme must be mongodb')
+      }
+      if (isNil(uriObject.database)) {
+        throw new Error('Database must be specified')
+      }
+    },
+    default: null,
+    env: 'DB_HOST',
   },
 }
 
