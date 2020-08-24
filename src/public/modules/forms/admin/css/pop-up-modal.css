@@ -174,3 +174,30 @@
   display: block;
   margin: 0 auto;
 }
+
+#create-form-modal .secret-key-safekeeping.alert-custom {
+  display: flex;
+  padding: 14px 16px;
+  line-height: 1.39;
+}
+
+#create-form-modal .secret-key-safekeeping i {
+  padding-top: 4px;
+  padding-right: 16px;
+}
+
+#create-form-modal .secret-key-safekeeping ul {
+  list-style-type: none;
+  padding-left: 0;
+  padding-top: 0.5em;
+}
+
+#create-form-modal .secret-key-safekeeping li::before {
+  /* Add a space here because otherwise there's a weird spacing before the first word */
+  content: '- ';
+  margin-right: 0.5em;
+}
+
+#create-form-modal .secret-key-safekeeping a {
+  color: #2f60ce;
+}

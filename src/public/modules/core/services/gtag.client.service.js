@@ -139,7 +139,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('search', {
       event_category: 'Examples',
       event_action: 'Click Open Template',
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     })
   }
@@ -154,7 +154,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('search', {
       event_category: 'Examples',
       event_action: 'Click Close Template',
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     })
   }
@@ -168,7 +168,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('search', {
       event_category: 'Examples',
       event_action: 'Click Create New Form',
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     })
   }
@@ -244,7 +244,7 @@ function GTag($rootScope, $window) {
     let eventParams = {
       event_category: 'Public Form',
       event_action: eventAction,
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     }
 
@@ -343,7 +343,8 @@ function GTag($rootScope, $window) {
    * Logs the start of a storage mode responses download.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
-   * @param {String} params.formTitle The title of the form
+   * @param {String} params.formTitle The title of the form 
+   * @param {String} params.userEmail The email of the user downloading
    * @param {number} expectedNumSubmissions The expected number of submissions to download
    * @param {number} numWorkers The number of decryption workers
    * @return {Void}
@@ -356,7 +357,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download start',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${params.userEmail}`,
       form_id: params.formId,
       num_workers: numWorkers,
       num_submissions: expectedNumSubmissions,
@@ -367,7 +368,8 @@ function GTag($rootScope, $window) {
    * Logs a successful storage mode responses download.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
-   * @param {String} params.formTitle The title of the form
+   * @param {String} params.formTitle The title of the form 
+   * @param {String} params.userEmail The email of the user downloading
    * @param {number} downloadedNumSubmissions The number of submissions downloaded
    * @param {number} numWorkers The number of decryption workers
    * @param {number} duration The duration taken by the download
@@ -382,7 +384,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download success',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${params.userEmail}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
@@ -394,7 +396,8 @@ function GTag($rootScope, $window) {
    * Logs a failed storage mode responses download.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
-   * @param {String} params.formTitle The title of the form
+   * @param {String} params.formTitle The title of the form 
+   * @param {String} params.userEmail The email of the user downloading
    * @param {number} numWorkers The number of decryption workers
    * @param {number} expectedNumSubmissions The expected number of submissions
    * @param  {number} duration The duration taken by the download
@@ -411,7 +414,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download failure',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${params.userEmail}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
@@ -424,6 +427,7 @@ function GTag($rootScope, $window) {
    * Logs a failed attempt to even start storage mode responses download.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
+   * @param {String} params.userEmail The email of the user downloading
    * @param {String} params.formTitle The title of the form
    * @param {string} errorMessage The error message for the failure
    * @return {Void}
@@ -432,7 +436,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Network failure',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${params.userEmail}`,
       form_id: params.formId,
       message: errorMessage,
     })
@@ -442,6 +446,7 @@ function GTag($rootScope, $window) {
    * Logs partial (or full) decryption failure when downloading responses.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
+   * @param {String} params.userEmail The email of the user downloading
    * @param {String} params.formTitle The title of the form
    * @param {number} numWorkers The number of decryption workers
    * @param {number} expectedNumSubmissions The expected number of submissions
@@ -459,12 +464,23 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Partial decrypt error',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${params.userEmail}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
       num_submissions: expectedNumSubmissions,
       err_count: errorCount,
+    })
+  }
+
+  /**
+   * Logs clicking on mailto link to share form secret key with collaborators.
+   */
+  gtagService.clickSecretKeyMailto = (formTitle) => {
+    _gtagEvents('storage', {
+      event_category: 'Storage Mode Form',
+      event_action: 'Secret key mailto clicked',
+      event_label: formTitle
     })
   }
 

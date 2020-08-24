@@ -14,7 +14,12 @@ const MailService = require('../../../../dist/backend/app/services/mail.service'
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
+const Verification = dbHandler.makeModel(
+  'verification.server.model',
+  'Verification',
+)
 const EmailForm = mongoose.model('email')
+const vfnConstants = require('../../../../dist/backend/shared/util/verification')
 
 describe('Email Submissions Controller', () => {
   const SESSION_SECRET = 'secret'
@@ -30,6 +35,7 @@ describe('Email Submissions Controller', () => {
     'dist/backend/app/controllers/email-submissions.server.controller',
     {
       mongoose: Object.assign(mongoose, { '@noCallThru': true }),
+      request: (url, callback) => spyRequest(url, callback),
     },
   )
   const submissionsController = spec(
@@ -2723,6 +2729,381 @@ describe('Email Submissions Controller', () => {
             reqFixtures.body.responses,
           )
           prepareSubmissionThenCompare(expected, done)
+        })
+      })
+    })
+  })
+
+  describe('Verified fields', () => {
+    let fixtures
+    let testAgency, testUser, testForm
+
+    const expireAt = new Date()
+    expireAt.setTime(
+      expireAt.getTime() + vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS * 1000,
+    ) // Expires 4 hours later
+    const hasExpired = new Date()
+    hasExpired.setTime(
+      hasExpired.getTime() -
+        vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS * 2000,
+    ) // Expired 2 days ago
+
+    const endpointPath = '/submissions'
+    const injectFixtures = (req, res, next) => {
+      Object.assign(req, fixtures)
+      next()
+    }
+    const sendSubmissionBack = (req, res) => {
+      res.status(200).send({
+        body: req.body,
+      })
+    }
+
+    const app = express()
+
+    const sendAndExpect = (status, expectedResponse = null) => {
+      let send = request(app).post(endpointPath).expect(status)
+      if (expectedResponse) {
+        send = send.expect(expectedResponse)
+      }
+      return send
+    }
+
+    const createTransactionForForm = (form) => {
+      return (expireAt, verifiableFields) => {
+        let t = {
+          formId: String(form._id),
+          expireAt,
+        }
+        t.fields = verifiableFields.map((field, i) => {
+          const {
+            fieldType,
+            hashCreatedAt,
+            hashedOtp,
+            signedData,
+            hashRetries,
+          } = field
+          return {
+            _id: form.form_fields[i]._id,
+            fieldType,
+            hashCreatedAt: hashCreatedAt === undefined ? null : hashCreatedAt,
+            hashedOtp: hashedOtp === undefined ? null : hashedOtp,
+            signedData: signedData === undefined ? null : signedData,
+            hashRetries: hashRetries === undefined ? 0 : hashRetries,
+          }
+        })
+        return Verification.create(t)
+      }
+    }
+
+    beforeAll((done) => {
+      app
+        .route(endpointPath)
+        .post(
+          injectFixtures,
+          controller.validateEmailSubmission,
+          sendSubmissionBack,
+        )
+      testAgency = new Agency({
+        shortName: 'govtest',
+        fullName: 'Government Testing Agency',
+        emailDomain: 'test.gov.sg',
+        logo: '/invalid-path/test.jpg',
+      })
+      testAgency
+        .save()
+        .then(() => {
+          return User.deleteMany({})
+        })
+        .then(() => {
+          testUser = new User({
+            email: 'test@test.gov.sg',
+            agency: testAgency._id,
+          })
+          return testUser.save()
+        })
+        .then(done)
+    })
+
+    // Submission
+    describe('No verified fields in form', () => {
+      beforeEach((done) => {
+        testForm = new Form({
+          title: 'Test Form',
+          emails: 'test@test.gov.sg',
+          admin: testUser._id,
+          responseMode: 'email',
+          form_fields: [{ title: 'Email', fieldType: 'email' }],
+        })
+        testForm
+          .save({ validateBeforeSave: false })
+          .then(() => {
+            fixtures = {
+              form: testForm,
+              body: {
+                responses: [],
+              },
+            }
+          })
+          .then(done)
+      })
+      it('should allow submission if transaction does not exist for forms that do not contain any fields that have to be verified', (done) => {
+        // No transaction created for testForm
+        const field = testForm.form_fields[0]
+        const response = {
+          _id: String(field._id),
+          fieldType: field.fieldType,
+          question: field.title,
+          answer: 'test@abc.com',
+        }
+        fixtures.body.responses.push(response)
+        sendAndExpect(HttpStatus.OK, {
+          body: {
+            parsedResponses: [Object.assign(response, { isVisible: true })],
+          },
+        }).end(done)
+      })
+    })
+    describe('Verified fields', () => {
+      let createTransaction
+      beforeAll((done) => {
+        testForm = new Form({
+          title: 'Test Form',
+          emails: 'test@test.gov.sg',
+          responseMode: 'email',
+          admin: testUser._id,
+          form_fields: [
+            { title: 'Email', fieldType: 'email', isVerifiable: true },
+          ],
+        })
+        testForm
+          .save({ validateBeforeSave: false })
+          .then(() => {
+            createTransaction = createTransactionForForm(testForm)
+          })
+          .then(done)
+      })
+      beforeEach(() => {
+        fixtures = {
+          form: testForm,
+          body: {
+            responses: [],
+          },
+        }
+      })
+
+      describe('No transaction', () => {
+        it('should prevent submission if transaction does not exist for a form containing fields that have to be verified', (done) => {
+          const field = testForm.form_fields[0]
+          const response = {
+            _id: String(field._id),
+            fieldType: field.fieldType,
+            question: field.title,
+            answer: 'test@abc.com',
+          }
+          fixtures.body.responses.push(response)
+
+          sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+        })
+      })
+
+      describe('Has transaction', () => {
+        it('should prevent submission if transaction has expired for a form containing fields that have to be verified', (done) => {
+          createTransaction(hasExpired, [
+            {
+              fieldType: 'email',
+              hashCreatedAt: new Date(),
+              hashedOtp: 'someHashValue',
+              signedData: 'someData',
+            },
+          ]).then(() => {
+            const field = testForm.form_fields[0]
+            const response = {
+              _id: String(field._id),
+              fieldType: field.fieldType,
+              question: field.title,
+              answer: 'test@abc.com',
+              signature: 'someData',
+            }
+            fixtures.body.responses.push(response)
+
+            sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+          })
+        })
+
+        it('should prevent submission if any of the transaction fields are not verified', (done) => {
+          createTransaction(expireAt, [
+            {
+              fieldType: 'email',
+              hashCreatedAt: null,
+              hashedOtp: null,
+              signedData: null,
+            },
+          ]).then(() => {
+            const field = testForm.form_fields[0]
+            const response = {
+              _id: String(field._id),
+              fieldType: field.fieldType,
+              question: field.title,
+              answer: 'test@abc.com',
+            }
+            fixtures.body.responses.push(response)
+
+            sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+          })
+        })
+
+        it('should allow submission if all of the transaction fields are verified', (done) => {
+          const formsg = require('@opengovsg/formsg-sdk')({
+            mode: 'test',
+            verificationOptions: {
+              secretKey: process.env.VERIFICATION_SECRET_KEY,
+            },
+          })
+          const transactionId = mongoose.Types.ObjectId(
+            '5e71ef8b19c1ed04b54cd5f9',
+          )
+
+          const field = testForm.form_fields[0]
+          const formId = testForm._id
+          let response = {
+            _id: String(field._id),
+            fieldType: field.fieldType,
+            question: field.title,
+            answer: 'test@abc.com',
+          }
+          const signature = formsg.verification.generateSignature({
+            transactionId: String(transactionId),
+            formId: String(formId),
+            fieldId: response._id,
+            answer: response.answer,
+          })
+          response.signature = signature
+
+          createTransaction(expireAt, [
+            {
+              fieldType: 'email',
+              hashCreatedAt: new Date(),
+              hashedOtp: 'someHashValue',
+              signedData: signature,
+            },
+          ]).then(() => {
+            fixtures.body.responses.push(response)
+            sendAndExpect(HttpStatus.OK).end(done)
+          })
+        })
+      })
+    })
+
+    describe('Hidden and optional fields', () => {
+      const expireAt = new Date()
+      expireAt.setTime(expireAt.getTime() + 86400)
+
+      beforeEach(() => {
+        fixtures = {
+          form: {},
+          body: {
+            responses: [],
+          },
+        }
+      })
+
+      const test = ({
+        fieldValue,
+        fieldIsRequired,
+        fieldIsHidden,
+        expectedStatus,
+        done,
+      }) => {
+        const field = {
+          _id: '5e719d5b62a2c4aa5d9789e2',
+          title: 'Email',
+          fieldType: 'email',
+          isVerifiable: true,
+          required: fieldIsRequired,
+        }
+        const yesNoField = {
+          _id: '5e719d5b62a2c4aa5d9789e3',
+          title: 'Show email if this field is yes',
+          fieldType: 'yes_no',
+        }
+        let form = new Form({
+          title: 'Test Form',
+          emails: 'test@test.gov.sg',
+          responseMode: 'email',
+          admin: testUser._id,
+          form_fields: [field, yesNoField],
+          form_logics: [
+            {
+              show: [field._id],
+              conditions: [
+                {
+                  ifValueType: 'single-select',
+                  _id: '58169',
+                  field: yesNoField._id,
+                  state: 'is equals to',
+                  value: 'Yes',
+                },
+              ],
+              _id: '5db00a15af2ffb29487d4eb1',
+              logicType: 'showFields',
+            },
+          ],
+        })
+        form.save({ validateBeforeSave: false }).then(() => {
+          const response = {
+            _id: String(field._id),
+            fieldType: field.fieldType,
+            question: field.title,
+            answer: fieldValue,
+          }
+          const yesNoResponse = {
+            _id: yesNoField._id,
+            question: yesNoField.title,
+            fieldType: yesNoField.fieldType,
+            answer: fieldIsHidden ? 'No' : 'Yes',
+          }
+          fixtures.form = form
+          fixtures.body.responses.push(yesNoResponse)
+          fixtures.body.responses.push(response)
+          sendAndExpect(expectedStatus).end(done)
+        })
+      }
+      it('should verify fields that are optional and filled in', (done) => {
+        test({
+          fieldValue: 'test@abc.com',
+          fieldIsRequired: false,
+          fieldIsHidden: false,
+          expectedStatus: HttpStatus.BAD_REQUEST,
+          done,
+        })
+      })
+      it('should not verify fields that are optional and not filled in', (done) => {
+        test({
+          fieldValue: '',
+          fieldIsRequired: false,
+          fieldIsHidden: false,
+          expectedStatus: HttpStatus.OK,
+          done,
+        })
+      })
+      it('should verify fields that are required and not hidden by logic', (done) => {
+        test({
+          fieldValue: 'test@abc.com',
+          fieldIsRequired: true,
+          fieldIsHidden: false,
+          expectedStatus: HttpStatus.BAD_REQUEST,
+          done,
+        })
+      })
+
+      it('should not verify fields that are required and hidden by logic', (done) => {
+        test({
+          fieldValue: '',
+          fieldIsRequired: true,
+          fieldIsHidden: true,
+          expectedStatus: HttpStatus.OK,
+          done,
         })
       })
     })

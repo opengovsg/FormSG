@@ -1,12 +1,9 @@
-'use strict'
+import { celebrate, Joi } from 'celebrate'
+import { Express } from 'express'
 
-/**
- * Module dependencies.
- */
-const { celebrate, Joi } = require('celebrate')
-const verifiedFieldsFactory = require('../factories/verified-fields.factory')
+import verifiedFieldsFactory from './verification.factory'
 
-module.exports = function (app) {
+const mountVfnRoutes = (app: Express): void => {
   const formatOfId = Joi.string().length(24).hex().required()
   app.route('/transaction').post(
     celebrate({
@@ -64,3 +61,5 @@ module.exports = function (app) {
     verifiedFieldsFactory.verifyOtp,
   )
 }
+
+export default mountVfnRoutes
