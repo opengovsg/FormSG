@@ -226,7 +226,7 @@ export const basicSchema: Schema<IBasicSchema> = {
     chromiumBin: {
       doc: 'Path to chromium executable for PDF generation',
       format: String,
-      default: null,
+      default: defaults.mail.chromiumBin,
       env: 'CHROMIUM_BIN',
     },
     maxMessages: {
