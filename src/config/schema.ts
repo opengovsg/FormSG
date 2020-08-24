@@ -8,9 +8,10 @@ import validator from 'validator'
 
 import {
   Environment,
-  IBasicSchema,
   IBucketUrlSchema,
-  ISesSchema,
+  ICompulsoryVarsSchema,
+  IOptionalVarsSchema,
+  IProdOnlyVarsSchema,
 } from '../types'
 
 import defaults from './defaults'
@@ -54,7 +55,38 @@ const validateBucketUrl = (
   }
 }
 
-export const basicSchema: Schema<IBasicSchema> = {
+export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
+  awsConfig: {
+    imageS3Bucket: {
+      doc: 'S3 Bucket to upload images to',
+      format: String,
+      default: null,
+      env: 'IMAGE_S3_BUCKET',
+    },
+    logoS3Bucket: {
+      doc: 'S3 Bucket to upload logos to',
+      format: String,
+      default: null,
+      env: 'LOGO_S3_BUCKET',
+    },
+    attachmentS3Bucket: {
+      doc: 'S3 Bucket to upload encrypted attachments to',
+      format: String,
+      default: null,
+      env: 'ATTACHMENT_S3_BUCKET',
+    },
+  },
+  core: {
+    sessionSecret: {
+      doc: 'Session Secret',
+      format: String,
+      default: null,
+      env: 'SESSION_SECRET',
+    },
+  },
+}
+
+export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   appConfig: {
     title: {
       format: String,
@@ -87,51 +119,6 @@ export const basicSchema: Schema<IBasicSchema> = {
       env: 'APP_IMAGES',
     },
   },
-  core: {
-    sessionSecret: {
-      doc: 'Session Secret',
-      format: String,
-      default: null,
-      env: 'SESSION_SECRET',
-    },
-    dbHost: {
-      doc: 'Database URI',
-      format: String,
-      default: '',
-      env: 'DB_HOST',
-    },
-    port: {
-      doc: 'Application Port',
-      format: 'port',
-      default: defaults.app.port,
-      env: 'PORT',
-    },
-    otpLifeSpan: {
-      doc:
-        'OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15 mins)',
-      format: 'int',
-      default: defaults.login.otpLifeSpan,
-      env: 'OTP_LIFE_SPAN',
-    },
-    submissionsTopUp: {
-      doc: 'Number of submissions to top up submissions statistic by',
-      format: 'int',
-      default: 0,
-      env: 'SUBMISSIONS_TOP_UP',
-    },
-    cspReportUri: {
-      doc: 'Endpoint for content security policy reporting',
-      format: String,
-      default: 'undefined', // HelmetJS reportUri param requires non-empty string
-      env: 'CSP_REPORT_URI',
-    },
-    nodeEnv: {
-      doc: 'Express environment mode',
-      format: [Environment.Prod, Environment.Dev, Environment.Test],
-      default: Environment.Prod,
-      env: 'NODE_ENV',
-    },
-  },
   banner: {
     isGeneralMaintenance: {
       doc: 'Load env variable with General Maintenance banner text.',
@@ -157,39 +144,6 @@ export const basicSchema: Schema<IBasicSchema> = {
       format: String,
       default: '',
       env: 'ADMIN_BANNER_CONTENT',
-    },
-  },
-  awsConfig: {
-    imageS3Bucket: {
-      doc: 'S3 Bucket to upload images to',
-      format: String,
-      default: null,
-      env: 'IMAGE_S3_BUCKET',
-    },
-    logoS3Bucket: {
-      doc: 'S3 Bucket to upload logos to',
-      format: String,
-      default: null,
-      env: 'LOGO_S3_BUCKET',
-    },
-    attachmentS3Bucket: {
-      doc: 'S3 Bucket to upload encrypted attachments to',
-      format: String,
-      default: null,
-      env: 'ATTACHMENT_S3_BUCKET',
-    },
-    region: {
-      doc: 'Region that S3 bucket is located in',
-      format: Object.keys(awsInfo.data.regions),
-      default: defaults.aws.region,
-      env: 'AWS_REGION',
-    },
-    customCloudWatchGroup: {
-      doc:
-        'Name of CloudWatch log group to store short-term logs. Log streams are separated by date.',
-      format: String,
-      default: '',
-      env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
     },
   },
   formsgSdkMode: {
@@ -251,9 +205,57 @@ export const basicSchema: Schema<IBasicSchema> = {
       env: 'MAIL_SOCKET_TIMEOUT',
     },
   },
+  awsConfig: {
+    region: {
+      doc: 'Region that S3 bucket is located in',
+      format: Object.keys(awsInfo.data.regions),
+      default: defaults.aws.region,
+      env: 'AWS_REGION',
+    },
+    customCloudWatchGroup: {
+      doc:
+        'Name of CloudWatch log group to store short-term logs. Log streams are separated by date.',
+      format: String,
+      default: '',
+      env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
+    },
+  },
+  core: {
+    port: {
+      doc: 'Application Port',
+      format: 'port',
+      default: defaults.app.port,
+      env: 'PORT',
+    },
+    otpLifeSpan: {
+      doc:
+        'OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15 mins)',
+      format: 'int',
+      default: defaults.login.otpLifeSpan,
+      env: 'OTP_LIFE_SPAN',
+    },
+    submissionsTopUp: {
+      doc: 'Number of submissions to top up submissions statistic by',
+      format: 'int',
+      default: 0,
+      env: 'SUBMISSIONS_TOP_UP',
+    },
+    cspReportUri: {
+      doc: 'Endpoint for content security policy reporting',
+      format: String,
+      default: 'undefined', // HelmetJS reportUri param requires non-empty string
+      env: 'CSP_REPORT_URI',
+    },
+    nodeEnv: {
+      doc: 'Express environment mode',
+      format: [Environment.Prod, Environment.Dev, Environment.Test],
+      default: Environment.Prod,
+      env: 'NODE_ENV',
+    },
+  },
 }
 
-export const sesSchema: Schema<ISesSchema> = {
+export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
   port: {
     doc: 'SMTP port number',
     format: 'port',
