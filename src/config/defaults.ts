@@ -14,7 +14,6 @@ const APP_CONFIG = {
   ],
   twitterImage: '/public/modules/core/img/og/logo-vertical-color.png',
   port: 5000,
-  sessionSecret: 'sandcrawler-138577',
 }
 
 // Config for login constants.

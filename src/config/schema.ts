@@ -89,7 +89,7 @@ export const basicSchema: Schema<IBasicSchema> = {
     sessionSecret: {
       doc: 'Session Secret',
       format: String,
-      default: defaults.app.sessionSecret,
+      default: null,
       env: 'SESSION_SECRET',
     },
     dbHost: {
