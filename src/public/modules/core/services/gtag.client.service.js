@@ -7,7 +7,7 @@ function GTag($rootScope, $window) {
   const GATrackingID = $window.GATrackingID
   let gtagService = {}
 
-  const userEmail = () => {
+  const getUserEmail = () => {
     const userDetails = JSON.parse($window.localStorage.getItem('user'))
     const userEmail = get(userDetails, 'email', null)
     return userEmail
@@ -368,13 +368,12 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download start',
-      event_label: `${params.formTitle} (${params.formId}), ${userEmail()}`,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       num_workers: numWorkers,
       num_submissions: expectedNumSubmissions,
     })
   }
-
 
   /**
    * Logs a successful storage mode responses download.
@@ -395,7 +394,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download success',
-      event_label: `${params.formTitle} (${params.formId}), ${userEmail()}`,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
@@ -424,7 +423,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download failure',
-      event_label: `${params.formTitle} (${params.formId}), ${userEmail()}`,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
@@ -445,7 +444,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Network failure',
-      event_label: `${params.formTitle} (${params.formId}), ${userEmail()}`,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       message: errorMessage,
     })
@@ -472,7 +471,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Partial decrypt error',
-      event_label: `${params.formTitle} (${params.formId}), ${userEmail()}`,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
