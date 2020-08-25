@@ -17,7 +17,7 @@ describe('handleSns', () => {
     mockBounceService.updateBounces.mockReset()
     mockBounceService.isValidSnsRequest.mockReset()
   })
-  test('does not call updateBounces for invalid requests', async () => {
+  it('does not call updateBounces for invalid requests', async () => {
     mockBounceService.isValidSnsRequest.mockReturnValueOnce(
       Promise.resolve(false),
     )
@@ -26,7 +26,7 @@ describe('handleSns', () => {
     expect(mockBounceService.updateBounces).not.toHaveBeenCalled()
     expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
   })
-  test('calls updateBounces for valid requests', async () => {
+  it('calls updateBounces for valid requests', async () => {
     mockBounceService.isValidSnsRequest.mockReturnValueOnce(
       Promise.resolve(true),
     )
@@ -35,7 +35,7 @@ describe('handleSns', () => {
     expect(mockBounceService.updateBounces).toHaveBeenCalledWith(req.body)
     expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
   })
-  test('catches errors thrown in isValidSnsRequest', async () => {
+  it('catches errors thrown in isValidSnsRequest', async () => {
     mockBounceService.isValidSnsRequest.mockImplementation(() => {
       throw new Error()
     })
@@ -44,7 +44,7 @@ describe('handleSns', () => {
     expect(mockBounceService.updateBounces).not.toHaveBeenCalled()
     expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
   })
-  test('catches errors thrown in updateBounces', async () => {
+  it('catches errors thrown in updateBounces', async () => {
     mockBounceService.isValidSnsRequest.mockReturnValueOnce(
       Promise.resolve(true),
     )
