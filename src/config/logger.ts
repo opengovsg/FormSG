@@ -1,12 +1,24 @@
-// Configuration for `winston` package.
 import hasAnsi from 'has-ansi'
 import omit from 'lodash/omit'
+import logform from 'logform'
+import path from 'path'
+import tripleBeam from 'triple-beam'
 import { inspect } from 'util'
 import { v4 as uuidv4 } from 'uuid'
-import { format, LoggerOptions, loggers, transports } from 'winston'
+import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
 import defaults from './defaults'
+
+// Params to enforce the logging format.
+type CustomLoggerParams = {
+  message: string
+  meta: {
+    action: string
+    [other: string]: any
+  }
+  error?: Error
+}
 
 // Cannot use config due to logger being instantiated first, and
 // having circular dependencies.
@@ -14,10 +26,36 @@ const isDev = ['development', 'test'].includes(process.env.NODE_ENV)
 const customCloudWatchGroup = process.env.CUSTOM_CLOUDWATCH_LOG_GROUP
 const awsRegion = process.env.AWS_REGION || defaults.aws.region
 
-// Config to make winston logging like console logging, allowing multiple
-// arguments.
+// A variety of helper functions to make winston logging like console logging,
+// allowing multiple arguments.
 // Retrieved from
 // https://github.com/winstonjs/winston/issues/1427#issuecomment-583199496.
+
+/**
+ * Hunts for errors in the given object passed to the logger.
+ * Assigns the `error` key the found error.
+ */
+const errorHunter = logform.format((info) => {
+  if (info.error) return info
+
+  const splat = info[tripleBeam.SPLAT as any] || []
+  info.error = splat.find((obj: any) => obj instanceof Error)
+
+  return info
+})
+
+/**
+ * Formats the error in the transformable info to a console.error-like format.
+ */
+const errorPrinter = logform.format((info) => {
+  if (!info.error) return info
+
+  // Handle case where Error has no stack.
+  const errorMsg = info.error.stack || info.error.toString()
+  info.message += `\n${errorMsg}`
+
+  return info
+})
 
 /**
  * Standard function to check if the passed in value is a primitive type.
@@ -54,7 +92,6 @@ const formatWithInspect = (val: any): string => {
  * string representation, mainly used for console logging.
  */
 export const customFormat = format.printf((info) => {
-  const stackTrace = info.stack ? `\n${info.stack}` : ''
   let duration = info.durationMs || info.responseTime
   duration = duration ? `duration=${duration}ms ` : ''
 
@@ -63,7 +100,7 @@ export const customFormat = format.printf((info) => {
     const obj = omit(info, ['level', 'timestamp', Symbol.for('level')])
     return `${info.timestamp} ${info.level} [${
       info.label
-    }]: ${formatWithInspect(obj)} ${duration}${stackTrace}`
+    }]: ${formatWithInspect(obj)} ${duration}`
   }
 
   // Handle multiple arguments passed into logger
@@ -75,7 +112,7 @@ export const customFormat = format.printf((info) => {
   const rest = splatArgs.map((data: any) => formatWithInspect(data)).join(' ')
   const msg = formatWithInspect(info.message)
 
-  return `${info.timestamp} ${info.level} [${info.label}]: ${msg} ${duration}${rest}${stackTrace}`
+  return `${info.timestamp} ${info.level} [${info.label}]: ${msg}\t${duration}\t${rest}`
 })
 
 /**
@@ -89,6 +126,8 @@ const createLoggerOptions = (label: string): LoggerOptions => {
     format: format.combine(
       format.label({ label }),
       format.timestamp(),
+      errorHunter(),
+      errorPrinter(),
       isDev ? format.combine(format.colorize(), customFormat) : format.json(),
     ),
     transports: [
@@ -101,12 +140,49 @@ const createLoggerOptions = (label: string): LoggerOptions => {
 }
 
 /**
- * Create a new winston logger with given label
- * @param label The label of the logger
+ * Returns a label from the given module
+ * @example loaders/index.ts
+ * @param callingModule
  */
-export const createLoggerWithLabel = (label: string) => {
+const getModuleLabel = (callingModule: NodeModule) => {
+  // Remove the file extension from the filename and split with path separator.
+  const parts = callingModule.filename.replace(/\.[^/.]+$/, '').split(path.sep)
+  // Join the last two parts of the file path together.
+  return path.join(parts[parts.length - 2], parts.pop())
+}
+
+/**
+ * Overrides the given winston logger with a new signature, so as to enforce a
+ * log format.
+ * @param logger the logger to override
+ */
+const createCustomLogger = (logger: Logger) => {
+  return {
+    info: ({ message, meta }: Omit<CustomLoggerParams, 'error'>) =>
+      logger.info(message, { meta }),
+    warn: ({ message, meta, error }: CustomLoggerParams) => {
+      if (error) {
+        return logger.warn(message, { meta }, error)
+      }
+      return logger.warn(message, { meta })
+    },
+    error: ({ message, meta, error }: CustomLoggerParams) => {
+      if (error) {
+        return logger.error(message, { meta }, error)
+      }
+      return logger.error(message, { meta })
+    },
+  }
+}
+
+/**
+ * Create a new winston logger with given module
+ * @param callingModule the module to create a logger for
+ */
+export const createLoggerWithLabel = (callingModule: NodeModule) => {
+  const label = getModuleLabel(callingModule)
   loggers.add(label, createLoggerOptions(label))
-  return loggers.get(label)
+  return createCustomLogger(loggers.get(label))
 }
 
 /**
