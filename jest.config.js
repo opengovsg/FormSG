@@ -8,11 +8,11 @@ module.exports = {
     // Needed to use @shelf/jest-mongodb preset.
     ...tsJestPreset.transform,
   },
-  collectCoverageFrom: ['./src/**/*.{ts}'],
+  collectCoverageFrom: ['./src/**/*.{ts,js}'],
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],
   coverageThreshold: {
     global: {
-      statements: 14, // Increase this percentage as test coverage improves
+      statements: 12, // Increase this percentage as test coverage improves
     },
   },
 }
