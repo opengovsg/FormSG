@@ -239,7 +239,10 @@ exports.validateEmailSubmission = function (req, res, next) {
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
     } catch (err) {
       logger.error({
-        message: 'Error processing responses',
+        message:
+          err instanceof ConflictError
+            ? 'Conflict - Form has been updated'
+            : 'Error processing responses',
         meta: {
           action: 'validateEmailSubmission',
           ip: getRequestIp(req),

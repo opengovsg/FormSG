@@ -116,6 +116,36 @@ export const customFormat = format.printf((info) => {
 })
 
 /**
+ * This is required as JSON.stringify(new Error()) returns an empty object. This
+ * function converts the error in `info.error` into a readable JSON stack trace.
+ *
+ * Function courtesy of
+ * https://github.com/winstonjs/winston/issues/1243#issuecomment-463548194.
+ */
+const jsonErrorReplacer = (_key: never, value: any) => {
+  if (value instanceof Error) {
+    return Object.getOwnPropertyNames(value).reduce((all, valKey) => {
+      if (valKey === 'stack') {
+        return {
+          ...all,
+          at: value[valKey]
+            .split('\n')
+            .filter((va) => va.trim().slice(0, 5) != 'Error')
+            .map((va, i) => `stack ${i} ${va.trim().slice(3).trim()}`),
+        }
+      } else {
+        return {
+          ...all,
+          [valKey]: value[valKey],
+        }
+      }
+    }, {})
+  } else {
+    return value
+  }
+}
+
+/**
  * Creates logger options for use by winston.
  * @param label The label of the logger
  * @returns the created options
@@ -124,11 +154,13 @@ const createLoggerOptions = (label: string): LoggerOptions => {
   return {
     level: 'debug',
     format: format.combine(
+      format.errors({ stack: true }),
       format.label({ label }),
       format.timestamp(),
       errorHunter(),
-      errorPrinter(),
-      isDev ? format.combine(format.colorize(), customFormat) : format.json(),
+      !isDev
+        ? format.combine(format.colorize(), errorPrinter(), customFormat)
+        : format.json({ replacer: jsonErrorReplacer }),
     ),
     transports: [
       new transports.Console({
