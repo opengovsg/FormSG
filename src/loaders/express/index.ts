@@ -7,6 +7,7 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
+import { AuthRouter } from '../../app/modules/auth/auth.routes'
 import mountSnsRoutes from '../../app/modules/sns/sns.routes'
 import mountVfnRoutes from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
@@ -124,6 +125,7 @@ const loadExpressApp = async (connection: Connection) => {
   })
   mountSnsRoutes(app)
   mountVfnRoutes(app)
+  app.use('/auth', AuthRouter)
 
   app.use(sentryMiddlewares())
 
