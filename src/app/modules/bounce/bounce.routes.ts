@@ -15,4 +15,4 @@ const BounceRouter = Router()
  */
 BounceRouter.post('/', handleSns)
 
-export default BounceRouter
+export { BounceRouter }

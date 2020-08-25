@@ -71,4 +71,4 @@ VfnRouter.post(
   verifiedFieldsFactory.verifyOtp,
 )
 
-export default VfnRouter
+export { VfnRouter }
