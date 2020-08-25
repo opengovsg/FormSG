@@ -10,7 +10,7 @@ import defaults from './defaults'
 
 // Cannot use config due to logger being instantiated first, and
 // having circular dependencies.
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = ['development', 'test'].includes(process.env.NODE_ENV)
 const customCloudWatchGroup = process.env.CUSTOM_CLOUDWATCH_LOG_GROUP
 const awsRegion = process.env.AWS_REGION || defaults.aws.region
 
@@ -91,7 +91,11 @@ const createLoggerOptions = (label: string): LoggerOptions => {
       format.timestamp(),
       isDev ? format.combine(format.colorize(), customFormat) : format.json(),
     ),
-    transports: [new transports.Console()],
+    transports: [
+      new transports.Console({
+        silent: process.env.NODE_ENV === 'test',
+      }),
+    ],
     exitOnError: false,
   }
 }
