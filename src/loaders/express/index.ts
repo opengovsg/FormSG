@@ -7,6 +7,8 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
+import mountSnsRoutes from '../../app/modules/sns/sns.routes'
+import mountVfnRoutes from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
 import config from '../../config/config'
 
@@ -120,6 +122,8 @@ const loadExpressApp = async (connection: Connection) => {
   apiRoutes.forEach(function (routeFunction) {
     routeFunction(app)
   })
+  mountSnsRoutes(app)
+  mountVfnRoutes(app)
 
   app.use(sentryMiddlewares())
 

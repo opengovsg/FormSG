@@ -56,7 +56,7 @@ const insertFormCollectionReqs = async ({
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
-}) => {
+} = {}) => {
   const Agency = getAgencyModel(mongoose)
   const User = getUserModel(mongoose)
 
@@ -69,7 +69,7 @@ const insertFormCollectionReqs = async ({
 
   const user = await User.create({
     email: `${mailName}@${mailDomain}`,
-    _id: userId,
+    _id: userId ?? new ObjectID(),
     agency: agency.id,
   })
 

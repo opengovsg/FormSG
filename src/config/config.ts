@@ -40,19 +40,12 @@ type AwsConfig = {
   s3: aws.S3
 }
 
-type EmailRetryConfig = {
-  retryDuration: number
-  maxRetryCount: number
-  maxRetryDuration: number
-}
-
 type MailConfig = {
   mailFrom: string
   mailer: {
     from: string
   }
   transporter: Mail
-  retry: EmailRetryConfig
 }
 
 type Config = {
@@ -70,6 +63,7 @@ type Config = {
   cspReportUri: string
   chromiumBin: string
   otpLifeSpan: number
+  bounceLifeSpan: number
   formsgSdkMode: PackageMode
   submissionsTopUp: number
   customCloudWatchGroup?: string
@@ -104,6 +98,12 @@ const sessionSecret = process.env.SESSION_SECRET || defaults.app.sessionSecret
  */
 const otpLifeSpan =
   parseInt(process.env.OTP_LIFE_SPAN, 10) || defaults.login.otpLifeSpan
+
+/**
+ * TTL of bounce documents in milliseconds.
+ */
+const bounceLifeSpan =
+  parseInt(process.env.BOUNCE_LIFE_SPAN, 10) || defaults.bounce.bounceLifeSpan
 
 /**
  * Number of submissions to top up submissions statistic by
@@ -277,21 +277,10 @@ const mailConfig: MailConfig = (function () {
     transporter = nodemailer.createTransport(directTransport({}))
   }
 
-  const emailRetryConfig: EmailRetryConfig = {
-    retryDuration:
-      Number(process.env.MAIL_RETRY_DURATION) || defaults.mail.retryDuration,
-    maxRetryCount:
-      Number(process.env.MAIL_RETRY_COUNT) || defaults.mail.maxRetryCount,
-    maxRetryDuration:
-      Number(process.env.MAIL_MAX_RETRY_DURATION) ||
-      defaults.mail.maxRetryDuration,
-  }
-
   return {
     mailFrom,
     mailer,
     transporter,
-    retry: emailRetryConfig,
   }
 })()
 
@@ -424,6 +413,7 @@ const config: Config = {
   customCloudWatchGroup,
   sessionSecret,
   otpLifeSpan,
+  bounceLifeSpan,
   formsgSdkMode,
   chromiumBin,
   cspReportUri,

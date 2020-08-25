@@ -14,7 +14,6 @@ const Submission = getSubmissionModel(mongoose)
 const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
-const { getParsedResponses } = require('../utils/response')
 const { ConflictError } = require('../utils/custom-errors')
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
@@ -24,6 +23,9 @@ const logger = require('../../config/logger').createLoggerWithLabel(
 const {
   aws: { attachmentS3Bucket, s3 },
 } = require('../../config/config')
+const {
+  getProcessedResponses,
+} = require('../modules/submission/submission.service')
 
 /**
  * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
@@ -51,13 +53,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
 
   if (req.body.responses) {
     try {
-      const encryptModeFilter = (arr) =>
-        arr.filter(({ fieldType }) => ['mobile', 'email'].includes(fieldType)) // For autoreplies
-      req.body.parsedResponses = getParsedResponses(
-        form,
-        req.body.responses,
-        encryptModeFilter,
-      )
+      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
     } catch (err) {
       logger.error(`ip="${getRequestIp(req)}" error=`, err)
@@ -348,7 +344,12 @@ exports.streamEncryptedResponses = async function (req, res) {
     submissionType: 'encryptSubmission',
   }
 
-  query = createQueryWithDateParam(query, req)
+  const augmentedQuery = createQueryWithDateParam(
+    req.query.startDate,
+    req.query.endDate,
+  )
+
+  query = { ...query, ...augmentedQuery }
 
   Submission.find(query, {
     encryptedContent: 1,

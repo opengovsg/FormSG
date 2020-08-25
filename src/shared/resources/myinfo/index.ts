@@ -1,4 +1,4 @@
-import { FieldType } from '../basic'
+import { BasicField } from '../../../types'
 
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
@@ -47,7 +47,7 @@ interface IMyInfoFieldType {
   verified: MyInfoVerifiedType[]
   source: string
   description: string
-  fieldType: FieldType
+  fieldType: BasicField
   fieldOptions?: string[]
   ValidationOptions?: object
 }
@@ -68,7 +68,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
       'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'sex',
@@ -78,7 +78,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
       'The gender of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
   },
   {
@@ -89,7 +89,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
       'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-    fieldType: 'date',
+    fieldType: BasicField.Date,
   },
   {
     name: 'race',
@@ -99,7 +99,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
       'The race of the form-filler. This field is verified by ICA for Singaporean/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: RACES,
   },
   {
@@ -110,7 +110,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
       'The nationality of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: NATIONALITIES,
   },
   {
@@ -121,14 +121,14 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
       'The birth country of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: COUNTRIES,
   },
   // {
   //   name: 'secondaryrace',
   //   value: 'Race (Secondary)',
   //   category: "personal",
-  //   fieldType: 'dropdown'
+  //   fieldType: BasicField.Dropdown
   // },
   {
     name: 'residentialstatus',
@@ -137,7 +137,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['SG', 'PR'],
     source: 'Immigration and Checkpoints Authority',
     description: 'The residential status of the form-filler.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: ['Alien', 'Citizen', 'NOT APPLICABLE', 'PR', 'Unknown'],
   },
   {
@@ -147,7 +147,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['SG', 'PR'],
     source: 'Immigration and Checkpoints Authority',
     description: 'The dialect group of the form-filler.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: DIALECTS,
   },
   {
@@ -158,7 +158,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Housing Development Board / Urban Redevelopment Authority',
     description:
       'The type of housing that the form-filler lives in. This information is verified by HDB for public housing, and by URA for private housing.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: [
       'APARTMENT',
       'CONDOMINIUM',
@@ -175,7 +175,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['SG', 'PR'],
     source: 'Housing Development Board',
     description: 'The type of HDB flat that the form-filler lives in.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: [
       '1-ROOM FLAT (HDB)',
       '2-ROOM FLAT (HDB)',
@@ -193,7 +193,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['SG'],
     source: 'Immigration & Checkpoints Authority',
     description: 'The passport number of the form-filler.',
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'passportexpirydate',
@@ -202,7 +202,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['SG'],
     source: 'Immigration & Checkpoints Authority',
     description: 'The passport expiry date of the form-filler.',
-    fieldType: 'date',
+    fieldType: BasicField.Date,
   },
   {
     name: 'marital',
@@ -212,7 +212,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Ministry of Social and Family Development',
     description:
       'The marital status of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: ['SINGLE', 'MARRIED', 'WIDOWED', 'DIVORCED'],
   },
   {
@@ -222,7 +222,7 @@ export const types: IMyInfoFieldType[] = [
     verified: [],
     source: 'User-provided',
     description: 'Highest education level of form-filler.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: [
       'NO FORMAL QUALIFICATION / PRE-PRIMARY / LOWER PRIMARY',
       'PRIMARY',
@@ -245,7 +245,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Ministry of Social and Family Development',
     description:
       'The country of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: COUNTRIES,
   },
   // {
@@ -255,7 +255,7 @@ export const types: IMyInfoFieldType[] = [
   //   verified: [],
   //   source: "User-provided"
   //   description: "",
-  //   fieldType: 'dropdown',
+  //   fieldType: BasicField.Dropdown,
   // },
   // {
   //   name: 'marriedname',
@@ -288,7 +288,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['SG', 'PR'],
     source: 'Immigration & Checkpoints Authority',
     description: 'The registered address of the form-filler.',
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'mailadd',
@@ -297,7 +297,7 @@ export const types: IMyInfoFieldType[] = [
     verified: [],
     source: 'User-provided',
     description: 'The mailing address of the form-filler.',
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'billadd',
@@ -306,7 +306,7 @@ export const types: IMyInfoFieldType[] = [
     verified: [],
     source: 'User-provided',
     description: 'The billing address of the form-filler.',
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'schoolname',
@@ -316,7 +316,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'User-provided',
     description:
       'List of primary, secondary and tertiary educational institutions in Singapore. Does not include private or international educational institutions.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: SCHOOLS,
   },
   {
@@ -327,7 +327,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Ministry of Manpower',
     description:
       'The occupation of the form-filler. Verified for foreigners with SingPass only.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: OCCUPATIONS,
   },
   {
@@ -338,7 +338,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Ministry of Manpower',
     description:
       "The name of the form-filler's employer. Verified for foreigners with SingPass only.",
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'vehno',
@@ -347,7 +347,7 @@ export const types: IMyInfoFieldType[] = [
     verified: [],
     source: 'User-provided',
     description: 'Vehicle plate number of the form-filler.',
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'marriagecertno',
@@ -357,7 +357,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Ministry of Social and Family Development',
     description:
       'Marriage Certificate Number of form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
-    fieldType: 'textfield',
+    fieldType: BasicField.ShortText,
   },
   {
     name: 'marriagedate',
@@ -367,7 +367,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Ministry of Social and Family Development',
     description:
       'The date of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
-    fieldType: 'date',
+    fieldType: BasicField.Date,
   },
   {
     name: 'divorcedate',
@@ -377,7 +377,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Ministry of Social and Family Development',
     description:
       'The date of divorce of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
-    fieldType: 'date',
+    fieldType: BasicField.Date,
   },
   {
     name: 'workpassstatus',
@@ -386,7 +386,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['F'],
     source: 'Ministry of Manpower',
     description: 'Workpass application status of foreigner.',
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     fieldOptions: ['Live', 'Approved'],
   },
   {
@@ -396,7 +396,7 @@ export const types: IMyInfoFieldType[] = [
     verified: ['F'],
     source: 'Ministry of Manpower',
     description: 'The workpass expiry date of the form-filler.',
-    fieldType: 'date',
+    fieldType: BasicField.Date,
   },
   {
     name: 'mobileno',
@@ -405,7 +405,7 @@ export const types: IMyInfoFieldType[] = [
     verified: [],
     source: 'User-provided',
     description: 'Mobile telephone number of form-filler.',
-    fieldType: 'mobile',
+    fieldType: BasicField.Mobile,
   },
   {
     name: 'homeno',
@@ -414,7 +414,7 @@ export const types: IMyInfoFieldType[] = [
     verified: [],
     source: 'User-provided',
     description: 'Home telephone number of form-filler.',
-    fieldType: 'homeno',
+    fieldType: BasicField.HomeNo,
   },
   {
     name: 'gradyear',
@@ -424,7 +424,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'User-provided',
     description:
       "Graduation year of form filler's last attended educational institution.",
-    fieldType: 'number',
+    fieldType: BasicField.Number,
     ValidationOptions: {
       selectedValidation: 'Exact',
       customVal: 4,

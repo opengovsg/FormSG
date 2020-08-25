@@ -167,27 +167,29 @@ describe('MyInfoService', () => {
       ).rejects.toThrowError(mockError)
     })
 
-    it('should throw circuit breaker error after first fetch failure', async () => {
+    it('should throw circuit breaker error after 5 fetch failures', async () => {
       // Arrange
       const mockError = new Error('Mock MyInfo server failure')
-      MyInfoGovClient.getPersonBasic.mockImplementationOnce(() =>
-        Promise.reject(mockError),
-      )
 
       // Act + Assert
-      // Call fetch twice
-      // First fetch should be correctly rejected
-      await expect(
-        myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
-      ).rejects.toThrowError(mockError)
+      // Call fetch 5 times
+      // All should be correctly rejected
+      for (let i = 0; i < 5; i++) {
+        MyInfoGovClient.getPersonBasic.mockImplementationOnce(() =>
+          Promise.reject(mockError),
+        )
+        await expect(
+          myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
+        ).rejects.toThrowError(mockError)
+      }
 
-      // Second fetch should be circuit broken error, without needing to check
+      // 6th fetch should be circuit broken error, without needing to check
       // MyInfoGovClient.getPersonBasic.
       await expect(
         myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
       ).rejects.toThrowError(new Error('Breaker is open'))
-      // Total number of calls to getPersonBasic should be only 1
-      expect(MyInfoGovClient.getPersonBasic).toBeCalledTimes(1)
+      // Total number of calls to getPersonBasic should be only 5
+      expect(MyInfoGovClient.getPersonBasic).toBeCalledTimes(5)
     })
   })
 
