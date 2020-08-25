@@ -47,6 +47,32 @@ function ViewResponsesController(
 
   vm.datePicker = { date: { startDate: null, endDate: null } }
 
+  if (typeof BroadcastChannel === 'function') {
+    vm.privateKeyChannel = new BroadcastChannel('formsg_private_key_sharing')
+    vm.privateKeyChannel.onmessage = function (e) {
+      if (e.data.action === 'broadcastKey') {
+        if (vm.encryptionKey === null && vm.myform._id === e.data.formId) {
+          vm.unlock({ encryptionKey: e.data.encryptionKey })
+          $scope.$digest()
+        }
+      }
+      if (e.data.action === 'requestKey') {
+        if (vm.encryptionKey !== null && vm.myform._id === e.data.formId) {
+          vm.privateKeyChannel.postMessage({
+            formId: vm.myform._id,
+            action: 'broadcastKey',
+            encryptionKey: vm.encryptionKey,
+          })
+        }
+      }
+    }
+
+    vm.privateKeyChannel.postMessage({
+      formId: vm.myform._id,
+      action: 'requestKey',
+    })
+  }
+
   // Datepicker for export CSV function
   vm.exportCsvDate = {
     value: '',
@@ -266,6 +292,14 @@ function ViewResponsesController(
       },
     )
     vm.loading = false
+
+    if (typeof vm.privateKeyChannel !== 'undefined') {
+      vm.privateKeyChannel.postMessage({
+        formId: vm.myform._id,
+        action: 'broadcastKey',
+        encryptionKey: vm.encryptionKey,
+      })
+    }
   }
 
   /** * UNLOCK RESPONSES ***/
