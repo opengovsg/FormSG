@@ -216,7 +216,7 @@
     "mongodb-memory-server-core": "^5.1.5",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "prettier": "^2.0.5",
-    "regenerator": "^0.14.4",
+    "regenerator": "^0.14.7",
     "sinon": "^6.0.0",
     "stylelint": "^13.3.3",
     "stylelint-config-prettier": "^8.0.1",
