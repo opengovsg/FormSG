@@ -9,13 +9,16 @@ const fs = require('fs')
 const SPCPAuthClient = require('@opengovsg/spcp-auth-client')
 const { MyInfoGovClient } = require('@opengovsg/myinfo-gov-client')
 const MyInfoService = require('../services/myinfo.service')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'spcp-myinfo-config',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 const spcpFactory = ({ isEnabled, props }) => {
   if (isEnabled && props) {
-    logger.info('Configuring SingPass client...')
+    logger.info({
+      message: 'Configuring SingPass client...',
+      meta: {
+        action: 'spcpFactory',
+      },
+    })
     let singPassAuthClient = new SPCPAuthClient({
       partnerEntityId: props.spPartnerEntityId,
       idpLoginURL: props.spIdpLoginUrl,
@@ -26,7 +29,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       spcpCert: fs.readFileSync(props.spIdpCertPath),
       extract: SPCPAuthClient.extract.SINGPASS,
     })
-    logger.info('Configuring CorpPass client...')
+    logger.info({
+      message: 'Configuring CorpPass client...',
+      meta: {
+        action: 'spcpFactory',
+      },
+    })
     let corpPassAuthClient = new SPCPAuthClient({
       partnerEntityId: props.cpPartnerEntityId,
       idpLoginURL: props.cpIdpLoginUrl,
@@ -37,7 +45,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       spcpCert: fs.readFileSync(props.cpIdpCertPath),
       extract: SPCPAuthClient.extract.CORPPASS,
     })
-    logger.info('Configuring MyInfo client...')
+    logger.info({
+      message: 'Configuring MyInfo client...',
+      meta: {
+        action: 'spcpFactory',
+      },
+    })
     let myInfoConfig = {
       realm: config.app.title,
       singpassEserviceId: props.spEsrvcId,
@@ -58,9 +71,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       myInfoConfig.mode = 'stg'
       myInfoGovClient = new MyInfoGovClient(myInfoConfig)
     } else {
-      logger.warn(
-        `\n!!! WARNING !!!\nNo MyInfo keys detected.\nRequests to MyInfo will not work.\nThis should NEVER be seen in production.\nFalling back on MockPass.`,
-      )
+      logger.warn({
+        message: `\n!!! WARNING !!!\nNo MyInfo keys detected.\nRequests to MyInfo will not work.\nThis should NEVER be seen in production.\nFalling back on MockPass.`,
+        meta: {
+          action: 'spcpFactory',
+        },
+      })
       myInfoConfig.appId = 'STG2-' + myInfoConfig.singpassEserviceId
       myInfoConfig.privateKey = fs.readFileSync(
         './node_modules/@opengovsg/mockpass/static/certs/key.pem',

@@ -10,7 +10,7 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 // Prevents JSON.stringify error for circular JSONs and BigInts
 const { stringifySafe } = require('../../shared/util/stringify-safe')
 const formsgSdk = require('../../config/formsg-sdk')
-const logger = require('../../config/logger').createLoggerWithLabel('webhooks')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 /**
  * Logs webhook failure in console and database.
@@ -89,16 +89,20 @@ const logWebhookSuccess = (
   response,
   { webhookUrl, submissionId, formId, now, signature },
 ) => {
-  const status = _.get(response, 'status')
-  const loggingParams = {
-    status,
-    submissionId,
-    formId,
-    now,
-    webhookUrl,
-    signature,
-  }
-  logger.info(getConsoleMessage('Webhook POST succeeded', loggingParams))
+  logger.info({
+    message: 'Webhook POST succeeded',
+    meta: {
+      action: 'logWebhookSuccess',
+      meta: {
+        status: _.get(response, 'status'),
+        submissionId,
+        formId,
+        now,
+        webhookUrl,
+        signature,
+      },
+    },
+  })
 }
 
 // Logging for webhook failure
@@ -106,20 +110,30 @@ const logWebhookFailure = (
   error,
   { webhookUrl, submissionId, formId, now, signature },
 ) => {
-  const errorMessage = _.get(error, 'message')
-  const loggingParams = {
+  const logMeta = {
+    action: 'logWebhookFailure',
     submissionId,
     formId,
     now,
     webhookUrl,
     signature,
-    errorMessage,
   }
+
   if (error instanceof WebhookValidationError) {
-    logger.error(getConsoleMessage('Webhook not attempted', loggingParams))
+    logger.error({
+      message: 'Webhook not attempted',
+      meta: logMeta,
+      error,
+    })
   } else {
-    loggingParams.status = _.get(error, 'response.status')
-    logger.error(getConsoleMessage('Webhook POST failed', loggingParams))
+    logger.error({
+      message: 'Webhook POST failed',
+      meta: {
+        ...logMeta,
+        status: _.get(error, 'response.status'),
+      },
+      error,
+    })
   }
 }
 
@@ -136,25 +150,17 @@ const updateSubmissionsDb = (formId, submissionId, updateObj) => {
       }
     })
     .catch((error) => {
-      logger.error(
-        getConsoleMessage('Database update for webhook status failed', {
+      logger.error({
+        message: 'Database update for webhook status failed',
+        meta: {
+          action: 'updateSubmissionsDb',
           formId,
           submissionId,
           updateObj: stringifySafe(updateObj),
-          dbErrorMessage: _.get(error, 'message'),
-        }),
-      )
+        },
+        error,
+      })
     })
-}
-
-// Creates a string with a title, followed by a tab, followed
-// by a list of 'key=value' pairs separated by spaces
-const getConsoleMessage = (title, params) => {
-  let consoleMessage = title + ':\t'
-  consoleMessage += Object.entries(params)
-    .map(([key, value]) => key + '=' + value)
-    .join(' ')
-  return consoleMessage
 }
 
 // Formats webhook success info into an object to update Submissions collection

@@ -19,9 +19,7 @@ const config = require('../../config/config')
 const defaults = require('../../config/defaults').default
 const PERMISSIONS = require('../utils/permission-levels.js')
 const { getRequestIp } = require('../utils/request')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'authentication',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail.service').default
 
 const MAX_OTP_ATTEMPTS = 10
@@ -61,11 +59,16 @@ exports.validateDomain = function (req, res, next) {
     }
     // Agency not found
     if (!agency) {
-      logger.error(
-        `Agency not found:\temail=${email} emailDomain=${emailDomain} ip=${getRequestIp(
-          req,
-        )}`,
-      )
+      logger.error({
+        message: 'Agency not found',
+        meta: {
+          action: 'validateDomain',
+          email,
+          emailDomain,
+          ip: getRequestIp(req),
+        },
+        error: err,
+      })
       return res
         .status(HttpStatus.UNAUTHORIZED)
         .send(
@@ -173,7 +176,16 @@ exports.createOtp = function (req, res, next) {
       { w: 1, upsert: true, new: true },
       function (updateErr, updatedRecord) {
         if (updateErr) {
-          logger.error(getRequestIp(req), req.url, req.headers, updateErr)
+          logger.error({
+            message: 'Token update error',
+            meta: {
+              action: 'createOtp',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: updateErr,
+          })
           return res
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .send(
@@ -207,10 +219,26 @@ exports.sendOtp = async function (req, res) {
       otp,
       ipAddress: getRequestIp(req),
     })
-    logger.info(`Login OTP sent:\temail=${recipient} ip=${getRequestIp(req)}`)
+    logger.info({
+      message: 'Login OTP sent',
+      meta: {
+        action: 'sendOtp',
+        ip: getRequestIp(req),
+        email: recipient,
+      },
+    })
     return res.status(HttpStatus.OK).send(`OTP sent to ${recipient}!`)
   } catch (err) {
-    logger.error('Mail otp error', getRequestIp(req), req.url, req.headers, err)
+    logger.error({
+      message: 'Mail otp error',
+      meta: {
+        action: 'sendOtp',
+        ip: getRequestIp(req),
+        url: req.url,
+        headers: req.headers,
+      },
+      error: err,
+    })
     return res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .send(
@@ -245,11 +273,15 @@ exports.verifyOtp = function (req, res, next) {
     { w: 1, upsert: false, new: true },
     function (updateErr, updatedRecord) {
       if (updateErr) {
-        logger.error(
-          `Failed to validate OTP (updateErr)\temail=${email} ip=${getRequestIp(
-            req,
-          )}`,
-        )
+        logger.error({
+          message: 'Error updating Token in database',
+          meta: {
+            action: 'verifyOtp',
+            email,
+            ip: getRequestIp(req),
+          },
+          error: updateErr,
+        })
         return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
           .send(
@@ -257,15 +289,27 @@ exports.verifyOtp = function (req, res, next) {
           )
       }
       if (!updatedRecord) {
-        logger.info(`Expired OTP\temail=${email} ip=${getRequestIp(req)}`)
+        logger.info({
+          message: 'Expired OTP',
+          meta: {
+            action: 'verifyOtp',
+            ip: getRequestIp(req),
+            email,
+          },
+        })
         return res
           .status(HttpStatus.UNPROCESSABLE_ENTITY)
           .send('OTP has expired. Click Resend to receive a new OTP.')
       }
       if (updatedRecord.numOtpAttempts > MAX_OTP_ATTEMPTS) {
-        logger.info(
-          `Exceeded max OTP attempts\temail=${email} ip=${getRequestIp(req)}`,
-        )
+        logger.info({
+          message: 'Exceeded max OTP attempts',
+          meta: {
+            action: 'verifyOtp',
+            ip: getRequestIp(req),
+            email,
+          },
+        })
         return res
           .status(HttpStatus.UNPROCESSABLE_ENTITY)
           .send(
@@ -277,7 +321,14 @@ exports.verifyOtp = function (req, res, next) {
         isCorrect,
       ) {
         if (bcryptErr) {
-          logger.error(`Malformed OTP\temail=${email} ip=${getRequestIp(req)}`)
+          logger.error({
+            message: 'Malformed OTP',
+            meta: {
+              action: 'verifyOtp',
+              ip: getRequestIp(req),
+            },
+            error: bcryptErr,
+          })
           return res
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .send(
@@ -287,11 +338,15 @@ exports.verifyOtp = function (req, res, next) {
         if (isCorrect) {
           Token.findOneAndRemove({ email: email }, function (removeErr) {
             if (removeErr) {
-              logger.error(
-                `Failed to validate OTP (removeErr)\temail=${email} ip=${getRequestIp(
-                  req,
-                )}`,
-              )
+              logger.error({
+                message: 'Error removing Token in database',
+                meta: {
+                  action: 'verifyOtp',
+                  email,
+                  ip: getRequestIp(req),
+                },
+                error: removeErr,
+              })
               return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .send(
@@ -302,7 +357,14 @@ exports.verifyOtp = function (req, res, next) {
             }
           })
         } else {
-          logger.info(`Invalid OTP\temail=${email} ip=${getRequestIp(req)}`)
+          logger.info({
+            message: 'Invalid OTP',
+            meta: {
+              action: 'verifyOtp',
+              email,
+              ip: getRequestIp(req),
+            },
+          })
           return res
             .status(HttpStatus.UNAUTHORIZED)
             .send('OTP is invalid. Please try again.')
@@ -361,9 +423,14 @@ exports.signIn = function (req, res) {
 
       // Add user info to session
       req.session.user = userObj
-      logger.info(
-        `Successful Login:\temail=${user.email} ip=${getRequestIp(req)}`,
-      )
+      logger.info({
+        message: 'Successful login',
+        meta: {
+          action: 'signIn',
+          email,
+          ip: getRequestIp(req),
+        },
+      })
       return res.status(HttpStatus.OK).send(userObj)
     },
   )

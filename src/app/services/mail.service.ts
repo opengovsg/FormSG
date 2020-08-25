@@ -1,8 +1,8 @@
+import { String } from 'aws-sdk/clients/cloudhsm'
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import Mail from 'nodemailer/lib/mailer'
 import validator from 'validator'
-import { Logger } from 'winston'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -24,7 +24,7 @@ import {
   isToFieldValid,
 } from '../utils/mail'
 
-const mailLogger = createLoggerWithLabel('mail')
+const logger = createLoggerWithLabel(module)
 
 type SendMailOptions = {
   mailId?: string
@@ -53,7 +53,6 @@ type MailServiceParams = {
   appUrl?: string
   transporter?: Mail
   senderMail?: string
-  logger?: Logger
 }
 
 type AutoReplyMailData = {
@@ -102,27 +101,25 @@ export class MailService {
    *
    * E.g. `FormSG <test@example.com>`
    */
-  #senderFromString: string
-  /**
-   * Logger to log any errors encounted while sending mail.
-   */
-  #logger: Logger
+  #senderFromString: String
 
   constructor({
     appName = config.app.title,
     appUrl = config.app.appUrl,
     transporter = config.mail.transporter,
     senderMail = config.mail.mailFrom,
-    logger = mailLogger,
   }: MailServiceParams = {}) {
-    this.#logger = logger
-
     // Email validation
     if (!validator.isEmail(senderMail)) {
       const invalidMailError = new Error(
         `MailService constructor: senderMail: ${senderMail} is not a valid email`,
       )
-      this.#logger.error(invalidMailError)
+      logger.error({
+        message: `senderMail: ${senderMail} is not a valid email`,
+        meta: {
+          action: 'constructor',
+        },
+      })
       throw invalidMailError
     }
 
@@ -139,35 +136,51 @@ export class MailService {
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
   #sendNodeMail = async (mail: MailOptions, sendOptions?: SendMailOptions) => {
-    const emailLogString = `mailId: ${sendOptions?.mailId}\t Email from:${mail?.from}\t subject:${mail?.subject}\t formId: ${sendOptions?.formId}`
+    const logMeta = {
+      action: '#sendNodeMail',
+      mailId: sendOptions?.mailId,
+      mailFrom: mail?.from,
+      mailSubject: mail?.subject,
+      formId: sendOptions?.formId,
+    }
 
     // Guard against missing mail info.
     if (!mail || isEmpty(mail.to)) {
-      this.#logger.error(`mailError: undefined mail. ${emailLogString}`)
+      logger.error({
+        message: 'Undefined mail',
+        meta: logMeta,
+      })
       return Promise.reject(new Error('Mail undefined error'))
     }
 
     // Guard against invalid emails.
     if (!isToFieldValid(mail.to)) {
-      this.#logger.error(
-        `mailError: ${mail.to} is not a valid email. ${emailLogString}`,
-      )
+      logger.error({
+        message: `${mail.to} is not a valid email`,
+        meta: logMeta,
+      })
       return Promise.reject(new Error('Invalid email error'))
     }
 
-    this.#logger.info(emailLogString)
-    this.#logger.profile(emailLogString)
-
     try {
+      logger.info({
+        message: 'Attempting to send mail',
+        meta: logMeta,
+      })
       const response = await this.#transporter.sendMail(mail)
-      this.#logger.info(`mailSuccess:\t${emailLogString}`)
+
+      logger.info({
+        message: 'Mail successfully sent',
+        meta: logMeta,
+      })
       return response
     } catch (err) {
       // Pass errors to the callback
-      this.#logger.error(
-        `mailError ${err.responseCode}:\t${emailLogString}`,
-        err,
-      )
+      logger.error({
+        message: 'Send mail failure',
+        meta: logMeta,
+        error: err,
+      })
       return Promise.reject(err)
     }
   }
