@@ -1,6 +1,6 @@
 import { Express } from 'express'
 
-import handleSns from './sns.controller'
+import handleSns from './bounce.controller'
 
 const mountSnsRoutes = (app: Express) => {
   /**

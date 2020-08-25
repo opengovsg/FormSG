@@ -9,14 +9,14 @@ import { mocked } from 'ts-jest/utils'
 import * as loggerModule from 'src/config/logger'
 import { ISnsNotification } from 'src/types'
 
-import dbHandler from '../../helpers/jest-db'
-import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 import {
   extractBounceObject,
   makeBounceNotification,
   makeDeliveryNotification,
   MOCK_SNS_BODY,
-} from '../../helpers/sns'
+} from '../../helpers/bounce'
+import dbHandler from '../../helpers/jest-db'
+import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
@@ -33,7 +33,7 @@ import getBounceModel from 'src/app/models/bounce.server.model'
 import {
   isValidSnsRequest,
   updateBounces,
-} from 'src/app/modules/sns/sns.service'
+} from 'src/app/modules/bounce/bounce.service'
 
 const Bounce = getBounceModel(mongoose)
 

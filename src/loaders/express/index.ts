@@ -7,7 +7,7 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
-import mountSnsRoutes from '../../app/modules/sns/sns.routes'
+import mountSnsRoutes from '../../app/modules/bounce/bounce.routes'
 import UserRouter from '../../app/modules/user/user.routes'
 import mountVfnRoutes from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'

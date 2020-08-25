@@ -4,7 +4,7 @@ import HttpStatus from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ISnsNotification } from '../../../types'
 
-import * as snsService from './sns.service'
+import * as snsService from './bounce.service'
 
 const logger = createLoggerWithLabel(module)
 /**

@@ -4,12 +4,12 @@ import mongoose from 'mongoose'
 
 import getBounceModel from 'src/app/models/bounce.server.model'
 
-import dbHandler from '../helpers/jest-db'
 import {
   extractBounceObject,
   makeBounceNotification,
   makeDeliveryNotification,
-} from '../helpers/sns'
+} from '../helpers/bounce'
+import dbHandler from '../helpers/jest-db'
 
 const Bounce = getBounceModel(mongoose)
 
