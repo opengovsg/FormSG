@@ -1,4 +1,3 @@
-import { Request } from 'express'
 import { flattenDeep, sumBy } from 'lodash'
 
 import { FilePlatforms } from '../../shared/constants'
@@ -59,11 +58,11 @@ const isAttachmentResponseFromMap = (
  * based on their fieldId.
  * The response's answer is also changed to the attachment's filename.
  *
- * @param req - Express request object
+ * @param responses - Array of responses received
  * @param attachments - Array of file objects
  */
 export const addAttachmentToResponses = (
-  req: Request<{}, {}, { responses: FieldResponse[] }>,
+  responses: FieldResponse[],
   attachments: IAttachmentInfo[],
 ): void => {
   // Create a map of the attachments with fieldId as keys
@@ -75,9 +74,9 @@ export const addAttachmentToResponses = (
     return acc
   }, {})
 
-  if (req.body.responses) {
+  if (responses) {
     // matches responses to attachments using id, adding filename and content to response
-    req.body.responses.forEach((response) => {
+    responses.forEach((response) => {
       if (isAttachmentResponseFromMap(attachmentMap, response)) {
         const file = attachmentMap[response._id]
         response.answer = file.filename
