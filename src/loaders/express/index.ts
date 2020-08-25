@@ -7,7 +7,7 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
-import mountSnsRoutes from '../../app/modules/bounce/bounce.routes'
+import BounceRouter from '../../app/modules/bounce/bounce.routes'
 import UserRouter from '../../app/modules/user/user.routes'
 import mountVfnRoutes from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
@@ -123,7 +123,7 @@ const loadExpressApp = async (connection: Connection) => {
   apiRoutes.forEach(function (routeFunction) {
     routeFunction(app)
   })
-  mountSnsRoutes(app)
+  app.use('/emailnotifications', BounceRouter)
   mountVfnRoutes(app)
   app.use('/user', UserRouter)
 
