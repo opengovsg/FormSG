@@ -1,6 +1,7 @@
 # FormSG
 
 [![Build Status](https://travis-ci.com/opengovsg/formsg.svg?branch=release)](https://travis-ci.com/opengovsg/formsg)
+[![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
 
@@ -10,6 +11,7 @@
     - [Prerequisites](#prerequisites)
     - [Running Locally](#running-locally)
     - [Environment variables](#environment-variables)
+    - [Trouble-shooting](#trouble-shooting)
   - [Testing](#testing)
     - [Testing Prerequisites](#testing-prerequisites)
     - [Running tests](#running-tests)
