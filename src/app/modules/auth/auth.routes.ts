@@ -4,9 +4,14 @@ import HttpStatus from 'http-status-codes'
 
 import * as OldAuthController from '../../controllers/authentication.server.controller'
 
+import * as AuthMiddlewares from './auth.middlewares'
 import * as AuthRules from './auth.rules'
 
 export const AuthRouter = Router()
+
+// Router level middleware; all requests to this route will need to be validated
+// for authorization.
+AuthRouter.use(celebrate(AuthRules.forRouter), AuthMiddlewares.validateDomain)
 
 /**
  * Check if email domain is a valid agency
