@@ -19,7 +19,7 @@ export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
   // Joi validation ensures existence.
   const { email } = req.body
 
-  const [validationError] = await to(AuthService.validateDomain(email))
+  const [validationError] = await to(AuthService.getAgencyWithEmail(email))
 
   if (validationError) {
     logger.error({

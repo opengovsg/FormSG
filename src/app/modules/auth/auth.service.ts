@@ -19,10 +19,10 @@ const MAX_OTP_ATTEMPTS = 10
  * Validates the domain of the given email. A domain is valid if it exists in
  * the Agency collection in the database.
  * @param email the email to validate the domain for
- * @returns true only if the domain of the email is valid.
+ * @returns the agency document with the domain of the email only if it is valid.
  * @throws error if database query fails or if agency cannot be found.
  */
-export const validateDomain = async (email: string) => {
+export const getAgencyWithEmail = async (email: string) => {
   // Extra guard even if Joi validation has already checked.
   if (!validator.isEmail(email)) {
     throw new InvalidDomainError()
@@ -34,7 +34,7 @@ export const validateDomain = async (email: string) => {
     throw new InvalidDomainError()
   }
 
-  return true
+  return agency
 }
 
 export const createLoginOtp = async (email: string) => {
