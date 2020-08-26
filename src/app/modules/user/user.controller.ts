@@ -8,6 +8,7 @@ import { ApplicationError } from '../core/core.errors'
 
 import {
   createContactOtp,
+  getPopulatedUserById,
   updateUserContact,
   verifyContactOtp,
 } from './user.service'
@@ -21,6 +22,13 @@ export const handleContactSendOtp: RequestHandler<
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { contact, userId } = req.body
+  const sessionUserId = getUserIdFromSession(req.session)
+
+  // Guard against user updating for a different user, or if user is not logged
+  // in.
+  if (!sessionUserId || sessionUserId !== userId) {
+    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+  }
 
   try {
     const generatedOtp = await createContactOtp(userId, contact)
@@ -44,6 +52,13 @@ export const handleContactVerifyOtp: RequestHandler<
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { userId, otp, contact } = req.body
+  const sessionUserId = getUserIdFromSession(req.session)
+
+  // Guard against user updating for a different user, or if user is not logged
+  // in.
+  if (!sessionUserId || sessionUserId !== userId) {
+    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+  }
 
   try {
     await verifyContactOtp(otp, contact, userId)
@@ -57,12 +72,39 @@ export const handleContactVerifyOtp: RequestHandler<
   }
 
   // No error, update user with given contact.
-  const [updateErr] = await to(updateUserContact(contact, userId))
+  const [updateErr, updatedUser] = await to(updateUserContact(contact, userId))
   if (updateErr) {
     // Handle update error.
     logger.warn(updateErr)
     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(updateErr.message)
   }
 
-  return res.sendStatus(HttpStatus.OK)
+  return res.status(HttpStatus.OK).send(updatedUser)
+}
+
+export const handleFetchUser: RequestHandler = async (req, res) => {
+  const sessionUserId = getUserIdFromSession(req.session)
+  if (!sessionUserId) {
+    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+  }
+
+  // Retrieve user with id in session
+  const [dbErr, retrievedUser] = await to(getPopulatedUserById(sessionUserId))
+
+  if (dbErr || !retrievedUser) {
+    logger.warn(
+      `handleFetchUser: Unable to retrieve user ${sessionUserId}`,
+      dbErr,
+    )
+    return res
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .send('Unable to retrieve user')
+  }
+
+  return res.send(retrievedUser)
+}
+
+// TODO(#212): Save userId instead of entire user collection in session.
+const getUserIdFromSession = (session?: Express.Session) => {
+  return session?.user?._id as string | undefined
 }

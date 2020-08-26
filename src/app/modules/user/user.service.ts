@@ -3,10 +3,11 @@ import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
 
 import getAdminVerificationModel from '../../../app/models/admin_verification.server.model'
+import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
 import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
-import { IUserSchema } from '../../../types'
+import { IPopulatedUser, IUserSchema } from '../../../types'
 
 import { InvalidOtpError, MalformedOtpError } from './user.errors'
 
@@ -119,21 +120,36 @@ export const verifyContactOtp = async (
 }
 
 /**
- * Updates the user document with the userId with the given contact.
+ * Updates the user document with the userId with the given contact and returns
+ * the populated updated user.
  * @param contact the contact to update
  * @param userId the user id of the user document to update
+ * @returns the updated user with populated references
+ * @throws error if any db actions fail
  */
 export const updateUserContact = async (
   contact: string,
   userId: IUserSchema['_id'],
-) => {
+): Promise<IPopulatedUser> => {
   // Retrieve user from database.
   // Update user's contact details.
-  const admin = await User.findById(userId)
+  const admin = await User.findById(userId).populate({
+    path: 'agency',
+    model: AGENCY_SCHEMA_ID,
+  })
   if (!admin) {
     throw new Error('User id is invalid')
   }
 
   admin.contact = contact
   return admin.save()
+}
+
+export const getPopulatedUserById = async (
+  userId: IUserSchema['_id'],
+): Promise<IPopulatedUser> => {
+  return User.findById(userId).populate({
+    path: 'agency',
+    model: AGENCY_SCHEMA_ID,
+  })
 }

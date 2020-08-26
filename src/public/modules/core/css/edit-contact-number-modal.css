@@ -40,6 +40,10 @@
   justify-content: center;
 }
 
+#edit-contact-modal .bx-loader {
+  font-size: 30px;
+}
+
 #edit-contact-modal .close-modal {
   text-align: right;
   font-size: 28px;
@@ -223,10 +227,18 @@
   text-decoration: underline;
 }
 
+#edit-contact-modal .ecm__otp__resend button:disabled {
+  opacity: 0.5;
+}
+
 #edit-contact-modal .ecm__otp__resend button:hover,
 #edit-contact-modal .ecm__otp__resend button:active,
 #edit-contact-modal .ecm__otp__resend button:focus {
   color: #264da4;
+}
+
+#edit-contact-modal .ecm__otp__resend span {
+  opacity: 0.5;
 }
 
 #edit-contact-modal .ecm__vfn-button--success {
@@ -235,6 +247,14 @@
 
 #edit-contact-modal .ecm__vfn-button--success:disabled {
   opacity: 1;
+}
+
+#edit-contact-modal .ecm__button {
+  min-width: 140px;
+}
+
+#edit-contact-modal .ecm__button--verify {
+  min-width: 110px;
 }
 
 #edit-contact-modal .otp__form {

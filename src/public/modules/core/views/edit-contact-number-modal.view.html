@@ -12,8 +12,9 @@
       Emergency mobile number
     </div>
     <div class="ecm__content__subheader">
-      We will only contact you in case of urgent issues with your form. You can
-      change this number later in your user settings.
+      Please verify your mobile number so we can contact you in the unlikely
+      case of an urgent form issue. You can change this number later in user
+      settings.
     </div>
     <div class="ecm__content__input">
       <!-- Verification input -->
@@ -34,7 +35,7 @@
           <!-- Errors -->
           <div
             ng-messages="verifyForm.contact.$error"
-            ng-show="verifyForm.contact.$touched"
+            ng-show="verifyForm.contact.$touched && !vm.contact.error"
           >
             <div
               class="alert-custom alert-error"
@@ -52,25 +53,36 @@
               <span class="alert-msg">Please verify your mobile number.</span>
             </div>
           </div>
+          <!--Send otp error messages-->
+          <div ng-show="vm.contact.error">
+            <div class="alert-custom alert-error">
+              <i class="bx bx-exclamation bx-md icon-spacing"></i>
+              <span class="alert-msg">{{vm.contact.error}}</span>
+            </div>
+          </div>
+          <!-- End send otp error messages -->
+          <!-- End errors -->
         </div>
         <div>
           <button
             ng-disabled="!vm.contact.number || vm.vfnState !==
-          vm.VERIFY_STATE.IDLE || vm.isFetching"
-            class="ecm__vfn-button vfn-btn btn-custom btn-large field-group"
+          vm.VERIFY_STATE.IDLE || vm.contact.isFetching"
+            class="ecm__vfn-button ecm__button vfn-btn btn-custom btn-large field-group"
             ng-class="vm.vfnState === vm.VERIFY_STATE.SUCCESS ?
           'ecm__vfn-button--success' : ''"
             ng-click="vm.vfnState !== vm.VERIFY_STATE.SUCCESS && vm.sendOtp()"
           >
             <span
-              ng-if="!vm.isFetching && vm.vfnState !== vm.VERIFY_STATE.SUCCESS"
+              ng-if="!vm.contact.isFetching && vm.vfnState !== vm.VERIFY_STATE.SUCCESS"
               >Verify</span
             >
             <span
-              ng-if="!vm.isFetching && vm.vfnState === vm.VERIFY_STATE.SUCCESS"
+              ng-if="!vm.contact.isFetching && vm.vfnState === vm.VERIFY_STATE.SUCCESS"
               >Verified</span
             >
-            <i ng-if="vm.isFetching" class="bx bx-loader bx-spin"></i>
+            <div ng-if="vm.contact.isFetching">
+              <i class="bx bx-loader bx-spin"></i>
+            </div>
           </button>
         </div>
       </form>
@@ -104,13 +116,14 @@
                 ng-required="true"
                 ng-model="vm.otp.value"
                 ng-pattern="/^\d{6}$/"
-                ng-disabled="vm.isFetching"
+                ng-disabled="vm.otp.isFetching"
+                ng-change="vm.resetOtpErrors()"
               />
               <!-- Errors -->
               <!-- Input errors -->
               <div
                 ng-messages="otpForm.otp.$error"
-                ng-show="otpForm.otp.$touched"
+                ng-show="otpForm.otp.$touched && !vm.otp.error"
               >
                 <div class="alert-custom alert-error" ng-message="required">
                   <i class="bx bx-exclamation bx-md icon-spacing"></i>
@@ -136,14 +149,14 @@
             <div class="">
               <button
                 type="button"
-                class="btn-custom btn-small"
+                class="btn-custom btn-small ecm__button--verify"
                 ng-click="vm.verifyOtp()"
-                ng-disabled="!otpForm.otp.$valid || vm.isFetching"
+                ng-disabled="!otpForm.otp.$valid || vm.otp.isFetching"
               >
-                <div class="btn--loading" ng-show="vm.isFetching">
+                <div class="btn--loading" ng-if="vm.otp.isFetching">
                   <i class="bx bx-loader bx-spin"></i>
                 </div>
-                <span ng-show="!vm.isFetching">Submit</span>
+                <span ng-if="!vm.otp.isFetching">Submit</span>
               </button>
             </div>
           </div>
@@ -151,8 +164,9 @@
           <!--Resend button-->
           <div class="ecm__otp__resend">
             <button
-              ng-disabled="vm.isFetching || vm.otp.countdown > 0"
-              ng-click="vm.getNewOtp()"
+              role="button"
+              ng-disabled="vm.otp.isFetching || vm.otp.countdown > 0"
+              ng-click="vm.sendOtp()"
             >
               Resend OTP
             </button>

@@ -6,6 +6,9 @@ import * as UserRules from './user.rules'
 
 const UserRouter = Router()
 
+UserRouter.get('/', UserController.handleFetchUser)
+
+// /contact subroute
 UserRouter.post(
   '/contact/sendotp',
   celebrate(UserRules.forContactSendOtp),

@@ -5,6 +5,7 @@ import { ImportMock } from 'ts-mock-imports'
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
 import * as UserService from 'src/app/modules/user/user.service'
 import * as OtpUtils from 'src/app/utils/otp'
+import { IAgencySchema, IUserSchema } from 'src/types'
 
 import dbHandler from '../../helpers/jest-db'
 
@@ -17,17 +18,19 @@ describe('user.service', () => {
   const MOCK_OTP = '123456'
   const USER_ID = new ObjectID()
 
-  let defaultAgencyId: ObjectID
+  let defaultAgency: IAgencySchema
+  let defaultUser: IUserSchema
 
   beforeAll(async () => {
     await dbHandler.connect()
 
     // Insert user into collections.
-    const { agency } = await dbHandler.insertFormCollectionReqs({
+    const { agency, user } = await dbHandler.insertFormCollectionReqs({
       userId: USER_ID,
     })
 
-    defaultAgencyId = agency._id
+    defaultAgency = agency.toObject()
+    defaultUser = user.toObject()
   })
   beforeEach(
     async () =>
@@ -173,7 +176,7 @@ describe('user.service', () => {
       // Arrange
       // Create new user
       const user = await dbHandler.insertUser({
-        agencyId: defaultAgencyId,
+        agencyId: defaultAgency._id,
         mailName: 'updateUserContact',
       })
       // User should not have contact
@@ -187,6 +190,8 @@ describe('user.service', () => {
 
       // Assert
       expect(updatedUser.contact).toEqual(MOCK_CONTACT)
+      // Returned document's agency should be populated.
+      expect(updatedUser.agency.toObject()).toEqual(defaultAgency)
     })
 
     it('should throw error if userId is invalid', async () => {
@@ -201,6 +206,30 @@ describe('user.service', () => {
 
       // Assert
       await expect(updatePromise).rejects.toThrowError('User id is invalid')
+    })
+  })
+
+  describe('getPopulatedUserById', () => {
+    it('should return populated user successfully', async () => {
+      // Arrange
+      const expected = {
+        ...defaultUser,
+        agency: defaultAgency,
+      }
+
+      // Act
+      const actual = await UserService.getPopulatedUserById(USER_ID)
+
+      // Assert
+      expect(actual.toObject()).toEqual(expected)
+    })
+
+    it('should return null when user cannot be found', async () => {
+      // Act
+      const userPromise = UserService.getPopulatedUserById(new ObjectID())
+
+      // Assert
+      await expect(userPromise).resolves.toBeNull()
     })
   })
 })

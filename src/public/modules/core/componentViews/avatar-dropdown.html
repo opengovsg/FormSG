@@ -27,13 +27,17 @@
       </li>
       <!-- End user details block -->
       <!-- Emergency contact block -->
-      <li class="navbar__dropdown__user__contact">
+      <li
+        feature-toggle
+        feature-name="sms"
+        class="navbar__dropdown__user__contact"
+      >
         <div
           ng-show="!vm.user.contact"
           class="navbar__dropdown__user__contact--missing"
         >
           <i class="bx bx-error-circle"></i>
-          <span>Emergency contact not added.</span>
+          <span>Emergency contact not added</span>
         </div>
         <div class="navbar__dropdown__user__contact__details">
           <div class="navbar__dropdown__user__contact__details--label">
