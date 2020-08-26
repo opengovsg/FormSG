@@ -36,15 +36,26 @@ describe('user.controller', () => {
     })
     it('should return 200 when successful', async () => {
       const mockRes = expressHandler.mockResponse()
+      const expectedOtp = '123456'
 
       // Mock UserService and SmsFactory to pass without errors.
-      MockUserService.createContactOtp.mockResolvedValueOnce('123456')
+      MockUserService.createContactOtp.mockResolvedValueOnce(expectedOtp)
       MockSmsFactory.sendAdminContactOtp.mockResolvedValueOnce(true)
 
       // Act
       await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
+      // Check passed in params.
+      expect(MockUserService.createContactOtp).toBeCalledWith(
+        MOCK_REQ.body.userId,
+        MOCK_REQ.body.contact,
+      )
+      expect(MockSmsFactory.sendAdminContactOtp).toBeCalledWith(
+        MOCK_REQ.body.contact,
+        expectedOtp,
+        MOCK_REQ.body.userId,
+      )
       expect(mockRes.sendStatus).toBeCalledWith(HttpStatus.OK)
     })
 
@@ -120,6 +131,9 @@ describe('user.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(HttpStatus.BAD_REQUEST)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
+      // Service functions should not be called.
+      expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
+      expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
 
     it('should return 400 when creating of OTP fails', async () => {
@@ -136,6 +150,9 @@ describe('user.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(HttpStatus.BAD_REQUEST)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
+      // Service functions should not be called.
+      expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
+      expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
   })
 
@@ -172,6 +189,16 @@ describe('user.controller', () => {
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
+      // Expect services to be called with correct arguments.
+      expect(MockUserService.verifyContactOtp).toBeCalledWith(
+        MOCK_REQ.body.otp,
+        MOCK_REQ.body.contact,
+        MOCK_REQ.body.userId,
+      )
+      expect(MockUserService.updateUserContact).toBeCalledWith(
+        MOCK_REQ.body.contact,
+        MOCK_REQ.body.userId,
+      )
       expect(mockRes.status).toBeCalledWith(HttpStatus.OK)
       expect(mockRes.send).toBeCalledWith(MOCK_UPDATED_USER)
     })
@@ -251,6 +278,8 @@ describe('user.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(HttpStatus.INTERNAL_SERVER_ERROR)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
+      expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
+      expect(MockUserService.updateUserContact).toHaveBeenCalledTimes(1)
     })
 
     it('should return correct status and message when verifying contact throws ApplicationError', async () => {
@@ -267,6 +296,8 @@ describe('user.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(expectedError.status)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
+      expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
+      expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
 
     it('should return 500 when verifying contact throws non-ApplicationError', async () => {
@@ -284,6 +315,8 @@ describe('user.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(HttpStatus.INTERNAL_SERVER_ERROR)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
+      expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
+      expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
   })
 
