@@ -2,7 +2,7 @@ import { celebrate } from 'celebrate'
 import { Router } from 'express'
 import HttpStatus from 'http-status-codes'
 
-import * as AuthController from '../../controllers/authentication.server.controller'
+import * as OldAuthController from '../../controllers/authentication.server.controller'
 
 import * as AuthRules from './auth.rules'
 
@@ -19,7 +19,7 @@ export const AuthRouter = Router()
 AuthRouter.post(
   '/checkuser',
   celebrate(AuthRules.forCheckUser),
-  AuthController.validateDomain,
+  OldAuthController.validateDomain,
   (_, res) => res.sendStatus(HttpStatus.OK),
 )
 
@@ -38,9 +38,9 @@ AuthRouter.post(
 AuthRouter.post(
   '/sendotp',
   celebrate(AuthRules.forSendOtp),
-  AuthController.validateDomain,
-  AuthController.createOtp,
-  AuthController.sendOtp,
+  OldAuthController.validateDomain,
+  OldAuthController.createOtp,
+  OldAuthController.sendOtp,
 )
 
 /**
@@ -58,9 +58,9 @@ AuthRouter.post(
 AuthRouter.post(
   '/verifyotp',
   celebrate(AuthRules.forVerifyOtp),
-  AuthController.validateDomain,
-  AuthController.verifyOtp,
-  AuthController.signIn,
+  OldAuthController.validateDomain,
+  OldAuthController.verifyOtp,
+  OldAuthController.signIn,
 )
 
 /**
@@ -70,4 +70,4 @@ AuthRouter.post(
  * @returns 200 when user has signed out successfully
  * @returns 400 when the signout failed for one reason or another
  */
-AuthRouter.get('/signout', AuthController.signOut)
+AuthRouter.get('/signout', OldAuthController.signOut)
