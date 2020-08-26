@@ -104,7 +104,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
   return res.send(retrievedUser)
 }
 
-// TODO: Save userId instead of entire user collection in session.
+// TODO(#212): Save userId instead of entire user collection in session.
 const getUserIdFromSession = (session?: Express.Session) => {
   return session?.user?._id as string | undefined
 }
