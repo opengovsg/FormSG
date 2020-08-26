@@ -11,6 +11,13 @@ import * as AuthService from './auth.service'
 
 const logger = createLoggerWithLabel('auth.middlewares')
 
+/**
+ * Middleware to check if domain of email in the body is from a whitelisted
+ * agency.
+ * @return 500 when there was an error validating email
+ * @return 401 when email domain is invalid
+ * @returns calls next when domain is valid
+ */
 export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
   req,
   res,
