@@ -33,14 +33,12 @@ describe('AdminVerification Model', () => {
       expect(actual._id).toBeDefined()
       expect(actual.createdAt).toBeInstanceOf(Date)
       expect(actual.updatedAt).toBeInstanceOf(Date)
-      expect(actual).toEqual(
-        expect.objectContaining({
-          ...DEFAULT_PARAMS,
-          // Add defaults
-          numOtpAttempts: 0,
-          numOtpSent: 0,
-        }),
-      )
+      expect(actual.toObject()).toMatchObject({
+        ...DEFAULT_PARAMS,
+        // Add defaults
+        numOtpAttempts: 0,
+        numOtpSent: 0,
+      })
     })
 
     it('should create and save successfully with defaults overriden', async () => {
