@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -10,9 +11,7 @@ import {
   postWebhook,
 } from 'src/app/services/webhooks.service'
 import { WebhookValidationError } from 'src/app/utils/custom-errors'
-
-import { ResponseMode, SubmissionType } from '../../../../src/types'
-import dbHandler from '../helpers/jest-db'
+import { ResponseMode, SubmissionType } from 'src/types'
 
 const EncryptForm = getEncryptedFormModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -89,7 +88,7 @@ describe('WebhooksService', () => {
   describe('handleWebhookFailure', () => {
     it('should update submission document with failed webhook response', async () => {
       // Act
-      class CustomError extends Error {
+      class MockAxiosError extends Error {
         response: any
         isAxiosError: boolean
         toJSON: () => {}
@@ -105,7 +104,10 @@ describe('WebhooksService', () => {
           this.config = {}
         }
       }
-      let error: AxiosError = new CustomError(ERROR_MSG, MOCK_SUCCESS_RESPONSE)
+      let error: AxiosError = new MockAxiosError(
+        ERROR_MSG,
+        MOCK_SUCCESS_RESPONSE,
+      )
       await handleWebhookFailure(error, testWebhookParam)
       // Assert
       let submission = await EncryptSubmission.findById(
