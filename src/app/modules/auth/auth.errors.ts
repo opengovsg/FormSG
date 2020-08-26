@@ -9,3 +9,11 @@ export class InvalidDomainError extends ApplicationError {
     super(message, HttpStatus.UNAUTHORIZED)
   }
 }
+
+export class InvalidOtpError extends ApplicationError {
+  constructor(
+    message: string = 'OTP has expired. Please request for a new OTP.',
+  ) {
+    super(message, HttpStatus.UNPROCESSABLE_ENTITY)
+  }
+}
