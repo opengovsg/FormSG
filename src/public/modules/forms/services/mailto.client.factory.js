@@ -20,7 +20,10 @@ function MailTo($window) {
 
       Form title: ${title}`
     if (formId) {
-      body += `Form URL: https://form.gov.sg/${formId}`
+      // Note the newline at the start
+      body += dedent`
+
+      Form URL: https://form.gov.sg/${formId}`
     }
     // Note the newline at the start
     body += dedent`
