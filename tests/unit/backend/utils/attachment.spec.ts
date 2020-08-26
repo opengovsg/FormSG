@@ -129,38 +129,44 @@ describe('attachmentsAreValid', () => {
 
 describe('addAttachmentToResponses', () => {
   it('adds attachments to responses correctly', () => {
-    const attachments = [validSingleFile, zipOnlyValid]
-    const responses = [
-      getResponse(attachments[0].fieldId, attachments[0].filename),
-      getResponse(attachments[1].fieldId, attachments[1].filename),
-    ]
-    addAttachmentToResponses(responses, attachments)
-    expect(responses[0].answer).toBe(attachments[0].filename)
-    expect((responses[0] as IAttachmentResponse).filename).toBe(
-      attachments[0].filename,
+    const firstAttachment = validSingleFile
+    const secondAttachment = zipOnlyValid
+    const firstResponse = getResponse(
+      firstAttachment.fieldId,
+      firstAttachment.filename,
     )
-    expect((responses[0] as IAttachmentResponse).content).toEqual(
-      attachments[0].content,
+    const secondResponse = getResponse(
+      secondAttachment.fieldId,
+      secondAttachment.filename,
     )
-    expect(responses[1].answer).toBe(attachments[1].filename)
-    expect((responses[1] as IAttachmentResponse).filename).toBe(
-      attachments[1].filename,
+    addAttachmentToResponses(
+      [firstResponse, secondResponse],
+      [firstAttachment, secondAttachment],
     )
-    expect((responses[1] as IAttachmentResponse).content).toEqual(
-      attachments[1].content,
+    expect(firstResponse.answer).toBe(firstAttachment.filename)
+    expect((firstResponse as IAttachmentResponse).filename).toBe(
+      firstAttachment.filename,
+    )
+    expect((firstResponse as IAttachmentResponse).content).toEqual(
+      firstAttachment.content,
+    )
+    expect(secondResponse.answer).toBe(secondAttachment.filename)
+    expect((secondResponse as IAttachmentResponse).filename).toBe(
+      secondAttachment.filename,
+    )
+    expect((secondResponse as IAttachmentResponse).content).toEqual(
+      secondAttachment.content,
     )
   })
 
   it('overwrites answer with filename', () => {
-    const attachments = [validSingleFile]
-    const responses = [getResponse(attachments[0].fieldId, MOCK_ANSWER)]
-    addAttachmentToResponses(responses, attachments)
-    expect(responses[0].answer).toBe(attachments[0].filename)
-    expect((responses[0] as IAttachmentResponse).filename).toBe(
-      attachments[0].filename,
-    )
-    expect((responses[0] as IAttachmentResponse).content).toEqual(
-      attachments[0].content,
+    const attachment = validSingleFile
+    const response = getResponse(attachment.fieldId, MOCK_ANSWER)
+    addAttachmentToResponses([response], [attachment])
+    expect(response.answer).toBe(attachment.filename)
+    expect((response as IAttachmentResponse).filename).toBe(attachment.filename)
+    expect((response as IAttachmentResponse).content).toEqual(
+      attachment.content,
     )
   })
 
@@ -231,20 +237,28 @@ describe('mapAttachmentsFromParsedResponses', () => {
   })
 
   it('correctly extracts filename and content', () => {
-    const attachments = [validSingleFile, zipOnlyValid]
-    const responses = [
-      merge(getResponse(attachments[0].fieldId, MOCK_ANSWER), attachments[0]),
-      merge(getResponse(attachments[1].fieldId, MOCK_ANSWER), attachments[1]),
-    ]
-    const result = mapAttachmentsFromParsedResponses(responses)
-    expect(result.length).toBe(responses.length)
+    const firstAttachment = validSingleFile
+    const secondAttachment = zipOnlyValid
+    const firstResponse = merge(
+      getResponse(firstAttachment.fieldId, MOCK_ANSWER),
+      firstAttachment,
+    )
+    const secondResponse = merge(
+      getResponse(secondAttachment.fieldId, MOCK_ANSWER),
+      secondAttachment,
+    )
+    const result = mapAttachmentsFromParsedResponses([
+      firstResponse,
+      secondResponse,
+    ])
+    expect(result.length).toBe(2)
     expect(result[0]).toEqual({
-      filename: attachments[0].filename,
-      content: attachments[0].content,
+      filename: firstAttachment.filename,
+      content: firstAttachment.content,
     })
     expect(result[1]).toEqual({
-      filename: attachments[1].filename,
-      content: attachments[1].content,
+      filename: secondAttachment.filename,
+      content: secondAttachment.content,
     })
   })
 })
