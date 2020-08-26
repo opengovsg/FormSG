@@ -47,6 +47,18 @@ function ViewResponsesController(
 
   vm.datePicker = { date: { startDate: null, endDate: null } }
 
+  // BroadcastChannel will only broadcast the message to scripts from the same origin 
+  // (i.e. https://form.gov.sg in practice) so all data should be controlled by scripts 
+  // originating from FormSG. This does not store any data in browser-based storage 
+  // (e.g. cookies or localStorage) so secrets would not be retained past the user closing 
+  // all FormSG tabs containing the form.
+
+  // We do not use polyfills for BroadcastChannel as they usually involve localStorage, 
+  // which is not safe for secret key handling.
+    
+  // BroadcastChannel is not available on Safari and IE 11, so this feature is not available
+  // on those two browsers. Current behavior where users have to upload the secret key on
+  // each tab will continue for users on those two browsers.
   if (typeof BroadcastChannel === 'function') {
     vm.privateKeyChannel = new BroadcastChannel('formsg_private_key_sharing')
     vm.privateKeyChannel.onmessage = function (e) {
