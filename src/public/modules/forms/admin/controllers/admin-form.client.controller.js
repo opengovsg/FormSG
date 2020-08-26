@@ -72,6 +72,12 @@ function AdminFormController(
   FormApi,
 ) {
 
+  // Track active main tab
+  $scope.activeMainTab = 'Build'
+  $scope.setActiveMainTab = (value) => {
+    $scope.activeMainTab = value
+  }
+
   // Banner message on form builder routes
   $scope.bannerContent = $window.siteBannerContent || $window.adminBannerContent
 

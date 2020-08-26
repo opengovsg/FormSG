@@ -291,7 +291,11 @@
   <uib-tabset type="pills">
     <div id="admin-tab-bar">
       <div id="admin-tabs-container" drag-scroll="true">
-        <uib-tab ng-repeat="viewTab in viewTabs" heading="{{viewTab.title}}">
+        <uib-tab
+          ng-repeat="viewTab in viewTabs"
+          heading="{{viewTab.title}}"
+          select="setActiveMainTab(viewTab.route)"
+        >
           <div ui-view="{{viewTab.route}}"></div>
         </uib-tab>
       </div>

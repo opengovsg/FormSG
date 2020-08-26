@@ -255,21 +255,27 @@ function ViewResponsesController(
     }
   }
 
+  vm.setSubmissionsCount = function() {
+    Submissions.count({
+      formId: vm.myform._id,
+    })
+    .then((responsesCount) => {
+      vm.responsesCount = responsesCount
+      $timeout(() => {
+        vm.loading = false
+      }, 200)
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  }
+  
   // When this route is initialized, call the responses count function
+  // Trigger refresh when user navigates to responses subtab
   $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
-    if (newValue === 'responses' && vm.loading) {
-      Submissions.count({
-        formId: vm.myform._id,
-      })
-        .then((responsesCount) => {
-          vm.responsesCount = responsesCount
-          $timeout(() => {
-            vm.loading = false
-          }, 200)
-        })
-        .catch((error) => {
-          console.error(error)
-        })
+    if (newValue === 'responses') {
+      vm.setSubmissionsCount()
+      vm.refreshResponses()
     }
   })
 
@@ -330,6 +336,24 @@ function ViewResponsesController(
     }
   }
 
+
+  // Trigger refresh when user navigates to Data tab
+
+  $scope.$watch(
+    'activeMainTab',
+    (newValue) => {
+      if (newValue === 'results') vm.refreshResponses()
+    },
+  )
+
+  // Trigger refresh of response count for unlocked responses when user navigates to Data tab 
+
+  $scope.$watch('activeMainTab', (newValue) => {
+    if (newValue === 'results') {
+      vm.setSubmissionsCount()
+    }
+  })
+  
   // Triggers the download progress modal after SHOW_PROGRESS_DELAY_MS has
   // passed and is still downloading after export button click.
   let timeoutPromise
