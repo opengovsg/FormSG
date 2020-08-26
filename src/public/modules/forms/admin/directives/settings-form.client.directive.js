@@ -242,7 +242,7 @@ function settingsFormDirective(
         }
 
         // Toggle form status between PUBLIC and PRIVATE
-        const updateFormStatusAndSave = (toastText) => {
+        const updateFormStatusAndSave = (toastText, toastOptions = {}) => {
           $scope.tempForm.status =
             $scope.tempForm.status === 'PRIVATE' ? 'PUBLIC' : 'PRIVATE'
           $scope.btnLiveState = 2 // pressed; loading
@@ -252,7 +252,7 @@ function settingsFormDirective(
               $timeout(() => {
                 $scope.btnLiveState = 1 // unpressed
               }, 1000)
-              Toastr.success(toastText || 'Form updated')
+              Toastr.success(toastText || 'Form updated', toastOptions)
             }, 1000)
           })
         }
