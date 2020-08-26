@@ -1,3 +1,4 @@
+import { AxiosResponse } from 'axios'
 import { Document, Model } from 'mongoose'
 
 import { MyInfoAttribute } from './field'
@@ -79,11 +80,8 @@ export interface IWebhookResponse {
   webhookUrl: string
   signature: string
   errorMessage?: string
-  response?: {
-    status?: number
-    statusText?: string
-    headers?: string
-    data?: string
+  response?: Omit<AxiosResponse<string>, 'config' | 'request' | 'headers'> & {
+    headers: string
   }
 }
 
