@@ -56,7 +56,7 @@ const insertFormCollectionReqs = async ({
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
-} = {}) => {
+}) => {
   const Agency = getAgencyModel(mongoose)
   const User = getUserModel(mongoose)
 

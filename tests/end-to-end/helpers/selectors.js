@@ -93,6 +93,7 @@ const settingsTab = {
   captchaToggleLabel: Selector('#enable-captcha input').parent(),
   formTitleInput: Selector('#settings-name'),
   emailListInput: Selector('#settings-email'),
+  webhookUrlInput: Selector('#settings-webhook-url'),
 }
 
 const dataTab = {

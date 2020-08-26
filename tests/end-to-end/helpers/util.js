@@ -327,12 +327,13 @@ async function createForm(
   { user, formOptions, formFields, logicData },
   Form,
   captchaEnabled,
+  webhookUrl,
 ) {
   const { email } = user
   await logInWithEmail(t, email)
   await addNewForm(t, formOptions)
   // Need to add settings first so MyInfo fields can be added
-  await addSettings(t, formOptions, captchaEnabled)
+  await addSettings(t, formOptions, captchaEnabled, webhookUrl)
   await addFields(t, formFields)
   if (logicData) {
     await addLogic(t, logicData, formFields)
@@ -594,7 +595,7 @@ function getFormIdFromUrl(url) {
   return getSubstringBetween(url, '#!/', '/admin')
 }
 
-async function addSettings(t, formOptions, captchaEnabled) {
+async function addSettings(t, formOptions, captchaEnabled, webhookUrl) {
   await t.click(adminTabs.settings)
 
   // Expect auth type to be none by default, then change it
@@ -613,6 +614,10 @@ async function addSettings(t, formOptions, captchaEnabled) {
     if (!formOptions.hasCaptcha) {
       await t.click(settingsTab.captchaToggleLabel)
     }
+  }
+
+  if (webhookUrl) {
+    await t.typeText(settingsTab.webhookUrlInput, webhookUrl)
   }
 
   // Expect form to be inactive, then activate it
