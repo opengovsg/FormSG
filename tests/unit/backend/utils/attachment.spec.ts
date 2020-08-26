@@ -27,12 +27,6 @@ const invalidSingleFile = {
   fieldId: String(new ObjectId()),
 }
 
-// const zipWithFolder = {
-//   filename: 'folder.zip',
-//   content: readFileSync('./tests/unit/backend/resources/folder.zip'),
-//   fieldId: String(new ObjectId()),
-// }
-
 const zipWithValidAndInvalid = {
   filename: 'invalidandvalid.zip',
   content: readFileSync('./tests/unit/backend/resources/invalidandvalid.zip'),
@@ -62,12 +56,6 @@ const zipOnlyValid = {
   content: readFileSync('./tests/unit/backend/resources/onlyvalid.zip'),
   fieldId: String(new ObjectId()),
 }
-
-// const zipRepeated = {
-//   filename: 'repeated.zip',
-//   content: readFileSync('./tests/unit/backend/resources/repeated.zip'),
-//   fieldId: String(new ObjectId()),
-// }
 
 const MOCK_ANSWER = 'mockAnswer'
 
