@@ -2,10 +2,9 @@ import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
 import validator from 'validator'
 
-import getTokenModel from 'src/app/models/token.server.model'
-
 import config, { otpGenerator } from '../../../config/config'
 import getAgencyModel from '../../models/agency.server.model'
+import getTokenModel from '../../models/token.server.model'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 

@@ -2,11 +2,10 @@ import to from 'await-to-js'
 import { RequestHandler } from 'express'
 import HttpStatus from 'http-status-codes'
 
-import MailService from 'src/app/services/mail.service'
-import { getRequestIp } from 'src/app/utils/request'
-import defaults from 'src/config/defaults'
-
+import defaults from '../../../config/defaults'
 import { createLoggerWithLabel } from '../../../config/logger'
+import MailService from '../../services/mail.service'
+import { getRequestIp } from '../../utils/request'
 import * as UserService from '../user/user.service'
 
 import { InvalidOtpError } from './auth.errors'

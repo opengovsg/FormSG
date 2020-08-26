@@ -1,8 +1,7 @@
 import mongoose from 'mongoose'
 import validator from 'validator'
 
-import { IAgency, IUserSchema } from 'src/types'
-
+import { IAgency, IUserSchema } from '../../../types'
 import getUserModel from '../../models/user.server.model'
 import { InvalidDomainError } from '../auth/auth.errors'
 
