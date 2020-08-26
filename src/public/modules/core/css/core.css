@@ -583,6 +583,11 @@ body #toast-container > .toast-error > .toast-message > a {
   text-decoration: underline;
 }
 
+body #toast-container > .toast-success > .toast-message > a {
+  color: #038363;
+  text-decoration: underline;
+}
+
 /* Custom css for icons */
 
 i.glyphicon-question-sign {

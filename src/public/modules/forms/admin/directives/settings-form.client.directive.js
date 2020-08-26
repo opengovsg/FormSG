@@ -269,6 +269,10 @@ function settingsFormDirective(
               externalScope: () => ({
                 updateFormStatusAndSave,
                 checks,
+                formParams: {
+                  _id: $scope.myform._id,
+                  title: $scope.myform.title
+                }
               }),
             },
           })
