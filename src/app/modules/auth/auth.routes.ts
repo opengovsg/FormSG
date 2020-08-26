@@ -1,31 +1,25 @@
 import { celebrate } from 'celebrate'
 import { Router } from 'express'
-import HttpStatus from 'http-status-codes'
 
-import * as OldAuthController from '../../controllers/authentication.server.controller'
-
+import * as AuthController from './auth.controller'
 import * as AuthMiddlewares from './auth.middlewares'
 import * as AuthRules from './auth.rules'
 
 export const AuthRouter = Router()
 
-// Router level middleware; all requests to this route will need to be validated
-// for authorization.
-AuthRouter.use(celebrate(AuthRules.forRouter), AuthMiddlewares.validateDomain)
-
 /**
  * Check if email domain is a valid agency
  * @route POST /auth/checkuser
  * @group admin
- * @param body.email - the user's email
- * @returns 200 when user has logged in before
- * @returns 400 with a message indicating a bad email address when email is invalid
+ * @param body.email the user's email to validate domain for
+ * @return 200 when email domain is valid
+ * @return 401 when email domain is invalid
  */
 AuthRouter.post(
   '/checkuser',
   celebrate(AuthRules.forCheckUser),
-  OldAuthController.validateDomain,
-  (_, res) => res.sendStatus(HttpStatus.OK),
+  AuthMiddlewares.validateDomain,
+  AuthController.handleCheckUser,
 )
 
 /**
@@ -33,19 +27,18 @@ AuthRouter.post(
  * as part of the login procedure.
  * @route POST /auth/sendotp
  * @group admin
- * @param body.email the user's email
+ * @param body.email the user's email to validate domain for
  * @produces application/json
  * @consumes application/json
- * @returns 200 when OTP has been been successfully sent
- * @returns 400 with a message indicating either a bad email address, or that the agency indicated in the email address has not been onboarded to FormSG when that situation occurs
- * @returns 500 when FormSG was unable to generate the OTP, or create/send the email that delivers the OTP to the user's email address
+ * @return 200 when OTP has been been successfully sent
+ * @return 401 when email domain is invalid
+ * @return 500 when FormSG was unable to generate the OTP, or create/send the email that delivers the OTP to the user's email address
  */
 AuthRouter.post(
   '/sendotp',
   celebrate(AuthRules.forSendOtp),
-  OldAuthController.validateDomain,
-  OldAuthController.createOtp,
-  OldAuthController.sendOtp,
+  AuthMiddlewares.validateDomain,
+  AuthController.handleLoginSendOtp,
 )
 
 /**
@@ -55,24 +48,26 @@ AuthRouter.post(
  * @group admin
  * @param body.email the user's email
  * @param body.otp the otp to verify
+ * @headers 200.set-cookie contains the session cookie upon login
  * @returns 200 when user has successfully logged in, with session cookie set
- * @returns 400 when the OTP is invalid or has expired, or the email is invalid
+ * @returns 401 when the email domain is invalid
+ * @returns 422 when the OTP is invalid
  * @returns 500 when error occurred whilst verifying the OTP
- * @headers 200.set-cookie - contains the session cookie upon login
  */
 AuthRouter.post(
   '/verifyotp',
   celebrate(AuthRules.forVerifyOtp),
-  OldAuthController.validateDomain,
-  OldAuthController.verifyOtp,
-  OldAuthController.signIn,
+  AuthMiddlewares.validateDomain,
+  AuthController.handleLoginVerifyOtp,
 )
 
 /**
  * Sign the user out of the session by clearing the relevant session cookie
  * @route GET /auth/signout
  * @group admin
+ * @headers 200.clear-cookie clears cookie upon signout
  * @returns 200 when user has signed out successfully
- * @returns 400 when the signout failed for one reason or another
+ * @returns 400 when the request does not contain a session
+ * @returns 500 when the session fails to be destroyed
  */
-AuthRouter.get('/signout', OldAuthController.signOut)
+AuthRouter.get('/signout', AuthController.handleSignout)

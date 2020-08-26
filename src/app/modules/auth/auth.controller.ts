@@ -161,9 +161,6 @@ export const handleLoginVerifyOtp: RequestHandler<
   }
 }
 
-/**
- * Precondition: AuthMiddlewares.validateDomain must precede this handler.
- */
 export const handleSignout: RequestHandler = async (req, res) => {
   if (!req.session) {
     logger.error({
