@@ -1,18 +1,21 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
-import { ITokenSchema } from '../../types'
+import { IToken, ITokenModel, ITokenSchema } from '../../types'
 
 export const TOKEN_SCHEMA_ID = 'Token'
 
 const TokenSchema = new Schema<ITokenSchema>({
   email: {
     type: String,
+    required: true,
   },
   hashedOtp: {
     type: String,
+    required: true,
   },
   expireAt: {
     type: Date,
+    required: true,
   },
   numOtpAttempts: {
     type: Number,
@@ -25,6 +28,24 @@ const TokenSchema = new Schema<ITokenSchema>({
 })
 TokenSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
+// Statics
+/**
+ * Upserts given OTP into Token collection.
+ */
+TokenSchema.statics.upsertOtp = async function (
+  this: ITokenModel,
+  upsertParams: Omit<IToken, '_id' | 'numOtpSent'>,
+) {
+  return this.findOneAndUpdate(
+    { email: upsertParams.email },
+    {
+      $set: { ...upsertParams, numOtpAttempts: 0 },
+      $inc: { numOtpSent: 1 },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
+  )
+}
+
 /**
  * Token Schema
  * @param db - Active DB Connection
@@ -32,9 +53,9 @@ TokenSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
  */
 const getTokenModel = (db: Mongoose) => {
   try {
-    return db.model(TOKEN_SCHEMA_ID) as Model<ITokenSchema>
+    return db.model(TOKEN_SCHEMA_ID) as ITokenModel
   } catch {
-    return db.model<ITokenSchema>(TOKEN_SCHEMA_ID, TokenSchema)
+    return db.model<ITokenSchema, ITokenModel>(TOKEN_SCHEMA_ID, TokenSchema)
   }
 }
 
