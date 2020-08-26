@@ -5,8 +5,8 @@ import HttpStatus from 'http-status-codes'
 import defaults from '../../../config/defaults'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getRequestIp } from '../../utils/request'
+import { ApplicationError } from '../core/core.errors'
 
-import { InvalidDomainError } from './auth.errors'
 import * as AuthService from './auth.service'
 
 const logger = createLoggerWithLabel('auth.middlewares')
@@ -31,7 +31,7 @@ export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
       },
       error: validationError,
     })
-    if (validationError instanceof InvalidDomainError) {
+    if (validationError instanceof ApplicationError) {
       return res.status(validationError.status).send(validationError.message)
     }
     return res

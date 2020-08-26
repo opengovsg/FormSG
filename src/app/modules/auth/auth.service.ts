@@ -36,6 +36,13 @@ export const getAgencyWithEmail = async (email: string) => {
   return agency
 }
 
+/**
+ * Creates a login OTP and saves its hash into the Token collection.
+ * @param email the email to link the generated otp to
+ * @returns the generated OTP if saving into DB is successful
+ * @throws {InvalidDomainError} the given email is invalid
+ * @throws {Error} if any error occur whilst creating the OTP or insertion of OTP into the database.
+ */
 export const createLoginOtp = async (email: string) => {
   if (!validator.isEmail(email)) {
     throw new InvalidDomainError()
