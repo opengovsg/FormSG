@@ -584,7 +584,7 @@ body #toast-container > .toast-error > .toast-message > a {
 }
 
 body #toast-container > .toast-success > .toast-message > a {
-  color: #038363;
+  color: #2560eb;
   text-decoration: underline;
 }
 
