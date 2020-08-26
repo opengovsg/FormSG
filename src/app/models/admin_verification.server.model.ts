@@ -64,6 +64,11 @@ AdminVerificationSchema.statics.upsertOtp = async function (
   )
 }
 
+/**
+ * Increments otp attempts for the given admin id.
+ * @param adminId the admin id to increment otp attempts for
+ * @returns the incremented document
+ */
 AdminVerificationSchema.statics.incrementAttemptsByAdminId = async function (
   this: IAdminVerificationModel,
   adminId: IUserSchema['_id'],

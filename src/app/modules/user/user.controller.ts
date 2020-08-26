@@ -15,6 +15,12 @@ import {
 
 const logger = createLoggerWithLabel('user-controller')
 
+/**
+ * Generates an OTP and sends the OTP to the given contact in request body.
+ * @route POST /contact/sendotp
+ * @returns 200 if OTP was successfully sent
+ * @returns 400 on OTP creation or SMS send failure
+ */
 export const handleContactSendOtp: RequestHandler<
   {},
   {},
@@ -36,11 +42,19 @@ export const handleContactSendOtp: RequestHandler<
 
     return res.sendStatus(HttpStatus.OK)
   } catch (err) {
-    // TODO: Send different error messages according to error.
+    // TODO(#193): Send different error messages according to error.
     return res.status(HttpStatus.BAD_REQUEST).send(err.message)
   }
 }
 
+/**
+ * Verifies given OTP with the hashed OTP data, and updates the user's contact
+ * number if the hash matches.
+ * @route POST /contact/verifyotp
+ * @returns 200 when user contact update success
+ * @returns 422 when OTP is invalid
+ * @returns 500 when OTP is malformed or for unknown errors
+ */
 export const handleContactVerifyOtp: RequestHandler<
   {},
   {},
@@ -72,14 +86,14 @@ export const handleContactVerifyOtp: RequestHandler<
   }
 
   // No error, update user with given contact.
-  const [updateErr, updatedUser] = await to(updateUserContact(contact, userId))
-  if (updateErr) {
+  try {
+    const updatedUser = await updateUserContact(contact, userId)
+    return res.status(HttpStatus.OK).send(updatedUser)
+  } catch (updateErr) {
     // Handle update error.
     logger.warn(updateErr)
     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(updateErr.message)
   }
-
-  return res.status(HttpStatus.OK).send(updatedUser)
 }
 
 export const handleFetchUser: RequestHandler = async (req, res) => {
