@@ -47,6 +47,22 @@ TokenSchema.statics.upsertOtp = async function (
 }
 
 /**
+ * Increments the number of login attempts for the document associated with the
+ * given email.
+ * @param email the email to retrieve the related Token document
+ */
+TokenSchema.statics.incrementAttemptsByEmail = async function (
+  this: ITokenModel,
+  email: string,
+) {
+  return this.findOneAndUpdate(
+    { email: email },
+    { $inc: { numOtpAttempts: 1 } },
+    { new: true },
+  )
+}
+
+/**
  * Token Schema
  * @param db - Active DB Connection
  * @returns Token model
