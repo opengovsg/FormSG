@@ -215,7 +215,7 @@ exports.validateEmailSubmission = function (req, res, next) {
     } catch (err) {
       logger.error(`ip="${getRequestIp(req)}" error=`, err)
       if (err instanceof ConflictError) {
-        return res.status(HttpStatus.CONFLICT).send({
+        return res.status(err.status).send({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
