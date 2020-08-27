@@ -30,7 +30,7 @@ const createAttachmentFieldSchema = () => {
   ) {
     const { webhook, responseMode } = this.parent()
 
-    if (responseMode === ResponseMode.Encrypt && webhook.url) {
+    if (responseMode === ResponseMode.Encrypt && webhook?.url) {
       return next(
         Error('Attachments are not allowed when a form has a webhook url'),
       )
