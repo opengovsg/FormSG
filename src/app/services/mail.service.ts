@@ -74,7 +74,7 @@ export type AutoreplySummaryRenderData = {
   formUrl: string
 }
 
-type MailOptions = Omit<Mail.Options, 'to'> & {
+export type MailOptions = Omit<Mail.Options, 'to'> & {
   to: string | string[]
 }
 
