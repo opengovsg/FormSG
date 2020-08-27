@@ -20,6 +20,8 @@ const MOCK_APP_URL = 'mockApp.example.com'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
 const MOCK_PDF = 'fake pdf'
 
+const MOCK_RETRY_COUNT = 10
+
 describe('mail.service', () => {
   const sendMailSpy = jest.fn()
   const mockTransporter = ({
@@ -38,6 +40,8 @@ describe('mail.service', () => {
     senderMail: MOCK_SENDER_EMAIL,
     appName: MOCK_APP_NAME,
     appUrl: MOCK_APP_URL,
+    // Set for instant timeouts during testing.
+    retryParams: { retries: MOCK_RETRY_COUNT, minTimeout: 0, factor: 2 },
   })
 
   describe('Constructor', () => {
@@ -98,6 +102,79 @@ describe('mail.service', () => {
       await expect(
         mailService.sendVerificationOtp(invalidEmail, MOCK_OTP),
       ).rejects.toThrowError('Invalid email error')
+    })
+
+    it('should autoretry when error is thrown by sendNodeMail and pass if second try passes', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      const mockReject = 'something happened oh no'
+      sendMailSpy
+        .mockRejectedValueOnce(mockReject)
+        .mockReturnValueOnce(mockedResponse)
+
+      const expectedArgument = {
+        to: MOCK_VALID_EMAIL,
+        from: MOCK_SENDER_STRING,
+        subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
+        html: MailUtils.generateVerificationOtpHtml({
+          appName: MOCK_APP_NAME,
+          otp: MOCK_OTP,
+          minutesToExpiry: 10,
+        }),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Verification OTP',
+        },
+      }
+
+      // Act
+      const pendingSendVerification = mailService.sendVerificationOtp(
+        MOCK_VALID_EMAIL,
+        MOCK_OTP,
+      )
+
+      // Act + Assert
+      await expect(pendingSendVerification).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should have been called two times since it rejected the first one and
+      // resolved
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should autoreply MOCK_RETRY_COUNT times and return error when all retries fail', async () => {
+      // Arrange
+      const mockReject = 'something happened oh no'
+      sendMailSpy.mockRejectedValue(mockReject)
+
+      const expectedArgument = {
+        to: MOCK_VALID_EMAIL,
+        from: MOCK_SENDER_STRING,
+        subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
+        html: MailUtils.generateVerificationOtpHtml({
+          appName: MOCK_APP_NAME,
+          otp: MOCK_OTP,
+          minutesToExpiry: 10,
+        }),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Verification OTP',
+        },
+      }
+
+      // Act
+      const pendingSendVerification = mailService.sendVerificationOtp(
+        MOCK_VALID_EMAIL,
+        MOCK_OTP,
+      )
+
+      // Act + Assert
+      await expect(pendingSendVerification).rejects.toEqual(mockReject)
+      // Check arguments passed to sendNodeMail
+      // Should have been called MOCK_RETRY_COUNT + 1 times
+      expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
   })
 
