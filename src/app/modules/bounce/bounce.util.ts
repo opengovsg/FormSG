@@ -8,6 +8,7 @@ import {
  * and email type (admin response, email confirmation OTP etc).
  * @param body Body of SNS notification
  * @param header Key of header to extract
+ * @returns the header from the body, if any.
  */
 export const extractHeader = (
   body: IEmailNotification,
@@ -22,6 +23,7 @@ export const extractHeader = (
  * Whether a bounce notification says a given email has bounced.
  * @param bounceInfo Bounce notification from SNS
  * @param email Email address to check
+ * @returns true if the email as bounced, false otherwise
  */
 export const hasEmailBounced = (
   bounceInfo: IBounceNotification,
