@@ -1,11 +1,9 @@
-export class WebhookValidationError extends Error {
-  /**
-   * Custom name of this sub-class of Error
-   */
-  #name: string
+import HttpStatus from 'http-status-codes'
 
-  constructor(message: string) {
-    super(message)
-    this.#name = 'WebhookValidationError'
+import { ApplicationError } from '../core/core.errors'
+
+export class WebhookValidationError extends ApplicationError {
+  constructor(message: string, meta?: string) {
+    super(message, HttpStatus.UNPROCESSABLE_ENTITY, meta)
   }
 }
