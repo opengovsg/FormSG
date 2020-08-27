@@ -1,6 +1,7 @@
 angular
   .module('core')
   .controller('EditContactNumberModalController', [
+    '$state',
     '$interval',
     '$http',
     '$timeout',
@@ -13,6 +14,7 @@ angular
   ])
 
 function EditContactNumberModalController(
+  $state,
   $interval,
   $http,
   $timeout,
