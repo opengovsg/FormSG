@@ -8,6 +8,7 @@ import path from 'path'
 import url from 'url'
 
 import mountSnsRoutes from '../../app/modules/sns/sns.routes'
+import UserRouter from '../../app/modules/user/user.routes'
 import mountVfnRoutes from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
 import config from '../../config/config'
@@ -124,6 +125,7 @@ const loadExpressApp = async (connection: Connection) => {
   })
   mountSnsRoutes(app)
   mountVfnRoutes(app)
+  app.use('/user', UserRouter)
 
   app.use(sentryMiddlewares())
 

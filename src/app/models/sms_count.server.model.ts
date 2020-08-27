@@ -1,8 +1,11 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
 import {
+  IAdminContactSmsCountSchema,
   ISmsCount,
+  ISmsCountModel,
   ISmsCountSchema,
+  IVerificationSmsCountSchema,
   LogSmsParams,
   LogType,
   SmsType,
@@ -13,69 +16,83 @@ import { USER_SCHEMA_ID } from './user.server.model'
 
 const SMS_COUNT_SCHEMA_NAME = 'SmsCount'
 
-interface ISmsCountModel extends Model<ISmsCountSchema> {
-  logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
-}
-
-const SmsCountSchema = new Schema<ISmsCountSchema>(
-  {
-    form: {
+const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
+  form: {
+    type: Schema.Types.ObjectId,
+    ref: FORM_SCHEMA_ID,
+    required: true,
+  },
+  formAdmin: {
+    email: { type: String, required: true },
+    userId: {
       type: Schema.Types.ObjectId,
-      ref: FORM_SCHEMA_ID,
+      ref: USER_SCHEMA_ID,
       required: true,
     },
-    formAdmin: {
-      email: { type: String, required: true },
-      userId: {
-        type: Schema.Types.ObjectId,
-        ref: USER_SCHEMA_ID,
+  },
+})
+
+const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
+  admin: {
+    type: Schema.Types.ObjectId,
+    ref: USER_SCHEMA_ID,
+    required: true,
+  },
+})
+
+const compileSmsCountModel = (db: Mongoose) => {
+  const SmsCountSchema = new Schema<ISmsCountSchema>(
+    {
+      msgSrvcSid: {
+        type: String,
+        required: true,
+      },
+      logType: {
+        type: String,
+        enum: Object.values(LogType),
+        required: true,
+      },
+      smsType: {
+        type: String,
+        enum: Object.values(SmsType),
         required: true,
       },
     },
-    msgSrvcSid: {
-      type: String,
-      required: true,
+    {
+      timestamps: {
+        createdAt: true,
+        updatedAt: false,
+      },
+      discriminatorKey: 'smsType',
     },
-    logType: {
-      type: String,
-      enum: Object.values(LogType),
-      required: true,
-    },
-    smsType: {
-      type: String,
-      enum: Object.values(SmsType),
-      required: true,
-    },
-  },
-  {
-    timestamps: {
-      createdAt: true,
-      updatedAt: false,
-    },
-  },
-)
+  )
 
-SmsCountSchema.statics.logSms = async function (
-  this: ISmsCountModel,
-  { otpData, msgSrvcSid, smsType, logType }: LogSmsParams,
-) {
-  const schemaData: Omit<ISmsCount, '_id'> = {
-    ...otpData,
-    msgSrvcSid,
-    smsType,
-    logType,
+  SmsCountSchema.statics.logSms = async function (
+    this: ISmsCountModel,
+    { otpData, msgSrvcSid, smsType, logType }: LogSmsParams,
+  ) {
+    const schemaData: Omit<ISmsCount, '_id'> = {
+      ...otpData,
+      msgSrvcSid,
+      smsType,
+      logType,
+    }
+
+    const smsCount: ISmsCountSchema = new this(schemaData)
+
+    return smsCount.save()
   }
 
-  const smsCount: ISmsCountSchema = new this(schemaData)
-
-  return smsCount.save()
-}
-
-const compileSmsCountModel = (db: Mongoose) => {
-  return db.model<ISmsCountSchema, ISmsCountModel>(
+  const SmsCountModel = db.model<ISmsCountSchema, ISmsCountModel>(
     SMS_COUNT_SCHEMA_NAME,
     SmsCountSchema,
   )
+
+  // Adding Discriminators
+  SmsCountModel.discriminator(SmsType.verification, VerificationSmsCountSchema)
+  SmsCountModel.discriminator(SmsType.adminContact, AdminContactSmsCountSchema)
+
+  return SmsCountModel
 }
 
 /**

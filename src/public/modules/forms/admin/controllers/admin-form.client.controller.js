@@ -102,20 +102,6 @@ function AdminFormController(
   $scope.viewTabs = getViewTabs($scope.userCanEdit)
 
   /* Top bar within form */
-
-  // Massage user for display at top bar within form
-  $scope.userShort = '?'
-  if ('email' in $scope.user) {
-    let userEmail = $scope.user.email
-    let userName = userEmail.split('@')[0]
-    if (userName.length >= 1) {
-      $scope.userShort = userName.charAt(0)
-    }
-    if (userName.length >= 2) {
-      $scope.userShort += userName.charAt(1)
-    }
-  }
-
   $scope.lastModifiedString = '-'
   $scope.$watch(
     '[myform.lastModified]',

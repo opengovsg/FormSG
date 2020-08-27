@@ -22,6 +22,7 @@ const { getRequestIp } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(
   'authentication',
 )
+const { generateOtp } = require('../utils/otp')
 const MailService = require('../services/mail.service').default
 
 const MAX_OTP_ATTEMPTS = 10
@@ -148,7 +149,7 @@ exports.createOtp = function (req, res, next) {
   // 3. Save OTP to DB
 
   let email = res.locals.email
-  let otp = config.otpGenerator()
+  let otp = generateOtp()
   bcrypt.hash(otp, 10, function (bcryptErr, hashedOtp) {
     if (bcryptErr) {
       return res
@@ -355,6 +356,7 @@ exports.signIn = function (req, res) {
       let userObj = {
         agency: agency,
         email: user.email,
+        contact: user.contact,
         _id: user._id,
         betaFlags: user.betaFlags,
       }

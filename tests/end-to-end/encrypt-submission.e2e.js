@@ -242,6 +242,7 @@ const getDefaultFormOptions = async ({
   const user = await User.create({
     email: String(Date.now()) + '@data.gov.sg',
     agency: govTech._id,
+    contact: '+6587654321',
   })
   return {
     user,

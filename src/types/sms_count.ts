@@ -1,10 +1,11 @@
-import { Document } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
-import { IFormSchema, OtpData } from './form'
-import { IUserSchema } from './user'
+import { FormOtpData, IFormSchema } from './form'
+import { AdminContactOtpData, IUserSchema } from './user'
 
 export enum SmsType {
   verification = 'VERIFICATION',
+  adminContact = 'ADMIN_CONTACT',
 }
 
 export enum LogType {
@@ -13,18 +14,13 @@ export enum LogType {
 }
 
 export type LogSmsParams = {
-  otpData: OtpData
+  otpData: FormOtpData | AdminContactOtpData
   msgSrvcSid: string
   smsType: SmsType
   logType: LogType
 }
 
 export interface ISmsCount {
-  form: IFormSchema['_id']
-  formAdmin: {
-    email: string
-    userId: IUserSchema['_id']
-  }
   // The Twilio SID used to send the SMS. Not to be confused with msgSrvcName.
   msgSrvcSid: string
   logType: LogType
@@ -34,3 +30,23 @@ export interface ISmsCount {
 }
 
 export interface ISmsCountSchema extends ISmsCount, Document {}
+
+export interface IVerificationSmsCount extends ISmsCount {
+  form: IFormSchema['_id']
+  formAdmin: {
+    email: string
+    userId: IUserSchema['_id']
+  }
+}
+
+export interface IVerificationSmsCountSchema extends ISmsCountSchema {}
+
+export interface IAdminContactSmsCount extends ISmsCount {
+  admin: IUserSchema['_id']
+}
+
+export interface IAdminContactSmsCountSchema extends ISmsCountSchema {}
+
+export interface ISmsCountModel extends Model<ISmsCountSchema> {
+  logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
+}

@@ -10,12 +10,12 @@ import {
   BasicField,
   Colors,
   FormLogoState,
+  FormOtpData,
   IEmailFormSchema,
   IEncryptedFormSchema,
   IFormSchema,
   IPopulatedForm,
   LogicType,
-  OtpData,
   Permission,
   ResponseMode,
   Status,
@@ -85,7 +85,7 @@ const formSchemaOptions: SchemaOptions = {
 }
 
 export interface IFormModel extends Model<IFormSchema> {
-  getOtpData(formId: string): Promise<OtpData | null>
+  getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
 }
 
@@ -415,7 +415,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         path: 'admin',
         select: 'email',
       })
-      const otpData: OtpData = {
+      const otpData: FormOtpData = {
         form: data._id,
         formAdmin: {
           email: data.admin.email,
