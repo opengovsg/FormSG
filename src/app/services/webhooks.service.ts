@@ -10,13 +10,12 @@ import {
   IFormSchema,
   ISubmissionSchema,
   IWebhookResponse,
-  LogWebhookParams,
   WebhookParams,
 } from '../../types'
 import { getEncryptSubmissionModel } from '../models/submission.server.model'
 import { WebhookValidationError } from '../utils/custom-errors'
 
-const logger = createLoggerWithLabel('webhooks')
+const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 /**
@@ -103,15 +102,19 @@ const logWebhookSuccess = (
   { webhookUrl, submissionId, formId, now, signature }: WebhookParams,
 ): void => {
   const status = get(response, 'status')
-  const loggingParams: LogWebhookParams = {
-    status,
-    submissionId,
-    formId,
-    now,
-    webhookUrl,
-    signature,
-  }
-  logger.info(getConsoleMessage('Webhook POST succeeded', loggingParams))
+
+  logger.info({
+    message: 'Webhook POST succeeded',
+    meta: {
+      action: 'logWebhookSuccess',
+      status,
+      submissionId,
+      formId,
+      now,
+      webhookUrl,
+      signature,
+    },
+  })
 }
 
 // Logging for webhook failure
@@ -119,20 +122,30 @@ export const logWebhookFailure = (
   error: Error | AxiosError,
   { webhookUrl, submissionId, formId, now, signature }: WebhookParams,
 ): void => {
-  const errorMessage = get(error, 'message')
-  let loggingParams: LogWebhookParams = {
+  let logMeta = {
+    action: 'logWebhookFailure',
     submissionId,
     formId,
     now,
     webhookUrl,
     signature,
-    errorMessage,
   }
+
   if (error instanceof WebhookValidationError) {
-    logger.error(getConsoleMessage('Webhook not attempted', loggingParams))
+    logger.error({
+      message: 'Webhook not attempted',
+      meta: logMeta,
+      error,
+    })
   } else {
-    loggingParams.status = get(error, 'response.status')
-    logger.error(getConsoleMessage('Webhook POST failed', loggingParams))
+    logger.error({
+      message: 'Webhook POST failed',
+      meta: {
+        ...logMeta,
+        status: get(error, 'response.status'),
+      },
+      error,
+    })
   }
 }
 
@@ -152,25 +165,17 @@ const updateSubmissionsDb = async (
       throw new Error('Submission not found in database.')
     }
   } catch (error) {
-    logger.error(
-      getConsoleMessage('Database update for webhook status failed', {
+    logger.error({
+      message: 'Database update for webhook status failed',
+      meta: {
+        action: 'updateSubmissionsDb',
         formId,
         submissionId,
         updateObj: stringifySafe(updateObj),
-        dbErrorMessage: get(error, 'message'),
-      }),
-    )
+      },
+      error,
+    })
   }
-}
-
-// Creates a string with a title, followed by a tab, followed
-// by a list of 'key=value' pairs separated by spaces
-const getConsoleMessage = (title: string, params: object) => {
-  let consoleMessage = title + ':\t'
-  consoleMessage += Object.entries(params)
-    .map(([key, value]) => key + '=' + value)
-    .join(' ')
-  return consoleMessage
 }
 
 // Formats webhook success info into an object to update Submissions collection

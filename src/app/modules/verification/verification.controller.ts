@@ -6,7 +6,7 @@ import { VfnErrors } from '../../../shared/util/verification'
 
 import * as verificationService from './verification.service'
 
-const logger = createLoggerWithLabel('verification')
+const logger = createLoggerWithLabel(module)
 /**
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
@@ -27,7 +27,13 @@ export const createTransaction: RequestHandler<
       ? res.status(HttpStatus.CREATED).json(transaction)
       : res.sendStatus(HttpStatus.OK)
   } catch (error) {
-    logger.error(`createTransaction: ${error}`)
+    logger.error({
+      message: 'Error creating transaction',
+      meta: {
+        action: 'createTransaction',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -46,7 +52,13 @@ export const getTransactionMetadata: RequestHandler<{
     )
     return res.status(HttpStatus.OK).json(transaction)
   } catch (error) {
-    logger.error(`getTransaction: ${error}`)
+    logger.error({
+      message: 'Error retrieving transaction metadata',
+      meta: {
+        action: 'getTransactionMetadata',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -68,7 +80,13 @@ export const resetFieldInTransaction: RequestHandler<
     await verificationService.resetFieldInTransaction(transaction, fieldId)
     return res.sendStatus(HttpStatus.OK)
   } catch (error) {
-    logger.error(`resetFieldInTransaction: ${error}`)
+    logger.error({
+      message: 'Error resetting field in transaction',
+      meta: {
+        action: 'resetFieldInTransaction',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -90,7 +108,13 @@ export const getNewOtp: RequestHandler<
     await verificationService.getNewOtp(transaction, fieldId, answer)
     return res.sendStatus(HttpStatus.CREATED)
   } catch (error) {
-    logger.error(`getNewOtp: ${error}`)
+    logger.error({
+      message: 'Error retrieving new OTP',
+      meta: {
+        action: 'getNewOtp',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -113,7 +137,13 @@ export const verifyOtp: RequestHandler<
     const data = await verificationService.verifyOtp(transaction, fieldId, otp)
     return res.status(HttpStatus.OK).json(data)
   } catch (error) {
-    logger.error(`verifyOtp: ${error}`)
+    logger.error({
+      message: 'Error verifying OTP',
+      meta: {
+        action: 'verifyOtp',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }

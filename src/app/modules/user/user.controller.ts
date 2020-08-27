@@ -13,7 +13,7 @@ import {
   verifyContactOtp,
 } from './user.service'
 
-const logger = createLoggerWithLabel('user-controller')
+const logger = createLoggerWithLabel(module)
 
 /**
  * Generates an OTP and sends the OTP to the given contact in request body.
@@ -106,10 +106,13 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
   const [dbErr, retrievedUser] = await to(getPopulatedUserById(sessionUserId))
 
   if (dbErr || !retrievedUser) {
-    logger.warn(
-      `handleFetchUser: Unable to retrieve user ${sessionUserId}`,
-      dbErr,
-    )
+    logger.warn({
+      message: `Unable to retrieve user ${sessionUserId}`,
+      meta: {
+        action: 'handleFetchUser',
+      },
+      error: dbErr,
+    })
     return res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .send('Unable to retrieve user')

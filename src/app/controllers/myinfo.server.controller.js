@@ -12,7 +12,7 @@ const HttpStatus = require('http-status-codes')
 
 const { sessionSecret } = require('../../config/config')
 const { getRequestIp } = require('../utils/request')
-const logger = require('../../config/logger').createLoggerWithLabel('myinfo')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getMyInfoHashModel = require('../models/myinfo_hash.server.model').default
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
@@ -50,21 +50,19 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
     }),
   )
   if (fetchError) {
-    if (CircuitBreaker.isOurError(fetchError)) {
-      logger.error(
-        `Circuit breaker tripped for formId ${formId} with singpassEserviceId ${esrvcId}:\t ip=${getRequestIp(
-          req,
-        )}`,
-        fetchError,
-      )
-    } else {
-      logger.error(
-        `Error retrieving from MyInfo for formId ${formId} with singpassEserviceId ${esrvcId}:\t ip=${getRequestIp(
-          req,
-        )}`,
-        fetchError,
-      )
-    }
+    const logMessage = CircuitBreaker.isOurError(fetchError)
+      ? 'Circuit breaker tripped'
+      : 'Error retrieving from MyInfo'
+    logger.error({
+      message: logMessage,
+      meta: {
+        action: 'addMyInfo',
+        ip: getRequestIp(req),
+        formId,
+        esrvcId,
+      },
+      error: fetchError,
+    })
     res.locals.myInfoError = true
     return next()
   }
@@ -107,17 +105,30 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
         (err) => {
           if (err) {
             res.locals.myInfoError = true
-            logger.error(`Error writing to DB:\t ip=${getRequestIp(req)}`, err)
+            logger.error({
+              message: 'Error writing to DB',
+              meta: {
+                action: 'addMyInfo',
+                ip: getRequestIp(req),
+                formId,
+              },
+              error: err,
+            })
           }
           return next()
         },
       )
     })
     .catch((error) => {
-      logger.error(
-        `Error hashing MyInfo fields:\t ip=${getRequestIp(req)}`,
+      logger.error({
+        message: 'Error hashing MyInfo fields',
+        meta: {
+          action: 'addMyInfo',
+          ip: getRequestIp(req),
+          formId,
+        },
         error,
-      )
+      })
       res.locals.myInfoError = true
       return next()
     })
@@ -176,11 +187,14 @@ exports.verifyMyInfoVals = function (req, res, next) {
       { uinFin: hashedUinFin, form: formObjId },
       (err, hashedObj) => {
         if (err) {
-          logger.error(
-            `[MyInfo] Unable to connect to database: ip=${getRequestIp(
-              req,
-            )} ${err}`,
-          )
+          logger.error({
+            message: 'Error retrieving MyInfo hash from database',
+            meta: {
+              action: 'verifyMyInfoVals',
+              ip: getRequestIp(req),
+            },
+            error: err,
+          })
           return res.status(HttpStatus.SERVICE_UNAVAILABLE).send({
             message: 'MyInfo verification unavailable, please try again later.',
             spcpSubmissionFailure: true,
@@ -188,11 +202,14 @@ exports.verifyMyInfoVals = function (req, res, next) {
         }
 
         if (!hashedObj) {
-          logger.error(
-            `[MyInfo] Unable to find hashes for form: ${formObjId} ip=${getRequestIp(
-              req,
-            )}`,
-          )
+          logger.error({
+            message: `Unable to find MyInfo hashes for ${formObjId}`,
+            meta: {
+              action: 'verifyMyInfoVals',
+              ip: getRequestIp(req),
+              formId: formObjId,
+            },
+          })
           return res.status(HttpStatus.GONE).send({
             message:
               'MyInfo verification expired, please refresh and try again.',
@@ -233,11 +250,14 @@ exports.verifyMyInfoVals = function (req, res, next) {
                 .filter(([_, compare]) => compare === false)
                 .map(([clientField, _]) => clientField.attr)
 
-              logger.error(
-                `[MyInfo] Hash did not match for form:\t${formObjId}\tfields:\t${hashFailedAttrs} ip=${getRequestIp(
-                  req,
-                )}`,
-              )
+              logger.error({
+                message: `Hash did not match for form ${formObjId}`,
+                meta: {
+                  action: 'verifyMyInfoVals',
+                  ip: getRequestIp(req),
+                  failedFields: hashFailedAttrs,
+                },
+              })
               return res.status(HttpStatus.UNAUTHORIZED).send({
                 message: 'MyInfo verification failed.',
                 spcpSubmissionFailure: true,

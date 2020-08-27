@@ -6,7 +6,7 @@ import { ISnsNotification } from '../../../types'
 
 import * as snsService from './sns.service'
 
-const logger = createLoggerWithLabel('sns-controller')
+const logger = createLoggerWithLabel(module)
 /**
  * Validates that a request came from Amazon SNS, then updates the Bounce
  * collection.
@@ -28,7 +28,13 @@ const handleSns = async (
     await snsService.updateBounces(req.body)
     return res.sendStatus(HttpStatus.OK)
   } catch (err) {
-    logger.warn(err)
+    logger.warn({
+      message: 'Error updating bounces',
+      meta: {
+        action: 'handleSns',
+      },
+      error: err,
+    })
     return res.sendStatus(HttpStatus.BAD_REQUEST)
   }
 }

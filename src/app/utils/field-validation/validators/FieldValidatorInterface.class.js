@@ -1,5 +1,5 @@
 const logger = require('../../../../config/logger').createLoggerWithLabel(
-  'FieldValidatorInterface',
+  module,
 )
 
 /**
@@ -41,14 +41,20 @@ class FieldValidatorInterface {
    */
   logIfInvalid(isValid, message) {
     if (!isValid) {
-      let stmt = `formId="${this.formId}" fieldId="${this.formField._id}"`
-      if (this.formField.fieldType) {
-        stmt += ` fieldType="${this.formField.fieldType}"`
-      } else if (this.formField.columnType) {
-        stmt += ` fieldType="table" columnType="${this.formField.columnType}"`
+      const logMeta = {
+        action: 'logIfInvalid',
+        formId: this.formId,
+        fieldId: this.formField._id,
       }
-      stmt += ` message="Invalid field: ${message}"`
-      logger.error(stmt)
+      if (this.formField.fieldType) {
+        logMeta.fieldType = this.formField.fieldType
+      } else if (this.formField.columnType) {
+        logMeta.columnType = this.formField.columnType
+      }
+      logger.error({
+        message: `Invalid field: ${message}`,
+        meta: logMeta,
+      })
     }
   }
 
@@ -65,9 +71,15 @@ class FieldValidatorInterface {
       this.formField.fieldType === 'checkbox'
     ) {
       if (!Object.prototype.hasOwnProperty.call(this.response, 'answerArray')) {
-        logger.info(
-          `formId="${this.formId}" fieldId="${this.formField._id}" fieldType="${this.formField.fieldType}" message="answerArray does not exist"`,
-        )
+        logger.info({
+          message: 'answerArray does not exist',
+          meta: {
+            action: 'logIfAnswerArrayDoesNotExist',
+            formId: this.formId,
+            fieldId: this.formField._id,
+            fieldType: this.formField.fieldType,
+          },
+        })
       }
     }
   }

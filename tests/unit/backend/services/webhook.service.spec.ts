@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { mocked } from 'ts-jest/utils'
 
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -12,6 +13,9 @@ import {
 } from 'src/app/services/webhooks.service'
 import { WebhookValidationError } from 'src/app/utils/custom-errors'
 import { ResponseMode, SubmissionType } from 'src/types'
+
+jest.mock('axios')
+const mockAxios = mocked(axios, true)
 
 const EncryptForm = getEncryptedFormModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -161,15 +165,17 @@ describe('WebhooksService', () => {
   describe('postWebhook', () => {
     it('should make post request with valid parameters', async () => {
       // Arrange
-      const spyAxios = spyOn(axios, 'post')
-      // Act and Assert
-      spyAxios.and.callFake((url, data, config) => {
+      mockAxios.post.mockImplementationOnce((url, data, config) => {
         expect(url).toEqual(MOCK_WEBHOOK_URL)
         expect(data).toEqual(testSubmissionWebhookView)
         expect(config).toEqual(testConfig)
-        return MOCK_SUCCESS_RESPONSE
+        return Promise.resolve(MOCK_SUCCESS_RESPONSE)
       })
+
+      // Act
       const response = await postWebhook(testWebhookParam)
+
+      // Assert
       expect(response).toEqual(MOCK_SUCCESS_RESPONSE)
     })
   })

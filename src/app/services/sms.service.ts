@@ -17,7 +17,7 @@ import {
 import getFormModel from '../models/form.server.model'
 import getSmsCountModel from '../models/sms_count.server.model'
 
-const logger = createLoggerWithLabel('sms')
+const logger = createLoggerWithLabel(module)
 const SmsCount = getSmsCountModel(mongoose)
 const Form = getFormModel(mongoose)
 const secretsManager = new SecretsManager({ region: config.aws.region })
@@ -59,9 +59,14 @@ const getCredentials = async (
       }
     }
   } catch (err) {
-    logger.error(
-      `getCredentials: msgSrvcName="${msgSrvcName}" error="${err.stack}"`,
-    )
+    logger.error({
+      message: 'Error retrieving credentials',
+      meta: {
+        action: 'getCredentials',
+        msgSrvcName,
+      },
+      error: err,
+    })
   }
   return null
 }
@@ -106,13 +111,25 @@ const getTwilio = async (
         }
         // Add it to the cache
         twilioClientCache.set(msgSrvcName, result)
-        logger.info(`getTwilio: added msgSrvcName="${msgSrvcName}" to cache`)
+        logger.info({
+          message: `Added ${msgSrvcName} to cache`,
+          meta: {
+            action: 'getTwilio',
+            msgSrvcName,
+          },
+        })
         return result
       }
     } catch (err) {
-      logger.error(
-        `getTwilio: Defaulting to central twilio client. msgSrvcName="${msgSrvcName}" error="${err.stack}"`,
-      )
+      logger.warn({
+        message:
+          'Failed to retrieve from cache. Defaulting to central Twilio client',
+        meta: {
+          action: 'getTwilio',
+          msgSrvcName,
+        },
+        error: err,
+      })
     }
   }
   return defaultConfig
@@ -173,15 +190,26 @@ const send = async (
         logType: LogType.success,
       }
       SmsCount.logSms(logParams).catch((err) => {
-        logger.error('Error adding smsCount to database: ', err, logParams)
+        logger.error({
+          message: 'Error logging sms count to database',
+          meta: {
+            action: 'send',
+            ...logParams,
+          },
+          error: err,
+        })
       })
 
       return true
     })
     .catch((err) => {
-      logger.warn(
-        `send: SMS Message error with errorCode=${err.code} message=${err.message} status=${err.status}`,
-      )
+      logger.error({
+        message: 'SMS send error',
+        meta: {
+          action: 'send',
+        },
+        error: err,
+      })
 
       // Log failure
       const logParams: LogSmsParams = {
@@ -191,7 +219,14 @@ const send = async (
         logType: LogType.failure,
       }
       SmsCount.logSms(logParams).catch((err) => {
-        logger.error('Error adding smsCount to database: ', err, logParams)
+        logger.error({
+          message: 'Error logging sms count to database',
+          meta: {
+            action: 'send',
+            ...logParams,
+          },
+          error: err,
+        })
       })
 
       // Invalid number error code, throw a more reasonable error for error
@@ -220,12 +255,24 @@ const sendVerificationOtp = async (
   formId: string,
   defaultConfig: TwilioConfig,
 ) => {
-  logger.info(`sendVerificationOtp: formId="${formId}"`)
+  logger.info({
+    message: `Sending verification OTP for ${formId}`,
+    meta: {
+      action: 'sendVerificationOtp',
+      formId,
+    },
+  })
   const otpData = await getOtpDataFromForm(formId)
 
   if (!otpData) {
-    const errMsg = `sendVerificationOtp: Unable to retrieve otpData from formId="${formId}`
-    logger.error(errMsg)
+    const errMsg = `Unable to retrieve otpData from ${formId}`
+    logger.error({
+      message: errMsg,
+      meta: {
+        action: 'sendVerificationOtp',
+        formId,
+      },
+    })
     throw new Error(errMsg)
   }
   const twilioData = await getTwilio(otpData.msgSrvcName, defaultConfig)
@@ -241,7 +288,13 @@ const sendAdminContactOtp = async (
   userId: string,
   defaultConfig: TwilioConfig,
 ) => {
-  logger.info(`sendAdminContactOtp: userId="${userId}"`)
+  logger.info({
+    message: `Sending admin contact verification OTP for ${userId}`,
+    meta: {
+      action: 'sendAdminContactOtp',
+      userId,
+    },
+  })
 
   const message = `Use the OTP ${otp} to verify your emergency contact number.`
 
