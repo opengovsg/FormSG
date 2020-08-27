@@ -1,3 +1,4 @@
+import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
@@ -16,25 +17,22 @@ const compileUserModel = (db: Mongoose) => {
     email: {
       type: String,
       trim: true,
-      unique: 'Account already exists with this email',
+      unique: true,
       required: 'Please enter your email',
       validate: {
         // Check if email entered exists in the Agency collection
         validator: async (value: string) => {
-          return new Promise<boolean>((resolve, reject) => {
-            if (!validator.isEmail(value)) {
-              return resolve(false)
-            }
-            const emailDomain = value.split('@').pop()
+          if (!validator.isEmail(value)) {
+            return false
+          }
 
-            Agency.findOne({ emailDomain }, (err, agency) => {
-              if (err || !agency) {
-                return reject(err)
-              } else {
-                return resolve(true)
-              }
-            })
-          })
+          const emailDomain = value.split('@').pop()
+          try {
+            const agency = await Agency.findOne({ emailDomain })
+            return !!agency
+          } catch {
+            return false
+          }
         },
         message: 'This email is not a valid agency email',
       },
@@ -48,7 +46,37 @@ const compileUserModel = (db: Mongoose) => {
       type: Date,
       default: Date.now,
     },
+    contact: {
+      type: String,
+      validate: {
+        // Check if phone number is valid.
+        validator: function (value: string) {
+          const phoneNumber = parsePhoneNumberFromString(value)
+          if (!phoneNumber) return false
+          return phoneNumber.isValid()
+        },
+        message: (props) => `${props.value} is not a valid mobile number`,
+      },
+    },
     betaFlags: {},
+  })
+
+  // Hooks
+  /**
+   * Unique key violation custom error middleware.
+   *
+   * Used because the `unique` schema option is not a validator, and will not
+   * throw a ValidationError. Instead, another error will be thrown, which will
+   * have to be caught here to output the expected error message.
+   *
+   * See: https://masteringjs.io/tutorials/mongoose/e11000-duplicate-key.
+   */
+  UserSchema.post<IUserSchema>('save', function (err, doc, next) {
+    if (err.name === 'MongoError' && err.code === 11000) {
+      next(new Error('Account already exists with this email'))
+    } else {
+      next()
+    }
   })
 
   return db.model<IUserSchema>(USER_SCHEMA_ID, UserSchema)

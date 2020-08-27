@@ -2,7 +2,6 @@ import bcrypt from 'bcrypt'
 import _ from 'lodash'
 import mongoose from 'mongoose'
 
-import { otpGenerator } from '../../../config/config'
 import formsgSdk from '../../../config/formsg-sdk'
 import * as vfnUtil from '../../../shared/util/verification'
 import {
@@ -17,6 +16,7 @@ import smsFactory from '../../factories/sms.factory'
 import getFormModel from '../../models/form.server.model'
 import getVerificationModel from '../../models/verification.server.model'
 import MailService from '../../services/mail.service'
+import { generateOtp } from '../../utils/otp'
 
 const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
@@ -135,7 +135,7 @@ export const getNewOtp = async (
     )
   } else {
     const hashCreatedAt = new Date()
-    const otp = otpGenerator()
+    const otp = generateOtp()
     const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS)
     const signedData = formsgSdk.verification.generateSignature({
       transactionId,

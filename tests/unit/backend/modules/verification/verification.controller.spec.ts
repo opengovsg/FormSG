@@ -13,7 +13,7 @@ import {
 } from 'src/app/modules/verification/verification.controller'
 import * as vfnService from 'src/app/modules/verification/verification.service'
 
-import { mockResponse } from '../../helpers/jest-express'
+import expressHandler from '../../helpers/jest-express'
 
 jest.mock('src/app/modules/verification/verification.service')
 const mockVfnService = mocked(vfnService, true)
@@ -24,7 +24,7 @@ const MOCK_FIELD_ID = 'fieldId'
 const MOCK_ANSWER = 'answer'
 const MOCK_OTP = 'otp'
 const MOCK_DATA = 'data'
-const mockRes = mockResponse()
+const mockRes = expressHandler.mockResponse()
 const Verification = getVerificationModel(mongoose)
 const notFoundError = 'TRANSACTION_NOT_FOUND'
 const waitOtpError = 'WAIT_FOR_OTP'

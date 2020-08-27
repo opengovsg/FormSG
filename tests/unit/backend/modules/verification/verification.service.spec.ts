@@ -14,7 +14,7 @@ import {
   verifyOtp,
 } from 'src/app/modules/verification/verification.service'
 import MailService from 'src/app/services/mail.service'
-import { otpGenerator } from 'src/config/config'
+import { generateOtp } from 'src/app/utils/otp'
 import formsgSdk from 'src/config/formsg-sdk'
 import { BasicField, IUserSchema, IVerificationSchema } from 'src/types'
 
@@ -25,8 +25,8 @@ const Verification = getVerificationModel(mongoose)
 const MOCK_FORM_TITLE = 'Verification service tests'
 
 // Set up mocks
-jest.mock('src/config/config')
-const mockOtpGenerator = mocked(otpGenerator, true)
+jest.mock('src/app/utils/otp')
+const mockGenerateOtp = mocked(generateOtp, true)
 jest.mock('src/config/formsg-sdk')
 const mockFormsgSdk = mocked(formsgSdk, true)
 jest.mock('src/app/factories/sms.factory')
@@ -219,7 +219,7 @@ describe('Verification service', () => {
         ],
         expireAt: new Date(Date.now() + 6e5), // so it won't expire in tests
       })
-      mockOtpGenerator.mockReturnValue(mockOtp)
+      mockGenerateOtp.mockReturnValue(mockOtp)
       mockBcrypt.hash.mockReturnValue(Promise.resolve(hashedOtp))
       mockFormsgSdk.verification.generateSignature.mockReturnValue(signedData)
     })
@@ -257,7 +257,7 @@ describe('Verification service', () => {
       transaction.fields[0].hashRetries = 1
       await transaction.save()
       await getNewOtp(transaction, transaction.fields[0]._id, mockAnswer)
-      expect(mockOtpGenerator).toHaveBeenCalled()
+      expect(mockGenerateOtp).toHaveBeenCalled()
       expect(mockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
       expect(
         mockFormsgSdk.verification.generateSignature.mock.calls[0][0],
@@ -288,7 +288,7 @@ describe('Verification service', () => {
       transaction.fields[1].hashRetries = 1
       await transaction.save()
       await getNewOtp(transaction, transaction.fields[1]._id, mockAnswer)
-      expect(mockOtpGenerator).toHaveBeenCalled()
+      expect(mockGenerateOtp).toHaveBeenCalled()
       expect(mockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
       expect(
         mockFormsgSdk.verification.generateSignature.mock.calls[0][0],

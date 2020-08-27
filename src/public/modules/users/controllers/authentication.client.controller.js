@@ -37,22 +37,20 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
   // boolean to enable/disable email submit button
   vm.isSubmitEmailDisabled = false
 
-
-   /**
+  /**
    * Action on keyup for email input
    */
 
-   vm.handleEmailKeyUp = function (e) {
+  vm.handleEmailKeyUp = function (e) {
     if (e.keyCode == 13) {
-      vm.isSubmitEmailDisabled === false && vm.checkEmail() 
+      vm.isSubmitEmailDisabled === false && vm.checkEmail()
       // condition vm.isSubmitEmailDisabled == false is necessary to prevent retries using enter key
       // when submit button is disabled
     } else {
       vm.removeError(e)
       vm.isSubmitEmailDisabled = false
-     } 
-   }
-
+    }
+  }
 
   /**
    * Redirects user with active session to target page

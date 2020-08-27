@@ -12,6 +12,9 @@ const {
 const {
   verifySubmissionE2e,
   clearDownloadsFolder,
+  verifyWebhookSubmission,
+  createWebhookConfig,
+  removeWebhookConfig,
 } = require('./helpers/encrypt-mode')
 const { allFields } = require('./helpers/all-fields')
 const { verifiableEmailField } = require('./helpers/verifiable-email-field')
@@ -28,6 +31,7 @@ const aws = require('aws-sdk')
 let User
 let Form
 let Agency
+let Submission
 let govTech
 let db
 const testSpNric = 'S6005038D'
@@ -41,6 +45,7 @@ fixture('Storage mode submissions')
     Agency = makeModel(db, 'agency.server.model', 'Agency')
     User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
+    Submission = makeModel(db, 'submission.server.model', 'Submission')
     govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
     // Check whether captcha is enabled in environment
     captchaEnabled = await getFeatureState('captcha')
@@ -172,6 +177,7 @@ test.meta('full-env', 'true').before(async (t) => {
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
 })
 
+// Basic form with verifiable email field
 test.meta('full-env', 'true').before(async (t) => {
   const formData = await getDefaultFormOptions()
   formData.formFields = cloneDeep(verifiableEmailField)
@@ -179,6 +185,47 @@ test.meta('full-env', 'true').before(async (t) => {
 })('Create and submit form with verifiable email field', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
+})
+
+// Basic form with only one field
+test.meta('full-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = [
+    {
+      title: 'short text',
+      fieldType: 'textfield',
+      val: 'Lorem Ipsum',
+    },
+  ].map(makeField)
+  t.ctx.formData = formData
+})('Submit form with webhook integration', async (t) => {
+  // Create webhookUrl and write webhook configuration to disk for mock webhook server to access
+  const webhookUrl = await createWebhookConfig(t.ctx.formData.formOptions.title)
+  // Create form
+  t.ctx.form = await createForm(
+    t,
+    t.ctx.formData,
+    Form,
+    captchaEnabled,
+    webhookUrl,
+  )
+  // Make and verify submission
+  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
+  // Verify webhook submission (request body is returned and stored as webhook response)
+  let submission = await Submission.findOne({ form: t.ctx.form._id })
+  await t
+    .expect(submission.webhookResponses.length)
+    .eql(1)
+    .expect(submission.webhookResponses[0].webhookUrl)
+    .eql(webhookUrl)
+    .expect(submission.webhookResponses[0].response.status)
+    .eql(200)
+  const webhookRequestData = JSON.parse(
+    submission.webhookResponses[0].response.data,
+  )
+  await verifyWebhookSubmission(t, t.ctx.formData, webhookRequestData)
+  // Remove webhook config
+  await removeWebhookConfig(webhookUrl)
 })
 
 // Creates an object with default encrypt-mode form options, with optional modifications.
@@ -195,6 +242,7 @@ const getDefaultFormOptions = async ({
   const user = await User.create({
     email: String(Date.now()) + '@data.gov.sg',
     agency: govTech._id,
+    contact: '+6587654321',
   })
   return {
     user,

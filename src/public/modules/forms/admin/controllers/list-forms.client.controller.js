@@ -31,14 +31,14 @@ function ListFormsController(
 ) {
   const vm = this
 
-
   vm.bannerContent = $window.siteBannerContent || $window.adminBannerContent
 
   // Hidden buttons on forms that appear after clicking more
   vm.showFormBtns = []
   // Duplicated form outline on newly dup forms
   vm.duplicatedForms = []
-  vm.user = Auth.getUser()
+  // Redirect to signin if unable to get user
+  vm.user = Auth.getUser() || $state.go('signin')
 
   // Brings user to edit form page
   vm.editForm = function (form) {
