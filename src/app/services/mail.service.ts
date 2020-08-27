@@ -2,6 +2,7 @@ import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
+import { OperationOptions } from 'retry'
 import validator from 'validator'
 
 import config from '../../config/config'
@@ -53,6 +54,7 @@ type MailServiceParams = {
   appUrl?: string
   transporter?: Mail
   senderMail?: string
+  retryParams?: Partial<OperationOptions>
 }
 
 type AutoReplyMailData = {
@@ -76,25 +78,32 @@ type MailOptions = Omit<Mail.Options, 'to'> & {
   to: string | string[]
 }
 
+const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
+  retries: 3,
+  // Exponential backoff.
+  factor: 2,
+  minTimeout: 5000,
+}
+
 export class MailService {
   /**
    * The application name to be shown in some sent emails' fields such as mail
    * subject or mail body.
    */
-  #appName: string
+  #appName: Required<MailServiceParams['appName']>
   /**
    * The application URL to be shown in some sent emails' fields such as mail
    * subject or mail body.
    */
-  #appUrl: string
+  #appUrl: Required<MailServiceParams['appUrl']>
   /**
    * The transporter to be used to send mail.
    */
-  #transporter: Mail
+  #transporter: Required<MailServiceParams['transporter']>
   /**
    * The email string to denote the "from" field of the email.
    */
-  #senderMail: string
+  #senderMail: Required<MailServiceParams['senderMail']>
   /**
    * The full string that can be shown in the mail's "from" field created from
    * the given `appName` and `senderMail` arguments.
@@ -103,11 +112,17 @@ export class MailService {
    */
   #senderFromString: string
 
+  /**
+   * Sets the retry parameters for sendNodeMail retries.
+   */
+  #retryParams: MailServiceParams['retryParams']
+
   constructor({
     appName = config.app.title,
     appUrl = config.app.appUrl,
     transporter = config.mail.transporter,
     senderMail = config.mail.mailFrom,
+    retryParams = DEFAULT_RETRY_PARAMS,
   }: MailServiceParams = {}) {
     // Email validation
     if (!validator.isEmail(senderMail)) {
@@ -128,6 +143,7 @@ export class MailService {
     this.#senderMail = senderMail
     this.#senderFromString = `${appName} <${senderMail}>`
     this.#transporter = transporter
+    this.#retryParams = retryParams
   }
 
   /**
@@ -139,8 +155,8 @@ export class MailService {
     const logMeta = {
       action: '#sendNodeMail',
       mailId: sendOptions?.mailId,
-      mailFrom: mail?.from,
-      mailSubject: mail?.subject,
+      mailFrom: mail.from,
+      mailSubject: mail.subject,
       formId: sendOptions?.formId,
     }
 
@@ -162,38 +178,30 @@ export class MailService {
       return Promise.reject(new Error('Invalid email error'))
     }
 
-    return promiseRetry(
-      async (retry, attemptNum) => {
+    return promiseRetry(async (retry, attemptNum) => {
+      logger.info({
+        message: `Attempt ${attemptNum} to send mail`,
+        meta: logMeta,
+      })
+
+      try {
+        const response = await this.#transporter.sendMail(mail)
         logger.info({
-          message: `Attempt ${attemptNum} to send mail`,
+          message: `Mail successfully sent on attempt ${attemptNum}`,
           meta: logMeta,
         })
+        return response
+      } catch (err) {
+        // Pass errors to the callback
+        logger.error({
+          message: `Send mail failure on attempt ${attemptNum}`,
+          meta: logMeta,
+          error: err,
+        })
 
-        try {
-          const response = await this.#transporter.sendMail(mail)
-          logger.info({
-            message: `Mail successfully sent on attempt ${attemptNum}`,
-            meta: logMeta,
-          })
-          return response
-        } catch (err) {
-          // Pass errors to the callback
-          logger.error({
-            message: `Send mail failure on attempt ${attemptNum}`,
-            meta: logMeta,
-            error: err,
-          })
-
-          retry(err)
-        }
-      },
-      {
-        retries: 3,
-        // Exponential backoff.
-        factor: 2,
-        minTimeout: 5000,
-      },
-    )
+        retry(err)
+      }
+    }, this.#retryParams)
   }
 
   /**
