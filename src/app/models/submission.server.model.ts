@@ -136,7 +136,7 @@ const encryptSubmissionSchema = new Schema<IEncryptedSubmissionSchema>({
  * which will be posted to the webhook URL.
  */
 encryptSubmissionSchema.methods.getWebhookView = function (
-  this: ISubmissionSchema,
+  this: IEncryptedSubmissionSchema,
 ): WebhookView {
   const webhookData: WebhookData = {
     formId: String(this.form),
