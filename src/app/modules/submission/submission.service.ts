@@ -27,7 +27,7 @@ const getFilteredResponses = (
   const modeFilter = getModeFilter(form.responseMode)
 
   // _id must be transformed to string as form response is jsonified.
-  const fieldIds = modeFilter(form.form_fields).map((field) => ({
+  const fieldIds = modeFilter(form.form_fields!).map((field) => ({
     _id: String(field._id),
   }))
   const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
@@ -69,7 +69,7 @@ export const getProcessedResponses = (
   }
 
   // Create a map keyed by field._id for easier access
-  const fieldMap = form.form_fields.reduce<{
+  const fieldMap = form.form_fields!.reduce<{
     [fieldId: string]: IFieldSchema
   }>((acc, field) => {
     acc[field._id] = field
