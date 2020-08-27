@@ -40,11 +40,11 @@
     "test-e2e-basic": "env-cmd -f tests/.test-basic-env --use-shell \"npm run download-binary && npm run testcafe-basic-env\"",
     "test-e2e": "npm run test-e2e-build && npm run test-e2e-full && npm run test-e2e-basic",
     "test-e2e-ci": "npm run test-e2e-full && npm run test-e2e-basic",
-    "lint-code": "eslint './src/**' --quiet --fix",
+    "lint-code": "eslint src/ --quiet --fix",
     "lint-style": "stylelint '*/**/*.css' --quiet --fix",
     "lint-html": "htmlhint && prettier --write './src/public/**/*.html' --ignore-path './dist/**' --loglevel silent",
     "lint": "npm run lint-code && npm run lint-style && npm run lint-html",
-    "lint-ci": "eslint './src/**' --quiet && stylelint '*/**/*.css' --quiet && htmlhint && prettier --c './src/public/**/*.html' --ignore-path './dist/**'"
+    "lint-ci": "eslint src/ --quiet && stylelint '*/**/*.css' --quiet && htmlhint && prettier --c './src/public/**/*.html' --ignore-path './dist/**'"
   },
   "husky": {
     "hooks": {
