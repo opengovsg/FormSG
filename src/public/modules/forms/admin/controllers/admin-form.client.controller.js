@@ -71,7 +71,6 @@ function AdminFormController(
   $window,
   FormApi,
 ) {
-
   // Banner message on form builder routes
   $scope.bannerContent = $window.siteBannerContent || $window.adminBannerContent
 

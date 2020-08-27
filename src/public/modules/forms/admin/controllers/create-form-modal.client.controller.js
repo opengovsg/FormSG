@@ -302,7 +302,8 @@ function CreateFormModalController(
   }
 
   const generateMailToUri = (title, secretKey) => {
-    return 'mailto:?subject=' +
+    return (
+      'mailto:?subject=' +
       $window.encodeURIComponent(`Shared Secret Key for ${title}`) +
       '&body=' +
       $window.encodeURIComponent(
@@ -317,8 +318,9 @@ function CreateFormModalController(
           All you need to do is keep this email as a record, and please do not share this key with anyone else.
 
           Thank you for helping to safekeep my form!
-        `
+        `,
       )
+    )
   }
 
   vm.handleMailToClick = () => {

@@ -24,16 +24,18 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
 
   vm.fileAttached = false
   vm.isLoading = false
-  vm.beforeResizingImages = function (fieldId) {
+  vm.beforeResizingImages = function (_fieldId) {
     vm.isLoading = true
   }
-  vm.uploadFile = function (file, errFiles, fieldId) {
+  vm.uploadFile = function (file, errFiles, _fieldId) {
     let err
     if (errFiles.length > 0) {
       err = errFiles[0].$error
       if (err === 'maxSize') {
         const currentSize = (errFiles[0].size / 1000000).toFixed(2)
-        showAttachmentError(`${currentSize} MB / ${vm.field.attachmentSize} MB: File size exceeded`)
+        showAttachmentError(
+          `${currentSize} MB / ${vm.field.attachmentSize} MB: File size exceeded`,
+        )
       } else if (err === 'resize') {
         showAttachmentError(`An error has occurred while resizing your image`)
       } else {
@@ -46,7 +48,9 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
 
     let fileExt = FileHandler.getFileExtension(file.name)
     if (FileHandler.isInvalidFileExtension(fileExt)) {
-      showAttachmentError(`Your file's extension ending in *${fileExt} is not allowed`)
+      showAttachmentError(
+        `Your file's extension ending in *${fileExt} is not allowed`,
+      )
       return
     }
 
@@ -63,7 +67,9 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
         $timeout(() => {
           if (invalidFiles.length > 0) {
             const stringOfInvalidExtensions = invalidFiles.join(', ')
-            showAttachmentError(`The following file extensions in your zip are not valid: ${stringOfInvalidExtensions}`)
+            showAttachmentError(
+              `The following file extensions in your zip are not valid: ${stringOfInvalidExtensions}`,
+            )
           } else {
             saveFileToField(file)
           }
@@ -71,15 +77,15 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
       })
       .catch(() => {
         $timeout(() => {
-          showAttachmentError('An error has occurred while parsing your zip file')
+          showAttachmentError(
+            'An error has occurred while parsing your zip file',
+          )
         })
       })
   }
 
   vm.attachmentIsDisabled = (field) => {
-    return (
-      (vm.isadminpreview && !vm.isLoading) || field.disabled
-    )
+    return (vm.isadminpreview && !vm.isLoading) || field.disabled
   }
 
   vm.removeFile = function () {
@@ -105,7 +111,7 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
       $timeout(() => {
         showAttachmentError(
           'Upload failed. If you are using online storage such as Google Drive, ' +
-          'download your file before attaching the downloaded version'
+            'download your file before attaching the downloaded version',
         )
       })
     }

@@ -244,7 +244,7 @@ function EditFieldsModalController(
       selectedDateValidation: temp,
     }
   }
-  
+
   vm.triggerDateChangeTracker = function () {
     const field = vm.field
     field.isValidateDate = !field.isValidateDate
