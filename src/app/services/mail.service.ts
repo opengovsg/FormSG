@@ -162,30 +162,38 @@ export class MailService {
       return Promise.reject(new Error('Invalid email error'))
     }
 
-    return promiseRetry(async (retry, attemptNum) => {
-      logger.info({
-        message: `Attempt ${attemptNum} to send mail`,
-        meta: logMeta,
-      })
-
-      try {
-        const response = await this.#transporter.sendMail(mail)
+    return promiseRetry(
+      async (retry, attemptNum) => {
         logger.info({
-          message: `Mail successfully sent on attempt ${attemptNum}`,
+          message: `Attempt ${attemptNum} to send mail`,
           meta: logMeta,
-        })
-        return response
-      } catch (err) {
-        // Pass errors to the callback
-        logger.error({
-          message: `Send mail failure on attempt ${attemptNum}`,
-          meta: logMeta,
-          error: err,
         })
 
-        retry(err)
-      }
-    })
+        try {
+          const response = await this.#transporter.sendMail(mail)
+          logger.info({
+            message: `Mail successfully sent on attempt ${attemptNum}`,
+            meta: logMeta,
+          })
+          return response
+        } catch (err) {
+          // Pass errors to the callback
+          logger.error({
+            message: `Send mail failure on attempt ${attemptNum}`,
+            meta: logMeta,
+            error: err,
+          })
+
+          retry(err)
+        }
+      },
+      {
+        retries: 3,
+        // Exponential backoff.
+        factor: 2,
+        minTimeout: 5000,
+      },
+    )
   }
 
   /**
