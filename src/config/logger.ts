@@ -158,7 +158,7 @@ const createLoggerOptions = (label: string): LoggerOptions => {
       format.label({ label }),
       format.timestamp(),
       errorHunter(),
-      !isDev
+      isDev
         ? format.combine(format.colorize(), errorPrinter(), customFormat)
         : format.json({ replacer: jsonErrorReplacer }),
     ),
