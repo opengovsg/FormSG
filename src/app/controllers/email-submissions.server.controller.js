@@ -10,7 +10,7 @@ const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const HttpStatus = require('http-status-codes')
 const { getRequestIp } = require('../utils/request')
-const { ConflictError } = require('../utils/custom-errors')
+const { ConflictError } = require('../modules/submission/submission.errors')
 const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,

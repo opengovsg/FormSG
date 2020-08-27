@@ -14,7 +14,7 @@ const Submission = getSubmissionModel(mongoose)
 const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
-const { ConflictError } = require('../utils/custom-errors')
+const { ConflictError } = require('../modules/submission/submission.errors')
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(
