@@ -34,6 +34,9 @@ const awsRegion = process.env.AWS_REGION || defaults.aws.region
 /**
  * Hunts for errors in the given object passed to the logger.
  * Assigns the `error` key the found error.
+ *
+ * Note: Winston relies on their `logform` package for formatting, which in turn
+ * uses the `triplebeam` package symbols.
  */
 const errorHunter = logform.format((info) => {
   if (info.error) return info
