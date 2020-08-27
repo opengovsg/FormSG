@@ -372,9 +372,10 @@ describe('mail.service', () => {
           },
         },
       } as IPopulatedForm,
-      submission: ({
+      submission: {
         id: 'mockSubmissionId',
-      } as unknown) as ISubmissionSchema,
+        created: new Date(),
+      } as ISubmissionSchema,
       responsesData: [
         {
           question: 'some question',

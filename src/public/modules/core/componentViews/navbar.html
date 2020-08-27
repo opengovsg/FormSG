@@ -36,12 +36,6 @@
         User Guide
       </a>
     </div>
-    <span ng-show="user.email" class="form-navbar__email" class="hidden-xs">
-      {{user.email}}
-    </span>
-    <span class="form-navbar__link--logout" ng-click="vm.signOut()">
-      <span class="form-navbar__link--logout__text hidden-xs">Logout</span>
-      <i class="bx bx-log-out bx-md"></i>
-    </span>
+    <avatar-dropdown-component></avatar-dropdown-component>
   </div>
 </nav>

@@ -30,6 +30,7 @@ fixture('login')
       return new User({
         email,
         agency: govTech._id,
+        contact: '+6587654321',
       })
         .save()
         .catch((error) => console.error(error))
@@ -197,6 +198,7 @@ test
   let otp = await extractOTP(email)
   await enterOTPAndExpect({ t, otp, isValid: true, email })
 
+  await t.click(formList.avatarDropdown)
   await t.click(formList.logOutBtn)
   await t
     .expect(getPageUrl())

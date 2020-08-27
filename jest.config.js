@@ -4,6 +4,7 @@ module.exports = {
   preset: '@shelf/jest-mongodb',
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: ['<rootDir>'],
+  testPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
   transform: {
     // Needed to use @shelf/jest-mongodb preset.
     ...tsJestPreset.transform,

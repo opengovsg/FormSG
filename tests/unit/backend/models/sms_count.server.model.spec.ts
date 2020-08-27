@@ -3,7 +3,7 @@ import { cloneDeep, merge, omit } from 'lodash'
 import mongoose from 'mongoose'
 
 import getSmsCountModel from 'src/app/models/sms_count.server.model'
-import { ISmsCount, LogType, SmsType } from 'src/types'
+import { IVerificationSmsCount, LogType, SmsType } from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
 
@@ -24,10 +24,10 @@ describe('SmsCount', () => {
   beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('Schema', () => {
+  describe('VerificationCount Schema', () => {
     it('should create and save successfully', async () => {
       // Arrange
-      const smsCountParams = createSmsCountParams()
+      const smsCountParams = createVerificationSmsCountParams()
 
       // Act
       const validSmsCount = new SmsCount(smsCountParams)
@@ -49,9 +49,12 @@ describe('SmsCount', () => {
 
     it('should save successfully, but not save fields that is not defined in the schema', async () => {
       // Arrange
-      const smsCountParamsWithExtra = merge(createSmsCountParams(), {
-        extra: 'somethingExtra',
-      })
+      const smsCountParamsWithExtra = merge(
+        createVerificationSmsCountParams(),
+        {
+          extra: 'somethingExtra',
+        },
+      )
 
       // Act
       const validSmsCount = new SmsCount(smsCountParamsWithExtra)
@@ -75,7 +78,7 @@ describe('SmsCount', () => {
 
     it('should reject if form key is missing', async () => {
       // Arrange
-      const malformedParams = omit(createSmsCountParams(), 'form')
+      const malformedParams = omit(createVerificationSmsCountParams(), 'form')
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
@@ -86,7 +89,10 @@ describe('SmsCount', () => {
 
     it('should reject if formAdmin.email is missing', async () => {
       // Arrange
-      const malformedParams = omit(createSmsCountParams(), 'formAdmin.email')
+      const malformedParams = omit(
+        createVerificationSmsCountParams(),
+        'formAdmin.email',
+      )
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
@@ -97,7 +103,10 @@ describe('SmsCount', () => {
 
     it('should reject if formAdmin.userId is missing', async () => {
       // Arrange
-      const malformedParams = omit(createSmsCountParams(), 'formAdmin.userId')
+      const malformedParams = omit(
+        createVerificationSmsCountParams(),
+        'formAdmin.userId',
+      )
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
@@ -108,7 +117,10 @@ describe('SmsCount', () => {
 
     it('should reject if logType is missing', async () => {
       // Arrange
-      const malformedParams = omit(createSmsCountParams(), 'logType')
+      const malformedParams = omit(
+        createVerificationSmsCountParams(),
+        'logType',
+      )
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
@@ -119,7 +131,7 @@ describe('SmsCount', () => {
 
     it('should reject if logType is invalid', async () => {
       // Arrange
-      const malformedParams = createSmsCountParams()
+      const malformedParams = createVerificationSmsCountParams()
       // @ts-ignore
       malformedParams.logType = 'INVALID_LOG_TYPE'
       const malformedSmsCount = new SmsCount(malformedParams)
@@ -132,7 +144,10 @@ describe('SmsCount', () => {
 
     it('should reject if smsType is missing', async () => {
       // Arrange
-      const malformedParams = omit(createSmsCountParams(), 'smsType')
+      const malformedParams = omit(
+        createVerificationSmsCountParams(),
+        'smsType',
+      )
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
@@ -143,7 +158,7 @@ describe('SmsCount', () => {
 
     it('should reject if smsType is invalid', async () => {
       // Arrange
-      const malformedParams = createSmsCountParams()
+      const malformedParams = createVerificationSmsCountParams()
       // @ts-ignore
       malformedParams.smsType = 'INVALID_SMS_TYPE'
       const malformedSmsCount = new SmsCount(malformedParams)
@@ -234,14 +249,16 @@ describe('SmsCount', () => {
   })
 })
 
-const createSmsCountParams = ({
+const createVerificationSmsCountParams = ({
   logType = LogType.success,
   smsType = SmsType.verification,
 }: {
   logType?: LogType
   smsType?: SmsType
 } = {}) => {
-  const smsCountParams: Partial<ISmsCount> = cloneDeep(MOCK_SMSCOUNT_PARAMS)
+  const smsCountParams: Partial<IVerificationSmsCount> = cloneDeep(
+    MOCK_SMSCOUNT_PARAMS,
+  )
   smsCountParams.logType = logType
   smsCountParams.smsType = smsType
   smsCountParams.msgSrvcSid = MOCK_MSG_SRVC_SID
