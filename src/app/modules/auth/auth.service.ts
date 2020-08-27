@@ -2,9 +2,10 @@ import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
 import validator from 'validator'
 
-import config, { otpGenerator } from '../../../config/config'
+import config from '../../../config/config'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
+import { generateOtp } from '../../utils/otp'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -48,7 +49,7 @@ export const createLoginOtp = async (email: string) => {
     throw new InvalidDomainError()
   }
 
-  const otp = otpGenerator()
+  const otp = generateOtp()
   const hashedOtp = await bcrypt.hash(otp, DEFAULT_SALT_ROUNDS)
 
   await TokenModel.upsertOtp({
