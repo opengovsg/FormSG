@@ -272,6 +272,8 @@ function ViewResponsesController(
   
   // When this route is initialized, call the responses count function
   // Trigger refresh when user navigates to responses subtab
+  // It is necessary to watch $parent for vm.activeResultsTab as
+  // a different object with the same name (vm) already exists in $scope 
   $scope.$parent.$watch('vm.activeResultsTab', (newValue) => {
     if (newValue === 'responses') {
       vm.setSubmissionsCount()
