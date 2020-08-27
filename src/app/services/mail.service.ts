@@ -1,7 +1,7 @@
-import { String } from 'aws-sdk/clients/cloudhsm'
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import Mail from 'nodemailer/lib/mailer'
+import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
 import config from '../../config/config'
@@ -101,7 +101,7 @@ export class MailService {
    *
    * E.g. `FormSG <test@example.com>`
    */
-  #senderFromString: String
+  #senderFromString: string
 
   constructor({
     appName = config.app.title,
@@ -162,27 +162,30 @@ export class MailService {
       return Promise.reject(new Error('Invalid email error'))
     }
 
-    try {
+    return promiseRetry(async (retry, attemptNum) => {
       logger.info({
-        message: 'Attempting to send mail',
+        message: `Attempt ${attemptNum} to send mail`,
         meta: logMeta,
       })
-      const response = await this.#transporter.sendMail(mail)
 
-      logger.info({
-        message: 'Mail successfully sent',
-        meta: logMeta,
-      })
-      return response
-    } catch (err) {
-      // Pass errors to the callback
-      logger.error({
-        message: 'Send mail failure',
-        meta: logMeta,
-        error: err,
-      })
-      return Promise.reject(err)
-    }
+      try {
+        const response = await this.#transporter.sendMail(mail)
+        logger.info({
+          message: `Mail successfully sent on attempt ${attemptNum}`,
+          meta: logMeta,
+        })
+        return response
+      } catch (err) {
+        // Pass errors to the callback
+        logger.error({
+          message: `Send mail failure on attempt ${attemptNum}`,
+          meta: logMeta,
+          error: err,
+        })
+
+        retry(err)
+      }
+    })
   }
 
   /**
