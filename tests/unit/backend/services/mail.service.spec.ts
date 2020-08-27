@@ -14,6 +14,8 @@ import { IPopulatedForm, ISubmissionSchema } from 'src/types'
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
 const MOCK_VALID_EMAIL_3 = 'to3@example.com'
+const MOCK_VALID_EMAIL_4 = 'to4@example.com'
+const MOCK_VALID_EMAIL_5 = 'to5@example.com'
 const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
 const MOCK_APP_URL = 'mockApp.example.com'
@@ -385,6 +387,41 @@ describe('mail.service', () => {
       const formEmailsMixture = [
         `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
         MOCK_VALID_EMAIL_3,
+      ]
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formEmailsMixture
+
+      const expectedArgument = {
+        to: formEmailsMixture,
+        from: MOCK_SENDER_STRING,
+        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+        html: expectedHtml,
+        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Admin (response)',
+          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
+          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+        },
+        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
+      }
+      // Act + Assert
+      await expect(
+        mailService.sendSubmissionToAdmin(modifiedParams),
+      ).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should send submission mail to admin successfully if form.emails is an array with a mixture of emails, semi-colon, and comma separated emails strings', async () => {
+      // Arrange
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      const formEmailsMixture = [
+        `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
+        `${MOCK_VALID_EMAIL_4};${MOCK_VALID_EMAIL_5},    ${MOCK_VALID_EMAIL_3}`,
       ]
       const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       modifiedParams.form.emails = formEmailsMixture
