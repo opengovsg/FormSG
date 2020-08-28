@@ -237,7 +237,7 @@ function ViewResponsesController(
 
     Promise.all(downloadPromises).then((promises) => {
       zip.generateAsync({type: 'blob'}).then((blob) => {
-        triggerFileDownload(blob, 'Response ' + vm.tableParams.data[vm.currentResponse.index].refNo + '.zip')
+        triggerFileDownload(blob, 'RefNo ' + vm.tableParams.data[vm.currentResponse.index].refNo + '.zip')
       })
     }).catch((error) => {
       console.error(error)
