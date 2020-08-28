@@ -178,7 +178,7 @@
     "@types/helmet": "0.0.47",
     "@types/ip": "^1.1.0",
     "@types/jest": "^26.0.9",
-    "@types/mongoose": "^5.7.24",
+    "@types/mongoose": "^5.7.36",
     "@types/node": "^14.0.13",
     "@types/nodemailer": "^6.4.0",
     "@types/nodemailer-direct-transport": "^1.0.31",
