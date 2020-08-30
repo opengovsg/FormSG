@@ -168,6 +168,15 @@
             {{ vm.decryptedResponse.submissionTime }}
           </div>
         </div>
+        <div class="row" ng-if="vm.attachmentDownloadUrls.size > 0">
+          <div class="col-xs-12 col-sm-4"><b>Attachments</b></div>
+          <div class="col-xs-12 col-sm-8">
+            <a ng-click="vm.downloadAllAttachments()"
+              >Download {{ vm.attachmentDownloadUrls.size }} Attachment(s) in
+              ZIP</a
+            >
+          </div>
+        </div>
       </div>
 
       <div id="question-answer-grp">

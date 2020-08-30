@@ -455,8 +455,15 @@
   padding: 30px 25px;
 }
 
-#responses-tab #detailed-responses #respondent-timestamp div.row:first-child {
+#responses-tab
+  #detailed-responses
+  #respondent-timestamp
+  div.row:not(:last-child) {
   padding-bottom: 10px;
+}
+
+#responses-tab #detailed-responses #respondent-timestamp a {
+  cursor: pointer;
 }
 
 #responses-tab #detailed-responses #question-answer-grp {

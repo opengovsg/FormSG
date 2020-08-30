@@ -7,6 +7,7 @@ const { fixParamsToUrl } = require('../helpers/util')
 const ndjsonStream = require('../helpers/ndjsonStream')
 const fetchStream = require('fetch-readablestream')
 const { forOwn } = require('lodash')
+const { decode: decodeBase64 } = require('@stablelib/base64')
 
 const NUM_OF_METADATA_ROWS = 4
 
@@ -19,6 +20,7 @@ angular
     '$window',
     'GTag',
     'responseModeEnum',
+    'FormSgSdk',
     SubmissionsFactory,
   ])
 
@@ -29,6 +31,7 @@ function SubmissionsFactory(
   $window,
   GTag,
   responseModeEnum,
+  FormSgSdk,
 ) {
   const submitAdminUrl = '/:formId/adminform/submissions'
   const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
@@ -172,6 +175,19 @@ function SubmissionsFactory(
         },
       )
       return deferred.promise
+    },
+    /**
+     * Triggers a download of a single attachment when given an S3 presigned url and a secretKey
+     * @param {String} url URL pointing to the location of the encrypted attachment
+     * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
+     * @returns {Promise} A Promise containing the contents of the file as a Blob
+     */
+    downloadAndDecryptAttachment: function (url, secretKey) {
+      return $http.get(url).then((response) => {
+        let data = response.data
+        data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
+        return FormSgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
+      })
     },
     /**
      * Triggers a download of file responses when called
