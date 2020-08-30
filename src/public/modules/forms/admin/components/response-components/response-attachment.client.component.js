@@ -8,7 +8,11 @@ angular.module('forms').component('responseAttachmentComponent', {
     encryptionKey: '<',
   },
   controllerAs: 'vm',
-  controller: ['Submissions', '$timeout', responseAttachmentComponentController],
+  controller: [
+    'Submissions',
+    '$timeout',
+    responseAttachmentComponentController,
+  ],
 })
 
 function responseAttachmentComponentController(Submissions, $timeout) {
@@ -16,7 +20,10 @@ function responseAttachmentComponentController(Submissions, $timeout) {
 
   vm.downloadAndDecryptAttachment = function () {
     vm.hasDownloadError = false
-    Submissions.downloadAndDecryptAttachment(vm.field.downloadUrl, vm.encryptionKey.secretKey)
+    Submissions.downloadAndDecryptAttachment(
+      vm.field.downloadUrl,
+      vm.encryptionKey.secretKey,
+    )
       .then((bytesArray) => {
         // Construct a downloadable link and click on it to download the file
         let blob = new Blob([bytesArray])

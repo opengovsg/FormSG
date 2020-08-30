@@ -204,7 +204,10 @@ function ViewResponsesController(
           }
           // Populate S3 presigned URL for attachments
           if (attachmentMetadata[field._id]) {
-            vm.attachmentDownloadUrls.set(questionCount - 1, {url: attachmentMetadata[field._id], filename: field.answer})
+            vm.attachmentDownloadUrls.set(questionCount - 1, {
+              url: attachmentMetadata[field._id],
+              filename: field.answer,
+            })
             field.downloadUrl = attachmentMetadata[field._id]
           }
         })
@@ -220,29 +223,41 @@ function ViewResponsesController(
     })
   }
 
-  vm.downloadAllAttachments = function() {
-    var zip = new JSZip();
+  vm.downloadAllAttachments = function () {
+    var zip = new JSZip()
     let downloadPromises = []
 
     for (const [questionNum, metadata] of vm.attachmentDownloadUrls) {
       downloadPromises.push(
         Submissions.downloadAndDecryptAttachment(
           metadata.url,
-          vm.encryptionKey.secretKey
+          vm.encryptionKey.secretKey,
         ).then((bytesArray) => {
-          zip.file('Question ' + questionNum + ' - ' + metadata.filename, bytesArray)
-        })
+          zip.file(
+            'Question ' + questionNum + ' - ' + metadata.filename,
+            bytesArray,
+          )
+        }),
       )
     }
 
-    Promise.all(downloadPromises).then((promises) => {
-      zip.generateAsync({type: 'blob'}).then((blob) => {
-        triggerFileDownload(blob, 'RefNo ' + vm.tableParams.data[vm.currentResponse.index].refNo + '.zip')
+    Promise.all(downloadPromises)
+      .then(() => {
+        zip.generateAsync({ type: 'blob' }).then((blob) => {
+          triggerFileDownload(
+            blob,
+            'RefNo ' +
+              vm.tableParams.data[vm.currentResponse.index].refNo +
+              '.zip',
+          )
+        })
       })
-    }).catch((error) => {
-      console.error(error)
-      Toastr.error('An error occurred while downloading the attachments in a ZIP file. Try downloading them separately.')
-    })
+      .catch((error) => {
+        console.error(error)
+        Toastr.error(
+          'An error occurred while downloading the attachments in a ZIP file. Try downloading them separately.',
+        )
+      })
   }
 
   vm.nextRespondent = function () {
