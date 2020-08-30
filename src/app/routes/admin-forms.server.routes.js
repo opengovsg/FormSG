@@ -16,6 +16,12 @@ let PERMISSIONS = require('../utils/permission-levels').default
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 
+const emailValOpts = {
+  minDomainSegments: 2, // Number of segments required for the domain
+  tlds: true, // TLD (top level domain) validation
+  multiple: false, // Disallow multiple emails
+}
+
 /**
  * Authenticates logged in user, before retrieving non-archived form
  * and verifying read/write permissions.
@@ -292,9 +298,18 @@ module.exports = function (app) {
    * @returns {ErrorMessage.model} 500 - Errors while querying for response
    * @returns {Object} 200 - Response document
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner')
-    .post(authActiveForm(PERMISSIONS.ADMIN), adminForms.transferOwner)
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner').post(
+    authActiveForm(PERMISSIONS.ADMIN),
+    celebrate({
+      body: Joi.object().keys({
+        email: Joi.string()
+          .required()
+          .email(emailValOpts)
+          .error(() => 'Please enter a valid email'),
+      }),
+    }),
+    adminForms.transferOwner,
+  )
 
   /**
    * On preview, submit a form response, processing it as an email to be sent to
