@@ -755,17 +755,6 @@ function makeModule(connection) {
     transferOwner: async function (req, res) {
       const newOwnerEmail = req.body.email
 
-      // Check if new owner's email is specified
-      if (_.isEmpty(newOwnerEmail)) {
-        const errMsg = 'Error: email should exists in req body'
-        logger.error(
-          `formId="${req.form._id}", ip=${getRequestIp(
-            req,
-          )}, message="${errMsg}"`,
-        )
-        return res.status(HttpStatus.BAD_REQUEST).send({ message: errMsg })
-      }
-
       // Transfer owner and Save the form
       try {
         await req.form.transferOwner(req.session.user, newOwnerEmail)

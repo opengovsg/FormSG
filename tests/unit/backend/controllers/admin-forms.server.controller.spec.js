@@ -263,6 +263,7 @@ describe('Admin-Forms Controller', () => {
       const form1 = new Form({
         title: 'Transfer Owner Form',
         admin: collabAdmin._id,
+        permissionList: [roles.collaborator(newOwner.email)],
       })
       await form1.save()
 
