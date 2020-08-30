@@ -14,16 +14,16 @@ const Submission = getSubmissionModel(mongoose)
 const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
-const { getParsedResponses } = require('../utils/response')
 const { ConflictError } = require('../utils/custom-errors')
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'encrypt-submissions',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
   aws: { attachmentS3Bucket, s3 },
 } = require('../../config/config')
+const {
+  getProcessedResponses,
+} = require('../modules/submission/submission.service')
 
 /**
  * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
@@ -39,11 +39,15 @@ exports.validateEncryptSubmission = function (req, res, next) {
     // Check if the encrypted content is base64
     checkIsEncryptedEncoding(req.body.encryptedContent)
   } catch (error) {
-    logger.error(
-      `Error 400 - Invalid encryption: formId=${form._id} ip=${getRequestIp(
-        req,
-      )} error='${error}'`,
-    )
+    logger.error({
+      message: 'Invalid encryption',
+      meta: {
+        action: 'validateEncryptSubmission',
+        ip: getRequestIp(req),
+        formId: form._id,
+      },
+      error,
+    })
     return res
       .status(HttpStatus.BAD_REQUEST)
       .send({ message: 'Invalid data was found. Please submit again.' })
@@ -51,16 +55,18 @@ exports.validateEncryptSubmission = function (req, res, next) {
 
   if (req.body.responses) {
     try {
-      const encryptModeFilter = (arr) =>
-        arr.filter(({ fieldType }) => ['mobile', 'email'].includes(fieldType)) // For autoreplies
-      req.body.parsedResponses = getParsedResponses(
-        form,
-        req.body.responses,
-        encryptModeFilter,
-      )
+      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
     } catch (err) {
-      logger.error(`ip="${getRequestIp(req)}" error=`, err)
+      logger.error({
+        message: 'Error processing responses',
+        meta: {
+          action: 'validateEncryptSubmission',
+          ip: getRequestIp(req),
+          formId: form._id,
+        },
+        error: err,
+      })
       if (err instanceof ConflictError) {
         return res.status(HttpStatus.CONFLICT).send({
           message:
@@ -100,7 +106,16 @@ exports.prepareEncryptSubmission = (req, res, next) => {
  * of the submission
  */
 function onEncryptSubmissionFailure(err, req, res, submission) {
-  logger.error(getRequestIp(req), req.url, req.headers, err)
+  logger.error({
+    message: 'Encrypt submission error',
+    meta: {
+      action: 'onEncryptSubmissionFailure',
+      ip: getRequestIp(req),
+      url: req.url,
+      headers: req.headers,
+    },
+    error: err,
+  })
   return res.status(HttpStatus.BAD_REQUEST).send({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
@@ -164,7 +179,13 @@ exports.saveResponseToDb = function (req, res, next) {
         })
         .promise()
         .catch((err) => {
-          logger.error('Attachment upload error: ', err)
+          logger.error({
+            message: 'Attachment upload error',
+            meta: {
+              action: 'saveResponseToDb',
+            },
+            error: err,
+          })
           return onEncryptSubmissionFailure(err, req, res, submission)
         }),
     )
@@ -252,7 +273,16 @@ exports.getMetadata = function (req, res) {
     .allowDiskUse(true) // prevents out-of-memory for large search results (max 100MB)
     .exec((err, result) => {
       if (err || !result) {
-        logger.error(getRequestIp(req), req.url, req.headers, err)
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: {
+            action: 'getMetadata',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error: err,
+        })
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
           message: errorHandler.getMongoErrorMessage(err),
         })
@@ -301,7 +331,16 @@ exports.getEncryptedResponse = function (req, res) {
     },
   ).exec(async (err, response) => {
     if (err || !response) {
-      logger.error(getRequestIp(req), req.url, req.headers, err)
+      logger.error({
+        message: 'Failure retrieving encrypted submission from database',
+        meta: {
+          action: 'getEncryptedResponse',
+          ip: getRequestIp(req),
+          url: req.url,
+          headers: req.headers,
+        },
+        error: err,
+      })
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
         message: errorHandler.getMongoErrorMessage(err),
       })
@@ -348,7 +387,12 @@ exports.streamEncryptedResponses = async function (req, res) {
     submissionType: 'encryptSubmission',
   }
 
-  query = createQueryWithDateParam(query, req)
+  const augmentedQuery = createQueryWithDateParam(
+    req.query.startDate,
+    req.query.endDate,
+  )
+
+  query = { ...query, ...augmentedQuery }
 
   Submission.find(query, {
     encryptedContent: 1,
@@ -363,10 +407,14 @@ exports.streamEncryptedResponses = async function (req, res) {
     .lean()
     .cursor()
     .on('error', function (err) {
-      logger.error(
-        `Error streaming submissions from MongoDB:\t ip=${getRequestIp(req)}`,
-        err,
-      )
+      logger.error({
+        message: 'Error streaming submissions from database',
+        meta: {
+          action: 'streamEncryptedResponse',
+          ip: getRequestIp(req),
+        },
+        error: err,
+      })
       res.status(500).send({
         message: 'Error retrieving from database.',
       })
@@ -375,20 +423,28 @@ exports.streamEncryptedResponses = async function (req, res) {
     // seperated by a newline.
     .pipe(JSONStream.stringify(false))
     .on('error', function (err) {
-      logger.error(
-        `Error converting submissions to JSON:\t ip=${getRequestIp(req)}`,
-        err,
-      )
+      logger.error({
+        message: 'Error converting submissions to JSON',
+        meta: {
+          action: 'streamEncryptedResponse',
+          ip: getRequestIp(req),
+        },
+        error: err,
+      })
       res.status(500).send({
         message: 'Error converting submissions to JSON',
       })
     })
     .pipe(res.type('application/x-ndjson'))
     .on('error', function (err) {
-      logger.error(
-        `Error writing submissions to HTTP stream:\t ip=${getRequestIp(req)}`,
-        err,
-      )
+      logger.error({
+        message: 'Error writing submissions to HTTP stream',
+        meta: {
+          action: 'streamEncryptedResponse',
+          ip: getRequestIp(req),
+        },
+        error: err,
+      })
       res.status(500).send({
         message: 'Error writing submissions to HTTP stream',
       })

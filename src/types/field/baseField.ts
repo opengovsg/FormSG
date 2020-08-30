@@ -2,7 +2,7 @@ import { Document } from 'mongoose'
 
 import { IFormSchema } from '../form'
 
-import { BasicFieldType, MyInfoAttribute } from './fieldTypes'
+import { BasicField, MyInfoAttribute } from './fieldTypes'
 
 export interface IMyInfo {
   attr: MyInfoAttribute
@@ -21,7 +21,7 @@ export interface IField {
   description: string
   required: boolean
   disabled: boolean
-  fieldType: BasicFieldType
+  fieldType: BasicField
   myInfo?: IMyInfo
   _id: Document['_id']
 }
@@ -32,6 +32,9 @@ export interface IFieldSchema extends IField, Document {
   ownerDocument(): IFormSchema
   /** Returns this sub-documents parent document. */
   parent(): IFormSchema
+
+  // Discriminatable parameter
+  isVerifiable?: boolean
 
   // Instance methods
   /**

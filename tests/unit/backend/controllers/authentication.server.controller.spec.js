@@ -17,8 +17,8 @@ describe('Authentication Controller', () => {
     'dist/backend/app/controllers/authentication.server.controller',
     {
       mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      '../../config/config': {
-        otpGenerator: () => TEST_OTP,
+      '../utils/otp': {
+        generateOtp: () => TEST_OTP,
       },
       '../services/mail.service': {
         sendNodeMail: mockSendNodeMail,

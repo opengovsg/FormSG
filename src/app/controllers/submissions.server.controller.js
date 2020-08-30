@@ -1,7 +1,6 @@
 'use strict'
 
 const axios = require('axios')
-const _ = require('lodash')
 
 const mongoose = require('mongoose')
 const errorHandler = require('./errors.server.controller')
@@ -12,17 +11,8 @@ const HttpStatus = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
-const {
-  parseAutoReplyData,
-  generateAutoReplyPdf,
-} = require('../utils/autoreply-pdf')
-const { renderPromise } = require('../utils/render-promise')
-const config = require('../../config/config')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'authentication',
-)
-const { sendNodeMail } = require('../services/mail.service')
-const { EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
+const MailService = require('../services/mail.service').default
 
 const GOOGLE_RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
 
@@ -42,11 +32,14 @@ exports.captchaCheck = (captchaPrivateKey) => {
           message: 'Captcha not set-up',
         })
       } else if (!req.query.captchaResponse) {
-        logger.error(
-          `[${
-            req.form._id
-          }] Error 400: Missing captchaResponse ip=${getRequestIp(req)}`,
-        )
+        logger.error({
+          message: 'Missing captchaResponse param',
+          meta: {
+            action: 'captchaCheck',
+            formId: req.form._id,
+            ip: getRequestIp(req),
+          },
+        })
         return res.status(HttpStatus.BAD_REQUEST).send({
           message: 'Captcha was missing. Please refresh and submit again.',
         })
@@ -61,11 +54,14 @@ exports.captchaCheck = (captchaPrivateKey) => {
           })
           .then(({ data }) => {
             if (!data.success) {
-              logger.error(
-                `Error 400 - Incorrect captchaResponse: formId=${
-                  req.form._id
-                } ip=${getRequestIp(req)}`,
-              )
+              logger.error({
+                message: 'Incorrect captcha response',
+                meta: {
+                  action: 'captchaCheck',
+                  formId: req.form._id,
+                  ip: getRequestIp(req),
+                },
+              })
               return res.status(HttpStatus.BAD_REQUEST).send({
                 message: 'Captcha was incorrect. Please submit again.',
               })
@@ -74,12 +70,15 @@ exports.captchaCheck = (captchaPrivateKey) => {
           })
           .catch((err) => {
             // Problem with the verificationUrl - maybe it timed out?
-            logger.error(
-              `[${req.form._id}] Error verifying captcha, ip=${getRequestIp(
-                req,
-              )}`,
-              err,
-            )
+            logger.error({
+              message: 'Error verifying captcha',
+              meta: {
+                action: 'captchaCheck',
+                formId: req.form._id,
+                ip: getRequestIp(req),
+              },
+              error: err,
+            })
             return res.status(HttpStatus.BAD_REQUEST).send({
               message:
                 'Could not verify captcha. Please submit again in a few minutes.',
@@ -156,125 +155,38 @@ exports.injectAutoReplyInfo = function (req, res, next) {
  * Long waterfall to send autoreply
  * @param {Object} req - Express request object
  * @param {Array<Object>} req.autoReplyEmails Auto-reply email fields
- * @param {Array} req.replyToEmails Reply-to emails
  * @param {Object} req.form - the form
  * @param {Array<Array<string>>} req.autoReplyData Field-value tuples for auto-replies
  * @param {Object} req.submission Mongodb Submission object
  * @param {Object} req.attachments - submitted attachments, parsed by
- * @param {Object} res - Express response object
  */
-const sendEmailAutoReplies = async function (req, res) {
+const sendEmailAutoReplies = async function (req) {
   const { form, attachments, autoReplyEmails, autoReplyData, submission } = req
   if (autoReplyEmails.length === 0) {
     return Promise.resolve()
   }
-  const renderData = parseAutoReplyData(
-    form,
-    submission,
-    autoReplyData,
-    req.get('origin') || config.app.appUrl,
-  )
-  try {
-    if (_.some(autoReplyEmails, ['includeFormSummary', true])) {
-      const pdfBuffer = await generateAutoReplyPdf({ renderData, res })
-      attachments.push({
-        filename: 'response.pdf',
-        content: pdfBuffer,
-      })
-    }
-    // If one promise is rejected, carry on with the rest
-    return Promise.allSettled(
-      autoReplyEmails.map((autoReplyEmail, index) =>
-        sendOneEmailAutoReply(
-          req,
-          res,
-          autoReplyEmail,
-          renderData,
-          attachments,
-          index,
-        ),
-      ),
-    )
-  } catch (err) {
-    logger.error(
-      `Email autoreply error for formId=${form._id} submissionId=${submission.id}:\t${err}`,
-    )
-    // We do not deal with failed autoreplies
-    return Promise.resolve()
-  }
-}
 
-/**
- * Render and send auto-reply emails to the form submitter
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- * @param {Array} autoReplyEmails Auto-reply email fields
- * @param {Object} form Form object
- * @param {Object} renderData Data about the submission and answers to form questions. This is the raw
- *   data that is rendered on the response PDF if the PDF was needed, otherwise it is null.
- * @param {String} submissionId The ObjectId of the submission
- * @param {Array<Object>} attachments The attachments to send to form submitter.
- * @param {String} attachment.filename Name of file
- * @param {Buffer} attachment.buffer Contents of file
- */
-async function sendOneEmailAutoReply(
-  req,
-  res,
-  autoReplyEmail,
-  renderData,
-  attachments,
-  index,
-) {
-  const { form, submission } = req
-  const submissionId = submission.id
-  const defaultSubject = 'Thank you for submitting ' + form.title
-  const defaultSender = form.admin.agency.fullName
-  const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
-  const autoReplyBody = (autoReplyEmail.body || defaultBody).split('\n')
-
-  // Only include the form response if the flag is set
-  const templateData = autoReplyEmail.includeFormSummary
-    ? { autoReplyBody, ...renderData }
-    : { autoReplyBody }
-  let autoReplyHtml
   try {
-    autoReplyHtml = await renderPromise(
-      res,
-      'templates/submit-form-autoreply',
-      templateData,
-    )
-  } catch (err) {
-    logger.warn('Render autoreply error', err)
-    return Promise.reject(err)
-  }
-  const senderName = autoReplyEmail.sender || defaultSender
-  // Sender's name appearing after ( symbol gets truncated. Escaping it solves the problem.
-  const escapedSenderName = senderName.replace('(', '\\(')
-
-  const mail = {
-    to: autoReplyEmail.email,
-    from: `${escapedSenderName} <${config.mail.mailFrom}>`,
-    subject: autoReplyEmail.subject || defaultSubject,
-    // Only send attachments if the admin has the box checked for email field
-    attachments: autoReplyEmail.includeFormSummary ? attachments : [],
-    html: autoReplyHtml,
-    headers: {
-      [EMAIL_HEADERS.formId]: String(form._id),
-      [EMAIL_HEADERS.submissionId]: submission.id,
-      [EMAIL_HEADERS.emailType]: EMAIL_TYPES.emailConfirmation,
-    },
-  }
-  try {
-    return sendNodeMail({
-      mail,
-      options: {
-        retryCount: config.mail.retry.maxRetryCount,
-        mailId: `${submissionId}-${index}`,
-      },
+    return MailService.sendAutoReplyEmails({
+      form,
+      submission,
+      attachments,
+      responsesData: autoReplyData,
+      autoReplyMailDatas: autoReplyEmails,
     })
   } catch (err) {
-    logger.error(`Mail autoreply error:\t ip=${getRequestIp(req)}`, err)
-    return Promise.reject(err)
+    logger.error({
+      message: 'Failed to send autoreply emails',
+      meta: {
+        action: 'sendEmailAutoReplies',
+        ip: getRequestIp(req),
+        formId: req.form._id,
+        submissionId: submission.id,
+      },
+      error: err,
+    })
+    // We do not deal with failed autoreplies
+    return Promise.resolve()
   }
 }
 
@@ -297,11 +209,26 @@ exports.count = function (req, res) {
     })
   }
 
-  query = createQueryWithDateParam(query, req)
+  const augmentedQuery = createQueryWithDateParam(
+    req.query.startDate,
+    req.query.endDate,
+  )
+
+  query = { ...query, ...augmentedQuery }
 
   Submission.countDocuments(query, function (err, count) {
     if (err) {
-      logger.error(getRequestIp(req), req.url, req.headers, err)
+      logger.error({
+        message: 'Error counting submission documents from database',
+        meta: {
+          action: 'count',
+          ip: getRequestIp(req),
+          url: req.url,
+          headers: req.headers,
+        },
+        error: err,
+      })
+
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
         message: errorHandler.getMongoErrorMessage(err),
       })
@@ -321,8 +248,14 @@ exports.sendAutoReply = function (req, res) {
   // We do not handle failed autoreplies
   const autoReplies = [sendEmailAutoReplies(req, res)]
   return Promise.all(autoReplies).catch((err) => {
-    logger.error(
-      `Autoreply error for formId=${form._id} submissionId=${submission.id}:\t${err}`,
-    )
+    logger.error({
+      message: 'Error sending autoreply',
+      meta: {
+        action: 'sendAutoReply',
+        formId: form._id,
+        submissionId: submission.id,
+      },
+      error: err,
+    })
   })
 }

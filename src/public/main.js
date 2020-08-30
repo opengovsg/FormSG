@@ -145,8 +145,10 @@ require('./modules/core/services/feature.client.factory')
 
 // Core controllers
 require('./modules/core/controllers/landing.client.controller.js')
+require('./modules/core/controllers/edit-contact-number-modal.client.controller')
 
 // Core directives
+require('./modules/core/directives/on-click-outside.client.directive')
 require('./modules/core/directives/route-loading-indicator.client.directive.js')
 require('./modules/core/services/features.client.factory.js')
 require('./modules/core/directives/feature-toggle.client.directive.js')
@@ -156,6 +158,7 @@ require('./modules/core/config/core.client.routes.js')
 
 // Core components
 require('./modules/core/components/navbar.client.component.js')
+require('./modules/core/components/avatar-dropdown.client.component')
 require('./modules/core/components/banner.client.component.js')
 require('./modules/core/components/sg-govt-banner.client.component.js')
 
@@ -324,10 +327,12 @@ app.run([
       'modules/core/componentViews/navbar.html',
       require('./modules/core/componentViews/navbar.html'),
     )
+
     $templateCache.put(
-      'modules/core/views/landing.client.view.html',
-      require('./modules/core/views/landing.client.view.html'),
+      'modules/core/componentViews/avatar-dropdown.html',
+      require('./modules/core/componentViews/avatar-dropdown.html'),
     )
+
     $templateCache.put(
       'modules/core/componentViews/banner.html',
       require('./modules/core/componentViews/banner.html'),
@@ -335,6 +340,17 @@ app.run([
     $templateCache.put(
       'modules/core/componentViews/sg-govt-banner.html',
       require('./modules/core/componentViews/sg-govt-banner.html'),
+    )
+
+    // Core views
+    $templateCache.put(
+      'modules/core/views/landing.client.view.html',
+      require('./modules/core/views/landing.client.view.html'),
+    )
+
+    $templateCache.put(
+      'modules/core/views/edit-contact-number-modal.view.html',
+      require('./modules/core/views/edit-contact-number-modal.view.html'),
     )
 
     // Forms module

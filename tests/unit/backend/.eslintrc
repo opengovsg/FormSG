@@ -8,5 +8,11 @@
     "spec": true,
     "expectAsync": true
   },
-  "overrides": [{ "files": ["*.ts"], "extends": ["plugin:jest/recommended"] }]
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "env": { "jest": true, "jasmine": false },
+      "extends": ["plugin:jest/recommended"]
+    }
+  ]
 }

@@ -4,9 +4,7 @@ const mongoose = require('mongoose')
 const HttpStatus = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'public-forms',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormFeedbackModel = require('../models/form_feedback.server.model')
   .default
 const getFormModel = require('../models/form.server.model').default
@@ -56,7 +54,13 @@ exports.redirect = async function (req, res) {
       redirectPath,
     })
   } catch (err) {
-    logger.error(`Error fetching metatags, ${err}`)
+    logger.error({
+      message: 'Error fetching metatags',
+      meta: {
+        action: 'redirect',
+      },
+      error: err,
+    })
   }
   res.redirect('/#!/' + redirectPath)
 }
@@ -88,7 +92,14 @@ exports.submitFeedback = function (req, res) {
     },
     function (err) {
       if (err) {
-        logger.error(`ip=${getRequestIp(req)}`, err)
+        logger.error({
+          message: 'Error creating form feedback',
+          meta: {
+            action: 'submitFeedback',
+            ip: getRequestIp(req),
+          },
+          error: err,
+        })
         return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
           .send('Form feedback could not be created')

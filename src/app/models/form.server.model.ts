@@ -7,25 +7,25 @@ import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
 import { validateWebhookUrl } from '../../shared/util/webhook-validation'
 import {
   AuthType,
-  BasicFieldType,
+  BasicField,
   Colors,
   FormLogoState,
+  FormOtpData,
   IEmailFormSchema,
   IEncryptedFormSchema,
   IFormSchema,
   IPopulatedForm,
   LogicType,
-  OtpData,
   Permission,
   ResponseMode,
   Status,
 } from '../../types'
-import { MB } from '../utils/constants'
+import { MB } from '../constants/filesize'
 
 import getAgencyModel from './agency.server.model'
 import {
+  BaseFieldSchema,
   createAttachmentFieldSchema,
-  createBaseFieldSchema,
   createCheckboxFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
@@ -85,7 +85,7 @@ const formSchemaOptions: SchemaOptions = {
 }
 
 export interface IFormModel extends Model<IFormSchema> {
-  getOtpData(formId: string): Promise<OtpData | null>
+  getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
 }
 
@@ -133,8 +133,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   const Agency = getAgencyModel(db)
   const User = getUserModel(db)
 
-  const BaseFieldSchema = createBaseFieldSchema(db)
-
   // Schema
   const FormSchema = new Schema<IFormSchema>(
     {
@@ -145,7 +143,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
         match: [
-          /^[a-zA-Z0-9_\-./() ]*$/,
+          /^[a-zA-Z0-9_\-./() &`;'"]*$/,
           'Form name cannot contain special characters',
         ],
       },
@@ -322,58 +320,43 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   const TableFieldSchema = createTableFieldSchema()
 
-  FormFieldPath.discriminator(BasicFieldType.Email, createEmailFieldSchema())
-  FormFieldPath.discriminator(BasicFieldType.Rating, createRatingFieldSchema())
+  FormFieldPath.discriminator(BasicField.Email, createEmailFieldSchema())
+  FormFieldPath.discriminator(BasicField.Rating, createRatingFieldSchema())
   FormFieldPath.discriminator(
-    BasicFieldType.Attachment,
+    BasicField.Attachment,
     createAttachmentFieldSchema(),
   )
+  FormFieldPath.discriminator(BasicField.Dropdown, createDropdownFieldSchema())
+  FormFieldPath.discriminator(BasicField.Radio, createRadioFieldSchema())
+  FormFieldPath.discriminator(BasicField.Checkbox, createCheckboxFieldSchema())
   FormFieldPath.discriminator(
-    BasicFieldType.Dropdown,
-    createDropdownFieldSchema(),
-  )
-  FormFieldPath.discriminator(BasicFieldType.Radio, createRadioFieldSchema())
-  FormFieldPath.discriminator(
-    BasicFieldType.Checkbox,
-    createCheckboxFieldSchema(),
-  )
-  FormFieldPath.discriminator(
-    BasicFieldType.ShortText,
+    BasicField.ShortText,
     createShortTextFieldSchema(),
   )
-  FormFieldPath.discriminator(BasicFieldType.HomeNo, createHomenoFieldSchema())
-  FormFieldPath.discriminator(BasicFieldType.Mobile, createMobileFieldSchema())
+  FormFieldPath.discriminator(BasicField.HomeNo, createHomenoFieldSchema())
+  FormFieldPath.discriminator(BasicField.Mobile, createMobileFieldSchema())
+  FormFieldPath.discriminator(BasicField.LongText, createLongTextFieldSchema())
+  FormFieldPath.discriminator(BasicField.Number, createNumberFieldSchema())
+  FormFieldPath.discriminator(BasicField.Decimal, createDecimalFieldSchema())
+  FormFieldPath.discriminator(BasicField.Image, createImageFieldSchema())
+  FormFieldPath.discriminator(BasicField.Date, createDateFieldSchema())
+  FormFieldPath.discriminator(BasicField.Nric, createNricFieldSchema())
+  FormFieldPath.discriminator(BasicField.YesNo, createYesNoFieldSchema())
   FormFieldPath.discriminator(
-    BasicFieldType.LongText,
-    createLongTextFieldSchema(),
-  )
-  FormFieldPath.discriminator(BasicFieldType.Number, createNumberFieldSchema())
-  FormFieldPath.discriminator(
-    BasicFieldType.Decimal,
-    createDecimalFieldSchema(),
-  )
-  FormFieldPath.discriminator(BasicFieldType.Image, createImageFieldSchema())
-  FormFieldPath.discriminator(BasicFieldType.Date, createDateFieldSchema())
-  FormFieldPath.discriminator(BasicFieldType.Nric, createNricFieldSchema())
-  FormFieldPath.discriminator(BasicFieldType.YesNo, createYesNoFieldSchema())
-  FormFieldPath.discriminator(
-    BasicFieldType.Statement,
+    BasicField.Statement,
     createStatementFieldSchema(),
   )
-  FormFieldPath.discriminator(
-    BasicFieldType.Section,
-    createSectionFieldSchema(),
-  )
-  FormFieldPath.discriminator(BasicFieldType.Table, TableFieldSchema)
+  FormFieldPath.discriminator(BasicField.Section, createSectionFieldSchema())
+  FormFieldPath.discriminator(BasicField.Table, TableFieldSchema)
   const TableColumnPath = TableFieldSchema.path(
     'columns',
   ) as Schema.Types.DocumentArray
   TableColumnPath.discriminator(
-    BasicFieldType.ShortText,
+    BasicField.ShortText,
     createShortTextFieldSchema(),
   )
   TableColumnPath.discriminator(
-    BasicFieldType.Dropdown,
+    BasicField.Dropdown,
     createDropdownFieldSchema(),
   )
 
@@ -432,7 +415,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         path: 'admin',
         select: 'email',
       })
-      const otpData: OtpData = {
+      const otpData: FormOtpData = {
         form: data._id,
         formAdmin: {
           email: data.admin.email,

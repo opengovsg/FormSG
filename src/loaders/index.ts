@@ -3,14 +3,24 @@ import { createLoggerWithLabel } from '../config/logger'
 import expressLoader from './express'
 import mongooseLoader from './mongoose'
 
-const logger = createLoggerWithLabel('server')
+const logger = createLoggerWithLabel(module)
 
 export default async () => {
   const connection = await mongooseLoader()
-  logger.info('MongoDB Intialized')
+  logger.info({
+    message: 'MongoDB Initialized',
+    meta: {
+      action: 'init',
+    },
+  })
 
   const app = expressLoader(connection)
-  logger.info('Express Intialized')
+  logger.info({
+    message: 'Express Initialized',
+    meta: {
+      action: 'init',
+    },
+  })
 
   return app
 }

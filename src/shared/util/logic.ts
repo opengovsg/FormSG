@@ -63,7 +63,7 @@ const isPreventSubmitLogic = (
  * @param {Array} form.form_fields : An array of form fields containing the ids of the fields
  * @returns {Object} Object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
  */
-const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
+export const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
   const formId = form._id
   const formLogics = form.form_logics.filter(isShowFieldsLogic)
   const formFieldIds = new Set(
@@ -126,7 +126,7 @@ const getPreventSubmitConditions = (
  * provided, the function recomputes it.
  * @returns {Object} Condition if submission is to prevented, otherwise undefined
  */
-const getLogicUnitPreventingSubmit = (
+export const getLogicUnitPreventingSubmit = (
   submission: LogicFieldArray,
   form: IForm,
   visibleFieldIds?: FieldIdSet,
@@ -166,7 +166,7 @@ const allConditionsExist = (
  * @var {Array} logicUnits - Array of logic units
  * @returns {Set} Set of IDs of visible fields
  */
-const getVisibleFieldIds = (
+export const getVisibleFieldIds = (
   submission: LogicFieldArray,
   form: IForm,
 ): FieldIdSet => {
@@ -306,10 +306,4 @@ const findConditionField = (
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
   )
-}
-
-module.exports = {
-  groupLogicUnitsByField,
-  getVisibleFieldIds,
-  getLogicUnitPreventingSubmit,
 }

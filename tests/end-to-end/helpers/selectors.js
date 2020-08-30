@@ -24,7 +24,8 @@ const signInPage = {
 const formList = {
   createFormBtn: Selector('#list-form #create-new, #list-form #welcome-btn'),
   welcomeMessage: Selector('#list-form #welcome'),
-  logOutBtn: Selector('.form-navbar__link--logout'),
+  avatarDropdown: Selector('.navbar__avatar'),
+  logOutBtn: Selector('.navbar__dropdown__logout'),
 }
 const createFormModal = {
   startFromScratchBtn: Selector('#start-from-scratch-button'),
@@ -93,6 +94,7 @@ const settingsTab = {
   captchaToggleLabel: Selector('#enable-captcha input').parent(),
   formTitleInput: Selector('#settings-name'),
   emailListInput: Selector('#settings-email'),
+  webhookUrlInput: Selector('#settings-webhook-url'),
 }
 
 const dataTab = {

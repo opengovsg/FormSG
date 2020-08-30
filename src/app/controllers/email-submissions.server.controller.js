@@ -1,6 +1,5 @@
 'use strict'
 
-const moment = require('moment-timezone')
 const Busboy = require('busboy')
 const { Buffer } = require('buffer')
 const _ = require('lodash')
@@ -10,13 +9,9 @@ const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const HttpStatus = require('http-status-codes')
-
-const { isValidSnsRequest, parseSns } = require('../utils/sns')
-const { FIELDS_TO_REJECT } = require('../utils/field-validation/config')
-const { getParsedResponses } = require('../utils/response')
 const { getRequestIp } = require('../utils/request')
 const { ConflictError } = require('../utils/custom-errors')
-const { MB, EMAIL_HEADERS, EMAIL_TYPES } = require('../utils/constants')
+const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
   addAttachmentToResponses,
@@ -24,15 +19,12 @@ const {
   handleDuplicatesInAttachments,
   mapAttachmentsFromParsedResponses,
 } = require('../utils/attachment')
-const { renderPromise } = require('../utils/render-promise')
 const config = require('../../config/config')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'email-submissions',
-)
-const emailLogger = require('../../config/logger').createCloudWatchLogger(
-  'email',
-)
-const { sendNodeMail } = require('../services/mail.service')
+const {
+  getProcessedResponses,
+} = require('../modules/submission/submission.service')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
+const MailService = require('../services/mail.service').default
 
 const { sessionSecret } = config
 
@@ -60,11 +52,15 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       },
     })
   } catch (err) {
-    logger.error(
-      `formId=${_.get(req, 'form._id')} ip="${getRequestIp(
-        req,
-      )}" busboy error=${err}`,
-    )
+    logger.error({
+      message: 'Busboy error',
+      meta: {
+        action: 'receiveEmailSubmissionUsingBusBoy',
+        ip: getRequestIp(req),
+        formId: _.get(req, 'form._id'),
+      },
+      error: err,
+    })
     return res.status(HttpStatus.BAD_REQUEST).send({
       message: 'Required headers are missing',
     })
@@ -107,11 +103,15 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         req.body = JSON.parse(val)
       } catch (err) {
         // Invalid form data
-        logger.error(
-          `Error 400 - Failed to parse body for email submission: formId=${
-            req.form._id
-          } ip=${getRequestIp(req)} error='${err}'`,
-        )
+        logger.error({
+          message: 'Invalid form data',
+          meta: {
+            action: 'receiveEmailSubmissionUsingBusBoy',
+            ip: getRequestIp(req),
+            formId: req.form._id,
+          },
+          error: err,
+        })
         return res.sendStatus(HttpStatus.BAD_REQUEST)
       }
     }
@@ -120,11 +120,14 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
   // responses successfully retrieved
   busboy.on('finish', async function () {
     if (limitReached) {
-      logger.error(
-        `Error 413 - Content is too large: formId=${
-          req.form._id
-        } ip=${getRequestIp(req)}`,
-      )
+      logger.error({
+        message: 'Content is too large',
+        meta: {
+          action: 'receiveEmailSubmissionUsingBusBoy',
+          ip: getRequestIp(req),
+          formId: req.form._id,
+        },
+      })
       return res
         .status(HttpStatus.REQUEST_TOO_LONG)
         .send({ message: 'Your submission is too large.' })
@@ -145,22 +148,29 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
           .update(concatenatedResponse)
           .digest('hex')
       : undefined
-    const ip = req.get('cf-connecting-ip') || req.ip
-    logger.info(
-      `[submissionHashes] formId=${_.get(
-        req,
-        'form._id',
-      )} ip=${ip} uin=${hashedUinFin} submission=${hashedSubmission}`,
-    )
+
+    logger.info({
+      message: 'Submission successfully hashed',
+      meta: {
+        action: 'receiveEmailSubmissionUsingBusBoy',
+        formId: req.form._id,
+        ip: getRequestIp(req),
+        uin: hashedUinFin,
+        submission: hashedSubmission,
+      },
+    })
 
     try {
       const areAttachmentsValid = await attachmentsAreValid(attachments)
       if (!areAttachmentsValid) {
-        logger.error(
-          `formId="${_.get(req, 'form._id')}" ip=${getRequestIp(
-            req,
-          )} Error 400: Invalid attachments`,
-        )
+        logger.error({
+          message: 'Invalid attachments',
+          meta: {
+            action: 'receiveEmailSubmissionUsingBusBoy',
+            ip: getRequestIp(req),
+            formId: req.form._id,
+          },
+        })
         return res.status(HttpStatus.BAD_REQUEST).send({
           message: 'Some files were invalid. Try uploading another file.',
         })
@@ -177,12 +187,17 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
 
       return next()
     } catch (error) {
-      logger.error(
-        `formId=${_.get(req, 'form._id')} ip=${getRequestIp(
-          req,
-        )} uin=${hashedUinFin} submission=${hashedSubmission} receiveSubmission error:\t`,
+      logger.error({
+        message: 'receiveSubmission error',
+        meta: {
+          action: 'receiveEmailSubmissionUsingBusBoy',
+          ip: getRequestIp(req),
+          formId: req.form._id,
+          uin: hashedUinFin,
+          submission: hashedSubmission,
+        },
         error,
-      )
+      })
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .send({ message: 'Unable to process submission.' })
@@ -190,11 +205,15 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
   })
 
   busboy.on('error', (err) => {
-    logger.error(
-      `formId=${_.get(req, 'form._id')} ip="${getRequestIp(
-        req,
-      )}" multipart error=${err}`,
-    )
+    logger.error({
+      message: 'Multipart error',
+      meta: {
+        action: 'receiveEmailSubmissionUsingBusBoy',
+        ip: getRequestIp(req),
+        formId: req.form._id,
+      },
+      error: err,
+    })
     return res
       .status(HttpStatus.INTERNAL_SERVER_ERROR)
       .send({ message: 'Unable to process submission.' })
@@ -216,16 +235,21 @@ exports.validateEmailSubmission = function (req, res, next) {
 
   if (req.body.responses) {
     try {
-      const emailModeFilter = (arr) =>
-        arr.filter(({ fieldType }) => !FIELDS_TO_REJECT.includes(fieldType))
-      req.body.parsedResponses = getParsedResponses(
-        form,
-        req.body.responses,
-        emailModeFilter,
-      )
+      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
     } catch (err) {
-      logger.error(`ip="${getRequestIp(req)}" error=`, err)
+      logger.error({
+        message:
+          err instanceof ConflictError
+            ? 'Conflict - Form has been updated'
+            : 'Error processing responses',
+        meta: {
+          action: 'validateEmailSubmission',
+          ip: getRequestIp(req),
+          formId: req.form._id,
+        },
+        error: err,
+      })
       if (err instanceof ConflictError) {
         return res.status(HttpStatus.CONFLICT).send({
           message:
@@ -473,7 +497,16 @@ const getVerifiedPrefix = (isUserVerified) => {
  * of the submission
  */
 function onSubmissionEmailFailure(err, req, res, submission) {
-  logger.error(getRequestIp(req), req.url, req.headers, err)
+  logger.error({
+    message: 'Error submitting email form',
+    meta: {
+      action: 'onSubmissionEmailFailure',
+      ip: getRequestIp(req),
+      url: req.url,
+      headers: req.headers,
+    },
+    error: err,
+  })
   return res.status(HttpStatus.BAD_REQUEST).send({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
@@ -552,19 +585,25 @@ exports.saveMetadataToDb = function (req, res, next) {
 
   // Create submission hash
   let concatenatedResponse = concatResponse(formData, attachments)
-  let submissionLogstring
 
   createHash(concatenatedResponse)
     .then((result) => {
       submission.responseHash = result.hash
       submission.responseSalt = result.salt
-      submissionLogstring = `Saving submission ${submission.id} to MongoDB with hash ${submission.responseHash}`
       // Save submission to database
-      logger.profile(submissionLogstring)
       return submission.save()
     })
     .then((submission) => {
-      logger.profile(submissionLogstring)
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        meta: {
+          action: 'saveMetadataToDb',
+          submissionId: submission.id,
+          formId: form._id,
+          ip: getRequestIp(req),
+          responseHash: submission.responseHash,
+        },
+      })
       req.submission = submission
       return next()
     })
@@ -577,7 +616,6 @@ exports.saveMetadataToDb = function (req, res, next) {
  * Generate and send admin email
  * @param {Object} req - the expressjs request. Will be injected with the
  * objects parsed from `req.form` and `req.attachments`
- * @param {Array} req.autoReplyEmails Auto-reply email fields
  * @param {Array} req.replyToEmails Reply-to emails
  * @param {Object} req.form - the form
  * @param {Array} req.formData Field-value tuples for admin email
@@ -597,117 +635,40 @@ exports.sendAdminEmail = async function (req, res, next) {
     attachments,
   } = req
 
-  let submissionTime = moment(submission.created)
-    .tz('Asia/Singapore')
-    .format('ddd, DD MMM YYYY hh:mm:ss A')
-
-  jsonData.unshift(
-    {
-      question: 'Reference Number',
-      answer: submission.id,
-    },
-    {
-      question: 'Timestamp',
-      answer: submissionTime,
-    },
-  )
-  let html
   try {
-    html = await renderPromise(res, 'templates/submit-form-email', {
-      refNo: submission.id,
-      formTitle: form.title,
-      submissionTime,
-      formData,
-      jsonData,
-      appName: res.app.locals.title,
-    })
-  } catch (err) {
-    logger.warn(err)
-    return onSubmissionEmailFailure(err, req, res, submission)
-  }
-  let mailOptions = {
-    to: form.emails,
-    from: config.mail.mailer.from,
-    subject: 'formsg-auto: ' + form.title + ' (Ref: ' + submission.id + ')',
-    html,
-    attachments,
-    headers: {
-      [EMAIL_HEADERS.formId]: String(form._id),
-      [EMAIL_HEADERS.submissionId]: submission.id,
-      [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
-    },
-  }
-
-  // Set reply-to to all email fields that have reply to enabled
-  if (replyToEmails) {
-    let replyTo = replyToEmails.join(', ')
-    if (replyTo) mailOptions.replyTo = replyTo
-  }
-
-  let adminLogstring = `Sending admin mail submissionId=${submission.id} formId=${form._id} submissionHash=${submission.responseHash}`
-  logger.profile(adminLogstring)
-
-  // Send mail
-  try {
-    await sendNodeMail({
-      mail: mailOptions,
-      options: {
-        mailId: submission.id,
+    logger.info({
+      message: 'Sending admin mail',
+      meta: {
+        action: 'sendAdminEmail',
+        submissionId: submission.id,
         formId: form._id,
+        ip: getRequestIp(req),
+        submissionHash: submission.responseHash,
       },
     })
+
+    await MailService.sendSubmissionToAdmin({
+      replyToEmails,
+      form,
+      submission,
+      attachments,
+      jsonData,
+      formData,
+    })
+
     return next()
   } catch (err) {
+    logger.warn({
+      message: 'Error sending submission to admin',
+      meta: {
+        action: 'sendAdminEmail',
+        submissionId: submission.id,
+        formId: form._id,
+        ip: getRequestIp(req),
+        submissionHash: submission.responseHash,
+      },
+      error: err,
+    })
     return onSubmissionEmailFailure(err, req, res, submission)
   }
-}
-
-/**
- * Validates that a request came from Amazon SNS.
- * @param {Object} req Express request object
- * @param {Object} res - Express response object
- * @param {Object} next - the next expressjs callback, invoked once attachments
- */
-exports.verifySns = async (req, res, next) => {
-  if (await isValidSnsRequest(req)) {
-    return next()
-  }
-  return res.sendStatus(HttpStatus.FORBIDDEN)
-}
-
-/**
- * When email bounces, SNS calls this function to mark the
- * submission as having bounced.
- *
- * Note that if anything errors in between, just return a 200
- * to SNS, as the error code to them doesn't really matter.
- *
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- */
-exports.confirmOnNotification = function (req, res) {
-  const parsed = parseSns(req.body)
-  // Log to short-lived CloudWatch log group
-  emailLogger.info(parsed)
-  const { submissionId, notificationType, emailType } = parsed
-  if (
-    notificationType !== 'Bounce' ||
-    emailType !== EMAIL_TYPES.adminResponse ||
-    !submissionId
-  ) {
-    return res.sendStatus(HttpStatus.OK)
-  }
-  // Mark submission ID as having bounced
-  emailSubmission.findOneAndUpdate(
-    { _id: submissionId },
-    {
-      hasBounced: true,
-    },
-    function (err) {
-      if (err) {
-        logger.warn(err)
-      }
-    },
-  )
-  return res.sendStatus(HttpStatus.OK)
 }

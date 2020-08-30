@@ -10,7 +10,7 @@ const HttpStatus = require('http-status-codes')
 const axios = require('axios')
 
 const { getRequestIp } = require('../utils/request')
-const logger = require('../../config/logger').createLoggerWithLabel('spcp')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 const getFormModel = require('../models/form.server.model').default
 const getLoginModel = require('../models/login.server.model').default
@@ -32,7 +32,14 @@ const addLoginToDB = function (form) {
     esrvcId: form.esrvcId,
   })
   return login.save().catch((err) => {
-    logger.error('Error adding login to database:', err)
+    logger.error({
+      message: 'Error adding login to database',
+      meta: {
+        action: 'addLoginToDB',
+        formId: form._id,
+      },
+      error: err,
+    })
   })
 }
 
@@ -136,7 +143,16 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
       }
       authClient.getAttributes(samlArt, destination, (err, data) => {
         if (err) {
-          logger.error(getRequestIp(req), req.url, req.headers, err)
+          logger.error({
+            message: 'Error retrieving attributes from auth client',
+            meta: {
+              action: 'handleOOBAuthenticationWith',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
         }
         const { attributes } = data
         const { userName, userInfo } = extractUser(attributes)
@@ -240,7 +256,14 @@ exports.validateESrvcId = (req, res) => {
       // The error page should have the title 'SingPass - System Error Page'
       const title = getSubstringBetween(data, '<title>', '</title>')
       if (title === null) {
-        logger.error({ Error: 'Could not find title', redirectURL, data })
+        logger.error({
+          message: 'Could not find title',
+          meta: {
+            action: 'validateESrvcId',
+            redirectUrl: redirectURL,
+            data,
+          },
+        })
         return res.status(HttpStatus.BAD_GATEWAY).send({
           message: 'Singpass returned incomprehensible content',
         })
@@ -265,10 +288,13 @@ exports.validateESrvcId = (req, res) => {
     .catch((err) => {
       const { statusCode } = err.response || {}
       logger.error({
-        Error: 'Could not contact singpass to validate eservice id',
-        redirectURL,
-        err,
-        statusCode,
+        message: 'Could not contact singpass to validate eservice id',
+        meta: {
+          action: 'validateESrvcId',
+          redirectUrl: redirectURL,
+          statusCode,
+        },
+        error: err,
       })
       return res.status(HttpStatus.SERVICE_UNAVAILABLE).send({
         message: 'Failed to contact Singpass',
@@ -319,9 +345,19 @@ exports.addSpcpSessionInfo = (authClients) => {
       // add session info if logged in
       authClient.verifyJWT(jwt, (err, payload) => {
         if (err) {
-          // Do not specify userName to call MyInfo endpoint with if jwt is invalid
-          // Client will inform the form-filler to log in with SingPass again
-          logger.error(getRequestIp(req), req.url, req.headers, err)
+          // Do not specify userName to call MyInfo endpoint with if jwt is
+          // invalid.
+          // Client will inform the form-filler to log in with SingPass again.
+          logger.error({
+            message: 'Failed to verify JWT with auth client',
+            meta: {
+              action: 'addSpcpSessionInfo',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
         } else {
           const { userName } = payload
           // For use in addMyInfo middleware
@@ -373,11 +409,15 @@ exports.encryptedVerifiedFields = (signingSecretKey) => {
       res.locals.verified = encryptedVerified
       return next()
     } catch (error) {
-      logger.error(
-        `Error 400 - Unable to encrypt verified content: formId=${
-          req.form._id
-        } error='${error}' ip=${getRequestIp(req)}`,
-      )
+      logger.error({
+        message: 'Unable to encrypt verified content',
+        meta: {
+          action: 'encryptedVerifiedFields',
+          formId: req.form._id,
+          ip: getRequestIp(req),
+        },
+        error,
+      })
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: 'Invalid data was found. Please submit again.' })
@@ -438,7 +478,16 @@ exports.isSpcpAuthenticated = (authClients) => {
       let jwt = req.cookies[jwtName]
       authClient.verifyJWT(jwt, (err, payload) => {
         if (err) {
-          logger.error(getRequestIp(req), req.url, req.headers, err)
+          logger.error({
+            message: 'Failed to verify JWT with auth client',
+            meta: {
+              action: 'isSpcpAuthenticated',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
           res.status(HttpStatus.UNAUTHORIZED).send({
             message: 'User is not SPCP authenticated',
             spcpSubmissionFailure: true,
