@@ -5,6 +5,7 @@ import mongoose from 'mongoose'
 
 import { createCloudWatchLogger } from '../../../config/logger'
 import {
+  IBounceNotification,
   IBounceSchema,
   IEmailNotification,
   ISnsNotification,
@@ -98,7 +99,11 @@ export const isValidSnsRequest = async (
 }
 
 // Writes a log message if all recipients have bounced
-const logCriticalBounce = (bounceDoc: IBounceSchema, formId: string): void => {
+const logCriticalBounce = (
+  bounceDoc: IBounceSchema,
+  formId: string,
+  notification: IEmailNotification,
+): void => {
   if (
     !bounceDoc.hasAlarmed &&
     bounceDoc.bounces.every((emailInfo) => emailInfo.hasBounced)
@@ -107,6 +112,9 @@ const logCriticalBounce = (bounceDoc: IBounceSchema, formId: string): void => {
       type: 'CRITICAL BOUNCE',
       formId,
       recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
+      // We know for sure that critical bounces can only happen because of bounce
+      // notifications, so this casting is okay
+      bounceInfo: (notification as IBounceNotification).bounce,
     })
     // We don't want a flood of logs and alarms, so we use this to limit the rate of
     // critical bounce logs for each form ID
@@ -129,10 +137,10 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
     oldBounces.merge(latestBounces, notification)
-    logCriticalBounce(oldBounces, formId)
+    logCriticalBounce(oldBounces, formId, notification)
     await oldBounces.save()
   } else {
-    logCriticalBounce(latestBounces, formId)
+    logCriticalBounce(latestBounces, formId, notification)
     await latestBounces.save()
   }
 }
