@@ -7,7 +7,7 @@ import { createLoggerWithLabel } from '../config/logger'
 const logger = createLoggerWithLabel(module)
 
 export default async (): Promise<Connection> => {
-  const usingMockedDb = config.db.uri === undefined
+  const usingMockedDb = !config.db.uri
   // Mock out the database if we're developing locally
   if (usingMockedDb) {
     logger.warn({
@@ -43,7 +43,7 @@ export default async (): Promise<Connection> => {
 
   // Actually connect to the database
   function connect() {
-    return mongoose.connect(config.db.uri, config.db.options)
+    return mongoose.connect(config.db.uri!, config.db.options)
   }
 
   // Only required for initial connection errors, reconnect on error.
