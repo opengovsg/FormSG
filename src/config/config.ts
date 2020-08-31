@@ -196,10 +196,10 @@ const configureAws = async () => {
       })
     }
     await getCredentials()
-    if (!aws.config.credentials.accessKeyId) {
+    if (!aws.config.credentials?.accessKeyId) {
       throw new Error(`AWS Access Key Id is missing`)
     }
-    if (!aws.config.credentials.secretAccessKey) {
+    if (!aws.config.credentials?.secretAccessKey) {
       throw new Error(`AWS Secret Access Key is missing`)
     }
   }
