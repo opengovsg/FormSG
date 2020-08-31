@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const _ = require('lodash')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const config = require('../../config/config')
 const { getRequestIp } = require('../utils/request')
@@ -58,11 +58,11 @@ exports.formCountUsingAggregateCollection = (req, res) => {
           },
           error: err,
         })
-        res.sendStatus(HttpStatus.SERVICE_UNAVAILABLE)
+        res.sendStatus(StatusCodes.SERVICE_UNAVAILABLE)
       } else if (result) {
         res.json(_.get(result, 'numActiveForms', 0))
       } else {
-        res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
       }
     },
   )
@@ -102,7 +102,7 @@ exports.formCountUsingSubmissionsCollection = (req, res) => {
           },
           error: err,
         })
-        res.sendStatus(HttpStatus.SERVICE_UNAVAILABLE)
+        res.sendStatus(StatusCodes.SERVICE_UNAVAILABLE)
       } else {
         res.json(forms.length)
       }

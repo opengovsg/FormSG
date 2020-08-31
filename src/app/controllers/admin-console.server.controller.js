@@ -5,7 +5,7 @@
  */
 const mongoose = require('mongoose')
 const moment = require('moment-timezone')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const getLoginModel = require('../models/login.server.model').default
 const getSubmissionModel = require('../models/submission.server.model').default
@@ -534,7 +534,7 @@ const getExampleFormsUsing = (
           x.timeText = parseTime(x.lastSubmission)
         })
         const totalNumResults = _.get(totalCount, '[0].count', 0)
-        return cb(null, HttpStatus.OK, { forms: pageResults, totalNumResults })
+        return cb(null, StatusCodes.OK, { forms: pageResults, totalNumResults })
       })
   } else {
     mongoQuery = mongoQuery
@@ -544,12 +544,12 @@ const getExampleFormsUsing = (
         pageResults.forEach((x) => {
           x.timeText = parseTime(x.lastSubmission)
         })
-        return cb(null, HttpStatus.OK, { forms: pageResults })
+        return cb(null, StatusCodes.OK, { forms: pageResults })
       })
   }
 
   mongoQuery.catch((err) => {
-    return cb(err, HttpStatus.INTERNAL_SERVER_ERROR, {
+    return cb(err, StatusCodes.INTERNAL_SERVER_ERROR, {
       message: 'Error in retrieving example forms.',
     })
   })
@@ -632,7 +632,7 @@ const getSingleExampleFormUsing = (
   cb,
 ) => {
   if (!formId || !mongoose.Types.ObjectId.isValid(formId)) {
-    return cb(null, HttpStatus.BAD_REQUEST, {
+    return cb(null, StatusCodes.BAD_REQUEST, {
       message: 'Form URL is missing/invalid.',
     })
   }
@@ -644,18 +644,18 @@ const getSingleExampleFormUsing = (
     .exec((err, result) => {
       // Error
       if (err) {
-        return cb(err, HttpStatus.INTERNAL_SERVER_ERROR, {
+        return cb(err, StatusCodes.INTERNAL_SERVER_ERROR, {
           message: 'Error in retrieving example forms.',
         })
       }
       if (!result) {
-        return cb(err, HttpStatus.NOT_FOUND, { message: 'No results found.' })
+        return cb(err, StatusCodes.NOT_FOUND, { message: 'No results found.' })
       }
 
       let [form] = result
       if (!form) {
         // The form data was not retrieved (formId likely invalid)
-        return cb(err, HttpStatus.NOT_FOUND, {
+        return cb(err, StatusCodes.NOT_FOUND, {
           message: 'Error in retrieving template form - form not found.',
         })
       }
@@ -677,7 +677,7 @@ const getSingleExampleFormUsing = (
           form.avgFeedback = submissionDetails.avgFeedback
           form.timeText = parseTime(form.lastSubmission)
         }
-        return cb(err, HttpStatus.OK, { form })
+        return cb(err, StatusCodes.OK, { form })
       })
     })
 }
@@ -814,10 +814,12 @@ exports.getLoginStats = function (req, res) {
           error,
         })
         return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send('Error in retrieving billing records')
       } else if (!loginStats) {
-        return res.status(HttpStatus.NOT_FOUND).send('No billing records found')
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send('No billing records found')
       } else {
         logger.info({
           message: `Billing search for ${esrvcId} by ${

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ISnsNotification } from '../../../types'
@@ -23,10 +23,10 @@ const handleSns = async (
   try {
     const isValid = await snsService.isValidSnsRequest(req.body)
     if (!isValid) {
-      return res.sendStatus(HttpStatus.FORBIDDEN)
+      return res.sendStatus(StatusCodes.FORBIDDEN)
     }
     await snsService.updateBounces(req.body)
-    return res.sendStatus(HttpStatus.OK)
+    return res.sendStatus(StatusCodes.OK)
   } catch (err) {
     logger.warn({
       message: 'Error updating bounces',
@@ -35,7 +35,7 @@ const handleSns = async (
       },
       error: err,
     })
-    return res.sendStatus(HttpStatus.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 }
 

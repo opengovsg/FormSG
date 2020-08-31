@@ -1,6 +1,6 @@
 const featureManager = require('../../config/feature-manager').default
 const frontend = require('../controllers/frontend.server.controller')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const googleAnalyticsFactory = ({ isEnabled }) => {
   if (isEnabled) {
@@ -10,7 +10,7 @@ const googleAnalyticsFactory = ({ isEnabled }) => {
   } else {
     return {
       datalayer: (req, res) => {
-        res.type('text/javascript').status(HttpStatus.OK).send()
+        res.type('text/javascript').status(StatusCodes.OK).send()
       },
     }
   }

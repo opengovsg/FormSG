@@ -2,7 +2,7 @@
 const crypto = require('crypto')
 const moment = require('moment-timezone')
 const JSONStream = require('JSONStream')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const mongoose = require('mongoose')
 const errorHandler = require('./errors.server.controller')
@@ -49,7 +49,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
       error,
     })
     return res
-      .status(HttpStatus.BAD_REQUEST)
+      .status(StatusCodes.BAD_REQUEST)
       .send({ message: 'Invalid data was found. Please submit again.' })
   }
 
@@ -73,7 +73,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
             'The form has been updated. Please refresh and submit again.',
         })
       } else {
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message:
             'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
         })
@@ -81,7 +81,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
     }
     return next()
   } else {
-    return res.sendStatus(HttpStatus.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 }
 
@@ -116,7 +116,7 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
     },
     error: err,
   })
-  return res.status(HttpStatus.BAD_REQUEST).send({
+  return res.status(StatusCodes.BAD_REQUEST).send({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
     submissionId: submission._id,
@@ -283,7 +283,7 @@ exports.getMetadata = function (req, res) {
           },
           error: err,
         })
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
           message: errorHandler.getMongoErrorMessage(err),
         })
       } else {
@@ -302,7 +302,7 @@ exports.getMetadata = function (req, res) {
           number--
           return entry
         })
-        return res.status(HttpStatus.OK).send({ metadata, count })
+        return res.status(StatusCodes.OK).send({ metadata, count })
       }
     })
 }
@@ -341,7 +341,7 @@ exports.getEncryptedResponse = function (req, res) {
         },
         error: err,
       })
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
         message: errorHandler.getMongoErrorMessage(err),
       })
     } else {
@@ -377,7 +377,7 @@ exports.streamEncryptedResponses = async function (req, res) {
     isMalformedDate(req.query.startDate) ||
     isMalformedDate(req.query.endDate)
   ) {
-    return res.status(HttpStatus.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).send({
       message: 'Malformed date parameter',
     })
   }

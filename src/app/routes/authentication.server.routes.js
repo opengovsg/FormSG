@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const { celebrate, Joi } = require('celebrate')
 
 let auth = require('../../app/controllers/authentication.server.controller')
@@ -39,7 +39,7 @@ module.exports = function (app) {
       }),
     }),
     auth.validateDomain,
-    (_, res) => res.sendStatus(HttpStatus.OK),
+    (_, res) => res.sendStatus(StatusCodes.OK),
   )
 
   /**
