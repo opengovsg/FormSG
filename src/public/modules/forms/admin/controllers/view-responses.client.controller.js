@@ -1,6 +1,8 @@
 'use strict'
 
 const processDecryptedContent = require('../../helpers/process-decrypted-content')
+const { triggerFileDownload } = require('../../helpers/util')
+const JSZip = require('jszip')
 
 const SHOW_PROGRESS_DELAY_MS = 3000
 
@@ -38,6 +40,7 @@ function ViewResponsesController(
   vm.isEncryptResponseMode = vm.myform.responseMode === responseModeEnum.ENCRYPT
   vm.encryptionKey = null // will be set to an instance of EncryptionKey when form is unlocked successfully
   vm.csvDownloading = false // whether CSV export is in progress
+  vm.attachmentDownloadUrls = new Map()
 
   // Three views:
   // 1 - Unlock view for verifying form password
@@ -171,8 +174,9 @@ function ViewResponsesController(
       submissionId,
     }).then((response) => {
       if (vm.encryptionKey !== null) {
-        const { content, verified, attachmentMetadata } = response
+        vm.attachmentDownloadUrls = new Map()
 
+        const { content, verified, attachmentMetadata } = response
         let displayedContent
 
         try {
@@ -200,6 +204,10 @@ function ViewResponsesController(
           }
           // Populate S3 presigned URL for attachments
           if (attachmentMetadata[field._id]) {
+            vm.attachmentDownloadUrls.set(questionCount - 1, {
+              url: attachmentMetadata[field._id],
+              filename: field.answer,
+            })
             field.downloadUrl = attachmentMetadata[field._id]
           }
         })
@@ -213,6 +221,43 @@ function ViewResponsesController(
 
       vm.loading = false
     })
+  }
+
+  vm.downloadAllAttachments = function () {
+    var zip = new JSZip()
+    let downloadPromises = []
+
+    for (const [questionNum, metadata] of vm.attachmentDownloadUrls) {
+      downloadPromises.push(
+        Submissions.downloadAndDecryptAttachment(
+          metadata.url,
+          vm.encryptionKey.secretKey,
+        ).then((bytesArray) => {
+          zip.file(
+            'Question ' + questionNum + ' - ' + metadata.filename,
+            bytesArray,
+          )
+        }),
+      )
+    }
+
+    Promise.all(downloadPromises)
+      .then(() => {
+        zip.generateAsync({ type: 'blob' }).then((blob) => {
+          triggerFileDownload(
+            blob,
+            'RefNo ' +
+              vm.tableParams.data[vm.currentResponse.index].refNo +
+              '.zip',
+          )
+        })
+      })
+      .catch((error) => {
+        console.error(error)
+        Toastr.error(
+          'An error occurred while downloading the attachments in a ZIP file. Try downloading them separately.',
+        )
+      })
   }
 
   vm.nextRespondent = function () {

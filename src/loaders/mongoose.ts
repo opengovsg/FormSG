@@ -4,21 +4,27 @@ import mongoose, { Connection } from 'mongoose'
 import config from '../config/config'
 import { createLoggerWithLabel } from '../config/logger'
 
-const logger = createLoggerWithLabel('mongoose')
+const logger = createLoggerWithLabel(module)
 
 export default async (): Promise<Connection> => {
   let usingMockedDb = config.db.uri === undefined
   // Mock out the database if we're developing locally
   if (usingMockedDb) {
-    logger.warn(
-      '\n!!! WARNING !!!',
-      '\nNo database configuration detected',
-      '\nUsing mock development database instead.',
-      '\nThis should NEVER be seen in production.',
-    )
+    logger.warn({
+      message:
+        '!!! WARNING !!!\nNo database configuration detected\nUsing mock development database instead.\nThis should NEVER be seen in production.',
+      meta: {
+        action: 'init',
+      },
+    })
 
     if (!process.env.MONGO_BINARY_VERSION) {
-      logger.error('Environment var MONGO_BINARY_VERSION is missing')
+      logger.error({
+        message: 'Environment var MONGO_BINARY_VERSION is missing',
+        meta: {
+          action: 'init',
+        },
+      })
       process.exit(1)
     }
 
@@ -48,14 +54,31 @@ export default async (): Promise<Connection> => {
 
   mongoose.connection.on('error', (err) => {
     // No need to reconnect here since mongo config has auto reconnect, we log.
-    logger.error('@MongoDB: DB error:', err)
+    logger.error({
+      message: '@MongoDB: DB connection error',
+      meta: {
+        action: 'init',
+      },
+      error: err,
+    })
   })
 
   mongoose.connection.on('open', function () {
-    logger.info('@MongoDB: DB connected')
+    logger.info({
+      message: '@MongoDB: DB connected',
+      meta: {
+        action: 'init',
+      },
+    })
   })
+
   mongoose.connection.on('close', function (str) {
-    logger.info('@MongoDB: DB disconnected: ' + str)
+    logger.info({
+      message: `@MongoDB: DB disconnected: ${str}`,
+      meta: {
+        action: 'init',
+      },
+    })
   })
 
   // Seed the db with govtech agency if using the mocked db

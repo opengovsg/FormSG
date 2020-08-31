@@ -115,7 +115,9 @@ export const isToFieldValid = (addresses: string | string[]) => {
   const mails = flattenDeep(
     flattenDeep([addresses]).map((addrString) =>
       String(addrString)
-        .split(',')
+        // Split by both commas and semicolons, as some legacy emails are
+        // delimited by semicolons.
+        .split(/,|;/)
         .map((addr) => addr.trim()),
     ),
   )

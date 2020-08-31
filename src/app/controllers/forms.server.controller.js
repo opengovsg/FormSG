@@ -8,7 +8,7 @@ const _ = require('lodash')
 const HttpStatus = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
-const logger = require('../../config/logger').createLoggerWithLabel('forms')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormModel = require('../models/form.server.model').default
 
 const Form = getFormModel(mongoose)
@@ -116,7 +116,16 @@ exports.formById = async function (req, res, next) {
       return next()
     }
   } catch (err) {
-    logger.error(getRequestIp(req), req.url, req.headers, err)
+    logger.error({
+      message: 'Error retrieving form from database',
+      meta: {
+        action: 'formById',
+        ip: getRequestIp(req),
+        url: req.url,
+        headers: req.headers,
+      },
+      error: err,
+    })
     return next(err)
   }
 }

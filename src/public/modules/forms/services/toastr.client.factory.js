@@ -36,9 +36,11 @@ function Toastr($filter) {
 
   let toastrNotification = {
     success: function (message, options = {}, title = '') {
-      const linkyfiedMessage = $filter('linky')(message, '_blank')
+      if (!options.skipLinky) {
+        message = $filter('linky')(message, '_blank')
+      }
       toastr.success(
-        linkyfiedMessage + successIconHtml,
+        message + successIconHtml,
         title,
         Object.assign({}, defaultSuccessOptions, options),
       )

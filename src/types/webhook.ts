@@ -9,13 +9,3 @@ export type WebhookParams = {
   now: number
   signature: string
 }
-
-export type LogWebhookParams = {
-  submissionId: ISubmissionSchema['_id']
-  formId: IFormSchema['_id']
-  now: number
-  webhookUrl: string
-  signature: string
-  status?: number
-  errorMessage?: string
-}

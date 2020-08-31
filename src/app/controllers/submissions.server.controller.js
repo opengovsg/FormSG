@@ -11,9 +11,7 @@ const HttpStatus = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'authentication',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail.service').default
 
 const GOOGLE_RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
@@ -34,11 +32,14 @@ exports.captchaCheck = (captchaPrivateKey) => {
           message: 'Captcha not set-up',
         })
       } else if (!req.query.captchaResponse) {
-        logger.error(
-          `[${
-            req.form._id
-          }] Error 400: Missing captchaResponse ip=${getRequestIp(req)}`,
-        )
+        logger.error({
+          message: 'Missing captchaResponse param',
+          meta: {
+            action: 'captchaCheck',
+            formId: req.form._id,
+            ip: getRequestIp(req),
+          },
+        })
         return res.status(HttpStatus.BAD_REQUEST).send({
           message: 'Captcha was missing. Please refresh and submit again.',
         })
@@ -53,11 +54,14 @@ exports.captchaCheck = (captchaPrivateKey) => {
           })
           .then(({ data }) => {
             if (!data.success) {
-              logger.error(
-                `Error 400 - Incorrect captchaResponse: formId=${
-                  req.form._id
-                } ip=${getRequestIp(req)}`,
-              )
+              logger.error({
+                message: 'Incorrect captcha response',
+                meta: {
+                  action: 'captchaCheck',
+                  formId: req.form._id,
+                  ip: getRequestIp(req),
+                },
+              })
               return res.status(HttpStatus.BAD_REQUEST).send({
                 message: 'Captcha was incorrect. Please submit again.',
               })
@@ -66,12 +70,15 @@ exports.captchaCheck = (captchaPrivateKey) => {
           })
           .catch((err) => {
             // Problem with the verificationUrl - maybe it timed out?
-            logger.error(
-              `[${req.form._id}] Error verifying captcha, ip=${getRequestIp(
-                req,
-              )}`,
-              err,
-            )
+            logger.error({
+              message: 'Error verifying captcha',
+              meta: {
+                action: 'captchaCheck',
+                formId: req.form._id,
+                ip: getRequestIp(req),
+              },
+              error: err,
+            })
             return res.status(HttpStatus.BAD_REQUEST).send({
               message:
                 'Could not verify captcha. Please submit again in a few minutes.',
@@ -168,11 +175,16 @@ const sendEmailAutoReplies = async function (req) {
       autoReplyMailDatas: autoReplyEmails,
     })
   } catch (err) {
-    logger.error(
-      `Mail autoreply error for formId=${form._id} submissionId=${
-        submission.id
-      } ip=${getRequestIp(req)}:\t${err}`,
-    )
+    logger.error({
+      message: 'Failed to send autoreply emails',
+      meta: {
+        action: 'sendEmailAutoReplies',
+        ip: getRequestIp(req),
+        formId: req.form._id,
+        submissionId: submission.id,
+      },
+      error: err,
+    })
     // We do not deal with failed autoreplies
     return Promise.resolve()
   }
@@ -206,7 +218,17 @@ exports.count = function (req, res) {
 
   Submission.countDocuments(query, function (err, count) {
     if (err) {
-      logger.error(getRequestIp(req), req.url, req.headers, err)
+      logger.error({
+        message: 'Error counting submission documents from database',
+        meta: {
+          action: 'count',
+          ip: getRequestIp(req),
+          url: req.url,
+          headers: req.headers,
+        },
+        error: err,
+      })
+
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
         message: errorHandler.getMongoErrorMessage(err),
       })
@@ -226,8 +248,14 @@ exports.sendAutoReply = function (req, res) {
   // We do not handle failed autoreplies
   const autoReplies = [sendEmailAutoReplies(req, res)]
   return Promise.all(autoReplies).catch((err) => {
-    logger.error(
-      `Autoreply error for formId=${form._id} submissionId=${submission.id}:\t${err}`,
-    )
+    logger.error({
+      message: 'Error sending autoreply',
+      meta: {
+        action: 'sendAutoReply',
+        formId: form._id,
+        submissionId: submission.id,
+      },
+      error: err,
+    })
   })
 }

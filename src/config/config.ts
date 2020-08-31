@@ -10,7 +10,7 @@ import SMTPPool from 'nodemailer/lib/smtp-pool'
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
 
-const configLogger = createLoggerWithLabel('config')
+const logger = createLoggerWithLabel(module)
 
 // Typings
 type AppConfig = {
@@ -115,7 +115,12 @@ const submissionsTopUp = parseInt(process.env.SUBMISSIONS_TOP_UP, 10) || 0
  */
 const cspReportUri = process.env.CSP_REPORT_URI || 'undefined'
 if (!process.env.CSP_REPORT_URI) {
-  configLogger.warn('Content Security Policy reporting is not configured.')
+  logger.warn({
+    message: 'Content Security Policy reporting is not configured.',
+    meta: {
+      action: 'init',
+    },
+  })
 }
 
 /**
@@ -123,9 +128,15 @@ if (!process.env.CSP_REPORT_URI) {
  */
 const chromiumBin = process.env.CHROMIUM_BIN
 if (!chromiumBin) {
-  throw new Error(
-    'Path to Chromium executable missing - please specify in CHROMIUM_BIN environment variable',
-  )
+  const errMsg =
+    'Path to Chromium executable missing - please specify in CHROMIUM_BIN environment variable'
+  logger.error({
+    message: errMsg,
+    meta: {
+      action: 'init',
+    },
+  })
+  throw new Error(errMsg)
 }
 
 /**
@@ -141,9 +152,16 @@ if (
   !formsgSdkMode ||
   !['staging', 'production', 'development', 'test'].includes(formsgSdkMode)
 ) {
-  throw new Error(
-    'FORMSG_SDK_MODE not found or invalid. Please specify one of: "staging" | "production" | "development" | "test" in the environment variable.',
-  )
+  const errMsg =
+    'FORMSG_SDK_MODE not found or invalid. Please specify one of: "staging" | "production" | "development" | "test" in the environment variable.'
+
+  logger.error({
+    message: errMsg,
+    meta: {
+      action: 'init',
+    },
+  })
+  throw new Error(errMsg)
 }
 
 // Optional environment variables
@@ -254,23 +272,25 @@ const mailConfig: MailConfig = (function () {
 
     transporter = nodemailer.createTransport(options)
   } else if (process.env.SES_PORT) {
-    configLogger.warn(
-      '\n!!! WARNING !!!',
-      '\nNo SES credentials detected.',
-      '\nUsing Nodemailer to send to local SMTP server instead.',
-      '\nThis should NEVER be seen in production.',
-    )
+    logger.warn({
+      message:
+        '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer to send to local SMTP server instead.\nThis should NEVER be seen in production.',
+      meta: {
+        action: 'init.mailConfig',
+      },
+    })
     transporter = nodemailer.createTransport({
       port: Number(process.env.SES_PORT),
       ignoreTLS: true,
     })
   } else {
-    configLogger.warn(
-      '\n!!! WARNING !!!',
-      '\nNo SES credentials detected.',
-      '\nUsing Nodemailer Direct Transport instead.',
-      '\nThis should NEVER be seen in production.',
-    )
+    logger.warn({
+      message:
+        '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer Direct Transport instead.\nThis should NEVER be seen in production.',
+      meta: {
+        action: 'init.mailConfig',
+      },
+    })
     // Falls back to direct transport
     transporter = nodemailer.createTransport(directTransport({}))
   }
