@@ -271,8 +271,8 @@ function settingsFormDirective(
                 checks,
                 formParams: {
                   _id: $scope.myform._id,
-                  title: $scope.myform.title
-                }
+                  title: $scope.myform.title,
+                },
               }),
             },
           })

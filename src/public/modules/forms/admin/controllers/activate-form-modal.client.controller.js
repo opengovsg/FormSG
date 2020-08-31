@@ -116,18 +116,22 @@ function ActivateFormController(
       vm.savingStatus = 1
       const toastMessage = dedent`
         Congrats! Your form has gone live.<br/>
-        <a href=${MailTo.generateMailToUri(formParams.title, encryptionKey.secretKey, formParams._id)}>
+        <a href=${MailTo.generateMailToUri(
+          formParams.title,
+          encryptionKey.secretKey,
+          formParams._id,
+        )}>
           Email secret key to colleagues for safekeeping.
         </a>
         `
-      updateFormStatusAndSave(
-        toastMessage,
-        { timeOut: 10000, extendedTimeOut: 10000, skipLinky: true },
-      )
-        .then(() => {
-          vm.savingStatus = 2
-          vm.closeActivateFormModal()
-        })
+      updateFormStatusAndSave(toastMessage, {
+        timeOut: 10000,
+        extendedTimeOut: 10000,
+        skipLinky: true,
+      }).then(() => {
+        vm.savingStatus = 2
+        vm.closeActivateFormModal()
+      })
     }
   }
 }
