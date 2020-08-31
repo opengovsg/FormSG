@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash'
+import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
@@ -199,7 +199,13 @@ export class MailService {
           error: err,
         })
 
-        retry(err)
+        // Retry only on 4xx errors.
+        if (inRange(get(err, 'responseCode', 0), 400, 500)) {
+          return retry(err)
+        }
+
+        // Not 4xx error, rethrow error.
+        throw err
       }
     }, this.#retryParams)
   }
