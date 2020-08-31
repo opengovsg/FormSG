@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const dbHandler = require('../helpers/db-handler')
 let roles = require('../helpers/roles')
 let permissionLevels = require('../../../../dist/backend/app/utils/permission-levels')
+  .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Token = dbHandler.makeModel('token.server.model', 'Token')

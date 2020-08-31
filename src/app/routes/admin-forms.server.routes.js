@@ -12,7 +12,7 @@ let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
-let PERMISSIONS = require('../utils/permission-levels.js')
+let PERMISSIONS = require('../utils/permission-levels').default
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 
