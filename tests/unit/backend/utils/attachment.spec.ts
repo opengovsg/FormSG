@@ -60,70 +60,81 @@ const zipOnlyValid = {
 const MOCK_ANSWER = 'mockAnswer'
 
 describe('attachmentsAreValid', () => {
-  it('should return true when given a single valid file', () => {
-    return expect(attachmentsAreValid([validSingleFile])).resolves.toBe(true)
+  it('should return true when given a single valid file', async () => {
+    const isValid = await attachmentsAreValid([validSingleFile])
+    expect(isValid).toBe(true)
   })
 
-  it('should return true when given a multiple valid files', () => {
-    return expect(
-      attachmentsAreValid([validSingleFile, validSingleFile]),
-    ).resolves.toBe(true)
+  it('should return true when given a multiple valid files', async () => {
+    const isValid = await attachmentsAreValid([
+      validSingleFile,
+      validSingleFile,
+    ])
+    expect(isValid).toBe(true)
   })
 
-  it('should return false when given a single invalid file', () => {
-    return expect(attachmentsAreValid([invalidSingleFile])).resolves.toBe(false)
+  it('should return false when given a single invalid file', async () => {
+    const isValid = await attachmentsAreValid([invalidSingleFile])
+    expect(isValid).toBe(false)
   })
 
-  it('should return false when given a multiple invalid files', () => {
-    return expect(
-      attachmentsAreValid([invalidSingleFile, invalidSingleFile]),
-    ).resolves.toBe(false)
+  it('should return false when given a multiple invalid files', async () => {
+    const isValid = await attachmentsAreValid([
+      invalidSingleFile,
+      invalidSingleFile,
+    ])
+    expect(isValid).toBe(false)
   })
 
-  it('should return false when given a mix of valid and invalid files', () => {
-    return expect(
-      attachmentsAreValid([validSingleFile, invalidSingleFile]),
-    ).resolves.toBe(false)
+  it('should return false when given a mix of valid and invalid files', async () => {
+    const isValid = await attachmentsAreValid([
+      validSingleFile,
+      invalidSingleFile,
+    ])
+    expect(isValid).toBe(false)
   })
 
-  it('should return true when given a single valid zip', () => {
-    return expect(attachmentsAreValid([zipOnlyValid])).resolves.toBe(true)
+  it('should return true when given a single valid zip', async () => {
+    const isValid = await attachmentsAreValid([zipOnlyValid])
+    expect(isValid).toBe(true)
   })
 
-  it('should return true when given multiple valid zips', () => {
-    return expect(
-      attachmentsAreValid([zipOnlyValid, zipOnlyValid]),
-    ).resolves.toBe(true)
+  it('should return true when given multiple valid zips', async () => {
+    const isValid = await attachmentsAreValid([zipOnlyValid, zipOnlyValid])
+    expect(isValid).toBe(true)
   })
 
-  it('should return false when given a zip with only invalid files', () => {
-    return expect(attachmentsAreValid([zipOnlyInvalid])).resolves.toBe(false)
+  it('should return false when given a zip with only invalid files', async () => {
+    const isValid = await attachmentsAreValid([zipOnlyInvalid])
+    expect(isValid).toBe(false)
   })
 
-  it('should return false when given a zip with a mix of valid and invalid files', () => {
-    return expect(attachmentsAreValid([zipWithValidAndInvalid])).resolves.toBe(
-      false,
-    )
+  it('should return false when given a zip with a mix of valid and invalid files', async () => {
+    const isValid = await attachmentsAreValid([zipWithValidAndInvalid])
+    expect(isValid).toBe(false)
   })
 
-  it('should return false when given multiple invalid zips', () => {
-    return expect(
-      attachmentsAreValid([zipOnlyInvalid, zipWithValidAndInvalid]),
-    ).resolves.toBe(false)
+  it('should return false when given multiple invalid zips', async () => {
+    const isValid = await attachmentsAreValid([
+      zipOnlyInvalid,
+      zipWithValidAndInvalid,
+    ])
+    expect(isValid).toBe(false)
   })
 
-  it('should return false when given a mix of valid and invalid zips', () => {
-    return expect(
-      attachmentsAreValid([zipOnlyValid, zipOnlyInvalid]),
-    ).resolves.toBe(false)
+  it('should return false when given a mix of valid and invalid zips', async () => {
+    const isValid = await attachmentsAreValid([zipOnlyValid, zipOnlyInvalid])
+    expect(isValid).toBe(false)
   })
 
-  it('should return true when given nested zips with valid filetypes', () => {
-    return expect(attachmentsAreValid([zipNestedValid])).resolves.toBe(true)
+  it('should return true when given nested zips with valid filetypes', async () => {
+    const isValid = await attachmentsAreValid([zipNestedValid])
+    expect(isValid).toBe(true)
   })
 
-  it('should return false when given nested zips with invalid filetypes', () => {
-    return expect(attachmentsAreValid([zipNestedInvalid])).resolves.toBe(false)
+  it('should return false when given nested zips with invalid filetypes', async () => {
+    const isValid = await attachmentsAreValid([zipNestedInvalid])
+    expect(isValid).toBe(false)
   })
 })
 
