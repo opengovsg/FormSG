@@ -21,7 +21,7 @@ describe('Bounce Model', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('schema', () => {
-    it('should create and save successfully with defaults', async () => {
+    it('should save with defaults when params are not provided', async () => {
       const formId = new ObjectId()
       const bounces = [{ email: MOCK_EMAIL }]
       const savedBounce = await new Bounce({ formId, bounces }).save()
@@ -35,7 +35,7 @@ describe('Bounce Model', () => {
       })
     })
 
-    it('should create and save successfully with non-defaults', async () => {
+    it('should save with non-defaults when they are provided', async () => {
       const params = {
         formId: new ObjectId(),
         bounces: [{ email: MOCK_EMAIL, hasBounced: true }],
@@ -47,7 +47,7 @@ describe('Bounce Model', () => {
       expect(savedBounceObject).toEqual(params)
     })
 
-    it('should reject invalid emails', async () => {
+    it('should reject emails when they are invalid', async () => {
       const bounce = new Bounce({
         formId: new ObjectId(),
         bounces: [{ email: 'this is an ex-parrot' }],
@@ -55,7 +55,7 @@ describe('Bounce Model', () => {
       await expect(bounce.save()).rejects.toThrow()
     })
 
-    it('should reject empty form IDs', async () => {
+    it('should not save when formId is not provided', async () => {
       const bounce = new Bounce()
       await expect(bounce.save()).rejects.toThrowError('Form ID is required')
     })
@@ -63,7 +63,7 @@ describe('Bounce Model', () => {
 
   describe('methods', () => {
     describe('merge', () => {
-      it('should update old bounce with latest bounce info', () => {
+      it('should update old bounce when valid bounce info is given', () => {
         const formId = new ObjectId()
         const oldBounce = new Bounce({
           formId,
@@ -81,7 +81,7 @@ describe('Bounce Model', () => {
         })
       })
 
-      it('should set hasBounced to false if email is delivered later', () => {
+      it('should set hasBounced to false when email is delivered later', () => {
         const formId = new ObjectId()
         const oldBounce = new Bounce({
           formId,
@@ -105,7 +105,7 @@ describe('Bounce Model', () => {
         })
       })
 
-      it('should update email list as necessary', () => {
+      it('should update email list when it changes', () => {
         const newEmail = 'newemail@email.com'
         const formId = new ObjectId()
         const oldBounce = new Bounce({
@@ -134,7 +134,7 @@ describe('Bounce Model', () => {
 
   describe('statics', () => {
     describe('fromSnsNotification', () => {
-      it('should create documents from delivery notifications correctly', () => {
+      it('should create documents correctly when delivery notification is valid', () => {
         const formId = new ObjectId()
         const submissionId = new ObjectId()
         const notification = JSON.parse(
@@ -154,7 +154,7 @@ describe('Bounce Model', () => {
         expect(actual.expireAt).toBeInstanceOf(Date)
       })
 
-      it('should create documents from bounce notifications correctly', () => {
+      it('should create documents correctly when bounce notification is valid', () => {
         const formId = new ObjectId()
         const submissionId = new ObjectId()
         const notification = JSON.parse(

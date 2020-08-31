@@ -40,7 +40,7 @@ describe('Verification controller', () => {
       mockReq = { body: { formId: MOCK_FORM_ID } }
     })
 
-    it('correctly returns transaction', async () => {
+    it('should correctly return transaction when parameters are valid', async () => {
       const returnValue = {
         transactionId: 'Bereft of life, it rests in peace',
         expireAt: new Date(),
@@ -56,7 +56,7 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(returnValue)
     })
 
-    it('correctly returns 200 when transaction is not found', async () => {
+    it('should correctly return 200 when transaction is not found', async () => {
       mockVfnService.createTransaction.mockReturnValueOnce(null)
       await createTransaction(mockReq, mockRes, noop)
       expect(mockVfnService.createTransaction).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe('Verification controller', () => {
       mockReq = { params: { transactionId: MOCK_TRANSACTION_ID } }
     })
 
-    it('correctly returns metadata', async () => {
+    it('should correctly return metadata when parameters are valid', async () => {
       // Coerce type
       const transaction = ('it' as unknown) as ReturnType<
         typeof mockVfnService.getTransactionMetadata
@@ -90,7 +90,7 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(transaction)
     })
 
-    it('returns 404 on error', async () => {
+    it('should return 404 when service throws error', async () => {
       mockVfnService.getTransactionMetadata.mockImplementationOnce(() => {
         const error = new Error(notFoundError)
         error.name = notFoundError
@@ -116,7 +116,7 @@ describe('Verification controller', () => {
       }
     })
 
-    it('correctly calls service', async () => {
+    it('should correctly call service when params are valid', async () => {
       const transaction = new Verification({ formId: new ObjectId() })
       mockVfnService.getTransaction.mockReturnValueOnce(
         Promise.resolve(transaction),
@@ -132,7 +132,7 @@ describe('Verification controller', () => {
       expect(mockRes.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
     })
 
-    it('returns 404 on error', async () => {
+    it('should return 404 when service throws error', async () => {
       mockVfnService.getTransaction.mockImplementationOnce(() => {
         const error = new Error(notFoundError)
         error.name = notFoundError
@@ -162,7 +162,7 @@ describe('Verification controller', () => {
       )
     })
 
-    it('calls service correctly', async () => {
+    it('should call service correctly when params are valid', async () => {
       await getNewOtp(mockReq, mockRes, noop)
       expect(mockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
@@ -175,7 +175,7 @@ describe('Verification controller', () => {
       expect(mockRes.sendStatus).toHaveBeenCalledWith(HttpStatus.CREATED)
     })
 
-    it('returns 404 on not found error', async () => {
+    it('should return 404 when service throws not found error', async () => {
       mockVfnService.getNewOtp.mockImplementationOnce(() => {
         const error = new Error(notFoundError)
         error.name = notFoundError
@@ -194,7 +194,7 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(notFoundError)
     })
 
-    it('returns 202 on WaitForOtp error', async () => {
+    it('should return 202 when service throws WaitForOtp error', async () => {
       mockVfnService.getNewOtp.mockImplementationOnce(() => {
         const error = new Error(waitOtpError)
         error.name = waitOtpError
@@ -213,7 +213,7 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(waitOtpError)
     })
 
-    it('returns 400 on OTP failed error', async () => {
+    it('should return 400 when services throws OTP failed error', async () => {
       mockVfnService.getNewOtp.mockImplementationOnce(() => {
         const error = new Error(sendOtpError)
         error.name = sendOtpError
@@ -249,7 +249,7 @@ describe('Verification controller', () => {
       )
     })
 
-    it('calls service correctly', async () => {
+    it('should call service correctly when params are valid', async () => {
       mockVfnService.verifyOtp.mockReturnValue(Promise.resolve(MOCK_DATA))
       await verifyOtp(mockReq, mockRes, noop)
       expect(mockVfnService.getTransaction).toHaveBeenCalledWith(
@@ -264,7 +264,7 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(MOCK_DATA)
     })
 
-    it('returns 422 for invalid OTP', async () => {
+    it('should return 422 when OTP is invalid', async () => {
       mockVfnService.verifyOtp.mockImplementationOnce(() => {
         const error = new Error(invalidOtpError)
         error.name = invalidOtpError

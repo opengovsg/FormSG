@@ -77,7 +77,7 @@ describe('Verification service', () => {
       ).resolves.toBe(null)
     })
 
-    it('should correctly save and return transaction', async () => {
+    it('should correctly save and return transaction when it is valid', async () => {
       const testForm = new Form({
         form_fields: [{ fieldType: BasicField.Email, isVerifiable: true }],
         admin: user,
@@ -105,7 +105,7 @@ describe('Verification service', () => {
       ).rejects.toThrowError('TRANSACTION_NOT_FOUND')
     })
 
-    it('should correctly return metadata', async () => {
+    it('should correctly return metadata when request is valid', async () => {
       const formId = new ObjectId()
       const expireAt = new Date()
       const testVerification = new Verification({ formId, expireAt })
@@ -122,7 +122,7 @@ describe('Verification service', () => {
   describe('resetFieldInTransaction', () => {
     afterEach(async () => await dbHandler.clearDatabase())
 
-    it('should correctly reset one field', async () => {
+    it('should reset one field when params are valid', async () => {
       const testForm = new Form({
         admin: user,
         title: MOCK_FORM_TITLE,
@@ -168,7 +168,7 @@ describe('Verification service', () => {
       })
     })
 
-    it('should throw error if field ID does not exist', async () => {
+    it('should throw error when field ID does not exist', async () => {
       const transaction = new Verification({ formId: new ObjectId() })
       await transaction.save()
       return expect(
@@ -176,7 +176,7 @@ describe('Verification service', () => {
       ).rejects.toThrowError('Field not found in transaction')
     })
 
-    it('should throw error if transaction ID does not exist', async () => {
+    it('should throw error when transaction ID does not exist', async () => {
       const transaction = new Verification({ formId: new ObjectId() })
       return expect(
         resetFieldInTransaction(transaction, String(new ObjectId())),
@@ -226,7 +226,7 @@ describe('Verification service', () => {
 
     afterEach(async () => await dbHandler.clearDatabase())
 
-    it('should throw error for expired transaction', async () => {
+    it('should throw error when transaction is expired', async () => {
       transaction.expireAt = new Date(1)
       await transaction.save()
       return expect(
@@ -234,13 +234,13 @@ describe('Verification service', () => {
       ).rejects.toThrowError('TRANSACTION_NOT_FOUND')
     })
 
-    it('should throw error for invalid field ID', async () => {
+    it('should throw error when field ID is invalid', async () => {
       return expect(
         getNewOtp(transaction, String(new ObjectId()), mockAnswer),
       ).rejects.toThrowError('Field not found in transaction')
     })
 
-    it('should throw error for OTP requested too soon', async () => {
+    it('should throw error when OTP is requested too soon', async () => {
       // 1min in the future
       transaction.fields[0].hashCreatedAt = new Date(Date.now() + 6e4)
       // Actual error is 'Wait for _ seconds before requesting'
@@ -249,7 +249,7 @@ describe('Verification service', () => {
       ).rejects.toThrowError('seconds before requesting for a new otp')
     })
 
-    it('should send OTP for email field', async () => {
+    it('should send OTP when params are valid for email field', async () => {
       // Reset field so we can it update later on
       transaction.fields[0].hashedOtp = null
       transaction.fields[0].signedData = null
@@ -280,7 +280,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(0)
     })
 
-    it('should send OTP for mobile field', async () => {
+    it('should send OTP when params are valid for mobile field', async () => {
       // Reset field so we can it update later on
       transaction.fields[1].hashedOtp = null
       transaction.fields[1].signedData = null
@@ -380,7 +380,7 @@ describe('Verification service', () => {
 
     afterEach(async () => await dbHandler.clearDatabase())
 
-    it('should throw error for expired transaction', async () => {
+    it('should throw error when transaction is expired', async () => {
       transaction.expireAt = new Date(1)
       await transaction.save()
       await expect(
@@ -393,7 +393,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
     })
 
-    it('should throw error for invalid field ID', async () => {
+    it('should throw error when field ID is invalid', async () => {
       await transaction.save()
       await expect(
         verifyOtp(transaction, String(new ObjectId()), mockOtp),
@@ -405,7 +405,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
     })
 
-    it('should throw error for invalid hashed OTP', async () => {
+    it('should throw error when hashed OTP is invalid', async () => {
       transaction.fields[0].hashedOtp = null
       await transaction.save()
       await expect(
@@ -418,7 +418,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
     })
 
-    it('should throw error for invalid hashCreatedAt', async () => {
+    it('should throw error when hashCreatedAt is invalid', async () => {
       transaction.fields[0].hashCreatedAt = null
       await transaction.save()
       await expect(
@@ -431,7 +431,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
     })
 
-    it('should throw error for expired hash', async () => {
+    it('should throw error when hash is expired', async () => {
       // 10min 10s ago
       transaction.fields[0].hashCreatedAt = new Date(Date.now() - 6.1e5)
       await transaction.save()
@@ -445,7 +445,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
     })
 
-    it('should throw error if too many retries', async () => {
+    it('should throw error when retries are maxed out', async () => {
       const tooManyRetries = 4
       transaction.fields[0].hashRetries = tooManyRetries
       await transaction.save()
@@ -459,7 +459,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(tooManyRetries)
     })
 
-    it('should reject invalid OTP', async () => {
+    it('should reject when OTP is invalid', async () => {
       mockBcrypt.compare.mockReturnValueOnce(Promise.resolve(false))
       await transaction.save()
       await expect(
@@ -472,7 +472,7 @@ describe('Verification service', () => {
       expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries + 1)
     })
 
-    it('should accept valid OTP', async () => {
+    it('should resolve when OTP is invalid', async () => {
       mockBcrypt.compare.mockReturnValueOnce(Promise.resolve(true))
       await transaction.save()
       await expect(
