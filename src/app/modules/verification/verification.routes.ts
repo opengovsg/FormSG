@@ -65,7 +65,7 @@ VfnRouter.post(
       otp: Joi.string()
         .regex(/^\d{6}$/)
         .required()
-        .error(() => 'Please enter a valid otp'),
+        .message('Please enter a valid otp'),
     }),
   }),
   verifiedFieldsFactory.verifyOtp,
