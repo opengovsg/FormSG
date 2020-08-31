@@ -219,13 +219,17 @@ function CreateFormModalController(
       vm.formData.responseMode === responseModeEnum.ENCRYPT
     ) {
       vm.formStatus = 2
-      $timeout(() => {
-        const { publicKey, secretKey } = FormSgSdk.crypto.generate()
-        vm.publicKey = publicKey
-        vm.secretKey = secretKey
-        vm.mailToUri = MailTo.generateMailToUri(vm.formData.title, secretKey)
-        vm.formStatus = 3
-      })
+      const { publicKey, secretKey } = FormSgSdk.crypto.generate()
+      vm.publicKey = publicKey
+      vm.secretKey = secretKey
+      MailTo.generateMailToUri(vm.formData.title, secretKey).then(
+        (mailToUri) => {
+          $timeout(() => {
+            vm.mailToUri = mailToUri
+            vm.formStatus = 3
+          })
+        },
+      )
     } else if (
       (vm.formStatus === 1 &&
         vm.formData.responseMode === responseModeEnum.EMAIL) ||
