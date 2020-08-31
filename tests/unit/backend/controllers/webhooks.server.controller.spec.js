@@ -11,7 +11,7 @@ const dbHandler = require('../helpers/db-handler')
 const Submission = dbHandler.makeModel('submission.server.model', 'Submission')
 const controllerPath = 'dist/backend/app/controllers/webhooks.server.controller'
 const validateWebhookUrlPath = '../../shared/util/webhook-validation'
-const webhookUtilsPath = '../modules/webhook/webhooks.service'
+const webhookUtilsPath = '../modules/webhook/webhook.service'
 const defaultWebhookUrl = 'https://test.site'
 let mockAxios
 

@@ -11,7 +11,7 @@ import {
   handleWebhookFailure,
   handleWebhookSuccess,
   postWebhook,
-} from 'src/app/modules/webhook/webhooks.service'
+} from 'src/app/modules/webhook/webhook.service'
 import { ResponseMode, SubmissionType } from 'src/types'
 
 jest.mock('axios')

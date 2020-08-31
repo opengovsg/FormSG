@@ -5,7 +5,7 @@ const {
   handleWebhookSuccess,
   handleWebhookFailure,
   logWebhookFailure,
-} = require('../modules/webhook/webhooks.service')
+} = require('../modules/webhook/webhook.service')
 const { WebhookValidationError } = require('../modules/webhook/webhook.errors')
 
 /**
