@@ -181,6 +181,7 @@
     "@types/helmet": "0.0.48",
     "@types/ip": "^1.1.0",
     "@types/jest": "^26.0.9",
+    "@types/json-stringify-safe": "^5.0.0",
     "@types/mongoose": "^5.7.36",
     "@types/node": "^14.0.13",
     "@types/nodemailer": "^6.4.0",
