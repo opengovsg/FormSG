@@ -16,8 +16,7 @@ describe('handleSns', () => {
   })
 
   afterEach(() => {
-    MockBounceService.updateBounces.mockReset()
-    MockBounceService.isValidSnsRequest.mockReset()
+    jest.clearAllMocks()
   })
 
   it('should not call updateBounces when requests are invalid', async () => {
