@@ -121,7 +121,7 @@ const logWebhookSuccess = (
 // Logging for webhook failure
 export const logWebhookFailure = (
   error: Error | AxiosError,
-  { webhookUrl, submissionId, formId, now, signature }: WebhookParams,
+  { webhookUrl, submissionId, formId, now, signature }: Partial<WebhookParams>,
 ): void => {
   let logMeta = {
     action: 'logWebhookFailure',

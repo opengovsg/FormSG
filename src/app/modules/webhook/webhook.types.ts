@@ -1,5 +1,10 @@
+import {
+  IEncryptedSubmission,
+  IForm,
+  ISubmissionSchema,
+  WebhookView,
+} from '../../../types'
 import { IFormSchema } from '../../../types/form'
-import { ISubmissionSchema, WebhookView } from '../../../types/submission'
 
 export type WebhookParams = {
   webhookUrl: string
@@ -8,4 +13,9 @@ export type WebhookParams = {
   formId: IFormSchema['_id']
   now: number
   signature: string
+}
+
+export interface WebhookRequestLocals {
+  form: IForm
+  submission: IEncryptedSubmission
 }

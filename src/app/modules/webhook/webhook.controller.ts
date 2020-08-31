@@ -1,12 +1,16 @@
-const formsgSdk = require('../../../config/formsg-sdk')
-const { validateWebhookUrl } = require('./webhook.utils')
-const {
-  postWebhook,
-  handleWebhookSuccess,
+import { NextFunction, Request, Response } from 'express'
+
+import formsgSdk from '../../../config/formsg-sdk'
+
+import { WebhookValidationError } from './webhook.errors'
+import {
   handleWebhookFailure,
+  handleWebhookSuccess,
   logWebhookFailure,
-} = require('./webhook.service')
-const { WebhookValidationError } = require('./webhook.errors')
+  postWebhook,
+} from './webhook.service'
+import { WebhookRequestLocals } from './webhook.types'
+import { validateWebhookUrl } from './webhook.utils'
 
 /**
  * POST submission to a specified URL.  Only works for encrypted submissions.
@@ -17,7 +21,12 @@ const { WebhookValidationError } = require('./webhook.errors')
  * @param {Object} req.submission The submission saved to the database
  * @param {function} next Next middleware
  */
-function post(req, _res, next) {
+
+export function post(
+  req: Request & WebhookRequestLocals,
+  res: Response,
+  next: NextFunction,
+) {
   const { form, submission } = req
   if (form.webhook.url) {
     const webhookUrl = form.webhook.url
@@ -44,7 +53,7 @@ function post(req, _res, next) {
       submissionId,
       formId,
       epoch: now,
-    })
+    }) as string
 
     const webhookParams = {
       webhookUrl,
@@ -54,6 +63,7 @@ function post(req, _res, next) {
       now,
       signature,
     }
+
     // Use promises instead of await to prevent the user from having to await on the
     // webhook before they receive acknowledgement that their submission was successful.
     validateWebhookUrl(webhookParams.webhookUrl)
@@ -66,8 +76,4 @@ function post(req, _res, next) {
       })
   }
   return next()
-}
-
-module.exports = {
-  post,
 }
