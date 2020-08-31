@@ -1,7 +1,7 @@
 'use strict'
 
 const mongoose = require('mongoose')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -22,9 +22,9 @@ exports.isFormPublic = function (req, res, next) {
     case 'PUBLIC':
       return next()
     case 'ARCHIVED':
-      return res.sendStatus(HttpStatus.GONE)
+      return res.sendStatus(StatusCodes.GONE)
     default:
-      return res.status(HttpStatus.NOT_FOUND).send({
+      return res.status(StatusCodes.NOT_FOUND).send({
         message: req.form.inactiveMessage,
         isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
         formTitle: req.form.title,
@@ -80,7 +80,7 @@ exports.submitFeedback = function (req, res) {
     !('comment' in req.body)
   ) {
     return res
-      .status(HttpStatus.BAD_REQUEST)
+      .status(StatusCodes.BAD_REQUEST)
       .send('Form feedback data not passed in')
   }
 
@@ -101,10 +101,12 @@ exports.submitFeedback = function (req, res) {
           error: err,
         })
         return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send('Form feedback could not be created')
       } else {
-        return res.status(HttpStatus.OK).send('Successfully submitted feedback')
+        return res
+          .status(StatusCodes.OK)
+          .send('Successfully submitted feedback')
       }
     },
   )

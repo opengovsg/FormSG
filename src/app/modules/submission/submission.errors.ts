@@ -1,4 +1,4 @@
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { ApplicationError } from '../core/core.errors'
 
@@ -8,6 +8,6 @@ import { ApplicationError } from '../core/core.errors'
  */
 export class ConflictError extends ApplicationError {
   constructor(message: string, meta?: string) {
-    super(message, HttpStatus.CONFLICT, meta)
+    super(message, StatusCodes.CONFLICT, meta)
   }
 }

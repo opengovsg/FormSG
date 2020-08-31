@@ -5,7 +5,7 @@
  */
 const mongoose = require('mongoose')
 const _ = require('lodash')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -95,20 +95,20 @@ exports.formById = async function (req, res, next) {
   let id = req.params && req.params.formId
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(HttpStatus.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).send({
       message: 'Form URL is invalid.',
     })
   }
   try {
     const form = await Form.getFullFormById(id)
     if (!form) {
-      return res.status(HttpStatus.NOT_FOUND).send({
+      return res.status(StatusCodes.NOT_FOUND).send({
         message: "Oops! We can't find the form you're looking for.",
       })
     } else {
       // Remove sensitive information from User object
       if (!form.admin) {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
           message: 'Server error.',
         })
       }

@@ -1,4 +1,4 @@
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
@@ -25,7 +25,7 @@ describe('handleSns', () => {
       MOCK_REQ.body,
     )
     expect(MockBounceService.updateBounces).not.toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
   })
 
   it('should call updateBounces when requests are valid', async () => {
@@ -37,7 +37,7 @@ describe('handleSns', () => {
       MOCK_REQ.body,
     )
     expect(MockBounceService.updateBounces).toHaveBeenCalledWith(MOCK_REQ.body)
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
   })
 
   it('should return 400 when errors are thrown in isValidSnsRequest', async () => {
@@ -49,7 +49,7 @@ describe('handleSns', () => {
       MOCK_REQ.body,
     )
     expect(MockBounceService.updateBounces).not.toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
   })
 
   it('should return 400 when errors are thrown in updateBounces', async () => {
@@ -64,6 +64,6 @@ describe('handleSns', () => {
       MOCK_REQ.body,
     )
     expect(MockBounceService.updateBounces).toHaveBeenCalledWith(MOCK_REQ.body)
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
   })
 })

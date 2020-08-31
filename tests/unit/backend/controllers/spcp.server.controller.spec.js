@@ -1,5 +1,5 @@
 const crypto = require('crypto')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
@@ -177,22 +177,22 @@ describe('SPCP Controller', () => {
     it('should return 400 if target not provided', () => {
       req.query.target = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(HttpStatus.BAD_REQUEST)
+      expectResponse(StatusCodes.BAD_REQUEST)
     })
 
     it('should return 400 if authType not provided', () => {
       req.query.authType = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(HttpStatus.BAD_REQUEST)
+      expectResponse(StatusCodes.BAD_REQUEST)
     })
     it('should return 400 if esrvcId not provided', () => {
       req.query.esrvcId = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(HttpStatus.BAD_REQUEST)
+      expectResponse(StatusCodes.BAD_REQUEST)
     })
     it('should return 400 if authType is NIL', () => {
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(HttpStatus.BAD_REQUEST)
+      expectResponse(StatusCodes.BAD_REQUEST)
     })
     it('should return 200 and redirectUrl if authType is SP', () => {
       req.query.authType = 'SP'
@@ -207,7 +207,7 @@ describe('SPCP Controller', () => {
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(next).toHaveBeenCalled()
       Controller.returnSpcpRedirectURL(req, res)
-      expectResponse(HttpStatus.OK, expectedUrl)
+      expectResponse(StatusCodes.OK, expectedUrl)
     })
     it('should return 200 and redirectUrl if authType is CP', () => {
       req.query.authType = 'CP'
@@ -222,7 +222,7 @@ describe('SPCP Controller', () => {
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(next).toHaveBeenCalled()
       Controller.returnSpcpRedirectURL(req, res)
-      expectResponse(HttpStatus.OK, expectedUrl)
+      expectResponse(StatusCodes.OK, expectedUrl)
     })
   })
 
@@ -270,7 +270,7 @@ describe('SPCP Controller', () => {
       replyWith('error', {})
       Controller.isSpcpAuthenticated(authClients)(req, res, next)
       expect(next).not.toHaveBeenCalled()
-      expectResponse(HttpStatus.UNAUTHORIZED, {
+      expectResponse(StatusCodes.UNAUTHORIZED, {
         message: 'User is not SPCP authenticated',
         spcpSubmissionFailure: true,
       })
@@ -393,35 +393,35 @@ describe('SPCP Controller', () => {
     it('should return 401 if artifact not provided', () => {
       req.query.SAMLart = ''
       Controller.singPassLogin(ndiConfig)(req, res)
-      expectResponse(HttpStatus.UNAUTHORIZED)
+      expectResponse(StatusCodes.UNAUTHORIZED)
     })
 
     it('should return 400 if relayState not provided', () => {
       req.query.RelayState = ''
       Controller.singPassLogin(ndiConfig)(req, res)
-      expectResponse(HttpStatus.BAD_REQUEST)
+      expectResponse(StatusCodes.BAD_REQUEST)
     })
 
     it('should return 401 if artifact is invalid', () => {
       req.query.SAMLart = '123456789'
       Controller.singPassLogin(ndiConfig)(req, res)
-      expectResponse(HttpStatus.UNAUTHORIZED)
+      expectResponse(StatusCodes.UNAUTHORIZED)
     })
 
     it('should return 400 if relayState is invalid format', () => {
       req.query.RelayState = '/invalidRelayState'
       Controller.singPassLogin(ndiConfig)(req, res)
-      expectResponse(HttpStatus.BAD_REQUEST)
+      expectResponse(StatusCodes.BAD_REQUEST)
     })
 
     it('should return 404 if relayState has valid format but invalid formId', (done) => {
       req.query.RelayState = '/123,false'
-      expectBadRequestOnLogin(HttpStatus.NOT_FOUND, done)
+      expectBadRequestOnLogin(StatusCodes.NOT_FOUND, done)
     })
 
     it('should return 401 if relayState has valid format but belongs to non SP form', (done) => {
       req.query.RelayState = `$/{testForm._id},false`
-      expectBadRequestOnLogin(HttpStatus.UNAUTHORIZED, done)
+      expectBadRequestOnLogin(StatusCodes.UNAUTHORIZED, done)
     })
 
     it('should redirect to relayState with login error if getAttributes returns relayState only', (done) => {

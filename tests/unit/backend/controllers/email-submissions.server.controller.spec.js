@@ -1,4 +1,4 @@
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const { times } = require('lodash')
 const ejs = require('ejs')
 const express = require('express')
@@ -148,7 +148,7 @@ describe('Email Submissions Controller', () => {
 
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .then(() => {
           const mailOptions = sendSubmissionMailSpy.calls.mostRecent().args[0]
           expect(mailOptions).toEqual(fixtures)
@@ -166,7 +166,7 @@ describe('Email Submissions Controller', () => {
       delete fixtures.form.emails
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.BAD_REQUEST)
+        .expect(StatusCodes.BAD_REQUEST)
         .then(done)
         .catch(done)
     })
@@ -202,7 +202,7 @@ describe('Email Submissions Controller', () => {
       request(app)
         .post(endpointPath)
         .field('body', JSON.stringify(body))
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .expect({ body })
         .end(done)
     })
@@ -235,7 +235,7 @@ describe('Email Submissions Controller', () => {
         .post(endpointPath)
         .field('body', JSON.stringify(body))
         .attach('govtech.jpg', Buffer.alloc(1), 'receiveId')
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .expect(JSON.stringify({ body: parsedBody }))
         .end(done)
     })
@@ -246,7 +246,7 @@ describe('Email Submissions Controller', () => {
         .post(endpointPath)
         .field('body', JSON.stringify(body))
         .attach('invalid.py', Buffer.alloc(1), 'fieldId')
-        .expect(HttpStatus.BAD_REQUEST)
+        .expect(StatusCodes.BAD_REQUEST)
         .end(done)
     })
 
@@ -258,7 +258,7 @@ describe('Email Submissions Controller', () => {
         .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId1')
         .attach('valid2.jpg', Buffer.alloc(3000000), 'fieldId2')
         .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId3')
-        .expect(HttpStatus.UNPROCESSABLE_ENTITY)
+        .expect(StatusCodes.UNPROCESSABLE_ENTITY)
         .end(done)
     })
 
@@ -305,7 +305,7 @@ describe('Email Submissions Controller', () => {
         .field('body', JSON.stringify(body))
         .attach('attachment.jpg', Buffer.alloc(1), 'attachment1')
         .attach('attachment.jpg', Buffer.alloc(1), 'attachment2')
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .expect(JSON.stringify({ body: parsedBody }))
         .end(done)
     })
@@ -355,7 +355,7 @@ describe('Email Submissions Controller', () => {
     it('parses submissions without files', (done) => {
       request(app)
         .post(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .expect(
           JSON.stringify({
             body: {
@@ -425,7 +425,7 @@ describe('Email Submissions Controller', () => {
 
       request(app)
         .post(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .expect(
           JSON.stringify({
             body: {
@@ -528,7 +528,7 @@ describe('Email Submissions Controller', () => {
           testForm = val
           return request(app)
             .get(endpointPath)
-            .expect(HttpStatus.OK)
+            .expect(StatusCodes.OK)
             .then(({ body: submission }) => {
               console.info()
               expect(submission.form).toEqual(testForm._id.toString())
@@ -552,7 +552,7 @@ describe('Email Submissions Controller', () => {
     it('saves non-MyInfo submissions', (done) => {
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .then(({ body: submission }) => {
           expect(submission.form).toEqual(testForm._id.toString())
           expect(submission.recipientEmails).toEqual(
@@ -584,7 +584,7 @@ describe('Email Submissions Controller', () => {
       let concatResponse = 'foo bar; checkbox option 1, option 2; number 1; '
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .then(({ body: submission }) => {
           expect(submission.form).toEqual(testForm._id.toString())
           expect(submission.recipientEmails).toEqual(
@@ -629,7 +629,7 @@ describe('Email Submissions Controller', () => {
         'foo bar; [attachment] Text File file.text; \u0000\u0000\u0000\u0000\u0000'
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .then(({ body: submission }) => {
           expect(submission.form).toEqual(testForm._id.toString())
           expect(submission.recipientEmails).toEqual(
@@ -683,7 +683,10 @@ describe('Email Submissions Controller', () => {
         (req, res) => res.status(200).send(),
       )
 
-      request(badApp).get(endpointPath).expect(HttpStatus.BAD_REQUEST).end(done)
+      request(badApp)
+        .get(endpointPath)
+        .expect(StatusCodes.BAD_REQUEST)
+        .end(done)
     })
   })
 
@@ -744,7 +747,7 @@ describe('Email Submissions Controller', () => {
     const prepareSubmissionThenCompare = (expected, done) => {
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .then(
           ({ body: { formData, autoReplyData, jsonData, replyToEmails } }) => {
             expect(formData).withContext('Form Data').toEqual(expected.formData)
@@ -1560,7 +1563,7 @@ describe('Email Submissions Controller', () => {
       ]
       reqFixtures.form.form_fields = fields
       reqFixtures.body.responses = responses
-      request(app).get(endpointPath).expect(HttpStatus.CONFLICT).then(done)
+      request(app).get(endpointPath).expect(StatusCodes.CONFLICT).then(done)
     })
 
     describe('Logic', () => {
@@ -1667,7 +1670,7 @@ describe('Email Submissions Controller', () => {
         it('rejects submission prevented by single select value', (done) => {
           // Fulfills condition, hence submission rejected
           makeSingleSelectFixtures(preventSubmitLogics, 'Yes', true)
-          expectStatusCodeError(HttpStatus.BAD_REQUEST, done)
+          expectStatusCodeError(StatusCodes.BAD_REQUEST, done)
         })
       })
 
@@ -1771,7 +1774,7 @@ describe('Email Submissions Controller', () => {
 
         it('rejects submission prevented by number value', (done) => {
           makeNumberValueFixtures(preventSubmitLogics, '9', true)
-          expectStatusCodeError(HttpStatus.BAD_REQUEST, done)
+          expectStatusCodeError(StatusCodes.BAD_REQUEST, done)
         })
       })
 
@@ -1876,7 +1879,7 @@ describe('Email Submissions Controller', () => {
 
         it('rejects submissions prevented by logic', (done) => {
           makeMultiSelectFixtures(preventSubmitLogics, 'Option 1', true)
-          expectStatusCodeError(HttpStatus.BAD_REQUEST, done)
+          expectStatusCodeError(StatusCodes.BAD_REQUEST, done)
         })
       })
 
@@ -2033,7 +2036,7 @@ describe('Email Submissions Controller', () => {
 
         it('rejects submissions prevented by logic', (done) => {
           makeMultiAndFixtures(preventSubmitLogics, 'Yes', 'Textfield', true)
-          expectStatusCodeError(HttpStatus.BAD_REQUEST, done)
+          expectStatusCodeError(StatusCodes.BAD_REQUEST, done)
         })
       })
 
@@ -2158,7 +2161,7 @@ describe('Email Submissions Controller', () => {
 
         it('rejects submission prevented by logic', (done) => {
           makeOrFixtures(preventSubmitLogics, 'Yes', 'Radiobutton', true)
-          expectStatusCodeError(HttpStatus.BAD_REQUEST, done)
+          expectStatusCodeError(StatusCodes.BAD_REQUEST, done)
         })
       })
 
@@ -2491,7 +2494,7 @@ describe('Email Submissions Controller', () => {
             true,
             true,
           )
-          expectStatusCodeError(HttpStatus.BAD_REQUEST, done)
+          expectStatusCodeError(StatusCodes.BAD_REQUEST, done)
         })
       })
 
@@ -2857,7 +2860,7 @@ describe('Email Submissions Controller', () => {
           answer: 'test@abc.com',
         }
         fixtures.body.responses.push(response)
-        sendAndExpect(HttpStatus.OK, {
+        sendAndExpect(StatusCodes.OK, {
           body: {
             parsedResponses: [Object.assign(response, { isVisible: true })],
           },
@@ -2903,7 +2906,7 @@ describe('Email Submissions Controller', () => {
           }
           fixtures.body.responses.push(response)
 
-          sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+          sendAndExpect(StatusCodes.BAD_REQUEST).end(done)
         })
       })
 
@@ -2927,7 +2930,7 @@ describe('Email Submissions Controller', () => {
             }
             fixtures.body.responses.push(response)
 
-            sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+            sendAndExpect(StatusCodes.BAD_REQUEST).end(done)
           })
         })
 
@@ -2949,7 +2952,7 @@ describe('Email Submissions Controller', () => {
             }
             fixtures.body.responses.push(response)
 
-            sendAndExpect(HttpStatus.BAD_REQUEST).end(done)
+            sendAndExpect(StatusCodes.BAD_REQUEST).end(done)
           })
         })
 
@@ -2989,7 +2992,7 @@ describe('Email Submissions Controller', () => {
             },
           ]).then(() => {
             fixtures.body.responses.push(response)
-            sendAndExpect(HttpStatus.OK).end(done)
+            sendAndExpect(StatusCodes.OK).end(done)
           })
         })
       })
@@ -3074,7 +3077,7 @@ describe('Email Submissions Controller', () => {
           fieldValue: 'test@abc.com',
           fieldIsRequired: false,
           fieldIsHidden: false,
-          expectedStatus: HttpStatus.BAD_REQUEST,
+          expectedStatus: StatusCodes.BAD_REQUEST,
           done,
         })
       })
@@ -3083,7 +3086,7 @@ describe('Email Submissions Controller', () => {
           fieldValue: '',
           fieldIsRequired: false,
           fieldIsHidden: false,
-          expectedStatus: HttpStatus.OK,
+          expectedStatus: StatusCodes.OK,
           done,
         })
       })
@@ -3092,7 +3095,7 @@ describe('Email Submissions Controller', () => {
           fieldValue: 'test@abc.com',
           fieldIsRequired: true,
           fieldIsHidden: false,
-          expectedStatus: HttpStatus.BAD_REQUEST,
+          expectedStatus: StatusCodes.BAD_REQUEST,
           done,
         })
       })
@@ -3102,7 +3105,7 @@ describe('Email Submissions Controller', () => {
           fieldValue: '',
           fieldIsRequired: true,
           fieldIsHidden: true,
-          expectedStatus: HttpStatus.OK,
+          expectedStatus: StatusCodes.OK,
           done,
         })
       })

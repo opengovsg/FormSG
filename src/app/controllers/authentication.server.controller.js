@@ -13,7 +13,7 @@ const Token = getTokenModel(mongoose)
 const Agency = getAgencyModel(mongoose)
 const bcrypt = require('bcrypt')
 const validator = require('validator')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const config = require('../../config/config')
 const defaults = require('../../config/defaults').default
@@ -36,7 +36,7 @@ exports.authenticateUser = function (req, res, next) {
     return next()
   } else {
     return res
-      .status(HttpStatus.UNAUTHORIZED)
+      .status(StatusCodes.UNAUTHORIZED)
       .send({ message: 'User is unauthorized.' })
   }
 }
@@ -53,7 +53,7 @@ exports.validateDomain = function (req, res, next) {
     // Database issues
     if (err) {
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send(
           `Unable to validate email domain. If this issue persists, please submit a Support Form (${defaults.links.supportFormLink}).`,
         )
@@ -71,7 +71,7 @@ exports.validateDomain = function (req, res, next) {
         error: err,
       })
       return res
-        .status(HttpStatus.UNAUTHORIZED)
+        .status(StatusCodes.UNAUTHORIZED)
         .send(
           'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
         )
@@ -129,7 +129,7 @@ exports.verifyPermission = (requiredPermission) =>
     if (hasSufficientPermission) {
       return next()
     } else {
-      return res.status(HttpStatus.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).send({
         message:
           'User ' +
           req.session.user.email +
@@ -156,7 +156,7 @@ exports.createOtp = function (req, res, next) {
   bcrypt.hash(otp, 10, function (bcryptErr, hashedOtp) {
     if (bcryptErr) {
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send(
           'Error generating OTP. Please try again later and if the problem persists, contact us.',
         )
@@ -188,7 +188,7 @@ exports.createOtp = function (req, res, next) {
             error: updateErr,
           })
           return res
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
             .send(
               'Error saving OTP. Please try again later and if the problem persists, contact us.',
             )
@@ -228,7 +228,7 @@ exports.sendOtp = async function (req, res) {
         email: recipient,
       },
     })
-    return res.status(HttpStatus.OK).send(`OTP sent to ${recipient}!`)
+    return res.status(StatusCodes.OK).send(`OTP sent to ${recipient}!`)
   } catch (err) {
     logger.error({
       message: 'Mail otp error',
@@ -241,7 +241,7 @@ exports.sendOtp = async function (req, res) {
       error: err,
     })
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
         'Error sending OTP. Please try again later and if the problem persists, contact us.',
       )
@@ -284,7 +284,7 @@ exports.verifyOtp = function (req, res, next) {
           error: updateErr,
         })
         return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send(
             `Unable to login at this time. Please submit a Support Form (${defaults.links.supportFormLink}).`,
           )
@@ -299,7 +299,7 @@ exports.verifyOtp = function (req, res, next) {
           },
         })
         return res
-          .status(HttpStatus.UNPROCESSABLE_ENTITY)
+          .status(StatusCodes.UNPROCESSABLE_ENTITY)
           .send('OTP has expired. Click Resend to receive a new OTP.')
       }
       if (updatedRecord.numOtpAttempts > MAX_OTP_ATTEMPTS) {
@@ -312,7 +312,7 @@ exports.verifyOtp = function (req, res, next) {
           },
         })
         return res
-          .status(HttpStatus.UNPROCESSABLE_ENTITY)
+          .status(StatusCodes.UNPROCESSABLE_ENTITY)
           .send(
             'You have hit the max number of attempts for this OTP. Click Resend to receive a new OTP.',
           )
@@ -331,7 +331,7 @@ exports.verifyOtp = function (req, res, next) {
             error: bcryptErr,
           })
           return res
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
             .send(
               'Malformed OTP. Please try again later and if the problem persists, contact us.',
             )
@@ -349,7 +349,7 @@ exports.verifyOtp = function (req, res, next) {
                 error: removeErr,
               })
               return res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(StatusCodes.INTERNAL_SERVER_ERROR)
                 .send(
                   'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
                 )
@@ -367,7 +367,7 @@ exports.verifyOtp = function (req, res, next) {
             },
           })
           return res
-            .status(HttpStatus.UNAUTHORIZED)
+            .status(StatusCodes.UNAUTHORIZED)
             .send('OTP is invalid. Please try again.')
         }
       })
@@ -410,7 +410,7 @@ exports.signIn = function (req, res) {
     function (updateErr, user) {
       if (updateErr || !user) {
         return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send(
             `User signin failed. Please try again later and if the problem persists, submit our Support Form (${defaults.links.supportFormLink}).`,
           )
@@ -433,7 +433,7 @@ exports.signIn = function (req, res) {
           ip: getRequestIp(req),
         },
       })
-      return res.status(HttpStatus.OK).send(userObj)
+      return res.status(StatusCodes.OK).send(userObj)
     },
   )
 }
@@ -447,11 +447,11 @@ exports.signOut = function (req, res) {
   req.session.destroy(function (err) {
     if (err) {
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send('Sign out failed')
     } else {
       res.clearCookie('connect.sid')
-      return res.status(HttpStatus.OK).send('Sign out successful')
+      return res.status(StatusCodes.OK).send('Sign out successful')
     }
   })
 }
@@ -472,7 +472,7 @@ exports.doesUserBeta = (betaType) => (req, res, next) => {
   if (user && user.betaFlags && user.betaFlags[betaType]) {
     return next()
   } else {
-    return res.status(HttpStatus.FORBIDDEN).send({
+    return res.status(StatusCodes.FORBIDDEN).send({
       message: `User is not authorized to access beta feature: ${betaType}`,
     })
   }
