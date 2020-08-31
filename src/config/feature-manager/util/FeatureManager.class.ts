@@ -78,15 +78,19 @@ export default class FeatureManager {
   }
 
   /**
-   * Return whether requested feature is enabled
-   * @param name
+   * Return true if requested feature is enabled. Else, throw error.
+   * @param name the feature name to check enabledness
+   * @returns true iff feature is enabled
+   * @throws {Error} if feature is not enabled
    */
   isEnabled(name: FeatureNames): boolean {
-    if (this.states[name] !== undefined) {
-      return this.states[name]
-    } else {
-      throw new Error(`A feature called ${name} does not exist`)
+    const isInState = this.states[name]
+    if (isInState) {
+      return isInState
     }
+
+    // Not enabled or not in state.
+    throw new Error(`A feature called ${name} does not exist`)
   }
 
   /**
@@ -94,11 +98,13 @@ export default class FeatureManager {
    * @param name
    */
   props<K extends FeatureNames>(name: K) {
-    if (this.states[name] !== undefined) {
-      return this.properties[name]
-    } else {
-      throw new Error(`A feature called ${name} does not exist`)
+    const isInState = this.states[name]
+    if (isInState) {
+      return this.properties[name]!
     }
+
+    // Not enabled or not in state.
+    throw new Error(`A feature called ${name} does not exist`)
   }
 
   /**
