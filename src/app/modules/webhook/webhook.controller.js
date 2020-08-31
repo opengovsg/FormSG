@@ -1,12 +1,14 @@
-const formsgSdk = require('../../config/formsg-sdk')
-const { validateWebhookUrl } = require('../../shared/util/webhook-validation')
+const formsgSdk = require('../../../config/formsg-sdk')
+const {
+  validateWebhookUrl,
+} = require('../../../shared/util/webhook-validation')
 const {
   postWebhook,
   handleWebhookSuccess,
   handleWebhookFailure,
   logWebhookFailure,
-} = require('../modules/webhook/webhook.service')
-const { WebhookValidationError } = require('../modules/webhook/webhook.errors')
+} = require('./webhook.service')
+const { WebhookValidationError } = require('./webhook.errors')
 
 /**
  * POST submission to a specified URL.  Only works for encrypted submissions.
