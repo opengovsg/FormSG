@@ -1,4 +1,5 @@
 import HttpStatus from 'http-status-codes'
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
 import handleSns from 'src/app/modules/bounce/bounce.controller'
@@ -7,14 +8,10 @@ import * as BounceService from 'src/app/modules/bounce/bounce.service'
 jest.mock('src/app/modules/bounce/bounce.service')
 const MockBounceService = mocked(BounceService, true)
 
+const MOCK_REQ = expressHandler.mockRequest({ body: { someKey: 'someValue' } })
+const MOCK_RES = expressHandler.mockResponse()
+
 describe('handleSns', () => {
-  let req, res
-
-  beforeEach(() => {
-    req = { body: 'somebody' }
-    res = { sendStatus: jest.fn() }
-  })
-
   afterEach(() => {
     jest.clearAllMocks()
   })
@@ -23,30 +20,36 @@ describe('handleSns', () => {
     MockBounceService.isValidSnsRequest.mockReturnValueOnce(
       Promise.resolve(false),
     )
-    await handleSns(req, res)
-    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(req.body)
+    await handleSns(MOCK_REQ, MOCK_RES)
+    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
+      MOCK_REQ.body,
+    )
     expect(MockBounceService.updateBounces).not.toHaveBeenCalled()
-    expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
   })
 
   it('should call updateBounces when requests are valid', async () => {
     MockBounceService.isValidSnsRequest.mockReturnValueOnce(
       Promise.resolve(true),
     )
-    await handleSns(req, res)
-    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(req.body)
-    expect(MockBounceService.updateBounces).toHaveBeenCalledWith(req.body)
-    expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
+    await handleSns(MOCK_REQ, MOCK_RES)
+    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
+      MOCK_REQ.body,
+    )
+    expect(MockBounceService.updateBounces).toHaveBeenCalledWith(MOCK_REQ.body)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.OK)
   })
 
   it('should return 400 when errors are thrown in isValidSnsRequest', async () => {
     MockBounceService.isValidSnsRequest.mockImplementation(() => {
       throw new Error()
     })
-    await handleSns(req, res)
-    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(req.body)
+    await handleSns(MOCK_REQ, MOCK_RES)
+    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
+      MOCK_REQ.body,
+    )
     expect(MockBounceService.updateBounces).not.toHaveBeenCalled()
-    expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
   })
 
   it('should return 400 when errors are thrown in updateBounces', async () => {
@@ -56,9 +59,11 @@ describe('handleSns', () => {
     MockBounceService.updateBounces.mockImplementation(() => {
       throw new Error()
     })
-    await handleSns(req, res)
-    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(req.body)
-    expect(MockBounceService.updateBounces).toHaveBeenCalledWith(req.body)
-    expect(res.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
+    await handleSns(MOCK_REQ, MOCK_RES)
+    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
+      MOCK_REQ.body,
+    )
+    expect(MockBounceService.updateBounces).toHaveBeenCalledWith(MOCK_REQ.body)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
   })
 })
