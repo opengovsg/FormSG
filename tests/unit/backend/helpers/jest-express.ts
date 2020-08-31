@@ -2,13 +2,16 @@ import { Request, Response } from 'express'
 
 const mockRequest = ({
   body,
+  params,
   session,
 }: {
   body: Record<string, string>
+  params?: Record<string, string>
   session?: any
 }) => {
   return {
     body,
+    params,
     session,
   } as Request
 }
