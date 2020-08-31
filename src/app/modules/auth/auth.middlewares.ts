@@ -9,7 +9,7 @@ import { ApplicationError } from '../core/core.errors'
 
 import * as AuthService from './auth.service'
 
-const logger = createLoggerWithLabel('auth.middlewares')
+const logger = createLoggerWithLabel(module)
 
 /**
  * Middleware to check if domain of email in the body is from a whitelisted

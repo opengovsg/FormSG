@@ -11,7 +11,7 @@ import * as UserService from '../user/user.service'
 import { InvalidOtpError } from './auth.errors'
 import * as AuthService from './auth.service'
 
-const logger = createLoggerWithLabel('auth.controller')
+const logger = createLoggerWithLabel(module)
 
 /**
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
