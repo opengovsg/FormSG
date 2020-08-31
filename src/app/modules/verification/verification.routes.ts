@@ -1,4 +1,4 @@
-import { celebrate, Joi } from 'celebrate'
+import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import verifiedFieldsFactory from './verification.factory'
@@ -10,7 +10,7 @@ const formatOfId = Joi.string().length(24).hex().required()
 VfnRouter.post(
   '/',
   celebrate({
-    body: Joi.object({
+    [Segments.BODY]: Joi.object({
       formId: formatOfId,
     }),
   }),
@@ -20,7 +20,7 @@ VfnRouter.post(
 VfnRouter.get(
   '/:transactionId',
   celebrate({
-    params: Joi.object({
+    [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
     }),
   }),
@@ -30,10 +30,10 @@ VfnRouter.get(
 VfnRouter.post(
   '/:transactionId/reset',
   celebrate({
-    params: Joi.object({
+    [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
     }),
-    body: Joi.object({
+    [Segments.BODY]: Joi.object({
       fieldId: formatOfId,
     }),
   }),
@@ -43,10 +43,10 @@ VfnRouter.post(
 VfnRouter.post(
   '/:transactionId/otp',
   celebrate({
-    params: Joi.object({
+    [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
     }),
-    body: Joi.object({
+    [Segments.BODY]: Joi.object({
       fieldId: formatOfId,
       answer: Joi.string().required(),
     }),
@@ -57,10 +57,10 @@ VfnRouter.post(
 VfnRouter.post(
   '/:transactionId/otp/verify',
   celebrate({
-    params: Joi.object({
+    [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
     }),
-    body: Joi.object({
+    [Segments.BODY]: Joi.object({
       fieldId: formatOfId,
       otp: Joi.string()
         .regex(/^\d{6}$/)
