@@ -5,12 +5,12 @@ const mongoose = require('mongoose')
 
 const {
   validateWebhookUrl,
-} = require('../../../../../dist/backend/shared/util/webhook-validation')
+} = require('../../../../../dist/backend/app/modules/webhook/webhook.utils')
 const dbHandler = require('../../helpers/db-handler')
 
 const Submission = dbHandler.makeModel('submission.server.model', 'Submission')
 const controllerPath = 'dist/backend/app/modules/webhook/webhook.controller'
-const validateWebhookUrlPath = '../../../shared/util/webhook-validation'
+const validateWebhookUrlPath = './webhook.utils'
 const webhookUtilsPath = './webhook.service'
 const defaultWebhookUrl = 'https://test.site'
 let mockAxios

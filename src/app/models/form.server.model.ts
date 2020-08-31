@@ -4,7 +4,6 @@ import { Model, Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
 import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
-import { validateWebhookUrl } from '../../shared/util/webhook-validation'
 import {
   AuthType,
   BasicField,
@@ -21,6 +20,7 @@ import {
   Status,
 } from '../../types'
 import { MB } from '../constants/filesize'
+import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
 import {

@@ -1,7 +1,5 @@
 const formsgSdk = require('../../../config/formsg-sdk')
-const {
-  validateWebhookUrl,
-} = require('../../../shared/util/webhook-validation')
+const { validateWebhookUrl } = require('./webhook.utils')
 const {
   postWebhook,
   handleWebhookSuccess,
