@@ -3,7 +3,7 @@ import { Router } from 'express'
 
 import verifiedFieldsFactory from './verification.factory'
 
-const VfnRouter = Router()
+export const VfnRouter = Router()
 
 const formatOfId = Joi.string().length(24).hex().required()
 
@@ -70,5 +70,3 @@ VfnRouter.post(
   }),
   verifiedFieldsFactory.verifyOtp,
 )
-
-export { VfnRouter }
