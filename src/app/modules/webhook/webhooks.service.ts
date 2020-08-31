@@ -2,18 +2,19 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 
-import formsgSdk from '../../config/formsg-sdk'
-import { createLoggerWithLabel } from '../../config/logger'
+import formsgSdk from '../../../config/formsg-sdk'
+import { createLoggerWithLabel } from '../../../config/logger'
 // Prevents JSON.stringify error for circular JSONs and BigInts
-import { stringifySafe } from '../../shared/util/stringify-safe'
+import { stringifySafe } from '../../../shared/util/stringify-safe'
 import {
   IFormSchema,
   ISubmissionSchema,
   IWebhookResponse,
   WebhookParams,
-} from '../../types'
-import { getEncryptSubmissionModel } from '../models/submission.server.model'
-import { WebhookValidationError } from '../modules/webhooks/webhook.errors'
+} from '../../../types'
+import { getEncryptSubmissionModel } from '../../models/submission.server.model'
+
+import { WebhookValidationError } from './webhook.errors'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)

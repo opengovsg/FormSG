@@ -1,7 +1,7 @@
 import { promises as dns } from 'dns'
 import ip from 'ip'
 
-import { WebhookValidationError } from '../../app/modules/webhooks/webhook.errors'
+import { WebhookValidationError } from '../../app/modules/webhook/webhook.errors'
 
 import { isValidHttpsUrl } from './url-validation'
 
