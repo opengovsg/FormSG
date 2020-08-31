@@ -6,7 +6,7 @@ import {
 } from '../../../types'
 import { IFormSchema } from '../../../types/form'
 
-export type WebhookParams = {
+export interface WebhookParams {
   webhookUrl: string
   submissionWebhookView: WebhookView
   submissionId: ISubmissionSchema['_id']
