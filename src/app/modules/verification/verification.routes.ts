@@ -63,12 +63,9 @@ VfnRouter.post(
     [Segments.BODY]: Joi.object({
       fieldId: formatOfId,
       otp: Joi.string()
-        .regex(/^\d{6}$/)
         .required()
-        .messages({
-          'any.required': 'Please enter an OTP',
-          'string.pattern.base': 'Please enter a valid OTP',
-        }),
+        .regex(/^\d{6}$/)
+        .message('Please enter a valid OTP'),
     }),
   }),
   verifiedFieldsFactory.verifyOtp,
