@@ -6,12 +6,12 @@ import { mocked } from 'ts-jest/utils'
 
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
+import { WebhookValidationError } from 'src/app/modules/webhooks/webhook.errors'
 import {
   handleWebhookFailure,
   handleWebhookSuccess,
   postWebhook,
 } from 'src/app/services/webhooks.service'
-import { WebhookValidationError } from 'src/app/utils/custom-errors'
 import { ResponseMode, SubmissionType } from 'src/types'
 
 jest.mock('axios')

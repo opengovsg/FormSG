@@ -13,7 +13,7 @@ import {
   WebhookParams,
 } from '../../types'
 import { getEncryptSubmissionModel } from '../models/submission.server.model'
-import { WebhookValidationError } from '../utils/custom-errors'
+import { WebhookValidationError } from '../modules/webhooks/webhook.errors'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)

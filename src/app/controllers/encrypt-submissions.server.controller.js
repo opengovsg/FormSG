@@ -14,7 +14,7 @@ const Submission = getSubmissionModel(mongoose)
 const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
-const { ConflictError } = require('../utils/custom-errors')
+const { ConflictError } = require('../modules/submission/submission.errors')
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -68,7 +68,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
         error: err,
       })
       if (err instanceof ConflictError) {
-        return res.status(HttpStatus.CONFLICT).send({
+        return res.status(err.status).send({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
