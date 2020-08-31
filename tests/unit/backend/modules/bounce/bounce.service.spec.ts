@@ -6,7 +6,7 @@ import { cloneDeep, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import * as loggerModule from 'src/config/logger'
+import * as LoggerModule from 'src/config/logger'
 import { ISnsNotification } from 'src/types'
 
 import {
@@ -21,10 +21,10 @@ import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
 jest.mock('src/config/logger')
-const mockLoggerModule = mocked(loggerModule, true)
+const MockLoggerModule = mocked(LoggerModule, true)
 const mockLogger = getMockLogger()
-mockLoggerModule.createCloudWatchLogger.mockReturnValue(mockLogger)
-mockLoggerModule.createLoggerWithLabel.mockReturnValue(getMockLogger())
+MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockLogger)
+MockLoggerModule.createLoggerWithLabel.mockReturnValue(getMockLogger())
 
 // Import modules which depend on config last so that mocks get imported correctly
 // eslint-disable-next-line import/first

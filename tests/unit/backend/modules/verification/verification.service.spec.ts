@@ -26,15 +26,15 @@ const MOCK_FORM_TITLE = 'Verification service tests'
 
 // Set up mocks
 jest.mock('src/app/utils/otp')
-const mockGenerateOtp = mocked(generateOtp, true)
+const MockGenerateOtp = mocked(generateOtp, true)
 jest.mock('src/config/formsg-sdk')
-const mockFormsgSdk = mocked(formsgSdk, true)
+const MockFormsgSdk = mocked(formsgSdk, true)
 jest.mock('src/app/factories/sms.factory')
-const mockSmsFactory = mocked(smsFactory, true)
+const MockSmsFactory = mocked(smsFactory, true)
 jest.mock('src/app/services/mail.service')
-const mockMailService = mocked(MailService, true)
+const MockMailService = mocked(MailService, true)
 jest.mock('bcrypt')
-const mockBcrypt = mocked(bcrypt, true)
+const MockBcrypt = mocked(bcrypt, true)
 
 describe('Verification service', () => {
   let user: IUserSchema
@@ -219,9 +219,9 @@ describe('Verification service', () => {
         ],
         expireAt: new Date(Date.now() + 6e5), // so it won't expire in tests
       })
-      mockGenerateOtp.mockReturnValue(mockOtp)
-      mockBcrypt.hash.mockReturnValue(Promise.resolve(hashedOtp))
-      mockFormsgSdk.verification.generateSignature.mockReturnValue(signedData)
+      MockGenerateOtp.mockReturnValue(mockOtp)
+      MockBcrypt.hash.mockReturnValue(Promise.resolve(hashedOtp))
+      MockFormsgSdk.verification.generateSignature.mockReturnValue(signedData)
     })
 
     afterEach(async () => await dbHandler.clearDatabase())
@@ -257,17 +257,17 @@ describe('Verification service', () => {
       transaction.fields[0].hashRetries = 1
       await transaction.save()
       await getNewOtp(transaction, transaction.fields[0]._id, mockAnswer)
-      expect(mockGenerateOtp).toHaveBeenCalled()
-      expect(mockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
+      expect(MockGenerateOtp).toHaveBeenCalled()
+      expect(MockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
       expect(
-        mockFormsgSdk.verification.generateSignature.mock.calls[0][0],
+        MockFormsgSdk.verification.generateSignature.mock.calls[0][0],
       ).toEqual({
         transactionId: transaction._id,
         formId: transaction.formId,
         fieldId: transaction.fields[0]._id,
         answer: mockAnswer,
       })
-      expect(mockMailService.sendVerificationOtp.mock.calls[0]).toEqual([
+      expect(MockMailService.sendVerificationOtp.mock.calls[0]).toEqual([
         mockAnswer,
         mockOtp,
       ])
@@ -288,17 +288,17 @@ describe('Verification service', () => {
       transaction.fields[1].hashRetries = 1
       await transaction.save()
       await getNewOtp(transaction, transaction.fields[1]._id, mockAnswer)
-      expect(mockGenerateOtp).toHaveBeenCalled()
-      expect(mockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
+      expect(MockGenerateOtp).toHaveBeenCalled()
+      expect(MockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
       expect(
-        mockFormsgSdk.verification.generateSignature.mock.calls[0][0],
+        MockFormsgSdk.verification.generateSignature.mock.calls[0][0],
       ).toEqual({
         transactionId: transaction._id,
         formId: transaction.formId,
         fieldId: transaction.fields[1]._id,
         answer: mockAnswer,
       })
-      expect(mockSmsFactory.sendVerificationOtp.mock.calls[0]).toEqual([
+      expect(MockSmsFactory.sendVerificationOtp.mock.calls[0]).toEqual([
         mockAnswer,
         mockOtp,
         transaction.formId,
@@ -320,7 +320,7 @@ describe('Verification service', () => {
       transaction.fields[0].hashRetries = 1
       await transaction.save()
       const myErrorMsg = "I'd like to have an argument please"
-      mockMailService.sendVerificationOtp.mockImplementationOnce(() => {
+      MockMailService.sendVerificationOtp.mockImplementationOnce(() => {
         throw new Error(myErrorMsg)
       })
       return expect(
@@ -336,7 +336,7 @@ describe('Verification service', () => {
       transaction.fields[1].hashRetries = 1
       await transaction.save()
       const myErrorMsg = 'Tis but a scratch!'
-      mockSmsFactory.sendVerificationOtp.mockImplementationOnce(() => {
+      MockSmsFactory.sendVerificationOtp.mockImplementationOnce(() => {
         throw new Error(myErrorMsg)
       })
       return expect(
@@ -460,7 +460,7 @@ describe('Verification service', () => {
     })
 
     it('should reject when OTP is invalid', async () => {
-      mockBcrypt.compare.mockReturnValueOnce(Promise.resolve(false))
+      MockBcrypt.compare.mockReturnValueOnce(Promise.resolve(false))
       await transaction.save()
       await expect(
         verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
@@ -473,7 +473,7 @@ describe('Verification service', () => {
     })
 
     it('should resolve when OTP is invalid', async () => {
-      mockBcrypt.compare.mockReturnValueOnce(Promise.resolve(true))
+      MockBcrypt.compare.mockReturnValueOnce(Promise.resolve(true))
       await transaction.save()
       await expect(
         verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
