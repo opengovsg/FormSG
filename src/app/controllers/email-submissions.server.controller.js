@@ -183,7 +183,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       }
 
       handleDuplicatesInAttachments(attachments)
-      addAttachmentToResponses(req, attachments)
+      addAttachmentToResponses(req.body.responses, attachments)
 
       return next()
     } catch (error) {
