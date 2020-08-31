@@ -87,6 +87,7 @@ describe('AdminVerification Model', () => {
       }
 
       // Act
+      // @ts-ignore
       const actualPromise = AdminVerification.create(missingContactParams)
 
       // Assert
@@ -103,6 +104,7 @@ describe('AdminVerification Model', () => {
       }
 
       // Act
+      // @ts-ignore
       const actualPromise = AdminVerification.create(missingOtpParams)
 
       // Assert
@@ -119,6 +121,7 @@ describe('AdminVerification Model', () => {
       }
 
       // Act
+      // @ts-ignore
       const actualPromise = AdminVerification.create(missingExpireParams)
 
       // Assert
