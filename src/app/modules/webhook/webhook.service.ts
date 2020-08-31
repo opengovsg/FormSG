@@ -10,11 +10,11 @@ import {
   IFormSchema,
   ISubmissionSchema,
   IWebhookResponse,
-  WebhookParams,
 } from '../../../types'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 
 import { WebhookValidationError } from './webhook.errors'
+import { WebhookParams } from './webhook.types'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)

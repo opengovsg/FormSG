@@ -1,5 +1,5 @@
-import { IFormSchema } from './form'
-import { ISubmissionSchema, WebhookView } from './submission'
+import { IFormSchema } from '../../../types/form'
+import { ISubmissionSchema, WebhookView } from '../../../types/submission'
 
 export type WebhookParams = {
   webhookUrl: string
