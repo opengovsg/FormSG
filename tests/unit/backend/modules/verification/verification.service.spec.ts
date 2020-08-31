@@ -281,7 +281,7 @@ describe('Verification service', () => {
     })
 
     it('should send OTP when params are valid for mobile field', async () => {
-      // Reset field so we can it update later on
+      // Reset field so we can test update later on
       transaction.fields[1].hashedOtp = null
       transaction.fields[1].signedData = null
       transaction.fields[1].hashCreatedAt = null
