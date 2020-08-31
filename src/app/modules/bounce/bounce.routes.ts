@@ -2,7 +2,7 @@ import { Router } from 'express'
 
 import handleSns from './bounce.controller'
 
-const BounceRouter = Router()
+export const BounceRouter = Router()
 
 /**
  * When email bounces, SNS calls this function to mark the
@@ -14,5 +14,3 @@ const BounceRouter = Router()
  * @route POST /emailnotifications
  */
 BounceRouter.post('/', handleSns)
-
-export { BounceRouter }
