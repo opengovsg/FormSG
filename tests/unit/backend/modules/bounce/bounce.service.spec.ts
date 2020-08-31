@@ -39,6 +39,7 @@ const Bounce = getBounceModel(mongoose)
 
 describe('isValidSnsRequest', () => {
   let keys, body: ISnsNotification
+
   beforeAll(() => {
     keys = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
@@ -52,30 +53,37 @@ describe('isValidSnsRequest', () => {
       },
     })
   })
+
   beforeEach(() => {
     body = cloneDeep(MOCK_SNS_BODY)
     mockAxios.get.mockResolvedValue({
       data: keys.publicKey,
     })
   })
+
   it('should gracefully reject when input is empty', () => {
     return expect(isValidSnsRequest(undefined)).resolves.toBe(false)
   })
+
   it('should reject requests when their structure is invalid', () => {
     delete body.Type
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
+
   it('should reject requests when their certificate URL is invalid', () => {
     body.SigningCertURL = 'http://www.example.com'
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
+
   it('should reject requests when their signature version is invalid', () => {
     body.SignatureVersion = 'wrongSignatureVersion'
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
+
   it('should reject requests when their signature is invalid', () => {
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
+
   it('should accept when requests are valid', () => {
     const signer = crypto.createSign('RSA-SHA1')
     const baseString =
@@ -102,11 +110,14 @@ describe('updateBounces', () => {
     'email2@example.com',
     'email3@example.com',
   ]
+
   beforeAll(async () => await dbHandler.connect())
+
   afterEach(async () => {
     await dbHandler.clearDatabase()
     resetMockLogger(mockLogger)
   })
+
   afterAll(async () => await dbHandler.closeDatabase())
 
   it('should save correctly when there is a single delivery notification', async () => {
