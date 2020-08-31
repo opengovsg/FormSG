@@ -60,75 +60,75 @@ const zipOnlyValid = {
 const MOCK_ANSWER = 'mockAnswer'
 
 describe('attachmentsAreValid', () => {
-  it('returns true for a single valid file', () => {
+  it('should return true when given a single valid file', () => {
     return expect(attachmentsAreValid([validSingleFile])).resolves.toBe(true)
   })
 
-  it('returns true for multiple valid files', () => {
+  it('should return true when given a multiple valid files', () => {
     return expect(
       attachmentsAreValid([validSingleFile, validSingleFile]),
     ).resolves.toBe(true)
   })
 
-  it('returns false for a single invalid file', () => {
+  it('should return false when given a single invalid file', () => {
     return expect(attachmentsAreValid([invalidSingleFile])).resolves.toBe(false)
   })
 
-  it('returns false for multiple invalid files', () => {
+  it('should return false when given a multiple invalid files', () => {
     return expect(
       attachmentsAreValid([invalidSingleFile, invalidSingleFile]),
     ).resolves.toBe(false)
   })
 
-  it('returns false for a mix of valid and invalid files', () => {
+  it('should return false when given a mix of valid and invalid files', () => {
     return expect(
       attachmentsAreValid([validSingleFile, invalidSingleFile]),
     ).resolves.toBe(false)
   })
 
-  it('returns true for a single valid zip', () => {
+  it('should return true when given a single valid zip', () => {
     return expect(attachmentsAreValid([zipOnlyValid])).resolves.toBe(true)
   })
 
-  it('returns true for multiple valid zips', () => {
+  it('should return true when given multiple valid zips', () => {
     return expect(
       attachmentsAreValid([zipOnlyValid, zipOnlyValid]),
     ).resolves.toBe(true)
   })
 
-  it('returns false for a zip with only invalid files', () => {
+  it('should return false when given a zip with only invalid files', () => {
     return expect(attachmentsAreValid([zipOnlyInvalid])).resolves.toBe(false)
   })
 
-  it('returns false for a zip with a mix of valid and invalid files', () => {
+  it('should return false when given a zip with a mix of valid and invalid files', () => {
     return expect(attachmentsAreValid([zipWithValidAndInvalid])).resolves.toBe(
       false,
     )
   })
 
-  it('returns false for multiple invalid zips', () => {
+  it('should return false when given multiple invalid zips', () => {
     return expect(
       attachmentsAreValid([zipOnlyInvalid, zipWithValidAndInvalid]),
     ).resolves.toBe(false)
   })
 
-  it('returns false for a mix of valid and invalid zips', () => {
+  it('should return false when given a mix of valid and invalid zips', () => {
     return expect(
       attachmentsAreValid([zipOnlyValid, zipOnlyInvalid]),
     ).resolves.toBe(false)
   })
 
-  it('returns true for nested zips with valid filetypes', () => {
+  it('should return true when given nested zips with valid filetypes', () => {
     return expect(attachmentsAreValid([zipNestedValid])).resolves.toBe(true)
   })
 
-  it('returns true for nested zips with invalid filetypes', () => {
+  it('should return false when given nested zips with invalid filetypes', () => {
     return expect(attachmentsAreValid([zipNestedInvalid])).resolves.toBe(false)
   })
 })
 
 describe('addAttachmentToResponses', () => {
-  it('adds attachments to responses correctly', () => {
+  it('should add attachments to responses correctly when inputs are valid', () => {
     const firstAttachment = validSingleFile
     const secondAttachment = zipOnlyValid
     const firstResponse = getResponse(
@@ -159,7 +159,7 @@ describe('addAttachmentToResponses', () => {
     )
   })
 
-  it('overwrites answer with filename', () => {
+  it('should overwrite answer with filename when they are different', () => {
     const attachment = validSingleFile
     const response = getResponse(attachment.fieldId, MOCK_ANSWER)
     addAttachmentToResponses([response], [attachment])
@@ -170,13 +170,13 @@ describe('addAttachmentToResponses', () => {
     )
   })
 
-  it('does nothing for empty responses', () => {
+  it('should do nothing when responses are empty', () => {
     const responses = []
     addAttachmentToResponses(responses, [validSingleFile])
     expect(responses).toEqual([])
   })
 
-  it('does nothing when there are no attachments', () => {
+  it('should do nothing when there are no attachments', () => {
     const responses = [getResponse(validSingleFile.fieldId, MOCK_ANSWER)]
     addAttachmentToResponses(responses, [])
     expect(responses).toEqual([
@@ -186,19 +186,19 @@ describe('addAttachmentToResponses', () => {
 })
 
 describe('areAttachmentsMoreThan7MB', () => {
-  it('passes attachments smaller than 7MB', () => {
+  it('should pass attachments when they are smaller than 7MB', () => {
     expect(areAttachmentsMoreThan7MB([validSingleFile, zipOnlyValid])).toBe(
       false,
     )
   })
 
-  it('fails a single attachment larger than 7MB', () => {
+  it('should fail when a single attachment is larger than 7MB', () => {
     const modifiedBigFile = cloneDeep(validSingleFile)
     modifiedBigFile.content = Buffer.alloc(7000001)
     expect(areAttachmentsMoreThan7MB([modifiedBigFile])).toBe(true)
   })
 
-  it('fails attachments which add up to more than 7MB', () => {
+  it('should fail when attachments add up to more than 7MB', () => {
     const modifiedBigFile1 = cloneDeep(validSingleFile)
     const modifiedBigFile2 = cloneDeep(validSingleFile)
     modifiedBigFile1.content = Buffer.alloc(3500000)
@@ -213,7 +213,7 @@ describe('areAttachmentsMoreThan7MB', () => {
 // and 1-abc.txt, they will not be given unique names, i.e. one of the abc.txt
 // will be renamed to 1-abc.txt so you end up with abc.txt, 1-abc.txt and 1-abc.txt.
 describe('handleDuplicatesInAttachments', () => {
-  it('makes filenames unique by appending count', () => {
+  it('should make filenames unique by appending count when there are duplicates', () => {
     const attachments = [
       cloneDeep(validSingleFile),
       cloneDeep(validSingleFile),
@@ -230,13 +230,13 @@ describe('handleDuplicatesInAttachments', () => {
 })
 
 describe('mapAttachmentsFromParsedResponses', () => {
-  it('filters out non-attachment fields', () => {
+  it('should filter fields out when they are not attachments', () => {
     const response = getResponse(String(new ObjectId()), MOCK_ANSWER)
     response.fieldType = BasicField.YesNo
     expect(mapAttachmentsFromParsedResponses([response])).toEqual([])
   })
 
-  it('correctly extracts filename and content', () => {
+  it('should correctly extract filename and content when inputs are valid', () => {
     const firstAttachment = validSingleFile
     const secondAttachment = zipOnlyValid
     const firstResponse = merge(
