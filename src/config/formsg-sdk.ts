@@ -11,14 +11,14 @@ const formsgSdk = formsgSdkPackage({
   webhookSecretKey: get(
     featureManager.props(FeatureNames.WebhookVerifiedContent),
     'signingSecretKey',
-    null,
+    undefined,
   ),
   mode: formsgSdkMode,
   verificationOptions: {
     secretKey: get(
       featureManager.props(FeatureNames.VerifiedFields),
       'verificationSecretKey',
-      null,
+      undefined,
     ),
     transactionExpiry: vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS,
   },
