@@ -12,17 +12,13 @@ import {
   IWebhookResponse,
   WebhookView,
 } from '../../../types'
-import getSubmissionModel, {
-  getEncryptSubmissionModel,
-} from '../../models/submission.server.model'
+import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 
 import { WebhookValidationError } from './webhook.errors'
 import { WebhookParams } from './webhook.types'
 import { validateWebhookUrl } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
-// eslint-disable-next-line
-const Submission = getSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 /**
