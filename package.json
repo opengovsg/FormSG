@@ -221,7 +221,7 @@
     "mongodb-memory-server-core": "^5.1.5",
     "ngrok": "^3.2.7",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
-    "prettier": "^2.0.5",
+    "prettier": "^2.1.1",
     "regenerator": "^0.14.4",
     "sinon": "^9.0.3",
     "stylelint": "^13.3.3",
