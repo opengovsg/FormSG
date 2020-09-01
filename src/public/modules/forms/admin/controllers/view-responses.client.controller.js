@@ -204,7 +204,7 @@ function ViewResponsesController(
           }
           // Populate S3 presigned URL for attachments
           if (attachmentMetadata[field._id]) {
-            vm.attachmentDownloadUrls.set(questionCount - 1, {
+            vm.attachmentDownloadUrls.set(questionCount, {
               url: attachmentMetadata[field._id],
               filename: field.answer,
             })
