@@ -70,7 +70,6 @@ export type Config = {
 
   // Functions
   configureAws: () => Promise<void>
-  otpGenerator: () => string
 }
 
 // Interface
