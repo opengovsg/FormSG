@@ -24,8 +24,7 @@ convict.addFormat({
     if (!Array.isArray(val)) {
       throw new Error('must be of type Array')
     }
-    let isAllStrings = val.every((i) => typeof i === 'string')
-    if (!isAllStrings) {
+    if (val.some((i) => typeof i !== 'string')) {
       throw new Error('Elements must be of type string')
     }
   },
