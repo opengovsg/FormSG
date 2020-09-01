@@ -2,7 +2,7 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { BasicFieldType, ResponseMode } from 'src/types'
+import { BasicField, ResponseMode } from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
 
@@ -38,12 +38,12 @@ describe('Form Field Schema', () => {
       it('should return field title when field type is not a table field', async () => {
         // Arrange
         // Get all field types
-        const fieldTypes = Object.values(BasicFieldType)
+        const fieldTypes = Object.values(BasicField)
 
         // Asserts
         fieldTypes.forEach(async (type) => {
           // Skip table field.
-          if (type === BasicFieldType.Table) return
+          if (type === BasicField.Table) return
           const fieldTitle = `test ${type} field title`
           const field = await createAndReturnFormField({
             fieldType: type,

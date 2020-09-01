@@ -1,9 +1,14 @@
-angular.module('core').factory('GTag', ['$rootScope', '$window', GTag])
+angular.module('core').factory('GTag', ['Auth', '$rootScope', '$window', GTag])
 
-function GTag($rootScope, $window) {
+function GTag(Auth, $rootScope, $window) {
   // Google Analytics tracking ID provided on signup.
   const GATrackingID = $window.GATrackingID
   let gtagService = {}
+
+  const getUserEmail = () => {
+    const user = Auth.getUser()
+    return user && user.email
+  }
 
   /**
    * Internal wrapper function to initialise GA with some globals
@@ -50,7 +55,11 @@ function GTag($rootScope, $window) {
    * start with a slash (/) character.
    * @return {Void}
    */
-  const _gtagPageview = ({ pageTitle, pagePath, pageLocation }) => {
+  const _gtagPageview = ({
+    pageTitle,
+    pagePath,
+    pageLocation
+  }) => {
     if (GATrackingID) {
       $window.gtag('config', GATrackingID, {
         page_title: pageTitle,
@@ -139,7 +148,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('search', {
       event_category: 'Examples',
       event_action: 'Click Open Template',
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     })
   }
@@ -154,7 +163,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('search', {
       event_category: 'Examples',
       event_action: 'Click Close Template',
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     })
   }
@@ -168,7 +177,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('search', {
       event_category: 'Examples',
       event_action: 'Click Create New Form',
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     })
   }
@@ -244,7 +253,7 @@ function GTag($rootScope, $window) {
     let eventParams = {
       event_category: 'Public Form',
       event_action: eventAction,
-      event_label: form.title,
+      event_label: `${form.title} (${form._id})`,
       form_id: form._id,
     }
 
@@ -356,7 +365,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download start',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       num_workers: numWorkers,
       num_submissions: expectedNumSubmissions,
@@ -382,7 +391,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download success',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
@@ -411,7 +420,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Download failure',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
@@ -432,7 +441,7 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Network failure',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       message: errorMessage,
     })
@@ -459,12 +468,23 @@ function GTag($rootScope, $window) {
     _gtagEvents('storage', {
       event_category: 'Storage Mode Form',
       event_action: 'Partial decrypt error',
-      event_label: params.formTitle,
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
       form_id: params.formId,
       duration: duration,
       num_workers: numWorkers,
       num_submissions: expectedNumSubmissions,
       err_count: errorCount,
+    })
+  }
+
+  /**
+   * Logs clicking on mailto link to share form secret key with collaborators.
+   */
+  gtagService.clickSecretKeyMailto = (formTitle) => {
+    _gtagEvents('storage', {
+      event_category: 'Storage Mode Form',
+      event_action: 'Secret key mailto clicked',
+      event_label: formTitle,
     })
   }
 

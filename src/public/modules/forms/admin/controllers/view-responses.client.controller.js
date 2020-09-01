@@ -65,7 +65,6 @@ function ViewResponsesController(
       formId: vm.myform._id,
       formTitle: vm.myform.title,
     }
-
     if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
       params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
         'YYYY-MM-DD',

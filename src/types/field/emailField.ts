@@ -13,4 +13,6 @@ export interface IEmailField extends IField {
   isVerifiable: boolean
 }
 
-export interface IEmailFieldSchema extends IEmailField, IFieldSchema {}
+export interface IEmailFieldSchema extends IEmailField, IFieldSchema {
+  isVerifiable: boolean
+}

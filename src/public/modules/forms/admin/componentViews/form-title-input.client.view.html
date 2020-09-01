@@ -13,7 +13,7 @@
       ng-minlength="4"
       ng-required="true"
       ng-maxlength="200"
-      ng-pattern="/^[a-zA-Z0-9_\-.\/() ]*$/"
+      ng-pattern="/^[a-zA-Z0-9_\-.\/() &`;'&quot;]*$/"
       autocomplete="off"
       ng-keyup="$event.keyCode === 13 && vm.formController.title.$valid && vm.saveForm()"
       ng-class="vm.formController.title.$invalid && vm.formController.title.$dirty ? 'input-error' : ''"
