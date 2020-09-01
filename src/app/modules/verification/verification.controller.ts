@@ -1,12 +1,12 @@
 import { RequestHandler, Response } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { VfnErrors } from '../../../shared/util/verification'
 
 import * as verificationService from './verification.service'
 
-const logger = createLoggerWithLabel('verification')
+const logger = createLoggerWithLabel(module)
 /**
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
@@ -24,10 +24,16 @@ export const createTransaction: RequestHandler<
     const { formId } = req.body
     const transaction = await verificationService.createTransaction(formId)
     return transaction
-      ? res.status(HttpStatus.CREATED).json(transaction)
-      : res.sendStatus(HttpStatus.OK)
+      ? res.status(StatusCodes.CREATED).json(transaction)
+      : res.sendStatus(StatusCodes.OK)
   } catch (error) {
-    logger.error(`createTransaction: ${error}`)
+    logger.error({
+      message: 'Error creating transaction',
+      meta: {
+        action: 'createTransaction',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -44,9 +50,15 @@ export const getTransactionMetadata: RequestHandler<{
     const transaction = await verificationService.getTransactionMetadata(
       transactionId,
     )
-    return res.status(HttpStatus.OK).json(transaction)
+    return res.status(StatusCodes.OK).json(transaction)
   } catch (error) {
-    logger.error(`getTransaction: ${error}`)
+    logger.error({
+      message: 'Error retrieving transaction metadata',
+      meta: {
+        action: 'getTransactionMetadata',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -66,9 +78,15 @@ export const resetFieldInTransaction: RequestHandler<
     const { fieldId } = req.body
     const transaction = await verificationService.getTransaction(transactionId)
     await verificationService.resetFieldInTransaction(transaction, fieldId)
-    return res.sendStatus(HttpStatus.OK)
+    return res.sendStatus(StatusCodes.OK)
   } catch (error) {
-    logger.error(`resetFieldInTransaction: ${error}`)
+    logger.error({
+      message: 'Error resetting field in transaction',
+      meta: {
+        action: 'resetFieldInTransaction',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -88,9 +106,15 @@ export const getNewOtp: RequestHandler<
     const { answer, fieldId } = req.body
     const transaction = await verificationService.getTransaction(transactionId)
     await verificationService.getNewOtp(transaction, fieldId, answer)
-    return res.sendStatus(HttpStatus.CREATED)
+    return res.sendStatus(StatusCodes.CREATED)
   } catch (error) {
-    logger.error(`getNewOtp: ${error}`)
+    logger.error({
+      message: 'Error retrieving new OTP',
+      meta: {
+        action: 'getNewOtp',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -111,9 +135,15 @@ export const verifyOtp: RequestHandler<
     const { fieldId, otp } = req.body
     const transaction = await verificationService.getTransaction(transactionId)
     const data = await verificationService.verifyOtp(transaction, fieldId, otp)
-    return res.status(HttpStatus.OK).json(data)
+    return res.status(StatusCodes.OK).json(data)
   } catch (error) {
-    logger.error(`verifyOtp: ${error}`)
+    logger.error({
+      message: 'Error verifying OTP',
+      meta: {
+        action: 'verifyOtp',
+      },
+      error,
+    })
     return handleError(error, res)
   }
 }
@@ -123,22 +153,22 @@ export const verifyOtp: RequestHandler<
  * @param res
  */
 const handleError = (error: Error, res: Response) => {
-  let status = HttpStatus.INTERNAL_SERVER_ERROR
+  let status = StatusCodes.INTERNAL_SERVER_ERROR
   let message = error.message
   switch (error.name) {
     case VfnErrors.SendOtpFailed:
-      status = HttpStatus.BAD_REQUEST
+      status = StatusCodes.BAD_REQUEST
       break
     case VfnErrors.WaitForOtp:
-      status = HttpStatus.ACCEPTED
+      status = StatusCodes.ACCEPTED
       break
     case VfnErrors.ResendOtp:
     case VfnErrors.InvalidOtp:
-      status = HttpStatus.UNPROCESSABLE_ENTITY
+      status = StatusCodes.UNPROCESSABLE_ENTITY
       break
     case VfnErrors.FieldNotFound:
     case VfnErrors.TransactionNotFound:
-      status = HttpStatus.NOT_FOUND
+      status = StatusCodes.NOT_FOUND
       break
     default:
       message = 'An error occurred'

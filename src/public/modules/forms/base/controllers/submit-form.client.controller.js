@@ -27,7 +27,7 @@ function SubmitFormController(FormData, SpcpSession, $window, $document, GTag) {
   // Show banner content if available
   if ($window.siteBannerContent) {
     vm.banner = {
-      msg: $window.siteBannerContent
+      msg: $window.siteBannerContent,
     }
   } else if ($window.isGeneralMaintenance) {
     // Show banner for SingPass forms

@@ -2,20 +2,23 @@ const adminConsole = require('../controllers/admin-console.server.controller')
 const spcp = require('../controllers/spcp.server.controller')
 const myInfo = require('../controllers/myinfo.server.controller')
 const admin = require('../controllers/admin-forms.server.controller')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const featureManager = require('../../config/feature-manager').default
 const config = require('../../config/config')
 const fs = require('fs')
 const SPCPAuthClient = require('@opengovsg/spcp-auth-client')
 const { MyInfoGovClient } = require('@opengovsg/myinfo-gov-client')
 const MyInfoService = require('../services/myinfo.service')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'spcp-myinfo-config',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 const spcpFactory = ({ isEnabled, props }) => {
   if (isEnabled && props) {
-    logger.info('Configuring SingPass client...')
+    logger.info({
+      message: 'Configuring SingPass client...',
+      meta: {
+        action: 'spcpFactory',
+      },
+    })
     let singPassAuthClient = new SPCPAuthClient({
       partnerEntityId: props.spPartnerEntityId,
       idpLoginURL: props.spIdpLoginUrl,
@@ -26,7 +29,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       spcpCert: fs.readFileSync(props.spIdpCertPath),
       extract: SPCPAuthClient.extract.SINGPASS,
     })
-    logger.info('Configuring CorpPass client...')
+    logger.info({
+      message: 'Configuring CorpPass client...',
+      meta: {
+        action: 'spcpFactory',
+      },
+    })
     let corpPassAuthClient = new SPCPAuthClient({
       partnerEntityId: props.cpPartnerEntityId,
       idpLoginURL: props.cpIdpLoginUrl,
@@ -37,7 +45,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       spcpCert: fs.readFileSync(props.cpIdpCertPath),
       extract: SPCPAuthClient.extract.CORPPASS,
     })
-    logger.info('Configuring MyInfo client...')
+    logger.info({
+      message: 'Configuring MyInfo client...',
+      meta: {
+        action: 'spcpFactory',
+      },
+    })
     let myInfoConfig = {
       realm: config.app.title,
       singpassEserviceId: props.spEsrvcId,
@@ -58,9 +71,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       myInfoConfig.mode = 'stg'
       myInfoGovClient = new MyInfoGovClient(myInfoConfig)
     } else {
-      logger.warn(
-        `\n!!! WARNING !!!\nNo MyInfo keys detected.\nRequests to MyInfo will not work.\nThis should NEVER be seen in production.\nFalling back on MockPass.`,
-      )
+      logger.warn({
+        message: `\n!!! WARNING !!!\nNo MyInfo keys detected.\nRequests to MyInfo will not work.\nThis should NEVER be seen in production.\nFalling back on MockPass.`,
+        meta: {
+          action: 'spcpFactory',
+        },
+      })
       myInfoConfig.appId = 'STG2-' + myInfoConfig.singpassEserviceId
       myInfoConfig.privateKey = fs.readFileSync(
         './node_modules/@opengovsg/mockpass/static/certs/key.pem',
@@ -120,17 +136,17 @@ const spcpFactory = ({ isEnabled, props }) => {
         }),
       verifyMyInfoVals: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
       singPassLogin: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
       corpPassLogin: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
       addSpcpSessionInfo: (req, res, next) => next(),
       isSpcpAuthenticated: (req, res, next) => next(),
       createSpcpRedirectURL: (req, res, next) => next(),
       addMyInfo: (req, res, next) => next(),
       validateESrvcId: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
     }
   }
 }

@@ -30,6 +30,18 @@ const smsFactory = ({ isEnabled, props }) => {
         )
       }
     },
+    async sendAdminContactOtp(recipient, otp, userId) {
+      if (isEnabled) {
+        return smsService.sendAdminContactOtp(
+          recipient,
+          otp,
+          userId,
+          twilioConfig,
+        )
+      } else {
+        throw new Error(`Send Admin Contact OTP has not been enabled`)
+      }
+    },
   }
 }
 

@@ -97,7 +97,7 @@ describe('getInvalidFileExtensionsInZip on server', () => {
     },
     {
       name: 'should include invalid extensions in nested zip files',
-      file: './tests/unit/backend/resources/nested.zip',
+      file: './tests/unit/backend/resources/nestedInvalid.zip',
       expected: ['.a', '.oo'],
     },
   ]

@@ -1,16 +1,33 @@
-import { Response } from 'express'
+import { Request, Response } from 'express'
 
-interface MockResponse extends Response {
-  sendStatus: jest.Mock
-  send: jest.Mock
-  status: jest.Mock
-  json: jest.Mock
+const mockRequest = ({
+  body,
+  params,
+  session,
+}: {
+  body: Record<string, string>
+  params?: Record<string, string>
+  session?: any
+}) => {
+  return {
+    body,
+    params,
+    session,
+  } as Request
 }
 
-export const mockResponse = () =>
-  ({
-    sendStatus: jest.fn(),
-    send: jest.fn(),
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn(),
-  } as MockResponse)
+const mockResponse = () => {
+  const mockRes = {} as Response
+  mockRes.status = jest.fn().mockReturnThis()
+  mockRes.send = jest.fn().mockReturnThis()
+  mockRes.sendStatus = jest.fn().mockReturnThis()
+  mockRes.json = jest.fn()
+  return mockRes
+}
+
+const expressHandler = {
+  mockRequest,
+  mockResponse,
+}
+
+export default expressHandler

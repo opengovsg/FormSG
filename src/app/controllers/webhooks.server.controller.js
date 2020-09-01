@@ -6,7 +6,7 @@ const {
   handleWebhookFailure,
   logWebhookFailure,
 } = require('../services/webhooks.service')
-const { WebhookValidationError } = require('../utils/custom-errors')
+const { WebhookValidationError } = require('../modules/webhooks/webhook.errors')
 
 /**
  * POST submission to a specified URL.  Only works for encrypted submissions.

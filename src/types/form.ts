@@ -32,7 +32,7 @@ export enum ResponseMode {
 }
 
 // Typings
-export type OtpData = {
+export type FormOtpData = {
   form: IFormSchema['_id']
   formAdmin: {
     email: IUserSchema['email']

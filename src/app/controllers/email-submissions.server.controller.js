@@ -8,9 +8,9 @@ const stringify = require('json-stringify-deterministic')
 const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const { getRequestIp } = require('../utils/request')
-const { ConflictError } = require('../utils/custom-errors')
+const { ConflictError } = require('../modules/submission/submission.errors')
 const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
@@ -23,9 +23,7 @@ const config = require('../../config/config')
 const {
   getProcessedResponses,
 } = require('../modules/submission/submission.service')
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'email-submissions',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail.service').default
 
 const { sessionSecret } = config
@@ -54,12 +52,16 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       },
     })
   } catch (err) {
-    logger.error(
-      `formId=${_.get(req, 'form._id')} ip="${getRequestIp(
-        req,
-      )}" busboy error=${err}`,
-    )
-    return res.status(HttpStatus.BAD_REQUEST).send({
+    logger.error({
+      message: 'Busboy error',
+      meta: {
+        action: 'receiveEmailSubmissionUsingBusBoy',
+        ip: getRequestIp(req),
+        formId: _.get(req, 'form._id'),
+      },
+      error: err,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).send({
       message: 'Required headers are missing',
     })
   }
@@ -101,12 +103,16 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         req.body = JSON.parse(val)
       } catch (err) {
         // Invalid form data
-        logger.error(
-          `Error 400 - Failed to parse body for email submission: formId=${
-            req.form._id
-          } ip=${getRequestIp(req)} error='${err}'`,
-        )
-        return res.sendStatus(HttpStatus.BAD_REQUEST)
+        logger.error({
+          message: 'Invalid form data',
+          meta: {
+            action: 'receiveEmailSubmissionUsingBusBoy',
+            ip: getRequestIp(req),
+            formId: req.form._id,
+          },
+          error: err,
+        })
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
     }
   })
@@ -114,13 +120,16 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
   // responses successfully retrieved
   busboy.on('finish', async function () {
     if (limitReached) {
-      logger.error(
-        `Error 413 - Content is too large: formId=${
-          req.form._id
-        } ip=${getRequestIp(req)}`,
-      )
+      logger.error({
+        message: 'Content is too large',
+        meta: {
+          action: 'receiveEmailSubmissionUsingBusBoy',
+          ip: getRequestIp(req),
+          formId: req.form._id,
+        },
+      })
       return res
-        .status(HttpStatus.REQUEST_TOO_LONG)
+        .status(StatusCodes.REQUEST_TOO_LONG)
         .send({ message: 'Your submission is too large.' })
     }
 
@@ -139,58 +148,74 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
           .update(concatenatedResponse)
           .digest('hex')
       : undefined
-    const ip = req.get('cf-connecting-ip') || req.ip
-    logger.info(
-      `[submissionHashes] formId=${_.get(
-        req,
-        'form._id',
-      )} ip=${ip} uin=${hashedUinFin} submission=${hashedSubmission}`,
-    )
+
+    logger.info({
+      message: 'Submission successfully hashed',
+      meta: {
+        action: 'receiveEmailSubmissionUsingBusBoy',
+        formId: req.form._id,
+        ip: getRequestIp(req),
+        uin: hashedUinFin,
+        submission: hashedSubmission,
+      },
+    })
 
     try {
       const areAttachmentsValid = await attachmentsAreValid(attachments)
       if (!areAttachmentsValid) {
-        logger.error(
-          `formId="${_.get(req, 'form._id')}" ip=${getRequestIp(
-            req,
-          )} Error 400: Invalid attachments`,
-        )
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        logger.error({
+          message: 'Invalid attachments',
+          meta: {
+            action: 'receiveEmailSubmissionUsingBusBoy',
+            ip: getRequestIp(req),
+            formId: req.form._id,
+          },
+        })
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message: 'Some files were invalid. Try uploading another file.',
         })
       }
 
       if (areAttachmentsMoreThan7MB(attachments)) {
-        return res.status(HttpStatus.UNPROCESSABLE_ENTITY).send({
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
           message: 'Please keep the size of your attachments under 7MB.',
         })
       }
 
       handleDuplicatesInAttachments(attachments)
-      addAttachmentToResponses(req, attachments)
+      addAttachmentToResponses(req.body.responses, attachments)
 
       return next()
     } catch (error) {
-      logger.error(
-        `formId=${_.get(req, 'form._id')} ip=${getRequestIp(
-          req,
-        )} uin=${hashedUinFin} submission=${hashedSubmission} receiveSubmission error:\t`,
+      logger.error({
+        message: 'receiveSubmission error',
+        meta: {
+          action: 'receiveEmailSubmissionUsingBusBoy',
+          ip: getRequestIp(req),
+          formId: req.form._id,
+          uin: hashedUinFin,
+          submission: hashedSubmission,
+        },
         error,
-      )
+      })
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send({ message: 'Unable to process submission.' })
     }
   })
 
   busboy.on('error', (err) => {
-    logger.error(
-      `formId=${_.get(req, 'form._id')} ip="${getRequestIp(
-        req,
-      )}" multipart error=${err}`,
-    )
+    logger.error({
+      message: 'Multipart error',
+      meta: {
+        action: 'receiveEmailSubmissionUsingBusBoy',
+        ip: getRequestIp(req),
+        formId: req.form._id,
+      },
+      error: err,
+    })
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send({ message: 'Unable to process submission.' })
   })
 
@@ -213,14 +238,25 @@ exports.validateEmailSubmission = function (req, res, next) {
       req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
     } catch (err) {
-      logger.error(`ip="${getRequestIp(req)}" error=`, err)
+      logger.error({
+        message:
+          err instanceof ConflictError
+            ? 'Conflict - Form has been updated'
+            : 'Error processing responses',
+        meta: {
+          action: 'validateEmailSubmission',
+          ip: getRequestIp(req),
+          formId: req.form._id,
+        },
+        error: err,
+      })
       if (err instanceof ConflictError) {
-        return res.status(HttpStatus.CONFLICT).send({
+        return res.status(err.status).send({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
       } else {
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message:
             'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
         })
@@ -233,7 +269,7 @@ exports.validateEmailSubmission = function (req, res, next) {
     )
     return next()
   } else {
-    return res.sendStatus(HttpStatus.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 }
 
@@ -461,8 +497,17 @@ const getVerifiedPrefix = (isUserVerified) => {
  * of the submission
  */
 function onSubmissionEmailFailure(err, req, res, submission) {
-  logger.error(getRequestIp(req), req.url, req.headers, err)
-  return res.status(HttpStatus.BAD_REQUEST).send({
+  logger.error({
+    message: 'Error submitting email form',
+    meta: {
+      action: 'onSubmissionEmailFailure',
+      ip: getRequestIp(req),
+      url: req.url,
+      headers: req.headers,
+    },
+    error: err,
+  })
+  return res.status(StatusCodes.BAD_REQUEST).send({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
     submissionId: submission._id,
@@ -551,10 +596,13 @@ exports.saveMetadataToDb = function (req, res, next) {
     .then((submission) => {
       logger.info({
         message: 'Saved submission to MongoDB',
-        submissionId: submission.id,
-        formId: form._id,
-        ip: getRequestIp(req),
-        responseHash: submission.responseHash,
+        meta: {
+          action: 'saveMetadataToDb',
+          submissionId: submission.id,
+          formId: form._id,
+          ip: getRequestIp(req),
+          responseHash: submission.responseHash,
+        },
       })
       req.submission = submission
       return next()
@@ -590,10 +638,13 @@ exports.sendAdminEmail = async function (req, res, next) {
   try {
     logger.info({
       message: 'Sending admin mail',
-      submissionId: submission.id,
-      formId: form._id,
-      ip: getRequestIp(req),
-      submissionHash: submission.responseHash,
+      meta: {
+        action: 'sendAdminEmail',
+        submissionId: submission.id,
+        formId: form._id,
+        ip: getRequestIp(req),
+        submissionHash: submission.responseHash,
+      },
     })
 
     await MailService.sendSubmissionToAdmin({
@@ -607,7 +658,17 @@ exports.sendAdminEmail = async function (req, res, next) {
 
     return next()
   } catch (err) {
-    logger.warn('sendAdminEmail error', err)
+    logger.warn({
+      message: 'Error sending submission to admin',
+      meta: {
+        action: 'sendAdminEmail',
+        submissionId: submission.id,
+        formId: form._id,
+        ip: getRequestIp(req),
+        submissionHash: submission.responseHash,
+      },
+      error: err,
+    })
     return onSubmissionEmailFailure(err, req, res, submission)
   }
 }

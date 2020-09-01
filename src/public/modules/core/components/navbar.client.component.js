@@ -2,13 +2,11 @@
 
 angular.module('core').component('navbarComponent', {
   templateUrl: 'modules/core/componentViews/navbar.html',
-  controller: ['Auth', '$state', NavBarController],
+  controller: ['$state', NavBarController],
   controllerAs: 'vm',
 })
 
-function NavBarController(Auth, $state) {
+function NavBarController($state) {
   const vm = this
-
-  vm.signOut = () => Auth.signOut()
   vm.activeTab = $state.current.name
 }

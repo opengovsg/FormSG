@@ -4,5 +4,5 @@ module.exports = {
     'no-descending-specificity': [true, { severity: 'warning' }],
     'selector-type-no-unknown': [true, { ignore: ['custom-elements'] }],
   },
-  ignoreFiles: ['dist/**', "**/*.html"],
+  ignoreFiles: ['dist/**', '**/*.html', 'coverage/**'],
 }

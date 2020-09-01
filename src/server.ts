@@ -2,7 +2,7 @@ import config from './config/config'
 import { createLoggerWithLabel } from './config/logger'
 import loadApp from './loaders'
 
-const logger = createLoggerWithLabel('server')
+const logger = createLoggerWithLabel(module)
 
 const initServer = async () => {
   const app = await loadApp()
@@ -12,10 +12,13 @@ const initServer = async () => {
   await config.configureAws()
 
   app.listen(config.port)
-  logger.info('--')
-  logger.info('Environment: ' + config.nodeEnv)
-  logger.info('Port:        ' + config.port)
-  logger.info('--')
+
+  logger.info({
+    message: `[${config.nodeEnv}] Connected to port ${config.port}`,
+    meta: {
+      action: 'initServer',
+    },
+  })
 }
 
 initServer()

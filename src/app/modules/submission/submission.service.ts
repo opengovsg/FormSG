@@ -5,9 +5,9 @@ import {
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
 import { FieldResponse, IFieldSchema, IFormSchema } from '../../../types'
-import { ConflictError } from '../../utils/custom-errors'
 import validateField from '../../utils/field-validation'
 
+import { ConflictError } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
 import { getModeFilter } from './submission.utils'
 

@@ -1,8 +1,9 @@
-import { isEmpty } from 'lodash'
+import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import Mail from 'nodemailer/lib/mailer'
+import promiseRetry from 'promise-retry'
+import { OperationOptions } from 'retry'
 import validator from 'validator'
-import { Logger } from 'winston'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -24,7 +25,7 @@ import {
   isToFieldValid,
 } from '../utils/mail'
 
-const mailLogger = createLoggerWithLabel('mail')
+const logger = createLoggerWithLabel(module)
 
 type SendMailOptions = {
   mailId?: string
@@ -53,7 +54,7 @@ type MailServiceParams = {
   appUrl?: string
   transporter?: Mail
   senderMail?: string
-  logger?: Logger
+  retryParams?: Partial<OperationOptions>
 }
 
 type AutoReplyMailData = {
@@ -73,8 +74,15 @@ export type AutoreplySummaryRenderData = {
   formUrl: string
 }
 
-type MailOptions = Omit<Mail.Options, 'to'> & {
+export type MailOptions = Omit<Mail.Options, 'to'> & {
   to: string | string[]
+}
+
+const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
+  retries: 3,
+  // Exponential backoff.
+  factor: 2,
+  minTimeout: 5000,
 }
 
 export class MailService {
@@ -82,20 +90,20 @@ export class MailService {
    * The application name to be shown in some sent emails' fields such as mail
    * subject or mail body.
    */
-  #appName: string
+  #appName: Required<MailServiceParams['appName']>
   /**
    * The application URL to be shown in some sent emails' fields such as mail
    * subject or mail body.
    */
-  #appUrl: string
+  #appUrl: Required<MailServiceParams['appUrl']>
   /**
    * The transporter to be used to send mail.
    */
-  #transporter: Mail
+  #transporter: Required<MailServiceParams['transporter']>
   /**
    * The email string to denote the "from" field of the email.
    */
-  #senderMail: string
+  #senderMail: Required<MailServiceParams['senderMail']>
   /**
    * The full string that can be shown in the mail's "from" field created from
    * the given `appName` and `senderMail` arguments.
@@ -103,26 +111,30 @@ export class MailService {
    * E.g. `FormSG <test@example.com>`
    */
   #senderFromString: string
+
   /**
-   * Logger to log any errors encounted while sending mail.
+   * Sets the retry parameters for sendNodeMail retries.
    */
-  #logger: Logger
+  #retryParams: MailServiceParams['retryParams']
 
   constructor({
     appName = config.app.title,
     appUrl = config.app.appUrl,
     transporter = config.mail.transporter,
     senderMail = config.mail.mailFrom,
-    logger = mailLogger,
+    retryParams = DEFAULT_RETRY_PARAMS,
   }: MailServiceParams = {}) {
-    this.#logger = logger
-
     // Email validation
     if (!validator.isEmail(senderMail)) {
       const invalidMailError = new Error(
         `MailService constructor: senderMail: ${senderMail} is not a valid email`,
       )
-      this.#logger.error(invalidMailError)
+      logger.error({
+        message: `senderMail: ${senderMail} is not a valid email`,
+        meta: {
+          action: 'constructor',
+        },
+      })
       throw invalidMailError
     }
 
@@ -131,6 +143,7 @@ export class MailService {
     this.#senderMail = senderMail
     this.#senderFromString = `${appName} <${senderMail}>`
     this.#transporter = transporter
+    this.#retryParams = retryParams
   }
 
   /**
@@ -139,37 +152,62 @@ export class MailService {
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
   #sendNodeMail = async (mail: MailOptions, sendOptions?: SendMailOptions) => {
-    const emailLogString = `mailId: ${sendOptions?.mailId}\t Email from:${mail?.from}\t subject:${mail?.subject}\t formId: ${sendOptions?.formId}`
+    const logMeta = {
+      action: '#sendNodeMail',
+      mailId: sendOptions?.mailId,
+      mailFrom: mail.from,
+      mailSubject: mail.subject,
+      formId: sendOptions?.formId,
+    }
 
     // Guard against missing mail info.
     if (!mail || isEmpty(mail.to)) {
-      this.#logger.error(`mailError: undefined mail. ${emailLogString}`)
+      logger.error({
+        message: 'Undefined mail',
+        meta: logMeta,
+      })
       return Promise.reject(new Error('Mail undefined error'))
     }
 
     // Guard against invalid emails.
     if (!isToFieldValid(mail.to)) {
-      this.#logger.error(
-        `mailError: ${mail.to} is not a valid email. ${emailLogString}`,
-      )
+      logger.error({
+        message: `${mail.to} is not a valid email`,
+        meta: logMeta,
+      })
       return Promise.reject(new Error('Invalid email error'))
     }
 
-    this.#logger.info(emailLogString)
-    this.#logger.profile(emailLogString)
+    return promiseRetry(async (retry, attemptNum) => {
+      logger.info({
+        message: `Attempt ${attemptNum} to send mail`,
+        meta: logMeta,
+      })
 
-    try {
-      const response = await this.#transporter.sendMail(mail)
-      this.#logger.info(`mailSuccess:\t${emailLogString}`)
-      return response
-    } catch (err) {
-      // Pass errors to the callback
-      this.#logger.error(
-        `mailError ${err.responseCode}:\t${emailLogString}`,
-        err,
-      )
-      return Promise.reject(err)
-    }
+      try {
+        const response = await this.#transporter.sendMail(mail)
+        logger.info({
+          message: `Mail successfully sent on attempt ${attemptNum}`,
+          meta: logMeta,
+        })
+        return response
+      } catch (err) {
+        // Pass errors to the callback
+        logger.error({
+          message: `Send mail failure on attempt ${attemptNum}`,
+          meta: logMeta,
+          error: err,
+        })
+
+        // Retry only on 4xx errors.
+        if (inRange(get(err, 'responseCode', 0), 400, 500)) {
+          return retry(err)
+        }
+
+        // Not 4xx error, rethrow error.
+        throw err
+      }
+    }, this.#retryParams)
   }
 
   /**

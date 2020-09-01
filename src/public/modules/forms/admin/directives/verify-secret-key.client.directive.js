@@ -12,7 +12,7 @@ function verifySecretKeyDirective(FormSgSdk) {
       if (isActivationModal === true) {
         return 'modules/forms/admin/directiveViews/verify-secret-key-activation.client.view.html'
       } else {
-      return 'modules/forms/admin/directiveViews/verify-secret-key.client.view.html'
+        return 'modules/forms/admin/directiveViews/verify-secret-key.client.view.html'
       }
     },
     restrict: 'E',
@@ -63,8 +63,14 @@ function verifySecretKeyDirective(FormSgSdk) {
         $scope.isAcknowledgementWrong = () => {
           const inputAcknowledgement = $scope.inputAcknowledgement
           if (!inputAcknowledgement) return true
-          return inputAcknowledgement.toLowerCase().replace(/\./g, "").replace(/  +/g, ' ').trim() !== 
-          'i understand the consequences and have stored my secret key in 2 other places'
+          return (
+            inputAcknowledgement
+              .toLowerCase()
+              .replace(/\./g, '')
+              .replace(/  +/g, ' ')
+              .trim() !==
+            'i understand the consequences and have stored my secret key in 2 other places'
+          )
           //Allow regardless of whether user types in upper / lowercase, ignore full stops and multiple spaces
         }
 

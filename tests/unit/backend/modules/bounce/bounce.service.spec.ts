@@ -6,25 +6,25 @@ import { cloneDeep, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import * as loggerModule from 'src/config/logger'
+import * as LoggerModule from 'src/config/logger'
 import { ISnsNotification } from 'src/types'
 
-import dbHandler from '../../helpers/jest-db'
-import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 import {
   extractBounceObject,
   makeBounceNotification,
   makeDeliveryNotification,
   MOCK_SNS_BODY,
-} from '../../helpers/sns'
+} from '../../helpers/bounce'
+import dbHandler from '../../helpers/jest-db'
+import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
 jest.mock('src/config/logger')
-const mockLoggerModule = mocked(loggerModule, true)
+const MockLoggerModule = mocked(LoggerModule, true)
 const mockLogger = getMockLogger()
-mockLoggerModule.createCloudWatchLogger.mockReturnValue(mockLogger)
-mockLoggerModule.createLoggerWithLabel.mockReturnValue(getMockLogger())
+MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockLogger)
+MockLoggerModule.createLoggerWithLabel.mockReturnValue(getMockLogger())
 
 // Import modules which depend on config last so that mocks get imported correctly
 // eslint-disable-next-line import/first
@@ -33,12 +33,13 @@ import getBounceModel from 'src/app/models/bounce.server.model'
 import {
   isValidSnsRequest,
   updateBounces,
-} from 'src/app/modules/sns/sns.service'
+} from 'src/app/modules/bounce/bounce.service'
 
 const Bounce = getBounceModel(mongoose)
 
 describe('isValidSnsRequest', () => {
   let keys, body: ISnsNotification
+
   beforeAll(() => {
     keys = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
@@ -52,31 +53,38 @@ describe('isValidSnsRequest', () => {
       },
     })
   })
+
   beforeEach(() => {
     body = cloneDeep(MOCK_SNS_BODY)
     mockAxios.get.mockResolvedValue({
       data: keys.publicKey,
     })
   })
-  test('should gracefully reject empty input', () => {
+
+  it('should gracefully reject when input is empty', () => {
     return expect(isValidSnsRequest(undefined)).resolves.toBe(false)
   })
-  test('should reject requests without valid structure', () => {
+
+  it('should reject requests when their structure is invalid', () => {
     delete body.Type
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
-  test('should reject requests with invalid certificate URL', () => {
+
+  it('should reject requests when their certificate URL is invalid', () => {
     body.SigningCertURL = 'http://www.example.com'
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
-  test('should reject requests with invalid signature version', () => {
+
+  it('should reject requests when their signature version is invalid', () => {
     body.SignatureVersion = 'wrongSignatureVersion'
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
-  test('should reject requests with invalid signature', () => {
+
+  it('should reject requests when their signature is invalid', () => {
     return expect(isValidSnsRequest(body)).resolves.toBe(false)
   })
-  test('should accept valid requests', () => {
+
+  it('should accept when requests are valid', () => {
     const signer = crypto.createSign('RSA-SHA1')
     const baseString =
       dedent`Message
@@ -102,14 +110,17 @@ describe('updateBounces', () => {
     'email2@example.com',
     'email3@example.com',
   ]
+
   beforeAll(async () => await dbHandler.connect())
+
   afterEach(async () => {
     await dbHandler.clearDatabase()
     resetMockLogger(mockLogger)
   })
+
   afterAll(async () => await dbHandler.closeDatabase())
 
-  test('should save a single delivery notification correctly', async () => {
+  it('should save correctly when there is a single delivery notification', async () => {
     const formId = new ObjectId()
     const submissionId = new ObjectId()
     const notification = makeDeliveryNotification(
@@ -137,7 +148,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should save a single non-critical bounce notification correctly', async () => {
+  it('should save correctly when there is a single non-critical bounce notification', async () => {
     const bounces = {
       [recipientList[0]]: true,
       [recipientList[1]]: false,
@@ -170,7 +181,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should save a single critical bounce notification correctly', async () => {
+  it('should save correctly when there is a single critical bounce notification', async () => {
     const formId = new ObjectId()
     const submissionId = new ObjectId()
     const notification = makeBounceNotification(
@@ -200,7 +211,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should save consecutive delivery notifications correctly', async () => {
+  it('should save correctly when there are consecutive delivery notifications', async () => {
     const formId = new ObjectId()
     const submissionId = new ObjectId()
     const notification1 = makeDeliveryNotification(
@@ -240,7 +251,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should save consecutive non-critical bounce notifications correctly', async () => {
+  it('should save correctly when there are consecutive non-critical bounce notifications', async () => {
     const bounces = {
       [recipientList[0]]: true,
       [recipientList[1]]: true,
@@ -285,7 +296,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should save consecutive critical bounce notifications correctly', async () => {
+  it('should save correctly when there are consecutive critical bounce notifications', async () => {
     const formId = new ObjectId()
     const submissionId = new ObjectId()
     const notification1 = makeBounceNotification(
@@ -327,7 +338,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should save delivery, then bounce notifications correctly', async () => {
+  it('should save correctly when there are delivery then bounce notifications', async () => {
     const bounces = {
       [recipientList[0]]: false,
       [recipientList[1]]: true,
@@ -372,7 +383,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should save bounce, then delivery notifications correctly', async () => {
+  it('should save correctly when there are bounce then delivery notifications', async () => {
     const bounces = {
       [recipientList[0]]: true,
       [recipientList[1]]: false,
@@ -417,7 +428,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should set hasBounced to false on subsequent success', async () => {
+  it('should set hasBounced to false when a subsequent response is delivered', async () => {
     const formId = new ObjectId()
     const submissionId = new ObjectId()
     const notification1 = makeBounceNotification(
@@ -457,7 +468,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  test('should not log critical bounces if hasAlarmed is true', async () => {
+  it('should not log critical bounces when hasAlarmed is true', async () => {
     const formId = new ObjectId()
     const submissionId1 = new ObjectId()
     const submissionId2 = new ObjectId()

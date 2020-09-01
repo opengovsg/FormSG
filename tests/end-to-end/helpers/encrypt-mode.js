@@ -17,6 +17,7 @@ const {
 const fs = require('fs')
 const rimraf = require('rimraf')
 const parse = require('csv-parse/lib/sync')
+const ngrok = require('ngrok')
 
 // Index of the column headers in the exported CSV. The first 4 rows are
 // metadata about the number of responses decrypted.
@@ -24,6 +25,9 @@ const CSV_HEADER_ROW_INDEX = 4
 // The first two columns are "Reference number" and "Timestamp", so the
 // fields to check only start from the third column.
 const CSV_ANSWER_COL_INDEX = 2
+
+const WEBHOOK_PORT = process.env.MOCK_WEBHOOK_PORT
+const WEBHOOK_CONFIG_FILE = process.env.MOCK_WEBHOOK_CONFIG_FILE
 
 // We can't just call getResponseArray because CSVs use different
 // delimiters for checkbox and table. Hence we treat checbox and table
@@ -85,6 +89,30 @@ const clearDownloadsFolder = (formTile, formId) => {
   )
   rimraf(
     `${downloadsFolder}/${formTile}-${formId}.csv`,
+    {
+      glob: false,
+    },
+    emptyCallback,
+  )
+}
+
+const createWebhookConfig = async (formTitle) => {
+  const encodedTitle = encodeURI(formTitle)
+  const webhookUrl = await ngrok.connect(WEBHOOK_PORT)
+  const downloadsFolder = getDownloadsFolder()
+  fs.writeFileSync(
+    `${downloadsFolder}/${WEBHOOK_CONFIG_FILE}`,
+    `${encodedTitle},${webhookUrl}`,
+    'utf8',
+  )
+  return webhookUrl
+}
+
+const removeWebhookConfig = async (url) => {
+  await ngrok.disconnect(url)
+  const downloadsFolder = getDownloadsFolder()
+  rimraf(
+    `${downloadsFolder}/${WEBHOOK_CONFIG_FILE}`,
     {
       glob: false,
     },
@@ -200,7 +228,25 @@ const verifySubmissionE2e = async (t, form, formData, authData) => {
   await checkDecryptedResponses(t, formData, authData)
 }
 
+const verifyWebhookSubmission = async (t, formData, webhookRequestData) => {
+  let { formFields } = formData
+  for (let i = 0; i < formFields.length; i++) {
+    await t
+      .expect(formFields[i].title)
+      .eql(webhookRequestData.responses[i].question)
+    await t
+      .expect(formFields[i].fieldType)
+      .eql(webhookRequestData.responses[i].fieldType)
+    await t
+      .expect(formFields[i].val)
+      .eql(webhookRequestData.responses[i].answer)
+  }
+}
+
 module.exports = {
   verifySubmissionE2e,
   clearDownloadsFolder,
+  verifyWebhookSubmission,
+  createWebhookConfig,
+  removeWebhookConfig,
 }

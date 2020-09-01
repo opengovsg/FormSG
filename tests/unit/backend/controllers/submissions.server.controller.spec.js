@@ -1,6 +1,6 @@
 const MockAdapter = require('axios-mock-adapter')
 const axios = require('axios')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const ejs = require('ejs')
 const express = require('express')
 const request = require('supertest')
@@ -104,12 +104,12 @@ describe('Submissions Controller', () => {
     it('passes through on no form captcha', (done) => {
       answerCaptchaWith(new Error())
       hasCaptcha = false
-      request(app).post(endpointPath).expect(HttpStatus.OK).end(done)
+      request(app).post(endpointPath).expect(StatusCodes.OK).end(done)
     })
 
     it('errors with 400 on no captcha response', (done) => {
       answerCaptchaWith(new Error())
-      request(app).post(endpointPath).expect(HttpStatus.BAD_REQUEST).end(done)
+      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
     })
 
     it('errors with 500 if no captcha private key', (done) => {
@@ -206,7 +206,7 @@ describe('Submissions Controller', () => {
         testFn(mail)
       })
 
-      request(app).get(endpointPath).expect(HttpStatus.OK).end(done)
+      request(app).get(endpointPath).expect(StatusCodes.OK).end(done)
     }
 
     it(
@@ -259,7 +259,7 @@ describe('Submissions Controller', () => {
       mockSendNodeMail.calls.reset()
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.OK)
+        .expect(StatusCodes.OK)
         .end(() => {
           expect(mockSendNodeMail).not.toHaveBeenCalled()
           done()
@@ -314,7 +314,7 @@ describe('Submissions Controller', () => {
 
       request(app)
         .get(endpointPath)
-        .expect(HttpStatus.INTERNAL_SERVER_ERROR)
+        .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         .end((err) => {
           // Restore Submission.countDocuments before passing on any errors
           Submission.countDocuments = originalSubmissionCountDoc

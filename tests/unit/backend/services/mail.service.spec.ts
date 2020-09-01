@@ -5,6 +5,7 @@ import { ImportMock } from 'ts-mock-imports'
 
 import {
   AutoreplySummaryRenderData,
+  MailOptions,
   MailService,
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail.service'
@@ -14,11 +15,15 @@ import { IPopulatedForm, ISubmissionSchema } from 'src/types'
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
 const MOCK_VALID_EMAIL_3 = 'to3@example.com'
+const MOCK_VALID_EMAIL_4 = 'to4@example.com'
+const MOCK_VALID_EMAIL_5 = 'to5@example.com'
 const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
 const MOCK_APP_URL = 'mockApp.example.com'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
 const MOCK_PDF = 'fake pdf'
+
+const MOCK_RETRY_COUNT = 10
 
 describe('mail.service', () => {
   const sendMailSpy = jest.fn()
@@ -38,6 +43,8 @@ describe('mail.service', () => {
     senderMail: MOCK_SENDER_EMAIL,
     appName: MOCK_APP_NAME,
     appUrl: MOCK_APP_URL,
+    // Set for instant timeouts during testing.
+    retryParams: { retries: MOCK_RETRY_COUNT, minTimeout: 0, factor: 2 },
   })
 
   describe('Constructor', () => {
@@ -61,13 +68,8 @@ describe('mail.service', () => {
   describe('sendVerificationOtp', () => {
     const MOCK_OTP = '123456'
 
-    it('should send verification otp successfully', async () => {
-      // Arrange
-      // sendMail should return mocked success response
-      const mockedResponse = 'mockedSuccessResponse'
-      sendMailSpy.mockResolvedValueOnce(mockedResponse)
-
-      const expectedArgument = {
+    const generateExpectedArg = async () => {
+      return {
         to: MOCK_VALID_EMAIL,
         from: MOCK_SENDER_STRING,
         subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
@@ -81,11 +83,24 @@ describe('mail.service', () => {
           'X-Formsg-Email-Type': 'Verification OTP',
         },
       }
+    }
 
-      // Act + Assert
-      await expect(
-        mailService.sendVerificationOtp(MOCK_VALID_EMAIL, MOCK_OTP),
-      ).resolves.toEqual(mockedResponse)
+    it('should send verification otp successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSend = mailService.sendVerificationOtp(
+        MOCK_VALID_EMAIL,
+        MOCK_OTP,
+      )
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
@@ -94,23 +109,105 @@ describe('mail.service', () => {
     it('should reject with error when email is invalid', async () => {
       // Arrange
       const invalidEmail = 'notAnEmail'
-      // Act + Assert
-      await expect(
-        mailService.sendVerificationOtp(invalidEmail, MOCK_OTP),
-      ).rejects.toThrowError('Invalid email error')
+
+      // Act
+      const pendingSend = mailService.sendVerificationOtp(
+        invalidEmail,
+        MOCK_OTP,
+      )
+
+      // Assert
+      await expect(pendingSend).rejects.toThrowError('Invalid email error')
+    })
+
+    it('should autoretry when 4xx error is thrown by sendNodeMail and pass if second try passes', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockReturnValueOnce(mockedResponse)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSendVerification = mailService.sendVerificationOtp(
+        MOCK_VALID_EMAIL,
+        MOCK_OTP,
+      )
+
+      // Assert
+      await expect(pendingSendVerification).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should have been called two times since it rejected the first one and
+      // resolved
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
+      // Arrange
+      const mock4xxReject = {
+        responseCode: 413,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy.mockRejectedValue(mock4xxReject)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSendVerification = mailService.sendVerificationOtp(
+        MOCK_VALID_EMAIL,
+        MOCK_OTP,
+      )
+
+      // Assert
+      await expect(pendingSendVerification).rejects.toEqual(mock4xxReject)
+      // Check arguments passed to sendNodeMail
+      // Should have been called MOCK_RETRY_COUNT + 1 times
+      expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should stop autoretrying when the returned error is not a 4xx error', async () => {
+      // Arrange
+      const mockError = new Error('this should be returned at the end')
+      const mock4xxReject = {
+        responseCode: 413,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockRejectedValueOnce(mockError)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSendVerification = mailService.sendVerificationOtp(
+        MOCK_VALID_EMAIL,
+        MOCK_OTP,
+      )
+
+      // Assert
+      await expect(pendingSendVerification).rejects.toEqual(mockError)
+      // Check arguments passed to sendNodeMail
+      // Should retry two times and stop since the second rejected value is
+      // non-4xx error.
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
   })
 
   describe('sendLoginOtp', () => {
     const MOCK_OTP = '123456'
     const MOCK_IP = 'mock:5000'
-    it('should send login otp successfully', async () => {
-      // Arrange
-      // sendMail should return mocked success response
-      const mockedResponse = 'mockedSuccessResponse'
-      sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
-      const expectedArgument = {
+    const generateExpectedArg = async () => {
+      return {
         to: MOCK_VALID_EMAIL,
         from: MOCK_SENDER_STRING,
         subject: `One-Time Password (OTP) for ${MOCK_APP_NAME}`,
@@ -125,15 +222,25 @@ describe('mail.service', () => {
           'X-Formsg-Email-Type': 'Login OTP',
         },
       }
+    }
 
-      // Act + Assert
-      await expect(
-        mailService.sendLoginOtp({
-          recipient: MOCK_VALID_EMAIL,
-          otp: MOCK_OTP,
-          ipAddress: MOCK_IP,
-        }),
-      ).resolves.toEqual(mockedResponse)
+    it('should send login otp successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSend = mailService.sendLoginOtp({
+        recipient: MOCK_VALID_EMAIL,
+        otp: MOCK_OTP,
+        ipAddress: MOCK_IP,
+      })
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
@@ -142,10 +249,99 @@ describe('mail.service', () => {
     it('should reject with error when email is invalid', async () => {
       // Arrange
       const invalidEmail = 'notAnEmail'
-      // Act + Assert
-      await expect(
-        mailService.sendVerificationOtp(invalidEmail, MOCK_OTP),
-      ).rejects.toThrowError('Invalid email error')
+
+      // Act
+      const pendingSend = mailService.sendLoginOtp({
+        recipient: invalidEmail,
+        otp: MOCK_OTP,
+        ipAddress: MOCK_IP,
+      })
+      // Assert
+      await expect(pendingSend).rejects.toThrowError('Invalid email error')
+    })
+
+    it('should autoretry when 4xx error is thrown by sendNodeMail and pass if second try passes', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockReturnValueOnce(mockedResponse)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSendLoginOtp = mailService.sendLoginOtp({
+        recipient: MOCK_VALID_EMAIL,
+        otp: MOCK_OTP,
+        ipAddress: MOCK_IP,
+      })
+
+      // Assert
+      await expect(pendingSendLoginOtp).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should have been called two times since it rejected the first one and
+      // resolved
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
+      // Arrange
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy.mockRejectedValue(mock4xxReject)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSendLoginOtp = mailService.sendLoginOtp({
+        recipient: MOCK_VALID_EMAIL,
+        otp: MOCK_OTP,
+        ipAddress: MOCK_IP,
+      })
+
+      // Assert
+      await expect(pendingSendLoginOtp).rejects.toEqual(mock4xxReject)
+      // Check arguments passed to sendNodeMail
+      // Should have been called MOCK_RETRY_COUNT + 1 times
+      expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should stop autoretrying when the returned error is not a 4xx error', async () => {
+      // Arrange
+      const mockError = new Error('this should be returned at the end')
+      const mock4xxReject = {
+        responseCode: 413,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockRejectedValueOnce(mockError)
+
+      const expectedArgument = await generateExpectedArg()
+
+      // Act
+      const pendingSendLoginOtp = mailService.sendLoginOtp({
+        recipient: MOCK_VALID_EMAIL,
+        otp: MOCK_OTP,
+        ipAddress: MOCK_IP,
+      })
+
+      // Assert
+      await expect(pendingSendLoginOtp).rejects.toEqual(mockError)
+      // Check arguments passed to sendNodeMail
+      // Should only invoke two times and stop since the second rejected value
+      // is non-4xx error.
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
   })
 
@@ -192,6 +388,23 @@ describe('mail.service', () => {
       ...MOCK_VALID_SUBMISSION_PARAMS.jsonData,
     ]
 
+    const generateExpectedArgWithToField = (toField: string[]) => {
+      return {
+        to: toField,
+        from: MOCK_SENDER_STRING,
+        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
+        html: expectedHtml,
+        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Admin (response)',
+          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
+          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
+        },
+        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
+      }
+    }
+
     beforeAll(async () => {
       const htmlData = {
         appName: MOCK_APP_NAME,
@@ -205,35 +418,29 @@ describe('mail.service', () => {
     })
 
     it('should send submission mail to admin successfully if form.emails is an array with a single string', async () => {
+      // Arrange
       // sendMail should return mocked success response
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
-      const expectedArgument = {
-        to: MOCK_VALID_SUBMISSION_PARAMS.form.emails,
-        from: MOCK_SENDER_STRING,
-        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: expectedHtml,
-        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Admin (response)',
-          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
-          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
-        },
-        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
-      }
+      const expectedArgument = generateExpectedArgWithToField(
+        MOCK_VALID_SUBMISSION_PARAMS.form.emails,
+      )
 
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(MOCK_VALID_SUBMISSION_PARAMS),
-      ).resolves.toEqual(mockedResponse)
+      // Act
+      const pendingSend = mailService.sendSubmissionToAdmin(
+        MOCK_VALID_SUBMISSION_PARAMS,
+      )
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
     it('should send submission mail to admin successfully if form.emails is an array with a single comma separated string', async () => {
+      // Arrange
       // sendMail should return mocked success response
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
@@ -244,25 +451,15 @@ describe('mail.service', () => {
       const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       modifiedParams.form.emails = formEmailsCommaSeparated
 
-      const expectedArgument = {
-        to: formEmailsCommaSeparated,
-        from: MOCK_SENDER_STRING,
-        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: expectedHtml,
-        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Admin (response)',
-          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
-          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
-        },
-        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
-      }
+      const expectedArgument = generateExpectedArgWithToField(
+        formEmailsCommaSeparated,
+      )
 
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(modifiedParams),
-      ).resolves.toEqual(mockedResponse)
+      // Act
+      const pendingSend = mailService.sendSubmissionToAdmin(modifiedParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
@@ -277,24 +474,15 @@ describe('mail.service', () => {
       const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       modifiedParams.form.emails = formMultipleEmailsArray
 
-      const expectedArgument = {
-        to: formMultipleEmailsArray,
-        from: MOCK_SENDER_STRING,
-        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: expectedHtml,
-        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Admin (response)',
-          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
-          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
-        },
-        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
-      }
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(modifiedParams),
-      ).resolves.toEqual(mockedResponse)
+      const expectedArgument = generateExpectedArgWithToField(
+        formMultipleEmailsArray,
+      )
+
+      // Act
+      const pendingSend = mailService.sendSubmissionToAdmin(modifiedParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
@@ -312,24 +500,37 @@ describe('mail.service', () => {
       const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       modifiedParams.form.emails = formEmailsMixture
 
-      const expectedArgument = {
-        to: formEmailsMixture,
-        from: MOCK_SENDER_STRING,
-        subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (Ref: ${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
-        html: expectedHtml,
-        attachments: MOCK_VALID_SUBMISSION_PARAMS.attachments,
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Admin (response)',
-          'X-Formsg-Form-ID': MOCK_VALID_SUBMISSION_PARAMS.form._id,
-          'X-Formsg-Submission-ID': MOCK_VALID_SUBMISSION_PARAMS.submission.id,
-        },
-        replyTo: MOCK_VALID_SUBMISSION_PARAMS.replyToEmails.join(', '),
-      }
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(modifiedParams),
-      ).resolves.toEqual(mockedResponse)
+      const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
+
+      // Act
+      const pendingSend = mailService.sendSubmissionToAdmin(modifiedParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should send submission mail to admin successfully if form.emails is an array with a mixture of emails, semi-colon, and comma separated emails strings', async () => {
+      // Arrange
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      const formEmailsMixture = [
+        `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
+        `${MOCK_VALID_EMAIL_4};${MOCK_VALID_EMAIL_5},    ${MOCK_VALID_EMAIL_3}`,
+      ]
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formEmailsMixture
+
+      const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
+
+      // Act
+      const pendingSend = mailService.sendSubmissionToAdmin(modifiedParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
@@ -340,26 +541,130 @@ describe('mail.service', () => {
       const invalidParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       invalidParams.form.emails = ['notAnEmail', MOCK_VALID_EMAIL]
 
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(invalidParams),
-      ).rejects.toThrowError('Invalid email error')
+      // Act
+      const pendingSend = mailService.sendSubmissionToAdmin(invalidParams)
+
+      // Assert
+      await expect(pendingSend).rejects.toThrowError('Invalid email error')
     })
 
     it('should reject with error when form.emails param is an empty array', async () => {
       // Arrange
       const invalidParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       invalidParams.form.emails = []
-      // Act + Assert
-      await expect(
-        mailService.sendSubmissionToAdmin(invalidParams),
-      ).rejects.toThrowError('Mail undefined error')
+
+      // Act
+      const pendingSend = mailService.sendSubmissionToAdmin(invalidParams)
+
+      // Assert
+      await expect(pendingSend).rejects.toThrowError('Mail undefined error')
+    })
+
+    it('should autoretry when 4xx error is thrown by sendNodeMail and pass if second try passes', async () => {
+      // Arrange
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockReturnValueOnce(mockedResponse)
+
+      const formEmailsMixture = [
+        `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
+        MOCK_VALID_EMAIL_3,
+      ]
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formEmailsMixture
+
+      const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
+
+      // Act
+      const pendingSendSubmission = mailService.sendSubmissionToAdmin(
+        modifiedParams,
+      )
+
+      // Assert
+      await expect(pendingSendSubmission).resolves.toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should have been called two times since it rejected the first one and
+      // resolved
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
+      // Arrange
+      const mock4xxReject = {
+        responseCode: 400,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy.mockRejectedValue(mock4xxReject)
+
+      const formEmailsCommaSeparated = [
+        `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
+      ]
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formEmailsCommaSeparated
+
+      const expectedArgument = generateExpectedArgWithToField(
+        formEmailsCommaSeparated,
+      )
+
+      // Act
+      const pendingSendSubmission = mailService.sendSubmissionToAdmin(
+        modifiedParams,
+      )
+
+      // Assert
+      await expect(pendingSendSubmission).rejects.toEqual(mock4xxReject)
+      // Check arguments passed to sendNodeMail
+      // Should have been called MOCK_RETRY_COUNT + 1 times
+      expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should stop autoretrying when the returned error is not a 4xx error', async () => {
+      // Arrange
+      const mockError = new Error('this should be returned at the end')
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+
+      // Mock 4xx error then non 4xx error.
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockRejectedValueOnce(mockError)
+
+      const formEmailsMixture = [
+        `${MOCK_VALID_EMAIL}, ${MOCK_VALID_EMAIL_2}`,
+        MOCK_VALID_EMAIL_3,
+      ]
+      const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
+      modifiedParams.form.emails = formEmailsMixture
+
+      const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
+
+      // Act
+      const pendingSendSubmission = mailService.sendSubmissionToAdmin(
+        modifiedParams,
+      )
+
+      // Assert
+      await expect(pendingSendSubmission).rejects.toEqual(mockError)
+      // Check arguments passed to sendNodeMail
+      // Should retry two times and stop since the second rejected value is
+      // non-4xx error.
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
   })
 
   describe('sendAutoReplyEmails', () => {
     let defaultHtml: string
-    let defaultExpectedArg
+    let defaultExpectedArg: MailOptions
 
     const MOCK_SENDER_NAME = 'John Doe'
     const MOCK_AUTOREPLY_PARAMS: SendAutoReplyEmailsArgs = {
@@ -372,9 +677,10 @@ describe('mail.service', () => {
           },
         },
       } as IPopulatedForm,
-      submission: ({
+      submission: {
         id: 'mockSubmissionId',
-      } as unknown) as ISubmissionSchema,
+        created: new Date(),
+      } as ISubmissionSchema,
       responsesData: [
         {
           question: 'some question',
@@ -418,19 +724,22 @@ describe('mail.service', () => {
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
-      // Act + Assert
       const expectedResponse = await Promise.allSettled([
         Promise.resolve(mockedResponse),
       ])
-      await expect(
-        mailService.sendAutoReplyEmails(MOCK_AUTOREPLY_PARAMS),
-      ).resolves.toEqual(expectedResponse)
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(MOCK_AUTOREPLY_PARAMS)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(defaultExpectedArg)
     })
 
     it('should send array of multiple autoreply mails successfully with defaults', async () => {
+      // Arrange
       const firstMockedResponse = 'mockedSuccessResponse1'
       const secondMockedResponse = 'mockedSuccessResponse1'
       sendMailSpy
@@ -445,14 +754,16 @@ describe('mail.service', () => {
       const secondExpectedArg = cloneDeep(defaultExpectedArg)
       secondExpectedArg.to = MOCK_VALID_EMAIL_3
 
-      // Act + Assert
       const expectedResponse = await Promise.allSettled([
         Promise.resolve(firstMockedResponse),
         Promise.resolve(secondMockedResponse),
       ])
-      await expect(
-        mailService.sendAutoReplyEmails(multipleEmailParams),
-      ).resolves.toEqual(expectedResponse)
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(multipleEmailParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
       expect(sendMailSpy).toHaveBeenNthCalledWith(1, defaultExpectedArg)
@@ -471,19 +782,22 @@ describe('mail.service', () => {
 
       const expectedArg = { ...defaultExpectedArg, subject: customSubject }
 
-      // Act + Assert
       const expectedResponse = await Promise.allSettled([
         Promise.resolve(mockedResponse),
       ])
-      await expect(
-        mailService.sendAutoReplyEmails(customDataParams),
-      ).resolves.toEqual(expectedResponse)
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
     it('should send single autoreply mail successfully with custom autoreply sender', async () => {
+      // Arrange
       const mockedResponse = 'mockedSuccessResponse'
       sendMailSpy.mockResolvedValueOnce(mockedResponse)
 
@@ -495,14 +809,15 @@ describe('mail.service', () => {
         ...defaultExpectedArg,
         from: `${customSender} <${MOCK_SENDER_EMAIL}>`,
       }
-
-      // Act + Assert
       const expectedResponse = await Promise.allSettled([
         Promise.resolve(mockedResponse),
       ])
-      await expect(
-        mailService.sendAutoReplyEmails(customDataParams),
-      ).resolves.toEqual(expectedResponse)
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
@@ -542,14 +857,15 @@ describe('mail.service', () => {
           },
         ],
       }
-
-      // Act + Assert
       const expectedResponse = await Promise.allSettled([
         Promise.resolve(mockedResponse),
       ])
-      await expect(
-        mailService.sendAutoReplyEmails(customDataParams),
-      ).resolves.toEqual(expectedResponse)
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
@@ -560,13 +876,109 @@ describe('mail.service', () => {
       const invalidDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
       invalidDataParams.autoReplyMailDatas[0].email = 'notAnEmail'
 
-      // Act + Assert
       const expectedResponse = await Promise.allSettled([
         Promise.reject(Error('Invalid email error')),
       ])
-      await expect(
-        mailService.sendAutoReplyEmails(invalidDataParams),
-      ).resolves.toEqual(expectedResponse)
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(invalidDataParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
+    })
+
+    it('should autoretry when 4xx error is thrown by sendNodeMail and pass if second try passes', async () => {
+      // Arrange
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockReturnValueOnce(mockedResponse)
+
+      const customSubject = 'customSubject'
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].subject = customSubject
+
+      const expectedArg = { ...defaultExpectedArg, subject: customSubject }
+      const expectedResponse = await Promise.allSettled([
+        Promise.resolve(mockedResponse),
+      ])
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should have been called two times since it rejected the first one and
+      // resolved
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    })
+
+    it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
+      // Arrange
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy.mockRejectedValue(mock4xxReject)
+
+      const customSubject = 'customSubject'
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].subject = customSubject
+
+      const expectedArg = { ...defaultExpectedArg, subject: customSubject }
+      const expectedResponse = await Promise.allSettled([
+        Promise.reject(mock4xxReject),
+      ])
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should have been called MOCK_RETRY_COUNT + 1 times
+      expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    })
+
+    it('should stop autoretrying when the returned error is not a 4xx error', async () => {
+      // Arrange
+      const mockError = new Error('this should be returned at the end')
+      const mock4xxReject = {
+        responseCode: 413,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockRejectedValueOnce(mockError)
+
+      const customSubject = 'customSubject'
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].subject = customSubject
+
+      const expectedArg = { ...defaultExpectedArg, subject: customSubject }
+
+      // Should be the error and not the 4xx rejection.
+      const expectedResponse = await Promise.allSettled([
+        Promise.reject(mockError),
+      ])
+
+      // Act
+      const pendingSend = mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      await expect(pendingSend).resolves.toEqual(expectedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should only invoke two times and stop since the second rejected value
+      // is non-4xx error.
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
   })
 })

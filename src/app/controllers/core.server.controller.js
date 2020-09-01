@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
 const _ = require('lodash')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const config = require('../../config/config')
 const { getRequestIp } = require('../utils/request')
-const logger = require('../../config/logger').createLoggerWithLabel('core')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 const getFormStatisticsTotalModel = require('../models/form_statistics_total.server.model')
   .default
@@ -48,12 +48,21 @@ exports.formCountUsingAggregateCollection = (req, res) => {
     ],
     function (err, [result]) {
       if (err) {
-        logger.error(getRequestIp(req), req.url, req.headers, err)
-        res.sendStatus(HttpStatus.SERVICE_UNAVAILABLE)
+        logger.error({
+          message: 'Mongo form statistics aggregate error',
+          meta: {
+            action: 'formCountUsingAggregateCollection',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error: err,
+        })
+        res.sendStatus(StatusCodes.SERVICE_UNAVAILABLE)
       } else if (result) {
         res.json(_.get(result, 'numActiveForms', 0))
       } else {
-        res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
       }
     },
   )
@@ -83,8 +92,17 @@ exports.formCountUsingSubmissionsCollection = (req, res) => {
     ],
     function (err, forms) {
       if (err) {
-        logger.error(req.ip, req.url, req.headers, err)
-        res.sendStatus(HttpStatus.SERVICE_UNAVAILABLE)
+        logger.error({
+          message: 'Mongo submission aggregate error',
+          meta: {
+            action: 'formCountUsingSubmissionsCollection',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error: err,
+        })
+        res.sendStatus(StatusCodes.SERVICE_UNAVAILABLE)
       } else {
         res.json(forms.length)
       }
@@ -101,7 +119,16 @@ exports.userCount = (req, res) => {
   let User = getUserModel(mongoose)
   User.estimatedDocumentCount(function (err, ct) {
     if (err) {
-      logger.error(getRequestIp(req), req.url, req.headers, err)
+      logger.error({
+        message: 'Mongo user count error',
+        meta: {
+          action: 'userCount',
+          ip: getRequestIp(req),
+          url: req.url,
+          headers: req.headers,
+        },
+        error: err,
+      })
     } else {
       res.json(ct)
     }
@@ -117,7 +144,16 @@ exports.submissionCount = (req, res) => {
   let Submission = getSubmissionModel(mongoose)
   Submission.estimatedDocumentCount(function (err, ct) {
     if (err) {
-      logger.error(getRequestIp(req), req.url, req.headers, err)
+      logger.error({
+        message: 'Mongo submission count error',
+        meta: {
+          action: 'submissionCount',
+          ip: getRequestIp(req),
+          url: req.url,
+          headers: req.headers,
+        },
+        error: err,
+      })
     } else {
       let totalCount = ct + config.submissionsTopUp
       res.json(totalCount)

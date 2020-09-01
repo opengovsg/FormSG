@@ -26,6 +26,7 @@ function Auth($q, $http, $state, $window) {
     verifyOtp,
     getUser,
     setUser,
+    refreshUser,
     signOut,
   }
   return authService
@@ -51,6 +52,19 @@ function Auth($q, $http, $state, $window) {
     } catch (error) {
       return null
     }
+  }
+
+  function refreshUser() {
+    return $http
+      .get('/user')
+      .then(({ data }) => {
+        setUser(data)
+        return data
+      })
+      .catch(() => {
+        setUser(null)
+        return null
+      })
   }
 
   function checkUser(credentials) {
@@ -97,6 +111,8 @@ function Auth($q, $http, $state, $window) {
     $http.get('/auth/signout').then(
       function () {
         $window.localStorage.removeItem('user')
+        // Clear contact banner on logout
+        $window.localStorage.removeItem('contactBannerDismissed')
         $state.go('landing')
       },
       function (error) {
