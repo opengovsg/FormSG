@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer'
 import directTransport from 'nodemailer-direct-transport'
 import Mail from 'nodemailer/lib/mailer'
 import SMTPPool from 'nodemailer/lib/smtp-pool'
+import { promisify } from 'util'
 
 import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
@@ -379,19 +380,8 @@ const cookieSettings: SessionOptions['cookie'] = {
 // Functions
 const configureAws = async () => {
   if (!isDev) {
-    const getCredentials = () => {
-      return new Promise((resolve, reject) => {
-        aws.config.getCredentials((err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-      })
-    }
-
-    await getCredentials()
+    // Convert to async function, then call and await
+    await promisify(aws.config.getCredentials)()
     if (!aws.config.credentials.accessKeyId) {
       throw new Error(`AWS Access Key Id is missing`)
     }
