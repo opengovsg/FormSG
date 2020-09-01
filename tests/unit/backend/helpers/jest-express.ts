@@ -5,13 +5,13 @@ const mockRequest = ({
   params,
   session,
 }: {
-  body: Record<string, string>
+  body?: Record<string, string>
   params?: Record<string, string>
   session?: any
-}) => {
+} = {}) => {
   return {
-    body,
-    params,
+    body: body ?? {},
+    params: params ?? {},
     session: session ?? {},
     get(name: string) {
       if (name === 'cf-connecting-ip') return 'MOCK_IP'

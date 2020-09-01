@@ -24,6 +24,23 @@ describe('auth.controller', () => {
     jest.clearAllMocks()
   })
 
+  describe('handleCheckUser', () => {
+    it('should return 200', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AuthController.handleCheckUser(
+        expressHandler.mockRequest(),
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.sendStatus).toBeCalledWith(200)
+    })
+  })
+
   describe('handleLoginSendOtp', () => {
     const MOCK_OTP = '123456'
     const MOCK_REQ = expressHandler.mockRequest({
