@@ -259,15 +259,6 @@ const mailConfig: MailConfig = (function () {
       // If set to true, then logs SMTP traffic, otherwise logs only transaction
       // events.
       debug: String(process.env.MAIL_DEBUG).toLowerCase() === 'true',
-      // Per second, or per rateDelta if supplied.
-      rateLimit: process.env.SES_RATE
-        ? Number(process.env.SES_RATE)
-        : undefined,
-      // Defines the time measuring period in milliseconds (defaults to 1000)
-      // for rate limiting.
-      rateDelta: process.env.SES_RATEDELTA
-        ? Number(process.env.SES_RATEDELTA)
-        : undefined,
     }
 
     transporter = nodemailer.createTransport(options)
