@@ -91,7 +91,7 @@ export interface IForm {
   webhook?: Webhook
   msgSrvcName?: string
 
-  responseMode?: ResponseMode
+  responseMode: ResponseMode
 
   // Schema properties
   _id: Document['_id']
