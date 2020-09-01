@@ -3,9 +3,9 @@
 /**
  * Module dependencies.
  */
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
-const PERMISSIONS = require('../utils/permission-levels.js')
+const PERMISSIONS = require('../utils/permission-levels').default
 
 /**
  * Middleware that authenticates admin-user
@@ -18,7 +18,7 @@ exports.authenticateUser = function (req, res, next) {
     return next()
   } else {
     return res
-      .status(HttpStatus.UNAUTHORIZED)
+      .status(StatusCodes.UNAUTHORIZED)
       .send({ message: 'User is unauthorized.' })
   }
 }
@@ -67,7 +67,7 @@ exports.verifyPermission = (requiredPermission) =>
     if (hasSufficientPermission) {
       return next()
     } else {
-      return res.status(HttpStatus.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).send({
         message:
           'User ' +
           req.session.user.email +

@@ -1,6 +1,6 @@
 import to from 'await-to-js'
 import { RequestHandler } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import defaults from '../../../config/defaults'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -18,7 +18,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 200 regardless, assumed to have passed domain validation.
  */
 export const handleCheckUser: RequestHandler = async (_req, res) => {
-  return res.sendStatus(HttpStatus.OK)
+  return res.sendStatus(StatusCodes.OK)
 }
 
 /**
@@ -48,7 +48,7 @@ export const handleLoginSendOtp: RequestHandler<
       error: otpErr,
     })
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
         'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       )
@@ -70,7 +70,7 @@ export const handleLoginSendOtp: RequestHandler<
     })
 
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
         'Error sending OTP. Please try again later and if the problem persists, contact us.',
       )
@@ -82,7 +82,7 @@ export const handleLoginSendOtp: RequestHandler<
     meta: logMeta,
   })
 
-  return res.status(HttpStatus.OK).send(`OTP sent to ${email}!`)
+  return res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)
 }
 
 /**
@@ -124,7 +124,7 @@ export const handleLoginVerifyOtp: RequestHandler<
     })
 
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
         'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
       )
@@ -145,7 +145,7 @@ export const handleLoginVerifyOtp: RequestHandler<
       meta: logMeta,
     })
 
-    return res.status(HttpStatus.OK).send(userObj)
+    return res.status(StatusCodes.OK).send(userObj)
   } catch (err) {
     logger.error({
       message: 'Error logging in user',
@@ -154,7 +154,7 @@ export const handleLoginVerifyOtp: RequestHandler<
     })
 
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
         `User signin failed. Please try again later and if the problem persists, submit our Support Form (${defaults.links.supportFormLink}).`,
       )
@@ -169,7 +169,7 @@ export const handleSignout: RequestHandler = async (req, res) => {
         action: 'handleSignout',
       },
     })
-    return res.sendStatus(HttpStatus.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
   req.session.destroy((error) => {
@@ -182,12 +182,12 @@ export const handleSignout: RequestHandler = async (req, res) => {
         error,
       })
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send('Sign out failed')
     }
 
     // No error.
     res.clearCookie('connect.sid')
-    return res.status(HttpStatus.OK).send('Sign out successful')
+    return res.status(StatusCodes.OK).send('Sign out successful')
   })
 }

@@ -1,4 +1,4 @@
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
@@ -56,7 +56,7 @@ describe('Public-Forms Controller', () => {
         status: 'PRIVATE',
       }
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
         done()
         return res
       })
@@ -135,7 +135,7 @@ describe('Public-Forms Controller', () => {
           return res
         })
         Controller.submitFeedback(req, res)
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       })
     })
 
@@ -150,7 +150,7 @@ describe('Public-Forms Controller', () => {
       }
       res.status.and.callFake(() => {
         expect(res.status).toHaveBeenCalledWith(
-          HttpStatus.INTERNAL_SERVER_ERROR,
+          StatusCodes.INTERNAL_SERVER_ERROR,
         )
         done()
         return res
@@ -167,7 +167,7 @@ describe('Public-Forms Controller', () => {
         formId: mongoose.Types.ObjectId(),
       }
       res.status.and.callFake((args) => {
-        expect(args).toBe(HttpStatus.OK)
+        expect(args).toBe(StatusCodes.OK)
         return res
       })
       res.send.and.callFake(() => {

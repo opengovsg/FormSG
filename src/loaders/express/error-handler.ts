@@ -1,6 +1,6 @@
 import { isCelebrate } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 
 import { createLoggerWithLabel } from '../../config/logger'
@@ -43,11 +43,11 @@ const errorHandlerMiddlewares = () => {
           },
           error: err,
         })
-        return res.status(HttpStatus.BAD_REQUEST).send(errorMessage)
+        return res.status(StatusCodes.BAD_REQUEST).send(errorMessage)
       }
       logger.error(err)
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send({ message: genericErrorMessage })
     }
   }
@@ -57,7 +57,7 @@ const errorHandlerMiddlewares = () => {
     _req,
     res,
   ) {
-    res.status(HttpStatus.NOT_FOUND).send()
+    res.status(StatusCodes.NOT_FOUND).send()
   }
 
   return [genericErrorHandlerMiddleware, catchNonExistentRoutesMiddleware]

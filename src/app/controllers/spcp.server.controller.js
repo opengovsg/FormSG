@@ -6,7 +6,7 @@ const { isEmpty } = require('lodash')
 
 const mongoose = require('mongoose')
 const crypto = require('crypto')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
 
 const { getRequestIp } = require('../utils/request')
@@ -112,7 +112,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     const payloads = String(relayState).split(',')
 
     if (payloads.length !== 2) {
-      return res.status(HttpStatus.BAD_REQUEST).send()
+      return res.status(StatusCodes.BAD_REQUEST).send()
     }
 
     const destination = payloads[0]
@@ -126,7 +126,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
         authType,
       )
     ) {
-      res.status(HttpStatus.UNAUTHORIZED).send()
+      res.status(StatusCodes.UNAUTHORIZED).send()
       return
     }
 
@@ -134,11 +134,11 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     samlArt = String(samlArt).replace(/ /g, '+')
 
     if (!destinationIsValid(destination))
-      return res.status(HttpStatus.BAD_REQUEST).send()
+      return res.status(StatusCodes.BAD_REQUEST).send()
 
     getForm(destination, (err, form) => {
       if (err || !form || form.authType !== authType) {
-        res.status(HttpStatus.NOT_FOUND).send()
+        res.status(StatusCodes.NOT_FOUND).send()
         return
       }
       authClient.getAttributes(samlArt, destination, (err, data) => {
@@ -218,13 +218,13 @@ exports.createSpcpRedirectURL = (authClients) => {
       req.redirectURL = authClient.createRedirectURL(target, esrvcId)
       return next()
     } else {
-      return res.status(HttpStatus.BAD_REQUEST).send('Redirect URL malformed')
+      return res.status(StatusCodes.BAD_REQUEST).send('Redirect URL malformed')
     }
   }
 }
 
 exports.returnSpcpRedirectURL = function (req, res) {
-  return res.status(HttpStatus.OK).send({ redirectURL: req.redirectURL })
+  return res.status(StatusCodes.OK).send({ redirectURL: req.redirectURL })
 }
 
 const getSubstringBetween = (text, markerStart, markerEnd) => {
@@ -249,7 +249,7 @@ exports.validateESrvcId = (req, res) => {
       },
       timeout: 10000, // 10 seconds
       // Throw error if not status 200.
-      validateStatus: (status) => status === HttpStatus.OK,
+      validateStatus: (status) => status === StatusCodes.OK,
     })
     .then(({ data }) => {
       // The successful login page should have the title 'SingPass Login'
@@ -264,12 +264,12 @@ exports.validateESrvcId = (req, res) => {
             data,
           },
         })
-        return res.status(HttpStatus.BAD_GATEWAY).send({
+        return res.status(StatusCodes.BAD_GATEWAY).send({
           message: 'Singpass returned incomprehensible content',
         })
       }
       if (title.indexOf('Error') === -1) {
-        return res.status(HttpStatus.OK).send({
+        return res.status(StatusCodes.OK).send({
           isValid: true,
         })
       }
@@ -280,7 +280,7 @@ exports.validateESrvcId = (req, res) => {
         'System Code:&nbsp<b>',
         '</b>',
       )
-      return res.status(HttpStatus.OK).send({
+      return res.status(StatusCodes.OK).send({
         isValid: false,
         errorCode,
       })
@@ -296,7 +296,7 @@ exports.validateESrvcId = (req, res) => {
         },
         error: err,
       })
-      return res.status(HttpStatus.SERVICE_UNAVAILABLE).send({
+      return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
         message: 'Failed to contact Singpass',
       })
     })
@@ -419,7 +419,7 @@ exports.encryptedVerifiedFields = (signingSecretKey) => {
         error,
       })
       return res
-        .status(HttpStatus.BAD_REQUEST)
+        .status(StatusCodes.BAD_REQUEST)
         .send({ message: 'Invalid data was found. Please submit again.' })
     }
   }
@@ -488,7 +488,7 @@ exports.isSpcpAuthenticated = (authClients) => {
             },
             error: err,
           })
-          res.status(HttpStatus.UNAUTHORIZED).send({
+          res.status(StatusCodes.UNAUTHORIZED).send({
             message: 'User is not SPCP authenticated',
             spcpSubmissionFailure: true,
           })

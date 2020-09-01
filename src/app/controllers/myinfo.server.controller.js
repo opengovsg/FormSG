@@ -8,7 +8,7 @@ const Promise = require('bluebird')
 const _ = require('lodash')
 const mongoose = require('mongoose')
 const moment = require('moment')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const { sessionSecret } = require('../../config/config')
 const { getRequestIp } = require('../utils/request')
@@ -195,7 +195,7 @@ exports.verifyMyInfoVals = function (req, res, next) {
             },
             error: err,
           })
-          return res.status(HttpStatus.SERVICE_UNAVAILABLE).send({
+          return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
             message: 'MyInfo verification unavailable, please try again later.',
             spcpSubmissionFailure: true,
           })
@@ -210,7 +210,7 @@ exports.verifyMyInfoVals = function (req, res, next) {
               formId: formObjId,
             },
           })
-          return res.status(HttpStatus.GONE).send({
+          return res.status(StatusCodes.GONE).send({
             message:
               'MyInfo verification expired, please refresh and try again.',
             spcpSubmissionFailure: true,
@@ -258,7 +258,7 @@ exports.verifyMyInfoVals = function (req, res, next) {
                   failedFields: hashFailedAttrs,
                 },
               })
-              return res.status(HttpStatus.UNAUTHORIZED).send({
+              return res.status(StatusCodes.UNAUTHORIZED).send({
                 message: 'MyInfo verification failed.',
                 spcpSubmissionFailure: true,
               })

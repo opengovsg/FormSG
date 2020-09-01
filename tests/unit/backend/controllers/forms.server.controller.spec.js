@@ -1,4 +1,4 @@
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 const { ObjectId } = require('bson-ext')
 
@@ -110,13 +110,13 @@ describe('Form Controller', () => {
         return res
       })
       Controller.formById(req, res, null, id)
-      expect(res.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     })
 
     it('should return a 404 error if form id is not found', (done) => {
       req.params.formId = mongoose.Types.ObjectId()
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
         done()
         return res
       })
@@ -132,7 +132,7 @@ describe('Form Controller', () => {
       req.params.formId = invalidForm._id
       res.status.and.callFake(() => {
         expect(res.status).toHaveBeenCalledWith(
-          HttpStatus.INTERNAL_SERVER_ERROR,
+          StatusCodes.INTERNAL_SERVER_ERROR,
         )
         done()
         return res

@@ -1,6 +1,6 @@
 import to from 'await-to-js'
 import { RequestHandler } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import defaults from '../../../config/defaults'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -42,7 +42,7 @@ export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
       return res.status(validationError.status).send(validationError.message)
     }
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
         `Unable to validate email domain. If this issue persists, please submit a Support Form at (${defaults.links.supportFormLink}).`,
       )

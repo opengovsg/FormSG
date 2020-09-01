@@ -1,9 +1,10 @@
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
 let roles = require('../helpers/roles')
 let permissionLevels = require('../../../../dist/backend/app/utils/permission-levels')
+  .default
 
 describe('Authentication Controller', () => {
   const TEST_OTP = '123456'
@@ -69,7 +70,7 @@ describe('Authentication Controller', () => {
     it('should return 401 if not authenticated', (done) => {
       req.session = null
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
         done()
         return res
       })
@@ -101,7 +102,7 @@ describe('Authentication Controller', () => {
     })
     it('should not authorize if session user is not a collaborator nor admin', () => {
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
         return res
       })
       // Populate admin with partial user object
