@@ -656,18 +656,16 @@ describe('Email Submissions Controller', () => {
     it('errors with 400 if submission fail', (done) => {
       const badSubmission = jasmine.createSpyObj('Submission', ['save'])
       badSubmission.save.and.callFake((callback) => callback(new Error('boom')))
-
       const badSubmissionModel = jasmine.createSpy()
       badSubmissionModel.and.returnValue(badSubmission)
-      const mongoose = jasmine.createSpyObj('mongoose', ['model'])
-      mongoose.model
-        .withArgs('emailSubmission')
-        .and.returnValue(badSubmissionModel)
-
+      const getEmailSubmissionModel = jasmine.createSpy(
+        'getEmailSubmissionModel',
+      )
+      getEmailSubmissionModel.and.returnValue(badSubmissionModel)
       const badController = spec(
         'dist/backend/app/controllers/email-submissions.server.controller',
         {
-          mongoose,
+          '../models/submission.server.model': { getEmailSubmissionModel },
         },
       )
 
