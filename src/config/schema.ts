@@ -90,37 +90,40 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     title: {
       doc: 'Application name in window title',
       format: String,
-      default: defaults.app.name,
+      default: 'FormSG',
       env: 'APP_NAME',
     },
     description: {
       doc: 'Application description in meta tag',
       format: String,
-      default: defaults.app.desc,
+      default: 'Form Manager for Government',
       env: 'APP_DESC',
     },
     appUrl: {
       doc: 'Application url in meta tag',
       format: 'url',
-      default: defaults.app.url,
+      default: 'https://form.gov.sg',
       env: 'APP_URL',
     },
     keywords: {
       doc: 'Application keywords in meta tag',
       format: String,
-      default: defaults.app.keywords,
+      default: 'forms, formbuilder, nodejs',
       env: 'APP_KEYWORDS',
     },
     twitterImage: {
       doc: 'Application image in twitter meta tag',
       format: String,
-      default: defaults.app.twitterImage,
+      default: '/public/modules/core/img/og/logo-vertical-color.png',
       env: 'APP_TWITTER_IMAGE',
     },
     images: {
       doc: 'Application images in meta tag',
       format: 'string[]',
-      default: defaults.app.images,
+      default: [
+        '/public/modules/core/img/og/img_metatag.png',
+        '/public/modules/core/img/og/logo-vertical-color.png',
+      ],
       env: 'APP_IMAGES',
     },
   },
@@ -162,7 +165,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     from: {
       doc: 'Sender email address',
       format: 'email',
-      default: defaults.mail.mailFrom,
+      default: 'donotreply@mail.form.gov.sg',
       env: 'MAIL_FROM',
     },
     logger: {
@@ -181,32 +184,32 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     bounceLifeSpan: {
       doc: 'TTL of bounce documents in milliseconds',
       format: 'int',
-      default: defaults.bounce.bounceLifeSpan,
+      default: 1800000,
       env: 'BOUNCE_LIFE_SPAN',
     },
     chromiumBin: {
       doc: 'Path to chromium executable for PDF generation',
       format: String,
-      default: defaults.mail.chromiumBin,
+      default: '/usr/bin/chromium-browser',
       env: 'CHROMIUM_BIN',
     },
     maxMessages: {
       doc:
         'Nodemailer config to help to keep the connection up-to-date for long-running messaging',
       format: 'int',
-      default: defaults.ses.maxMessages,
+      default: 100,
       env: 'SES_MAX_MESSAGES',
     },
     maxConnections: {
       doc: 'Connection pool to send email in parallel to the SMTP server',
       format: 'int',
-      default: defaults.ses.maxConnections,
+      default: 38,
       env: 'SES_POOL',
     },
     socketTimeout: {
       doc: 'Milliseconds of inactivity to allow before killing a connection',
       format: 'int',
-      default: defaults.ses.socketTimeout,
+      default: 600000,
       env: 'MAIL_SOCKET_TIMEOUT',
     },
   },
@@ -229,14 +232,14 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     port: {
       doc: 'Application Port',
       format: 'port',
-      default: defaults.app.port,
+      default: 5000,
       env: 'PORT',
     },
     otpLifeSpan: {
       doc:
         'OTP Life Span for Login. (Should be in miliseconds, e.g. 1000 * 60 * 15 = 15 mins)',
       format: 'int',
-      default: defaults.login.otpLifeSpan,
+      default: 900000,
       env: 'OTP_LIFE_SPAN',
     },
     submissionsTopUp: {
