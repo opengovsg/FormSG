@@ -13,7 +13,7 @@ const TokenModel = getTokenModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
 const DEFAULT_SALT_ROUNDS = 10
-const MAX_OTP_ATTEMPTS = 10
+export const MAX_OTP_ATTEMPTS = 10
 
 /**
  * Validates the domain of the given email. A domain is valid if it exists in
