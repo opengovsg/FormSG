@@ -1,6 +1,7 @@
 import to from 'await-to-js'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { isEmpty } from 'lodash'
 
 import defaults from '../../../config/defaults'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -158,7 +159,7 @@ export const handleLoginVerifyOtp: RequestHandler<
 }
 
 export const handleSignout: RequestHandler = async (req, res) => {
-  if (!req.session) {
+  if (isEmpty(req.session)) {
     logger.error({
       message: 'Attempted to sign out without a session',
       meta: {
