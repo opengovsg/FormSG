@@ -493,42 +493,24 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   return FormModel
 }
 
-const compileEmailFormModel = (db: Mongoose) => {
-  return db.model<IEmailFormSchema, IEmailFormModel>(
-    ResponseMode.Email,
-    EmailFormSchema,
-  )
-}
-
-export const getEmailFormModel = (db: Mongoose) => {
-  try {
-    return db.model(ResponseMode.Email) as IEmailFormModel
-  } catch {
-    return compileEmailFormModel(db)
-  }
-}
-
-const compileEncryptedFormModel = (db: Mongoose) => {
-  return db.model<IEncryptedFormSchema, IEncryptedFormModel>(
-    ResponseMode.Encrypt,
-    EncryptedFormSchema,
-  )
-}
-
-export const getEncryptedFormModel = (db: Mongoose) => {
-  try {
-    return db.model(ResponseMode.Encrypt) as IEncryptedFormModel
-  } catch {
-    return compileEncryptedFormModel(db)
-  }
-}
-
 const getFormModel = (db: Mongoose) => {
   try {
     return db.model(FORM_SCHEMA_ID) as IFormModel
   } catch {
     return compileFormModel(db)
   }
+}
+
+export const getEmailFormModel = (db: Mongoose) => {
+  // Load or build base model first
+  getFormModel(db)
+  return db.model(ResponseMode.Email) as IEmailFormModel
+}
+
+export const getEncryptedFormModel = (db: Mongoose) => {
+  // Load or build base model first
+  getFormModel(db)
+  return db.model(ResponseMode.Encrypt) as IEncryptedFormModel
 }
 
 export default getFormModel
