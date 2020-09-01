@@ -10,9 +10,9 @@ import { WebhookRequestLocals } from './webhook.types'
  * @param {Express.Request} req Express request object
  * @param {Object} req.form The form object containing the webhook URL
  * @param {Object} req.submission The submission saved to the database
+ * @param {Express.Response} res Express response object
  * @param {function} next Next middleware
  */
-
 export const post = (
   req: Request & WebhookRequestLocals,
   res: Response,
