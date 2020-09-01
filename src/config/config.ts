@@ -382,12 +382,13 @@ const configureAws = async () => {
   if (!isDev) {
     // Convert to async function, then call and await
     await promisify(aws.config.getCredentials)()
-    if (!aws.config.credentials.accessKeyId) {
-      throw new Error(`AWS Access Key Id is missing`)
-    }
-    if (!aws.config.credentials.secretAccessKey) {
-      throw new Error(`AWS Secret Access Key is missing`)
-    }
+  }
+  // In dev environment, credentials should be set from env vars
+  if (!aws.config.credentials.accessKeyId) {
+    throw new Error(`AWS Access Key Id is missing`)
+  }
+  if (!aws.config.credentials.secretAccessKey) {
+    throw new Error(`AWS Secret Access Key is missing`)
   }
 }
 
