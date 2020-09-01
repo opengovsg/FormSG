@@ -12,7 +12,7 @@ const mockRequest = ({
   return {
     body,
     params,
-    session,
+    session: session ?? {},
     get(name: string) {
       if (name === 'cf-connecting-ip') return 'MOCK_IP'
       return null
