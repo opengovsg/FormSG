@@ -54,7 +54,8 @@
         "@typescript-eslint/no-unused-vars": "error",
         "no-unused-vars": "off"
       }
-    }
+    },
+    { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] }
   ],
   "rules": {
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
