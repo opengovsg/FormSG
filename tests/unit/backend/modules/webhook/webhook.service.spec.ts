@@ -1,169 +1,124 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { mocked } from 'ts-jest/utils'
 
-import { getEncryptedFormModel } from 'src/app/models/form.server.model'
+import getFormModel from 'src/app/models/form.server.model'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
-import {
-  handleWebhookFailure,
-  handleWebhookSuccess,
-  postWebhook,
-} from 'src/app/modules/webhook/webhook.service'
-import { ResponseMode, SubmissionType } from 'src/types'
+import { pushData } from 'src/app/modules/webhook/webhook.service'
+import { validateWebhookUrl } from 'src/app/modules/webhook/webhook.utils'
+import formsgSdk from 'src/config/formsg-sdk'
+import { ResponseMode } from 'src/types'
 
+const Form = getFormModel(mongoose)
+const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+
+// Define constants
+const MOCK_ADMIN_OBJ_ID = new ObjectID()
+const MOCK_WEBHOOK_URL = 'https://form.gov.sg/endpoint'
+const ERROR_MSG = 'test-message'
+const MOCK_SUCCESS_RESPONSE = {
+  data: {
+    result: 'test-result',
+  },
+  status: 200,
+  statusText: 'success',
+  headers: {},
+  config: {},
+}
+const MOCK_FAILURE_RESPONSE = {
+  data: {
+    result: 'test-result',
+  },
+  status: 400,
+  statusText: 'failed',
+  headers: {},
+  config: {},
+}
+const MOCK_STRINGIFIED_SUCCESS_RESPONSE = {
+  data: '{"result":"test-result"}',
+  status: 200,
+  statusText: 'success',
+  headers: '{}',
+}
+const MOCK_STRINGIFIED_FAILURE_RESPONSE = {
+  data: `{"result":"test-result"}`,
+  status: 400,
+  statusText: 'failed',
+  headers: '{}',
+}
+const MOCK_EPOCH = 1487076708000
+
+// Set up mocks
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
-
-const EncryptForm = getEncryptedFormModel(mongoose)
-const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+jest.mock('src/app/modules/webhook/webhook.utils')
+const mockValidateWebhookUrl = mocked(validateWebhookUrl, true)
+jest.spyOn(Date, 'now').mockImplementation(() => MOCK_EPOCH)
 
 describe('WebhooksService', () => {
   beforeAll(async () => await dbHandler.connect())
-  afterEach(async () => await dbHandler.clearDatabase())
+  afterEach(async () => {
+    await dbHandler.clearDatabase()
+  })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  let testEncryptForm
   let testEncryptSubmission
-  let testWebhookParam
   let testConfig
   let testSubmissionWebhookView
-  const MOCK_ADMIN_OBJ_ID = new ObjectID()
-  const MOCK_SIGNATURE = 'mock-signature'
-  const MOCK_WEBHOOK_URL = '/webhook-endpoint'
-  const MOCK_NOW = Date.now()
-  const ERROR_MSG = 'test-message'
-  const MOCK_SUCCESS_RESPONSE = {
-    data: {
-      result: 'test-result',
-    },
-    status: 200,
-    statusText: 'success',
-    headers: {},
-    config: {},
-  }
-  const MOCK_STRINGIFIED_PARSED_RESPONSE = {
-    data: '{"result":"test-result"}',
-    status: 200,
-    statusText: 'success',
-    headers: '{}',
-  }
+  let testSignature
 
   beforeEach(async () => {
     const preloaded = await dbHandler.insertFormCollectionReqs({
       userId: MOCK_ADMIN_OBJ_ID,
     })
-    testEncryptForm = await EncryptForm.create({
+    let testEncryptForm = new Form({
       title: 'Test Form',
       admin: preloaded.user._id,
       responseMode: ResponseMode.Encrypt,
       publicKey: 'fake-public-key',
     })
-    testEncryptSubmission = await EncryptSubmission.create({
+    await testEncryptForm.save()
+
+    testEncryptSubmission = new EncryptSubmission({
       form: testEncryptForm._id,
-      submissionType: SubmissionType.Encrypt,
+      authType: testEncryptForm.authType,
+      myInfoFields: [],
       encryptedContent: 'encrypted-content',
       verifiedContent: 'verified-content',
       version: 1,
-      authType: testEncryptForm.authType,
-      myInfoFields: [],
-      webhookResponses: [],
     })
+    await testEncryptSubmission.save()
 
     testSubmissionWebhookView = testEncryptSubmission.getWebhookView()
-    testWebhookParam = {
-      webhookUrl: MOCK_WEBHOOK_URL,
-      submissionWebhookView: testSubmissionWebhookView,
+
+    testSignature = formsgSdk.webhooks.generateSignature({
+      uri: MOCK_WEBHOOK_URL,
       submissionId: testEncryptSubmission._id,
       formId: testEncryptForm._id,
-      now: MOCK_NOW,
-      signature: MOCK_SIGNATURE,
-    }
+      epoch: MOCK_EPOCH,
+    }) as string
+
     testConfig = {
       headers: {
-        'X-FormSG-Signature': `t=${MOCK_NOW},s=${testEncryptSubmission._id},f=${testEncryptForm._id},v1=${MOCK_SIGNATURE}`,
+        'X-FormSG-Signature': `t=${MOCK_EPOCH},s=${testEncryptSubmission._id},f=${testEncryptForm._id},v1=${testSignature}`,
       },
       maxRedirects: 0,
     }
   })
 
-  describe('handleWebhookFailure', () => {
-    it('should update submission document with failed webhook response', async () => {
-      // Act
-      class MockAxiosError extends Error {
-        response: any
-        isAxiosError: boolean
-        toJSON: () => {}
-        config: object
-        constructor(msg, response) {
-          super(msg)
-          this.name = 'AxiosError'
-          this.response = response
-          this.isAxiosError = false
-          this.toJSON = () => {
-            return {}
-          }
-          this.config = {}
-        }
-      }
-      let error: AxiosError = new MockAxiosError(
-        ERROR_MSG,
-        MOCK_SUCCESS_RESPONSE,
-      )
-      await handleWebhookFailure(error, testWebhookParam)
-      // Assert
-      let submission = await EncryptSubmission.findById(
-        testEncryptSubmission._id,
-      )
-      expect(submission.webhookResponses[0]).toEqual(
-        expect.objectContaining({
-          webhookUrl: MOCK_WEBHOOK_URL,
-          signature: MOCK_SIGNATURE,
-          errorMessage: ERROR_MSG,
-          response: expect.objectContaining(MOCK_STRINGIFIED_PARSED_RESPONSE),
-        }),
-      )
-    })
-    it('should update submission document with failed webhook validation', async () => {
-      // Act
-      const error = new WebhookValidationError(ERROR_MSG)
-      await handleWebhookFailure(error, testWebhookParam)
-      // Assert
-      let submission = await EncryptSubmission.findById(
-        testEncryptSubmission._id,
-      )
-      expect(submission.webhookResponses[0]).toEqual(
-        expect.objectContaining({
-          webhookUrl: MOCK_WEBHOOK_URL,
-          signature: MOCK_SIGNATURE,
-          errorMessage: ERROR_MSG,
-        }),
-      )
-    })
-  })
-
-  describe('handleWebhookSuccess', () => {
-    it('should update submission document with successful webhook response', async () => {
-      // Act
-      await handleWebhookSuccess(MOCK_SUCCESS_RESPONSE, testWebhookParam)
-      // Assert
-      let submission = await EncryptSubmission.findById(
-        testEncryptSubmission._id,
-      )
-      expect(submission.webhookResponses[0]).toEqual(
-        expect.objectContaining({
-          webhookUrl: MOCK_WEBHOOK_URL,
-          signature: MOCK_SIGNATURE,
-          response: expect.objectContaining(MOCK_STRINGIFIED_PARSED_RESPONSE),
-        }),
-      )
-    })
-  })
-
   describe('postWebhook', () => {
-    it('should make post request with valid parameters', async () => {
+    it('should not make post request if submissionWebhookView is null', async () => {
+      // Act
+      await pushData(MOCK_WEBHOOK_URL, null)
+
+      // Assert
+      expect(mockAxios.post).toHaveBeenCalledTimes(0)
+    })
+
+    it('should update submission document with successful webhook response if post succeeds', async () => {
       // Arrange
       mockAxios.post.mockImplementationOnce((url, data, config) => {
         expect(url).toEqual(MOCK_WEBHOOK_URL)
@@ -171,12 +126,97 @@ describe('WebhooksService', () => {
         expect(config).toEqual(testConfig)
         return Promise.resolve(MOCK_SUCCESS_RESPONSE)
       })
+      mockValidateWebhookUrl.mockImplementationOnce((url) => {
+        expect(url).toEqual(MOCK_WEBHOOK_URL)
+        return Promise.resolve()
+      })
 
       // Act
-      const response = await postWebhook(testWebhookParam)
+      await pushData(MOCK_WEBHOOK_URL, testSubmissionWebhookView)
 
       // Assert
-      expect(response).toEqual(MOCK_SUCCESS_RESPONSE)
+      let submission = await EncryptSubmission.findById(
+        testEncryptSubmission._id,
+      )
+      expect(submission.webhookResponses[0]).toEqual(
+        expect.objectContaining({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          signature: testSignature,
+          response: expect.objectContaining(MOCK_STRINGIFIED_SUCCESS_RESPONSE),
+        }),
+      )
+    })
+
+    it('should update submission document with failed webhook response if validation fails', async () => {
+      // Arrange
+      mockValidateWebhookUrl.mockImplementationOnce((url) => {
+        expect(url).toEqual(MOCK_WEBHOOK_URL)
+        return Promise.reject(new WebhookValidationError(ERROR_MSG))
+      })
+
+      // Act
+      await pushData(MOCK_WEBHOOK_URL, testSubmissionWebhookView)
+
+      // Assert
+      let submission = await EncryptSubmission.findById(
+        testEncryptSubmission._id,
+      )
+      expect(submission.webhookResponses[0]).toEqual(
+        expect.objectContaining({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          signature: testSignature,
+          errorMessage: ERROR_MSG,
+        }),
+      )
+    })
+
+    it('should update submission document with failed webhook response if post fails', async () => {
+      // Arrange
+      class MockAxiosError extends Error {
+        isAxiosError: boolean
+        toJSON: () => {}
+        config: object
+        response: AxiosResponse
+        constructor(msg, response) {
+          super(msg)
+          this.isAxiosError = false
+          this.response = response
+          this.toJSON = () => {
+            return {}
+          }
+          this.config = {}
+        }
+      }
+      let mockAxiosError: AxiosError = new MockAxiosError(
+        ERROR_MSG,
+        MOCK_FAILURE_RESPONSE,
+      )
+      mockAxios.post.mockImplementationOnce((url, data, config) => {
+        expect(url).toEqual(MOCK_WEBHOOK_URL)
+        expect(data).toEqual(testSubmissionWebhookView)
+        expect(config).toEqual(testConfig)
+        return Promise.reject(mockAxiosError)
+      })
+      mockValidateWebhookUrl.mockImplementationOnce((url) => {
+        expect(url).toEqual(MOCK_WEBHOOK_URL)
+        return Promise.resolve()
+      })
+
+      // Act
+      await pushData(MOCK_WEBHOOK_URL, testSubmissionWebhookView)
+
+      // Assert
+      let submission = await EncryptSubmission.findById(
+        testEncryptSubmission._id,
+      )
+      expect(submission.webhookResponses[0]).toEqual(
+        expect.objectContaining({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          signature: testSignature,
+          errorMessage: ERROR_MSG,
+          response: expect.objectContaining(MOCK_STRINGIFIED_FAILURE_RESPONSE),
+        }),
+      )
     })
   })
 })
