@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -10,16 +10,21 @@ import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import { pushData } from 'src/app/modules/webhook/webhook.service'
 import { validateWebhookUrl } from 'src/app/modules/webhook/webhook.utils'
 import formsgSdk from 'src/config/formsg-sdk'
-import { ResponseMode } from 'src/types'
+import {
+  IEncryptedSubmissionSchema,
+  IWebhookResponse,
+  ResponseMode,
+  WebhookView,
+} from 'src/types'
 
 const Form = getFormModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 // Define constants
 const MOCK_ADMIN_OBJ_ID = new ObjectID()
-const MOCK_WEBHOOK_URL = 'https://form.gov.sg/endpoint'
-const ERROR_MSG = 'test-message'
-const MOCK_SUCCESS_RESPONSE = {
+const MOCK_WEBHOOK_URL: string = 'https://form.gov.sg/endpoint'
+const ERROR_MSG: string = 'test-message'
+const MOCK_SUCCESS_RESPONSE: AxiosResponse = {
   data: {
     result: 'test-result',
   },
@@ -28,7 +33,7 @@ const MOCK_SUCCESS_RESPONSE = {
   headers: {},
   config: {},
 }
-const MOCK_FAILURE_RESPONSE = {
+const MOCK_FAILURE_RESPONSE: AxiosResponse = {
   data: {
     result: 'test-result',
   },
@@ -37,19 +42,23 @@ const MOCK_FAILURE_RESPONSE = {
   headers: {},
   config: {},
 }
-const MOCK_STRINGIFIED_SUCCESS_RESPONSE = {
-  data: '{"result":"test-result"}',
-  status: 200,
-  statusText: 'success',
-  headers: '{}',
+const MOCK_STRINGIFIED_SUCCESS_RESPONSE: Pick<IWebhookResponse, 'response'> = {
+  response: {
+    data: '{"result":"test-result"}',
+    status: 200,
+    statusText: 'success',
+    headers: '{}',
+  },
 }
-const MOCK_STRINGIFIED_FAILURE_RESPONSE = {
-  data: `{"result":"test-result"}`,
-  status: 400,
-  statusText: 'failed',
-  headers: '{}',
+const MOCK_STRINGIFIED_FAILURE_RESPONSE: Pick<IWebhookResponse, 'response'> = {
+  response: {
+    data: `{"result":"test-result"}`,
+    status: 400,
+    statusText: 'failed',
+    headers: '{}',
+  },
 }
-const MOCK_EPOCH = 1487076708000
+const MOCK_EPOCH: number = 1487076708000
 
 // Set up mocks
 jest.mock('axios')
@@ -65,10 +74,10 @@ describe('WebhooksService', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  let testEncryptSubmission
-  let testConfig
-  let testSubmissionWebhookView
-  let testSignature
+  let testEncryptSubmission: IEncryptedSubmissionSchema
+  let testConfig: AxiosRequestConfig
+  let testSubmissionWebhookView: WebhookView
+  let testSignature: string
 
   beforeEach(async () => {
     const preloaded = await dbHandler.insertFormCollectionReqs({
@@ -142,7 +151,9 @@ describe('WebhooksService', () => {
         expect.objectContaining({
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,
-          response: expect.objectContaining(MOCK_STRINGIFIED_SUCCESS_RESPONSE),
+          response: expect.objectContaining(
+            MOCK_STRINGIFIED_SUCCESS_RESPONSE.response,
+          ),
         }),
       )
     })
@@ -214,7 +225,9 @@ describe('WebhooksService', () => {
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,
           errorMessage: ERROR_MSG,
-          response: expect.objectContaining(MOCK_STRINGIFIED_FAILURE_RESPONSE),
+          response: expect.objectContaining(
+            MOCK_STRINGIFIED_FAILURE_RESPONSE.response,
+          ),
         }),
       )
     })
