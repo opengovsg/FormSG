@@ -13,11 +13,11 @@ import { WebhookRequestLocals } from './webhook.types'
  * @param {function} next Next middleware
  */
 
-export function post(
+export const post = (
   req: Request & WebhookRequestLocals,
   res: Response,
   next: NextFunction,
-) {
+) => {
   const { form, submission } = req
   const webhookUrl = form.webhook.url
   const submissionWebhookView = submission.getWebhookView()
