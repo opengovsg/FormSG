@@ -17,7 +17,7 @@ const { StatusCodes } = require('http-status-codes')
 
 const config = require('../../config/config')
 const defaults = require('../../config/defaults').default
-const PERMISSIONS = require('../utils/permission-levels.js')
+const PERMISSIONS = require('../utils/permission-levels').default
 const { getRequestIp } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { generateOtp } = require('../utils/otp')
