@@ -12,13 +12,17 @@ import {
   IWebhookResponse,
   WebhookView,
 } from '../../../types'
-import { getEncryptSubmissionModel } from '../../models/submission.server.model'
+import getSubmissionModel, {
+  getEncryptSubmissionModel,
+} from '../../models/submission.server.model'
 
 import { WebhookValidationError } from './webhook.errors'
 import { WebhookParams } from './webhook.types'
 import { validateWebhookUrl } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
+// eslint-disable-next-line
+const Submission = getSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 /**
@@ -37,7 +41,7 @@ const handleWebhookFailure = async (
   webhookParams: WebhookParams,
 ): Promise<any> => {
   logWebhookFailure(error, webhookParams)
-  await updateSubmissionsDb(
+  return updateSubmissionsDb(
     webhookParams.formId,
     webhookParams.submissionId,
     getFailureDbUpdate(error, webhookParams),
@@ -60,7 +64,7 @@ const handleWebhookSuccess = async (
   webhookParams: WebhookParams,
 ): Promise<any> => {
   logWebhookSuccess(response, webhookParams)
-  await updateSubmissionsDb(
+  return updateSubmissionsDb(
     webhookParams.formId,
     webhookParams.submissionId,
     getSuccessDbUpdate(response, webhookParams),
@@ -262,9 +266,9 @@ export const pushData = (
   return validateWebhookUrl(webhookParams.webhookUrl)
     .then(() => postWebhook(webhookParams))
     .then((response) => {
-      handleWebhookSuccess(response, webhookParams)
+      return handleWebhookSuccess(response, webhookParams)
     })
     .catch((error) => {
-      handleWebhookFailure(error, webhookParams)
+      return handleWebhookFailure(error, webhookParams)
     })
 }
