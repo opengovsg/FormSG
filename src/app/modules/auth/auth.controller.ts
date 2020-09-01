@@ -105,24 +105,20 @@ export const handleLoginVerifyOtp: RequestHandler<
   const [verifyErr] = await to(AuthService.verifyLoginOtp(otp, email))
 
   if (verifyErr) {
-    if (verifyErr instanceof InvalidOtpError) {
-      // Known error, no need to log with error.
-      logger.warn({
-        message: 'Login OTP is invalid',
-        meta: logMeta,
-        error: verifyErr,
-      })
-
-      return res.status(verifyErr.status).send(verifyErr.message)
-    }
-
-    // Not known error, log with error.
-    logger.error({
-      message: 'Error occurred when trying to validate login OTP',
+    logger.warn({
+      message:
+        verifyErr instanceof InvalidOtpError
+          ? 'Login OTP is invalid'
+          : 'Error occurred when trying to validate login OTP',
       meta: logMeta,
       error: verifyErr,
     })
 
+    if (verifyErr instanceof InvalidOtpError) {
+      return res.status(verifyErr.status).send(verifyErr.message)
+    }
+
+    // Unknown error, return generic error response.
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
