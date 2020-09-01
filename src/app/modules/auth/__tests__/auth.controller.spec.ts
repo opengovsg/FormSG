@@ -235,4 +235,70 @@ describe('auth.controller', () => {
       expect(MockUserService.upsertAndReturnUser).toHaveBeenCalledTimes(1)
     })
   })
+
+  describe('handleSignout', () => {
+    it('should return 200 when session is successfully destroyed', async () => {
+      // Arrange
+      const mockDestroy = jest.fn().mockImplementation((fn) => fn(false))
+      const mockClearCookie = jest.fn()
+      const mockReq = expressHandler.mockRequest({
+        session: {
+          destroy: mockDestroy,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: mockClearCookie,
+      })
+
+      // Act
+      await AuthController.handleSignout(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.send).toBeCalledWith('Sign out successful')
+      expect(mockClearCookie).toBeCalledTimes(1)
+      expect(mockDestroy).toBeCalledTimes(1)
+    })
+
+    it('should return 400 when session does not exist in request', async () => {
+      // Arrange
+      const mockReqWithoutSession = expressHandler.mockRequest()
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AuthController.handleSignout(
+        mockReqWithoutSession,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.sendStatus).toBeCalledWith(400)
+    })
+
+    it('should return 500 when error is thrown when destroying session', async () => {
+      // Arrange
+      const mockDestroyWithErr = jest
+        .fn()
+        .mockImplementation((fn) => fn(new Error('some error')))
+      const mockClearCookie = jest.fn()
+      const mockReq = expressHandler.mockRequest({
+        session: {
+          destroy: mockDestroyWithErr,
+        },
+      })
+      const mockRes = expressHandler.mockResponse({
+        clearCookie: mockClearCookie,
+      })
+
+      // Act
+      await AuthController.handleSignout(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.send).toBeCalledWith('Sign out failed')
+      expect(mockDestroyWithErr).toBeCalledTimes(1)
+      expect(mockClearCookie).not.toBeCalled()
+    })
+  })
 })
