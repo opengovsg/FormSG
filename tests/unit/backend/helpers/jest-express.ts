@@ -20,13 +20,15 @@ const mockRequest = ({
   } as Request
 }
 
-const mockResponse = () => {
-  const mockRes = {} as Response
-  mockRes.status = jest.fn().mockReturnThis()
-  mockRes.send = jest.fn().mockReturnThis()
-  mockRes.sendStatus = jest.fn().mockReturnThis()
-  mockRes.json = jest.fn()
-  return mockRes
+const mockResponse = (extraArgs: Partial<Record<keyof Response, any>> = {}) => {
+  const mockRes = {
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn().mockReturnThis(),
+    sendStatus: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+    ...extraArgs,
+  }
+  return mockRes as Response
 }
 
 const expressHandler = {
