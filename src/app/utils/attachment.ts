@@ -69,7 +69,7 @@ export const addAttachmentToResponses = (
   const attachmentMap: Record<
     IAttachmentInfo['fieldId'],
     IAttachmentInfo
-  > = attachments.reduce((acc, attachment) => {
+  > = attachments.reduce<Record<string, IAttachmentInfo>>((acc, attachment) => {
     acc[attachment.fieldId] = attachment
     return acc
   }, {})
