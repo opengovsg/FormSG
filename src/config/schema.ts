@@ -183,7 +183,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     bounceLifeSpan: {
       doc: 'TTL of bounce documents in milliseconds',
       format: 'int',
-      default: 1800000,
+      default: 10800000,
       env: 'BOUNCE_LIFE_SPAN',
     },
     chromiumBin: {
