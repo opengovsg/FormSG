@@ -77,7 +77,6 @@ const helmetMiddlewares = () => {
       "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
     ],
     formAction: ["'self'"],
-    upgradeInsecureRequests: !config.isDev,
   }
 
   const reportUri = get(
@@ -85,7 +84,14 @@ const helmetMiddlewares = () => {
     'cspReportUri',
     undefined,
   )
-  const cspOptionalDirectives = reportUri ? { reportUri } : {}
+
+  const cspOptionalDirectives = {}
+
+  // Add on reportUri CSP header if ReportUri exists
+  if (reportUri) cspOptionalDirectives.reportUri = [reportUri]
+
+  // Add on upgradeInsecureRequest CSP header if !config.isDev
+  if (!config.isDev) cspOptionalDirectives.upgradeInsecureRequests = []
 
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
     directives: {
