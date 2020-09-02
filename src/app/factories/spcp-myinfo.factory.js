@@ -57,7 +57,7 @@ const spcpFactory = ({ isEnabled, props }) => {
     }
     let myInfoGovClient
     // TODO: These env vars should move to spcp-myinfo.config and be validated
-    // as part of convict schema
+    // as part of convict (Issue #255)
     if (config.nodeEnv === 'production') {
       let myInfoPrefix =
         process.env.MYINFO_CLIENT_CONFIG === 'stg' ? 'STG2-' : 'PROD2-'
