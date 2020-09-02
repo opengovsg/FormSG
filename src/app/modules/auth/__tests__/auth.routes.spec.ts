@@ -12,7 +12,10 @@ describe('auth.routes', () => {
   const app = setupApp('/auth', AuthRouter)
 
   beforeAll(async () => await dbHandler.connect())
-  afterEach(async () => await dbHandler.clearDatabase())
+  afterEach(async () => {
+    await dbHandler.clearDatabase()
+    jest.restoreAllMocks()
+  })
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('POST /auth/checkuser', () => {
@@ -139,7 +142,6 @@ describe('auth.routes', () => {
       expect(response.text).toEqual(
         'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       )
-      createLoginOtpSpy.mockRestore()
     })
 
     it('should return 500 when error occurs whilst sending login OTP', async () => {
@@ -159,7 +161,6 @@ describe('auth.routes', () => {
       expect(response.text).toEqual(
         'Error sending OTP. Please try again later and if the problem persists, contact us.',
       )
-      sendLoginOtpSpy.mockRestore()
     })
 
     it('should return 200 when otp is sent successfully', async () => {
@@ -177,7 +178,6 @@ describe('auth.routes', () => {
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
       expect(response.text).toEqual(`OTP sent to ${VALID_EMAIL}!`)
-      sendLoginOtpSpy.mockRestore()
     })
   })
 })
