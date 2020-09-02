@@ -67,6 +67,8 @@
     "@opengovsg/myinfo-gov-client": "^1.0.4",
     "@opengovsg/ng-file-upload": "^12.2.14",
     "@opengovsg/spcp-auth-client": "^1.3.0",
+    "@sentry/browser": "^5.22.3",
+    "@sentry/integrations": "^5.22.3",
     "@stablelib/base64": "^1.0.0",
     "JSONStream": "^1.3.5",
     "angular": "~1.8.0",
