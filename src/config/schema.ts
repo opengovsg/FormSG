@@ -36,7 +36,7 @@ convict.addFormat({
 /**
  * Verifies that S3 bucket url is a valid url with or without trailing slash
  */
-const validateBucketUrl = (
+export const validateBucketUrl = (
   val: string,
   { isDev, hasTrailingSlash }: { isDev: boolean; hasTrailingSlash: boolean },
 ) => {
