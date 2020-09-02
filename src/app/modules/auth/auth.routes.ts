@@ -1,9 +1,8 @@
-import { celebrate } from 'celebrate'
+import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as AuthController from './auth.controller'
 import * as AuthMiddlewares from './auth.middlewares'
-import * as AuthRules from './auth.rules'
 
 export const AuthRouter = Router()
 
@@ -17,7 +16,14 @@ export const AuthRouter = Router()
  */
 AuthRouter.post(
   '/checkuser',
-  celebrate(AuthRules.forCheckUser),
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      email: Joi.string()
+        .required()
+        .email()
+        .message('Please enter a valid email'),
+    }),
+  }),
   AuthMiddlewares.validateDomain,
   AuthController.handleCheckUser,
 )
@@ -36,7 +42,14 @@ AuthRouter.post(
  */
 AuthRouter.post(
   '/sendotp',
-  celebrate(AuthRules.forSendOtp),
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      email: Joi.string()
+        .required()
+        .email()
+        .message('Please enter a valid email'),
+    }),
+  }),
   AuthMiddlewares.validateDomain,
   AuthController.handleLoginSendOtp,
 )
@@ -56,7 +69,18 @@ AuthRouter.post(
  */
 AuthRouter.post(
   '/verifyotp',
-  celebrate(AuthRules.forVerifyOtp),
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      email: Joi.string()
+        .required()
+        .email()
+        .message('Please enter a valid email'),
+      otp: Joi.string()
+        .required()
+        .regex(/^\d{6}$/)
+        .message('Please enter a valid otp'),
+    }),
+  }),
   AuthMiddlewares.validateDomain,
   AuthController.handleLoginVerifyOtp,
 )
