@@ -35,9 +35,13 @@ convict.addFormat({
 /**
  * Verifies that S3 bucket url is a valid url with or without trailing slash
  */
-export const validateBucketUrl = (
+const validateBucketUrl = (
   val: string,
-  { isDev, hasTrailingSlash }: { isDev: boolean; hasTrailingSlash: boolean },
+  {
+    isDev,
+    hasTrailingSlash,
+    region,
+  }: { isDev: boolean; hasTrailingSlash: boolean; region: string },
 ) => {
   if (!validator.isURL(val, { require_tld: !isDev })) {
     throw new Error('must be a url')
@@ -50,6 +54,11 @@ export const validateBucketUrl = (
     if (/[/]$/.test(val)) {
       throw new Error('must not end with a slash')
     }
+  }
+  // Region should be specified correctly in production
+  const isRegionCorrect = new RegExp(`^https://s3.${region}.amazonaws.com`, 'i')
+  if (!isDev && !isRegionCorrect.test(val)) {
+    throw new Error(`region should be ${region}`)
   }
 }
 
@@ -314,27 +323,38 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
   },
 }
 
-export const loadS3BucketUrlSchema = (
-  isDev: boolean,
-): Schema<IBucketUrlSchema> => {
+export const loadS3BucketUrlSchema = ({
+  isDev,
+  region,
+}: {
+  isDev: boolean
+  region: string
+}): Schema<IBucketUrlSchema> => {
   return {
+    endPoint: {
+      doc: 'Endpoint for S3 buckets',
+      format: (val) =>
+        validateBucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: 'https://s3.ap-southeast-1.amazonaws.com', // NOTE NO TRAILING / AT THE END OF THIS URL!
+      env: 'AWS_ENDPOINT',
+    },
     attachmentBucketUrl: {
       doc:
         'Url of attachment S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: true }),
+        validateBucketUrl(val, { isDev, hasTrailingSlash: true, region }),
       default: null,
     },
     logoBucketUrl: {
       doc: 'Url of logo S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
+        validateBucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,
     },
     imageBucketUrl: {
       doc: 'Url of images S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: false }),
+        validateBucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,
     },
   }

@@ -35,6 +35,7 @@ export type AwsConfig = {
   imageBucketUrl: string
   attachmentBucketUrl: string
   s3: aws.S3
+  endPoint: string
 }
 
 export type MailConfig = {
@@ -127,4 +128,5 @@ export interface IBucketUrlSchema {
   attachmentBucketUrl: string
   logoBucketUrl: string
   imageBucketUrl: string
+  endPoint: string
 }

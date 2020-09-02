@@ -9,7 +9,6 @@ import SMTPPool from 'nodemailer/lib/smtp-pool'
 import { promisify } from 'util'
 import validator from 'validator'
 
-import { AWS_DEFAULT } from '../shared/constants'
 import { AwsConfig, Config, DbConfig, Environment, MailConfig } from '../types'
 
 import { createLoggerWithLabel } from './logger'
@@ -18,7 +17,6 @@ import {
   loadS3BucketUrlSchema,
   optionalVarsSchema,
   prodOnlyVarsSchema,
-  validateBucketUrl,
 } from './schema'
 
 // Load and validate optional configuration values
@@ -59,15 +57,12 @@ if (isDev) {
 // functional local AWS cloud stack for hosting images/logos/attachments.
 // Else, the environment variables to instantiate S3 are used.
 
-const awsEndpoint = isDev
-  ? AWS_DEFAULT.endpoint
-  : `https://s3.${basicVars.awsConfig.region}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
-
-// Validate to make sure no one ever adds a trailing slash here
-validateBucketUrl(awsEndpoint, { isDev, hasTrailingSlash: false })
-
 // Perform validation before accessing s3 Bucket Urls
-const s3BucketUrlSchema = loadS3BucketUrlSchema(isDev)
+const s3BucketUrlSchema = loadS3BucketUrlSchema({
+  isDev,
+  region: basicVars.awsConfig.region,
+})
+const awsEndpoint = convict(s3BucketUrlSchema).getProperties().endPoint
 const s3BucketUrlVars = convict(s3BucketUrlSchema)
   .load({
     logoBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.logoS3Bucket}`,
@@ -83,7 +78,7 @@ const s3 = new aws.S3({
   // Unset and use default if not in development mode
   // Endpoint and path style overrides are needed only in development mode for
   // localstack to work.
-  endpoint: isDev ? AWS_DEFAULT.endpoint : undefined,
+  endpoint: isDev ? s3BucketUrlVars.endPoint : undefined,
   s3ForcePathStyle: isDev ? true : undefined,
 })
 

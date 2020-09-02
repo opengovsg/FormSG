@@ -134,6 +134,7 @@ The following env variables are set in Travis:
 | `AWS_REGION`                  | AWS region.                                                                                                                         |
 | `AWS_ACCESS_KEY_ID`           | AWS IAM access key ID used to access S3.                                                                                            |
 | `AWS_SECRET_ACCESS_KEY`       | AWS IAM access secret used to access S3.                                                                                            |
+| `AWS_ENDPOINT`                 | AWS S3 bucket endpoint. region.                                                                                                                         |
 | `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads.                                                                                          |
 | `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
 | `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |

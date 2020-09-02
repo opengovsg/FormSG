@@ -64,3 +64,5 @@ MOCK_WEBHOOK_PORT=4000
 
 AWS_ACCESS_KEY_ID=fakeAccessKeyId
 AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
+
+AWS_ENDPOINT=http://localhost:4572
