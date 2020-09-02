@@ -59,7 +59,7 @@ export const handleLoginSendOtp: RequestHandler<
   const [sendErr] = await to(
     MailService.sendLoginOtp({
       recipient: email,
-      otp,
+      otp: otp!,
       ipAddress: requestIp,
     }),
   )
@@ -134,6 +134,11 @@ export const handleLoginVerifyOtp: RequestHandler<
 
     // Create user object to return to frontend.
     const userObj = { ...user.toObject(), agency }
+
+    if (!req.session) {
+      throw new Error('req.session not found')
+    }
+
     // TODO(#212): Should store only userId in session.
     // Add user info to session.
     req.session.user = userObj
@@ -169,7 +174,7 @@ export const handleSignout: RequestHandler = async (req, res) => {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  req.session.destroy((error) => {
+  req.session!.destroy((error) => {
     if (error) {
       logger.error({
         message: 'Failed to destroy session',

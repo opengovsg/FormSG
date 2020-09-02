@@ -82,7 +82,7 @@ export const verifyLoginOtp = async (otpToVerify: string, email: string) => {
   }
 
   // Too many attempts.
-  if (updatedDocument.numOtpAttempts > MAX_OTP_ATTEMPTS) {
+  if (updatedDocument.numOtpAttempts! > MAX_OTP_ATTEMPTS) {
     throw new InvalidOtpError(
       'You have hit the max number of attempts. Please request for a new OTP.',
     )
