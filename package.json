@@ -126,7 +126,7 @@
     "jszip": "^3.2.2",
     "jwt-decode": "^2.2.0",
     "libphonenumber-js": "^1.7.55",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.20",
     "mobile-detect": "^1.4.2",
     "moment-timezone": "0.5.31",
     "mongoose": "^5.9.10",
