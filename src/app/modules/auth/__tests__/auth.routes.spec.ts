@@ -1,5 +1,5 @@
 import { pick } from 'lodash'
-import request from 'supertest'
+import supertest from 'supertest'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import validator from 'validator'
@@ -14,6 +14,7 @@ import * as AuthService from '../auth.service'
 
 describe('auth.routes', () => {
   const app = setupApp('/auth', AuthRouter)
+  const request = supertest(app)
 
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => {
@@ -25,7 +26,7 @@ describe('auth.routes', () => {
   describe('POST /auth/checkuser', () => {
     it('should return 400 when body.email is not provided as a param', async () => {
       // Act
-      const response = await request(app).post('/auth/checkuser')
+      const response = await request.post('/auth/checkuser')
 
       // Assert
       expect(response.status).toEqual(400)
@@ -37,7 +38,7 @@ describe('auth.routes', () => {
       const invalidEmail = 'not an email'
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/checkuser')
         .send({ email: invalidEmail })
 
@@ -51,7 +52,7 @@ describe('auth.routes', () => {
       const validEmailWithInvalidDomain = 'test@example.com'
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/checkuser')
         .send({ email: validEmailWithInvalidDomain })
 
@@ -70,7 +71,7 @@ describe('auth.routes', () => {
       await dbHandler.insertDefaultAgency({ mailDomain: validDomain })
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/checkuser')
         .send({ email: validEmail })
 
@@ -91,7 +92,7 @@ describe('auth.routes', () => {
         .mockRejectedValueOnce(new Error('some error occured'))
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/checkuser')
         .send({ email: validEmail })
 
@@ -115,7 +116,7 @@ describe('auth.routes', () => {
 
     it('should return 400 when body.email is not provided as a param', async () => {
       // Act
-      const response = await request(app).post('/auth/sendotp')
+      const response = await request.post('/auth/sendotp')
 
       // Assert
       expect(response.status).toEqual(400)
@@ -127,7 +128,7 @@ describe('auth.routes', () => {
       const invalidEmail = 'not an email'
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/sendotp')
         .send({ email: invalidEmail })
 
@@ -142,7 +143,7 @@ describe('auth.routes', () => {
       expect(validator.isEmail(validEmailWithInvalidDomain)).toEqual(true)
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/sendotp')
         .send({ email: validEmailWithInvalidDomain })
 
@@ -160,7 +161,7 @@ describe('auth.routes', () => {
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/sendotp')
         .send({ email: VALID_EMAIL })
 
@@ -179,7 +180,7 @@ describe('auth.routes', () => {
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/sendotp')
         .send({ email: VALID_EMAIL })
 
@@ -198,7 +199,7 @@ describe('auth.routes', () => {
         .mockRejectedValueOnce(new Error('some error occured'))
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/sendotp')
         .send({ email: VALID_EMAIL })
 
@@ -217,7 +218,7 @@ describe('auth.routes', () => {
         .mockResolvedValueOnce(true)
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/sendotp')
         .send({ email: VALID_EMAIL })
 
@@ -245,7 +246,7 @@ describe('auth.routes', () => {
 
     it('should return 400 when body.email is not provided as a param', async () => {
       // Act
-      const response = await request(app).post('/auth/verifyotp').send({
+      const response = await request.post('/auth/verifyotp').send({
         otp: MOCK_VALID_OTP,
       })
 
@@ -256,7 +257,7 @@ describe('auth.routes', () => {
 
     it('should return 400 when body.otp is not provided as a param', async () => {
       // Act
-      const response = await request(app).post('/auth/verifyotp').send({
+      const response = await request.post('/auth/verifyotp').send({
         email: VALID_EMAIL,
       })
 
@@ -270,7 +271,7 @@ describe('auth.routes', () => {
       const invalidEmail = 'not an email'
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: invalidEmail, otp: MOCK_VALID_OTP })
 
@@ -281,7 +282,7 @@ describe('auth.routes', () => {
 
     it('should return 400 when body.otp is less than 6 digits', async () => {
       // Act
-      const response = await request(app).post('/auth/verifyotp').send({
+      const response = await request.post('/auth/verifyotp').send({
         email: VALID_EMAIL,
         otp: '12345',
       })
@@ -293,7 +294,7 @@ describe('auth.routes', () => {
 
     it('should return 400 when body.otp is 6 characters but does not consist purely of digits', async () => {
       // Act
-      const response = await request(app).post('/auth/verifyotp').send({
+      const response = await request.post('/auth/verifyotp').send({
         email: VALID_EMAIL,
         otp: '123abc',
       })
@@ -309,7 +310,7 @@ describe('auth.routes', () => {
       expect(validator.isEmail(validEmailWithInvalidDomain)).toEqual(true)
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: validEmailWithInvalidDomain, otp: MOCK_VALID_OTP })
 
@@ -327,7 +328,7 @@ describe('auth.routes', () => {
         .mockRejectedValueOnce(new Error('some error occured'))
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
 
@@ -341,7 +342,7 @@ describe('auth.routes', () => {
 
     it('should return 422 when hash does not exist for body.otp', async () => {
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
 
@@ -361,7 +362,7 @@ describe('auth.routes', () => {
       await requestForOtp(app, VALID_EMAIL)
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: invalidOtp })
 
@@ -381,7 +382,7 @@ describe('auth.routes', () => {
       const verifyPromises = []
       for (let i = 0; i < AuthService.MAX_OTP_ATTEMPTS; i++) {
         verifyPromises.push(
-          request(app)
+          request
             .post('/auth/verifyotp')
             .send({ email: VALID_EMAIL, otp: invalidOtp }),
         )
@@ -398,7 +399,7 @@ describe('auth.routes', () => {
       )
 
       // Act again, this time with a valid OTP.
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
 
@@ -416,7 +417,7 @@ describe('auth.routes', () => {
       await requestForOtp(app, VALID_EMAIL)
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
 
@@ -443,7 +444,7 @@ describe('auth.routes', () => {
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act
-      const response = await request(app)
+      const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
 
@@ -463,6 +464,6 @@ const requestForOtp = async (app: Express.Application, email: string) => {
   // Set that so no real mail is sent.
   jest.spyOn(MailService, 'sendLoginOtp').mockResolvedValue(true)
 
-  const response = await request(app).post('/auth/sendotp').send({ email })
+  const response = await supertest(app).post('/auth/sendotp').send({ email })
   expect(response.text).toEqual(`OTP sent to ${email}!`)
 }
