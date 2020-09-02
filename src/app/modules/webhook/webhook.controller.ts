@@ -18,6 +18,9 @@ export const post = (
   res: Response,
   next: NextFunction,
 ) => {
+  // TODO: Once we move away from the middleware pattern, there should not be a webhook controller
+  // There should only be a webhook service, which is called within the submission controller
+  // This will also remove the need for retrieval of form/submission from req.
   const { form, submission } = req
   const webhookUrl = form.webhook.url
   const submissionWebhookView = submission.getWebhookView()
