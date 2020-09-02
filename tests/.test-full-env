@@ -49,7 +49,6 @@ SESSION_SECRET=sandcrawler-138577
 
 SES_PORT=1025 
 
-FORMSG_LOCALSTACK_ENDPT=http://localhost:4572
 SERVICES=s3
 
 IMAGE_S3_BUCKET=local-image-bucket
