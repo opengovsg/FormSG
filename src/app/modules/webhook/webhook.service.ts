@@ -307,14 +307,11 @@ export const pushData = async (
     signature,
   }
 
-  // Use promises instead of await to prevent the user from having to await on the
-  // webhook before they receive acknowledgement that their submission was successful.
-  return validateWebhookUrl(webhookParams.webhookUrl)
-    .then(() => postWebhook(webhookParams))
-    .then((response) => {
-      return handleWebhookSuccess(response, webhookParams)
-    })
-    .catch((error) => {
-      return handleWebhookFailure(error, webhookParams)
-    })
+  try {
+    await validateWebhookUrl(webhookParams.webhookUrl)
+    const response = await postWebhook(webhookParams)
+    return handleWebhookSuccess(response, webhookParams)
+  } catch (error) {
+    return handleWebhookFailure(error, webhookParams)
+  }
 }
