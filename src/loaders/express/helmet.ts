@@ -27,7 +27,13 @@ const helmetMiddlewares = () => {
     policy: 'strict-origin-when-cross-origin',
   })
 
-  const cspCoreDirectives = {
+  //Declare type of cspDirectives
+  //Workaround to extract the type from helmet because
+  //@types/helmet is out of date and helmet doesn’t export those specific types
+
+  type ICsp = Parameters<typeof helmet.contentSecurityPolicy>[0]
+
+  const cspCoreDirectives: ICsp['directives'] = {
     defaultSrc: ["'self'"],
     imgSrc: [
       "'self'",
@@ -85,7 +91,7 @@ const helmetMiddlewares = () => {
     undefined,
   )
 
-  const cspOptionalDirectives = {}
+  const cspOptionalDirectives: ICsp['directives'] = {}
 
   // Add on reportUri CSP header if ReportUri exists
   if (reportUri) cspOptionalDirectives.reportUri = [reportUri]
