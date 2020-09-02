@@ -142,7 +142,6 @@
     "promise-retry": "^2.0.1",
     "proxyquire": "^2.1.0",
     "puppeteer-core": "^5.2.1",
-    "raven-js": "^3.27.0",
     "rimraf": "^3.0.2",
     "selectize": "0.12.4",
     "slick-carousel": "1.8.1",
