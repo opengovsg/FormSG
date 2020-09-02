@@ -80,6 +80,7 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       format: String,
       default: null,
       env: 'SESSION_SECRET',
+      sensitive: true,
     },
   },
 }
@@ -280,6 +281,7 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     format: String,
     default: null,
     env: 'SES_PASS',
+    sensitive: true,
   },
   dbHost: {
     doc: 'Database URI',
@@ -308,6 +310,7 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     },
     default: null,
     env: 'DB_HOST',
+    sensitive: true,
   },
 }
 
