@@ -7,7 +7,6 @@ import directTransport from 'nodemailer-direct-transport'
 import Mail from 'nodemailer/lib/mailer'
 import SMTPPool from 'nodemailer/lib/smtp-pool'
 import { promisify } from 'util'
-import validator from 'validator'
 
 import { AwsConfig, Config, DbConfig, Environment, MailConfig } from '../types'
 
