@@ -9,8 +9,7 @@ import SMTPPool from 'nodemailer/lib/smtp-pool'
 import { promisify } from 'util'
 import validator from 'validator'
 
-import { AWS_DEFAULT } from 'src/shared/constants'
-
+import { AWS_DEFAULT } from '../shared/constants'
 import { AwsConfig, Config, DbConfig, Environment, MailConfig } from '../types'
 
 import { createLoggerWithLabel } from './logger'
