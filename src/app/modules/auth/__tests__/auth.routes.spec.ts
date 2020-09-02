@@ -1,10 +1,14 @@
+import { pick } from 'lodash'
 import request from 'supertest'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import validator from 'validator'
 
 import MailService from 'src/app/services/mail.service'
+import * as OtpUtils from 'src/app/utils/otp'
+import { IAgencySchema } from 'src/types'
 
+import * as UserService from '../../user/user.service'
 import { AuthRouter } from '../auth.routes'
 import * as AuthService from '../auth.service'
 
@@ -73,6 +77,30 @@ describe('auth.routes', () => {
       // Assert
       expect(response.status).toEqual(200)
       expect(response.text).toEqual('OK')
+    })
+
+    it('should return 500 when validating domain throws an unknown error', async () => {
+      // Arrange
+      // Insert agency
+      const validDomain = 'example.com'
+      const validEmail = `test@${validDomain}`
+      await dbHandler.insertDefaultAgency({ mailDomain: validDomain })
+
+      const getAgencySpy = jest
+        .spyOn(AuthService, 'getAgencyWithEmail')
+        .mockRejectedValueOnce(new Error('some error occured'))
+
+      // Act
+      const response = await request(app)
+        .post('/auth/checkuser')
+        .send({ email: validEmail })
+
+      // Assert
+      expect(getAgencySpy).toBeCalled()
+      expect(response.status).toEqual(500)
+      expect(response.text).toEqual(
+        expect.stringContaining('Unable to validate email domain.'),
+      )
     })
   })
 
@@ -163,6 +191,25 @@ describe('auth.routes', () => {
       )
     })
 
+    it('should return 500 when validating domain throws an unknown error', async () => {
+      // Arrange
+      const getAgencySpy = jest
+        .spyOn(AuthService, 'getAgencyWithEmail')
+        .mockRejectedValueOnce(new Error('some error occured'))
+
+      // Act
+      const response = await request(app)
+        .post('/auth/sendotp')
+        .send({ email: VALID_EMAIL })
+
+      // Assert
+      expect(getAgencySpy).toBeCalled()
+      expect(response.status).toEqual(500)
+      expect(response.text).toEqual(
+        expect.stringContaining('Unable to validate email domain.'),
+      )
+    })
+
     it('should return 200 when otp is sent successfully', async () => {
       // Arrange
       const sendLoginOtpSpy = jest
@@ -180,4 +227,242 @@ describe('auth.routes', () => {
       expect(response.text).toEqual(`OTP sent to ${VALID_EMAIL}!`)
     })
   })
+
+  describe('POST /auth/verifyotp', () => {
+    const MOCK_VALID_OTP = '123456'
+    const VALID_DOMAIN = 'example.com'
+    const VALID_EMAIL = `test@${VALID_DOMAIN}`
+    const INVALID_DOMAIN = 'example.org'
+
+    let defaultAgency: IAgencySchema
+
+    beforeEach(async () => {
+      defaultAgency = await dbHandler.insertDefaultAgency({
+        mailDomain: VALID_DOMAIN,
+      })
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValue(MOCK_VALID_OTP)
+    })
+
+    it('should return 400 when body.email is not provided as a param', async () => {
+      // Act
+      const response = await request(app).post('/auth/verifyotp').send({
+        otp: MOCK_VALID_OTP,
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.text).toEqual('"email" is required')
+    })
+
+    it('should return 400 when body.otp is not provided as a param', async () => {
+      // Act
+      const response = await request(app).post('/auth/verifyotp').send({
+        email: VALID_EMAIL,
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.text).toEqual('"otp" is required')
+    })
+
+    it('should return 400 when body.email is invalid', async () => {
+      // Arrange
+      const invalidEmail = 'not an email'
+
+      // Act
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: invalidEmail, otp: MOCK_VALID_OTP })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.text).toEqual('Please enter a valid email')
+    })
+
+    it('should return 400 when body.otp is less than 6 digits', async () => {
+      // Act
+      const response = await request(app).post('/auth/verifyotp').send({
+        email: VALID_EMAIL,
+        otp: '12345',
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.text).toEqual('Please enter a valid otp')
+    })
+
+    it('should return 400 when body.otp is 6 characters but does not consist purely of digits', async () => {
+      // Act
+      const response = await request(app).post('/auth/verifyotp').send({
+        email: VALID_EMAIL,
+        otp: '123abc',
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.text).toEqual('Please enter a valid otp')
+    })
+
+    it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
+      // Arrange
+      const validEmailWithInvalidDomain = `test@${INVALID_DOMAIN}`
+      expect(validator.isEmail(validEmailWithInvalidDomain)).toEqual(true)
+
+      // Act
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: validEmailWithInvalidDomain, otp: MOCK_VALID_OTP })
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.text).toEqual(
+        'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
+      )
+    })
+
+    it('should return 500 when validating domain throws an unknown error', async () => {
+      // Arrange
+      const getAgencySpy = jest
+        .spyOn(AuthService, 'getAgencyWithEmail')
+        .mockRejectedValueOnce(new Error('some error occured'))
+
+      // Act
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
+
+      // Assert
+      expect(getAgencySpy).toBeCalled()
+      expect(response.status).toEqual(500)
+      expect(response.text).toEqual(
+        expect.stringContaining('Unable to validate email domain.'),
+      )
+    })
+
+    it('should return 422 when hash does not exist for body.otp', async () => {
+      // Act
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.text).toEqual(
+        expect.stringContaining(
+          'OTP has expired. Please request for a new OTP.',
+        ),
+      )
+    })
+
+    it('should return 422 when body.otp is invalid', async () => {
+      // Arrange
+      const invalidOtp = '654321'
+      // Request for OTP so the hash exists.
+      await requestForOtp(app, VALID_EMAIL)
+
+      // Act
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: VALID_EMAIL, otp: invalidOtp })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.text).toEqual('OTP is invalid. Please try again.')
+    })
+
+    it('should should return 422 when invalid body.otp has been attempted too many times', async () => {
+      // Arrange
+      const invalidOtp = '654321'
+      // Request for OTP so the hash exists.
+      await requestForOtp(app, VALID_EMAIL)
+
+      // Act
+      // Attempt invalid OTP for MAX_OTP_ATTEMPTS.
+      const verifyPromises = []
+      for (let i = 0; i < AuthService.MAX_OTP_ATTEMPTS; i++) {
+        verifyPromises.push(
+          request(app)
+            .post('/auth/verifyotp')
+            .send({ email: VALID_EMAIL, otp: invalidOtp }),
+        )
+      }
+      const results = (await Promise.all(verifyPromises)).map((resolve) =>
+        pick(resolve, ['status', 'text']),
+      )
+      // Should be all invalid OTP responses.
+      expect(results).toEqual(
+        Array(AuthService.MAX_OTP_ATTEMPTS).fill({
+          status: 422,
+          text: 'OTP is invalid. Please try again.',
+        }),
+      )
+
+      // Act again, this time with a valid OTP.
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
+
+      // Assert
+      // Should still reject with max OTP attempts error.
+      expect(response.status).toEqual(422)
+      expect(response.text).toEqual(
+        'You have hit the max number of attempts. Please request for a new OTP.',
+      )
+    })
+
+    it('should return 200 with user object when body.otp is a valid OTP', async () => {
+      // Arrange
+      // Request for OTP so the hash exists.
+      await requestForOtp(app, VALID_EMAIL)
+
+      // Act
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Body should be an user object.
+      expect(response.body).toMatchObject({
+        // Required since that's how the data is sent out from the application.
+        agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
+        _id: expect.any(String),
+        created: expect.any(String),
+        email: VALID_EMAIL,
+      })
+    })
+
+    it('should return 500 when upserting user document fails', async () => {
+      // Arrange
+      // Request for OTP so the hash exists.
+      await requestForOtp(app, VALID_EMAIL)
+
+      // Mock error thrown when creating user
+      const upsertSpy = jest
+        .spyOn(UserService, 'upsertAndReturnUser')
+        .mockRejectedValueOnce(new Error('some error'))
+
+      // Act
+      const response = await request(app)
+        .post('/auth/verifyotp')
+        .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
+
+      // Assert
+      // Should have reached this spy.
+      expect(upsertSpy).toBeCalled()
+      expect(response.status).toEqual(500)
+      expect(response.text).toEqual(
+        expect.stringContaining('User signin failed. Please try again later'),
+      )
+    })
+  })
 })
+
+// Helper functions
+const requestForOtp = async (app: Express.Application, email: string) => {
+  // Set that so no real mail is sent.
+  jest.spyOn(MailService, 'sendLoginOtp').mockResolvedValue(true)
+
+  const response = await request(app).post('/auth/sendotp').send({ email })
+  expect(response.text).toEqual(`OTP sent to ${email}!`)
+}
