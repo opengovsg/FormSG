@@ -1,6 +1,6 @@
 import { pick } from 'lodash'
 import supertest from 'supertest'
-import { setupApp } from 'tests/integration/helpers/express-setup'
+import { CookieStore, setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import validator from 'validator'
 
@@ -14,12 +14,14 @@ import * as AuthService from '../auth.service'
 
 describe('auth.routes', () => {
   const app = setupApp('/auth', AuthRouter)
+  const cookieStore = new CookieStore()
   const request = supertest(app)
 
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => {
     await dbHandler.clearDatabase()
     jest.restoreAllMocks()
+    cookieStore.clear()
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -420,6 +422,7 @@ describe('auth.routes', () => {
       const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
+      cookieStore.handleCookie(response)
 
       // Assert
       expect(response.status).toEqual(200)
@@ -431,6 +434,8 @@ describe('auth.routes', () => {
         created: expect.any(String),
         email: VALID_EMAIL,
       })
+      // Should have session cookie returned.
+      expect(cookieStore.get()).toEqual(expect.stringContaining('connect.sid'))
     })
 
     it('should return 500 when upserting user document fails', async () => {
