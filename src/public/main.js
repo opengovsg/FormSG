@@ -12,7 +12,7 @@ if (!window['TextEncoder']) {
   window['TextEncoder'] = textEncoding.TextEncoder
 }
 
-// Define module dependencies (without ngRaven)
+// Define module dependencies (without ngSentry)
 const moduleDependencies = [
   'ui.select',
   'ngAnimate',
