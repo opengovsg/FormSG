@@ -6,10 +6,14 @@ function featureToggle(Features) {
   return {
     restrict: 'A',
     link: function (scope, element, attrs) {
-      Features.getfeatureStates().then(function (response) {
-        element.css('display', response[attrs.featureName] ? '' : 'none')
-        scope.feature = response
-      })
+      Features.getfeatureStates()
+        .then(function (response) {
+          element.css('display', response[attrs.featureName] ? '' : 'none')
+          scope.feature = response
+        })
+        .catch((_err) => {
+          element.css('display', 'none')
+        })
     },
   }
 }
