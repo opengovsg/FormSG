@@ -40,6 +40,11 @@ export const createTransaction = async (
   formId: string,
 ): Promise<ITransaction | null> => {
   const form = await Form.findById(formId)
+
+  if (!form) {
+    return null
+  }
+
   const fields = initializeVerifiableFields(form)
   if (!_.isEmpty(fields)) {
     const verification = new Verification({ formId, fields })
@@ -74,8 +79,8 @@ export const getTransaction = async (
   transactionId: string,
 ): Promise<IVerificationSchema> => {
   const transaction = await Verification.findById(transactionId)
-  if (transaction === null) {
-    throwError(VfnErrors.TransactionNotFound)
+  if (!transaction) {
+    return throwError(VfnErrors.TransactionNotFound)
   }
   return transaction
 }
@@ -117,17 +122,17 @@ export const getNewOtp = async (
   fieldId: string,
   answer: string,
 ): Promise<void> => {
-  if (isTransactionExpired(transaction.expireAt)) {
+  if (isTransactionExpired(transaction.expireAt!)) {
     throwError(VfnErrors.TransactionNotFound)
   }
   const field = getFieldFromTransaction(transaction, fieldId)
-  if (field === undefined) {
-    throwError('Field not found in transaction', VfnErrors.FieldNotFound)
+  if (!field) {
+    return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
   }
   const { _id: transactionId, formId } = transaction
-  const waitForSeconds = waitToResendOtpSeconds(field.hashCreatedAt)
+  const waitForSeconds = waitToResendOtpSeconds(field.hashCreatedAt!)
   if (waitForSeconds > 0) {
-    throwError(
+    return throwError(
       `Wait for ${waitForSeconds} seconds before requesting for a new otp`,
       VfnErrors.WaitForOtp,
     )
@@ -135,7 +140,8 @@ export const getNewOtp = async (
     const hashCreatedAt = new Date()
     const otp = generateOtp()
     const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS)
-    const signedData = formsgSdk.verification.generateSignature({
+
+    const signedData = formsgSdk.verification.generateSignature!({
       transactionId,
       formId,
       fieldId,
@@ -171,32 +177,32 @@ export const verifyOtp = async (
   fieldId: string,
   inputOtp: string,
 ): Promise<string> => {
-  if (isTransactionExpired(transaction.expireAt)) {
+  if (isTransactionExpired(transaction.expireAt!)) {
     throwError(VfnErrors.TransactionNotFound)
   }
   const field = getFieldFromTransaction(transaction, fieldId)
-  if (field === undefined) {
-    throwError('Field not found in transaction', VfnErrors.FieldNotFound)
+  if (!field) {
+    return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
   }
   const { hashedOtp, hashCreatedAt, signedData, hashRetries } = field
   if (
     hashedOtp &&
     hashCreatedAt &&
     !isHashedOtpExpired(hashCreatedAt) &&
-    hashRetries < NUM_OTP_RETRIES
+    NUM_OTP_RETRIES > hashRetries!
   ) {
     await Verification.updateOne(
       { _id: transaction._id, 'fields._id': fieldId },
       {
         $set: {
-          'fields.$.hashRetries': hashRetries + 1,
+          'fields.$.hashRetries': hashRetries! + 1,
         },
       },
     )
     const validOtp = await bcrypt.compare(inputOtp, hashedOtp)
-    return validOtp ? signedData : throwError(VfnErrors.InvalidOtp)
+    return validOtp ? signedData! : throwError(VfnErrors.InvalidOtp)
   }
-  throwError(VfnErrors.ResendOtp)
+  return throwError(VfnErrors.ResendOtp)
 }
 
 /**
