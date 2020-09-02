@@ -1,6 +1,8 @@
 'use strict'
 
 const textEncoding = require('text-encoding')
+const Sentry = require('@sentry/browser')
+const { Angular: AngularIntegration } = require('@sentry/integrations')
 
 if (!window['TextDecoder']) {
   window['TextDecoder'] = textEncoding.TextDecoder
@@ -41,12 +43,13 @@ window.$ = window.jQuery
 const angular = require('angular')
 
 // Sentry.io SDK
-const Raven = require('raven-js')
+// Docs: https://docs.sentry.io/platforms/javascript/guides/angular/angular1/
 if (window.sentryConfigUrl) {
-  Raven.config(window.sentryConfigUrl)
-    .addPlugin(require('raven-js/plugins/angular'), angular)
-    .install()
-  moduleDependencies.push('ngRaven')
+  Sentry.init({
+    dsn: window.sentryConfigUrl,
+    integrations: [new AngularIntegration()],
+  })
+  moduleDependencies.push('ngSentry')
 }
 
 require('angular-translate')
