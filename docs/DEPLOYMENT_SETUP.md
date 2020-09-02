@@ -277,4 +277,3 @@ If this feature is enabled, storage mode forms will also support authentication 
 | `PWD`                  | Path of working directory.                                                                                                                      |
 | `MOCK_WEBHOOK_CONFIG_FILE`                  | Path of configuration file for mock webhook server                                                                                                                      |
 | `MOCK_WEBHOOK_PORT`                  | Port of mock webhook server                                                                                                                      |
-| `FORMSG_LOCALSTACK_ENDPT`                  | Endpoint for local development equivalent of S3                                                                                                                     |
