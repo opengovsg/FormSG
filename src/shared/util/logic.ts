@@ -127,20 +127,19 @@ const getPreventSubmitConditions = (
 export const getLogicUnitPreventingSubmit = (
   submission: LogicFieldArray,
   form: IForm,
-  optionalVisibleFieldIds?: FieldIdSet,
+  visibleFieldIds?: FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
-  const visibleFieldIds =
-    optionalVisibleFieldIds ?? getVisibleFieldIds(submission, form)
-
+  if (!visibleFieldIds) {
+    visibleFieldIds = getVisibleFieldIds(submission, form)
+  }
   const preventSubmitConditions = getPreventSubmitConditions(form)
   return preventSubmitConditions.find((logicUnit) =>
-    isLogicUnitSatisfied(submission, logicUnit.conditions, visibleFieldIds),
+    isLogicUnitSatisfied(submission, logicUnit.conditions, visibleFieldIds!),
   )
 }
 
 /**
  * Checks if the field ids in logic's conditions all exist in the fieldIds.
- *
  * @param conditions the list of conditions to check
  * @param formFieldIds the set of form field ids to check
  * @returns true if every condition's related form field id exists in the set of formFieldIds, false otherwise.
@@ -200,9 +199,10 @@ export const getVisibleFieldIds = (
 
 /**
  * Checks if an array of conditions is satisfied.
- * @param {Object} submission - form_fields (on client), or req.body.responses (on server)
- * @param {Object} logicUnit - Object containing the conditions specified in a single modal of `add new logic` on the form logic tab
- * @param {Set} visibleFieldIds - Set of field IDs that are visible, which is used to ensure that conditions are visible
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param logicUnit an object containing the conditions specified in a single modal of `add new logic` on the form logic tab
+ * @param visibleFieldIds the set of field IDs that are visible, which is used to ensure that conditions are visible
+ * @returns true if all the conditions are satisfied, false otherwise
  */
 const isLogicUnitSatisfied = (
   submission: LogicFieldArray,
@@ -219,7 +219,9 @@ const isLogicUnitSatisfied = (
   })
 }
 
-const getCurrentValue = (field: LogicField): string | null => {
+const getCurrentValue = (
+  field: LogicField,
+): string | null | undefined | string[] => {
   if ('fieldValue' in field) {
     // client
     return field.fieldValue
@@ -229,7 +231,6 @@ const getCurrentValue = (field: LogicField): string | null => {
   }
   return null
 }
-
 /**
  * Checks if the field's value matches the condition
  * @param {Object} field
@@ -244,8 +245,11 @@ const isConditionFulfilled = (
     return false
   }
   let currentValue = getCurrentValue(field)
-
-  if (!currentValue || currentValue.length === 0) {
+  if (
+    currentValue === null ||
+    currentValue === undefined ||
+    currentValue.length === 0
+  ) {
     return false
   }
 
@@ -295,11 +299,11 @@ const isConditionFulfilled = (
 }
 
 /**
- * Find the field in the current submission corresponding to the condition to be checked
- *
- * @param {Array} submission - form_fields (on client), or req.body.responses (on server)
- * @param {String} fieldId - id of condition field
- * @returns
+ * Find the field in the current submission corresponding to the condition to be
+ * checked.
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param fieldId the id of condition field to find
+ * @returns the condition field if it exists, `undefined` otherwise
  */
 const findConditionField = (
   submission: LogicFieldArray,
