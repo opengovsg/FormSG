@@ -14,9 +14,9 @@ const logger = createLoggerWithLabel(module)
  * @param res - Express response object
  */
 const handleSns = async (
-  req: Request<{}, {}, ISnsNotification>,
+  req: Request<Record<string, string>, string, ISnsNotification>,
   res: Response,
-) => {
+): Promise<Response<never>> => {
   // Since this function is for a public endpoint, catch all possible errors
   // so we never fail on malformed input. The response code is meaningless since
   // it is meant to go back to AWS.

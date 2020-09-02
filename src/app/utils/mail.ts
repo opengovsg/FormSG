@@ -13,7 +13,7 @@ export const generateLoginOtpHtml = (htmlData: {
   appName: string
   appUrl: string
   ipAddress: string
-}) => {
+}): Promise<string> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
   return ejs.renderFile(pathToTemplate, htmlData)
 }
@@ -26,7 +26,7 @@ export const generateVerificationOtpHtml = ({
   otp: string
   appName: string
   minutesToExpiry: number
-}) => {
+}): string => {
   return dedent`
     <p>You are currently submitting a form on ${appName}.</p>
     <p>
@@ -56,7 +56,7 @@ type SubmissionToAdminHtmlData = {
 
 export const generateSubmissionToAdminHtml = async (
   htmlData: SubmissionToAdminHtmlData,
-) => {
+): Promise<string> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
   return ejs.renderFile(pathToTemplate, htmlData)
 }
@@ -65,13 +65,14 @@ type AutoreplySummaryRenderData = {
   refNo: ISubmissionSchema['_id']
   formTitle: IFormSchema['title']
   submissionTime: string
+  // TODO (#42): Add proper types once the type is determined.
   formData: any
   formUrl: string
 }
 
 export const generateAutoreplyPdf = async (
   renderData: AutoreplySummaryRenderData,
-) => {
+): Promise<Buffer> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-summary-pdf.server.view.html`
 
   const summaryHtml = await ejs.renderFile(pathToTemplate, renderData)
@@ -98,14 +99,16 @@ export const generateAutoreplyPdf = async (
 
 type AutoreplyHtmlData = {
   autoReplyBody: string[]
-} & (AutoreplySummaryRenderData | {})
+} & (AutoreplySummaryRenderData | Record<string, unknown>)
 
-export const generateAutoreplyHtml = async (htmlData: AutoreplyHtmlData) => {
+export const generateAutoreplyHtml = async (
+  htmlData: AutoreplyHtmlData,
+): Promise<string> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-autoreply.server.view.html`
   return ejs.renderFile(pathToTemplate, htmlData)
 }
 
-export const isToFieldValid = (addresses: string | string[]) => {
+export const isToFieldValid = (addresses: string | string[]): boolean => {
   // Retrieve all emails from each address.
   // As addresses can be strings or a string array, cast given addresses param
   // into an array regardless and flatten deep.

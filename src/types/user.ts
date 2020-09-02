@@ -11,7 +11,7 @@ export interface IUser {
   agency: IAgencySchema['_id']
   contact?: string
   created?: Date
-  betaFlag?: {}
+  betaFlag?: Record<string, unknown>
   _id?: Document['_id']
 }
 

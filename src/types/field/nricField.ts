@@ -1,5 +1,5 @@
 import { IField, IFieldSchema } from './baseField'
 
-export interface INricField extends IField {}
+export type INricField = IField
 
 export interface INricFieldSchema extends INricField, IFieldSchema {}

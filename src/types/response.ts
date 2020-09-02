@@ -39,7 +39,7 @@ interface IClientSubmission {
   responses: FieldResponse[]
 }
 
-export interface IClientEmailSubmission extends IClientSubmission {}
+export type IClientEmailSubmission = IClientSubmission
 
 export interface IClientEncryptSubmission extends IClientSubmission {
   encryptedContent: string

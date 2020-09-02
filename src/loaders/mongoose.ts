@@ -7,7 +7,7 @@ import { createLoggerWithLabel } from '../config/logger'
 const logger = createLoggerWithLabel(module)
 
 export default async (): Promise<Connection> => {
-  let usingMockedDb = config.db.uri === undefined
+  const usingMockedDb = config.db.uri === undefined
   // Mock out the database if we're developing locally
   if (usingMockedDb) {
     logger.warn({
@@ -83,8 +83,8 @@ export default async (): Promise<Connection> => {
 
   // Seed the db with govtech agency if using the mocked db
   if (usingMockedDb) {
-    let Agency = mongoose.model('Agency')
-    let agency = new Agency({
+    const Agency = mongoose.model('Agency')
+    const agency = new Agency({
       shortName: 'govtech',
       fullName: 'Government Technology Agency',
       emailDomain: 'data.gov.sg',

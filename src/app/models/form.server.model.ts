@@ -12,6 +12,7 @@ import {
   FormOtpData,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  IForm,
   IFormSchema,
   IPopulatedForm,
   LogicType,
@@ -376,7 +377,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Methods
   FormSchema.methods.getMainFields = function (this: IFormSchema) {
-    let form = {
+    const form = {
       _id: this._id,
       title: this.title,
       status: this.status,
@@ -397,7 +398,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Return a duplicate form object with the given properties
   FormSchema.methods.duplicate = function (
     this: IFormSchema,
-    overrideProps: object,
+    overrideProps: Partial<IForm>,
   ) {
     const newForm = pick(this, FORM_DUPLICATE_KEYS)
     Object.assign(newForm, overrideProps)
@@ -493,7 +494,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   return FormModel
 }
 
-const getFormModel = (db: Mongoose) => {
+const getFormModel = (db: Mongoose): IFormModel => {
   try {
     return db.model(FORM_SCHEMA_ID) as IFormModel
   } catch {
@@ -501,13 +502,13 @@ const getFormModel = (db: Mongoose) => {
   }
 }
 
-export const getEmailFormModel = (db: Mongoose) => {
+export const getEmailFormModel = (db: Mongoose): IEmailFormModel => {
   // Load or build base model first
   getFormModel(db)
   return db.model(ResponseMode.Email) as IEmailFormModel
 }
 
-export const getEncryptedFormModel = (db: Mongoose) => {
+export const getEncryptedFormModel = (db: Mongoose): IEncryptedFormModel => {
   // Load or build base model first
   getFormModel(db)
   return db.model(ResponseMode.Encrypt) as IEncryptedFormModel

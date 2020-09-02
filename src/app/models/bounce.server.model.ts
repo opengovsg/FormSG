@@ -142,14 +142,11 @@ BounceSchema.methods.merge = function (
   this.bounces = latestBounces.bounces
 }
 
-const getBounceModel = (db: Mongoose) => {
+const getBounceModel = (db: Mongoose): IBounceModel => {
   try {
     return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
   } catch {
-    return db.model<IBounceSchema>(
-      BOUNCE_SCHEMA_ID,
-      BounceSchema,
-    ) as IBounceModel
+    return db.model<IBounceSchema, IBounceModel>(BOUNCE_SCHEMA_ID, BounceSchema)
   }
 }
 
