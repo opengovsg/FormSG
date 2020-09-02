@@ -3,7 +3,7 @@
 angular.module('core').factory('Features', ['$resource', featureFactory])
 
 function featureFactory($resource) {
-  var service = {
+  const service = {
     states: '',
     getfeatureStates: async () => {
       if (this.states) {
