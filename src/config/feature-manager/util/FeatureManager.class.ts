@@ -80,29 +80,26 @@ export default class FeatureManager {
   /**
    * Return true if requested feature is enabled. Else, throw error.
    * @param name the feature name to check enabledness
-   * @returns true iff feature is enabled
-   * @throws {Error} if feature is not enabled
+   * @returns true if the feature is enabled, false if disabled
+   * @throws {Error} if name given is not a registered feature
    */
   isEnabled(name: FeatureNames): boolean {
-    const isInState = this.states[name]
-    if (isInState) {
-      return isInState
+    if (this.states[name] !== undefined) {
+      return !!this.states[name]
     }
 
-    // Not enabled or not in state.
+    // Only throw error if state is undefined.
     throw new Error(`A feature called ${name} does not exist`)
   }
 
   /**
    * Return props registered for requested feature
-   * @param name
+   * @param name the feature to return properties for
    */
   props<K extends FeatureNames>(name: K) {
-    const isInState = this.states[name]
-    if (isInState) {
-      return this.properties[name]!
+    if (this.states[name] !== undefined) {
+      return this.properties[name]
     }
-
     // Not enabled or not in state.
     throw new Error(`A feature called ${name} does not exist`)
   }
@@ -110,12 +107,12 @@ export default class FeatureManager {
   /**
    * Return properties registered for requested feature
    * and whether requested feature is enabled
-   * @param name
+   * @param name the name of the feature to return
    */
   get(name: FeatureNames): RegisteredFeature<FeatureNames> {
     return {
       isEnabled: this.isEnabled(name),
-      props: this.props(name),
+      props: this.props(name)!,
     }
   }
 }
