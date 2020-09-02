@@ -2,10 +2,10 @@
 
 This document details what is needed to create an environment to run FormSG in AWS.
 
-### Build and run your nodejs app
+## Build and run your NodeJS app
 
-```
-$ npm install
+```bash
+npm install
 $ npm run build
 $ npm start
 ```
@@ -25,7 +25,7 @@ As a prerequisite for EB deployment, make sure you have already created your AWS
 
 ### Dockerrun.aws.json
 
-```
+```json
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
@@ -52,7 +52,7 @@ FormSG supports storing of users' Twilio API credentials using AWS Secret Manage
 
 Firstly, name the secret with a unique secret name and store the secret value in the following format:
 
-```
+```json
 {
   "accountSid": "",
   "apiKey": "",
@@ -147,8 +147,6 @@ The following env variables are set in Travis:
 | `SES_PASS`            | SMTP password.                                                                                                                                                                                 |
 | `SES_MAX_MESSAGES`    | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`. |
 | `SES_POOL`            | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                |
-| `SES_RATE`            | Maximum email to send per second, or per `rateDelta` if supplied.                                                                                                                              |
-| `SES_RATEDELTA`       | Defines the time measuring period in milliseconds for rate limiting. Defaults to `1000`.                                                                                                       |
 | `MAIL_FROM`           | Sender email address. Defaults to `'donotreply@mail.form.gov.sg'`.                                                                                                                             |  |
 | `MAIL_SOCKET_TIMEOUT` | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                          |
 | `MAIL_LOGGER`         | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                   |
