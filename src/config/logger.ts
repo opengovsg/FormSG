@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
-import defaults from './defaults'
+import { AWS_DEFAULT } from 'src/shared/constants'
 
 // Params to enforce the logging format.
 type CustomLoggerParams = {
@@ -25,7 +25,7 @@ type CustomLoggerParams = {
 // having circular dependencies.
 const isDev = ['development', 'test'].includes(process.env.NODE_ENV)
 const customCloudWatchGroup = process.env.CUSTOM_CLOUDWATCH_LOG_GROUP
-const awsRegion = process.env.AWS_REGION || defaults.aws.region
+const awsRegion = process.env.AWS_REGION || AWS_DEFAULT.region
 
 // A variety of helper functions to make winston logging like console logging,
 // allowing multiple arguments.
