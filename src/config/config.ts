@@ -1,6 +1,5 @@
 import aws from 'aws-sdk'
 import convict from 'convict'
-import crypto from 'crypto'
 import { SessionOptions } from 'express-session'
 import { merge } from 'lodash'
 import nodemailer from 'nodemailer'
@@ -10,15 +9,17 @@ import SMTPPool from 'nodemailer/lib/smtp-pool'
 import { promisify } from 'util'
 import validator from 'validator'
 
+import { AWS_DEFAULT } from 'src/shared/constants'
+
 import { AwsConfig, Config, DbConfig, Environment, MailConfig } from '../types'
 
-import defaults from './defaults'
 import { createLoggerWithLabel } from './logger'
 import {
   compulsoryVarsSchema,
   loadS3BucketUrlSchema,
   optionalVarsSchema,
   prodOnlyVarsSchema,
+  validateBucketUrl,
 } from './schema'
 
 // Load and validate optional configuration values
@@ -60,8 +61,11 @@ if (isDev) {
 // Else, the environment variables to instantiate S3 are used.
 
 const awsEndpoint = isDev
-  ? defaults.aws.endpoint
+  ? AWS_DEFAULT.endpoint
   : `https://s3.${basicVars.awsConfig.region}.amazonaws.com` // NOTE NO TRAILING / AT THE END OF THIS URL!
+
+// Validate to make sure no one ever adds a trailing slash here
+validateBucketUrl(awsEndpoint, { isDev, hasTrailingSlash: false })
 
 // Perform validation before accessing s3 Bucket Urls
 const s3BucketUrlSchema = loadS3BucketUrlSchema(isDev)
@@ -80,7 +84,7 @@ const s3 = new aws.S3({
   // Unset and use default if not in development mode
   // Endpoint and path style overrides are needed only in development mode for
   // localstack to work.
-  endpoint: isDev ? defaults.aws.endpoint : undefined,
+  endpoint: isDev ? AWS_DEFAULT.endpoint : undefined,
   s3ForcePathStyle: isDev ? true : undefined,
 })
 
