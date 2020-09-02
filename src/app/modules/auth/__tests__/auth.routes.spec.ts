@@ -12,11 +12,11 @@ import * as UserService from '../../user/user.service'
 import { AuthRouter } from '../auth.routes'
 import * as AuthService from '../auth.service'
 
-describe('auth.routes', () => {
-  const app = setupApp('/auth', AuthRouter)
-  const cookieStore = new CookieStore()
-  const request = supertest(app)
+const app = setupApp('/auth', AuthRouter)
+const cookieStore = new CookieStore()
+const request = supertest(app)
 
+describe('auth.routes', () => {
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => {
     await dbHandler.clearDatabase()
@@ -361,7 +361,7 @@ describe('auth.routes', () => {
       // Arrange
       const invalidOtp = '654321'
       // Request for OTP so the hash exists.
-      await requestForOtp(app, VALID_EMAIL)
+      await requestForOtp(VALID_EMAIL)
 
       // Act
       const response = await request
@@ -377,7 +377,7 @@ describe('auth.routes', () => {
       // Arrange
       const invalidOtp = '654321'
       // Request for OTP so the hash exists.
-      await requestForOtp(app, VALID_EMAIL)
+      await requestForOtp(VALID_EMAIL)
 
       // Act
       // Attempt invalid OTP for MAX_OTP_ATTEMPTS.
@@ -416,7 +416,7 @@ describe('auth.routes', () => {
     it('should return 200 with user object when body.otp is a valid OTP', async () => {
       // Arrange
       // Request for OTP so the hash exists.
-      await requestForOtp(app, VALID_EMAIL)
+      await requestForOtp(VALID_EMAIL)
 
       // Act
       const response = await request
@@ -441,7 +441,7 @@ describe('auth.routes', () => {
     it('should return 500 when upserting user document fails', async () => {
       // Arrange
       // Request for OTP so the hash exists.
-      await requestForOtp(app, VALID_EMAIL)
+      await requestForOtp(VALID_EMAIL)
 
       // Mock error thrown when creating user
       const upsertSpy = jest
@@ -462,13 +462,69 @@ describe('auth.routes', () => {
       )
     })
   })
+
+  describe('GET /auth/signout', () => {
+    const MOCK_VALID_OTP = '123456'
+    const VALID_DOMAIN = 'example.com'
+    const VALID_EMAIL = `test@${VALID_DOMAIN}`
+
+    beforeEach(async () => {
+      await dbHandler.insertDefaultAgency({
+        mailDomain: VALID_DOMAIN,
+      })
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValue(MOCK_VALID_OTP)
+    })
+
+    it('should return 200 and clear cookies when signout is successful', async () => {
+      // Act
+      // Sign in user
+      await signInUser(VALID_EMAIL, MOCK_VALID_OTP)
+
+      // Arrange
+      const response = await request
+        .get('/auth/signout')
+        .set('Cookie', cookieStore.get())
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.text).toEqual('Sign out successful')
+      // connect.sid should now be empty.
+      expect(response.header['set-cookie'][0]).toEqual(
+        expect.stringContaining('connect.sid=;'),
+      )
+    })
+
+    it('should return 200 even when user has not signed in before', async () => {
+      // Arrange
+      // Should have no cookies.
+      expect(cookieStore.get()).toEqual('')
+
+      // Act
+      const response = await request.get('/auth/signout')
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.text).toEqual('Sign out successful')
+    })
+  })
 })
 
 // Helper functions
-const requestForOtp = async (app: Express.Application, email: string) => {
+const requestForOtp = async (email: string) => {
   // Set that so no real mail is sent.
   jest.spyOn(MailService, 'sendLoginOtp').mockResolvedValue(true)
 
-  const response = await supertest(app).post('/auth/sendotp').send({ email })
+  const response = await request.post('/auth/sendotp').send({ email })
   expect(response.text).toEqual(`OTP sent to ${email}!`)
+}
+
+const signInUser = async (email: string, otp: string) => {
+  await requestForOtp(email)
+  const response = await request.post('/auth/verifyotp').send({ email, otp })
+  cookieStore.handleCookie(response)
+
+  // Assert
+  // Should have session cookie returned.
+  expect(cookieStore.get()).toEqual(expect.stringContaining('connect.sid'))
+  return response.body
 }
