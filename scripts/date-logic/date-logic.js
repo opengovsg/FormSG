@@ -54,5 +54,4 @@
     { '$count': 'numFormFields' }
   ]
   db.getCollection('forms').aggregate(afterScriptFormFieldsWithIsFutureOnlyTrue)
-
-  
+ 
