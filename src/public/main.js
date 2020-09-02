@@ -144,7 +144,6 @@ app.requires.push('users')
 require('./modules/core/services/gtag.client.service.js')
 require('./modules/core/services/analytics.client.service.js')
 require('./modules/core/services/formsgSdk.client.factory')
-require('./modules/core/services/feature.client.factory')
 
 // Core controllers
 require('./modules/core/controllers/landing.client.controller.js')
