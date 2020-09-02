@@ -10,7 +10,6 @@ import { promisify } from 'util'
 
 import { AwsConfig, Config, DbConfig, Environment, MailConfig } from '../types'
 
-import { createLoggerWithLabel } from './logger'
 import {
   compulsoryVarsSchema,
   loadS3BucketUrlSchema,
@@ -87,8 +86,6 @@ const awsConfig: AwsConfig = {
   s3,
 }
 
-const logger = createLoggerWithLabel(module)
-
 let dbUri
 if (isDev) {
   if (basicVars.core.nodeEnv === Environment.Dev && prodOnlyVars.dbHost) {
@@ -153,26 +150,12 @@ const mailConfig: MailConfig = (function () {
     transporter = nodemailer.createTransport(options)
   } else {
     if (basicVars.core.nodeEnv === Environment.Dev) {
-      logger.warn({
-        message:
-          '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer to send to local SMTP server instead.\nThis should NEVER be seen in production.',
-        meta: {
-          action: 'init.mailConfig',
-        },
-      })
       // Falls back to direct transport
       transporter = nodemailer.createTransport(directTransport({}))
     } else if (
       basicVars.core.nodeEnv === Environment.Test &&
       prodOnlyVars.port
     ) {
-      logger.warn({
-        message:
-          '\n!!! WARNING !!!\nNo SES credentials detected.\nUsing Nodemailer Direct Transport instead.\nThis should NEVER be seen in production.',
-        meta: {
-          action: 'init.mailConfig',
-        },
-      })
       transporter = nodemailer.createTransport({
         port: prodOnlyVars.port,
         ignoreTLS: true,
