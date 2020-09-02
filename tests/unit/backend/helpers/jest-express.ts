@@ -1,9 +1,6 @@
 import { Request, Response } from 'express'
 
-const mockRequest = <
-  P extends Record<string, string>,
-  B extends Record<string, string>
->({
+const mockRequest = <P extends Record<string, string>, B>({
   params,
   body,
   session,

@@ -47,7 +47,7 @@ describe('submission.utils', () => {
 
     it('should throw error if called with invalid responseMode', async () => {
       // Act + Assert
-      expect(() => getModeFilter(undefined)).toThrowError(
+      expect(() => getModeFilter(undefined!)).toThrowError(
         'getResponsesForEachField: Invalid response mode parameter',
       )
     })

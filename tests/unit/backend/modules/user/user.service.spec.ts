@@ -221,7 +221,7 @@ describe('user.service', () => {
       const actual = await UserService.getPopulatedUserById(USER_ID)
 
       // Assert
-      expect(actual.toObject()).toEqual(expected)
+      expect(actual!.toObject()).toEqual(expected)
     })
 
     it('should return null when user cannot be found', async () => {

@@ -10,6 +10,7 @@ import {
   IAgencySchema,
   IEncryptedForm,
   IUserSchema,
+  Permission,
   ResponseMode,
 } from 'src/types'
 
@@ -167,7 +168,9 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList.map((permission) => omit(permission, '_id'))
+          .permissionList!.map((permission: Permission[]) =>
+            omit(permission, '_id'),
+          )
         expect(actualPermissionList).toEqual(permissionList)
       })
 
@@ -351,7 +354,7 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Remove indeterministic id from actual permission list
-        const actualPermissionList = (saved.toObject() as IEncryptedForm).permissionList.map(
+        const actualPermissionList = (saved.toObject() as IEncryptedForm).permissionList!.map(
           (permission) => omit(permission, '_id'),
         )
         expect(actualPermissionList).toEqual(permissionList)
@@ -555,7 +558,9 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList.map((permission) => omit(permission, '_id'))
+          .permissionList!.map((permission: Permission[]) =>
+            omit(permission, '_id'),
+          )
         expect(actualPermissionList).toEqual(permissionList)
       })
 
@@ -690,7 +695,7 @@ describe('Form Model', () => {
         const form = (await Form.create(emailFormParams)).toObject()
 
         // Act
-        const actualForm = (await Form.getFullFormById(form._id)).toObject()
+        const actualForm = (await Form.getFullFormById(form._id))!.toObject()
 
         // Assert
         // Form should be returned
@@ -721,7 +726,7 @@ describe('Form Model', () => {
         const form = (await Form.create(encryptFormParams)).toObject()
 
         // Act
-        const actualForm = (await Form.getFullFormById(form._id)).toObject()
+        const actualForm = (await Form.getFullFormById(form._id))!.toObject()
 
         // Assert
         // Form should be returned

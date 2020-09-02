@@ -850,7 +850,7 @@ describe('mail.service', () => {
         html: expectedMailBody,
         // Attachments should be concatted with mock pdf response
         attachments: [
-          ...MOCK_AUTOREPLY_PARAMS.attachments,
+          ...MOCK_AUTOREPLY_PARAMS.attachments!,
           {
             content: MOCK_PDF,
             filename: 'response.pdf',

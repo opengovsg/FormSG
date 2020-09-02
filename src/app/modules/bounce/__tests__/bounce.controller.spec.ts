@@ -4,11 +4,14 @@ import { mocked } from 'ts-jest/utils'
 
 import { handleSns } from 'src/app/modules/bounce/bounce.controller'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
+import { ISnsNotification } from 'src/types'
 
 jest.mock('src/app/modules/bounce/bounce.service')
 const MockBounceService = mocked(BounceService, true)
 
-const MOCK_REQ = expressHandler.mockRequest({ body: { someKey: 'someValue' } })
+const MOCK_REQ = expressHandler.mockRequest({
+  body: ({ someKey: 'someValue' } as unknown) as ISnsNotification,
+})
 const MOCK_RES = expressHandler.mockResponse()
 
 describe('handleSns', () => {
