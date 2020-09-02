@@ -28,6 +28,7 @@ services:
       - BOUNCE_LIFE_SPAN=1800000
       - AWS_ACCESS_KEY_ID=fakeKey
       - AWS_SECRET_ACCESS_KEY=fakeSecret
+      - SESSION_SECRET=thisisasecret
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
