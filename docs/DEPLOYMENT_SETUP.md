@@ -124,6 +124,8 @@ The following env variables are set in Travis:
 | Variable                      | Description                                                                                                                         |
 | :---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `AWS_REGION`                  | AWS region.                                                                                                                         |
+| `AWS_ACCESS_KEY_ID`           | AWS IAM access key ID used to access S3.                                                                                            |
+| `AWS_SECRET_ACCESS_KEY`       | AWS IAM access secret used to access S3.                                                                                            |
 | `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads.                                                                                          |
 | `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
 | `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
@@ -258,9 +260,9 @@ If this feature is enabled, storage mode forms will also support authentication 
 
 ### Tests
 
-| Variable               | Description                                                                                                                                     |
-| :--------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MONGO_BINARY_VERSION` | Version of the Mongo binary used. Defaults to `'latest'` according to [MongoMemoryServer](https://github.com/nodkz/mongodb-memory-server) docs. |
-| `PWD`                  | Path of working directory.                                                                                                                      |
-| `MOCK_WEBHOOK_CONFIG_FILE`                  | Path of configuration file for mock webhook server                                                                                                                      |
-| `MOCK_WEBHOOK_PORT`                  | Port of mock webhook server                                                                                                                      |
+| Variable                   | Description                                                                                                                                     |
+| :------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MONGO_BINARY_VERSION`     | Version of the Mongo binary used. Defaults to `'latest'` according to [MongoMemoryServer](https://github.com/nodkz/mongodb-memory-server) docs. |
+| `PWD`                      | Path of working directory.                                                                                                                      |
+| `MOCK_WEBHOOK_CONFIG_FILE` | Path of configuration file for mock webhook server                                                                                              |
+| `MOCK_WEBHOOK_PORT`        | Port of mock webhook server                                                                                                                     |
