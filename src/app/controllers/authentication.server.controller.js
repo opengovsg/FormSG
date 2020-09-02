@@ -16,7 +16,7 @@ const validator = require('validator')
 const { StatusCodes } = require('http-status-codes')
 
 const config = require('../../config/config')
-const { LINKS } = require('../shared/constants')
+const { LINKS } = require('../../shared/constants')
 const PERMISSIONS = require('../utils/permission-levels').default
 const { getRequestIp } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)

@@ -6,8 +6,7 @@ import { isNil } from 'lodash'
 import mongodbUri from 'mongodb-uri'
 import validator from 'validator'
 
-import { AWS_DEFAULT } from 'src/shared/constants'
-
+import { AWS_DEFAULT } from '../shared/constants'
 import {
   Environment,
   IBucketUrlSchema,

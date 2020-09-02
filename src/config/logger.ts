@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
-import { AWS_DEFAULT } from 'src/shared/constants'
+import { AWS_DEFAULT } from '../shared/constants'
 
 // Params to enforce the logging format.
 type CustomLoggerParams = {
