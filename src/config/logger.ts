@@ -9,7 +9,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
-import { aws, customCloudWatchGroup, isDev } from './config'
+import { Environment } from '../types'
+
+import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
 
 // Params to enforce the logging format.
 type CustomLoggerParams = {
@@ -162,7 +164,7 @@ const createLoggerOptions = (label: string): LoggerOptions => {
     ),
     transports: [
       new transports.Console({
-        silent: process.env.NODE_ENV === 'test',
+        silent: nodeEnv === Environment.Test,
       }),
     ],
     exitOnError: false,
