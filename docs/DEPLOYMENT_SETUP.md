@@ -182,7 +182,7 @@ If this feature is enabled, client-side error events will be piped to [sentry.io
 
 | Variable            | Description                                                                                           |
 | :------------------ | ----------------------------------------------------------------------------------------------------- |
-| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK.                                                          |
+| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Sentry SDK.                                                         |
 | `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
 #### Examples page Using Pre-Computed Results
