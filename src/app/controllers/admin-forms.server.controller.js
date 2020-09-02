@@ -8,7 +8,6 @@ const moment = require('moment-timezone')
 const _ = require('lodash')
 const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
-const get = require('lodash/get')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('./errors.server.controller')
