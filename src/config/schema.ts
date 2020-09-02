@@ -61,6 +61,8 @@ const validateBucketUrl = (
   }
 }
 
+// If the default value does not match the format specified, the configuration built from this schema
+// will throw an error upon validation (i.e. All env vars with default null have to be specified)
 export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
   awsConfig: {
     imageS3Bucket: {
@@ -93,6 +95,7 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
   },
 }
 
+// If the following environment variables are not specified, we will fall back to the defaults provided
 export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   appConfig: {
     title: {
