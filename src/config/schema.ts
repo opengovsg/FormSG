@@ -6,7 +6,6 @@ import { isNil } from 'lodash'
 import mongodbUri from 'mongodb-uri'
 import validator from 'validator'
 
-import { AWS_DEFAULT } from '../shared/constants'
 import {
   Environment,
   IBucketUrlSchema,
@@ -226,7 +225,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     region: {
       doc: 'Region that S3 bucket is located in',
       format: Object.keys(awsInfo.data.regions),
-      default: AWS_DEFAULT.region,
+      default: 'ap-southeast-1',
       env: 'AWS_REGION',
     },
     customCloudWatchGroup: {

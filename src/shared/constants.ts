@@ -28,11 +28,6 @@ export const FORM_DUPLICATE_KEYS = [
   'inactiveMessage',
 ]
 
-// Config for AWS.
-export const AWS_DEFAULT = {
-  region: 'ap-southeast-1',
-}
-
 export const LINKS = {
   supportFormLink: 'https://go.gov.sg/formsg-support',
 }
