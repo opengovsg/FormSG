@@ -78,7 +78,7 @@ export const handleContactVerifyOtp: RequestHandler<
     await verifyContactOtp(otp, contact, userId)
   } catch (err) {
     logger.warn({
-      message: `Error occurred whilst verifying contact OTP for ${userId}`,
+      message: 'Error occurred whilst verifying contact OTP',
       meta: {
         action: 'handleContactVerifyOtp',
         userId,
@@ -99,7 +99,7 @@ export const handleContactVerifyOtp: RequestHandler<
   } catch (updateErr) {
     // Handle update error.
     logger.warn({
-      message: `Error occurred whilst updating contact of user ${userId}`,
+      message: 'Error occurred whilst updating user contact',
       meta: {
         action: 'handleContactVerifyOtp',
         userId,
