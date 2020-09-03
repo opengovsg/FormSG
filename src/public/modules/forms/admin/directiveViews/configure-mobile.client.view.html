@@ -14,7 +14,11 @@
         ng-class="field.isVerifiable? 'toggle-selector-on' : ''"
         onclick=""
       >
-        <input type="checkbox" ng-model="field.isVerifiable" />
+        <input
+          type="checkbox"
+          ng-model="field.isVerifiable"
+          ng-click="openVerifiedSMSModal()"
+        />
         <div class="toggle-selector-switch">
           <i ng-class="field.isVerifiable ? 'bx bx-check' : 'bx bx-x' "></i>
         </div>
