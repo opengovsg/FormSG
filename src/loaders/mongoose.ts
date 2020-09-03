@@ -48,7 +48,13 @@ export default async (): Promise<Connection> => {
 
   // Only required for initial connection errors, reconnect on error.
   connect().catch((err) => {
-    logger.error(err)
+    logger.error({
+      message: '@MongoDB: Error caught while connecting',
+      meta: {
+        action: 'init',
+      },
+      error: err,
+    })
     return connect()
   })
 

@@ -77,7 +77,14 @@ export const handleContactVerifyOtp: RequestHandler<
   try {
     await verifyContactOtp(otp, contact, userId)
   } catch (err) {
-    logger.warn(err.meta ?? err)
+    logger.warn({
+      message: `Error occurred whilst verifying contact OTP for ${userId}`,
+      meta: {
+        action: 'handleContactVerifyOtp',
+        userId,
+      },
+      error: err,
+    })
     if (err instanceof ApplicationError) {
       return res.status(err.status).send(err.message)
     } else {
@@ -91,7 +98,14 @@ export const handleContactVerifyOtp: RequestHandler<
     return res.status(StatusCodes.OK).send(updatedUser)
   } catch (updateErr) {
     // Handle update error.
-    logger.warn(updateErr)
+    logger.warn({
+      message: `Error occurred whilst updating contact of user ${userId}`,
+      meta: {
+        action: 'handleContactVerifyOtp',
+        userId,
+      },
+      error: updateErr,
+    })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(updateErr.message)
   }
 }
@@ -110,6 +124,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
       message: `Unable to retrieve user ${sessionUserId}`,
       meta: {
         action: 'handleFetchUser',
+        userId: sessionUserId,
       },
       error: dbErr,
     })
