@@ -7,9 +7,9 @@ import defaults from '../../../config/defaults'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../services/mail.service'
 import { getRequestIp } from '../../utils/request'
+import { ApplicationError } from '../core/core.errors'
 import * as UserService from '../user/user.service'
 
-import { InvalidOtpError } from './auth.errors'
 import * as AuthService from './auth.service'
 
 const logger = createLoggerWithLabel(module)
@@ -108,14 +108,14 @@ export const handleLoginVerifyOtp: RequestHandler<
   if (verifyErr) {
     logger.warn({
       message:
-        verifyErr instanceof InvalidOtpError
+        verifyErr instanceof ApplicationError
           ? 'Login OTP is invalid'
           : 'Error occurred when trying to validate login OTP',
       meta: logMeta,
       error: verifyErr,
     })
 
-    if (verifyErr instanceof InvalidOtpError) {
+    if (verifyErr instanceof ApplicationError) {
       return res.status(verifyErr.status).send(verifyErr.message)
     }
 
