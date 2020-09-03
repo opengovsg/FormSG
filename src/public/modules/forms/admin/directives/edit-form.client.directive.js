@@ -200,8 +200,7 @@ function editFormController(
       backdrop: 'static',
       keyboard: false,
       templateUrl: 'modules/forms/admin/views/edit-fields.client.modal.html',
-      windowClass: 'edit-modal-window full-page-modal modal-on-top',
-      backdropClass: 'custom-modal-backdrop',
+      windowClass: 'edit-modal-window full-page-modal',
       resolve: {
         externalScope: function () {
           return {
