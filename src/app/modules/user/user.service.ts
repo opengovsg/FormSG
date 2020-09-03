@@ -157,14 +157,15 @@ export const getPopulatedUserById = async (
 }
 
 /**
- * Updates or creates a user document with the given email and return the user.
+ * Retrieves the user with the given email. If the user does not yet exist, a
+ * new user document is created and returned.
  * @param email the email of the user to retrieve
  * @param agency the agency document to associate with the user
  * @returns the upserted user document
  * @throws {InvalidDomainError} on invalid email
  * @throws {Error} on upsert failure
  */
-export const upsertAndReturnUser = async (email: string, agency: IAgency) => {
+export const retrieveUser = async (email: string, agency: IAgency) => {
   if (!validator.isEmail(email)) {
     throw new InvalidDomainError()
   }

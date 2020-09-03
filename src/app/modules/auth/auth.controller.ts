@@ -133,7 +133,7 @@ export const handleLoginVerifyOtp: RequestHandler = async (
 
   // OTP is valid, proceed to login user.
   try {
-    const user = await UserService.upsertAndReturnUser(email, agency)
+    const user = await UserService.retrieveUser(email, agency)
     // Create user object to return to frontend.
     const userObj = { ...user.toObject(), agency }
 
