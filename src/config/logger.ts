@@ -1,4 +1,5 @@
 import hasAnsi from 'has-ansi'
+import { isEmpty } from 'lodash'
 import omit from 'lodash/omit'
 import logform from 'logform'
 import path from 'path'
@@ -197,7 +198,11 @@ const createCustomLogger = (logger: Logger) => {
     info: (params: Omit<CustomLoggerParams, 'error'>) => {
       try {
         const { message, meta } = params
-        return logger.info(message, { meta })
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
+        return logger.info(params)
       } catch {
         return logger.info(params)
       }
@@ -205,6 +210,10 @@ const createCustomLogger = (logger: Logger) => {
     warn: (params: CustomLoggerParams) => {
       try {
         const { message, meta, error } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
         if (error) {
           return logger.warn(message, { meta }, error)
         }
@@ -216,6 +225,10 @@ const createCustomLogger = (logger: Logger) => {
     error: (params: CustomLoggerParams) => {
       try {
         const { message, meta, error } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
         if (error) {
           return logger.error(message, { meta }, error)
         }
