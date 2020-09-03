@@ -3,6 +3,7 @@ import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { IPopulatedUser } from '../../../types'
 import SmsFactory from '../../factories/sms.factory'
 import { ApplicationError } from '../core/core.errors'
 
@@ -22,8 +23,8 @@ const logger = createLoggerWithLabel(module)
  * @returns 400 on OTP creation or SMS send failure
  */
 export const handleContactSendOtp: RequestHandler<
-  {},
-  {},
+  Record<string, string>,
+  string,
   { contact: string; userId: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -56,8 +57,8 @@ export const handleContactSendOtp: RequestHandler<
  * @returns 500 when OTP is malformed or for unknown errors
  */
 export const handleContactVerifyOtp: RequestHandler<
-  {},
-  {},
+  Record<string, string>,
+  string | IPopulatedUser,
   {
     userId: string
     otp: string
@@ -77,7 +78,14 @@ export const handleContactVerifyOtp: RequestHandler<
   try {
     await verifyContactOtp(otp, contact, userId)
   } catch (err) {
-    logger.warn(err.meta ?? err)
+    logger.warn({
+      message: 'Error occurred whilst verifying contact OTP',
+      meta: {
+        action: 'handleContactVerifyOtp',
+        userId,
+      },
+      error: err,
+    })
     if (err instanceof ApplicationError) {
       return res.status(err.status).send(err.message)
     } else {
@@ -91,7 +99,14 @@ export const handleContactVerifyOtp: RequestHandler<
     return res.status(StatusCodes.OK).send(updatedUser)
   } catch (updateErr) {
     // Handle update error.
-    logger.warn(updateErr)
+    logger.warn({
+      message: 'Error occurred whilst updating user contact',
+      meta: {
+        action: 'handleContactVerifyOtp',
+        userId,
+      },
+      error: updateErr,
+    })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(updateErr.message)
   }
 }
@@ -110,6 +125,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
       message: `Unable to retrieve user ${sessionUserId}`,
       meta: {
         action: 'handleFetchUser',
+        userId: sessionUserId,
       },
       error: dbErr,
     })

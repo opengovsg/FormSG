@@ -5,7 +5,7 @@ import { IFormStatisticsTotalSchema } from '../../types'
 const FORM_STATS_TOTAL_SCHEMA_ID = 'FormStatisticsTotal'
 const FORM_STATS_COLLECTION_NAME = 'formStatisticsTotal'
 
-interface IFormStatisticsTotalModel extends Model<IFormStatisticsTotalSchema> {}
+type IFormStatisticsTotalModel = Model<IFormStatisticsTotalSchema>
 
 const compileFormStatisticsTotalModel = (db: Mongoose) => {
   const FormStatisticsTotalSchema = new Schema<IFormStatisticsTotalSchema>(

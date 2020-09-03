@@ -3,7 +3,7 @@ import _ from 'lodash'
 import mongoose from 'mongoose'
 
 import formsgSdk from '../../../config/formsg-sdk'
-import * as vfnUtil from '../../../shared/util/verification'
+import * as VfnUtils from '../../../shared/util/verification'
 import {
   IEmailFieldSchema,
   IFieldSchema,
@@ -18,8 +18,11 @@ import getVerificationModel from '../../models/verification.server.model'
 import MailService from '../../services/mail.service'
 import { generateOtp } from '../../utils/otp'
 
+import { ITransaction } from './verification.types'
+
 const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
+
 const {
   HASH_EXPIRE_AFTER_SECONDS,
   NUM_OTP_RETRIES,
@@ -27,12 +30,7 @@ const {
   VERIFIED_FIELDTYPES,
   VfnErrors,
   WAIT_FOR_OTP_SECONDS,
-} = vfnUtil
-
-interface ITransaction {
-  transactionId: IVerificationSchema['_id']
-  expireAt: IVerificationSchema['expireAt']
-}
+} = VfnUtils
 
 /**
  *  Creates a transaction for a form that has verifiable fields
@@ -282,7 +280,7 @@ const isTransactionExpired = (expireAt: Date): boolean => {
  */
 const isHashedOtpExpired = (hashCreatedAt: Date): boolean => {
   const currentDate = new Date()
-  const expireAt = vfnUtil.getExpiryDate(
+  const expireAt = VfnUtils.getExpiryDate(
     HASH_EXPIRE_AFTER_SECONDS,
     hashCreatedAt,
   )
@@ -298,9 +296,10 @@ const waitToResendOtpSeconds = (hashCreatedAt: Date): number => {
     // Hash has not been created
     return 0
   }
-  const expireAtMs = vfnUtil
-    .getExpiryDate(WAIT_FOR_OTP_SECONDS, hashCreatedAt)
-    .getTime()
+  const expireAtMs = VfnUtils.getExpiryDate(
+    WAIT_FOR_OTP_SECONDS,
+    hashCreatedAt,
+  ).getTime()
   const currentMs = Date.now()
   return Math.ceil((expireAtMs - currentMs) / 1000)
 }
@@ -324,7 +323,7 @@ const getFieldFromTransaction = (
  * @param name
  */
 const throwError = (message: string, name?: string): never => {
-  let error = new Error(message)
+  const error = new Error(message)
   error.name = name || message
   throw error
 }

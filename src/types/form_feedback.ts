@@ -11,4 +11,4 @@ export interface IFormFeedback {
   _id: Document['_id']
 }
 
-export interface IFormFeedbackSchema extends Document {}
+export type IFormFeedbackSchema = Document

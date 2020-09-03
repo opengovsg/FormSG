@@ -46,7 +46,7 @@ const loadExpressApp = async (connection: Connection) => {
   }
 
   app.use(function (req, res, next) {
-    let urlPath = url.parse(req.url).path.split('/')
+    const urlPath = url.parse(req.url).path.split('/')
     if (
       urlPath.indexOf('static') > -1 &&
       urlPath.indexOf('view') === urlPath.indexOf('static') - 1

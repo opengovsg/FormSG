@@ -146,7 +146,7 @@ const logWebhookFailure = (
   error: Error | AxiosError,
   { webhookUrl, submissionId, formId, now, signature }: Partial<WebhookParams>,
 ): void => {
-  let logMeta = {
+  const logMeta = {
     action: 'logWebhookFailure',
     submissionId,
     formId,
@@ -237,7 +237,7 @@ const getFailureDbUpdate = (
   { webhookUrl, signature }: Pick<WebhookParams, 'webhookUrl' | 'signature'>,
 ): IWebhookResponse => {
   const errorMessage = get(error, 'message')
-  let update: IWebhookResponse = {
+  const update: IWebhookResponse = {
     webhookUrl,
     signature,
     errorMessage,
