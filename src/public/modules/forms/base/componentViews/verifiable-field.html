@@ -129,9 +129,7 @@
             ng-click="!vm.display.resendBtn.disabled && !vm.display.resendBtn.overrideDisabled && vm.getNewOtp()"
             >Resend OTP</a
           >
-          <span ng-if="vm.countdown > 0">
-            in {{ vm.countdown}} seconds
-          </span>
+          <span ng-if="vm.countdown > 0"> in {{ vm.countdown}} seconds </span>
         </div>
         <!--'Required but unverified' message  is on the parent input box-->
       </div>

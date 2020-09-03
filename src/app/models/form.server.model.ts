@@ -4,7 +4,6 @@ import { Model, Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
 import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
-import { validateWebhookUrl } from '../../shared/util/webhook-validation'
 import {
   AuthType,
   BasicField,
@@ -21,6 +20,7 @@ import {
   Status,
 } from '../../types'
 import { MB } from '../constants/filesize'
+import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
 import {
@@ -493,42 +493,24 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   return FormModel
 }
 
-const compileEmailFormModel = (db: Mongoose) => {
-  return db.model<IEmailFormSchema, IEmailFormModel>(
-    ResponseMode.Email,
-    EmailFormSchema,
-  )
-}
-
-export const getEmailFormModel = (db: Mongoose) => {
-  try {
-    return db.model(ResponseMode.Email) as IEmailFormModel
-  } catch {
-    return compileEmailFormModel(db)
-  }
-}
-
-const compileEncryptedFormModel = (db: Mongoose) => {
-  return db.model<IEncryptedFormSchema, IEncryptedFormModel>(
-    ResponseMode.Encrypt,
-    EncryptedFormSchema,
-  )
-}
-
-export const getEncryptedFormModel = (db: Mongoose) => {
-  try {
-    return db.model(ResponseMode.Encrypt) as IEncryptedFormModel
-  } catch {
-    return compileEncryptedFormModel(db)
-  }
-}
-
 const getFormModel = (db: Mongoose) => {
   try {
     return db.model(FORM_SCHEMA_ID) as IFormModel
   } catch {
     return compileFormModel(db)
   }
+}
+
+export const getEmailFormModel = (db: Mongoose) => {
+  // Load or build base model first
+  getFormModel(db)
+  return db.model(ResponseMode.Email) as IEmailFormModel
+}
+
+export const getEncryptedFormModel = (db: Mongoose) => {
+  // Load or build base model first
+  getFormModel(db)
+  return db.model(ResponseMode.Encrypt) as IEncryptedFormModel
 }
 
 export default getFormModel

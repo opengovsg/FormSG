@@ -19,9 +19,7 @@
                 beta
               </span>
               <!-- New Icon -->
-              <span class="beta-icon" ng-if="isNewField(type.name)">
-                new
-              </span>
+              <span class="beta-icon" ng-if="isNewField(type.name)"> new </span>
               <!-- Field Icon -->
               <div class="add-field-icon">
                 <field-icon-component
@@ -37,9 +35,7 @@
 
       <!-- MyInfo Fields -->
       <uib-tab feature-toggle feature-name="spcp-myinfo">
-        <uib-tab-heading>
-          MyInfo
-        </uib-tab-heading>
+        <uib-tab-heading> MyInfo </uib-tab-heading>
         <!-- Only show fields if form type is not storage form -->
         <div ng-if="myform.authType==='SP' && !isStorageForm">
           <div class="myinfo-category">PERSONAL</div>
