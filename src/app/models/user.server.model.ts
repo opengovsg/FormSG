@@ -1,14 +1,12 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
-import { IUserSchema } from '../../types'
+import { IUser, IUserModel, IUserSchema } from '../../types'
 
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 
 export const USER_SCHEMA_ID = 'User'
-
-export interface IUserModel extends Model<IUserSchema> {}
 
 const compileUserModel = (db: Mongoose) => {
   const Agency = getAgencyModel(db)
@@ -79,7 +77,27 @@ const compileUserModel = (db: Mongoose) => {
     }
   })
 
-  return db.model<IUserSchema>(USER_SCHEMA_ID, UserSchema)
+  // Statics
+  /**
+   * Upserts given user details into User collection.
+   */
+  UserSchema.statics.upsertUser = async function (
+    this: IUserModel,
+    upsertParams: Pick<IUser, 'email' | 'agency'>,
+  ) {
+    return this.findOneAndUpdate(
+      { email: upsertParams.email },
+      { $set: upsertParams },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    )
+  }
+
+  return db.model<IUserSchema, IUserModel>(USER_SCHEMA_ID, UserSchema)
 }
 
 /**

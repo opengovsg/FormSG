@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
 import { IAgencySchema } from './agency'
 
@@ -17,6 +17,12 @@ export interface IUser {
 
 export interface IUserSchema extends IUser, Document {
   _id: Document['_id']
+}
+
+export interface IUserModel extends Model<IUserSchema> {
+  upsertUser: (
+    upsertParams: Pick<IUser, 'email' | 'agency'>,
+  ) => Promise<IUserSchema>
 }
 
 export interface IPopulatedUser extends IUserSchema {

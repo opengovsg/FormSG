@@ -169,16 +169,11 @@ export const upsertAndReturnUser = async (email: string, agency: IAgency) => {
     throw new InvalidDomainError()
   }
 
-  const upsertParams: Partial<IUserSchema> = {
+  const admin = await UserModel.upsertUser({
     email,
     agency: agency._id,
-  }
+  })
 
-  const admin = await UserModel.findOneAndUpdate(
-    { email },
-    { $set: upsertParams },
-    { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
-  )
   if (!admin) {
     throw new Error('Failed to upsert user')
   }
