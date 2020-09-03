@@ -64,7 +64,7 @@ services:
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
       - AGGREGATE_COLLECTION
-      - AWS_ENDPOINT
+      - AWS_ENDPOINT=http://localhost:4572
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
