@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import handleSns from './bounce.controller'
+import { handleSns } from './bounce.controller'
 
 export const BounceRouter = Router()
 
