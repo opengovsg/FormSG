@@ -97,9 +97,9 @@ export const generateAutoreplyPdf = async (
   return pdfBuffer
 }
 
-type AutoreplyHtmlData = {
-  autoReplyBody: string[]
-} & (AutoreplySummaryRenderData | Record<string, unknown>)
+type AutoreplyHtmlData =
+  | ({ autoReplyBody: string[] } & AutoreplySummaryRenderData)
+  | { autoReplyBody: string[] }
 
 export const generateAutoreplyHtml = async (
   htmlData: AutoreplyHtmlData,
