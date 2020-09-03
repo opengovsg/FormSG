@@ -45,7 +45,14 @@ const errorHandlerMiddlewares = () => {
         })
         return res.status(StatusCodes.BAD_REQUEST).send(errorMessage)
       }
-      logger.error(err)
+
+      logger.error({
+        message: 'Unknown error',
+        meta: {
+          action: 'genericErrorHandlerMiddleware',
+        },
+        error: err,
+      })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send({ message: genericErrorMessage })
