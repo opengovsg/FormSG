@@ -129,7 +129,7 @@ describe('auth.controller', () => {
 
       // Mock all service success.
       MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
-      MockUserService.upsertAndReturnUser.mockResolvedValueOnce(mockUser)
+      MockUserService.retrieveUser.mockResolvedValueOnce(mockUser)
 
       // Act
       await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
@@ -162,7 +162,7 @@ describe('auth.controller', () => {
       expect(mockRes.send).toBeCalledWith(expectedInvalidOtpError.message)
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
-      expect(MockUserService.upsertAndReturnUser).not.toHaveBeenCalled()
+      expect(MockUserService.retrieveUser).not.toHaveBeenCalled()
     })
 
     it('should return 500 when verifying login OTP throws a non-InvalidOtpError', async () => {
@@ -186,7 +186,7 @@ describe('auth.controller', () => {
       )
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
-      expect(MockUserService.upsertAndReturnUser).not.toHaveBeenCalled()
+      expect(MockUserService.retrieveUser).not.toHaveBeenCalled()
     })
 
     it('should return 500 when an error is thrown while upserting user', async () => {
@@ -196,7 +196,7 @@ describe('auth.controller', () => {
         locals: { agency: MOCK_AGENCY },
       })
       MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
-      MockUserService.upsertAndReturnUser.mockRejectedValueOnce(
+      MockUserService.retrieveUser.mockRejectedValueOnce(
         new Error('upsert error'),
       )
 
@@ -213,7 +213,7 @@ describe('auth.controller', () => {
       )
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
-      expect(MockUserService.upsertAndReturnUser).toHaveBeenCalledTimes(1)
+      expect(MockUserService.retrieveUser).toHaveBeenCalledTimes(1)
     })
   })
 

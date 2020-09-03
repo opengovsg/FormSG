@@ -445,7 +445,7 @@ describe('auth.routes', () => {
 
       // Mock error thrown when creating user
       const upsertSpy = jest
-        .spyOn(UserService, 'upsertAndReturnUser')
+        .spyOn(UserService, 'retrieveUser')
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act
