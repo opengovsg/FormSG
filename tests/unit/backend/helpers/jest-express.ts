@@ -22,6 +22,7 @@ const mockRequest = ({
 
 const mockResponse = (extraArgs: Partial<Record<keyof Response, any>> = {}) => {
   const mockRes = {
+    locals: {},
     status: jest.fn().mockReturnThis(),
     send: jest.fn().mockReturnThis(),
     sendStatus: jest.fn().mockReturnThis(),

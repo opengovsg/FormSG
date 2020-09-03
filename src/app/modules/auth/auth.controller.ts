@@ -1,5 +1,5 @@
 import to from 'await-to-js'
-import { RequestHandler } from 'express'
+import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
@@ -11,6 +11,7 @@ import { ApplicationError } from '../core/core.errors'
 import * as UserService from '../user/user.service'
 
 import * as AuthService from './auth.service'
+import { ResponseAfter } from './auth.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -18,18 +19,20 @@ const logger = createLoggerWithLabel(module)
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
  * @returns 200 regardless, assumed to have passed domain validation.
  */
-export const handleCheckUser: RequestHandler = async (_req, res) => {
+export const handleCheckUser: RequestHandler = async (
+  _req: Request,
+  res: ResponseAfter['validateDomain'],
+) => {
   return res.sendStatus(StatusCodes.OK)
 }
 
 /**
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
  */
-export const handleLoginSendOtp: RequestHandler<
-  {},
-  {},
-  { email: string }
-> = async (req, res) => {
+export const handleLoginSendOtp: RequestHandler = async (
+  req: Request<{}, {}, { email: string }>,
+  res: ResponseAfter['validateDomain'],
+) => {
   // Joi validation ensures existence.
   const { email } = req.body
   const requestIp = getRequestIp(req)
@@ -89,13 +92,14 @@ export const handleLoginSendOtp: RequestHandler<
 /**
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
  */
-export const handleLoginVerifyOtp: RequestHandler<
-  {},
-  {},
-  { email: string; otp: string }
-> = async (req, res) => {
+export const handleLoginVerifyOtp: RequestHandler = async (
+  req: Request<{}, {}, { email: string; otp: string }>,
+  res: ResponseAfter['validateDomain'],
+) => {
   // Joi validation ensures existence.
   const { email, otp } = req.body
+  // validateDomain middleware will populate agency.
+  const { agency } = res.locals
 
   const logMeta = {
     action: 'handleLoginVerifyOtp',
@@ -129,9 +133,7 @@ export const handleLoginVerifyOtp: RequestHandler<
 
   // OTP is valid, proceed to login user.
   try {
-    const agency = await AuthService.getAgencyWithEmail(email)
     const user = await UserService.upsertAndReturnUser(email, agency)
-
     // Create user object to return to frontend.
     const userObj = { ...user.toObject(), agency }
 

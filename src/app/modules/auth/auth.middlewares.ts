@@ -14,9 +14,9 @@ const logger = createLoggerWithLabel(module)
 /**
  * Middleware to check if domain of email in the body is from a whitelisted
  * agency.
- * @return 500 when there was an error validating email
- * @return 401 when email domain is invalid
- * @returns calls next when domain is valid
+ * @returns 500 when there was an error validating email
+ * @returns 401 when email domain is invalid
+ * @returns sets retrieved agency in `res.locals.agency` and calls next when domain is valid
  */
 export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
   req,
@@ -26,7 +26,9 @@ export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
   // Joi validation ensures existence.
   const { email } = req.body
 
-  const [validationError] = await to(AuthService.getAgencyWithEmail(email))
+  const [validationError, agency] = await to(
+    AuthService.getAgencyWithEmail(email),
+  )
 
   if (validationError) {
     logger.error({
@@ -47,6 +49,9 @@ export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
         `Unable to validate email domain. If this issue persists, please submit a Support Form at (${defaults.links.supportFormLink}).`,
       )
   }
+
+  // Pass down agency to next handler.
+  res.locals.agency = agency
 
   return next()
 }
