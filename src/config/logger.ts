@@ -202,7 +202,7 @@ const createCustomLogger = (logger: Logger) => {
         if (!message || isEmpty(meta)) {
           throw new Error('Wrong shape')
         }
-        return logger.info(params)
+        return logger.info(message, { meta })
       } catch {
         return logger.info(params)
       }
