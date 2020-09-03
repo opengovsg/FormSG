@@ -1,4 +1,5 @@
-import { Request, RequestHandler, Response } from 'express'
+import { RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -14,7 +15,7 @@ const logger = createLoggerWithLabel(module)
  * @param res - Express response object
  */
 export const handleSns: RequestHandler<
-  Record<string, string>,
+  ParamsDictionary,
   never,
   ISnsNotification
 > = async (req, res) => {

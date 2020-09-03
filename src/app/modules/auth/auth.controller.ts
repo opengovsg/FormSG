@@ -1,5 +1,6 @@
 import to from 'await-to-js'
 import { Request, RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
@@ -11,7 +12,7 @@ import { ApplicationError } from '../core/core.errors'
 import * as UserService from '../user/user.service'
 
 import * as AuthService from './auth.service'
-import { ResponseAfter } from './auth.types'
+import { ResponseAfter, SessionUser } from './auth.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -30,7 +31,7 @@ export const handleCheckUser: RequestHandler = async (
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
  */
 export const handleLoginSendOtp: RequestHandler = async (
-  req: Request<{}, {}, { email: string }>,
+  req: Request<ParamsDictionary, string, { email: string }>,
   res: ResponseAfter['validateDomain'],
 ) => {
   // Joi validation ensures existence.
@@ -62,7 +63,7 @@ export const handleLoginSendOtp: RequestHandler = async (
   const [sendErr] = await to(
     MailService.sendLoginOtp({
       recipient: email,
-      otp: otp!,
+      otp,
       ipAddress: requestIp,
     }),
   )
@@ -93,7 +94,11 @@ export const handleLoginSendOtp: RequestHandler = async (
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
  */
 export const handleLoginVerifyOtp: RequestHandler = async (
-  req: Request<{}, {}, { email: string; otp: string }>,
+  req: Request<
+    ParamsDictionary,
+    string | SessionUser,
+    { email: string; otp: string }
+  >,
   res: ResponseAfter['validateDomain'],
 ) => {
   // Joi validation ensures existence.
@@ -143,7 +148,7 @@ export const handleLoginVerifyOtp: RequestHandler = async (
 
     // TODO(#212): Should store only userId in session.
     // Add user info to session.
-    req.session.user = userObj
+    req.session.user = userObj as SessionUser
     logger.info({
       message: `Successfully logged in user ${user.email}`,
       meta: logMeta,
@@ -176,7 +181,7 @@ export const handleSignout: RequestHandler = async (req, res) => {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  req.session!.destroy((error) => {
+  req.session.destroy((error) => {
     if (error) {
       logger.error({
         message: 'Failed to destroy session',

@@ -1,4 +1,4 @@
-import { IAgencySchema } from 'src/types'
+import { IAgencySchema, IPopulatedUser } from 'src/types'
 
 import { ResponseWithLocals } from '../core/core.types'
 
@@ -9,3 +9,5 @@ import { ResponseWithLocals } from '../core/core.types'
 export type ResponseAfter = {
   validateDomain: ResponseWithLocals<{ agency?: IAgencySchema }>
 }
+
+export type SessionUser = IPopulatedUser

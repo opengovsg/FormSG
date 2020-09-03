@@ -1,5 +1,6 @@
 import to from 'await-to-js'
 import { RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -18,11 +19,11 @@ const logger = createLoggerWithLabel(module)
  * @returns 401 when email domain is invalid
  * @returns sets retrieved agency in `res.locals.agency` and calls next when domain is valid
  */
-export const validateDomain: RequestHandler<{}, {}, { email: string }> = async (
-  req,
-  res,
-  next,
-) => {
+export const validateDomain: RequestHandler<
+  ParamsDictionary,
+  string,
+  { email: string }
+> = async (req, res, next) => {
   // Joi validation ensures existence.
   const { email } = req.body
 
