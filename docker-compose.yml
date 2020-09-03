@@ -92,7 +92,7 @@ services:
       - '27017:27017'
 
   localstack:
-    image: localstack/localstack:0.8.0
+    image: localstack/localstack:latest
     container_name: formsg-localstack
     depends_on:
       - formsg
