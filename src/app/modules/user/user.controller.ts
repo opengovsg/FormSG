@@ -3,6 +3,7 @@ import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { IPopulatedUser } from '../../../types'
 import SmsFactory from '../../factories/sms.factory'
 import { ApplicationError } from '../core/core.errors'
 
@@ -22,8 +23,8 @@ const logger = createLoggerWithLabel(module)
  * @returns 400 on OTP creation or SMS send failure
  */
 export const handleContactSendOtp: RequestHandler<
-  {},
-  {},
+  Record<string, string>,
+  string,
   { contact: string; userId: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -56,8 +57,8 @@ export const handleContactSendOtp: RequestHandler<
  * @returns 500 when OTP is malformed or for unknown errors
  */
 export const handleContactVerifyOtp: RequestHandler<
-  {},
-  {},
+  Record<string, string>,
+  string | IPopulatedUser,
   {
     userId: string
     otp: string

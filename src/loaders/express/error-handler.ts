@@ -28,13 +28,13 @@ const errorHandlerMiddlewares = () => {
         'Apologies, something odd happened. Please try again later!'
       // Error page
       if (isCelebrate(err)) {
-        let errorMessage = get(
+        const errorMessage = get(
           err,
           'joi.details[0].message',
           genericErrorMessage,
         )
         // formId is only present for Joi validated routes that require it
-        let formId = get(req, 'form._id', null)
+        const formId = get(req, 'form._id', null)
         logger.error({
           message: 'Joi validation error',
           meta: {

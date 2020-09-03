@@ -39,7 +39,11 @@ export const CURRENT_VERIFIED_FIELDS: VerifiedKeys[] = []
   .concat(values(SpVerifiedKeys))
   .concat(values(CpVerifiedKeys))
 
-export type VerifiedKeyMap = ISpVerifiedKeys | ICpVerifiedKeys | {}
+export type VerifiedKeyMap =
+  | ISpVerifiedKeys
+  | ICpVerifiedKeys
+  | Record<string, unknown>
+
 /**
  * Returns the correct mapping layer according to given type. If no type is
  * given, an empty object is returned.
@@ -65,9 +69,9 @@ const getVerifiedKeyMap = (type?: 'SP' | 'CP'): VerifiedKeyMap => {
  * @returns A new object with the renamed keys
  */
 const renameKeys = (
-  obj: Record<VerifiedKeys, any>,
+  obj: Record<VerifiedKeys, unknown>,
   newKeys: VerifiedKeyMap,
-) => {
+): Record<string, unknown> => {
   const keyValues = Object.keys(obj).map((key) => {
     const newKey = newKeys[key] || key
     return { [newKey]: obj[key] }
@@ -77,7 +81,7 @@ const renameKeys = (
 
 interface IMappableData {
   type?: 'SP' | 'CP'
-  data: Record<string, any>
+  data: Record<string, unknown>
 }
 
 /**
@@ -90,11 +94,14 @@ interface IMappableData {
  * as `uinFin` is mapped to `cpUen`. `other` is removed
  * as the key does not map to anything.
  */
-export const mapDataToKey = ({ type, data }: IMappableData) => {
+export const mapDataToKey = ({
+  type,
+  data,
+}: IMappableData): Record<string, unknown> => {
   const fieldMap = getVerifiedKeyMap(type)
   const subsetKeys = pick(data, Object.keys(fieldMap)) as Record<
     VerifiedKeys,
-    any
+    unknown
   >
 
   return renameKeys(subsetKeys, fieldMap)

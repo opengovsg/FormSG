@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
-import handleSns from 'src/app/modules/bounce/bounce.controller'
+import { handleSns } from 'src/app/modules/bounce/bounce.controller'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
 
 jest.mock('src/app/modules/bounce/bounce.service')
@@ -20,7 +20,7 @@ describe('handleSns', () => {
     MockBounceService.isValidSnsRequest.mockReturnValueOnce(
       Promise.resolve(false),
     )
-    await handleSns(MOCK_REQ, MOCK_RES)
+    await handleSns(MOCK_REQ, MOCK_RES, jest.fn())
     expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
       MOCK_REQ.body,
     )
@@ -32,7 +32,7 @@ describe('handleSns', () => {
     MockBounceService.isValidSnsRequest.mockReturnValueOnce(
       Promise.resolve(true),
     )
-    await handleSns(MOCK_REQ, MOCK_RES)
+    await handleSns(MOCK_REQ, MOCK_RES, jest.fn())
     expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
       MOCK_REQ.body,
     )
@@ -44,7 +44,7 @@ describe('handleSns', () => {
     MockBounceService.isValidSnsRequest.mockImplementation(() => {
       throw new Error()
     })
-    await handleSns(MOCK_REQ, MOCK_RES)
+    await handleSns(MOCK_REQ, MOCK_RES, jest.fn())
     expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
       MOCK_REQ.body,
     )
@@ -59,7 +59,7 @@ describe('handleSns', () => {
     MockBounceService.updateBounces.mockImplementation(() => {
       throw new Error()
     })
-    await handleSns(MOCK_REQ, MOCK_RES)
+    await handleSns(MOCK_REQ, MOCK_RES, jest.fn())
     expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
       MOCK_REQ.body,
     )
