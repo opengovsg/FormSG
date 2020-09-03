@@ -15,7 +15,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleSns: RequestHandler<
   Record<string, string>,
-  string,
+  never,
   ISnsNotification
 > = async (req, res) => {
   // Since this function is for a public endpoint, catch all possible errors
