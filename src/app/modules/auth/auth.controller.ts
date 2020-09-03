@@ -3,8 +3,8 @@ import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
-import defaults from '../../../config/defaults'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { LINKS } from '../../../shared/constants'
 import MailService from '../../services/mail.service'
 import { getRequestIp } from '../../utils/request'
 import { ApplicationError } from '../core/core.errors'
@@ -160,7 +160,7 @@ export const handleLoginVerifyOtp: RequestHandler = async (
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send(
-        `User signin failed. Please try again later and if the problem persists, submit our Support Form (${defaults.links.supportFormLink}).`,
+        `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
       )
   }
 }
