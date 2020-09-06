@@ -14,7 +14,8 @@ const DATE_VALIDATION_OPTIONS = {
   custom: 'Custom date range',
 }
 
-angular.module('forms')
+angular
+  .module('forms')
   .controller('EditFieldsModalController', [
     '$uibModalInstance',
     'externalScope',
@@ -57,8 +58,13 @@ function EditFieldsModalController(
   }
 
   // Serialize allowed email domains
-  if (vm.field.fieldType === 'email' && vm.field.allowedEmailDomains.length > 0) {
-    vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join('\n')
+  if (
+    vm.field.fieldType === 'email' &&
+    vm.field.allowedEmailDomains.length > 0
+  ) {
+    vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
+      '\n',
+    )
   }
 
   // Set Validation Options on older paragraph fields - This ensures backward compatibility
@@ -428,7 +434,10 @@ function EditFieldsModalController(
       if (!field.allowedEmailDomainsFromText) {
         field.allowedEmailDomains = []
       } else {
-        field.allowedEmailDomains = field.allowedEmailDomainsFromText.split('\n').map(s => s.trim()).filter(s => s)
+        field.allowedEmailDomains = field.allowedEmailDomainsFromText
+          .split('\n')
+          .map((s) => s.trim())
+          .filter((s) => s)
       }
     }
 

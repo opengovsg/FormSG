@@ -7,7 +7,10 @@ const validateEmailDomain = () => {
     restrict: 'A',
     require: 'ngModel',
     link: (scope, elem, attr, ngModel) => {
-      const allowedEmailDomains = scope.vm.field.isVerifiable && scope.vm.field.hasAllowedEmailDomains ? new Set(scope.vm.field.allowedEmailDomains) : new Set()
+      const allowedEmailDomains =
+        scope.vm.field.isVerifiable && scope.vm.field.hasAllowedEmailDomains
+          ? new Set(scope.vm.field.allowedEmailDomains)
+          : new Set()
       ngModel.$validators.emailDomainValidator = (emailAddress) => {
         if (allowedEmailDomains.size) {
           const emailDomain = emailAddress.split('@').pop()
@@ -15,6 +18,6 @@ const validateEmailDomain = () => {
         }
         return true
       }
-    }
+    },
   }
 }
