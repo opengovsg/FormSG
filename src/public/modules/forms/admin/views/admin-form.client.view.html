@@ -14,10 +14,17 @@
     </div>
     <div id="header-addcollab" class="col-md-2 col-sm-3 col-xs-2">
       <div class="right-spacer">
-        <button id="collab-circle-plus" ng-class="collab.isModalShown ? 'active' : ''" class="pull-right"
-          ng-click="toggleCollabModal()" ng-if="user !== undefined">
+        <button
+          id="collab-circle-plus"
+          ng-class="collab.isModalShown ? 'active' : ''"
+          class="pull-right"
+          ng-click="toggleCollabModal()"
+          ng-if="user !== undefined"
+        >
           <i class="bx bxs-user-plus bx-lg hidden-xs"></i>
-          <i class="bx bxs-user-plus bx-md hidden-sm hidden-md hidden-lg hidden-xl"></i>
+          <i
+            class="bx bxs-user-plus bx-md hidden-sm hidden-md hidden-lg hidden-xl"
+          ></i>
         </button>
         <avatar-dropdown-component></avatar-dropdown-component>
       </div>
@@ -29,7 +36,10 @@
   <div ng-if="collab.isModalShown" id="collaborator-modal">
     <!-- Overlay used to close collaborator modal -->
     <div id="collab-overlay" ng-click="toggleCollabModal()"></div>
-    <div id="collaborator-modal-body" ng-class="collab.lockCollaboratorScroll ? 'mobile-scroll-lock' : ''">
+    <div
+      id="collaborator-modal-body"
+      ng-class="collab.lockCollaboratorScroll ? 'mobile-scroll-lock' : ''"
+    >
       <div id="collaborators-close-button" ng-click="toggleCollabModal()">
         <i class="bx bx-x"></i>
       </div>
@@ -38,38 +48,77 @@
         <div class="label-custom" id="invite-title">Add collaborators</div>
         <!-- Input and save button -->
         <div ng-form="collab.form">
-          <div class="row inputs-container inputs-container--{{myform.responseMode}}"
-            ng-init="collab.form.role = ROLES.EDITOR">
+          <div
+            class="row inputs-container inputs-container--{{myform.responseMode}}"
+            ng-init="collab.form.role = ROLES.EDITOR"
+          >
             <!-- The email input takes up the full row if it's email mode/non-beta user, three quarters otherwise -->
-            <div id="collab-email" class="col-xs-12"
-              ng-class="(userCanEdit && myform.responseMode === 'encrypt') ? 'col-sm-9' : ''">
-              <input ng-model="collab.form.email" type="email" placeholder="Enter email address" spellcheck="false"
-                class="input-custom input-medium" />
+            <div
+              id="collab-email"
+              class="col-xs-12"
+              ng-class="(userCanEdit && myform.responseMode === 'encrypt') ? 'col-sm-9' : ''"
+            >
+              <input
+                ng-model="collab.form.email"
+                type="email"
+                placeholder="Enter email address"
+                spellcheck="false"
+                class="input-custom input-medium"
+              />
               <!-- Error messages -->
-              <div ng-if="!collab.isAlreadyCollabError && !collab.hasEmailError && collab.form.$invalid"
-                class="alert-custom alert-error">
+              <div
+                ng-if="!collab.isAlreadyCollabError && !collab.hasEmailError && collab.form.$invalid"
+                class="alert-custom alert-error"
+              >
                 <i class="bx bx-exclamation bx-md icon-spacing"></i>
-                <span class="alert-msg">Please fill in a valid email address</span>
+                <span class="alert-msg"
+                  >Please fill in a valid email address</span
+                >
               </div>
-              <div ng-if="!collab.isAlreadyCollabError && collab.hasEmailError" class="alert-custom alert-error">
+              <div
+                ng-if="!collab.isAlreadyCollabError && collab.hasEmailError"
+                class="alert-custom alert-error"
+              >
                 <i class="bx bx-exclamation bx-md icon-spacing"></i>
                 <span class="alert-msg">{{alertMessage}}</span>
               </div>
-              <div ng-if="collab.isAlreadyCollabError" class="alert-custom alert-error">
+              <div
+                ng-if="collab.isAlreadyCollabError"
+                class="alert-custom alert-error"
+              >
                 <i class="bx bx-exclamation bx-md icon-spacing"></i>
-                <span class="alert-msg">User already has edit rights to this form</span>
+                <span class="alert-msg"
+                  >User already has edit rights to this form</span
+                >
               </div>
             </div>
             <!-- Viewer mode only dropdown menu-->
-            <div id="collab-role" ng-if="userCanEdit && myform.responseMode === 'encrypt'"
-              class="col-xs-12 col-sm-3 role-column">
-              <div id="new-collaborator-dropdown" class="btn-group btn-block" uib-dropdown uib-dropdown-toggle>
-                <button id="change-role-button" type="button" class="input-custom input-medium role-dropdown-btn">
+            <div
+              id="collab-role"
+              ng-if="userCanEdit && myform.responseMode === 'encrypt'"
+              class="col-xs-12 col-sm-3 role-column"
+            >
+              <div
+                id="new-collaborator-dropdown"
+                class="btn-group btn-block"
+                uib-dropdown
+                uib-dropdown-toggle
+              >
+                <button
+                  id="change-role-button"
+                  type="button"
+                  class="input-custom input-medium role-dropdown-btn"
+                >
                   <span class="pull-left">{{ collab.form.role }}</span>
                   <span class="caret pull-right"></span>
                 </button>
-                <ul id="role-dropdown-menu" class="dropdown-menu" uib-dropdown-menu role="menu"
-                  aria-labelledby="change-role-button">
+                <ul
+                  id="role-dropdown-menu"
+                  class="dropdown-menu"
+                  uib-dropdown-menu
+                  role="menu"
+                  aria-labelledby="change-role-button"
+                >
                   <li role="menuitem">
                     <a href ng-click="selectRole(ROLES.EDITOR)">
                       <div class="input-medium">{{ ROLES.EDITOR }}</div>
@@ -92,32 +141,51 @@
             </div>
           </div>
           <!-- Reminder to share secret key -->
-          <div class="alert-custom alert-info secret-key-warning" ng-if="myform.responseMode === 'encrypt'">
+          <div
+            class="alert-custom alert-info secret-key-warning"
+            ng-if="myform.responseMode === 'encrypt'"
+          >
             <i class="bx bx-info-circle bx-md icon-spacing"></i>
-            <span class="alert-msg">Collaborators need the Secret Key to access form responses. Share
+            <span class="alert-msg"
+              >Collaborators need the Secret Key to access form responses. Share
               the Secret Key in a secure manner according to your agency's
-              policies.</span>
+              policies.</span
+            >
           </div>
           <!-- Add button -->
           <div class="row">
             <div class="col-xs-12 col-sm-3">
               <button
                 ng-disabled="(collab.form.$invalid || collab.form.email === undefined || collab.form.email === '')  && collab.btnStatus === 1"
-                type="submit" id="collab-btn" class="btn-custom btn-medium" ng-click="saveCollabEmail()"
-                ng-class="collab.btnStatus >= 2 ? 'btn-pressed' : ''">
+                type="submit"
+                id="collab-btn"
+                class="btn-custom btn-medium"
+                ng-click="saveCollabEmail()"
+                ng-class="collab.btnStatus >= 2 ? 'btn-pressed' : ''"
+              >
                 <span ng-if="collab.btnStatus === 1">Add</span>
-                <span ng-if="collab.btnStatus === 2"><i class="bx bx-loader bx-spin bx-md"></i></span>
-                <span ng-if="collab.btnStatus === 3"><i class="bx bx-check bx-md"></i></span>
+                <span ng-if="collab.btnStatus === 2"
+                  ><i class="bx bx-loader bx-spin bx-md"></i
+                ></span>
+                <span ng-if="collab.btnStatus === 3"
+                  ><i class="bx bx-check bx-md"></i
+                ></span>
               </button>
             </div>
           </div>
         </div>
       </div>
       <!-- Bottom section contains the collaborators list -->
-      <div id="bottom-section" ng-class="myform.permissionList.length <= 0 ? 'non-mobile-hide' : ''">
+      <div
+        id="bottom-section"
+        ng-class="myform.permissionList.length <= 0 ? 'non-mobile-hide' : ''"
+      >
         <!-- List of collaborators -->
         <div class="header-custom" id="collab-title">Collaborators</div>
-        <div id="collab-list" ng-class="collab.lockCollaboratorScroll ? 'lock-scroll' : ''">
+        <div
+          id="collab-list"
+          ng-class="collab.lockCollaboratorScroll ? 'lock-scroll' : ''"
+        >
           <!-- First user in the list is the admin-->
           <div class="row collaborator-list-entry">
             <div class="col-xs-12 col-sm-8 collab-email remove-left-padding">
@@ -126,7 +194,9 @@
             <div id="owner-role" class="col-xs-5 col-sm-3 role-column">
               <span class="pull-left current-role-text">{{ ROLES.ADMIN }}</span>
             </div>
-            <div class="col-xs-2 col-xs-offset-5 col-sm-1 col-sm-offset-0 remove-right-padding"></div>
+            <div
+              class="col-xs-2 col-xs-offset-5 col-sm-1 col-sm-offset-0 remove-right-padding"
+            ></div>
           </div>
           <div class="collab-hr"></div>
           <!-- List of other collaborators -->
@@ -135,11 +205,18 @@
               <div class="col-xs-12 col-sm-8 collab-email remove-left-padding">
                 {{userObj.email}}
               </div>
-              <div id="existing-collab-role" class="col-xs-5 col-sm-3 role-column">
+              <div
+                id="existing-collab-role"
+                class="col-xs-5 col-sm-3 role-column"
+              >
                 <!-- Text only, for email or view-only collaborators list, as well as own email, since you cannot edit your own rights -->
-                <div id="role-text-only"
-                  ng-if="!userCanEdit || myform.responseMode === 'email' || user.email === userObj.email.toLowerCase()">
-                  <span class="pull-left current-role-text">{{ permissionsToRole(userObj) }}</span>
+                <div
+                  id="role-text-only"
+                  ng-if="!userCanEdit || myform.responseMode === 'email' || user.email === userObj.email.toLowerCase()"
+                >
+                  <span class="pull-left current-role-text"
+                    >{{ permissionsToRole(userObj) }}</span
+                  >
                 </div>
                 <!-- Admin/Editor collaborators list -->
                 <!-- toggleScrollLock is called twice here because if you open the dropdown then close the modal,
@@ -147,18 +224,30 @@
 								     Hence, it is called by on-toggle AND on ng-click. This would not be necessary if uib-dropdown
 								     were not buggy. Note that the is-open flag is still set accurately even when the
 								     on-toggle stops being called, hence we call toggleScrollLock using the is-open's property. -->
-                <div id="role-dropdown"
+                <div
+                  id="role-dropdown"
                   ng-if="userCanEdit && myform.responseMode === 'encrypt' && user.email !== userObj.email.toLowerCase()"
-                  uib-dropdown uib-dropdown-toggle dropdown-append-to-body
-                  is-open="collab.collaboratorDropdownsOpen[$index]" on-toggle="toggleScrollLock(open, $index)"
+                  uib-dropdown
+                  uib-dropdown-toggle
+                  dropdown-append-to-body
+                  is-open="collab.collaboratorDropdownsOpen[$index]"
+                  on-toggle="toggleScrollLock(open, $index)"
                   ng-click="toggleScrollLock(collab.collaboratorDropdownsOpen[$index], $index)"
-                  class="btn-group btn-block existing-role-button">
+                  class="btn-group btn-block existing-role-button"
+                >
                   <span type="button" class="role-dropdown-btn">
-                    <span class="pull-left current-role-text">{{ permissionsToRole(userObj) }}</span>
+                    <span class="pull-left current-role-text"
+                      >{{ permissionsToRole(userObj) }}</span
+                    >
                     <span class="caret pull-right"></span>
                   </span>
-                  <ul id="existing-role-dropdown-menu" class="dropdown-menu" uib-dropdown-menu role="menu"
-                    aria-labelledby="existing-role-button">
+                  <ul
+                    id="existing-role-dropdown-menu"
+                    class="dropdown-menu"
+                    uib-dropdown-menu
+                    role="menu"
+                    aria-labelledby="existing-role-button"
+                  >
                     <li role="menuitem">
                       <a href ng-click="updateRole($index, ROLES.EDITOR)">
                         <div class="role-dropdown-text">{{ ROLES.EDITOR }}</div>
@@ -175,9 +264,14 @@
                   </ul>
                 </div>
               </div>
-              <div class="col-xs-2 col-xs-offset-5 col-sm-1 col-sm-offset-0 remove-right-padding">
-                <button class="btn-delete" ng-if="user.email !== userObj.email.toLowerCase() && userCanEdit"
-                  ng-click="deleteCollabEmail(userObj.email);closeEditCollaboratorDropdowns()">
+              <div
+                class="col-xs-2 col-xs-offset-5 col-sm-1 col-sm-offset-0 remove-right-padding"
+              >
+                <button
+                  class="btn-delete"
+                  ng-if="user.email !== userObj.email.toLowerCase() && userCanEdit"
+                  ng-click="deleteCollabEmail(userObj.email);closeEditCollaboratorDropdowns()"
+                >
                   <i class="bx bx-trash bx-md"></i>
                 </button>
               </div>
@@ -199,7 +293,11 @@
       </div>
       <!-- Preview button -->
       <div id="preview-admin-tabs">
-        <a id="preview-form-btn" ui-sref="previewForm({ formId: myform._id })" target="_blank">
+        <a
+          id="preview-form-btn"
+          ui-sref="previewForm({ formId: myform._id })"
+          target="_blank"
+        >
           <i id="preview-form-eye" class="bx bx-show"></i>
           <span id="preview-form-text" class="hidden-xs">Preview</span>
         </a>

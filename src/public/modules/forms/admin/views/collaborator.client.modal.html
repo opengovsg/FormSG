@@ -38,9 +38,7 @@
     <div ng-if="!isDisplayTransferOwnerModal">
       <!-- Top section contains the title and functionality to add new collaborators -->
       <div id="top-section" ng-if="userCanEdit">
-        <div class="label-custom" id="invite-title">
-          New collaborators
-        </div>
+        <div class="label-custom" id="invite-title">New collaborators</div>
         <!-- Input and save button -->
         <div ng-form="collab.form">
           <div
@@ -210,9 +208,7 @@
         ng-class="myform.permissionList.length <= 0 ? 'non-mobile-hide' : ''"
       >
         <!-- List of collaborators -->
-        <div class="label-custom" id="invite-title">
-          Existing collaborators
-        </div>
+        <div class="label-custom" id="invite-title">Existing collaborators</div>
         <div
           class="alert-custom alert-success secret-key-warning"
           ng-if="isDisplayTransferSuccessMessage"
@@ -228,9 +224,7 @@
           ng-if="isDisplayTransferFailedMessage"
         >
           <i class="bx bx-info-circle bx-md icon-spacing"></i>
-          <span class="alert-msg">
-            {{ transferErrorMessage }}
-          </span>
+          <span class="alert-msg"> {{ transferErrorMessage }} </span>
         </div>
         <div
           id="collab-list"

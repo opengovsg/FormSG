@@ -85,7 +85,7 @@ const makeUnauthorizedMessage = (user, title) => {
  * @returns {String} - the error message
  */
 const logUnauthorizedAccess = (user, requiredPermission, form) => {
-  const msg = `User ${user} not authorized to perform ${requiredPermission} operation on Form ${form._id} with title: ${form.title}.`
+  const msg = `User ${user.email} not authorized to perform ${requiredPermission} operation on Form ${form._id} with title: ${form.title}.`
   logger.error(msg)
 }
 
