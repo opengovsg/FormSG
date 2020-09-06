@@ -28,7 +28,7 @@ export const validateDomain: RequestHandler<
   const { email } = req.body
 
   const [validationError, agency] = await to(
-    AuthService.getAgencyWithEmail(email),
+    AuthService.validateEmailDomain(email),
   )
 
   if (validationError) {

@@ -1,14 +1,21 @@
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
+import { err, ok, Result } from 'neverthrow'
 import validator from 'validator'
 
+import { IAgencySchema } from 'src/types'
+
 import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
 import { generateOtp } from '../../utils/otp'
+import { DatabaseError } from '../core/core.errors'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
+const logger = createLoggerWithLabel(module)
 const TokenModel = getTokenModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
@@ -19,22 +26,43 @@ export const MAX_OTP_ATTEMPTS = 10
  * Validates the domain of the given email. A domain is valid if it exists in
  * the Agency collection in the database.
  * @param email the email to validate the domain for
- * @returns the agency document with the domain of the email only if it is valid.
- * @throws error if database query fails or if agency cannot be found.
+ * @returns ok(agency) the agency document for the domain of the email only if it is valid
+ * @returns err(InvalidDomainError) if the email domain is invalid or if the domain does not exist in any agency
+ * @returns err(DatabaseError) if error occurs whilst retrieving agency from database
  */
-export const getAgencyWithEmail = async (email: string) => {
+export const validateEmailDomain = async (
+  email: string,
+): Promise<Result<IAgencySchema, InvalidDomainError | DatabaseError>> => {
   // Extra guard even if Joi validation has already checked.
   if (!validator.isEmail(email)) {
-    throw new InvalidDomainError()
+    return err(new InvalidDomainError())
   }
 
   const emailDomain = email.split('@').pop()
-  const agency = await AgencyModel.findOne({ emailDomain })
-  if (!agency) {
-    throw new InvalidDomainError()
-  }
 
-  return agency
+  try {
+    const agency = await AgencyModel.findOne({ emailDomain })
+    if (!agency) {
+      return err(new InvalidDomainError())
+    }
+
+    return ok(agency)
+  } catch (err) {
+    logger.error({
+      message: 'DB error whilst retrieving Agency',
+      meta: {
+        action: 'getAgencyWithEmail',
+        emailDomain,
+      },
+      error: err as Error,
+    })
+
+    return err(
+      new DatabaseError(
+        `Unable to validate email domain. If this issue persists, please submit a Support Form at (${LINKS.supportFormLink}).`,
+      ),
+    )
+  }
 }
 
 /**

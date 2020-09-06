@@ -39,7 +39,7 @@ describe('auth.service', () => {
   describe('getAgencyWithEmail', () => {
     it('should retrieve agency successfully when email is valid and domain is in Agency collection', async () => {
       // Act
-      const actual = await AuthService.getAgencyWithEmail(VALID_EMAIL)
+      const actual = await AuthService.validateEmailDomain(VALID_EMAIL)
 
       // Assert
       expect(actual.toObject()).toEqual(defaultAgency.toObject())
@@ -50,7 +50,7 @@ describe('auth.service', () => {
       const notAnEmail = 'not an email'
 
       // Act
-      const actualPromise = AuthService.getAgencyWithEmail(notAnEmail)
+      const actualPromise = AuthService.validateEmailDomain(notAnEmail)
 
       // Assert
       await expect(actualPromise).rejects.toThrowError(InvalidDomainError)
@@ -61,7 +61,7 @@ describe('auth.service', () => {
       const invalidEmail = 'invalid@example.com'
 
       // Act
-      const actualPromise = AuthService.getAgencyWithEmail(invalidEmail)
+      const actualPromise = AuthService.validateEmailDomain(invalidEmail)
 
       // Assert
       await expect(actualPromise).rejects.toThrowError(InvalidDomainError)
