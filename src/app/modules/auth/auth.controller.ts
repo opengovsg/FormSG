@@ -1,5 +1,5 @@
 import to from 'await-to-js'
-import { Request, RequestHandler, Response } from 'express'
+import { RequestHandler, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
@@ -16,7 +16,7 @@ import * as UserService from '../user/user.service'
 
 import { InvalidDomainError } from './auth.errors'
 import * as AuthService from './auth.service'
-import { ResponseAfter, SessionUser } from './auth.types'
+import { SessionUser } from './auth.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -55,7 +55,7 @@ const handleError = ({
  */
 export const handleCheckUser: RequestHandler<
   ParamsDictionary,
-  string,
+  unknown,
   { email: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -82,7 +82,7 @@ export const handleCheckUser: RequestHandler<
  */
 export const handleLoginSendOtp: RequestHandler<
   ParamsDictionary,
-  string,
+  unknown,
   { email: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -150,24 +150,27 @@ export const handleLoginSendOtp: RequestHandler<
 /**
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
  */
-export const handleLoginVerifyOtp: RequestHandler = async (
-  req: Request<
-    ParamsDictionary,
-    string | SessionUser,
-    { email: string; otp: string }
-  >,
-  res: ResponseAfter['validateDomain'],
-) => {
+export const handleLoginVerifyOtp: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  { email: string; otp: string }
+> = async (req, res) => {
   // Joi validation ensures existence.
   const { email, otp } = req.body
-  // validateDomain middleware will populate agency.
-  const { agency } = res.locals
-
   const logMeta = {
     action: 'handleLoginVerifyOtp',
     email,
     ip: getRequestIp(req),
   }
+
+  const agencyResult = await AuthService.validateEmailDomain(email)
+  // Invalid domain, return early.
+  if (agencyResult.isErr()) {
+    return handleError({ error: agencyResult.error, res, logMeta })
+  }
+
+  // Guaranteed to have agency if result is not an error.
+  const agency = agencyResult.value
 
   const [verifyErr] = await to(AuthService.verifyLoginOtp(otp, email))
 
