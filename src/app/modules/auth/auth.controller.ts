@@ -8,13 +8,27 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import MailService from '../../services/mail.service'
 import { getRequestIp } from '../../utils/request'
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 import * as UserService from '../user/user.service'
 
+import { InvalidDomainError } from './auth.errors'
 import * as AuthService from './auth.service'
 import { ResponseAfter, SessionUser } from './auth.types'
 
 const logger = createLoggerWithLabel(module)
+
+const handleError = (res: Response, error: ApplicationError) => {
+  switch (error.constructor) {
+    case InvalidDomainError:
+      return res.status(StatusCodes.UNAUTHORIZED).send(error.message)
+    case DatabaseError:
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error.message)
+    default:
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send('Something went wrong. Please try again.')
+  }
+}
 
 /**
  * Precondition: AuthMiddlewares.validateDomain must precede this handler.
