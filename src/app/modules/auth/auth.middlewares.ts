@@ -1,12 +1,8 @@
-import to from 'await-to-js'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { LINKS } from '../../../shared/constants'
 import { getRequestIp } from '../../utils/request'
-import { ApplicationError } from '../core/core.errors'
 
 import * as AuthService from './auth.service'
 
@@ -27,11 +23,10 @@ export const validateDomain: RequestHandler<
   // Joi validation ensures existence.
   const { email } = req.body
 
-  const [validationError, agency] = await to(
-    AuthService.validateEmailDomain(email),
-  )
+  const validateResult = await AuthService.validateEmailDomain(email)
 
-  if (validationError) {
+  if (validateResult.isErr()) {
+    const { error } = validateResult
     logger.error({
       message: 'Domain validation error',
       meta: {
@@ -39,20 +34,13 @@ export const validateDomain: RequestHandler<
         ip: getRequestIp(req),
         email,
       },
-      error: validationError,
+      error,
     })
-    if (validationError instanceof ApplicationError) {
-      return res.status(validationError.status).send(validationError.message)
-    }
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        `Unable to validate email domain. If this issue persists, please submit a Support Form at (${LINKS.supportFormLink}).`,
-      )
+    return res.status(error.status).send(error.message)
   }
 
   // Pass down agency to next handler.
-  res.locals.agency = agency
+  res.locals.agency = validateResult.value
 
   return next()
 }
