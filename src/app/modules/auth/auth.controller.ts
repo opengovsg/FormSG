@@ -1,5 +1,5 @@
 import to from 'await-to-js'
-import { Request, RequestHandler } from 'express'
+import { Request, RequestHandler, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
@@ -31,14 +31,34 @@ const handleError = (res: Response, error: ApplicationError) => {
 }
 
 /**
- * Precondition: AuthMiddlewares.validateDomain must precede this handler.
- * @returns 200 regardless, assumed to have passed domain validation.
+ * Handler for GET /auth/checkuser endpoint.
+ * @returns 500 when there was an error validating body.email
+ * @returns 401 when domain of body.email is invalid
+ * @returns 200 if domain of body.email is valid
  */
-export const handleCheckUser: RequestHandler = async (
-  _req: Request,
-  res: ResponseAfter['validateDomain'],
-) => {
-  return res.sendStatus(StatusCodes.OK)
+export const handleCheckUser: RequestHandler<
+  ParamsDictionary,
+  string,
+  { email: string }
+> = async (req, res) => {
+  // Joi validation ensures existence.
+  const { email } = req.body
+
+  const agencyResult = await AuthService.validateEmailDomain(email)
+
+  agencyResult
+    // Agency exists, return success.
+    .map(() => res.sendStatus(StatusCodes.OK))
+    .mapErr((err) => {
+      logger.error({
+        message: 'Error occurred in /auth/checkuser',
+        meta: {
+          action: 'handleCheckUser',
+        },
+        error: err,
+      })
+      return handleError(res, err)
+    })
 }
 
 /**

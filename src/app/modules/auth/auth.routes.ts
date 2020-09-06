@@ -24,7 +24,6 @@ AuthRouter.post(
         .message('Please enter a valid email'),
     }),
   }),
-  AuthMiddlewares.validateDomain,
   AuthController.handleCheckUser,
 )
 

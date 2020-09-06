@@ -51,7 +51,7 @@ export const validateEmailDomain = async (
     logger.error({
       message: 'DB error whilst retrieving Agency',
       meta: {
-        action: 'getAgencyWithEmail',
+        action: 'validateEmailDomain',
         emailDomain,
       },
       error: err as Error,
