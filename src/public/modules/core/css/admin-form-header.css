@@ -141,6 +141,12 @@
 
 /* Form collaborator modal */
 
+@media all and (max-width: 768px) {
+  #collaborator-modal-body {
+    padding: 3em;
+  }
+}
+
 #collaborator-modal #collab-overlay {
   position: fixed;
   z-index: 450;
@@ -293,7 +299,6 @@
   /* If they squeeze the screen too small, white screen will appear at the bottom.
     TODO: Fix if possible. */
   min-height: 60px;
-  padding-right: 39px;
 }
 
 #collaborator-modal-body .secret-key-warning {
@@ -306,6 +311,7 @@
       the current screen's height, the bottom of the page will just appear white and not load. */
     max-height: calc(100vh - 608px);
     overflow-y: auto;
+    padding-right: 39px;
   }
 
   #collaborator-modal-body .secret-key-warning {
