@@ -299,7 +299,7 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner').post(
-    authActiveForm(PERMISSIONS.ADMIN),
+    authActiveForm(PERMISSIONS.DELETE),
     celebrate({
       body: Joi.object().keys({
         email: Joi.string()

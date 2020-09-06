@@ -109,9 +109,9 @@ exports.verifyPermission = (requiredPermission) =>
       String(req.form.admin.id) === String(req.session.user._id)
 
     // Forbidden if requiredPersmission is admin but user is not
-    if (!isFormAdmin && requiredPermission === PERMISSIONS.ADMIN) {
+    if (!isFormAdmin && requiredPermission === PERMISSIONS.DELETE) {
       logUnauthorizedAccess(req.session.user, requiredPermission, req.form)
-      return res.status(HttpStatus.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).send({
         message: makeUnauthorizedMessage(
           req.session.user.email,
           req.form.title,
@@ -145,7 +145,7 @@ exports.verifyPermission = (requiredPermission) =>
 
     if (!hasSufficientPermission) {
       logUnauthorizedAccess(req.session.user, requiredPermission, req.form)
-      return res.status(HttpStatus.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).send({
         message: makeUnauthorizedMessage(
           req.session.user.email,
           req.form.title,
