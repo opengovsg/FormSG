@@ -20,10 +20,9 @@ import {
   ResponseMode,
   Status,
 } from '../../types'
-
+import { IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
-import { IUserSchema } from '../../types/user'
 
 import getAgencyModel from './agency.server.model'
 import {

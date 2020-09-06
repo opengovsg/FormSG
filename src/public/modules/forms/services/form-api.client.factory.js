@@ -42,10 +42,6 @@ function FormApi($resource, FormErrorService, FormFields) {
   const getInterceptor = (redirectOnError, errorTargetState) => {
     const interceptor = {
       request: (config) => {
-        if (get(config, 'data.form.editFormField.field')) {
-          set(config, 'data.form.editFormField.field.isNewClient', true)
-          // TODO: Remove isNewClient() after 31 Aug 2020 (#2437)
-        }
         if (get(config, 'data.form')) {
           FormFields.removeMyInfoFromForm(config.data.form)
         }

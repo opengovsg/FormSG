@@ -157,8 +157,7 @@ function AdminFormController(
     }
     $uibModal.open({
       animation: false,
-      templateUrl:
-        'modules/forms/admin/views/collaborator.client.modal.html',
+      templateUrl: 'modules/forms/admin/views/collaborator.client.modal.html',
       windowClass: 'full-screen-modal-window',
       controller: 'CollaboratorModalController',
       scope: $scope,
@@ -166,7 +165,8 @@ function AdminFormController(
   }
 
   $scope.toggleTransferOwnershipModal = () => {
-    $scope.collab.isOwnershipTransferModalShown = !$scope.collab.isOwnershipTransferModalShown
+    $scope.collab.isOwnershipTransferModalShown = !$scope.collab
+      .isOwnershipTransferModalShown
   }
 
   /**

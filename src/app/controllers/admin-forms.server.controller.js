@@ -764,7 +764,7 @@ function makeModule(connection) {
             err.message
           }"`,
         )
-        return res.status(HttpStatus.CONFLICT).send({ message: err.message })
+        return res.status(StatusCodes.CONFLICT).send({ message: err.message })
       }
       req.form.save(function (err, savedForm) {
         if (err) return respondOnMongoError(req, res, err)

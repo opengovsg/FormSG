@@ -9,12 +9,7 @@ angular
     CollaboratorModalController,
   ])
 
-function CollaboratorModalController(
-  $scope,
-  $uibModalInstance,
-  FormApi,
-) {
-
+function CollaboratorModalController($scope, $uibModalInstance, FormApi) {
   $scope.isDisplayTransferOwnerModal = false
   $scope.isDisplayTransferSuccessMessage = false
   $scope.isDisplayTransferFailedMessage = false
@@ -28,10 +23,13 @@ function CollaboratorModalController(
     $uibModalInstance.close('cancel')
   }
 
-  $scope.transferOwner =  () => {
+  $scope.transferOwner = () => {
     $scope.resetMessages()
-    FormApi.transferOwner({formId: $scope.myform._id}, {email: $scope.transferOwnerEmail}).$promise
-      .then((res) => {
+    FormApi.transferOwner(
+      { formId: $scope.myform._id },
+      { email: $scope.transferOwnerEmail },
+    )
+      .$promise.then((res) => {
         $scope.myform = res.form
         $scope.isDisplayTransferSuccessMessage = true
       })
@@ -66,5 +64,4 @@ function CollaboratorModalController(
   $scope.toggleTransferOwnerModal = () => {
     $scope.isDisplayTransferOwnerModal = !$scope.isDisplayTransferOwnerModal
   }
-
 }
