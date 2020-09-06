@@ -9,12 +9,6 @@ const sentryFeature: RegisterableFeature<FeatureNames.Sentry> = {
       default: null,
       env: 'SENTRY_CONFIG_URL',
     },
-    cspReportUri: {
-      doc: 'Endpoint for content security policy reporting',
-      format: 'url',
-      default: null,
-      env: 'CSP_REPORT_URI',
-    },
   },
 }
 

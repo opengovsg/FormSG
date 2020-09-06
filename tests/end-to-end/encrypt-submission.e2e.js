@@ -52,7 +52,7 @@ fixture('Storage mode submissions')
 
     // Create s3 bucket for attachments
     const s3 = new aws.S3({
-      endpoint: process.env.AWS_ENDPOINT,
+      endpoint: process.env.FORMSG_LOCALSTACK_ENDPT,
       s3ForcePathStyle: true,
     })
     await s3

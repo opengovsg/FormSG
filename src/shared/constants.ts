@@ -27,7 +27,3 @@ export const FORM_DUPLICATE_KEYS = [
   'authType',
   'inactiveMessage',
 ]
-
-export const LINKS = {
-  supportFormLink: 'https://go.gov.sg/formsg-support',
-}
