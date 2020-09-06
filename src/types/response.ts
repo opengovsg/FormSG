@@ -13,6 +13,11 @@ export interface ISingleAnswerResponse extends IBaseResponse {
   answer: string
 }
 
+export interface IAttachmentResponse extends ISingleAnswerResponse {
+  filename: string
+  content: Buffer
+}
+
 export interface ICheckboxResponse extends IBaseResponse {
   answerArray: string[]
 }
@@ -25,6 +30,7 @@ export type FieldResponse =
   | ISingleAnswerResponse
   | ICheckboxResponse
   | ITableResponse
+  | IAttachmentResponse
 
 interface IClientSubmission {
   attachments: AttachmentsMap
@@ -33,7 +39,7 @@ interface IClientSubmission {
   responses: FieldResponse[]
 }
 
-export interface IClientEmailSubmission extends IClientSubmission {}
+export type IClientEmailSubmission = IClientSubmission
 
 export interface IClientEncryptSubmission extends IClientSubmission {
   encryptedContent: string

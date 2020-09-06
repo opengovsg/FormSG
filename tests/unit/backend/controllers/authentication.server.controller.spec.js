@@ -1,9 +1,10 @@
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
 let roles = require('../helpers/roles')
 let permissionLevels = require('../../../../dist/backend/app/utils/permission-levels')
+  .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Token = dbHandler.makeModel('token.server.model', 'Token')
@@ -74,7 +75,7 @@ describe('Authentication Controller', () => {
     it('should return 401 if not authenticated', (done) => {
       req.session = null
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
         done()
         return res
       })
@@ -147,7 +148,7 @@ describe('Authentication Controller', () => {
     })
     it('should not authorize if session user is not a collaborator nor admin', () => {
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
         return res
       })
       // Populate admin with partial user object
@@ -259,7 +260,9 @@ describe('Authentication Controller', () => {
       res.locals.email = req.session.user.email
       req.body.otp = TEST_OTP
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.UNPROCESSABLE_ENTITY)
+        expect(res.status).toHaveBeenCalledWith(
+          StatusCodes.UNPROCESSABLE_ENTITY,
+        )
         done()
         return res
       })
@@ -276,7 +279,9 @@ describe('Authentication Controller', () => {
         numOtpAttempts: 10,
       })
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.UNPROCESSABLE_ENTITY)
+        expect(res.status).toHaveBeenCalledWith(
+          StatusCodes.UNPROCESSABLE_ENTITY,
+        )
         done()
         return res
       })
@@ -295,7 +300,7 @@ describe('Authentication Controller', () => {
         numOtpAttempts: 0,
       })
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
         done()
         return res
       })
@@ -388,7 +393,7 @@ describe('Authentication Controller', () => {
         [mockBetaFlag]: false,
       }
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
         done()
         return res
       })
@@ -398,7 +403,7 @@ describe('Authentication Controller', () => {
     it('should return 403 when user is undefined', (done) => {
       req.session.user = undefined
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.FORBIDDEN)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
         done()
         return res
       })

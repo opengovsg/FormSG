@@ -49,7 +49,7 @@ interface IMyInfoFieldType {
   description: string
   fieldType: BasicField
   fieldOptions?: string[]
-  ValidationOptions?: object
+  ValidationOptions?: Record<string, unknown>
 }
 
 // TODO: Enable more MyInfo fields.

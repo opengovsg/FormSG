@@ -2,7 +2,7 @@ const adminConsole = require('../controllers/admin-console.server.controller')
 const spcp = require('../controllers/spcp.server.controller')
 const myInfo = require('../controllers/myinfo.server.controller')
 const admin = require('../controllers/admin-forms.server.controller')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const featureManager = require('../../config/feature-manager').default
 const config = require('../../config/config')
 const fs = require('fs')
@@ -136,17 +136,17 @@ const spcpFactory = ({ isEnabled, props }) => {
         }),
       verifyMyInfoVals: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
       singPassLogin: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
       corpPassLogin: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
       addSpcpSessionInfo: (req, res, next) => next(),
       isSpcpAuthenticated: (req, res, next) => next(),
       createSpcpRedirectURL: (req, res, next) => next(),
       addMyInfo: (req, res, next) => next(),
       validateESrvcId: (req, res) =>
-        res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
     }
   }
 }

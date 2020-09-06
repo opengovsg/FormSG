@@ -7,8 +7,7 @@ const mongoose = require('mongoose')
 const moment = require('moment-timezone')
 const _ = require('lodash')
 const JSONStream = require('JSONStream')
-const HttpStatus = require('http-status-codes')
-const get = require('lodash/get')
+const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('./errors.server.controller')
@@ -78,17 +77,17 @@ function makeModule(connection) {
 
       let statusCode
       if (err.name === 'ValidationError') {
-        statusCode = HttpStatus.UNPROCESSABLE_ENTITY
+        statusCode = StatusCodes.UNPROCESSABLE_ENTITY
       } else if (err.name === 'VersionError') {
-        statusCode = HttpStatus.CONFLICT
+        statusCode = StatusCodes.CONFLICT
       } else if (
         err.name === 'FormSizeError' || // FormSG-imposed limit in pre-validate hook
         err instanceof RangeError || // exception when Mongoose breaches Mongo 16MB size limit
         (err.name === 'MongoError' && err.code === 10334) // MongoDB Invalid BSON error
       ) {
-        statusCode = HttpStatus.REQUEST_TOO_LONG // HTTP 413 Payload Too Large
+        statusCode = StatusCodes.REQUEST_TOO_LONG // HTTP 413 Payload Too Large
       } else {
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+        statusCode = StatusCodes.INTERNAL_SERVER_ERROR
       }
 
       return res.status(statusCode).send({
@@ -159,26 +158,7 @@ function makeModule(connection) {
       (f) => f.globalId === field.globalId,
     )
 
-    // To keep date schema in sync (isFutureOnly and dateValidation)
     const actionNameString = String(action.name)
-    if (field.fieldType === 'date') {
-      // TODO: Remove after 31 Jul 2020 (#2437)
-      if (field.isNewClient === true) {
-        // If form is edited by admin using new client
-        field.isFutureOnly =
-          get(field.dateValidation, 'selectedDateValidation') ===
-          'Disallow past dates'
-      } else {
-        // If form is edited by admin using old client
-        field.dateValidation = {
-          selectedDateValidation: field.isFutureOnly
-            ? 'Disallow past dates'
-            : null,
-          customMinDate: null,
-          customMaxDate: null,
-        }
-      }
-    }
 
     switch (actionNameString) {
       case EditFieldActions.Create:
@@ -239,7 +219,7 @@ function makeModule(connection) {
      */
     isFormActive: function (req, res, next) {
       if (req.form.status === 'ARCHIVED') {
-        return res.status(HttpStatus.NOT_FOUND).send({
+        return res.status(StatusCodes.NOT_FOUND).send({
           message: 'Form has been archived',
         })
       } else {
@@ -254,7 +234,7 @@ function makeModule(connection) {
      */
     isFormEncryptMode: function (req, res, next) {
       if (req.form.responseMode !== 'encrypt') {
-        return res.status(HttpStatus.UNPROCESSABLE_ENTITY).send({
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
           message: 'Form is not encrypt mode',
         })
       }
@@ -267,7 +247,7 @@ function makeModule(connection) {
      */
     create: function (req, res) {
       if (!req.body.form) {
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message: 'Invalid Input',
         })
       }
@@ -314,7 +294,7 @@ function makeModule(connection) {
             },
           })
           return res
-            .status(HttpStatus.BAD_REQUEST)
+            .status(StatusCodes.BAD_REQUEST)
             .send({ message: 'Invalid update to form' })
         } else {
           const { error, formFields } = getEditedFormFields(
@@ -331,7 +311,7 @@ function makeModule(connection) {
               },
               error,
             })
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: error })
+            return res.status(StatusCodes.BAD_REQUEST).send({ message: error })
           }
           form.form_fields = formFields
           delete updatedForm.editFormField
@@ -393,7 +373,7 @@ function makeModule(connection) {
           return respondOnMongoError(req, res, err)
         } else if (!form) {
           return res
-            .status(HttpStatus.NOT_FOUND)
+            .status(StatusCodes.NOT_FOUND)
             .send({ message: 'Form not found for duplication' })
         } else {
           let responseMode = req.body.responseMode || 'email'
@@ -470,7 +450,7 @@ function makeModule(connection) {
           if (err) {
             return respondOnMongoError(req, res, err)
           } else if (!forms) {
-            return res.status(HttpStatus.NOT_FOUND).send({
+            return res.status(StatusCodes.NOT_FOUND).send({
               message: 'No user-created and collaborated-on forms found',
             })
           }
@@ -493,7 +473,7 @@ function makeModule(connection) {
           return respondOnMongoError(req, res, err)
         } else if (!feedback) {
           return res
-            .status(HttpStatus.NOT_FOUND)
+            .status(StatusCodes.NOT_FOUND)
             .send({ message: 'No feedback found' })
         } else {
           let sum = 0
@@ -546,7 +526,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: errorHandler.getMongoErrorMessage(err),
           })
         } else {
@@ -573,7 +553,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: 'Error retrieving from database.',
           })
         })
@@ -587,7 +567,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: 'Error converting feedback to JSON',
           })
         })
@@ -601,7 +581,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: 'Error writing feedback to HTTP stream',
           })
         })
@@ -624,10 +604,10 @@ function makeModule(connection) {
         !('comment' in req.body)
       ) {
         return res
-          .status(HttpStatus.BAD_REQUEST)
+          .status(StatusCodes.BAD_REQUEST)
           .send('Form feedback data not passed in')
       } else {
-        return res.status(HttpStatus.OK).send('Successfully received feedback')
+        return res.status(StatusCodes.OK).send('Successfully received feedback')
       }
     },
     /**
@@ -684,7 +664,7 @@ function makeModule(connection) {
     createPresignedPostForImages: function (req, res) {
       if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
         return res
-          .status(HttpStatus.BAD_REQUEST)
+          .status(StatusCodes.BAD_REQUEST)
           .send(`Your file type "${req.body.fileType}" is not supported`)
       }
 
@@ -712,9 +692,9 @@ function makeModule(connection) {
               },
               error: err,
             })
-            return res.status(HttpStatus.BAD_REQUEST).send(err)
+            return res.status(StatusCodes.BAD_REQUEST).send(err)
           } else {
-            return res.status(HttpStatus.OK).send(presignedPostObject)
+            return res.status(StatusCodes.OK).send(presignedPostObject)
           }
         },
       )
@@ -731,7 +711,7 @@ function makeModule(connection) {
     createPresignedPostForLogos: function (req, res) {
       if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
         return res
-          .status(HttpStatus.BAD_REQUEST)
+          .status(StatusCodes.BAD_REQUEST)
           .send(`Your file type "${req.body.fileType}" is not supported`)
       }
 
@@ -759,9 +739,9 @@ function makeModule(connection) {
               },
               error: err,
             })
-            return res.status(HttpStatus.BAD_REQUEST).send(err)
+            return res.status(StatusCodes.BAD_REQUEST).send(err)
           } else {
-            return res.status(HttpStatus.OK).send(presignedPostObject)
+            return res.status(StatusCodes.OK).send(presignedPostObject)
           }
         },
       )

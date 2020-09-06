@@ -43,9 +43,9 @@ export default class FeatureManager {
     const config = convict(schema)
     const properties = config.getProperties()
     const isEnabled = Object.keys(schema).every((variable) => {
-      let val = _.get(properties, variable, null)
+      const val = _.get(properties, variable, null)
       // empty strings (i.e. '') are considered defined
-      let isDefined = !_.isNil(val)
+      const isDefined = !_.isNil(val)
       return isDefined
     })
 

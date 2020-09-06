@@ -29,9 +29,7 @@
         ng-disabled="vm.field.disabled"
         uis-open-close="vm.onDropdownOpenClose()"
       >
-        <ui-select-match>
-          {{ $select.selected }}
-        </ui-select-match>
+        <ui-select-match> {{ $select.selected }} </ui-select-match>
         <ui-select-choices
           position="down"
           refresh="vm.dropdownFilter($select.search)"

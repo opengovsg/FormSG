@@ -73,7 +73,7 @@ export const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
   /**
    * @type {Object.<string, Array<Array<ConditionSchema>>>} An index of logic units keyed by the field id to be shown. See FormLogicSchema
    */
-  let logicUnitsGroupedByField: GroupedLogic = {}
+  const logicUnitsGroupedByField: GroupedLogic = {}
 
   let hasInvalidLogic = false
   formLogics.forEach(function (logicUnit) {

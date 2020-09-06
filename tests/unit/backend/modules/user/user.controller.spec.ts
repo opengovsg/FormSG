@@ -1,4 +1,4 @@
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 import { mocked } from 'ts-jest/utils'
 
 import SmsFactory from 'src/app/factories/sms.factory'
@@ -56,7 +56,7 @@ describe('user.controller', () => {
         expectedOtp,
         MOCK_REQ.body.userId,
       )
-      expect(mockRes.sendStatus).toBeCalledWith(HttpStatus.OK)
+      expect(mockRes.sendStatus).toBeCalledWith(StatusCodes.OK)
     })
 
     it('should return 401 when user id is not in session', async () => {
@@ -78,7 +78,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(HttpStatus.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -109,7 +109,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(HttpStatus.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -129,7 +129,7 @@ describe('user.controller', () => {
       await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(HttpStatus.BAD_REQUEST)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -148,7 +148,7 @@ describe('user.controller', () => {
       await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(HttpStatus.BAD_REQUEST)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -199,7 +199,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.contact,
         MOCK_REQ.body.userId,
       )
-      expect(mockRes.status).toBeCalledWith(HttpStatus.OK)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
       expect(mockRes.send).toBeCalledWith(MOCK_UPDATED_USER)
     })
 
@@ -223,7 +223,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(HttpStatus.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -255,7 +255,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(HttpStatus.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -276,7 +276,7 @@ describe('user.controller', () => {
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(HttpStatus.INTERNAL_SERVER_ERROR)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).toHaveBeenCalledTimes(1)
@@ -313,7 +313,7 @@ describe('user.controller', () => {
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(HttpStatus.INTERNAL_SERVER_ERROR)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -367,7 +367,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(HttpStatus.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
     })
 
@@ -381,7 +381,7 @@ describe('user.controller', () => {
       await UserController.handleFetchUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(HttpStatus.INTERNAL_SERVER_ERROR)
+      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
       expect(mockRes.send).toBeCalledWith('Unable to retrieve user')
     })
   })

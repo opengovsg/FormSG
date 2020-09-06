@@ -8,9 +8,9 @@ const stringify = require('json-stringify-deterministic')
 const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const { getRequestIp } = require('../utils/request')
-const { ConflictError } = require('../utils/custom-errors')
+const { ConflictError } = require('../modules/submission/submission.errors')
 const { MB } = require('../constants/filesize')
 const {
   attachmentsAreValid,
@@ -61,7 +61,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       },
       error: err,
     })
-    return res.status(HttpStatus.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).send({
       message: 'Required headers are missing',
     })
   }
@@ -112,7 +112,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
           },
           error: err,
         })
-        return res.sendStatus(HttpStatus.BAD_REQUEST)
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
     }
   })
@@ -129,7 +129,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         },
       })
       return res
-        .status(HttpStatus.REQUEST_TOO_LONG)
+        .status(StatusCodes.REQUEST_TOO_LONG)
         .send({ message: 'Your submission is too large.' })
     }
 
@@ -171,19 +171,19 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
             formId: req.form._id,
           },
         })
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message: 'Some files were invalid. Try uploading another file.',
         })
       }
 
       if (areAttachmentsMoreThan7MB(attachments)) {
-        return res.status(HttpStatus.UNPROCESSABLE_ENTITY).send({
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
           message: 'Please keep the size of your attachments under 7MB.',
         })
       }
 
       handleDuplicatesInAttachments(attachments)
-      addAttachmentToResponses(req, attachments)
+      addAttachmentToResponses(req.body.responses, attachments)
 
       return next()
     } catch (error) {
@@ -199,7 +199,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         error,
       })
       return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send({ message: 'Unable to process submission.' })
     }
   })
@@ -215,7 +215,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       error: err,
     })
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send({ message: 'Unable to process submission.' })
   })
 
@@ -251,12 +251,12 @@ exports.validateEmailSubmission = function (req, res, next) {
         error: err,
       })
       if (err instanceof ConflictError) {
-        return res.status(HttpStatus.CONFLICT).send({
+        return res.status(err.status).send({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
       } else {
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message:
             'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
         })
@@ -269,7 +269,7 @@ exports.validateEmailSubmission = function (req, res, next) {
     )
     return next()
   } else {
-    return res.sendStatus(HttpStatus.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 }
 
@@ -507,7 +507,7 @@ function onSubmissionEmailFailure(err, req, res, submission) {
     },
     error: err,
   })
-  return res.status(HttpStatus.BAD_REQUEST).send({
+  return res.status(StatusCodes.BAD_REQUEST).send({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
     submissionId: submission._id,

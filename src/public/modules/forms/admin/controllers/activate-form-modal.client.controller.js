@@ -1,3 +1,5 @@
+const dedent = require('dedent-js')
+
 angular
   .module('forms')
   .controller('ActivateFormController', [
@@ -5,6 +7,7 @@ angular
     '$timeout',
     'SpcpValidateEsrvcId',
     'externalScope',
+    'MailTo',
     ActivateFormController,
   ])
 
@@ -13,8 +16,9 @@ function ActivateFormController(
   $timeout,
   SpcpValidateEsrvcId,
   externalScope,
+  MailTo,
 ) {
-  let { updateFormStatusAndSave, checks } = externalScope
+  let { updateFormStatusAndSave, checks, formParams } = externalScope
 
   const vm = this
 
@@ -110,10 +114,28 @@ function ActivateFormController(
     if (encryptionKey !== null) {
       vm.remainingChecks--
       vm.savingStatus = 1
-      updateFormStatusAndSave('Congrats! Your form has gone live.').then(() => {
-        vm.savingStatus = 2
-        vm.closeActivateFormModal()
-      })
+      MailTo.generateMailToUri(
+        formParams.title,
+        encryptionKey.secretKey,
+        formParams._id,
+      )
+        .then((mailToUri) => {
+          const toastMessage = dedent`
+            Congrats! Your form has gone live.<br/>
+            <a href=${mailToUri}>
+              Email secret key to colleagues for safekeeping.
+            </a>
+            `
+          return updateFormStatusAndSave(toastMessage, {
+            timeOut: 10000,
+            extendedTimeOut: 10000,
+            skipLinky: true,
+          })
+        })
+        .then(() => {
+          vm.savingStatus = 2
+          vm.closeActivateFormModal()
+        })
     }
   }
 }

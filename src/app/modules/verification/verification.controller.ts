@@ -1,10 +1,11 @@
 import { RequestHandler, Response } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { VfnErrors } from '../../../shared/util/verification'
 
-import * as verificationService from './verification.service'
+import * as VerificationService from './verification.service'
+import { ITransaction } from './verification.types'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -16,16 +17,16 @@ const logger = createLoggerWithLabel(module)
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
 export const createTransaction: RequestHandler<
-  {},
-  {},
+  Record<string, string>,
+  ITransaction,
   { formId: string }
 > = async (req, res) => {
   try {
     const { formId } = req.body
-    const transaction = await verificationService.createTransaction(formId)
+    const transaction = await VerificationService.createTransaction(formId)
     return transaction
-      ? res.status(HttpStatus.CREATED).json(transaction)
-      : res.sendStatus(HttpStatus.OK)
+      ? res.status(StatusCodes.CREATED).json(transaction)
+      : res.sendStatus(StatusCodes.OK)
   } catch (error) {
     logger.error({
       message: 'Error creating transaction',
@@ -47,10 +48,10 @@ export const getTransactionMetadata: RequestHandler<{
 }> = async (req, res) => {
   try {
     const { transactionId } = req.params
-    const transaction = await verificationService.getTransactionMetadata(
+    const transaction = await VerificationService.getTransactionMetadata(
       transactionId,
     )
-    return res.status(HttpStatus.OK).json(transaction)
+    return res.status(StatusCodes.OK).json(transaction)
   } catch (error) {
     logger.error({
       message: 'Error retrieving transaction metadata',
@@ -70,15 +71,15 @@ export const getTransactionMetadata: RequestHandler<{
  */
 export const resetFieldInTransaction: RequestHandler<
   { transactionId: string },
-  {},
+  string,
   { fieldId: string }
 > = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId } = req.body
-    const transaction = await verificationService.getTransaction(transactionId)
-    await verificationService.resetFieldInTransaction(transaction, fieldId)
-    return res.sendStatus(HttpStatus.OK)
+    const transaction = await VerificationService.getTransaction(transactionId)
+    await VerificationService.resetFieldInTransaction(transaction, fieldId)
+    return res.sendStatus(StatusCodes.OK)
   } catch (error) {
     logger.error({
       message: 'Error resetting field in transaction',
@@ -98,15 +99,15 @@ export const resetFieldInTransaction: RequestHandler<
  */
 export const getNewOtp: RequestHandler<
   { transactionId: string },
-  {},
+  string,
   { answer: string; fieldId: string }
 > = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { answer, fieldId } = req.body
-    const transaction = await verificationService.getTransaction(transactionId)
-    await verificationService.getNewOtp(transaction, fieldId, answer)
-    return res.sendStatus(HttpStatus.CREATED)
+    const transaction = await VerificationService.getTransaction(transactionId)
+    await VerificationService.getNewOtp(transaction, fieldId, answer)
+    return res.sendStatus(StatusCodes.CREATED)
   } catch (error) {
     logger.error({
       message: 'Error retrieving new OTP',
@@ -127,15 +128,15 @@ export const getNewOtp: RequestHandler<
  */
 export const verifyOtp: RequestHandler<
   { transactionId: string },
-  {},
+  string,
   { otp: string; fieldId: string }
 > = async (req, res) => {
   try {
     const { transactionId } = req.params
     const { fieldId, otp } = req.body
-    const transaction = await verificationService.getTransaction(transactionId)
-    const data = await verificationService.verifyOtp(transaction, fieldId, otp)
-    return res.status(HttpStatus.OK).json(data)
+    const transaction = await VerificationService.getTransaction(transactionId)
+    const data = await VerificationService.verifyOtp(transaction, fieldId, otp)
+    return res.status(StatusCodes.OK).json(data)
   } catch (error) {
     logger.error({
       message: 'Error verifying OTP',
@@ -153,22 +154,22 @@ export const verifyOtp: RequestHandler<
  * @param res
  */
 const handleError = (error: Error, res: Response) => {
-  let status = HttpStatus.INTERNAL_SERVER_ERROR
+  let status = StatusCodes.INTERNAL_SERVER_ERROR
   let message = error.message
   switch (error.name) {
     case VfnErrors.SendOtpFailed:
-      status = HttpStatus.BAD_REQUEST
+      status = StatusCodes.BAD_REQUEST
       break
     case VfnErrors.WaitForOtp:
-      status = HttpStatus.ACCEPTED
+      status = StatusCodes.ACCEPTED
       break
     case VfnErrors.ResendOtp:
     case VfnErrors.InvalidOtp:
-      status = HttpStatus.UNPROCESSABLE_ENTITY
+      status = StatusCodes.UNPROCESSABLE_ENTITY
       break
     case VfnErrors.FieldNotFound:
     case VfnErrors.TransactionNotFound:
-      status = HttpStatus.NOT_FOUND
+      status = StatusCodes.NOT_FOUND
       break
     default:
       message = 'An error occurred'

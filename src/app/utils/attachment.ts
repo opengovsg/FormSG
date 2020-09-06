@@ -1,6 +1,14 @@
-const fileValidation = require('../../shared/util/file-validation')
-const _ = require('lodash')
-const { FilePlatforms } = require('../../shared/constants')
+import { flattenDeep, sumBy } from 'lodash'
+
+import { FilePlatforms } from '../../shared/constants'
+import * as fileValidation from '../../shared/util/file-validation'
+import { BasicField, FieldResponse, IAttachmentResponse } from '../../types'
+
+export interface IAttachmentInfo {
+  filename: string
+  content: Buffer
+  fieldId: string
+}
 
 /**
  * Checks an array of attachments to see ensure that every
@@ -8,10 +16,12 @@ const { FilePlatforms } = require('../../shared/constants')
  * internal isInvalidFileExtension checker function, and
  * zip files are checked recursively.
  *
- * @param {File[]} attachments - Array of file objects
- * @return {boolean} Whether all attachments are valid
+ * @param attachments - Array of file objects
+ * @return Whether all attachments are valid
  */
-const attachmentsAreValid = async (attachments) => {
+export const attachmentsAreValid = async (
+  attachments: IAttachmentInfo[],
+): Promise<boolean> => {
   // Turn it into an array of promises that each resolve
   // to an array of file extensions that are invalid (if any)
   const getInvalidFileExtensionsInZip = fileValidation.getInvalidFileExtensionsInZip(
@@ -28,7 +38,7 @@ const attachmentsAreValid = async (attachments) => {
 
   try {
     const results = await Promise.all(promises)
-    return _.flattenDeep(results).length === 0
+    return flattenDeep(results).length === 0
   } catch (err) {
     // Consume error here, all errors should cause attachments to be considered
     // invalid.
@@ -36,26 +46,38 @@ const attachmentsAreValid = async (attachments) => {
   }
 }
 
+const isAttachmentResponseFromMap = (
+  attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
+  response: FieldResponse,
+): response is IAttachmentResponse => {
+  return !!attachmentMap[response._id]
+}
+
 /**
  * Adds the attachment's content, filename to each response,
  * based on their fieldId.
  * The response's answer is also changed to the attachment's filename.
  *
- * @param  {Object} req - Express request object
- * @param {File[]} attachments - Array of file objects
- * @return {Void}
+ * @param responses - Array of responses received
+ * @param attachments - Array of file objects
  */
-const addAttachmentToResponses = (req, attachments) => {
+export const addAttachmentToResponses = (
+  responses: FieldResponse[],
+  attachments: IAttachmentInfo[],
+): void => {
   // Create a map of the attachments with fieldId as keys
-  const attachmentMap = attachments.reduce((acc, attachment) => {
+  const attachmentMap: Record<
+    IAttachmentInfo['fieldId'],
+    IAttachmentInfo
+  > = attachments.reduce((acc, attachment) => {
     acc[attachment.fieldId] = attachment
     return acc
   }, {})
 
-  if (req.body.responses) {
+  if (responses) {
     // matches responses to attachments using id, adding filename and content to response
-    req.body.responses.forEach((response) => {
-      if (attachmentMap[response._id]) {
+    responses.forEach((response) => {
+      if (isAttachmentResponseFromMap(attachmentMap, response)) {
         const file = attachmentMap[response._id]
         response.answer = file.filename
         response.filename = file.filename
@@ -65,9 +87,11 @@ const addAttachmentToResponses = (req, attachments) => {
   }
 }
 
-const areAttachmentsMoreThan7MB = (attachments) => {
+export const areAttachmentsMoreThan7MB = (
+  attachments: IAttachmentInfo[],
+): boolean => {
   // Check if total attachments size is < 7mb
-  const totalAttachmentSize = _.sumBy(attachments, (a) => a.content.byteLength)
+  const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
   return totalAttachmentSize > 7000000
 }
 
@@ -76,10 +100,11 @@ const areAttachmentsMoreThan7MB = (attachments) => {
  * to for example 1-abc.txt, 2-abc.txt.
  * One of the duplicated files will not have its name changed.
  * Two abc.txt will become 1-abc.txt and abc.txt
- * @param {File[]} attachments - Array of file objects
- * @return {Void}
+ * @param attachments - Array of file objects
  */
-const handleDuplicatesInAttachments = (attachments) => {
+export const handleDuplicatesInAttachments = (
+  attachments: IAttachmentInfo[],
+): void => {
   const names = new Map()
 
   // fill up the map, the key: filename and value: count
@@ -101,24 +126,22 @@ const handleDuplicatesInAttachments = (attachments) => {
   })
 }
 
-const mapAttachmentsFromParsedResponses = (responses) => {
-  // look for attachments in parsedResponses
-  // Could be undefined if it is not required, or hidden
-  return responses
-    .filter(
-      (response) =>
-        response.fieldType === 'attachment' && response.content !== undefined,
-    )
-    .map((response) => ({
-      filename: response.filename,
-      content: response.content,
-    }))
+const isAttachmentResponse = (
+  response: FieldResponse,
+): response is IAttachmentResponse => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    (response as IAttachmentResponse).content !== undefined
+  )
 }
 
-module.exports = {
-  attachmentsAreValid,
-  addAttachmentToResponses,
-  areAttachmentsMoreThan7MB,
-  handleDuplicatesInAttachments,
-  mapAttachmentsFromParsedResponses,
+export const mapAttachmentsFromParsedResponses = (
+  responses: FieldResponse[],
+): Pick<IAttachmentResponse, 'filename' | 'content'>[] => {
+  // look for attachments in parsedResponses
+  // Could be undefined if it is not required, or hidden
+  return responses.filter(isAttachmentResponse).map((response) => ({
+    filename: response.filename,
+    content: response.content,
+  }))
 }

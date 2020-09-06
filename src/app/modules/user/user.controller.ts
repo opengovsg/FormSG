@@ -1,8 +1,9 @@
 import to from 'await-to-js'
 import { RequestHandler } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { IPopulatedUser } from '../../../types'
 import SmsFactory from '../../factories/sms.factory'
 import { ApplicationError } from '../core/core.errors'
 
@@ -22,8 +23,8 @@ const logger = createLoggerWithLabel(module)
  * @returns 400 on OTP creation or SMS send failure
  */
 export const handleContactSendOtp: RequestHandler<
-  {},
-  {},
+  Record<string, string>,
+  string,
   { contact: string; userId: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -33,17 +34,17 @@ export const handleContactSendOtp: RequestHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
   }
 
   try {
     const generatedOtp = await createContactOtp(userId, contact)
     await SmsFactory.sendAdminContactOtp(contact, generatedOtp, userId)
 
-    return res.sendStatus(HttpStatus.OK)
+    return res.sendStatus(StatusCodes.OK)
   } catch (err) {
     // TODO(#193): Send different error messages according to error.
-    return res.status(HttpStatus.BAD_REQUEST).send(err.message)
+    return res.status(StatusCodes.BAD_REQUEST).send(err.message)
   }
 }
 
@@ -56,8 +57,8 @@ export const handleContactSendOtp: RequestHandler<
  * @returns 500 when OTP is malformed or for unknown errors
  */
 export const handleContactVerifyOtp: RequestHandler<
-  {},
-  {},
+  Record<string, string>,
+  string | IPopulatedUser,
   {
     userId: string
     otp: string
@@ -71,35 +72,49 @@ export const handleContactVerifyOtp: RequestHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
   }
 
   try {
     await verifyContactOtp(otp, contact, userId)
   } catch (err) {
-    logger.warn(err.meta ?? err)
+    logger.warn({
+      message: 'Error occurred whilst verifying contact OTP',
+      meta: {
+        action: 'handleContactVerifyOtp',
+        userId,
+      },
+      error: err,
+    })
     if (err instanceof ApplicationError) {
       return res.status(err.status).send(err.message)
     } else {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(err.message)
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message)
     }
   }
 
   // No error, update user with given contact.
   try {
     const updatedUser = await updateUserContact(contact, userId)
-    return res.status(HttpStatus.OK).send(updatedUser)
+    return res.status(StatusCodes.OK).send(updatedUser)
   } catch (updateErr) {
     // Handle update error.
-    logger.warn(updateErr)
-    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(updateErr.message)
+    logger.warn({
+      message: 'Error occurred whilst updating user contact',
+      meta: {
+        action: 'handleContactVerifyOtp',
+        userId,
+      },
+      error: updateErr,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(updateErr.message)
   }
 }
 
 export const handleFetchUser: RequestHandler = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
   if (!sessionUserId) {
-    return res.status(HttpStatus.UNAUTHORIZED).send('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
   }
 
   // Retrieve user with id in session
@@ -110,11 +125,12 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
       message: `Unable to retrieve user ${sessionUserId}`,
       meta: {
         action: 'handleFetchUser',
+        userId: sessionUserId,
       },
       error: dbErr,
     })
     return res
-      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send('Unable to retrieve user')
   }
 

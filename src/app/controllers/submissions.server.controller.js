@@ -7,7 +7,7 @@ const errorHandler = require('./errors.server.controller')
 const getSubmissionModel = require('../models/submission.server.model').default
 const Submission = getSubmissionModel(mongoose)
 
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const { getRequestIp } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
@@ -28,7 +28,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
       return next()
     } else {
       if (!captchaPrivateKey) {
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
           message: 'Captcha not set-up',
         })
       } else if (!req.query.captchaResponse) {
@@ -40,7 +40,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
             ip: getRequestIp(req),
           },
         })
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message: 'Captcha was missing. Please refresh and submit again.',
         })
       } else {
@@ -62,7 +62,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
                   ip: getRequestIp(req),
                 },
               })
-              return res.status(HttpStatus.BAD_REQUEST).send({
+              return res.status(StatusCodes.BAD_REQUEST).send({
                 message: 'Captcha was incorrect. Please submit again.',
               })
             }
@@ -79,7 +79,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
               },
               error: err,
             })
-            return res.status(HttpStatus.BAD_REQUEST).send({
+            return res.status(StatusCodes.BAD_REQUEST).send({
               message:
                 'Could not verify captcha. Please submit again in a few minutes.',
             })
@@ -204,7 +204,7 @@ exports.count = function (req, res) {
     isMalformedDate(req.query.startDate) ||
     isMalformedDate(req.query.endDate)
   ) {
-    return res.status(HttpStatus.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).send({
       message: 'Malformed date parameter',
     })
   }
@@ -229,7 +229,7 @@ exports.count = function (req, res) {
         error: err,
       })
 
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
         message: errorHandler.getMongoErrorMessage(err),
       })
     } else {

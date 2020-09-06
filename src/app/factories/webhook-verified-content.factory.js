@@ -1,4 +1,4 @@
-const webhooks = require('../controllers/webhooks.server.controller')
+const webhook = require('../modules/webhook/webhook.controller')
 const spcp = require('../controllers/spcp.server.controller')
 const featureManager = require('../../config/feature-manager').default
 
@@ -8,7 +8,7 @@ const webhookVerifiedContentFactory = ({ isEnabled, props }) => {
       encryptedVerifiedFields: spcp.encryptedVerifiedFields(
         props.signingSecretKey,
       ),
-      post: webhooks.post,
+      post: webhook.post,
     }
   } else {
     return {

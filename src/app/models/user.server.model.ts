@@ -8,7 +8,7 @@ import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 
 export const USER_SCHEMA_ID = 'User'
 
-export interface IUserModel extends Model<IUserSchema> {}
+export type IUserModel = Model<IUserSchema>
 
 const compileUserModel = (db: Mongoose) => {
   const Agency = getAgencyModel(db)

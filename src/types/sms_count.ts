@@ -39,13 +39,13 @@ export interface IVerificationSmsCount extends ISmsCount {
   }
 }
 
-export interface IVerificationSmsCountSchema extends ISmsCountSchema {}
+export type IVerificationSmsCountSchema = ISmsCountSchema
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']
 }
 
-export interface IAdminContactSmsCountSchema extends ISmsCountSchema {}
+export type IAdminContactSmsCountSchema = ISmsCountSchema
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>

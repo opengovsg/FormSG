@@ -1,4 +1,5 @@
 import hasAnsi from 'has-ansi'
+import { isEmpty } from 'lodash'
 import omit from 'lodash/omit'
 import logform from 'logform'
 import path from 'path'
@@ -189,23 +190,52 @@ const getModuleLabel = (callingModule: NodeModule) => {
 /**
  * Overrides the given winston logger with a new signature, so as to enforce a
  * log format.
+ * TODO(#42): Remove try catch blocks when application is 100% TypeScript.
  * @param logger the logger to override
  */
 const createCustomLogger = (logger: Logger) => {
   return {
-    info: ({ message, meta }: Omit<CustomLoggerParams, 'error'>) =>
-      logger.info(message, { meta }),
-    warn: ({ message, meta, error }: CustomLoggerParams) => {
-      if (error) {
-        return logger.warn(message, { meta }, error)
+    info: (params: Omit<CustomLoggerParams, 'error'>) => {
+      try {
+        const { message, meta } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
+        return logger.info(message, { meta })
+      } catch {
+        return logger.info(params)
       }
-      return logger.warn(message, { meta })
     },
-    error: ({ message, meta, error }: CustomLoggerParams) => {
-      if (error) {
-        return logger.error(message, { meta }, error)
+    warn: (params: CustomLoggerParams) => {
+      try {
+        const { message, meta, error } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
+        if (error) {
+          return logger.warn(message, { meta }, error)
+        }
+        return logger.warn(message, { meta })
+      } catch {
+        return logger.warn(params)
       }
-      return logger.error(message, { meta })
+    },
+    error: (params: CustomLoggerParams) => {
+      try {
+        const { message, meta, error } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
+        if (error) {
+          return logger.error(message, { meta }, error)
+        }
+        return logger.error(message, { meta })
+      } catch {
+        return logger.error(params)
+      }
     },
   }
 }

@@ -50,7 +50,7 @@ function avatarDropdownController(
       // Early return if user already has contact information.
       if (trueUser.contact) return
 
-      const features = await Features.getfeatureStates()
+      const features = await Features.getFeatureStates()
       // Do not proceed if sms feature is not available.
       if (!features.sms) return
 
