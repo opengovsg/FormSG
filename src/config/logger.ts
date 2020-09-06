@@ -14,11 +14,11 @@ import { Environment } from '../types'
 import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
 
 // Params to enforce the logging format.
-type CustomLoggerParams = {
+export type CustomLoggerParams = {
   message: string
   meta: {
     action: string
-    [other: string]: any
+    [other: string]: unknown
   }
   error?: Error
 }

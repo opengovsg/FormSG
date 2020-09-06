@@ -43,6 +43,13 @@ export const validateEmailDomain = async (
   try {
     const agency = await AgencyModel.findOne({ emailDomain })
     if (!agency) {
+      logger.warn({
+        message: 'Agency not found',
+        meta: {
+          action: 'validateEmailDomain',
+          emailDomain,
+        },
+      })
       return err(new InvalidDomainError())
     }
 

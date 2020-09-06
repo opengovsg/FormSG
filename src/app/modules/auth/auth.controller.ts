@@ -4,7 +4,10 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import MailService from '../../services/mail.service'
 import { getRequestIp } from '../../utils/request'
@@ -17,7 +20,21 @@ import { ResponseAfter, SessionUser } from './auth.types'
 
 const logger = createLoggerWithLabel(module)
 
-const handleError = (res: Response, error: ApplicationError) => {
+const handleError = ({
+  error,
+  res,
+  logMeta,
+}: {
+  error: ApplicationError
+  res: Response
+  logMeta: CustomLoggerParams['meta']
+}) => {
+  logger.error({
+    message: 'Error occurred whilst handling auth routes',
+    meta: logMeta,
+    error,
+  })
+
   switch (error.constructor) {
     case InvalidDomainError:
       return res.status(StatusCodes.UNAUTHORIZED).send(error.message)
@@ -43,22 +60,18 @@ export const handleCheckUser: RequestHandler<
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { email } = req.body
+  const logMeta = {
+    action: 'handleCheckUser',
+    email,
+    ip: getRequestIp(req),
+  }
 
   const agencyResult = await AuthService.validateEmailDomain(email)
 
   agencyResult
     // Agency exists, return success.
     .map(() => res.sendStatus(StatusCodes.OK))
-    .mapErr((err) => {
-      logger.error({
-        message: 'Error occurred in /auth/checkuser',
-        meta: {
-          action: 'handleCheckUser',
-        },
-        error: err,
-      })
-      return handleError(res, err)
-    })
+    .mapErr((error) => handleError({ error, res, logMeta }))
 }
 
 /**
