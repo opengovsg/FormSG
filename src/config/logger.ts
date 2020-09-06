@@ -9,9 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
-import { Environment } from '../types'
-
-import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
+import defaults from './defaults'
 
 // Params to enforce the logging format.
 type CustomLoggerParams = {
@@ -22,6 +20,12 @@ type CustomLoggerParams = {
   }
   error?: Error
 }
+
+// Cannot use config due to logger being instantiated first, and
+// having circular dependencies.
+const isDev = ['development', 'test'].includes(process.env.NODE_ENV)
+const customCloudWatchGroup = process.env.CUSTOM_CLOUDWATCH_LOG_GROUP
+const awsRegion = process.env.AWS_REGION || defaults.aws.region
 
 // A variety of helper functions to make winston logging like console logging,
 // allowing multiple arguments.
@@ -164,7 +168,7 @@ const createLoggerOptions = (label: string): LoggerOptions => {
     ),
     transports: [
       new transports.Console({
-        silent: nodeEnv === Environment.Test,
+        silent: process.env.NODE_ENV === 'test',
       }),
     ],
     exitOnError: false,
@@ -264,7 +268,7 @@ export const createCloudWatchLogger = (label: string) => {
         // not share sequence tokens. Hence generate a unique ID for each instance
         // of the logger.
         logStreamName: uuidv4(),
-        awsRegion: aws.region,
+        awsRegion,
         jsonMessage: true,
       }),
     ]
