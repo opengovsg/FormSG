@@ -38,10 +38,10 @@
     <div ng-if="!isDisplayTransferOwnerModal">
       <div
         class="alert-custom alert-error secret-key-warning"
-        ng-if="isDisplayTransferFailedMessage"
+        ng-if="isDisplayAlertMessage"
       >
         <i class="bx bx-info-circle bx-md icon-spacing"></i>
-        <span class="alert-msg"> {{ transferErrorMessage }} </span>
+        <span class="alert-msg"> {{ alertMessage }} </span>
       </div>
 
       <!-- Top section contains the title and functionality to add new collaborators -->
@@ -74,28 +74,12 @@
               />
               <!-- Error messages -->
               <div
-                ng-if="!isAlreadyCollabError && !hasEmailError && collab.form.$invalid"
+                ng-if="collab.form.$invalid"
                 class="alert-custom alert-error"
               >
                 <i class="bx bx-exclamation bx-md icon-spacing"></i>
                 <span class="alert-msg"
                   >Please enter a valid email address</span
-                >
-              </div>
-              <div
-                ng-if="!isAlreadyCollabError && hasEmailError"
-                class="alert-custom alert-error"
-              >
-                <i class="bx bx-exclamation bx-md icon-spacing"></i>
-                <span class="alert-msg">{{alertMessage}}</span>
-              </div>
-              <div
-                ng-if="isAlreadyCollabError"
-                class="alert-custom alert-error"
-              >
-                <i class="bx bx-exclamation bx-md icon-spacing"></i>
-                <span class="alert-msg"
-                  >This user is an existing collaborator. Edit role below.</span
                 >
               </div>
             </div>

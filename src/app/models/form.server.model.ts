@@ -175,7 +175,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         ],
         validate: {
           validator: async (users: Permission[]) => {
-            console.info(users)
             // Retrieve count of users that exist in the Agency collection.
             // Map is used instead of for...of loop so that this runs in
             // parallel.

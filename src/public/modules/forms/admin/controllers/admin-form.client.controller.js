@@ -1,5 +1,6 @@
 'use strict'
 
+const HttpStatus = require('http-status-codes')
 const { LogicType } = require('../../../../../types')
 
 // All viewable tabs. readOnly is true if that tab cannot be used to edit form.
@@ -37,8 +38,10 @@ angular
     'FormData',
     'Auth',
     'moment',
+    'Toastr',
     '$state',
     '$window',
+    'FormApi',
     AdminFormController,
   ])
 
@@ -49,14 +52,14 @@ function AdminFormController(
   FormData,
   Auth,
   moment,
+  Toastr,
   $state,
   $window,
+  FormApi,
 ) {
   // Banner message on form builder routes
   $scope.bannerContent = $window.siteBannerContent || $window.adminBannerContent
   $scope.myform = FormData.form
-
-  console.info($scope)
 
   // Redirect to signin if unable to get user
   $scope.user =
@@ -121,6 +124,57 @@ function AdminFormController(
         }),
       },
     })
+  }
+
+  /**
+   * Calls the update form api
+   * formId is the id of the form to update
+   * updatedForm is a subset of fields from scope.myform which have been edited
+   *
+   * @param {Object} {formId: String, updatedForm: Object}
+   * @returns Promise
+   */
+  $scope.updateForm = (update) => {
+    return FormApi.update({ formId: $scope.myform._id }, { form: update })
+      .$promise.then((savedForm) => {
+        // Updating this form updates lastModified
+        // and also updates myform if a formToUse is passed in
+        $scope.myform = savedForm
+      })
+      .catch((error) => {
+        if (!error) {
+          return
+        }
+        let errorMessage
+        switch (error.status) {
+          case HttpStatus.BAD_REQUEST:
+            errorMessage =
+              'This page seems outdated, and your changes could not be saved. Please refresh.'
+            break
+          case HttpStatus.UNAUTHORIZED:
+            errorMessage =
+              'Your changes could not be saved as your account lacks the requisite privileges.'
+            break
+          case HttpStatus.UNPROCESSABLE_ENTITY:
+            // Validation can fail for many reasons, so return more specific message
+            errorMessage = _.get(
+              error,
+              'data.message',
+              'Your changes contain invalid input.',
+            )
+            break
+          case HttpStatus.REQUEST_TOO_LONG: // HTTP Payload Too Large
+            errorMessage = `
+                Your form is too large. Reduce the number of fields, or submit a
+                <a href="${$scope.supportFormLink}" target="_blank" rel="noopener"><u>Support Form</u></a>.
+              `
+            break
+          default:
+            errorMessage = 'An error occurred while saving your changes.'
+        }
+        Toastr.error(errorMessage)
+        return error
+      })
   }
 
   /* Logic stuff with checking across Build and Logic tabs */
