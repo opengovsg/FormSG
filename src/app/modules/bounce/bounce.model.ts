@@ -14,6 +14,8 @@ import {
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
+import { extractHeader, hasEmailBounced } from './bounce.util'
+
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 
 export interface IBounceModel extends Model<IBounceSchema> {
@@ -56,26 +58,6 @@ const BounceSchema = new Schema<IBounceSchema>({
   },
 })
 BounceSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
-
-// Helper function for methods.
-// Extracts custom headers which we send with all emails, such as form ID, submission ID
-// and email type (admin response, email confirmation OTP etc).
-const extractHeader = (body: IEmailNotification, header: string): string => {
-  return get(body, 'mail.headers').find(
-    (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
-  )?.value
-}
-
-// Helper function for methods.
-// Whether a bounce notification says a given email has bounced
-const hasEmailBounced = (
-  bounceInfo: IBounceNotification,
-  email: string,
-): boolean => {
-  return get(bounceInfo, 'bounce.bouncedRecipients').some(
-    (emailInfo) => emailInfo.emailAddress === email,
-  )
-}
 
 // Create a new Bounce document from an SNS notification.
 // More info on format of SNS notifications:
