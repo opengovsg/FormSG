@@ -1,7 +1,3 @@
-// Helper function for methods.
-
-import { get } from 'lodash'
-
 import { IBounceNotification, IEmailNotification } from 'src/types'
 /**
  * Extracts custom headers which we send with all emails, such as form ID, submission ID
@@ -13,7 +9,7 @@ export const extractHeader = (
   body: IEmailNotification,
   header: string,
 ): string => {
-  return get(body, 'mail.headers').find(
+  return body.mail.headers.find(
     (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
   )?.value
 }
@@ -27,7 +23,7 @@ export const hasEmailBounced = (
   bounceInfo: IBounceNotification,
   email: string,
 ): boolean => {
-  return get(bounceInfo, 'bounce.bouncedRecipients').some(
+  return bounceInfo.bounce.bouncedRecipients.some(
     (emailInfo) => emailInfo.emailAddress === email,
   )
 }
