@@ -111,17 +111,18 @@ const logCriticalBounce = (
   formId: string,
   notification: IEmailNotification,
 ): void => {
-  if (
-    !bounceDoc.hasAlarmed &&
-    bounceDoc.bounces.every((emailInfo) => emailInfo.hasBounced)
-  ) {
+  if (bounceDoc.bounces.every((emailInfo) => emailInfo.hasBounced)) {
     logger.warn({
-      type: 'CRITICAL BOUNCE',
-      formId,
-      recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
-      // We know for sure that critical bounces can only happen because of bounce
-      // notifications, so this casting is okay
-      bounceInfo: (notification as IBounceNotification).bounce,
+      message: 'CRITICAL BOUNCE',
+      meta: {
+        action: 'Received critical bounce',
+        hasAlarmed: bounceDoc.hasAlarmed,
+        formId,
+        recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
+        // We know for sure that critical bounces can only happen because of bounce
+        // notifications, so this casting is okay
+        bounceInfo: (notification as IBounceNotification).bounce,
+      },
     })
     // We don't want a flood of logs and alarms, so we use this to limit the rate of
     // critical bounce logs for each form ID
