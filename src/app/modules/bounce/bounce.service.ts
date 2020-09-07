@@ -1,9 +1,13 @@
 import axios from 'axios'
 import crypto from 'crypto'
+import { EMAIL_HEADERS, EMAIL_TYPES } from 'dist/backend/app/constants/mail'
 import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
-import { createCloudWatchLogger } from '../../../config/logger'
+import {
+  createCloudWatchLogger,
+  createLoggerWithLabel,
+} from '../../../config/logger'
 import {
   IBounceNotification,
   IBounceSchema,
@@ -12,8 +16,10 @@ import {
 } from '../../../types'
 
 import getBounceModel from './bounce.model'
+import { extractHeader } from './bounce.util'
 
-const logger = createCloudWatchLogger('email')
+const logger = createLoggerWithLabel(module)
+const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
 
 // Note that these need to be ordered in order to generate
@@ -130,8 +136,24 @@ const logCriticalBounce = (
 export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const notification: IEmailNotification = JSON.parse(body.Message)
   // This is the crucial log statement which allows us to debug bounce-related
-  // issues, as it logs all the details about deliveries and bounces
-  logger.info(notification)
+  // issues, as it logs all the details about deliveries and bounces. Email
+  // confirmation info goes to the short-term log group so we do not store
+  // form fillers' information for too long, and everything else goes into the
+  // main log group.
+  if (
+    extractHeader(notification, EMAIL_HEADERS.formId) ===
+    EMAIL_TYPES.emailConfirmation
+  ) {
+    shortTermLogger.info(notification)
+  } else {
+    logger.info({
+      message: 'Email notification',
+      meta: {
+        action: 'Received notification from SNS',
+        ...notification,
+      },
+    })
+  }
   const latestBounces = Bounce.fromSnsNotification(notification)
   if (!latestBounces) return
   const formId = latestBounces.formId
