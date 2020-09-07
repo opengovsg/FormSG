@@ -11,6 +11,7 @@ import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { LINKS } from '../../../shared/constants'
 import { IAgency, IPopulatedUser, IUserSchema } from '../../../types'
 import { InvalidDomainError } from '../auth/auth.errors'
 import { DatabaseError } from '../core/core.errors'
@@ -195,7 +196,9 @@ export const retrieveUser = (
           },
           error: err,
         })
-        return new DatabaseError()
+        return new DatabaseError(
+          `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
+        )
       },
     ),
     TE.chain((admin) => {
@@ -208,7 +211,11 @@ export const retrieveUser = (
             agency,
           },
         })
-        return TE.left(new DatabaseError())
+        return TE.left(
+          new DatabaseError(
+            `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
+          ),
+        )
       }
       return TE.right(admin)
     }),
