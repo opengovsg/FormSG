@@ -11,7 +11,7 @@ import getMockLogger, {
 import { mocked } from 'ts-jest/utils'
 
 import * as LoggerModule from 'src/config/logger'
-import { ISnsNotification } from 'src/types'
+import { IBounceNotification, ISnsNotification } from 'src/types'
 
 import {
   extractBounceObject,
@@ -24,9 +24,10 @@ jest.mock('axios')
 const mockAxios = mocked(axios, true)
 jest.mock('src/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
+const mockShortTermLogger = getMockLogger()
 const mockLogger = getMockLogger()
-MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockLogger)
-MockLoggerModule.createLoggerWithLabel.mockReturnValue(getMockLogger())
+MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockShortTermLogger)
+MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 // Import modules which depend on config last so that mocks get imported correctly
 // eslint-disable-next-line import/first
@@ -113,11 +114,17 @@ describe('updateBounces', () => {
     'email3@example.com',
   ]
 
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    // Avoid being affected by other modules
+    resetMockLogger(mockLogger)
+    resetMockLogger(mockShortTermLogger)
+  })
 
   afterEach(async () => {
     await dbHandler.clearDatabase()
     resetMockLogger(mockLogger)
+    resetMockLogger(mockShortTermLogger)
   })
 
   afterAll(async () => await dbHandler.closeDatabase())
@@ -138,9 +145,11 @@ describe('updateBounces', () => {
       email,
       hasBounced: false,
     }))
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      JSON.parse(notification.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: {
+        ...JSON.parse(notification.Message),
+      },
+    })
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -171,9 +180,11 @@ describe('updateBounces', () => {
       email,
       hasBounced: bounces[email],
     }))
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      JSON.parse(notification.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: {
+        ...JSON.parse(notification.Message),
+      },
+    })
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -192,6 +203,9 @@ describe('updateBounces', () => {
       recipientList,
       recipientList,
     )
+    const parsedNotification: IBounceNotification = JSON.parse(
+      notification.Message,
+    )
     await updateBounces(notification)
     const actualBounceDoc = await Bounce.findOne({ formId })
     const actualBounce = extractBounceObject(actualBounceDoc)
@@ -199,11 +213,20 @@ describe('updateBounces', () => {
       email,
       hasBounced: true,
     }))
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      JSON.parse(notification.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: {
+        ...parsedNotification,
+      },
+    })
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
-      type: 'CRITICAL BOUNCE',
+      message: 'CRITICAL BOUNCE',
+      meta: {
+        action: 'Received critical bounce',
+        hasAlarmed: false,
+        formId: formId.toHexString(),
+        submissionId: submissionId.toHexString(),
+        bounceInfo: parsedNotification.bounce,
+      },
     })
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -238,12 +261,16 @@ describe('updateBounces', () => {
     }))
     // There should only be one document after 2 notifications
     expect(actualBounceCursor.length).toBe(1)
-    expect(mockLogger.info.mock.calls[0][0]).toEqual(
-      JSON.parse(notification1.Message),
-    )
-    expect(mockLogger.info.mock.calls[1][0]).toEqual(
-      JSON.parse(notification2.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: {
+        ...JSON.parse(notification1.Message),
+      },
+    })
+    expect(mockLogger.info.mock.calls[1][0]).toMatchObject({
+      meta: {
+        ...JSON.parse(notification2.Message),
+      },
+    })
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -283,12 +310,16 @@ describe('updateBounces', () => {
     }))
     // There should only be one document after 2 notifications
     expect(actualBounceCursor.length).toBe(1)
-    expect(mockLogger.info.mock.calls[0][0]).toEqual(
-      JSON.parse(notification1.Message),
-    )
-    expect(mockLogger.info.mock.calls[1][0]).toEqual(
-      JSON.parse(notification2.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: {
+        ...JSON.parse(notification1.Message),
+      },
+    })
+    expect(mockLogger.info.mock.calls[1][0]).toMatchObject({
+      meta: {
+        ...JSON.parse(notification2.Message),
+      },
+    })
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -300,18 +331,25 @@ describe('updateBounces', () => {
 
   it('should save correctly when there are consecutive critical bounce notifications', async () => {
     const formId = new ObjectId()
-    const submissionId = new ObjectId()
+    const submissionId1 = new ObjectId()
+    const submissionId2 = new ObjectId()
     const notification1 = makeBounceNotification(
       formId,
-      submissionId,
+      submissionId1,
       recipientList,
       recipientList.slice(0, 1), // First email bounced
     )
+    const parsedNotification1: IBounceNotification = JSON.parse(
+      notification1.Message,
+    )
     const notification2 = makeBounceNotification(
       formId,
-      submissionId,
+      submissionId2,
       recipientList,
       recipientList.slice(1, 3), // Second and third email bounced
+    )
+    const parsedNotification2: IBounceNotification = JSON.parse(
+      notification2.Message,
     )
     await updateBounces(notification1)
     await updateBounces(notification2)
@@ -323,14 +361,25 @@ describe('updateBounces', () => {
     }))
     // There should only be one document after 2 notifications
     expect(actualBounceCursor.length).toBe(1)
-    expect(mockLogger.info.mock.calls[0][0]).toEqual(
-      JSON.parse(notification1.Message),
-    )
-    expect(mockLogger.info.mock.calls[1][0]).toEqual(
-      JSON.parse(notification2.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: {
+        ...parsedNotification1,
+      },
+    })
+    expect(mockLogger.info.mock.calls[1][0]).toMatchObject({
+      meta: {
+        ...parsedNotification2,
+      },
+    })
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
-      type: 'CRITICAL BOUNCE',
+      message: 'CRITICAL BOUNCE',
+      meta: {
+        action: 'Received critical bounce',
+        hasAlarmed: false,
+        formId: formId.toHexString(),
+        submissionId: submissionId2.toHexString(),
+        bounceInfo: parsedNotification2.bounce,
+      },
     })
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -370,12 +419,12 @@ describe('updateBounces', () => {
     }))
     // There should only be one document after 2 notifications
     expect(actualBounceCursor.length).toBe(1)
-    expect(mockLogger.info.mock.calls[0][0]).toEqual(
-      JSON.parse(notification1.Message),
-    )
-    expect(mockLogger.info.mock.calls[1][0]).toEqual(
-      JSON.parse(notification2.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: { ...JSON.parse(notification1.Message) },
+    })
+    expect(mockLogger.info.mock.calls[1][0]).toMatchObject({
+      meta: { ...JSON.parse(notification2.Message) },
+    })
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -415,12 +464,12 @@ describe('updateBounces', () => {
     }))
     // There should only be one document after 2 notifications
     expect(actualBounceCursor.length).toBe(1)
-    expect(mockLogger.info.mock.calls[0][0]).toEqual(
-      JSON.parse(notification1.Message),
-    )
-    expect(mockLogger.info.mock.calls[1][0]).toEqual(
-      JSON.parse(notification2.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: { ...JSON.parse(notification1.Message) },
+    })
+    expect(mockLogger.info.mock.calls[1][0]).toMatchObject({
+      meta: { ...JSON.parse(notification2.Message) },
+    })
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -455,12 +504,12 @@ describe('updateBounces', () => {
     }))
     // There should only be one document after 2 notifications
     expect(actualBounceCursor.length).toBe(1)
-    expect(mockLogger.info.mock.calls[0][0]).toEqual(
-      JSON.parse(notification1.Message),
-    )
-    expect(mockLogger.info.mock.calls[1][0]).toEqual(
-      JSON.parse(notification2.Message),
-    )
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: { ...JSON.parse(notification1.Message) },
+    })
+    expect(mockLogger.info.mock.calls[1][0]).toMatchObject({
+      meta: { ...JSON.parse(notification2.Message) },
+    })
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
@@ -470,7 +519,7 @@ describe('updateBounces', () => {
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  it('should not log critical bounces when hasAlarmed is true', async () => {
+  it('should log a second critical bounce with hasAlarmed true', async () => {
     const formId = new ObjectId()
     const submissionId1 = new ObjectId()
     const submissionId2 = new ObjectId()
@@ -480,11 +529,17 @@ describe('updateBounces', () => {
       recipientList,
       recipientList,
     )
+    const parsedNotification1: IBounceNotification = JSON.parse(
+      notification1.Message,
+    )
     const notification2 = makeBounceNotification(
       formId,
       submissionId2,
       recipientList,
       recipientList,
+    )
+    const parsedNotification2: IBounceNotification = JSON.parse(
+      notification2.Message,
     )
     await updateBounces(notification1)
     await updateBounces(notification2)
@@ -496,14 +551,32 @@ describe('updateBounces', () => {
     }))
     // There should only be one document after 2 notifications
     expect(actualBounceCursor.length).toBe(1)
-    expect(mockLogger.info.mock.calls[0][0]).toEqual(
-      JSON.parse(notification1.Message),
-    )
-    expect(mockLogger.info.mock.calls[1][0]).toEqual(
-      JSON.parse(notification2.Message),
-    )
-    // Expect only 1 call to logger.warn
-    expect(mockLogger.warn.mock.calls.length).toBe(1)
+    expect(mockLogger.info.mock.calls[0][0]).toMatchObject({
+      meta: { ...parsedNotification1 },
+    })
+    expect(mockLogger.info.mock.calls[1][0]).toMatchObject({
+      meta: { ...parsedNotification2 },
+    })
+    expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
+      message: 'CRITICAL BOUNCE',
+      meta: {
+        action: 'Received critical bounce',
+        hasAlarmed: false,
+        formId: formId.toHexString(),
+        submissionId: submissionId1.toHexString(),
+        bounceInfo: parsedNotification1.bounce,
+      },
+    })
+    expect(mockLogger.warn.mock.calls[1][0]).toMatchObject({
+      message: 'CRITICAL BOUNCE',
+      meta: {
+        action: 'Received critical bounce',
+        hasAlarmed: true,
+        formId: formId.toHexString(),
+        submissionId: submissionId2.toHexString(),
+        bounceInfo: parsedNotification2.bounce,
+      },
+    })
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
       hasAlarmed: true,
