@@ -9,7 +9,7 @@ import {
   extractBounceObject,
   makeBounceNotification,
   makeDeliveryNotification,
-} from './bounce-helpers'
+} from './bounce-test-helpers'
 
 const Bounce = getBounceModel(mongoose)
 

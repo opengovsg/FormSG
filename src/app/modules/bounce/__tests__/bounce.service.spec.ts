@@ -18,7 +18,7 @@ import {
   makeBounceNotification,
   makeDeliveryNotification,
   MOCK_SNS_BODY,
-} from './bounce-helpers'
+} from './bounce-test-helpers'
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
