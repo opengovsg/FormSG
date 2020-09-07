@@ -142,7 +142,7 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   // form fillers' information for too long, and everything else goes into the
   // main log group.
   if (
-    extractHeader(notification, EMAIL_HEADERS.formId) ===
+    extractHeader(notification, EMAIL_HEADERS.emailType) ===
     EMAIL_TYPES.emailConfirmation
   ) {
     shortTermLogger.info(notification)

@@ -26,6 +26,7 @@ const makeEmailNotification = (
   formId: ObjectId,
   submissionId: ObjectId,
   recipientList: string[],
+  emailType: 'Admin (response)' | 'Email confirmation',
 ): IEmailNotification => {
   return {
     notificationType,
@@ -43,7 +44,7 @@ const makeEmailNotification = (
         },
         {
           name: 'X-Formsg-Email-Type',
-          value: 'Admin (response)',
+          value: emailType,
         },
       ],
       commonHeaders: {
@@ -61,9 +62,16 @@ export const makeBounceNotification = (
   recipientList: string[] = [],
   bouncedList: string[] = [],
   bounceType: 'Transient' | 'Permanent' = 'Permanent',
+  emailType: 'Admin (response)' | 'Email confirmation' = 'Admin (response)',
 ): ISnsNotification => {
   const Message = merge(
-    makeEmailNotification('Bounce', formId, submissionId, recipientList),
+    makeEmailNotification(
+      'Bounce',
+      formId,
+      submissionId,
+      recipientList,
+      emailType,
+    ),
     {
       bounce: {
         bounceType,
@@ -83,9 +91,16 @@ export const makeDeliveryNotification = (
   submissionId: ObjectId = new ObjectId(),
   recipientList: string[] = [],
   deliveredList: string[] = [],
+  emailType: 'Admin (response)' | 'Email confirmation' = 'Admin (response)',
 ): ISnsNotification => {
   const Message = merge(
-    makeEmailNotification('Delivery', formId, submissionId, recipientList),
+    makeEmailNotification(
+      'Delivery',
+      formId,
+      submissionId,
+      recipientList,
+      emailType,
+    ),
     {
       delivery: {
         recipients: deliveredList,
