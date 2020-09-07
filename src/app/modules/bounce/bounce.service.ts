@@ -1,6 +1,5 @@
 import axios from 'axios'
 import crypto from 'crypto'
-import { EMAIL_HEADERS, EMAIL_TYPES } from 'dist/backend/app/constants/mail'
 import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
@@ -14,6 +13,7 @@ import {
   IEmailNotification,
   ISnsNotification,
 } from '../../../types'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
 
 import getBounceModel from './bounce.model'
 import { extractHeader } from './bounce.util'
