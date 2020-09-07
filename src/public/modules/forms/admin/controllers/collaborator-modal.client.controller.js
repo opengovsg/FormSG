@@ -194,6 +194,8 @@ function CollaboratorModalController(
    * Admins, the user themselves, and users already in the permissionList cannot be added to the form.
    */
   $scope.saveCollabEmail = () => {
+    $scope.resetMessages()
+
     let email = $scope.collab.form.email.toLowerCase()
     let permissions = $scope.roleToPermissions($scope.collab.form.role)
 
