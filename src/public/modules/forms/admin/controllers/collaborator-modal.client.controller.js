@@ -68,6 +68,14 @@ function CollaboratorModalController(
    */
   $scope.transferOwner = () => {
     $scope.resetMessages()
+
+    if ($scope.transferOwnerEmail === $scope.myform.admin.email) {
+      $scope.isDisplayAlertMessage = true
+      $scope.alertMessage = 'You are already the owner of this form'
+      $scope.isDisplayTransferOwnerModal = false
+      return
+    }
+
     FormApi.transferOwner(
       { formId: $scope.myform._id },
       { email: $scope.transferOwnerEmail },
@@ -78,13 +86,17 @@ function CollaboratorModalController(
       })
       .catch((err) => {
         $scope.alertMessage = err.data.message
-        $scope.isDisplayTransferFailedMessage = true
+        $scope.isDisplayAlertMessage = true
       })
       .finally(() => {
         $scope.isDisplayTransferOwnerModal = false
       })
   }
 
+  /**
+   * Calls FormAPI update to update the permission list of a form
+   * @param {Array} permissionList - New permission list for the form
+   */
   $scope.updatePermissionList = (permissionList) => {
     return FormApi.update(
       { formId: $scope.myform._id },
@@ -95,7 +107,7 @@ function CollaboratorModalController(
       })
       .catch((err) => {
         $scope.alertMessage = err.data.message
-        $scope.isDisplayTransferFailedMessage = true
+        $scope.isDisplayAlertMessage = true
         return err
       })
   }
