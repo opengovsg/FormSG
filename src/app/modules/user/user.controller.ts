@@ -1,5 +1,6 @@
 import to from 'await-to-js'
 import { RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -23,7 +24,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 400 on OTP creation or SMS send failure
  */
 export const handleContactSendOtp: RequestHandler<
-  Record<string, string>,
+  ParamsDictionary,
   string,
   { contact: string; userId: string }
 > = async (req, res) => {
@@ -57,7 +58,7 @@ export const handleContactSendOtp: RequestHandler<
  * @returns 500 when OTP is malformed or for unknown errors
  */
 export const handleContactVerifyOtp: RequestHandler<
-  Record<string, string>,
+  ParamsDictionary,
   string | IPopulatedUser,
   {
     userId: string

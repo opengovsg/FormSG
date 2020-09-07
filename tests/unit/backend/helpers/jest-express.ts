@@ -5,24 +5,31 @@ const mockRequest = ({
   params,
   session,
 }: {
-  body: Record<string, string>
+  body?: Record<string, string>
   params?: Record<string, string>
   session?: any
-}) => {
+} = {}) => {
   return {
-    body,
-    params,
-    session,
+    body: body ?? {},
+    params: params ?? {},
+    session: session ?? {},
+    get(name: string) {
+      if (name === 'cf-connecting-ip') return 'MOCK_IP'
+      return null
+    },
   } as Request
 }
 
-const mockResponse = () => {
-  const mockRes = {} as Response
-  mockRes.status = jest.fn().mockReturnThis()
-  mockRes.send = jest.fn().mockReturnThis()
-  mockRes.sendStatus = jest.fn().mockReturnThis()
-  mockRes.json = jest.fn()
-  return mockRes
+const mockResponse = (extraArgs: Partial<Record<keyof Response, any>> = {}) => {
+  const mockRes = {
+    locals: {},
+    status: jest.fn().mockReturnThis(),
+    send: jest.fn().mockReturnThis(),
+    sendStatus: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+    ...extraArgs,
+  }
+  return mockRes as Response
 }
 
 const expressHandler = {
