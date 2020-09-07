@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as TE from 'fp-ts/lib/TaskEither'
 import mongoose from 'mongoose'
@@ -12,7 +13,7 @@ import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
 import { generateOtp } from '../../utils/otp'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -115,10 +116,7 @@ export const createLoginOtp = (
   }
 
   return pipe(
-    TE.tryCatch(
-      () => bcrypt.hash(otp, DEFAULT_SALT_ROUNDS),
-      (err) => new ApplicationError(String(err)),
-    ),
+    TE.tryCatch(() => bcrypt.hash(otp, DEFAULT_SALT_ROUNDS), E.toError),
     TE.chain((hashedOtp) => upsertToken(email, hashedOtp)),
     TE.map(() => otp),
   )

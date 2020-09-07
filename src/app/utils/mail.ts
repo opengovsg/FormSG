@@ -1,5 +1,6 @@
 import dedent from 'dedent-js'
 import ejs from 'ejs'
+import * as E from 'fp-ts/lib/Either'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { flattenDeep } from 'lodash'
 import puppeteer from 'puppeteer-core'
@@ -17,10 +18,7 @@ export const generateLoginOtpHtml = (htmlData: {
 }): TE.TaskEither<Error, string> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
 
-  return TE.tryCatch(
-    () => ejs.renderFile(pathToTemplate, htmlData),
-    (err) => err as Error,
-  )
+  return TE.tryCatch(() => ejs.renderFile(pathToTemplate, htmlData), E.toError)
 }
 
 export const generateVerificationOtpHtml = ({
