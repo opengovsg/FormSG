@@ -161,7 +161,7 @@
     "validator": "^13.1.1",
     "web-streams-polyfill": "^2.1.1",
     "whatwg-fetch": "^3.0.0",
-    "winston": "^3.2.1",
+    "winston": "^3.3.3",
     "winston-cloudwatch": "^2.3.2"
   },
   "devDependencies": {
