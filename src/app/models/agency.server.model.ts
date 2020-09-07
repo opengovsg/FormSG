@@ -40,7 +40,7 @@ const AgencySchema = new Schema<IAgencySchema>(
   },
 )
 
-const compileAgencyModel = (db: Mongoose) =>
+const compileAgencyModel = (db: Mongoose): Model<IAgencySchema> =>
   db.model<IAgencySchema>(AGENCY_SCHEMA_ID, AgencySchema)
 
 /**
@@ -49,7 +49,7 @@ const compileAgencyModel = (db: Mongoose) =>
  * @param db The mongoose instance to retrieve the Agency model from
  * @returns The agency model
  */
-const getAgencyModel = (db: Mongoose) => {
+const getAgencyModel = (db: Mongoose): Model<IAgencySchema> => {
   try {
     return db.model(AGENCY_SCHEMA_ID) as Model<IAgencySchema>
   } catch {

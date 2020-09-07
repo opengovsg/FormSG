@@ -1,6 +1,8 @@
 import to from 'await-to-js'
 import { RequestHandler, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { pipe } from 'fp-ts/lib/function'
+import * as TE from 'fp-ts/lib/TaskEither'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
@@ -57,7 +59,7 @@ export const handleCheckUser: RequestHandler<
   ParamsDictionary,
   unknown,
   { email: string }
-> = async (req, res) => {
+> = (req, res) => {
   // Joi validation ensures existence.
   const { email } = req.body
   const logMeta = {
@@ -66,12 +68,12 @@ export const handleCheckUser: RequestHandler<
     ip: getRequestIp(req),
   }
 
-  const agencyResult = await AuthService.validateEmailDomain(email)
-
-  agencyResult
+  return pipe(
+    AuthService.validateEmailDomain(email),
     // Agency exists, return success.
-    .map(() => res.sendStatus(StatusCodes.OK))
-    .mapErr((error) => handleError({ error, res, logMeta }))
+    TE.map(() => res.sendStatus(StatusCodes.OK)),
+    TE.mapLeft((error) => handleError({ error, res, logMeta })),
+  )()
 }
 
 /**
@@ -94,57 +96,58 @@ export const handleLoginSendOtp: RequestHandler<
     ip: requestIp,
   }
 
-  const agencyResult = await AuthService.validateEmailDomain(email)
-  // Invalid domain, return early.
-  if (agencyResult.isErr()) {
-    return handleError({ error: agencyResult.error, res, logMeta })
-  }
+  return pipe(
+    AuthService.validateEmailDomain(email),
+    TE.mapLeft((error) => handleError({ error, res, logMeta })),
+    // Agency exists, return success.
+    TE.map(async () => {
+      // Create OTP.
+      const [otpErr, otp] = await to(AuthService.createLoginOtp(email))
 
-  // Create OTP.
-  const [otpErr, otp] = await to(AuthService.createLoginOtp(email))
+      if (otpErr) {
+        logger.error({
+          message: 'Error generating OTP',
+          meta: logMeta,
+          error: otpErr,
+        })
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .send(
+            'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+          )
+      }
 
-  if (otpErr) {
-    logger.error({
-      message: 'Error generating OTP',
-      meta: logMeta,
-      error: otpErr,
-    })
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+      // Send OTP.
+      const [sendErr] = await to(
+        MailService.sendLoginOtp({
+          recipient: email,
+          otp,
+          ipAddress: requestIp,
+        }),
       )
-  }
+      if (sendErr) {
+        logger.error({
+          message: 'Error mailing OTP',
+          meta: logMeta,
+          error: sendErr,
+        })
 
-  // Send OTP.
-  const [sendErr] = await to(
-    MailService.sendLoginOtp({
-      recipient: email,
-      otp,
-      ipAddress: requestIp,
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .send(
+            'Error sending OTP. Please try again later and if the problem persists, contact us.',
+          )
+      }
+
+      // Successfully sent login otp.
+      logger.info({
+        message: 'Login OTP sent successfully',
+        meta: logMeta,
+      })
+
+      return res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)
     }),
-  )
-  if (sendErr) {
-    logger.error({
-      message: 'Error mailing OTP',
-      meta: logMeta,
-      error: sendErr,
-    })
-
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        'Error sending OTP. Please try again later and if the problem persists, contact us.',
-      )
-  }
-
-  // Successfully sent login otp.
-  logger.info({
-    message: 'Login OTP sent successfully',
-    meta: logMeta,
-  })
-
-  return res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)
+  )()
 }
 
 /**
@@ -163,71 +166,69 @@ export const handleLoginVerifyOtp: RequestHandler<
     ip: getRequestIp(req),
   }
 
-  const agencyResult = await AuthService.validateEmailDomain(email)
-  // Invalid domain, return early.
-  if (agencyResult.isErr()) {
-    return handleError({ error: agencyResult.error, res, logMeta })
-  }
+  return pipe(
+    AuthService.validateEmailDomain(email),
+    TE.mapLeft((error) => handleError({ error, res, logMeta })),
+    // Agency exists, return success.
+    TE.map(async (agency) => {
+      const [verifyErr] = await to(AuthService.verifyLoginOtp(otp, email))
 
-  // Guaranteed to have agency if result is not an error.
-  const agency = agencyResult.value
+      if (verifyErr) {
+        logger.warn({
+          message:
+            verifyErr instanceof ApplicationError
+              ? 'Login OTP is invalid'
+              : 'Error occurred when trying to validate login OTP',
+          meta: logMeta,
+          error: verifyErr,
+        })
 
-  const [verifyErr] = await to(AuthService.verifyLoginOtp(otp, email))
+        if (verifyErr instanceof ApplicationError) {
+          return res.status(verifyErr.status).send(verifyErr.message)
+        }
 
-  if (verifyErr) {
-    logger.warn({
-      message:
-        verifyErr instanceof ApplicationError
-          ? 'Login OTP is invalid'
-          : 'Error occurred when trying to validate login OTP',
-      meta: logMeta,
-      error: verifyErr,
-    })
+        // Unknown error, return generic error response.
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .send(
+            'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
+          )
+      }
 
-    if (verifyErr instanceof ApplicationError) {
-      return res.status(verifyErr.status).send(verifyErr.message)
-    }
+      // OTP is valid, proceed to login user.
+      try {
+        const user = await UserService.retrieveUser(email, agency)
+        // Create user object to return to frontend.
+        const userObj = { ...user.toObject(), agency }
 
-    // Unknown error, return generic error response.
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
-      )
-  }
+        if (!req.session) {
+          throw new Error('req.session not found')
+        }
 
-  // OTP is valid, proceed to login user.
-  try {
-    const user = await UserService.retrieveUser(email, agency)
-    // Create user object to return to frontend.
-    const userObj = { ...user.toObject(), agency }
+        // TODO(#212): Should store only userId in session.
+        // Add user info to session.
+        req.session.user = userObj as SessionUser
+        logger.info({
+          message: `Successfully logged in user ${user.email}`,
+          meta: logMeta,
+        })
 
-    if (!req.session) {
-      throw new Error('req.session not found')
-    }
+        return res.status(StatusCodes.OK).send(userObj)
+      } catch (err) {
+        logger.error({
+          message: 'Error logging in user',
+          meta: logMeta,
+          error: err,
+        })
 
-    // TODO(#212): Should store only userId in session.
-    // Add user info to session.
-    req.session.user = userObj as SessionUser
-    logger.info({
-      message: `Successfully logged in user ${user.email}`,
-      meta: logMeta,
-    })
-
-    return res.status(StatusCodes.OK).send(userObj)
-  } catch (err) {
-    logger.error({
-      message: 'Error logging in user',
-      meta: logMeta,
-      error: err,
-    })
-
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
-      )
-  }
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .send(
+            `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
+          )
+      }
+    }),
+  )()
 }
 
 export const handleSignout: RequestHandler = async (req, res) => {

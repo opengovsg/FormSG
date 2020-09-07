@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
+import { pipe } from 'fp-ts/lib/pipeable'
+import * as TE from 'fp-ts/lib/TaskEither'
 import mongoose from 'mongoose'
-import { err, ok, Result } from 'neverthrow'
 import validator from 'validator'
 
 import { IAgencySchema } from 'src/types'
@@ -30,46 +31,47 @@ export const MAX_OTP_ATTEMPTS = 10
  * @returns err(InvalidDomainError) if the email domain is invalid or if the domain does not exist in any agency
  * @returns err(DatabaseError) if error occurs whilst retrieving agency from database
  */
-export const validateEmailDomain = async (
+export const validateEmailDomain = (
   email: string,
-): Promise<Result<IAgencySchema, InvalidDomainError | DatabaseError>> => {
+): TE.TaskEither<InvalidDomainError | DatabaseError, IAgencySchema> => {
   // Extra guard even if Joi validation has already checked.
   if (!validator.isEmail(email)) {
-    return err(new InvalidDomainError())
+    return TE.left(new InvalidDomainError())
   }
 
   const emailDomain = email.split('@').pop()
 
-  try {
-    const agency = await AgencyModel.findOne({ emailDomain })
-    if (!agency) {
-      logger.warn({
-        message: 'Agency not found',
-        meta: {
-          action: 'validateEmailDomain',
-          emailDomain,
-        },
-      })
-      return err(new InvalidDomainError())
-    }
-
-    return ok(agency)
-  } catch (err) {
-    logger.error({
-      message: 'DB error whilst retrieving Agency',
-      meta: {
-        action: 'validateEmailDomain',
-        emailDomain,
+  return pipe(
+    TE.tryCatch(
+      () => AgencyModel.findOne({ emailDomain }).exec(),
+      (err) => {
+        logger.error({
+          message: 'DB error whilst retrieving Agency',
+          meta: {
+            action: 'validateEmailDomain',
+            emailDomain,
+          },
+          error: err as Error,
+        })
+        return new DatabaseError(
+          `Unable to validate email domain. If this issue persists, please submit a Support Form at (${LINKS.supportFormLink}).`,
+        )
       },
-      error: err as Error,
-    })
-
-    return err(
-      new DatabaseError(
-        `Unable to validate email domain. If this issue persists, please submit a Support Form at (${LINKS.supportFormLink}).`,
-      ),
-    )
-  }
+    ),
+    TE.chain((agency) => {
+      if (!agency) {
+        logger.warn({
+          message: 'Agency not found',
+          meta: {
+            action: 'validateEmailDomain',
+            emailDomain,
+          },
+        })
+        return TE.left(new InvalidDomainError())
+      }
+      return TE.right(agency)
+    }),
+  )
 }
 
 /**

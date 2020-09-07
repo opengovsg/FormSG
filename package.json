@@ -119,6 +119,7 @@
     "file-loader": "^4.0.0",
     "file-saver": "^2.0.2",
     "font-awesome": "4.7.0",
+    "fp-ts": "^2.8.2",
     "glob": "^7.1.2",
     "has-ansi": "^4.0.0",
     "helmet": "^3.21.3",
