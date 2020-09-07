@@ -1,5 +1,7 @@
 import to from 'await-to-js'
 import bcrypt from 'bcrypt'
+import { pipe } from 'fp-ts/lib/function'
+import * as TE from 'fp-ts/lib/TaskEither'
 import mongoose from 'mongoose'
 import validator from 'validator'
 
@@ -8,10 +10,14 @@ import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
 import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { IAgency, IPopulatedUser, IUserSchema } from '../../../types'
 import { InvalidDomainError } from '../auth/auth.errors'
+import { DatabaseError } from '../core/core.errors'
 
 import { InvalidOtpError, MalformedOtpError } from './user.errors'
+
+const logger = createLoggerWithLabel(module)
 
 const AdminVerificationModel = getAdminVerificationModel(mongoose)
 const UserModel = getUserModel(mongoose)
@@ -163,21 +169,48 @@ export const getPopulatedUserById = async (
  * @param agency the agency document to associate with the user
  * @returns the upserted user document
  * @throws {InvalidDomainError} on invalid email
- * @throws {Error} on upsert failure
+ * @throws {DatabaseError} on upsert failure
  */
-export const retrieveUser = async (email: string, agency: IAgency) => {
+export const retrieveUser = (
+  email: string,
+  agency: IAgency,
+): TE.TaskEither<DatabaseError | InvalidDomainError, IUserSchema> => {
   if (!validator.isEmail(email)) {
-    throw new InvalidDomainError()
+    return TE.left(new InvalidDomainError())
   }
 
-  const admin = await UserModel.upsertUser({
-    email,
-    agency: agency._id,
-  })
-
-  if (!admin) {
-    throw new Error('Failed to upsert user')
-  }
-
-  return admin
+  return pipe(
+    TE.tryCatch(
+      () =>
+        UserModel.upsertUser({
+          email,
+          agency: agency._id,
+        }),
+      (err) => {
+        logger.error({
+          message: `${err}`,
+          meta: {
+            action: 'retrieveUser',
+            email,
+          },
+          error: err,
+        })
+        return new DatabaseError()
+      },
+    ),
+    TE.chain((admin) => {
+      if (!admin) {
+        logger.error({
+          message: 'Failed to upsert user',
+          meta: {
+            action: 'retrieveUser',
+            email,
+            agency,
+          },
+        })
+        return TE.left(new DatabaseError())
+      }
+      return TE.right(admin)
+    }),
+  )
 }

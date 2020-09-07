@@ -20,7 +20,7 @@ export type CustomLoggerParams = {
     action: string
     [other: string]: unknown
   }
-  error?: Error
+  error?: unknown
 }
 
 // A variety of helper functions to make winston logging like console logging,
