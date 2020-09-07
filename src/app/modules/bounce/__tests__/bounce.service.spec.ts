@@ -4,15 +4,14 @@ import crypto from 'crypto'
 import dedent from 'dedent'
 import { cloneDeep, omit } from 'lodash'
 import mongoose from 'mongoose'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import getMockLogger, {
+  resetMockLogger,
+} from 'tests/unit/backend/helpers/jest-logger'
 import { mocked } from 'ts-jest/utils'
 
 import * as LoggerModule from 'src/config/logger'
 import { ISnsNotification } from 'src/types'
-
-import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
-import getMockLogger, {
-  resetMockLogger,
-} from '../../../../../tests/unit/backend/helpers/jest-logger'
 
 import {
   extractBounceObject,

@@ -1,10 +1,9 @@
 import { ObjectId } from 'bson'
 import { omit, pick } from 'lodash'
 import mongoose from 'mongoose'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
-
-import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
 
 import {
   extractBounceObject,
