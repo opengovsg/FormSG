@@ -38,7 +38,13 @@
     <div ng-if="!isDisplayTransferOwnerModal">
       <!-- Top section contains the title and functionality to add new collaborators -->
       <div id="top-section" ng-if="userCanEdit">
-        <div class="label-custom" id="invite-title">New collaborators</div>
+        <div class="top-section-label">
+          <div class="label-custom" id="invite-title">New collaborators</div>
+          <div class="close-full-screen-modal" ng-click="closeModal()">
+            <i class="bx bx-x"></i>
+          </div>
+        </div>
+
         <!-- Input and save button -->
         <div ng-form="collab.form">
           <div
