@@ -41,6 +41,7 @@ const handleError = ({
     case InvalidDomainError:
       return res.status(StatusCodes.UNAUTHORIZED).send(error.message)
     case DatabaseError:
+    case ApplicationError:
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error.message)
     default:
       return res
@@ -96,57 +97,32 @@ export const handleLoginSendOtp: RequestHandler<
     ip: requestIp,
   }
 
-  return pipe(
-    AuthService.validateEmailDomain(email),
-    TE.mapLeft((error) => handleError({ error, res, logMeta })),
-    // Agency exists, return success.
-    TE.map(async () => {
-      // Create OTP.
-      const [otpErr, otp] = await to(AuthService.createLoginOtp(email))
-
-      if (otpErr) {
-        logger.error({
-          message: 'Error generating OTP',
-          meta: logMeta,
-          error: otpErr,
-        })
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send(
-            'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-          )
-      }
-
-      // Send OTP.
-      const [sendErr] = await to(
+  const sendLoginOtp = (otp: string) =>
+    TE.tryCatch(
+      () =>
         MailService.sendLoginOtp({
-          recipient: email,
-          otp,
           ipAddress: requestIp,
+          otp,
+          recipient: email,
         }),
-      )
-      if (sendErr) {
+      (sendErr) => {
         logger.error({
           message: 'Error mailing OTP',
           meta: logMeta,
-          error: sendErr,
+          error: sendErr as Error,
         })
+        return new ApplicationError(
+          'Error sending OTP. Please try again later and if the problem persists, contact us.',
+        )
+      },
+    )
 
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send(
-            'Error sending OTP. Please try again later and if the problem persists, contact us.',
-          )
-      }
-
-      // Successfully sent login otp.
-      logger.info({
-        message: 'Login OTP sent successfully',
-        meta: logMeta,
-      })
-
-      return res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)
-    }),
+  return pipe(
+    AuthService.validateEmailDomain(email),
+    TE.chain(() => AuthService.createLoginOtp(email)),
+    TE.chain((otp) => sendLoginOtp(otp)),
+    TE.map(() => res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)),
+    TE.mapLeft((error) => handleError({ error, res, logMeta })),
   )()
 }
 
