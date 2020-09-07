@@ -108,7 +108,6 @@ export const isValidSnsRequest = async (
 // Writes a log message if all recipients have bounced
 const logCriticalBounce = (
   bounceDoc: IBounceSchema,
-  formId: string,
   notification: IEmailNotification,
 ): void => {
   if (bounceDoc.bounces.every((emailInfo) => emailInfo.hasBounced)) {
@@ -117,7 +116,8 @@ const logCriticalBounce = (
       meta: {
         action: 'Received critical bounce',
         hasAlarmed: bounceDoc.hasAlarmed,
-        formId,
+        formId: extractHeader(notification, EMAIL_HEADERS.formId),
+        submissionId: extractHeader(notification, EMAIL_HEADERS.submissionId),
         recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
         // We know for sure that critical bounces can only happen because of bounce
         // notifications, so this casting is okay
@@ -161,10 +161,10 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
     oldBounces.merge(latestBounces, notification)
-    logCriticalBounce(oldBounces, formId, notification)
+    logCriticalBounce(oldBounces, notification)
     await oldBounces.save()
   } else {
-    logCriticalBounce(latestBounces, formId, notification)
+    logCriticalBounce(latestBounces, notification)
     await latestBounces.save()
   }
 }
