@@ -9,14 +9,17 @@ import { mocked } from 'ts-jest/utils'
 import * as LoggerModule from 'src/config/logger'
 import { ISnsNotification } from 'src/types'
 
+import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
+import getMockLogger, {
+  resetMockLogger,
+} from '../../../../../tests/unit/backend/helpers/jest-logger'
+
 import {
   extractBounceObject,
   makeBounceNotification,
   makeDeliveryNotification,
   MOCK_SNS_BODY,
-} from '../../helpers/bounce'
-import dbHandler from '../../helpers/jest-db'
-import getMockLogger, { resetMockLogger } from '../../helpers/jest-logger'
+} from './bounce-helpers'
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)

@@ -4,12 +4,13 @@ import mongoose from 'mongoose'
 
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
 
+import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
+
 import {
   extractBounceObject,
   makeBounceNotification,
   makeDeliveryNotification,
-} from '../helpers/bounce'
-import dbHandler from '../helpers/jest-db'
+} from './bounce-helpers'
 
 const Bounce = getBounceModel(mongoose)
 
