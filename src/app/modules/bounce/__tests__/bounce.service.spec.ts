@@ -584,4 +584,23 @@ describe('updateBounces', () => {
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
+
+  it('should log email confirmations to short-term logs', async () => {
+    const formId = new ObjectId()
+    const submissionId = new ObjectId()
+    const notification = makeBounceNotification(
+      formId,
+      submissionId,
+      recipientList,
+      recipientList,
+      'Transient',
+      'Email confirmation',
+    )
+    await updateBounces(notification)
+    expect(mockLogger.info).not.toHaveBeenCalled()
+    expect(mockLogger.warn).not.toHaveBeenCalled()
+    expect(mockShortTermLogger.info).toHaveBeenCalledWith(
+      JSON.parse(notification.Message),
+    )
+  })
 })
