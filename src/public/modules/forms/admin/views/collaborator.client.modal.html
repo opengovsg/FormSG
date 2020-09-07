@@ -6,29 +6,29 @@
 
   <div
     id="collaborator-modal-body"
-    ng-class="collab.lockCollaboratorScroll ? 'mobile-scroll-lock' : ''"
+    ng-class="lockCollaboratorScroll ? 'mobile-scroll-lock' : ''"
   >
     <div ng-if="isDisplayTransferOwnerModal">
       <div class="label-custom" id="invite-title">
-        Transfer Ownership to {{transferOwnerEmail}}
+        Transfer ownership to {{transferOwnerEmail}}
       </div>
-      <div class="header-custom" id="collab-title">
-        Are you sure? You will no longer be the form owner and will lose rights
-        to delete this form. You will still have Editor rights
+      <div class="" id="collab-title">
+        Are you sure? You will lose form ownership and the right to delete this
+        form. You will still have Editor rights.
       </div>
       <button
         type="submit"
         id="transfer-owner-btn"
-        class="btn-custom red-bg btn-medium"
+        class="btn-custom red-bg-dark btn-medium"
         ng-click="transferOwner()"
-        ng-class="collab.btnStatus >= 2 ? 'btn-pressed' : ''"
+        ng-class="btnStatus >= 2 ? 'btn-pressed' : ''"
       >
         Yes, transfer
       </button>
       <button
         type="submit"
         id="transfer-owner-cancel-btn"
-        class="btn-custom btn-medium"
+        class="btn-medium"
         ng-click="toggleTransferOwnerModal()"
       >
         Cancel
@@ -36,6 +36,14 @@
     </div>
 
     <div ng-if="!isDisplayTransferOwnerModal">
+      <div
+        class="alert-custom alert-error secret-key-warning"
+        ng-if="isDisplayTransferFailedMessage"
+      >
+        <i class="bx bx-info-circle bx-md icon-spacing"></i>
+        <span class="alert-msg"> {{ transferErrorMessage }} </span>
+      </div>
+
       <!-- Top section contains the title and functionality to add new collaborators -->
       <div id="top-section" ng-if="userCanEdit">
         <div class="top-section-label">
@@ -66,29 +74,28 @@
               />
               <!-- Error messages -->
               <div
-                ng-if="!collab.isAlreadyCollabError && !collab.hasEmailError && collab.form.$invalid"
+                ng-if="!isAlreadyCollabError && !hasEmailError && collab.form.$invalid"
                 class="alert-custom alert-error"
               >
                 <i class="bx bx-exclamation bx-md icon-spacing"></i>
                 <span class="alert-msg"
-                  >Please fill in a valid email address</span
+                  >Please enter a valid email address</span
                 >
               </div>
               <div
-                ng-if="!collab.isAlreadyCollabError && collab.hasEmailError"
+                ng-if="!isAlreadyCollabError && hasEmailError"
                 class="alert-custom alert-error"
               >
                 <i class="bx bx-exclamation bx-md icon-spacing"></i>
                 <span class="alert-msg">{{alertMessage}}</span>
               </div>
               <div
-                ng-if="collab.isAlreadyCollabError"
+                ng-if="isAlreadyCollabError"
                 class="alert-custom alert-error"
               >
                 <i class="bx bx-exclamation bx-md icon-spacing"></i>
                 <span class="alert-msg"
-                  >This user is an existing collaborator. Kindly edit
-                  permissions below.</span
+                  >This user is an existing collaborator. Edit role below.</span
                 >
               </div>
             </div>
@@ -126,27 +133,21 @@
                       ng-click="selectRole(ROLES.ADMIN)"
                     >
                       <div class="input-medium">{{ ROLES.ADMIN }}</div>
-                      <div class="role-explanation">
-                        Can fully configure and edit
-                      </div>
+                      <div class="role-explanation">Edit and delete form</div>
                     </a>
                   </li>
                   <li class="spacer"></li>
                   <li role="menuitem">
                     <a href ng-click="selectRole(ROLES.EDITOR)">
                       <div class="input-medium">{{ ROLES.EDITOR }}</div>
-                      <div class="role-explanation">
-                        Can edit but can't delete forms
-                      </div>
+                      <div class="role-explanation">Edit form</div>
                     </a>
                   </li>
                   <li class="spacer"></li>
                   <li role="menuitem">
                     <a href ng-click="selectRole(ROLES.VIEWER)">
                       <div class="input-medium">{{ ROLES.VIEWER }}</div>
-                      <div class="role-explanation">
-                        Can only view responses
-                      </div>
+                      <div class="role-explanation">View responses only</div>
                     </a>
                   </li>
                 </ul>
@@ -160,44 +161,42 @@
           >
             <i class="bx bx-info-circle bx-md icon-spacing"></i>
             <span class="alert-msg">
-              Collaborators need the Secret Key to access form responses. Share
-              the Secret Key in a secure manner according to your agency's
-              policies.
+              Share your secret key with collaborators who need to access
+              response data.
             </span>
           </div>
-          <!-- Add button -->
           <div class="row">
-            <div class="col-xs-12 col-sm-4">
+            <div class="col-xs-12 col-sm-5">
               <button
-                ng-disabled="(collab.form.$invalid || collab.form.email == undefined || collab.form.email == '')  && collab.btnStatus == 1"
+                ng-disabled="(collab.form.$invalid || collab.form.email == undefined || collab.form.email == '')  && btnStatus == 1"
                 ng-if="collab.form.role !== ROLES.ADMIN"
                 type="submit"
                 id="collab-btn"
                 class="btn-custom btn-medium"
                 ng-click="saveCollabEmail()"
-                ng-class="collab.btnStatus >= 2 ? 'btn-pressed' : ''"
+                ng-class="btnStatus >= 2 ? 'btn-pressed' : ''"
               >
-                <span ng-if="collab.btnStatus == 1">Add</span>
-                <span ng-if="collab.btnStatus == 2">
+                <span ng-if="btnStatus == 1">Add</span>
+                <span ng-if="btnStatus == 2">
                   <i class="bx bx-loader bx-spin bx-md"></i>
                 </span>
-                <span ng-if="collab.btnStatus == 3">
+                <span ng-if="btnStatus == 3">
                   <i class="bx bx-check bx-md"></i>
                 </span>
               </button>
               <button
-                ng-disabled="(collab.form.$invalid || collab.form.email == undefined || collab.form.email == '')  && collab.btnStatus == 1"
+                ng-disabled="(collab.form.$invalid || collab.form.email == undefined || collab.form.email == '')  && btnStatus == 1"
                 ng-if="collab.form.role === ROLES.ADMIN"
                 type="submit"
                 id="collab-btn"
-                class="btn-custom btn-large"
+                class="btn-custom btn-medium"
                 ng-click="handleTransferOwnerButtonClick()"
               >
-                <span ng-if="collab.btnStatus == 1">Transfer Ownership</span>
-                <span ng-if="collab.btnStatus == 2">
+                <span ng-if="btnStatus == 1">Transfer Ownership</span>
+                <span ng-if="btnStatus == 2">
                   <i class="bx bx-loader bx-spin bx-md"></i>
                 </span>
-                <span ng-if="collab.btnStatus == 3">
+                <span ng-if="btnStatus == 3">
                   <i class="bx bx-check bx-md"></i>
                 </span>
               </button>
@@ -206,7 +205,9 @@
         </div>
       </div>
 
+      <br />
       <hr />
+      <br />
 
       <!-- Bottom section contains the collaborators list -->
       <div
@@ -221,20 +222,13 @@
         >
           <i class="bx bx-info-circle bx-md icon-spacing"></i>
           <span class="alert-msg">
-            You've transferred form ownership, and have been delegated an Editor
-            role
+            Form ownership transferred. You are now an Editor.
           </span>
         </div>
-        <div
-          class="alert-custom alert-error secret-key-warning"
-          ng-if="isDisplayTransferFailedMessage"
-        >
-          <i class="bx bx-info-circle bx-md icon-spacing"></i>
-          <span class="alert-msg"> {{ transferErrorMessage }} </span>
-        </div>
+
         <div
           id="collab-list"
-          ng-class="collab.lockCollaboratorScroll ? 'lock-scroll' : ''"
+          ng-class="lockCollaboratorScroll ? 'lock-scroll' : ''"
         >
           <!-- First user in the list is the admin-->
           <div class="row collaborator-list-entry">
@@ -281,9 +275,9 @@
                   uib-dropdown
                   uib-dropdown-toggle
                   dropdown-append-to-body
-                  is-open="collab.collaboratorDropdownsOpen[$index]"
+                  is-open="collaboratorDropdownsOpen[$index]"
                   on-toggle="toggleScrollLock(open, $index)"
-                  ng-click="toggleScrollLock(collab.collaboratorDropdownsOpen[$index], $index)"
+                  ng-click="toggleScrollLock(collaboratorDropdownsOpen[$index], $index)"
                   class="btn-group btn-block existing-role-button"
                 >
                   <span type="button" class="role-dropdown-btn">
@@ -306,21 +300,21 @@
                         ng-click="handleUpdateRoleToOwner($index)"
                       >
                         <div class="role-dropdown-text">{{ ROLES.ADMIN }}</div>
-                        <div>Can fully configure and edit</div>
+                        <div>Edit and delete form</div>
                       </a>
                     </li>
                     <li class="spacer"></li>
                     <li role="menuitem">
                       <a href ng-click="updateRole($index, ROLES.EDITOR)">
                         <div class="role-dropdown-text">{{ ROLES.EDITOR }}</div>
-                        <div>Can edit but can't delete forms</div>
+                        <div>Edit forms</div>
                       </a>
                     </li>
                     <li class="spacer"></li>
                     <li role="menuitem">
                       <a href ng-click="updateRole($index, ROLES.VIEWER)">
                         <div class="role-dropdown-text">{{ ROLES.VIEWER }}</div>
-                        <div>Can only view responses</div>
+                        <div>View responses only</div>
                       </a>
                     </li>
                   </ul>

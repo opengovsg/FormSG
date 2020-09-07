@@ -175,6 +175,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         ],
         validate: {
           validator: async (users: Permission[]) => {
+            console.info(users)
             // Retrieve count of users that exist in the Agency collection.
             // Map is used instead of for...of loop so that this runs in
             // parallel.
@@ -414,7 +415,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     // Verify that the new owner exists
     const newOwner = await User.findOne({ email: newOwnerEmail })
     if (newOwner == null) {
-      throw new Error(`user with email: ${newOwnerEmail} does not exists`)
+      throw new Error(
+        `invalid email error: "${newOwnerEmail} must have logged in once before being added as Owner"`,
+      )
     }
 
     // Update form's admin to new owner's id

@@ -304,12 +304,30 @@
 }
 
 #collaborator-modal-body #collab-title {
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.38;
+  letter-spacing: 1px;
+  color: #4a4a4a;
   padding-bottom: 25px;
+}
+
+#collaborator-modal-body #transfer-owner-cancel-btn {
+  font-size: 18px;
+  color: #2f60ce;
+  background-color: white;
+  border: 0;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 #collaborator-modal-body .collab-hr {
   height: 1px;
-  border: solid 0.5px #dcdcdc;
+  border: solid 1px #dcdcdc;
   margin-bottom: 10px;
 }
 

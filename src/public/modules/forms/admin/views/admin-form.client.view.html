@@ -16,15 +16,11 @@
       <div class="right-spacer">
         <button
           id="collab-circle-plus"
-          ng-class="collab.isModalShown ? 'active' : ''"
           class="pull-right"
           ng-click="toggleCollabModal()"
           ng-if="user !== undefined"
         >
           <i class="bx bxs-user-plus bx-lg hidden-xs"></i>
-          <i
-            class="bx bxs-user-plus bx-md hidden-sm hidden-md hidden-lg hidden-xl"
-          ></i>
         </button>
         <avatar-dropdown-component></avatar-dropdown-component>
       </div>
