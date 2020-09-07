@@ -104,6 +104,10 @@ function AdminFormController(
   )
 
   /* Collaborator */
+  $scope.refreshFormDataFromCollab = (form) => {
+    $scope.myform = form
+  }
+
   /**
    * If the collab modal is shown, hide it, and if it is hidden, show it.
    * When showing the collab modal, the html body for mobile will be scroll locked, to prevent the ability to scroll
@@ -121,6 +125,7 @@ function AdminFormController(
           form: $scope.myform,
           user: $scope.user,
           userCanEdit: $scope.userCanEdit,
+          refreshFormDataFromCollab: $scope.refreshFormDataFromCollab,
         }),
       },
     })

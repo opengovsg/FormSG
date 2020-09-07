@@ -82,6 +82,7 @@ function CollaboratorModalController(
     )
       .$promise.then((res) => {
         $scope.myform = res.form
+        externalScope.refreshFormDataFromCollab($scope.myform)
         $scope.isDisplayTransferSuccessMessage = true
       })
       .catch((err) => {
@@ -104,6 +105,7 @@ function CollaboratorModalController(
     )
       .$promise.then((savedForm) => {
         $scope.myform = savedForm
+        externalScope.refreshFormDataFromCollab($scope.myform)
       })
       .catch((err) => {
         $scope.alertMessage = err.data.message
