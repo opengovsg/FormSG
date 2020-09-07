@@ -25,7 +25,7 @@ AWS_ACCESS_KEY_ID=
 FORMSG_SDK_MODE=
 
 
-#### Optional variables, some have defaults defined here, as well as in `config/defaults`
+#### Optional variables, some have defaults defined here, as well as in `config/schema`
 
 ## App Config
 # APP_NAME=FormSG

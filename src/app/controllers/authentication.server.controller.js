@@ -16,7 +16,7 @@ const validator = require('validator')
 const { StatusCodes } = require('http-status-codes')
 
 const config = require('../../config/config')
-const defaults = require('../../config/defaults').default
+const { LINKS } = require('../../shared/constants')
 const PERMISSIONS = require('../utils/permission-levels').default
 const { getRequestIp } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -55,7 +55,7 @@ exports.validateDomain = function (req, res, next) {
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .send(
-          `Unable to validate email domain. If this issue persists, please submit a Support Form (${defaults.links.supportFormLink}).`,
+          `Unable to validate email domain. If this issue persists, please submit a Support Form (${LINKS.supportFormLink}).`,
         )
     }
     // Agency not found
@@ -286,7 +286,7 @@ exports.verifyOtp = function (req, res, next) {
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send(
-            `Unable to login at this time. Please submit a Support Form (${defaults.links.supportFormLink}).`,
+            `Unable to login at this time. Please submit a Support Form (${LINKS.supportFormLink}).`,
           )
       }
       if (!updatedRecord) {
@@ -412,7 +412,7 @@ exports.signIn = function (req, res) {
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send(
-            `User signin failed. Please try again later and if the problem persists, submit our Support Form (${defaults.links.supportFormLink}).`,
+            `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
           )
       }
       let userObj = {
