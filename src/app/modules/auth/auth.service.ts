@@ -13,7 +13,7 @@ import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
 import { generateOtp } from '../../utils/otp'
-import { DatabaseError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -127,40 +127,109 @@ export const createLoginOtp = (
  * retrieved with the given email.
  *
  * If the hash matches, the saved document in the database is removed and
- * returned. Else, the document is kept in the database and an error is thrown.
+ * `true` is returned. Else, the document is kept in the database and an error
+ * is thrown.
  * @param otpToVerify the OTP to verify with the hashed counterpart
  * @param email the email used to retrieve the document from the database
  * @returns true on success
  * @throws {InvalidOtpError} if the OTP is invalid or expired.
- * @throws {Error} if any errors occur whilst retrieving from database or comparing hashes.
+ * @throws {ApplicationError} if any errors occur whilst comparing hashes.
+ * @throws {DatabaseError} if any errors occur from database queries.
  */
-export const verifyLoginOtp = async (otpToVerify: string, email: string) => {
-  const updatedDocument = await TokenModel.incrementAttemptsByEmail(email)
-
-  // Does not exist, return expired error message.
-  if (!updatedDocument) {
-    throw new InvalidOtpError('OTP has expired. Please request for a new OTP.')
-  }
-
-  // Too many attempts.
-  if (updatedDocument.numOtpAttempts! > MAX_OTP_ATTEMPTS) {
-    throw new InvalidOtpError(
-      'You have hit the max number of attempts. Please request for a new OTP.',
+export const verifyLoginOtp = (
+  otpToVerify: string,
+  email: string,
+): TE.TaskEither<
+  DatabaseError | InvalidOtpError | ApplicationError,
+  boolean
+> => {
+  const incrementLoginAttempt = (): TE.TaskEither<
+    DatabaseError | InvalidOtpError,
+    ITokenSchema
+  > =>
+    pipe(
+      TE.tryCatch(
+        () => TokenModel.incrementAttemptsByEmail(email),
+        (err) => {
+          logger.error({
+            message: `${err}`,
+            meta: {
+              action: 'verifyLoginOtp',
+              email,
+            },
+            error: err,
+          })
+          return new DatabaseError()
+        },
+      ),
+      TE.chain((upsertedToken) => {
+        if (!upsertedToken) {
+          return TE.left(
+            new InvalidOtpError(
+              'OTP has expired. Please request for a new OTP.',
+            ),
+          )
+        }
+        if (upsertedToken.numOtpAttempts > MAX_OTP_ATTEMPTS) {
+          return TE.left(
+            new InvalidOtpError(
+              'You have hit the max number of attempts. Please request for a new OTP.',
+            ),
+          )
+        }
+        return TE.right(upsertedToken)
+      }),
     )
-  }
 
   // Compare otp with saved hash.
-  const isOtpMatch = await bcrypt.compare(
-    otpToVerify,
-    updatedDocument.hashedOtp,
-  )
+  const compareHash = (
+    hashedOtp: string,
+  ): TE.TaskEither<ApplicationError, boolean> =>
+    TE.tryCatch(
+      () => bcrypt.compare(otpToVerify, hashedOtp),
+      (err) => {
+        logger.error({
+          message: `Bcrypt failed to compare hash ${err}`,
+          meta: {
+            action: 'verifyLoginOtp',
+            email,
+          },
+          error: err,
+        })
+        return new ApplicationError()
+      },
+    )
 
-  if (!isOtpMatch) {
-    throw new InvalidOtpError('OTP is invalid. Please try again.')
+  const validateHash = (
+    isOtpMatch: boolean,
+  ): E.Either<InvalidOtpError, boolean> => {
+    if (!isOtpMatch) {
+      return E.left(new InvalidOtpError('OTP is invalid. Please try again.'))
+    }
+    return E.right(true)
   }
 
-  // Hashed OTP matches, remove from collection.
-  await TokenModel.findOneAndRemove({ email })
-  // Finally return true (as success).
-  return true
+  const removeToken = (email: string) =>
+    TE.tryCatch(
+      () => TokenModel.findOneAndRemove({ email }).exec(),
+      (err) => {
+        logger.error({
+          message: `${err}`,
+          meta: {
+            action: 'verifyLoginOtp',
+            email,
+          },
+          error: err,
+        })
+        return new DatabaseError()
+      },
+    )
+
+  return pipe(
+    incrementLoginAttempt(),
+    TE.chain(({ hashedOtp }) => compareHash(hashedOtp)),
+    TE.chain((isHashMatch) => TE.fromEither(validateHash(isHashMatch))),
+    TE.chain(() => removeToken(email)),
+    TE.map(() => true),
+  )
 }
