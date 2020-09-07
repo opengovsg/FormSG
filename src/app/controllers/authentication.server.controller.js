@@ -84,9 +84,20 @@ const makeUnauthorizedMessage = (user, title) => {
  * @param {String} form -  form
  * @returns {String} - the error message
  */
-const logUnauthorizedAccess = (user, requiredPermission, form) => {
+const logUnauthorizedAccess = (req, action, requiredPermission) => {
+  const user = req.session.user
+  const form = req.form
   const msg = `User ${user.email} not authorized to perform ${requiredPermission} operation on Form ${form._id} with title: ${form.title}.`
-  logger.error(msg)
+  logger.error({
+    message: msg,
+    meta: {
+      action: action,
+      ip: getRequestIp(req),
+      url: req.url,
+      headers: req.headers,
+    },
+    error: Error(msg),
+  })
 }
 
 /**
@@ -110,7 +121,7 @@ exports.verifyPermission = (requiredPermission) =>
 
     // Forbidden if requiredPersmission is admin but user is not
     if (!isFormAdmin && requiredPermission === PERMISSIONS.DELETE) {
-      logUnauthorizedAccess(req.session.user, requiredPermission, req.form)
+      logUnauthorizedAccess(req, 'verfiyPermission', requiredPermission)
       return res.status(StatusCodes.FORBIDDEN).send({
         message: makeUnauthorizedMessage(
           req.session.user.email,
@@ -144,7 +155,7 @@ exports.verifyPermission = (requiredPermission) =>
     }
 
     if (!hasSufficientPermission) {
-      logUnauthorizedAccess(req.session.user, requiredPermission, req.form)
+      logUnauthorizedAccess(req, 'verfiyPermission', requiredPermission)
       return res.status(StatusCodes.FORBIDDEN).send({
         message: makeUnauthorizedMessage(
           req.session.user.email,

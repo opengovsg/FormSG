@@ -759,11 +759,16 @@ function makeModule(connection) {
       try {
         await req.form.transferOwner(req.session.user, newOwnerEmail)
       } catch (err) {
-        logger.error(
-          `formId="${req.form._id}", ip=${getRequestIp(req)}, message="${
-            err.message
-          }"`,
-        )
+        logger.error({
+          message: err.message,
+          meta: {
+            action: 'makeModule.transferOwner',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          err,
+        })
         return res.status(StatusCodes.CONFLICT).send({ message: err.message })
       }
       req.form.save(function (err, savedForm) {
