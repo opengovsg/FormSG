@@ -28,7 +28,7 @@ MockLoggerModule.createLoggerWithLabel.mockReturnValue(getMockLogger())
 
 // Import modules which depend on config last so that mocks get imported correctly
 // eslint-disable-next-line import/first
-import getBounceModel from 'src/app/models/bounce.server.model'
+import getBounceModel from 'src/app/modules/bounce/bounce.model'
 // eslint-disable-next-line import/first
 import {
   isValidSnsRequest,

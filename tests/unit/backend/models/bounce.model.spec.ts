@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import getBounceModel from 'src/app/models/bounce.server.model'
+import getBounceModel from 'src/app/modules/bounce/bounce.model'
 
 import {
   extractBounceObject,

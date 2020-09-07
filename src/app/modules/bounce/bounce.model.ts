@@ -2,7 +2,7 @@ import { get } from 'lodash'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
-import { bounceLifeSpan } from '../../config/config'
+import { bounceLifeSpan } from '../../../config/config'
 import {
   IBounceNotification,
   IBounceSchema,
@@ -10,10 +10,9 @@ import {
   isBounceNotification,
   isDeliveryNotification,
   ISingleBounce,
-} from '../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
-
-import { FORM_SCHEMA_ID } from './form.server.model'
+} from '../../../types'
+import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
+import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 

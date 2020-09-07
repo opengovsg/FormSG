@@ -10,7 +10,8 @@ import {
   IEmailNotification,
   ISnsNotification,
 } from '../../../types'
-import getBounceModel from '../../models/bounce.server.model'
+
+import getBounceModel from './bounce.model'
 
 const logger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
