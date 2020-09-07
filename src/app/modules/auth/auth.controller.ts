@@ -97,30 +97,16 @@ export const handleLoginSendOtp: RequestHandler<
     ip: requestIp,
   }
 
-  const sendLoginOtp = (otp: string) =>
-    TE.tryCatch(
-      () =>
-        MailService.sendLoginOtp({
-          ipAddress: requestIp,
-          otp,
-          recipient: email,
-        }),
-      (sendErr) => {
-        logger.error({
-          message: 'Error mailing OTP',
-          meta: logMeta,
-          error: sendErr as Error,
-        })
-        return new ApplicationError(
-          'Error sending OTP. Please try again later and if the problem persists, contact us.',
-        )
-      },
-    )
-
   return pipe(
     AuthService.validateEmailDomain(email),
     TE.chain(() => AuthService.createLoginOtp(email)),
-    TE.chain((otp) => sendLoginOtp(otp)),
+    TE.chain((otp) =>
+      MailService.sendLoginOtp({
+        ipAddress: requestIp,
+        otp,
+        recipient: email,
+      }),
+    ),
     TE.map(() => res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)),
     TE.mapLeft((error) => handleError({ error, res, logMeta })),
   )()

@@ -1,3 +1,5 @@
+import { pipe } from 'fp-ts/lib/function'
+import * as TE from 'fp-ts/lib/TaskEither'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import Mail from 'nodemailer/lib/mailer'
@@ -16,6 +18,7 @@ import {
   ISubmissionSchema,
 } from '../../types'
 import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
+import { ApplicationError } from '../modules/core/core.errors'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
@@ -151,7 +154,7 @@ export class MailService {
    * @param mail Mail data to send with
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
-  #sendNodeMail = async (mail: MailOptions, sendOptions?: SendMailOptions) => {
+  #sendNodeMail = (mail: MailOptions, sendOptions?: SendMailOptions) => {
     const logMeta = {
       action: '#sendNodeMail',
       mailId: sendOptions?.mailId,
@@ -178,35 +181,37 @@ export class MailService {
       return Promise.reject(new Error('Invalid email error'))
     }
 
-    return promiseRetry(async (retry, attemptNum) => {
+    return promiseRetry((retry, attemptNum) => {
       logger.info({
         message: `Attempt ${attemptNum} to send mail`,
         meta: logMeta,
       })
 
-      try {
-        const response = await this.#transporter.sendMail(mail)
-        logger.info({
-          message: `Mail successfully sent on attempt ${attemptNum}`,
-          meta: logMeta,
+      return this.#transporter
+        .sendMail(mail)
+        .then((res) => {
+          logger.info({
+            message: `Mail successfully sent on attempt ${attemptNum}`,
+            meta: logMeta,
+          })
+          return res
         })
-        return response
-      } catch (err) {
-        // Pass errors to the callback
-        logger.error({
-          message: `Send mail failure on attempt ${attemptNum}`,
-          meta: logMeta,
-          error: err,
+        .catch((err) => {
+          // Pass errors to the callback
+          logger.error({
+            message: `Send mail failure on attempt ${attemptNum}`,
+            meta: logMeta,
+            error: err,
+          })
+
+          // Retry only on 4xx errors.
+          if (inRange(get(err, 'responseCode', 0), 400, 500)) {
+            return retry(err)
+          }
+
+          // Not 4xx error, rethrow error.
+          throw err
         })
-
-        // Retry only on 4xx errors.
-        if (inRange(get(err, 'responseCode', 0), 400, 500)) {
-          return retry(err)
-        }
-
-        // Not 4xx error, rethrow error.
-        throw err
-      }
     }, this.#retryParams)
   }
 
@@ -304,7 +309,7 @@ export class MailService {
    * @param otp the OTP to send
    * @throws error if mail fails, to be handled by the caller
    */
-  sendLoginOtp = async ({
+  sendLoginOtp = ({
     recipient,
     otp,
     ipAddress,
@@ -312,23 +317,38 @@ export class MailService {
     recipient: string
     otp: string
     ipAddress: string
-  }) => {
-    const mail: MailOptions = {
-      to: recipient,
-      from: this.#senderFromString,
-      subject: `One-Time Password (OTP) for ${this.#appName}`,
-      html: await generateLoginOtpHtml({
+  }): TE.TaskEither<ApplicationError, any> => {
+    const getMailOptions = pipe(
+      generateLoginOtpHtml({
         appName: this.#appName,
         appUrl: this.#appUrl,
         ipAddress: ipAddress,
         otp,
       }),
-      headers: {
-        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.loginOtp,
-      },
-    }
+      TE.map((html) => {
+        const mail: MailOptions = {
+          to: recipient,
+          from: this.#senderFromString,
+          subject: `One-Time Password (OTP) for ${this.#appName}`,
+          html,
+          headers: {
+            [EMAIL_HEADERS.emailType]: EMAIL_TYPES.loginOtp,
+          },
+        }
+        return mail
+      }),
+    )
 
-    return this.#sendNodeMail(mail, { mailId: 'OTP' })
+    const sendMail = (mail: MailOptions) =>
+      TE.tryCatch(
+        () => this.#sendNodeMail(mail, { mailId: 'OTP' }),
+        () =>
+          new ApplicationError(
+            'Error sending OTP. Please try again later and if the problem persists, contact us.',
+          ),
+      )
+
+    return pipe(getMailOptions, TE.chain(sendMail))
   }
 
   /**
