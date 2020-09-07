@@ -4,7 +4,7 @@ import * as TE from 'fp-ts/lib/TaskEither'
 import mongoose from 'mongoose'
 import validator from 'validator'
 
-import { IAgencySchema } from 'src/types'
+import { IAgencySchema, ITokenSchema } from 'src/types'
 
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -12,7 +12,7 @@ import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
 import { generateOtp } from '../../utils/otp'
-import { DatabaseError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -81,21 +81,47 @@ export const validateEmailDomain = (
  * @throws {InvalidDomainError} the given email is invalid
  * @throws {Error} if any error occur whilst creating the OTP or insertion of OTP into the database.
  */
-export const createLoginOtp = async (email: string) => {
+export const createLoginOtp = (
+  email: string,
+): TE.TaskEither<DatabaseError, string> => {
   if (!validator.isEmail(email)) {
-    throw new InvalidDomainError()
+    return TE.left(new InvalidDomainError())
   }
 
   const otp = generateOtp()
-  const hashedOtp = await bcrypt.hash(otp, DEFAULT_SALT_ROUNDS)
 
-  await TokenModel.upsertOtp({
-    email,
-    hashedOtp,
-    expireAt: new Date(Date.now() + config.otpLifeSpan),
-  })
+  const upsertToken = (
+    email: string,
+    hashedOtp: string,
+  ): TE.TaskEither<DatabaseError, ITokenSchema> => {
+    return TE.tryCatch(
+      () =>
+        TokenModel.upsertOtp({
+          email,
+          hashedOtp,
+          expireAt: new Date(Date.now() + config.otpLifeSpan),
+        }),
+      (err) => {
+        logger.error({
+          message: 'Error upserting login token',
+          meta: {
+            action: 'createLoginOtp',
+          },
+          error: err as Error,
+        })
+        return new DatabaseError()
+      },
+    )
+  }
 
-  return otp
+  return pipe(
+    TE.tryCatch(
+      () => bcrypt.hash(otp, DEFAULT_SALT_ROUNDS),
+      (err) => new ApplicationError(String(err)),
+    ),
+    TE.chain((hashedOtp) => upsertToken(email, hashedOtp)),
+    TE.map(() => otp),
+  )
 }
 
 /**
