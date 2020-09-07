@@ -43,6 +43,15 @@
         <i class="bx bx-info-circle bx-md icon-spacing"></i>
         <span class="alert-msg"> {{ alertMessage }} </span>
       </div>
+      <div
+        class="alert-custom alert-success secret-key-warning"
+        ng-if="isDisplayTransferSuccessMessage"
+      >
+        <i class="bx bx-info-circle bx-md icon-spacing"></i>
+        <span class="alert-msg">
+          Form ownership transferred. You are now an Editor.
+        </span>
+      </div>
 
       <!-- Top section contains the title and functionality to add new collaborators -->
       <div id="top-section" ng-if="userCanEdit">
@@ -200,16 +209,6 @@
       >
         <!-- List of collaborators -->
         <div class="label-custom" id="invite-title">Existing collaborators</div>
-        <div
-          class="alert-custom alert-success secret-key-warning"
-          ng-if="isDisplayTransferSuccessMessage"
-        >
-          <i class="bx bx-info-circle bx-md icon-spacing"></i>
-          <span class="alert-msg">
-            Form ownership transferred. You are now an Editor.
-          </span>
-        </div>
-
         <div
           id="collab-list"
           ng-class="lockCollaboratorScroll ? 'lock-scroll' : ''"
