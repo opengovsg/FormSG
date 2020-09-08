@@ -39,7 +39,7 @@ Notable features include:
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo)
 - (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
 
-The current product roadmap include:
+The current product roadmap includes:
 
 - (in progress) Migrating backend code from JavaScript to [TypeScript](https://www.typescriptlang.org/)
 - (in progress) Refactoring backend code to use [Domain-driven Design](https://en.wikipedia.org/wiki/Domain-driven_design)
