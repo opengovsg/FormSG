@@ -25,7 +25,7 @@ When **submitting a feature request**, please include the motivation, alternativ
 
 Here are some tips to writing good issues:
 
-- **Use clear and descriptive title** to identify the problem
+- **Use a clear and descriptive title** to identify the problem
 - **Describe the exact steps to reproduce the problem** and **explain how you did it**
 - **Provide specific examples to demonstrate the steps**
 - **Include screenshots or animated GIFs if you can**
