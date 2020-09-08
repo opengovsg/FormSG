@@ -4,7 +4,7 @@ Welcome to FormSG! The following are guidelines for contribution. Use your best 
 
 ## Getting started
 
-If you are simply looking to start working with the codebase, navigate to the GitHub "issues" tab and start looking through interesting issues. There are a number of issues listed under "contribute" where you could start out.
+To contribute, you can start by taking a look at our open issues marked 'contribute' under GitHub's 'Issues' tab. Feel free to assign yourself to any 'contribute' issue that interests you, and comment with questions or clarifications. 
 
 Otherwise, please **first discuss the change you wish to make via GitHub issue**, [email](mailto:formsg@tech.gov.sg), or any other method with the repository owners beforehand.
 
@@ -38,7 +38,7 @@ Issues available to be picked up by the community are labeled with `contribute`.
 If you're submitting a pull request, some points to note:
 
 1. Ensure any install or build dependencies are removed before the end of the layer when doing a build. Refer to [README.md](https://go.gov.sg/formsg-readme) for more details
-2. Update the [README.md](https://go.gov.sg/formsg-readme) with details of changes to the interface, this includes new environment variables, exposed ports, useful file locations and container parameters.
+2. Update the [README.md](https://go.gov.sg/formsg-readme) with details of changes to the interface, including new environment variables, exposed ports, useful file locations and container parameters.
 <!---Increase the version numbers of the packages in any example files and the [README.md](https://github.com/opengovsg/formsg/blob/master/README.md) to the new version that this Pull Request would represent.--->
 3. You may merge the Pull Request in once you have the sign-off of two other developers, or if you do not have permission to do that, you may request the second reviewer to merge it for you.
 
