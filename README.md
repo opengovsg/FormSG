@@ -35,6 +35,7 @@ Notable features include:
 - Automatic emailing of submissions for forms built with Email Mode
 - End-to-end encryption for forms built with Storage Mode
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/)
+- (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo)
 - (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
 
