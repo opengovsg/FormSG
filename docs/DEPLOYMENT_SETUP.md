@@ -47,7 +47,7 @@ Spam protection
 
 ### Mounting Elastic File System into Docker container on Elastic Beanstalk
 
-Please see [Dockerrun.aws.json](../Dockerrun.aws.json). This file is required for SingPass/MyInfo/CorpPass functionality is enabled.
+Please see [Dockerrun.aws.json](../Dockerrun.aws.json). This file is required for SingPass/MyInfo/CorpPass functionality to be enabled.
 
 ### Secrets Manager (Optional)
 
