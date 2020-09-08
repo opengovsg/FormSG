@@ -31,13 +31,11 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### Running Locally
 
-Run
+Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes.
 
 ```bash
 npm run dev
 ```
-
-to build the Docker image from scratch. This will usually take 10 or so minutes.
 
 If there have been no dependency changes in `package.json` or changes in the
 root `server.js` file, you can run
