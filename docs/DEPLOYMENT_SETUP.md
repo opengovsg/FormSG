@@ -119,14 +119,14 @@ The following env variables are set in Travis:
 
 #### App and Database
 
-| Variable             | Description                                                                                                                                                                                                 |
-| :------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DB_HOST`            | A MongoDB URI.                                                                                                                                                                                              |
-| `OTP_LIFE_SPAN`      | Time in milliseconds that admin login OTP is valid for. Defaults to 900000ms or 15 minutes.                                                                                                                 |
-| `PORT`               | Server port. Defaults to `5000`.                                                                                                                                                                            |
-| `NODE_ENV`           | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'development'`. This should always be set to a production environment |
-| `SESSION_SECRET`     | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment.                                                                                    |
-| `SUBMISSIONS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                               |
+| Variable             | Description                                                                                                                                                                                                |
+| :------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DB_HOST`            | A MongoDB URI.                                                                                                                                                                                             |
+| `OTP_LIFE_SPAN`      | Time in milliseconds that admin login OTP is valid for. Defaults to 900000ms or 15 minutes.                                                                                                                |
+| `PORT`               | Server port. Defaults to `5000`.                                                                                                                                                                           |
+| `NODE_ENV`           | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'production'`. This should always be set to a production environment |
+| `SESSION_SECRET`     | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment.                                                                                   |
+| `SUBMISSIONS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
 
 #### Banners
 
