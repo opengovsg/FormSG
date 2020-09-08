@@ -1,4 +1,4 @@
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 const express = require('express')
 const request = require('supertest')
@@ -98,7 +98,7 @@ describe('Encrypt Submissions Controller', () => {
         formData = 'encryptedContent'
         request(app)
           .get(endpointPath)
-          .expect(HttpStatus.OK)
+          .expect(StatusCodes.OK)
           .then(({ body: submission }) => {
             expect(submission.form).toEqual(testForm._id.toString())
             expect(submission.authType).toEqual('NIL')
@@ -171,7 +171,7 @@ describe('Encrypt Submissions Controller', () => {
 
         request(app)
           .post(endpointPath)
-          .expect(HttpStatus.OK)
+          .expect(StatusCodes.OK)
           .expect(
             JSON.stringify({
               body: {
@@ -197,7 +197,10 @@ describe('Encrypt Submissions Controller', () => {
             form_fields: [],
           }).toObject(),
         }
-        request(app).post(endpointPath).expect(HttpStatus.BAD_REQUEST).end(done)
+        request(app)
+          .post(endpointPath)
+          .expect(StatusCodes.BAD_REQUEST)
+          .end(done)
       })
     })
 
@@ -247,7 +250,7 @@ describe('Encrypt Submissions Controller', () => {
         }
         request(app)
           .post(endpointPath)
-          .expect(HttpStatus.OK)
+          .expect(StatusCodes.OK)
           .expect(
             JSON.stringify({
               body: { encryptedContent: correctlyEncryptedContent },
@@ -280,7 +283,7 @@ describe('Encrypt Submissions Controller', () => {
 
         request(app)
           .post(endpointPath)
-          .expect(HttpStatus.OK)
+          .expect(StatusCodes.OK)
           .end((err, res) => {
             if (err) return done(err)
             expect(res.body.body).toEqual({
@@ -319,7 +322,7 @@ describe('Encrypt Submissions Controller', () => {
 
         request(app)
           .post(endpointPath)
-          .expect(HttpStatus.OK)
+          .expect(StatusCodes.OK)
           .end((err, res) => {
             if (err) return done(err)
             expect(res.body.body).toEqual({

@@ -37,7 +37,7 @@ describe('Verification Model', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {
-    it('should create and save successfully with defaults', async () => {
+    it('should save successfully with defaults when params are not given', async () => {
       const verification = new Verification(VFN_PARAMS)
       const verificationSaved = await verification.save()
       expect(verificationSaved._id).toBeDefined()
@@ -51,7 +51,7 @@ describe('Verification Model', () => {
       expect(actualSavedFields).toEqual(expectedSavedFields)
     })
 
-    it('should create and save successfully with expireAt specified', async () => {
+    it('should save successfully when expireAt is specified', async () => {
       const params = merge({}, VFN_PARAMS, { expireAt: new Date() })
       const verification = new Verification(params)
       const verificationSaved = await verification.save()
@@ -64,7 +64,7 @@ describe('Verification Model', () => {
       expect(actualSavedFields).toEqual(expectedSavedFields)
     })
 
-    it('should create and save successfully with default fields', async () => {
+    it('should save successfully with defaults when field keys are not specified', async () => {
       const vfnParams = merge({}, VFN_PARAMS, {
         fields: [generateFieldParams(), generateFieldParams()],
       })
@@ -80,7 +80,7 @@ describe('Verification Model', () => {
       expect(actualSavedFields).toEqual(expectedSavedFields)
     })
 
-    it('should create and save successfully with field keys specified', async () => {
+    it('should save successfully when field keys are specified', async () => {
       const field = {
         ...generateFieldParams(),
         signedData: 'signedData',
@@ -101,7 +101,7 @@ describe('Verification Model', () => {
       expect(actualSavedFields).toEqual(expectedSavedFields)
     })
 
-    it('should reject attempts to save identical field IDs', async () => {
+    it('should not save when field IDs are identical', async () => {
       const field = generateFieldParams()
       const vfnParams = merge({}, VFN_PARAMS, {
         fields: [field, field],

@@ -6,11 +6,11 @@ const { isEmpty } = require('lodash')
 
 const mongoose = require('mongoose')
 const crypto = require('crypto')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
 
 const { getRequestIp } = require('../utils/request')
-const logger = require('../../config/logger').createLoggerWithLabel('spcp')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 const getFormModel = require('../models/form.server.model').default
 const getLoginModel = require('../models/login.server.model').default
@@ -32,7 +32,14 @@ const addLoginToDB = function (form) {
     esrvcId: form.esrvcId,
   })
   return login.save().catch((err) => {
-    logger.error('Error adding login to database:', err)
+    logger.error({
+      message: 'Error adding login to database',
+      meta: {
+        action: 'addLoginToDB',
+        formId: form._id,
+      },
+      error: err,
+    })
   })
 }
 
@@ -105,7 +112,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     const payloads = String(relayState).split(',')
 
     if (payloads.length !== 2) {
-      return res.status(HttpStatus.BAD_REQUEST).send()
+      return res.status(StatusCodes.BAD_REQUEST).send()
     }
 
     const destination = payloads[0]
@@ -119,7 +126,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
         authType,
       )
     ) {
-      res.status(HttpStatus.UNAUTHORIZED).send()
+      res.status(StatusCodes.UNAUTHORIZED).send()
       return
     }
 
@@ -127,16 +134,25 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     samlArt = String(samlArt).replace(/ /g, '+')
 
     if (!destinationIsValid(destination))
-      return res.status(HttpStatus.BAD_REQUEST).send()
+      return res.status(StatusCodes.BAD_REQUEST).send()
 
     getForm(destination, (err, form) => {
       if (err || !form || form.authType !== authType) {
-        res.status(HttpStatus.NOT_FOUND).send()
+        res.status(StatusCodes.NOT_FOUND).send()
         return
       }
       authClient.getAttributes(samlArt, destination, (err, data) => {
         if (err) {
-          logger.error(getRequestIp(req), req.url, req.headers, err)
+          logger.error({
+            message: 'Error retrieving attributes from auth client',
+            meta: {
+              action: 'handleOOBAuthenticationWith',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
         }
         const { attributes } = data
         const { userName, userInfo } = extractUser(attributes)
@@ -202,13 +218,13 @@ exports.createSpcpRedirectURL = (authClients) => {
       req.redirectURL = authClient.createRedirectURL(target, esrvcId)
       return next()
     } else {
-      return res.status(HttpStatus.BAD_REQUEST).send('Redirect URL malformed')
+      return res.status(StatusCodes.BAD_REQUEST).send('Redirect URL malformed')
     }
   }
 }
 
 exports.returnSpcpRedirectURL = function (req, res) {
-  return res.status(HttpStatus.OK).send({ redirectURL: req.redirectURL })
+  return res.status(StatusCodes.OK).send({ redirectURL: req.redirectURL })
 }
 
 const getSubstringBetween = (text, markerStart, markerEnd) => {
@@ -233,20 +249,27 @@ exports.validateESrvcId = (req, res) => {
       },
       timeout: 10000, // 10 seconds
       // Throw error if not status 200.
-      validateStatus: (status) => status === HttpStatus.OK,
+      validateStatus: (status) => status === StatusCodes.OK,
     })
     .then(({ data }) => {
       // The successful login page should have the title 'SingPass Login'
       // The error page should have the title 'SingPass - System Error Page'
       const title = getSubstringBetween(data, '<title>', '</title>')
       if (title === null) {
-        logger.error({ Error: 'Could not find title', redirectURL, data })
-        return res.status(HttpStatus.BAD_GATEWAY).send({
+        logger.error({
+          message: 'Could not find title',
+          meta: {
+            action: 'validateESrvcId',
+            redirectUrl: redirectURL,
+            data,
+          },
+        })
+        return res.status(StatusCodes.BAD_GATEWAY).send({
           message: 'Singpass returned incomprehensible content',
         })
       }
       if (title.indexOf('Error') === -1) {
-        return res.status(HttpStatus.OK).send({
+        return res.status(StatusCodes.OK).send({
           isValid: true,
         })
       }
@@ -257,7 +280,7 @@ exports.validateESrvcId = (req, res) => {
         'System Code:&nbsp<b>',
         '</b>',
       )
-      return res.status(HttpStatus.OK).send({
+      return res.status(StatusCodes.OK).send({
         isValid: false,
         errorCode,
       })
@@ -265,12 +288,15 @@ exports.validateESrvcId = (req, res) => {
     .catch((err) => {
       const { statusCode } = err.response || {}
       logger.error({
-        Error: 'Could not contact singpass to validate eservice id',
-        redirectURL,
-        err,
-        statusCode,
+        message: 'Could not contact singpass to validate eservice id',
+        meta: {
+          action: 'validateESrvcId',
+          redirectUrl: redirectURL,
+          statusCode,
+        },
+        error: err,
       })
-      return res.status(HttpStatus.SERVICE_UNAVAILABLE).send({
+      return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
         message: 'Failed to contact Singpass',
       })
     })
@@ -319,9 +345,19 @@ exports.addSpcpSessionInfo = (authClients) => {
       // add session info if logged in
       authClient.verifyJWT(jwt, (err, payload) => {
         if (err) {
-          // Do not specify userName to call MyInfo endpoint with if jwt is invalid
-          // Client will inform the form-filler to log in with SingPass again
-          logger.error(getRequestIp(req), req.url, req.headers, err)
+          // Do not specify userName to call MyInfo endpoint with if jwt is
+          // invalid.
+          // Client will inform the form-filler to log in with SingPass again.
+          logger.error({
+            message: 'Failed to verify JWT with auth client',
+            meta: {
+              action: 'addSpcpSessionInfo',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
         } else {
           const { userName } = payload
           // For use in addMyInfo middleware
@@ -373,13 +409,17 @@ exports.encryptedVerifiedFields = (signingSecretKey) => {
       res.locals.verified = encryptedVerified
       return next()
     } catch (error) {
-      logger.error(
-        `Error 400 - Unable to encrypt verified content: formId=${
-          req.form._id
-        } error='${error}' ip=${getRequestIp(req)}`,
-      )
+      logger.error({
+        message: 'Unable to encrypt verified content',
+        meta: {
+          action: 'encryptedVerifiedFields',
+          formId: req.form._id,
+          ip: getRequestIp(req),
+        },
+        error,
+      })
       return res
-        .status(HttpStatus.BAD_REQUEST)
+        .status(StatusCodes.BAD_REQUEST)
         .send({ message: 'Invalid data was found. Please submit again.' })
     }
   }
@@ -438,8 +478,17 @@ exports.isSpcpAuthenticated = (authClients) => {
       let jwt = req.cookies[jwtName]
       authClient.verifyJWT(jwt, (err, payload) => {
         if (err) {
-          logger.error(getRequestIp(req), req.url, req.headers, err)
-          res.status(HttpStatus.UNAUTHORIZED).send({
+          logger.error({
+            message: 'Failed to verify JWT with auth client',
+            meta: {
+              action: 'isSpcpAuthenticated',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
+          res.status(StatusCodes.UNAUTHORIZED).send({
             message: 'User is not SPCP authenticated',
             spcpSubmissionFailure: true,
           })

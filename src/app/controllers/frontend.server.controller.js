@@ -1,7 +1,7 @@
 'use strict'
 
 const ejs = require('ejs')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 /**
  * Google Tag Manager initialisation Javascript code templated
@@ -20,7 +20,7 @@ module.exports.datalayer = function (req, res) {
     `
   res
     .type('text/javascript')
-    .status(HttpStatus.OK)
+    .status(StatusCodes.OK)
     .send(ejs.render(js, req.app.locals))
 }
 
@@ -31,7 +31,7 @@ module.exports.datalayer = function (req, res) {
 module.exports.environment = function (req, res) {
   res
     .type('text/javascript')
-    .status(HttpStatus.OK)
+    .status(StatusCodes.OK)
     .send(req.app.locals.environment)
 }
 
@@ -48,6 +48,6 @@ module.exports.redirectLayer = function (req, res) {
   `
   res
     .type('text/javascript')
-    .status(HttpStatus.OK)
+    .status(StatusCodes.OK)
     .send(ejs.render(js, req.query))
 }

@@ -5,7 +5,7 @@
  */
 const mongoose = require('mongoose')
 const moment = require('moment-timezone')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 
 const getLoginModel = require('../models/login.server.model').default
 const getSubmissionModel = require('../models/submission.server.model').default
@@ -19,9 +19,7 @@ const FormStatisticsTotal = getFormStatisticsTotalModel(mongoose)
 const Form = getFormModel(mongoose)
 const _ = require('lodash')
 
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'admin-console',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { getRequestIp } = require('../utils/request')
 
 // Examples search-specific constants
@@ -536,7 +534,7 @@ const getExampleFormsUsing = (
           x.timeText = parseTime(x.lastSubmission)
         })
         const totalNumResults = _.get(totalCount, '[0].count', 0)
-        return cb(null, HttpStatus.OK, { forms: pageResults, totalNumResults })
+        return cb(null, StatusCodes.OK, { forms: pageResults, totalNumResults })
       })
   } else {
     mongoQuery = mongoQuery
@@ -546,12 +544,12 @@ const getExampleFormsUsing = (
         pageResults.forEach((x) => {
           x.timeText = parseTime(x.lastSubmission)
         })
-        return cb(null, HttpStatus.OK, { forms: pageResults })
+        return cb(null, StatusCodes.OK, { forms: pageResults })
       })
   }
 
   mongoQuery.catch((err) => {
-    return cb(err, HttpStatus.INTERNAL_SERVER_ERROR, {
+    return cb(err, StatusCodes.INTERNAL_SERVER_ERROR, {
       message: 'Error in retrieving example forms.',
     })
   })
@@ -572,8 +570,18 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
     lookupFormStatisticsInfo,
     projectSubmissionInfo,
     req.query,
-    (err, status, result) => {
-      if (err) logger.error(getRequestIp(req), req.url, req.headers, err)
+    (error, status, result) => {
+      if (error)
+        logger.error({
+          message: 'Failed to retrieve example forms',
+          meta: {
+            action: 'getExampleFormsUsingAggregateCollection',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error,
+        })
       return res.status(status).send(result)
     },
   )
@@ -594,8 +602,19 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
     lookupSubmissionInfo,
     groupSubmissionsByFormId,
     req.query,
-    (err, status, result) => {
-      if (err) logger.error(getRequestIp(req), req.url, req.headers, err)
+    (error, status, result) => {
+      if (error) {
+        logger.error({
+          message: 'Failed to retrieve example forms',
+          meta: {
+            action: 'getExampleFormsUsingSubmissionsCollection',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error,
+        })
+      }
       return res.status(status).send(result)
     },
   )
@@ -613,7 +632,7 @@ const getSingleExampleFormUsing = (
   cb,
 ) => {
   if (!formId || !mongoose.Types.ObjectId.isValid(formId)) {
-    return cb(null, HttpStatus.BAD_REQUEST, {
+    return cb(null, StatusCodes.BAD_REQUEST, {
       message: 'Form URL is missing/invalid.',
     })
   }
@@ -625,18 +644,18 @@ const getSingleExampleFormUsing = (
     .exec((err, result) => {
       // Error
       if (err) {
-        return cb(err, HttpStatus.INTERNAL_SERVER_ERROR, {
+        return cb(err, StatusCodes.INTERNAL_SERVER_ERROR, {
           message: 'Error in retrieving example forms.',
         })
       }
       if (!result) {
-        return cb(err, HttpStatus.NOT_FOUND, { message: 'No results found.' })
+        return cb(err, StatusCodes.NOT_FOUND, { message: 'No results found.' })
       }
 
       let [form] = result
       if (!form) {
         // The form data was not retrieved (formId likely invalid)
-        return cb(err, HttpStatus.NOT_FOUND, {
+        return cb(err, StatusCodes.NOT_FOUND, {
           message: 'Error in retrieving template form - form not found.',
         })
       }
@@ -658,7 +677,7 @@ const getSingleExampleFormUsing = (
           form.avgFeedback = submissionDetails.avgFeedback
           form.timeText = parseTime(form.lastSubmission)
         }
-        return cb(err, HttpStatus.OK, { form })
+        return cb(err, StatusCodes.OK, { form })
       })
     })
 }
@@ -673,8 +692,19 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
   getSingleExampleFormUsing(
     req.params.formId,
     createFormIdSubmissionQuery,
-    (err, status, result) => {
-      if (err) logger.error(getRequestIp(req), req.url, req.headers, err)
+    (error, status, result) => {
+      if (error) {
+        logger.error({
+          message: 'Failed to retrieve a single example form',
+          meta: {
+            action: 'getSingleExampleFormUsingSubmissionCollection',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error,
+        })
+      }
       return res.status(status).send(result)
     },
   )
@@ -691,7 +721,18 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
     req.params.formId,
     createFormIdStatsQuery,
     (err, status, result) => {
-      if (err) logger.error(getRequestIp(req), req.url, req.headers, err)
+      if (err) {
+        logger.error({
+          message: 'Failed to retrieve single example form',
+          meta: {
+            action: 'getSingleExampleFormUsingAggregateCollection',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error: err,
+        })
+      }
       return res.status(status).send(result)
     },
   )
@@ -760,21 +801,35 @@ exports.getLoginStats = function (req, res) {
         },
       },
     ],
-    function (err, loginStats) {
-      if (err) {
-        logger.error(getRequestIp(req), req.url, req.headers, err)
+    function (error, loginStats) {
+      if (error) {
+        logger.error({
+          message: 'Failed to retrieve billing records',
+          meta: {
+            action: 'getLoginStats',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          error,
+        })
         return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send('Error in retrieving billing records')
       } else if (!loginStats) {
-        return res.status(HttpStatus.NOT_FOUND).send('No billing records found')
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send('No billing records found')
       } else {
-        logger.info(
-          'Billing search for',
-          esrvcId,
-          'by',
-          req.session.user && req.session.user.email,
-        )
+        logger.info({
+          message: `Billing search for ${esrvcId} by ${
+            req.session.user && req.session.user.email
+          }`,
+          meta: {
+            action: 'getLoginStats',
+          },
+        })
+
         return res.send({
           loginStats,
         })

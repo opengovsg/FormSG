@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
-import HttpStatus from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ISnsNotification } from '../../../types'
 
-import * as snsService from './sns.service'
+import * as snsService from './bounce.service'
 
-const logger = createLoggerWithLabel('sns-controller')
+const logger = createLoggerWithLabel(module)
 /**
  * Validates that a request came from Amazon SNS, then updates the Bounce
  * collection.
@@ -23,13 +23,19 @@ const handleSns = async (
   try {
     const isValid = await snsService.isValidSnsRequest(req.body)
     if (!isValid) {
-      return res.sendStatus(HttpStatus.FORBIDDEN)
+      return res.sendStatus(StatusCodes.FORBIDDEN)
     }
     await snsService.updateBounces(req.body)
-    return res.sendStatus(HttpStatus.OK)
+    return res.sendStatus(StatusCodes.OK)
   } catch (err) {
-    logger.warn(err)
-    return res.sendStatus(HttpStatus.BAD_REQUEST)
+    logger.warn({
+      message: 'Error updating bounces',
+      meta: {
+        action: 'handleSns',
+      },
+      error: err,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 }
 

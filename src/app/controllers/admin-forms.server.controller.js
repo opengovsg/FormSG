@@ -7,12 +7,10 @@ const mongoose = require('mongoose')
 const moment = require('moment-timezone')
 const _ = require('lodash')
 const JSONStream = require('JSONStream')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
 
-const logger = require('../../config/logger').createLoggerWithLabel(
-  'admin-forms',
-)
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('./errors.server.controller')
 const { getRequestIp } = require('../utils/request')
 const { FormLogoState } = require('../../types')
@@ -67,20 +65,30 @@ function makeModule(connection) {
    */
   function respondOnMongoError(req, res, err) {
     if (err) {
+      logger.error({
+        message: 'Responding to Mongo error',
+        meta: {
+          action: 'respondOnMongoError',
+          ip: getRequestIp(req),
+          url: req.url,
+          headers: req.headers,
+        },
+        error: err,
+      })
+
       let statusCode
       if (err.name === 'ValidationError') {
-        statusCode = HttpStatus.UNPROCESSABLE_ENTITY
+        statusCode = StatusCodes.UNPROCESSABLE_ENTITY
       } else if (err.name === 'VersionError') {
-        statusCode = HttpStatus.CONFLICT
+        statusCode = StatusCodes.CONFLICT
       } else if (
         err.name === 'FormSizeError' || // FormSG-imposed limit in pre-validate hook
         err instanceof RangeError || // exception when Mongoose breaches Mongo 16MB size limit
         (err.name === 'MongoError' && err.code === 10334) // MongoDB Invalid BSON error
       ) {
-        statusCode = HttpStatus.REQUEST_TOO_LONG // HTTP 413 Payload Too Large
+        statusCode = StatusCodes.REQUEST_TOO_LONG // HTTP 413 Payload Too Large
       } else {
-        statusCode = HttpStatus.INTERNAL_SERVER_ERROR
-        logger.error(getRequestIp(req), req.url, req.headers, err)
+        statusCode = StatusCodes.INTERNAL_SERVER_ERROR
       }
 
       return res.status(statusCode).send({
@@ -109,15 +117,21 @@ function makeModule(connection) {
           if (logo.fileId) {
             form.customLogo = `${logoBucketUrl}/${logo.fileId}`
           } else {
-            logger.error(
-              `logo is in an invalid state. fileId should always be defined for CUSTOM state but is ${logo.fileId} for form ${form._id}`,
-            )
+            logger.error({
+              message: `Logo is in an invalid state. fileId should always be defined for CUSTOM state but is ${logo.fileId} for form ${form._id}`,
+              meta: {
+                action: 'updateCustomLogoInForm',
+              },
+            })
           }
           break
         default:
-          logger.error(
-            `logo is in an invalid state. Only NONE, DEFAULT and CUSTOM are allowed but state is ${logo.state} for form ${form._id}`,
-          )
+          logger.error({
+            message: `logo is in an invalid state. Only NONE, DEFAULT and CUSTOM are allowed but state is ${logo.state} for form ${form._id}`,
+            meta: {
+              action: 'updateCustomLogoInForm',
+            },
+          })
       }
     }
   }
@@ -225,7 +239,7 @@ function makeModule(connection) {
      */
     isFormActive: function (req, res, next) {
       if (req.form.status === 'ARCHIVED') {
-        return res.status(HttpStatus.NOT_FOUND).send({
+        return res.status(StatusCodes.NOT_FOUND).send({
           message: 'Form has been archived',
         })
       } else {
@@ -240,7 +254,7 @@ function makeModule(connection) {
      */
     isFormEncryptMode: function (req, res, next) {
       if (req.form.responseMode !== 'encrypt') {
-        return res.status(HttpStatus.UNPROCESSABLE_ENTITY).send({
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
           message: 'Form is not encrypt mode',
         })
       }
@@ -253,7 +267,7 @@ function makeModule(connection) {
      */
     create: function (req, res) {
       if (!req.body.form) {
-        return res.status(HttpStatus.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).send({
           message: 'Invalid Input',
         })
       }
@@ -291,13 +305,16 @@ function makeModule(connection) {
       if (!_.isEmpty(updatedForm.editFormField)) {
         if (!_.isEmpty(updatedForm.form_fields)) {
           // form_fields should not exist in updatedForm
-          logger.error(
-            `formId="${form._id}", ip=${getRequestIp(
-              req,
-            )}, message="form_fields should not exist in updatedForm"`,
-          )
+          logger.error({
+            message: 'form_fields should not exist in updatedForm',
+            meta: {
+              action: 'makeModule.update',
+              ip: getRequestIp(req),
+              formId: form._id,
+            },
+          })
           return res
-            .status(HttpStatus.BAD_REQUEST)
+            .status(StatusCodes.BAD_REQUEST)
             .send({ message: 'Invalid update to form' })
         } else {
           const { error, formFields } = getEditedFormFields(
@@ -305,12 +322,16 @@ function makeModule(connection) {
             updatedForm.editFormField,
           )
           if (error) {
-            logger.error(
-              `formId="${form._id}", ip=${getRequestIp(
-                req,
-              )}, message="${error}"`,
-            )
-            return res.status(HttpStatus.BAD_REQUEST).send({ message: error })
+            logger.error({
+              message: 'Error getting edited form fields',
+              meta: {
+                action: 'makeModule.update',
+                ip: getRequestIp(req),
+                formId: form._id,
+              },
+              error,
+            })
+            return res.status(StatusCodes.BAD_REQUEST).send({ message: error })
           }
           form.form_fields = formFields
           delete updatedForm.editFormField
@@ -322,7 +343,12 @@ function makeModule(connection) {
         updatedForm.customLogo !== undefined &&
         form.customLogo !== updatedForm.customLogo
       ) {
-        logger.info(`Custom logo being updated for form ${form._id}`)
+        logger.info({
+          message: `Custom logo being updated for form ${form._id}`,
+          meta: {
+            action: 'makeModule.update',
+          },
+        })
       }
 
       _.extend(form, updatedForm)
@@ -367,7 +393,7 @@ function makeModule(connection) {
           return respondOnMongoError(req, res, err)
         } else if (!form) {
           return res
-            .status(HttpStatus.NOT_FOUND)
+            .status(StatusCodes.NOT_FOUND)
             .send({ message: 'Form not found for duplication' })
         } else {
           let responseMode = req.body.responseMode || 'email'
@@ -444,7 +470,7 @@ function makeModule(connection) {
           if (err) {
             return respondOnMongoError(req, res, err)
           } else if (!forms) {
-            return res.status(HttpStatus.NOT_FOUND).send({
+            return res.status(StatusCodes.NOT_FOUND).send({
               message: 'No user-created and collaborated-on forms found',
             })
           }
@@ -467,7 +493,7 @@ function makeModule(connection) {
           return respondOnMongoError(req, res, err)
         } else if (!feedback) {
           return res
-            .status(HttpStatus.NOT_FOUND)
+            .status(StatusCodes.NOT_FOUND)
             .send({ message: 'No feedback found' })
         } else {
           let sum = 0
@@ -510,8 +536,17 @@ function makeModule(connection) {
         count,
       ) {
         if (err) {
-          logger.error(getRequestIp(req), req.url, req.headers, err)
-          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          logger.error({
+            message: 'Error counting documents in FormFeedback',
+            meta: {
+              action: 'makeModule.countFeedback',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: errorHandler.getMongoErrorMessage(err),
           })
         } else {
@@ -530,31 +565,43 @@ function makeModule(connection) {
       FormFeedback.find({ formId: req.form._id })
         .cursor()
         .on('error', function (err) {
-          logger.error(
-            `Error streaming feedback from MongoDB:\t ip=${getRequestIp(req)}`,
-            err,
-          )
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          logger.error({
+            message: 'Error streaming feedback from MongoDB',
+            meta: {
+              action: 'makeModule.streamFeedback',
+              ip: getRequestIp(req),
+            },
+            error: err,
+          })
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: 'Error retrieving from database.',
           })
         })
         .pipe(JSONStream.stringify())
         .on('error', function (err) {
-          logger.error(
-            `Error converting feedback to JSON:\t ip=${getRequestIp(req)}`,
-            err,
-          )
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          logger.error({
+            message: 'Error converting feedback to JSON',
+            meta: {
+              action: 'makeModule.streamFeedback',
+              ip: getRequestIp(req),
+            },
+            error: err,
+          })
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: 'Error converting feedback to JSON',
           })
         })
         .pipe(res.type('json'))
         .on('error', function (err) {
-          logger.error(
-            `Error writing feedback to HTTP stream:\t ip=${getRequestIp(req)}`,
-            err,
-          )
-          res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+          logger.error({
+            message: 'Error writing feedback to HTTP stream',
+            meta: {
+              action: 'makeModule.streamFeedback',
+              ip: getRequestIp(req),
+            },
+            error: err,
+          })
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             message: 'Error writing feedback to HTTP stream',
           })
         })
@@ -577,10 +624,10 @@ function makeModule(connection) {
         !('comment' in req.body)
       ) {
         return res
-          .status(HttpStatus.BAD_REQUEST)
+          .status(StatusCodes.BAD_REQUEST)
           .send('Form feedback data not passed in')
       } else {
-        return res.status(HttpStatus.OK).send('Successfully received feedback')
+        return res.status(StatusCodes.OK).send('Successfully received feedback')
       }
     },
     /**
@@ -637,7 +684,7 @@ function makeModule(connection) {
     createPresignedPostForImages: function (req, res) {
       if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
         return res
-          .status(HttpStatus.BAD_REQUEST)
+          .status(StatusCodes.BAD_REQUEST)
           .send(`Your file type "${req.body.fileType}" is not supported`)
       }
 
@@ -657,15 +704,17 @@ function makeModule(connection) {
         },
         function (err, presignedPostObject) {
           if (err) {
-            logger.error(
-              `Presigning post data encountered an error, ip=${getRequestIp(
-                req,
-              )}`,
-              err,
-            )
-            return res.status(HttpStatus.BAD_REQUEST).send(err)
+            logger.error({
+              message: 'Presigning post data encountered an error',
+              meta: {
+                action: 'makeModule.streamFeedback',
+                ip: getRequestIp(req),
+              },
+              error: err,
+            })
+            return res.status(StatusCodes.BAD_REQUEST).send(err)
           } else {
-            return res.status(HttpStatus.OK).send(presignedPostObject)
+            return res.status(StatusCodes.OK).send(presignedPostObject)
           }
         },
       )
@@ -682,7 +731,7 @@ function makeModule(connection) {
     createPresignedPostForLogos: function (req, res) {
       if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
         return res
-          .status(HttpStatus.BAD_REQUEST)
+          .status(StatusCodes.BAD_REQUEST)
           .send(`Your file type "${req.body.fileType}" is not supported`)
       }
 
@@ -702,15 +751,17 @@ function makeModule(connection) {
         },
         function (err, presignedPostObject) {
           if (err) {
-            logger.error(
-              `Presigning post data encountered an error:\tip=${getRequestIp(
-                req,
-              )}`,
-              err,
-            )
-            return res.status(HttpStatus.BAD_REQUEST).send(err)
+            logger.error({
+              message: 'Presigning post data encountered an error',
+              meta: {
+                action: 'makeModule.streamFeedback',
+                ip: getRequestIp(req),
+              },
+              error: err,
+            })
+            return res.status(StatusCodes.BAD_REQUEST).send(err)
           } else {
-            return res.status(HttpStatus.OK).send(presignedPostObject)
+            return res.status(StatusCodes.OK).send(presignedPostObject)
           }
         },
       )

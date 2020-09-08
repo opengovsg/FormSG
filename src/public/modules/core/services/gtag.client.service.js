@@ -55,11 +55,7 @@ function GTag(Auth, $rootScope, $window) {
    * start with a slash (/) character.
    * @return {Void}
    */
-  const _gtagPageview = ({
-    pageTitle,
-    pagePath,
-    pageLocation
-  }) => {
+  const _gtagPageview = ({ pageTitle, pagePath, pageLocation }) => {
     if (GATrackingID) {
       $window.gtag('config', GATrackingID, {
         page_title: pageTitle,

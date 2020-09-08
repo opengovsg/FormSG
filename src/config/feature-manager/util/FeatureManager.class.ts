@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { createLoggerWithLabel } from '../../logger'
 import { FeatureNames, IFeatureManager, RegisterableFeature } from '../types'
 
-const logger = createLoggerWithLabel('feature-manager')
+const logger = createLoggerWithLabel(module)
 convict.addFormat(validator.url)
 
 interface RegisteredFeature<T extends FeatureNames> {
@@ -61,11 +61,19 @@ export default class FeatureManager {
 
     // Inform whether feature is enabled or not
     if (isEnabled) {
-      logger.info(`${name} feature will be enabled on app`)
+      logger.info({
+        message: `${name} feature will be enabled on app`,
+        meta: {
+          action: 'register',
+        },
+      })
     } else {
-      logger.warn(
-        `\n!!! WARNING !!! \nEnv vars for ${name} are not detected. \n${name} feature will be disabled on app`,
-      )
+      logger.warn({
+        message: `\n!!! WARNING !!! \nEnv vars for ${name} are not detected. \n${name} feature will be disabled on app`,
+        meta: {
+          action: 'register',
+        },
+      })
     }
   }
 

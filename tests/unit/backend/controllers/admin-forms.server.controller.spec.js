@@ -1,4 +1,4 @@
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
@@ -45,6 +45,7 @@ describe('Admin-Forms Controller', () => {
       },
       headers: {},
       ip: '127.0.0.1',
+      get: () => {},
     }
   })
 
@@ -61,7 +62,7 @@ describe('Admin-Forms Controller', () => {
         return this
       })
       Controller.isFormActive(req, res, () => {})
-      expect(res.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND)
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
     })
 
     it('should pass on to the next middleware if not archived', () => {
@@ -83,7 +84,7 @@ describe('Admin-Forms Controller', () => {
       req.form.responseMode = 'email'
       Controller.isFormEncryptMode(req, res, next)
       expect(next).not.toHaveBeenCalled()
-      expect(res.status).toHaveBeenCalledWith(HttpStatus.UNPROCESSABLE_ENTITY)
+      expect(res.status).toHaveBeenCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
     })
     it('should accept forms that are encrypt mode', () => {
       req.form.responseMode = 'encrypt'
@@ -122,7 +123,7 @@ describe('Admin-Forms Controller', () => {
     it('should return 400 error when form param not supplied', (done) => {
       req.body.form = null
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST)
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
         done()
         return res
       })
@@ -132,7 +133,9 @@ describe('Admin-Forms Controller', () => {
     it('should return 405 error when saving a Form object with invalid fields', (done) => {
       req.body.form = { title: 'bad_form', emails: 'wrongemail.com' }
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.UNPROCESSABLE_ENTITY)
+        expect(res.status).toHaveBeenCalledWith(
+          StatusCodes.UNPROCESSABLE_ENTITY,
+        )
         done()
         return res
       })
@@ -176,7 +179,9 @@ describe('Admin-Forms Controller', () => {
         permissionList: [],
       }
       res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(HttpStatus.UNPROCESSABLE_ENTITY)
+        expect(res.status).toHaveBeenCalledWith(
+          StatusCodes.UNPROCESSABLE_ENTITY,
+        )
         done()
         return res
       })

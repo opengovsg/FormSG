@@ -14,21 +14,19 @@
     </div>
     <div id="header-addcollab" class="col-md-2 col-sm-3 col-xs-2">
       <div class="right-spacer">
-        <button id="collab-circle-user" class="pull-right hidden-xs">
-          {{userShort}}
-        </button>
         <button
           id="collab-circle-plus"
           ng-class="collab.isModalShown ? 'active' : ''"
           class="pull-right"
           ng-click="toggleCollabModal()"
-          ng-if="user != undefined"
+          ng-if="user !== undefined"
         >
           <i class="bx bxs-user-plus bx-lg hidden-xs"></i>
           <i
             class="bx bxs-user-plus bx-md hidden-sm hidden-md hidden-lg hidden-xl"
           ></i>
         </button>
+        <avatar-dropdown-component></avatar-dropdown-component>
       </div>
     </div>
   </div>
@@ -160,18 +158,18 @@
           <div class="row">
             <div class="col-xs-12 col-sm-3">
               <button
-                ng-disabled="(collab.form.$invalid || collab.form.email == undefined || collab.form.email == '')  && collab.btnStatus == 1"
+                ng-disabled="(collab.form.$invalid || collab.form.email === undefined || collab.form.email === '')  && collab.btnStatus === 1"
                 type="submit"
                 id="collab-btn"
                 class="btn-custom btn-medium"
                 ng-click="saveCollabEmail()"
                 ng-class="collab.btnStatus >= 2 ? 'btn-pressed' : ''"
               >
-                <span ng-if="collab.btnStatus == 1">Add</span>
-                <span ng-if="collab.btnStatus == 2"
+                <span ng-if="collab.btnStatus === 1">Add</span>
+                <span ng-if="collab.btnStatus === 2"
                   ><i class="bx bx-loader bx-spin bx-md"></i
                 ></span>
-                <span ng-if="collab.btnStatus == 3"
+                <span ng-if="collab.btnStatus === 3"
                   ><i class="bx bx-check bx-md"></i
                 ></span>
               </button>

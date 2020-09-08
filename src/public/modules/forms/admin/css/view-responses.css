@@ -418,13 +418,6 @@
   text-align: left;
 }
 
-#secret-key .warning-acknowledgement {
-  display: flex;
-  padding: 8px 10px;
-  margin: 0 10px 0;
-  width: 100%;
-}
-
 #secret-key .instructions-container {
   margin: 0 auto 30px;
 }
@@ -455,8 +448,15 @@
   padding: 30px 25px;
 }
 
-#responses-tab #detailed-responses #respondent-timestamp div.row:first-child {
+#responses-tab
+  #detailed-responses
+  #respondent-timestamp
+  div.row:not(:last-child) {
   padding-bottom: 10px;
+}
+
+#responses-tab #detailed-responses #respondent-timestamp a {
+  cursor: pointer;
 }
 
 #responses-tab #detailed-responses #question-answer-grp {
