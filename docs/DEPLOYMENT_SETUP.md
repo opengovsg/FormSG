@@ -147,7 +147,6 @@ The following env variables are set in Travis:
 | `AWS_ENDPOINT`                | AWS S3 bucket endpoint.                                                                                                             |
 | `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads.                                                                                          |
 | `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
-| `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
 | `ATTACHMENT_S3_BUCKET`        | Name of S3 bucket for attachment uploads on Storage Mode.                                                                           |
 | `CUSTOM_CLOUDWATCH_LOG_GROUP` | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
 
