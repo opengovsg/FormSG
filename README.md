@@ -165,7 +165,7 @@ forms and configured using the environment variables below.
 
 ## Contributing
 
-We welcome contributions to code open sourced by the Government Technology Agency of Singapore. All contributors will be asked to sign a Contributor License Agreement (CLA) in order to ensure that everybody is free to use their contributions.
+We welcome contributions to code open sourced by the Government Technology Agency of Singapore. All contributors should read [CONTRIBUTING.md](CONTRIBUTING.md) and will also be asked to sign a Contributor License Agreement (CLA) in order to ensure that everybody is free to use their contributions.
 
 ## Support
 

@@ -2,9 +2,13 @@
 
 Welcome to FormSG! The following are guidelines for contribution. Use your best judgment, and feel free to propose changes to this document in an issue.
 
-## How can I contribute?
+## How can I contribute
 
-When contributing to this repository, **please first discuss the change you wish to make via issue**, email, or any other method with the repository owners before making the change.
+Please **first discuss the change you wish to make via GitHub issue**, [email](mailto:formsg@tech.gov.sg), or any other method with the repository owners beforehand.
+
+## Security reports
+
+Please do not file an open issue for ongoing security bugs. Instead, email us directly with your findings at [formsg@tech.gov.sg](mailto:formsg@tech.gov.sg).
 
 ## Bug reports and feature requests
 
