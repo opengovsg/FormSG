@@ -2,9 +2,11 @@
 
 Welcome to FormSG! The following are guidelines for contribution. Use your best judgment, and feel free to propose changes to this document in an issue.
 
-## How can I contribute
+## Getting started
 
-Please **first discuss the change you wish to make via GitHub issue**, [email](mailto:formsg@tech.gov.sg), or any other method with the repository owners beforehand.
+If you are simply looking to start working with the pandas codebase, navigate to the GitHub "issues" tab and start looking through interesting issues. There are a number of issues listed under "contribute" where you could start out.
+
+Otherwise, please **first discuss the change you wish to make via GitHub issue**, [email](mailto:formsg@tech.gov.sg), or any other method with the repository owners beforehand.
 
 ## Security reports
 
