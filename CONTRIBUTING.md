@@ -51,4 +51,4 @@ You generally only need to submit a CLA once, so if you've already submitted one
 
 ## Contact us
 
-Have questions? Feel free out to us at [formsg@tech.gov.sg](mailto:formsg@tech.gov.sg).
+Have questions? Feel free to reach out to us at [formsg@tech.gov.sg](mailto:formsg@tech.gov.sg).
