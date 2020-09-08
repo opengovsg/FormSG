@@ -26,6 +26,9 @@ services:
       - LOGO_S3_BUCKET=local-logo-bucket
       - FORMSG_SDK_MODE=development
       - BOUNCE_LIFE_SPAN=1800000
+      - AWS_ACCESS_KEY_ID=fakeKey
+      - AWS_SECRET_ACCESS_KEY=fakeSecret
+      - SESSION_SECRET=thisisasecret
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
@@ -61,6 +64,7 @@ services:
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
       - AGGREGATE_COLLECTION
+      - AWS_ENDPOINT=http://localhost:4572
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
@@ -88,7 +92,7 @@ services:
       - '27017:27017'
 
   localstack:
-    image: localstack/localstack:0.8.0
+    image: localstack/localstack:latest
     container_name: formsg-localstack
     depends_on:
       - formsg

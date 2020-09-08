@@ -1,18 +1,20 @@
 import to from 'await-to-js'
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
+import validator from 'validator'
 
 import getAdminVerificationModel from '../../../app/models/admin_verification.server.model'
 import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
 import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
-import { IPopulatedUser, IUserSchema } from '../../../types'
+import { IAgency, IPopulatedUser, IUserSchema } from '../../../types'
+import { InvalidDomainError } from '../auth/auth.errors'
 
 import { InvalidOtpError, MalformedOtpError } from './user.errors'
 
-const AdminVerification = getAdminVerificationModel(mongoose)
-const User = getUserModel(mongoose)
+const AdminVerificationModel = getAdminVerificationModel(mongoose)
+const UserModel = getUserModel(mongoose)
 
 const DEFAULT_SALT_ROUNDS = 10
 export const MAX_OTP_ATTEMPTS = 10
@@ -29,7 +31,7 @@ export const createContactOtp = async (
   contact: string,
 ): Promise<string> => {
   // Verify existence of userId
-  const admin = await User.findById(userId)
+  const admin = await UserModel.findById(userId)
   if (!admin) {
     throw new Error('User id is invalid')
   }
@@ -38,7 +40,7 @@ export const createContactOtp = async (
   const hashedOtp = await bcrypt.hash(otp, DEFAULT_SALT_ROUNDS)
   const hashedContact = await bcrypt.hash(contact, DEFAULT_SALT_ROUNDS)
 
-  await AdminVerification.upsertOtp({
+  await AdminVerificationModel.upsertOtp({
     admin: userId,
     expireAt: new Date(Date.now() + config.otpLifeSpan),
     hashedContact,
@@ -65,7 +67,7 @@ export const verifyContactOtp = async (
   contactToVerify: string,
   userId: IUserSchema['_id'],
 ) => {
-  const updatedDocument = await AdminVerification.incrementAttemptsByAdminId(
+  const updatedDocument = await AdminVerificationModel.incrementAttemptsByAdminId(
     userId,
   )
 
@@ -114,7 +116,7 @@ export const verifyContactOtp = async (
   }
 
   // Hashed OTP matches, remove from collection.
-  await AdminVerification.findOneAndRemove({ admin: userId })
+  await AdminVerificationModel.findOneAndRemove({ admin: userId })
   // Finally return true (as success).
   return true
 }
@@ -133,7 +135,7 @@ export const updateUserContact = async (
 ): Promise<IPopulatedUser> => {
   // Retrieve user from database.
   // Update user's contact details.
-  const admin = await User.findById(userId).populate({
+  const admin = await UserModel.findById(userId).populate({
     path: 'agency',
     model: AGENCY_SCHEMA_ID,
   })
@@ -148,8 +150,34 @@ export const updateUserContact = async (
 export const getPopulatedUserById = async (
   userId: IUserSchema['_id'],
 ): Promise<IPopulatedUser> => {
-  return User.findById(userId).populate({
+  return UserModel.findById(userId).populate({
     path: 'agency',
     model: AGENCY_SCHEMA_ID,
   })
+}
+
+/**
+ * Retrieves the user with the given email. If the user does not yet exist, a
+ * new user document is created and returned.
+ * @param email the email of the user to retrieve
+ * @param agency the agency document to associate with the user
+ * @returns the upserted user document
+ * @throws {InvalidDomainError} on invalid email
+ * @throws {Error} on upsert failure
+ */
+export const retrieveUser = async (email: string, agency: IAgency) => {
+  if (!validator.isEmail(email)) {
+    throw new InvalidDomainError()
+  }
+
+  const admin = await UserModel.upsertUser({
+    email,
+    agency: agency._id,
+  })
+
+  if (!admin) {
+    throw new Error('Failed to upsert user')
+  }
+
+  return admin
 }

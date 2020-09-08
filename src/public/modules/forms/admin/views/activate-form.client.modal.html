@@ -13,9 +13,7 @@
   <div class="modal-body">
     <!-- If form is spcp, check for e-service id-->
     <div ng-if="vm.checkStatus === vm.checkEnum.esrvcId" id="verify-esrvcid">
-      <div class="field-title">
-        Validating your e-service ID
-      </div>
+      <div class="field-title">Validating your e-service ID</div>
       <div class="loader" ng-if="vm.esrvcIdStatus === 1">
         <i class="bx bx-loader bx-spin"></i>
       </div>
@@ -53,9 +51,7 @@
         </div>
         <!-- Since CorpPass eservice id cannot be validated, remind user to check-->
         <div ng-if="vm.esrvcIdSuccess.authType === 'CP'">
-          <div class="field-title">
-            This form uses CorpPass.
-          </div>
+          <div class="field-title">This form uses CorpPass.</div>
           <div class="field-description">
             Please make sure <b>{{vm.esrvcIdSuccess.esrvcId}}</b> is the correct
             e-service ID

@@ -23,8 +23,8 @@ const createColumnSchema = () => {
   )
 
   ColumnSchema.pre<IColumnSchema>('validate', function (next) {
-    let columnTypes = [BasicField.ShortText, BasicField.Dropdown]
-    let index = columnTypes.indexOf(this.columnType)
+    const columnTypes = [BasicField.ShortText, BasicField.Dropdown]
+    const index = columnTypes.indexOf(this.columnType)
     if (index > -1) {
       return next()
     } else {

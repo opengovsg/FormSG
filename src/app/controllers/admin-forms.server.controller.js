@@ -8,7 +8,6 @@ const moment = require('moment-timezone')
 const _ = require('lodash')
 const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
-const get = require('lodash/get')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('./errors.server.controller')
@@ -159,26 +158,7 @@ function makeModule(connection) {
       (f) => f.globalId === field.globalId,
     )
 
-    // To keep date schema in sync (isFutureOnly and dateValidation)
     const actionNameString = String(action.name)
-    if (field.fieldType === 'date') {
-      // TODO: Remove after 31 Jul 2020 (#2437)
-      if (field.isNewClient === true) {
-        // If form is edited by admin using new client
-        field.isFutureOnly =
-          get(field.dateValidation, 'selectedDateValidation') ===
-          'Disallow past dates'
-      } else {
-        // If form is edited by admin using old client
-        field.dateValidation = {
-          selectedDateValidation: field.isFutureOnly
-            ? 'Disallow past dates'
-            : null,
-          customMinDate: null,
-          customMaxDate: null,
-        }
-      }
-    }
 
     switch (actionNameString) {
       case EditFieldActions.Create:

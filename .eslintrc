@@ -24,6 +24,7 @@
         }
       },
       "plugins": ["@typescript-eslint", "import", "simple-import-sort"],
+      "extends": ["plugin:@typescript-eslint/recommended"],
       "rules": {
         // Rules for auto sort of imports
         "simple-import-sort/sort": [
@@ -49,12 +50,10 @@
         "import/order": "off",
         "import/first": "error",
         "import/newline-after-import": "error",
-        "import/no-duplicates": "error",
-        "@typescript-eslint/no-var-requires": "warn",
-        "@typescript-eslint/no-unused-vars": "error",
-        "no-unused-vars": "off"
+        "import/no-duplicates": "error"
       }
-    }
+    },
+    { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] }
   ],
   "rules": {
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],

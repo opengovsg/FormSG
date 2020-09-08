@@ -26,6 +26,7 @@ export interface IGoogleAnalytics {
 
 export interface ISentry {
   sentryConfigUrl: string
+  cspReportUri: string
 }
 
 export interface ISms {

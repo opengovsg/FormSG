@@ -10,7 +10,7 @@ export class InvalidOtpError extends ApplicationError {
 
 export class MalformedOtpError extends ApplicationError {
   constructor(
-    message: string = 'Malformed OTP. Please try again later. If the problem persists, contact us.',
+    message = 'Malformed OTP. Please try again later. If the problem persists, contact us.',
     meta?: string,
   ) {
     super(message, StatusCodes.INTERNAL_SERVER_ERROR, meta)

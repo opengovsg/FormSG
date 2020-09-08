@@ -152,34 +152,6 @@ encryptSubmissionSchema.methods.getWebhookView = function (
   }
 }
 
-export const getEmailSubmissionModel = (db: Mongoose) => {
-  try {
-    return db.model(SubmissionType.Email) as IEmailSubmissionModel
-  } catch {
-    return db.model<IEmailSubmissionSchema, IEmailSubmissionModel>(
-      SubmissionType.Email,
-      emailSubmissionSchema,
-    )
-  }
-}
-
-export const getEncryptSubmissionModel = (db: Mongoose) => {
-  try {
-    return db.model(SubmissionType.Encrypt) as IEncryptSubmissionModel
-  } catch {
-    return db.model<IEncryptedSubmissionSchema, IEncryptSubmissionModel>(
-      SubmissionType.Encrypt,
-      encryptSubmissionSchema,
-    )
-  }
-}
-
-/**
- * Form Submission Schema
- * @param  {Object} db - Active DB Connection
- * @return {Object} Mongoose Model
- */
-
 const compileSubmissionModel = (db: Mongoose) => {
   const Submission = db.model('Submission', SubmissionSchema)
   Submission.discriminator(SubmissionType.Email, emailSubmissionSchema)
@@ -193,6 +165,16 @@ const getSubmissionModel = (db: Mongoose) => {
   } catch {
     return compileSubmissionModel(db)
   }
+}
+
+export const getEmailSubmissionModel = (db: Mongoose) => {
+  getSubmissionModel(db)
+  return db.model(SubmissionType.Email) as IEmailSubmissionModel
+}
+
+export const getEncryptSubmissionModel = (db: Mongoose) => {
+  getSubmissionModel(db)
+  return db.model(SubmissionType.Encrypt) as IEncryptSubmissionModel
 }
 
 export default getSubmissionModel

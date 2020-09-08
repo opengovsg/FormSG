@@ -12,9 +12,7 @@
           ng-aria-disable
         ></div>
         <!-- Welcome message -->
-        <div id="welcome" class="row">
-          Welcome back, {{vm.userName}}
-        </div>
+        <div id="welcome" class="row">Welcome back, {{vm.userName}}</div>
 
         <!-- Form item for Create New Form -->
         <div
@@ -40,9 +38,7 @@
               {{form.title | limitTo: 24}}{{form.title.length > 24 ? '...' :
               ''}}
             </div>
-            <div class="form-name" id="content-mobile">
-              {{form.title}}
-            </div>
+            <div class="form-name" id="content-mobile">{{form.title}}</div>
             <div class="form-lastupdated">{{form.lastModifiedString}}</div>
             <div class="form-islive" ng-if="form.status==='PUBLIC'">
               Published
@@ -92,9 +88,7 @@
       <div ng-if="vm.myforms.length === 0" id="welcome-placeholder">
         <div class="row">
           <div class="col-sm-6 col-xs-12">
-            <div id="welcome">
-              Welcome {{vm.userName}}
-            </div>
+            <div id="welcome">Welcome {{vm.userName}}</div>
             <img
               id="welcome-image"
               class="hidden-sm hidden-md hidden-lg"

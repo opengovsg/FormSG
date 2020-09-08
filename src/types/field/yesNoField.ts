@@ -1,5 +1,5 @@
 import { IField, IFieldSchema } from './baseField'
 
-export interface IYesNoField extends IField {}
+export type IYesNoField = IField
 
 export interface IYesNoFieldSchema extends IYesNoField, IFieldSchema {}

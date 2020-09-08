@@ -1,6 +1,6 @@
 import moment from 'moment-timezone'
 
-export const isMalformedDate = (date?: string): Boolean => {
+export const isMalformedDate = (date?: string): boolean => {
   return Boolean(date) && !moment(date, 'YYYY-MM-DD', true).isValid()
 }
 

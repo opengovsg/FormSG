@@ -6,7 +6,12 @@ import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
-import { IAgencySchema, IEncryptedForm, IUserSchema } from 'src/types'
+import {
+  IAgencySchema,
+  IEncryptedForm,
+  IUserSchema,
+  ResponseMode,
+} from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
 
@@ -25,12 +30,12 @@ const MOCK_FORM_PARAMS = {
 const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
-  responseMode: 'encrypt',
+  responseMode: ResponseMode.Encrypt,
 }
 const MOCK_EMAIL_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   emails: [MOCK_ADMIN_EMAIL],
-  responseMode: 'email',
+  responseMode: ResponseMode.Email,
 }
 
 const FORM_DEFAULTS = {
@@ -676,13 +681,44 @@ describe('Form Model', () => {
         expect(form).toBeNull()
       })
 
-      it('should return the populated form when formId is valid', async () => {
+      it('should return the populated email form when formId is valid', async () => {
         // Arrange
-        const formParams = merge({}, MOCK_FORM_PARAMS, {
+        const emailFormParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: preloadedAdmin,
         })
         // Create a form
-        const form = (await Form.create(formParams)).toObject()
+        const form = (await Form.create(emailFormParams)).toObject()
+
+        // Act
+        const actualForm = (await Form.getFullFormById(form._id)).toObject()
+
+        // Assert
+        // Form should be returned
+        expect(actualForm).not.toBeNull()
+        // Omit admin key since it is populated is not ObjectId anymore.
+        expect(omit(actualForm, 'admin')).toEqual(omit(form, 'admin'))
+        // Verify populated admin shape
+        expect(actualForm.admin).not.toBeNull()
+        expect(actualForm.admin.email).toEqual(preloadedAdmin.email)
+        // Remove indeterministic keys
+        const expectedAgency = omit(preloadedAgency.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        expect(actualForm.admin.agency).toEqual(
+          expect.objectContaining(expectedAgency),
+        )
+      })
+
+      it('should return the populated encrypt form when formId is valid', async () => {
+        // Arrange
+        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          admin: preloadedAdmin,
+        })
+        // Create a form
+        const form = (await Form.create(encryptFormParams)).toObject()
 
         // Act
         const actualForm = (await Form.getFullFormById(form._id)).toObject()
@@ -720,13 +756,13 @@ describe('Form Model', () => {
         expect(form).toBeNull()
       })
 
-      it('should return otpData when formId is valid', async () => {
+      it('should return otpData of an email form when formId is valid', async () => {
         // Arrange
-        const formParams = merge({}, MOCK_FORM_PARAMS, {
+        const emailFormParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           msgSrvcName: 'mockSrvcName',
         })
         // Create a form with msgSrvcName
-        const form = await Form.create(formParams)
+        const form = await Form.create(emailFormParams)
 
         // Act
         const actualOtpData = await Form.getOtpData(form._id)
@@ -741,7 +777,33 @@ describe('Form Model', () => {
             email: preloadedAdmin.email,
             userId: preloadedAdmin._id,
           },
-          msgSrvcName: formParams.msgSrvcName,
+          msgSrvcName: emailFormParams.msgSrvcName,
+        }
+        expect(actualOtpData).toEqual(expectedOtpData)
+      })
+
+      it('should return otpData of an encrypt form when formId is valid', async () => {
+        // Arrange
+        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          msgSrvcName: 'mockSrvcName',
+        })
+        // Create a form with msgSrvcName
+        const form = await Form.create(encryptFormParams)
+
+        // Act
+        const actualOtpData = await Form.getOtpData(form._id)
+
+        // Assert
+        // OtpData should be returned
+        expect(actualOtpData).not.toBeNull()
+        // Check shape
+        const expectedOtpData = {
+          form: form._id,
+          formAdmin: {
+            email: preloadedAdmin.email,
+            userId: preloadedAdmin._id,
+          },
+          msgSrvcName: encryptFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
