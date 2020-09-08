@@ -34,9 +34,9 @@ Notable features include:
 - Verified email and mobile phone fields via integrations with Twilio and AWS SES
 - Automatic emailing of submissions for forms built with Email Mode
 - End-to-end encryption for forms built with Storage Mode
-- (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/)
-- (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/)
-- (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo)
+- (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
+- (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
+- (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
 - (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
 
 The current product roadmap includes:
@@ -62,7 +62,7 @@ npm run dev
 ```
 
 If there have been no dependency changes in `package.json` or changes in the
-root `server.js` file, you can run
+`src/server.ts` file, you can run
 
 ```bash
 docker-compose up
