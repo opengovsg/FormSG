@@ -19,7 +19,6 @@ Infrastructure
 - AWS Elastic Beanstalk / EC2 for hosting and deployment
 - AWS Elastic File System for mounting files (i.e. SingPass/MyInfo private keys into the `/certs` directory)
 - AWS S3 for image and logo hosting, attachments for Storage Mode forms
-- AWS Simple Email Service with SMTP integration for sending emails to login/send OTPs/form submissions
 
 DevOps
 
@@ -29,12 +28,20 @@ DevOps
 Network
 
 - AWS VPC (with peering preferred) for managed database hosted by MongoDB Atlas
-- AWS Secrets Manager (to manage custom or hosted Twilio credentials)
 - AWS NAT Gateway (for static IP whitelisting with SingPass)
 
 Database
 
 - MongoDB instance (we use Mongo Atlas)
+
+Emails
+
+- AWS Simple Email Service with SMTP integration for sending emails to login/send OTPs/form submissions/submission autoreplies
+
+SMS
+
+- Twilio for sending OTPs
+- AWS Secrets Manager (to manage user-provided or hosted Twilio credentials)
 
 Analytics and Monitoring
 
