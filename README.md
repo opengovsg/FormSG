@@ -7,6 +7,7 @@
 
 - [FormSG](#formsg)
   - [Table of Contents](#table-of-contents)
+  - [Features](#features)
   - [Local Development (Docker)](#local-development-docker)
     - [Prerequisites](#prerequisites)
     - [Running Locally](#running-locally)
@@ -22,6 +23,28 @@
   - [Maintenance Banners](#maintenance-banners)
   - [Contributing](#contributing)
   - [Support](#support)
+
+## Features
+
+FormSG is a form builder application built, open sourced and maintained by the [Open Government Products](https://open.gov.sg) team of the Singapore [Government Technology Agency](https://tech.gov.sg) to digitise paper processes.
+
+Notable features include:
+
+- 19 different form field types, including attachments, tables, email and mobile
+- Verified email and mobile phone fields via integrations with Twilio and AWS SES
+- Automatic emailing of submissions for forms built with Email Mode
+- End-to-end encryption for forms built with Storage Mode
+- (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/)
+- (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo)
+- (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
+
+The current product roadmap include:
+
+- (in progress) Migrating backend code from JavaScript to [TypeScript](https://www.typescriptlang.org/)
+- (in progress) Refactoring backend code to use [Domain-driven Design](https://en.wikipedia.org/wiki/Domain-driven_design)
+- (in progress) Migrating backend tests from [Jasmine](https://jasmine.github.io/) to [Jest](https://jestjs.io/) and expanding unit vs integration tests
+- (yet to start) Support for webhooks attachments
+- (yet to start) Frontend rewrite from [AngularJS](https://angularjs.org/) to [React](https://reactjs.org/)
 
 ## Local Development (Docker)
 
