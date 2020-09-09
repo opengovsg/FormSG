@@ -82,7 +82,7 @@
     "angular-resource": "^1.8.0",
     "angular-sanitize": "^1.8.0",
     "angular-translate": "^2.18.2",
-    "angular-translate-loader-partial": "^2.18.2",
+    "angular-translate-loader-partial": "^2.18.3",
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.22",
     "async": "~1.5.2",
