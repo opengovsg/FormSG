@@ -258,6 +258,8 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                             |
 | `IS_SP_MAINTENANCE`             | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                    |
 | `IS_CP_MAINTENANCE`             | If set, displays a banner message on CorpPass forms.                                                                                                                   |
+| `FILE_SYSTEM_ID`             | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                                   |
+| `CERT_PATH`             | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to SingPass, CorpPass and MyInfo.                                                                                                                   |
 
 #### Verified Emails/SMSes
 
