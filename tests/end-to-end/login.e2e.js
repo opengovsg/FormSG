@@ -62,7 +62,6 @@ test.meta('basic-env', 'true').meta('full-env', 'true')(
 
 test
   .meta('basic-env', 'true')
-  .meta('full-env', 'true')
   .before(async (t) => {
     t.ctx.user = await createUser('existinguser@data.gov.sg')
   })
@@ -87,7 +86,6 @@ test
 
 test
   .meta('basic-env', 'true')
-  .meta('full-env', 'true')
   .before((t) => {
     t.ctx.email = 'newuser@data.gov.sg'
   })
@@ -111,7 +109,6 @@ test
 
 test
   .meta('basic-env', 'true')
-  .meta('full-env', 'true')
   .before(async (t) => {
     t.ctx.user = await createUser('preventuseremail@data.gov.sg')
   })
@@ -144,7 +141,6 @@ test
 
 test
   .meta('basic-env', 'true')
-  .meta('full-env', 'true')
   .before(async (t) => {
     t.ctx.user = await createUser('resenduseremail@data.gov.sg')
   })
@@ -179,7 +175,6 @@ test
 
 test
   .meta('basic-env', 'true')
-  .meta('full-env', 'true')
   .before(async (t) => {
     t.ctx.user = await createUser('logoutuseremail@data.gov.sg')
   })

@@ -75,57 +75,45 @@ fixture('Storage mode submissions')
   })
 
 // Form with all field types available in storage mode
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(allFields)
-    t.ctx.formData = formData
-  })('Create and submit form with all field types', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(allFields)
+  t.ctx.formData = formData
+})('Create and submit form with all field types', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Form where all basic field types are hidden by logic
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(hiddenFieldsData)
-    formData.logicData = cloneDeep(hiddenFieldsLogicData)
-    t.ctx.formData = formData
-  })('Create and submit form with all field types hidden', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(hiddenFieldsData)
+  formData.logicData = cloneDeep(hiddenFieldsLogicData)
+  t.ctx.formData = formData
+})('Create and submit form with all field types hidden', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Form where all fields are optional and no field is answered
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = allFields.map((field) => {
-      return getBlankVersion(getOptionalVersion(field))
-    })
-    t.ctx.formData = formData
-  })('Create and submit form with all field types optional', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = allFields.map((field) => {
+    return getBlankVersion(getOptionalVersion(field))
+  })
+  t.ctx.formData = formData
+})('Create and submit form with all field types optional', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Form where submission is prevented using chained logic
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(chainDisabled.fields)
-    formData.logicData = cloneDeep(chainDisabled.logicData)
-    t.ctx.formData = formData
-  })('Create and disable form with chained logic', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(chainDisabled.fields)
+  formData.logicData = cloneDeep(chainDisabled.logicData)
+  t.ctx.formData = formData
+})('Create and disable form with chained logic', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionDisabled(
     t,
