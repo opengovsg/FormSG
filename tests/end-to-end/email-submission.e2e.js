@@ -65,75 +65,60 @@ fixture('Email mode submissions')
 // the form and reach the end page.
 
 // Form with all basic field types
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(allFields)
-    t.ctx.formData = formData
-  })('Create and submit form with all form fields', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(allFields)
+  t.ctx.formData = formData
+})('Create and submit form with all form fields', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Form where all basic field types are hidden by logic
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(hiddenFieldsData)
-    formData.logicData = cloneDeep(hiddenFieldsLogicData)
-    t.ctx.formData = formData
-  })('Create and submit form with all field types hidden', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(hiddenFieldsData)
+  formData.logicData = cloneDeep(hiddenFieldsLogicData)
+  t.ctx.formData = formData
+})('Create and submit form with all field types hidden', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Form where all fields are optional and no field is answered
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = allFields.map((field) => {
-      return getBlankVersion(getOptionalVersion(field))
-    })
-    t.ctx.formData = formData
-  })('Create and submit form with all field types optional', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = allFields.map((field) => {
+    return getBlankVersion(getOptionalVersion(field))
+  })
+  t.ctx.formData = formData
+})('Create and submit form with all field types optional', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Form with three attachments to test de-duplication of attachment names
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(tripleAttachment)
-    t.ctx.formData = formData
-  })('Create and submit form with identical attachment names', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(tripleAttachment)
+  t.ctx.formData = formData
+})('Create and submit form with identical attachment names', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
 })
 
 // Form with optional attachment in between mandatory ones
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(tripleAttachment)
-    // Modify middle attachment field to be optional and unfilled
-    formData.formFields[1] = getBlankVersion(
-      getOptionalVersion(formData.formFields[1]),
-    )
-    // Modify first filename to account for middle field left blank
-    formData.formFields[0].val = '1-test-att.txt'
-    t.ctx.formData = formData
-  })(
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(tripleAttachment)
+  // Modify middle attachment field to be optional and unfilled
+  formData.formFields[1] = getBlankVersion(
+    getOptionalVersion(formData.formFields[1]),
+  )
+  // Modify first filename to account for middle field left blank
+  formData.formFields[0].val = '1-test-att.txt'
+  t.ctx.formData = formData
+})(
   'Create and submit form with optional and required attachments',
   async (t) => {
     t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
@@ -142,15 +127,12 @@ test
 )
 
 // Form where submission is prevented using chained logic
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    formData.formFields = cloneDeep(chainDisabled.fields)
-    formData.logicData = cloneDeep(chainDisabled.logicData)
-    t.ctx.formData = formData
-  })('Create and disable form with chained logic', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  formData.formFields = cloneDeep(chainDisabled.fields)
+  formData.logicData = cloneDeep(chainDisabled.logicData)
+  t.ctx.formData = formData
+})('Create and disable form with chained logic', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
   await verifySubmissionDisabled(
     t,
@@ -160,15 +142,12 @@ test
   )
 })
 
-test
-  .meta('basic-env', 'true')
-  .meta('full-env', 'true')
-  .before(async (t) => {
-    const formData = await getDefaultFormOptions()
-    t.ctx.formData = formData
-    // cloneDeep in case other tests in future import and modify templateFields
-    t.ctx.formData.formFields = cloneDeep(templateFields)
-  })('Create a form from COVID19 Templates', async (t) => {
+test.meta('basic-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions()
+  t.ctx.formData = formData
+  // cloneDeep in case other tests in future import and modify templateFields
+  t.ctx.formData.formFields = cloneDeep(templateFields)
+})('Create a form from COVID19 Templates', async (t) => {
   t.ctx.form = await createFormFromTemplate(
     t,
     t.ctx.formData,
