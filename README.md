@@ -7,6 +7,7 @@
 
 - [FormSG](#formsg)
   - [Table of Contents](#table-of-contents)
+  - [Features](#features)
   - [Local Development (Docker)](#local-development-docker)
     - [Prerequisites](#prerequisites)
     - [Running Locally](#running-locally)
@@ -23,6 +24,29 @@
   - [Contributing](#contributing)
   - [Support](#support)
 
+## Features
+
+FormSG is a form builder application built, open sourced and maintained by the [Open Government Products](https://open.gov.sg) team of the Singapore [Government Technology Agency](https://tech.gov.sg) to digitise paper processes.
+
+Notable features include:
+
+- 19 different form field types, including attachments, tables, email and mobile
+- Verified email and mobile phone fields via integrations with Twilio and AWS SES
+- Automatic emailing of submissions for forms built with Email Mode
+- End-to-end encryption for forms built with Storage Mode
+- (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
+- (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
+- (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
+- (beta) Webhooks functionality via the [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk).
+
+The current product roadmap includes:
+
+- (in progress) Migrating backend code from JavaScript to [TypeScript](https://www.typescriptlang.org/)
+- (in progress) Refactoring backend code to use [Domain-driven Design](https://en.wikipedia.org/wiki/Domain-driven_design)
+- (in progress) Migrating backend tests from [Jasmine](https://jasmine.github.io/) to [Jest](https://jestjs.io/) and expanding unit vs integration tests
+- (yet to start) Support for webhooks attachments
+- (yet to start) Frontend rewrite from [AngularJS](https://angularjs.org/) to [React](https://reactjs.org/)
+
 ## Local Development (Docker)
 
 ### Prerequisites
@@ -31,16 +55,14 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### Running Locally
 
-Run
+Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes.
 
 ```bash
 npm run dev
 ```
 
-to build the Docker image from scratch. This will usually take 10 or so minutes.
-
 If there have been no dependency changes in `package.json` or changes in the
-root `server.js` file, you can run
+`src/server.ts` file, you can run
 
 ```bash
 docker-compose up
@@ -165,7 +187,7 @@ forms and configured using the environment variables below.
 
 ## Contributing
 
-We welcome contributions to code open sourced by the Government Technology Agency of Singapore. All contributors will be asked to sign a Contributor License Agreement (CLA) in order to ensure that everybody is free to use their contributions.
+We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md) and will also be asked to sign a Contributor License Agreement (CLA) in order to ensure that everybody is free to use their contributions.
 
 ## Support
 
