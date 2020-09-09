@@ -4,8 +4,9 @@
  * Module dependencies.
  */
 const { StatusCodes } = require('http-status-codes')
-
 const PERMISSIONS = require('../utils/permission-levels').default
+const { getRequestIp } = require('../utils/request')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 /**
  * Middleware that authenticates admin-user
@@ -21,50 +22,6 @@ exports.authenticateUser = function (req, res, next) {
       .status(StatusCodes.UNAUTHORIZED)
       .send({ message: 'User is unauthorized.' })
   }
-}
-
-/**
- * Checks if domain is from a whitelisted agency
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- */
-exports.validateDomain = function (req, res, next) {
-  let email = req.body.email
-  let emailDomain = String(validator.isEmail(email) && email.split('@').pop())
-  Agency.findOne({ emailDomain }, function (err, agency) {
-    // Database issues
-    if (err) {
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send(
-          `Unable to validate email domain. If this issue persists, please submit a Support Form (${LINKS.supportFormLink}).`,
-        )
-    }
-    // Agency not found
-    if (!agency) {
-      logger.error({
-        message: 'Agency not found',
-        meta: {
-          action: 'validateDomain',
-          email,
-          emailDomain,
-          ip: getRequestIp(req),
-        },
-        error: err,
-      })
-      return res
-        .status(StatusCodes.UNAUTHORIZED)
-        .send(
-          'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
-        )
-    }
-    // Agency whitelisted
-    res.locals = {
-      agency,
-      email,
-    }
-    return next()
-  })
 }
 
 /**
