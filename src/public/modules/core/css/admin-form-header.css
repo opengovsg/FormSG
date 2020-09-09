@@ -218,6 +218,14 @@
     transform: translate(-50%);
   }
 
+  #collab-email {
+    padding-right: 10px;
+  }
+
+  #collab-role {
+    padding-left: 0;
+  }
+
   #collaborator-modal-body .top-section-label .close-full-screen-modal {
     display: none;
   }
