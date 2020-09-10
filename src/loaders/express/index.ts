@@ -29,13 +29,8 @@ const loadExpressApp = async (connection: Connection) => {
 
   const environmentConfigs = {
     production(app: Express) {
-      // Add x-forwarded-proto headers to handle https cookie,
-      // and trust the proxy that is in front of you
-      app.use(function (req, res, next) {
-        req.headers['x-forwarded-proto'] = 'https'
-        return next()
-      })
-      app.set('trust proxy', 1)
+      // Trust the load balancer that is in front of the server
+      app.set('trust proxy', true)
       return app
     },
   }
