@@ -110,7 +110,7 @@ const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   notification: IEmailNotification,
 ): void => {
-  if (bounceDoc.bounces.every((emailInfo) => emailInfo.hasBounced)) {
+  if (bounceDoc.isCriticalBounce()) {
     logger.warn({
       message: 'Critical bounce',
       meta: {

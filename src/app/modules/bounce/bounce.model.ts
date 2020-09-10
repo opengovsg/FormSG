@@ -123,6 +123,12 @@ BounceSchema.methods.merge = function (
   this.bounces = latestBounces.bounces
 }
 
+BounceSchema.methods.isCriticalBounce = function (
+  this: IBounceSchema,
+): boolean {
+  return this.bounces.every((emailInfo) => emailInfo.hasBounced)
+}
+
 const getBounceModel = (db: Mongoose): IBounceModel => {
   try {
     return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
