@@ -219,7 +219,7 @@ describe('updateBounces', () => {
       },
     })
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
-      message: 'CRITICAL BOUNCE',
+      message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
         hasAlarmed: false,
@@ -372,7 +372,7 @@ describe('updateBounces', () => {
       },
     })
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
-      message: 'CRITICAL BOUNCE',
+      message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
         hasAlarmed: false,
@@ -558,7 +558,7 @@ describe('updateBounces', () => {
       meta: { ...parsedNotification2 },
     })
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
-      message: 'CRITICAL BOUNCE',
+      message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
         hasAlarmed: false,
@@ -568,7 +568,7 @@ describe('updateBounces', () => {
       },
     })
     expect(mockLogger.warn.mock.calls[1][0]).toMatchObject({
-      message: 'CRITICAL BOUNCE',
+      message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
         hasAlarmed: true,

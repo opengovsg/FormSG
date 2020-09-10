@@ -112,7 +112,7 @@ const logCriticalBounce = (
 ): void => {
   if (bounceDoc.bounces.every((emailInfo) => emailInfo.hasBounced)) {
     logger.warn({
-      message: 'CRITICAL BOUNCE',
+      message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
         hasAlarmed: bounceDoc.hasAlarmed,
