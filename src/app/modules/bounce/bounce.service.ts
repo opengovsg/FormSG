@@ -16,7 +16,7 @@ import {
 import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 
 import getBounceModel from './bounce.model'
-import { extractHeader } from './bounce.util'
+import { extractHeader, isBounceNotification } from './bounce.util'
 
 const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
@@ -108,7 +108,8 @@ export const isValidSnsRequest = async (
 // Writes a log message if all recipients have bounced
 const logCriticalBounce = (
   bounceDoc: IBounceSchema,
-  notification: IEmailNotification,
+  submissionId: string,
+  bounceInfo: IBounceNotification['bounce'] | undefined,
 ): void => {
   if (bounceDoc.isCriticalBounce()) {
     logger.warn({
@@ -116,12 +117,12 @@ const logCriticalBounce = (
       meta: {
         action: 'updateBounces',
         hasAlarmed: bounceDoc.hasAlarmed,
-        formId: extractHeader(notification, EMAIL_HEADERS.formId),
-        submissionId: extractHeader(notification, EMAIL_HEADERS.submissionId),
+        formId: bounceDoc.formId,
+        submissionId,
         recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
         // We know for sure that critical bounces can only happen because of bounce
-        // notifications, so this casting is okay
-        bounceInfo: (notification as IBounceNotification).bounce,
+        // notifications, so we don't expect this to be undefined
+        bounceInfo,
       },
     })
     // We don't want a flood of logs and alarms, so we use this to limit the rate of
@@ -158,13 +159,15 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const latestBounces = Bounce.fromSnsNotification(notification)
   if (!latestBounces) return
   const formId = latestBounces.formId
+  const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
+  const bounceInfo = isBounceNotification(notification) && notification.bounce
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
     oldBounces.merge(latestBounces, notification)
-    logCriticalBounce(oldBounces, notification)
+    logCriticalBounce(oldBounces, submissionId, bounceInfo)
     await oldBounces.save()
   } else {
-    logCriticalBounce(latestBounces, notification)
+    logCriticalBounce(latestBounces, submissionId, bounceInfo)
     await latestBounces.save()
   }
 }
