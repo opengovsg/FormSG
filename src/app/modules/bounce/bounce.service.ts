@@ -127,6 +127,7 @@ const logCriticalBounce = (
     })
     // TODO (private #31): autoemail and set hasAlarmed to true. Currently
     // hasAlarmed is a dangling key.
+    // TODO (private #31): convert bounceType to enum.
   }
 }
 
