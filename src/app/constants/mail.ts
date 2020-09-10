@@ -14,10 +14,10 @@ export const EMAIL_HEADERS = {
 }
 
 // Types of emails we send
-export const EMAIL_TYPES = {
-  adminResponse: 'Admin (response)',
-  loginOtp: 'Login OTP',
-  verificationOtp: 'Verification OTP',
-  emailConfirmation: 'Email confirmation',
-  adminBounce: 'Admin (bounce notification)',
+export enum EmailType {
+  AdminResponse = 'Admin (response)',
+  LoginOtp = 'Login OTP',
+  VerificationOtp = 'Verification OTP',
+  EmailConfirmation = 'Email confirmation',
+  AdminBounce = 'Admin (bounce notification)',
 }
