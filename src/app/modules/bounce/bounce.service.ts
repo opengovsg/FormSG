@@ -131,16 +131,10 @@ const logCriticalBounce = (
 }
 
 /**
- * Parses an SNS notification and updates the Bounce collection.
- * @param body The request body of the notification
+ * Logs the raw notification to the relevant log group.
+ * @param notification The parsed SNS notification
  */
-export const updateBounces = async (body: ISnsNotification): Promise<void> => {
-  const notification: IEmailNotification = JSON.parse(body.Message)
-  // This is the crucial log statement which allows us to debug bounce-related
-  // issues, as it logs all the details about deliveries and bounces. Email
-  // confirmation info goes to the short-term log group so we do not store
-  // form fillers' information for too long, and everything else goes into the
-  // main log group.
+const logEmailNotification = (notification: IEmailNotification): void => {
   if (
     extractHeader(notification, EMAIL_HEADERS.emailType) ===
     EmailType.EmailConfirmation
@@ -155,6 +149,20 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
       },
     })
   }
+}
+
+/**
+ * Parses an SNS notification and updates the Bounce collection.
+ * @param body The request body of the notification
+ */
+export const updateBounces = async (body: ISnsNotification): Promise<void> => {
+  const notification: IEmailNotification = JSON.parse(body.Message)
+  // This is the crucial log statement which allows us to debug bounce-related
+  // issues, as it logs all the details about deliveries and bounces. Email
+  // confirmation info goes to the short-term log group so we do not store
+  // form fillers' information for too long, and everything else goes into the
+  // main log group.
+  logEmailNotification(notification)
   const latestBounces = Bounce.fromSnsNotification(notification)
   if (!latestBounces) return
   const formId = latestBounces.formId
