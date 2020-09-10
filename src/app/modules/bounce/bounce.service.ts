@@ -164,10 +164,9 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
     oldBounces.merge(latestBounces, notification)
-    logCriticalBounce(oldBounces, submissionId, bounceInfo)
     await oldBounces.save()
   } else {
-    logCriticalBounce(latestBounces, submissionId, bounceInfo)
     await latestBounces.save()
   }
+  logCriticalBounce(oldBounces ?? latestBounces, submissionId, bounceInfo)
 }
