@@ -13,7 +13,7 @@ import {
   IEmailNotification,
   ISnsNotification,
 } from '../../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
+import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 
 import getBounceModel from './bounce.model'
 import { extractHeader } from './bounce.util'
@@ -143,7 +143,7 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   // main log group.
   if (
     extractHeader(notification, EMAIL_HEADERS.emailType) ===
-    EMAIL_TYPES.emailConfirmation
+    EmailType.EmailConfirmation
   ) {
     shortTermLogger.info(notification)
   } else {

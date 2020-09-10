@@ -11,7 +11,7 @@ import {
   isDeliveryNotification,
   ISingleBounce,
 } from '../../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../../constants/mail'
+import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 import { extractHeader, hasEmailBounced } from './bounce.util'
@@ -69,7 +69,7 @@ BounceSchema.statics.fromSnsNotification = function (
   const emailType = extractHeader(snsInfo, EMAIL_HEADERS.emailType)
   const formId = extractHeader(snsInfo, EMAIL_HEADERS.formId)
   // We only care about admin emails
-  if (emailType !== EMAIL_TYPES.adminResponse || !formId) {
+  if (emailType !== EmailType.AdminResponse || !formId) {
     return null
   }
   const isBounce = isBounceNotification(snsInfo)
