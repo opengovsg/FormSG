@@ -122,7 +122,7 @@ const logCriticalBounce = (
         recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
         // We know for sure that critical bounces can only happen because of bounce
         // notifications, so we don't expect this to be undefined
-        bounceInfo,
+        bounceInfo: bounceInfo,
       },
     })
     // TODO (private #31): autoemail and set hasAlarmed to true. Currently
