@@ -221,7 +221,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
       message: 'CRITICAL BOUNCE',
       meta: {
-        action: 'Received critical bounce',
+        action: 'updateBounces',
         hasAlarmed: false,
         formId: formId.toHexString(),
         submissionId: submissionId.toHexString(),
@@ -374,7 +374,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
       message: 'CRITICAL BOUNCE',
       meta: {
-        action: 'Received critical bounce',
+        action: 'updateBounces',
         hasAlarmed: false,
         formId: formId.toHexString(),
         submissionId: submissionId2.toHexString(),
@@ -560,7 +560,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn.mock.calls[0][0]).toMatchObject({
       message: 'CRITICAL BOUNCE',
       meta: {
-        action: 'Received critical bounce',
+        action: 'updateBounces',
         hasAlarmed: false,
         formId: formId.toHexString(),
         submissionId: submissionId1.toHexString(),
@@ -570,7 +570,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn.mock.calls[1][0]).toMatchObject({
       message: 'CRITICAL BOUNCE',
       meta: {
-        action: 'Received critical bounce',
+        action: 'updateBounces',
         hasAlarmed: true,
         formId: formId.toHexString(),
         submissionId: submissionId2.toHexString(),

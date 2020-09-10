@@ -114,7 +114,7 @@ const logCriticalBounce = (
     logger.warn({
       message: 'CRITICAL BOUNCE',
       meta: {
-        action: 'Received critical bounce',
+        action: 'updateBounces',
         hasAlarmed: bounceDoc.hasAlarmed,
         formId: extractHeader(notification, EMAIL_HEADERS.formId),
         submissionId: extractHeader(notification, EMAIL_HEADERS.submissionId),
@@ -150,7 +150,7 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
     logger.info({
       message: 'Email notification',
       meta: {
-        action: 'Received notification from SNS',
+        action: 'updateBounces',
         ...notification,
       },
     })
