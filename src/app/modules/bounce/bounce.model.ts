@@ -101,7 +101,6 @@ BounceSchema.methods.merge = function (
   latestBounces: IBounceSchema,
   snsInfo: IEmailNotification,
 ): void {
-  const isDelivery = isDeliveryNotification(snsInfo)
   this.bounces.forEach((oldBounce) => {
     // If we were previously notified that a given email has bounced,
     // we want to retain that information
@@ -115,8 +114,8 @@ BounceSchema.methods.merge = function (
       // a false in latestBounces doesn't guarantee that the email was
       // delivered, only that the email has not bounced yet.
       const hasSubsequentlySucceeded =
-        isDelivery &&
-        get(snsInfo, 'delivery.recipients').includes(oldBounce.email)
+        isDeliveryNotification(snsInfo) &&
+        snsInfo.delivery.recipients.includes(oldBounce.email)
       if (matchedLatestBounce) {
         // Set the latest bounce status based on the latest notification
         matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
