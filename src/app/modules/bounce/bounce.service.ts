@@ -125,9 +125,8 @@ const logCriticalBounce = (
         bounceInfo,
       },
     })
-    // We don't want a flood of logs and alarms, so we use this to limit the rate of
-    // critical bounce logs for each form ID
-    bounceDoc.hasAlarmed = true
+    // TODO (private #31): autoemail and set hasAlarmed to true. Currently
+    // hasAlarmed is a dangling key.
   }
 }
 
