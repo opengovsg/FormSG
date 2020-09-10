@@ -117,7 +117,7 @@ const logCriticalBounce = (
       meta: {
         action: 'updateBounces',
         hasAlarmed: bounceDoc.hasAlarmed,
-        formId: bounceDoc.formId,
+        formId: String(bounceDoc.formId),
         submissionId,
         recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
         // We know for sure that critical bounces can only happen because of bounce
