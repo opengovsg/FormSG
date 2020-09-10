@@ -1,4 +1,8 @@
-import { IBounceNotification, IEmailNotification } from 'src/types'
+import {
+  IBounceNotification,
+  IDeliveryNotification,
+  IEmailNotification,
+} from 'src/types'
 /**
  * Extracts custom headers which we send with all emails, such as form ID, submission ID
  * and email type (admin response, email confirmation OTP etc).
@@ -27,3 +31,13 @@ export const hasEmailBounced = (
     (emailInfo) => emailInfo.emailAddress === email,
   )
 }
+
+// If an email notification is for bounces
+export const isBounceNotification = (
+  body: IEmailNotification,
+): body is IBounceNotification => body.notificationType === 'Bounce'
+
+// If an email notification is for successful delivery
+export const isDeliveryNotification = (
+  body: IEmailNotification,
+): body is IDeliveryNotification => body.notificationType === 'Delivery'

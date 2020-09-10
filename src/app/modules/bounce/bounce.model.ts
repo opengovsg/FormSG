@@ -7,14 +7,17 @@ import {
   IBounceNotification,
   IBounceSchema,
   IEmailNotification,
-  isBounceNotification,
-  isDeliveryNotification,
   ISingleBounce,
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-import { extractHeader, hasEmailBounced } from './bounce.util'
+import {
+  extractHeader,
+  hasEmailBounced,
+  isBounceNotification,
+  isDeliveryNotification,
+} from './bounce.util'
 
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 
