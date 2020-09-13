@@ -12,39 +12,49 @@ $ npm start
 
 ## Deploying to AWS Elastic Beanstalk
 
-As a prerequisite for EB deployment, make sure you have already created your AWS environment. Some of the services used are listed below:
+Make sure you have created an AWS cloud environment as a prerequisite. Some of the services used are listed below:
 
-- Elastic Beanstalk / EC2 for hosting and deployment
-- VPC with peering to MongoDB Atlas
-- NAT Gateway (for static IP whitelisting with SingPass)
-- S3 for image and logo hosting
-- Elastic Container Registry for built Docker images
-- SES for sending emails
-- EFS for mounting files e.g. SingPass/MyInfo private keys into the `/certs` directory
-- Secrets Manager
+Infrastructure
 
-### Dockerrun.aws.json
+- AWS Elastic Beanstalk / EC2 for hosting and deployment
+- AWS Elastic File System for mounting files (i.e. SingPass/MyInfo private keys into the `/certs` directory)
+- AWS S3 for image and logo hosting, attachments for Storage Mode forms
 
-```json
-{
-  "AWSEBDockerrunVersion": "1",
-  "Image": {
-    "Name": "<AWS ECR Link>",
-    "Update": "true"
-  },
-  "Ports": [
-    {
-      "ContainerPort": "4545"
-    }
-  ],
-  "Volumes": [
-    {
-      "HostDirectory": "/certs",
-      "ContainerDirectory": "/certs"
-    }
-  ]
-}
-```
+DevOps
+
+- TravisCI for running tests and builds
+- AWS Elastic Container Registry to host built Docker images
+
+Network
+
+- AWS VPC (with peering preferred) for managed database hosted by MongoDB Atlas
+- AWS NAT Gateway (for static IP whitelisting with SingPass)
+
+Database
+
+- MongoDB instance (we use Mongo Atlas)
+
+Emails
+
+- AWS Simple Email Service with SMTP integration for sending emails to login/send OTPs/form submissions/submission autoreplies
+
+SMS
+
+- Twilio for sending OTPs
+- AWS Secrets Manager (to manage user-provided or hosted Twilio credentials)
+
+Analytics and Monitoring
+
+- Sentry.io
+- Google Analytics
+
+Spam protection
+
+- Google reCAPTCHA
+
+### Mounting Elastic File System into Docker container on Elastic Beanstalk
+
+Please see [Dockerrun.aws.json](../Dockerrun.aws.json). This file is required for SingPass/MyInfo/CorpPass functionality to be enabled.
 
 ### Secrets Manager (Optional)
 
@@ -54,10 +64,10 @@ Firstly, name the secret with a unique secret name and store the secret value in
 
 ```json
 {
-  "accountSid": "",
-  "apiKey": "",
-  "apiSecret": "",
-  "messagingServiceSid": ""
+  "accountSid": "<redacted>",
+  "apiKey": "redacted>",
+  "apiSecret": "redacted>",
+  "messagingServiceSid": "redacted>"
 }
 ```
 
@@ -73,7 +83,7 @@ For more information about the various environment variables, please refer to
 The following env variables are set in Travis:
 | Variable | Description|
 |:---------|------------|
-|`REPO`|The repository of the AWS ECR|
+|`REPO`|The repository of the AWS Elastic Container Registry|
 |`STAGING_BRANCH`|Name of staging branch, usually `master`.|
 |`STAGING_ALT_BRANCH`|Name of staging-alt (if any) branch, usually `release`. An alternate staging branch is used to host diverging feature sets, useful for A/B testing.|
 |`PROD_BRANCH`|Name of production branch, usually `release`.|
@@ -96,28 +106,36 @@ The following env variables are set in Travis:
 
 ### Core Features
 
+#### App Config
+
+| Variable            | Description                                                                                                      |
+| :------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `APP_NAME`          | Application name in window title; also used as an identifier for MyInfo. Defaults to `'FormSG'`.                 |
+| `APP_DESC`          | Defaults to `'Form Manager for Government'`.                                                                     |
+| `APP_URL`           | Defaults to `'https://form.gov.sg'`.                                                                             |
+| `APP_KEYWORDS`      | Defaults to `'forms, formbuilder, nodejs'`.                                                                      |
+| `APP_IMAGES`        | Defaults to `'/public/modules/core/img/og/img_metatag.png,/public/modules/core/img/og/logo-vertical-color.png'`. |
+| `APP_TWITTER_IMAGE` | Path to Twitter image. Defaults to `'/public/modules/core/img/og/logo-vertical-color.png'`.                      |
+
 #### App and Database
 
-| Variable                 | Description                                                                                                                                                                                                           |
-| :----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `APP_NAME`               | Application name in window title; also used as an identifier for MyInfo. Defaults to `'FormSG'`.                                                                                                                      |
-| `APP_DESC`               | Defaults to `'Form Manager for Government'`.                                                                                                                                                                          |
-| `APP_URL`                | Defaults to `'https://form.gov.sg'`.                                                                                                                                                                                  |
-| `APP_KEYWORDS`           | Defaults to `'forms, formbuilder, nodejs'`.                                                                                                                                                                           |
-| `APP_IMAGES`             | Defaults to `'/public/modules/core/img/og/img_metatag.png,/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                      |
-| `APP_TWITTER_IMAGE`      | ath to Twitter image. Defaults to `'/public/modules/core/img/og/logo-vertical-color.png'`.                                                                                                                            |
-| `DB_HOST`                | A MongoDB URI.                                                                                                                                                                                                        |
-| `OTP_LIFE_SPAN`          | Time in milliseconds that admin login OTP is valid for. Defaults to 900000ms or 15 minutes.                                                                                                                           |
-| `BOUNCE_LIFE_SPAN`       | Time in milliseconds that bounces are tracked for each form. Defaults to 1800000ms or 30 minutes. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
-| `PORT`                   | Server port. Defaults to `5000`.                                                                                                                                                                                      |
-| `NODE_ENV`               | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'development'`. This should always be set to a production environment           |
-| `SESSION_SECRET`         | Secret for `express-session`. Defaults to `'sandcrawler-138577'`. This should always be set in a production environment.                                                                                              |
-| `SITE_BANNER_CONTENT`    | If set, displays a banner message on both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. Overrides all other banner environment variables         |
-| `ADMIN_BANNER_CONTENT`   | If set, displays a banner message on private admin routes such as the form list page as well as form builder pages.                                                                                                   |
-| `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`.                                                                                                                |
-| `IS_SP_MAINTENANCE`      | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                                                   |
-| `IS_CP_MAINTENANCE`      | If set, displays a banner message on SingPass forms.                                                                                                                                                                  |
-| `SUBMISSIONS_TOP_UP`     | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                                         |
+| Variable             | Description                                                                                                                                                                                                |
+| :------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DB_HOST`            | A MongoDB URI.                                                                                                                                                                                             |
+| `OTP_LIFE_SPAN`      | Time in milliseconds that admin login OTP is valid for. Defaults to 900000ms or 15 minutes.                                                                                                                |
+| `PORT`               | Server port. Defaults to `5000`.                                                                                                                                                                           |
+| `NODE_ENV`           | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'production'`. This should always be set to a production environment |
+| `SESSION_SECRET`     | Secret for `express-session` for session management. This should always be set to a secret and random value in a production environment.                                                                   |
+| `SUBMISSIONS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
+
+#### Banners
+
+| Variable                 | Description                                                                                                                                                                                                   |
+| :----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SITE_BANNER_CONTENT`    | If set, displays a banner message on both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. Overrides all other banner environment variables |
+| `ADMIN_BANNER_CONTENT`   | If set, displays a banner message on private admin routes such as the form list page as well as form builder pages.                                                                                           |
+| `IS_LOGIN_BANNER`        | If set, displays a banner message on the login page                                                                                                                                                           |
+| `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`.                                                                                                        |
 
 #### AWS services
 
@@ -126,9 +144,10 @@ The following env variables are set in Travis:
 | `AWS_REGION`                  | AWS region.                                                                                                                         |
 | `AWS_ACCESS_KEY_ID`           | AWS IAM access key ID used to access S3.                                                                                            |
 | `AWS_SECRET_ACCESS_KEY`       | AWS IAM access secret used to access S3.                                                                                            |
+| `AWS_ENDPOINT`                | AWS S3 bucket endpoint.                                                                                                             |
 | `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads.                                                                                          |
 | `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
-| `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
+| `ATTACHMENT_S3_BUCKET`        | Name of S3 bucket for attachment uploads on Storage Mode.                                                                           |
 | `CUSTOM_CLOUDWATCH_LOG_GROUP` | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
 
 #### [FormSG JavaScript SDK](https://www.npmjs.com/package/@opengovsg/formsg-sdk)
@@ -139,19 +158,20 @@ The following env variables are set in Travis:
 
 #### Email and Nodemailer
 
-| Variable              | Description                                                                                                                                                                                    |
-| :-------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SES_HOST`            | SMTP hostname.                                                                                                                                                                                 |
-| `SES_PORT`            | SMTP port number.                                                                                                                                                                              |
-| `SES_USER`            | SMTP username.                                                                                                                                                                                 |
-| `SES_PASS`            | SMTP password.                                                                                                                                                                                 |
-| `SES_MAX_MESSAGES`    | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`. |
-| `SES_POOL`            | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                |
-| `MAIL_FROM`           | Sender email address. Defaults to `'donotreply@mail.form.gov.sg'`.                                                                                                                             |  |
-| `MAIL_SOCKET_TIMEOUT` | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                          |
-| `MAIL_LOGGER`         | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                   |
-| `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                              |
-| `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                       |
+| Variable              | Description                                                                                                                                                                                                         |
+| :-------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SES_HOST`            | SMTP hostname.                                                                                                                                                                                                      |
+| `SES_PORT`            | SMTP port number.                                                                                                                                                                                                   |
+| `SES_USER`            | SMTP username.                                                                                                                                                                                                      |
+| `SES_PASS`            | SMTP password.                                                                                                                                                                                                      |
+| `SES_MAX_MESSAGES`    | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`.                      |
+| `SES_POOL`            | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                                     |
+| `MAIL_FROM`           | Sender email address. Defaults to `'donotreply@mail.form.gov.sg'`.                                                                                                                                                  |
+| `MAIL_SOCKET_TIMEOUT` | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                                               |
+| `MAIL_LOGGER`         | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                                        |
+| `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                                                   |
+| `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                                            |
+| `BOUNCE_LIFE_SPAN`    | Time in milliseconds that bounces are tracked for each form. Defaults to 10800000ms or 3 hours. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
 
 ### Additional Features
 
@@ -180,7 +200,8 @@ If this feature is enabled, client-side error events will be piped to [sentry.io
 
 | Variable            | Description                                                                                           |
 | :------------------ | ----------------------------------------------------------------------------------------------------- |
-| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Sentry SDK.                                                         |
+| `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
+| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK.                                                          |
 | `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
 #### Examples page Using Pre-Computed Results
@@ -235,6 +256,10 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `MYINFO_CLIENT_CONFIG`          | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints. |
 | `MYINFO_FORMSG_KEY_PATH`        | Filepath to MyInfo private key, which is used to decrypt returned responses.                                                                                           |
 | `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                             |
+| `IS_SP_MAINTENANCE`             | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                    |
+| `IS_CP_MAINTENANCE`             | If set, displays a banner message on CorpPass forms.                                                                                                                   |
+| `FILE_SYSTEM_ID`             | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                                   |
+| `CERT_PATH`             | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to SingPass, CorpPass and MyInfo.                                                                                                                   |
 
 #### Verified Emails/SMSes
 

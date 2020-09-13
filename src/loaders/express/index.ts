@@ -7,6 +7,7 @@ import { Connection } from 'mongoose'
 import path from 'path'
 import url from 'url'
 
+import { AuthRouter } from '../../app/modules/auth/auth.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
@@ -28,13 +29,8 @@ const loadExpressApp = async (connection: Connection) => {
 
   const environmentConfigs = {
     production(app: Express) {
-      // Add x-forwarded-proto headers to handle https cookie,
-      // and trust the proxy that is in front of you
-      app.use(function (req, res, next) {
-        req.headers['x-forwarded-proto'] = 'https'
-        return next()
-      })
-      app.set('trust proxy', 1)
+      // Trust the load balancer that is in front of the server
+      app.set('trust proxy', true)
       return app
     },
   }
@@ -123,6 +119,8 @@ const loadExpressApp = async (connection: Connection) => {
   apiRoutes.forEach(function (routeFunction) {
     routeFunction(app)
   })
+
+  app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
   app.use('/emailnotifications', BounceRouter)
   app.use('/transaction', VfnRouter)

@@ -3,16 +3,23 @@ import crypto from 'crypto'
 import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
-import { createCloudWatchLogger } from '../../../config/logger'
+import {
+  createCloudWatchLogger,
+  createLoggerWithLabel,
+} from '../../../config/logger'
 import {
   IBounceNotification,
   IBounceSchema,
   IEmailNotification,
   ISnsNotification,
 } from '../../../types'
-import getBounceModel from '../../models/bounce.server.model'
+import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 
-const logger = createCloudWatchLogger('email')
+import getBounceModel from './bounce.model'
+import { extractHeader, isBounceNotification } from './bounce.util'
+
+const logger = createLoggerWithLabel(module)
+const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
 
 // Note that these need to be ordered in order to generate
@@ -101,24 +108,48 @@ export const isValidSnsRequest = async (
 // Writes a log message if all recipients have bounced
 const logCriticalBounce = (
   bounceDoc: IBounceSchema,
-  formId: string,
-  notification: IEmailNotification,
+  submissionId: string,
+  bounceInfo: IBounceNotification['bounce'] | undefined,
 ): void => {
-  if (
-    !bounceDoc.hasAlarmed &&
-    bounceDoc.bounces.every((emailInfo) => emailInfo.hasBounced)
-  ) {
+  if (bounceDoc.isCriticalBounce()) {
     logger.warn({
-      type: 'CRITICAL BOUNCE',
-      formId,
-      recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
-      // We know for sure that critical bounces can only happen because of bounce
-      // notifications, so this casting is okay
-      bounceInfo: (notification as IBounceNotification).bounce,
+      message: 'Critical bounce',
+      meta: {
+        action: 'updateBounces',
+        hasAlarmed: bounceDoc.hasAlarmed,
+        formId: String(bounceDoc.formId),
+        submissionId,
+        recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
+        // We know for sure that critical bounces can only happen because of bounce
+        // notifications, so we don't expect this to be undefined
+        bounceInfo: bounceInfo,
+      },
     })
-    // We don't want a flood of logs and alarms, so we use this to limit the rate of
-    // critical bounce logs for each form ID
+    // TODO (private #31): autoemail and set hasAlarmed to true. Currently
+    // hasAlarmed is a dangling key.
     bounceDoc.hasAlarmed = true
+    // TODO (private #31): convert bounceType to enum.
+  }
+}
+
+/**
+ * Logs the raw notification to the relevant log group.
+ * @param notification The parsed SNS notification
+ */
+const logEmailNotification = (notification: IEmailNotification): void => {
+  if (
+    extractHeader(notification, EMAIL_HEADERS.emailType) ===
+    EmailType.EmailConfirmation
+  ) {
+    shortTermLogger.info(notification)
+  } else {
+    logger.info({
+      message: 'Email notification',
+      meta: {
+        action: 'updateBounces',
+        ...notification,
+      },
+    })
   }
 }
 
@@ -129,18 +160,21 @@ const logCriticalBounce = (
 export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   const notification: IEmailNotification = JSON.parse(body.Message)
   // This is the crucial log statement which allows us to debug bounce-related
-  // issues, as it logs all the details about deliveries and bounces
-  logger.info(notification)
+  // issues, as it logs all the details about deliveries and bounces. Email
+  // confirmation info goes to the short-term log group so we do not store
+  // form fillers' information for too long, and everything else goes into the
+  // main log group.
+  logEmailNotification(notification)
   const latestBounces = Bounce.fromSnsNotification(notification)
   if (!latestBounces) return
   const formId = latestBounces.formId
+  const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
+  const bounceInfo = isBounceNotification(notification) && notification.bounce
   const oldBounces = await Bounce.findOne({ formId })
   if (oldBounces) {
     oldBounces.merge(latestBounces, notification)
-    logCriticalBounce(oldBounces, formId, notification)
-    await oldBounces.save()
-  } else {
-    logCriticalBounce(latestBounces, formId, notification)
-    await latestBounces.save()
   }
+  const bounce = oldBounces ?? latestBounces
+  logCriticalBounce(bounce, submissionId, bounceInfo)
+  await bounce.save()
 }
