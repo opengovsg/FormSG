@@ -1,8 +1,5 @@
-jest.mock(
-  '../../../../../src/app/utils/field-validation/validators/EmailValidator.class',
-)
-
-const validateField = require('../../../../../src/app/utils/field-validation')
+import EmailValidator = require('../../../../../src/app/utils/field-validation/validators/EmailValidator.class')
+import validateField = require('../../../../../src/app/utils/field-validation')
 
 it('should allow email addresses whose email domain belongs to allowedEmailDomains when isVerifiable is true, hasAllowedEmailDomains is true and allowedEmailDomains is not empty', () => {
   const formField = {
@@ -19,6 +16,9 @@ it('should allow email addresses whose email domain belongs to allowedEmailDomai
     isVisible: true,
     answer: 'volunteer-testing@test.gov.sg',
   }
+  jest
+    .spyOn(EmailValidator.prototype, '_isSignatureValid')
+    .mockImplementation(() => true)
   const testFunc = () => validateField('formId', formField, response)
   expect(testFunc).not.toThrow()
 })
@@ -38,6 +38,9 @@ it('should not allow email addresses whose email domain does not belong to allow
     isVisible: true,
     answer: 'volunteer-testing@test.gov.sg',
   }
+  jest
+    .spyOn(EmailValidator.prototype, '_isSignatureValid')
+    .mockImplementation(() => true)
   const testFunc = () => validateField('formId', formField, response)
   expect(testFunc).toThrow()
 })
@@ -57,6 +60,9 @@ it('should allow any valid email address when isVerifiable is true, hasAllowedEm
     isVisible: true,
     answer: 'volunteer-testing@test.gov.sg',
   }
+  jest
+    .spyOn(EmailValidator.prototype, '_isSignatureValid')
+    .mockImplementation(() => true)
   const testFunc = () => validateField('formId', formField, response)
   expect(testFunc).not.toThrow()
 })
@@ -76,6 +82,9 @@ it('should allow any valid email address when isVerifiable is true and hasAllowe
     isVisible: true,
     answer: 'volunteer-testing@test.gov.sg',
   }
+  jest
+    .spyOn(EmailValidator.prototype, '_isSignatureValid')
+    .mockImplementation(() => true)
   const testFunc = () => validateField('formId', formField, response)
   expect(testFunc).not.toThrow()
 })
