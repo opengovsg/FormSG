@@ -138,6 +138,10 @@ BounceSchema.methods.isCriticalBounce = function (
   return this.bounces.every((emailInfo) => emailInfo.hasBounced)
 }
 
+BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
+  return this.bounces.map((emailInfo) => emailInfo.email)
+}
+
 const getBounceModel = (db: Mongoose): IBounceModel => {
   try {
     return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
