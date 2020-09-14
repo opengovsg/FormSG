@@ -288,7 +288,7 @@
                   search-enabled="true"
                   ng-model="vm.field.dateValidation.selectedDateValidation"
                   ng-change="vm.handleDateValidationChange()"
-                  style="margin-bottom: 0;"
+                  style="margin-bottom: 0"
                 >
                   <ui-select-match placeholder="None"
                     >{{$select.selected}}</ui-select-match
@@ -592,17 +592,20 @@
         <div class="row" ng-show="vm.field.fieldType === 'email'">
           <br />
           <div class="toggle-option">
-            <div class="col-xs-8 label-custom label-medium">
+            <div
+              ng-class="{'toggle-option--disabled' : !vm.field.isVerifiable}"
+              class="col-xs-8 label-custom label-medium"
+            >
               Restrict email domain?<i
                 class="glyphicon glyphicon-question-sign"
-                uib-tooltip="When enabled, users must enter an email address of an allowed email domain before their submission is accepted."
+                uib-tooltip="e.g. @mom.gov.sg, @moe.gov.sg. OTP verification needs to be activated first."
                 tooltip-trigger="'click mouseenter'"
               ></i>
             </div>
             <div class="col-xs-4 field-input">
               <label
                 class="toggle-selector pull-right"
-                ng-class="vm.field.hasAllowedEmailDomains ? 'toggle-selector-on' : ''"
+                ng-class="{'toggle-selector-on': vm.field.isVerifiable && vm.field.hasAllowedEmailDomains, 'toggle-selector--disabled': !vm.field.isVerifiable}"
                 onclick=""
               >
                 <input
@@ -611,8 +614,10 @@
                 />
                 <div class="toggle-selector-switch">
                   <i
-                    ng-class="vm.field.hasAllowedEmailDomains ? 'bx bx-check' : 'bx bx-x' "
+                    ng-show="vm.field.isVerifiable"
+                    ng-class="vm.field.hasAllowedEmailDomains ? 'bx bx-check' : 'bx bx-x'"
                   ></i>
+                  <i ng-show="!vm.field.isVerifiable" class="bx bxs-lock"></i>
                 </div>
               </label>
             </div>
@@ -626,7 +631,7 @@
               Email domain restriction
               <i
                 class="glyphicon glyphicon-question-sign"
-                uib-tooltip="You must enable verification via OTP and enable the switch for restricting email domain in order to update and enforce allowed email domains."
+                uib-tooltip="Please enter one allowed email domain per line."
                 tooltip-trigger="'click mouseenter'"
               ></i>
             </div>
@@ -1017,7 +1022,7 @@
                   search-enabled="true"
                   ng-model="vm.field.ValidationOptions.selectedValidation"
                   ng-change="vm.resetCustomValidationParams(vm.field); vm.setFocus()"
-                  style="margin-bottom: 0;"
+                  style="margin-bottom: 0"
                 >
                   <ui-select-match placeholder="None"
                     >{{$select.selected}}</ui-select-match
