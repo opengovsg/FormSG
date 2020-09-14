@@ -6,13 +6,17 @@ const mockRequest = <P extends Record<string, string>, B>({
   session,
 }: {
   params?: P
-  body: B
+  body?: B
   session?: any
-}) => {
+} = {}) => {
   return {
-    body,
-    params,
-    session,
+    body: body ?? {},
+    params: params ?? {},
+    session: session ?? {},
+    get(name: string) {
+      if (name === 'cf-connecting-ip') return 'MOCK_IP'
+      return undefined
+    },
   } as Request<P, any, B>
 }
 
