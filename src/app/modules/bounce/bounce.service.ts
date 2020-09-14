@@ -106,7 +106,7 @@ export const isValidSnsRequest = async (
 }
 
 // Writes a log message if all recipients have bounced
-const logCriticalBounce = (
+const handleCriticalBounce = (
   bounceDoc: IBounceSchema,
   submissionId: string | undefined,
   bounceInfo: IBounceNotification['bounce'] | undefined,
@@ -173,6 +173,6 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
     oldBounces.merge(latestBounces, notification)
   }
   const bounce = oldBounces ?? latestBounces
-  logCriticalBounce(bounce, submissionId, bounceInfo)
+  handleCriticalBounce(bounce, submissionId, bounceInfo)
   await bounce.save()
 }
