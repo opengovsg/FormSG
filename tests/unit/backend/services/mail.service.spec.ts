@@ -4,14 +4,15 @@ import Mail, { Attachment } from 'nodemailer/lib/mailer'
 import { ImportMock } from 'ts-mock-imports'
 
 import { MailSendError } from 'src/app/modules/mail/mail.errors'
+import { MailService } from 'src/app/services/mail.service'
+import * as MailUtils from 'src/app/utils/mail'
 import {
   AutoreplySummaryRenderData,
+  IPopulatedForm,
+  ISubmissionSchema,
   MailOptions,
-  MailService,
   SendAutoReplyEmailsArgs,
-} from 'src/app/services/mail.service'
-import * as MailUtils from 'src/app/utils/mail'
-import { IPopulatedForm, ISubmissionSchema } from 'src/types'
+} from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'

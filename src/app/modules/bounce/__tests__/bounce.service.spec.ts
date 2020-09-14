@@ -11,7 +11,7 @@ import getMockLogger, {
 import { mocked } from 'ts-jest/utils'
 
 import * as LoggerModule from 'src/config/logger'
-import { IBounceNotification, ISnsNotification } from 'src/types'
+import { BounceType, IBounceNotification, ISnsNotification } from 'src/types'
 
 import {
   extractBounceObject,
@@ -591,7 +591,7 @@ describe('updateBounces', () => {
       submissionId,
       recipientList,
       recipientList,
-      'Transient',
+      BounceType.Transient,
       'Email confirmation',
     )
     await updateBounces(notification)
