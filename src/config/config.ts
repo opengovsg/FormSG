@@ -99,7 +99,7 @@ if (isDev) {
 }
 
 const dbConfig: DbConfig = {
-  uri: dbUri,
+  uri: dbUri!,
   options: {
     user: '',
     pass: '',
