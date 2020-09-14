@@ -110,9 +110,9 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct reportUri if cspReportUri', () => {
-    mockFeatureManager.props = jest.fn().mockImplementation(() => {
-      return { cspReportUri: 'value' }
-    })
+    mockFeatureManager.props = jest
+      .fn()
+      .mockReturnValue({ cspReportUri: 'value' })
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith(
       expect.objectContaining({
