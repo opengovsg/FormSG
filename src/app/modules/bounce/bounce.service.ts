@@ -124,7 +124,6 @@ const handleCriticalBounce = (
         bounceInfo: bounceInfo,
       },
     })
-    // TODO (private #31): convert bounceType to enum.
   }
 }
 

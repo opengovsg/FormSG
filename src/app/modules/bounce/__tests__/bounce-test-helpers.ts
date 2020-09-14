@@ -2,6 +2,7 @@ import { ObjectId } from 'bson'
 import { cloneDeep, merge, pick } from 'lodash'
 
 import {
+  BounceType,
   IBounce,
   IBounceNotification,
   IBounceSchema,
@@ -61,7 +62,7 @@ export const makeBounceNotification = (
   submissionId: ObjectId = new ObjectId(),
   recipientList: string[] = [],
   bouncedList: string[] = [],
-  bounceType: 'Transient' | 'Permanent' = 'Permanent',
+  bounceType: BounceType = BounceType.Permanent,
   emailType: 'Admin (response)' | 'Email confirmation' = 'Admin (response)',
 ): ISnsNotification => {
   const Message = merge(
