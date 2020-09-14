@@ -8,10 +8,10 @@ import * as verification from './verification.controller'
 
 interface IVerifiedFieldsFactory {
   createTransaction: RequestHandler
-  getTransactionMetadata: RequestHandler
-  resetFieldInTransaction: RequestHandler
-  getNewOtp: RequestHandler
-  verifyOtp: RequestHandler
+  getTransactionMetadata: RequestHandler<{ transactionId: string }>
+  resetFieldInTransaction: RequestHandler<{ transactionId: string }>
+  getNewOtp: RequestHandler<{ transactionId: string }>
+  verifyOtp: RequestHandler<{ transactionId: string }>
 }
 
 const verifiedFieldsFactory = ({

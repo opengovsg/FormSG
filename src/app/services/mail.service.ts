@@ -90,20 +90,20 @@ export class MailService {
    * The application name to be shown in some sent emails' fields such as mail
    * subject or mail body.
    */
-  #appName: Required<MailServiceParams['appName']>
+  #appName: Required<MailServiceParams>['appName']
   /**
    * The application URL to be shown in some sent emails' fields such as mail
    * subject or mail body.
    */
-  #appUrl: Required<MailServiceParams['appUrl']>
+  #appUrl: Required<MailServiceParams>['appUrl']
   /**
    * The transporter to be used to send mail.
    */
-  #transporter: Required<MailServiceParams['transporter']>
+  #transporter: Required<MailServiceParams>['transporter']
   /**
    * The email string to denote the "from" field of the email.
    */
-  #senderMail: Required<MailServiceParams['senderMail']>
+  #senderMail: Required<MailServiceParams>['senderMail']
   /**
    * The full string that can be shown in the mail's "from" field created from
    * the given `appName` and `senderMail` arguments.

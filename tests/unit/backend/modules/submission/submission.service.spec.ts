@@ -13,6 +13,7 @@ import {
   FieldResponse,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  IFieldSchema,
   IPreventSubmitLogicSchema,
   ISingleAnswerResponse,
   LogicType,
@@ -32,12 +33,12 @@ const MOCK_FORM_PARAMS = {
 const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
-  responseMode: 'encrypt',
+  responseMode: ResponseMode.Encrypt,
 }
 const MOCK_EMAIL_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   emails: ['test@example.com'],
-  responseMode: 'email',
+  responseMode: ResponseMode.Email,
 }
 
 // Declare here so the array is static.
@@ -66,13 +67,14 @@ describe('submission.service', () => {
       defaultFormFields,
       ResponseMode.Email,
     )) as IEmailFormSchema
+
     defaultEncryptForm = (await createAndReturnFormWithFields(
       defaultFormFields,
       ResponseMode.Encrypt,
     )) as IEncryptedFormSchema
 
     // Process default responses
-    defaultEmailResponses = defaultEmailForm.form_fields.map((field) => {
+    defaultEmailResponses = defaultEmailForm.form_fields!.map((field) => {
       return {
         _id: String(field._id),
         fieldType: field.fieldType,
@@ -80,7 +82,8 @@ describe('submission.service', () => {
         answer: '',
       }
     })
-    defaultEncryptResponses = defaultEncryptForm.form_fields.map((field) => {
+
+    defaultEncryptResponses = defaultEncryptForm.form_fields!.map((field) => {
       return {
         _id: String(field._id),
         fieldType: field.fieldType,
@@ -165,7 +168,7 @@ describe('submission.service', () => {
           isVisible: true,
         }
 
-        if (defaultEmailForm.form_fields[index].isVerifiable) {
+        if (defaultEmailForm.form_fields![index].isVerifiable) {
           expectedProcessed.isUserVerified = true
         }
         expectedParsed.push(expectedProcessed)
@@ -178,10 +181,10 @@ describe('submission.service', () => {
       // Arrange
       const extraFieldForm = cloneDeep(defaultEmailForm)
       const secondMobileField = cloneDeep(
-        extraFieldForm.form_fields[TYPE_TO_INDEX_MAP[BasicField.Mobile]],
+        extraFieldForm.form_fields![TYPE_TO_INDEX_MAP[BasicField.Mobile]],
       )
       secondMobileField._id = new ObjectID()
-      extraFieldForm.form_fields.push(secondMobileField)
+      extraFieldForm.form_fields!.push(secondMobileField)
 
       // Act + Assert
       expect(() =>
@@ -196,10 +199,10 @@ describe('submission.service', () => {
       // Arrange
       const extraFieldForm = cloneDeep(defaultEncryptForm)
       const secondMobileField = cloneDeep(
-        extraFieldForm.form_fields[TYPE_TO_INDEX_MAP[BasicField.Mobile]],
+        extraFieldForm.form_fields![TYPE_TO_INDEX_MAP[BasicField.Mobile]],
       )
       secondMobileField._id = new ObjectID()
-      extraFieldForm.form_fields.push(secondMobileField)
+      extraFieldForm.form_fields!.push(secondMobileField)
 
       // Act + Assert
       expect(() =>
@@ -217,7 +220,7 @@ describe('submission.service', () => {
       const mobileFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Mobile]
 
       const requireMobileEncryptForm = cloneDeep(defaultEncryptForm)
-      requireMobileEncryptForm.form_fields[mobileFieldIndex].required = true
+      requireMobileEncryptForm.form_fields![mobileFieldIndex].required = true
 
       // Act + Assert
       expect(() =>
@@ -233,7 +236,7 @@ describe('submission.service', () => {
       // Set NRIC field in form as required.
       const nricFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Nric]
       const requireNricEmailForm = cloneDeep(defaultEmailForm)
-      requireNricEmailForm.form_fields[nricFieldIndex].required = true
+      requireNricEmailForm.form_fields![nricFieldIndex].required = true
 
       // Act + Assert
       expect(() =>
@@ -249,12 +252,12 @@ describe('submission.service', () => {
       // Mock logic util to return non-empty to check if error is thrown
       jest
         .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
-        .mockReturnValueOnce({
+        .mockReturnValueOnce(({
           preventSubmitMessage: 'mock prevent submit',
           conditions: [],
           logicType: LogicType.PreventSubmit,
           _id: 'some id',
-        } as IPreventSubmitLogicSchema)
+        } as unknown) as IPreventSubmitLogicSchema)
 
       // Act + Assert
       expect(() =>
@@ -267,15 +270,17 @@ describe('submission.service', () => {
 
     it('should throw error when email form submission is prevented by logic', async () => {
       // Arrange
-      // Mock logic util to return non-empty to check if error is thrown
+      // Mock logic util to return non-empty to check if error is thrown.
+      const mockReturnLogicUnit = ({
+        preventSubmitMessage: 'mock prevent submit',
+        conditions: [],
+        logicType: LogicType.PreventSubmit,
+        _id: 'some id',
+      } as unknown) as IPreventSubmitLogicSchema
+
       jest
         .spyOn(LogicUtil, 'getLogicUnitPreventingSubmit')
-        .mockReturnValueOnce({
-          preventSubmitMessage: 'mock prevent submit',
-          conditions: [],
-          logicType: LogicType.PreventSubmit,
-          _id: 'some id',
-        } as IPreventSubmitLogicSchema)
+        .mockReturnValueOnce(mockReturnLogicUnit)
 
       // Act + Assert
       expect(() =>
@@ -300,9 +305,6 @@ const createAndReturnFormWithFields = async (
       break
     case ResponseMode.Encrypt:
       baseParams = MOCK_ENCRYPTED_FORM_PARAMS
-      break
-    default:
-      baseParams = MOCK_FORM_PARAMS
   }
 
   const processedParamList = formFieldParamsList.map((params) => {
@@ -325,7 +327,7 @@ const createAndReturnFormWithFields = async (
 
   const formParam = {
     ...baseParams,
-    form_fields: processedParamList,
+    form_fields: processedParamList as IFieldSchema[],
   }
   const form = await Form.create(formParam)
 

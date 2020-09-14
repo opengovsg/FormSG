@@ -82,7 +82,7 @@ type TwilioConfig = {
  * @returns A TwilioConfig containing the client and the sid linked to the msgSrvcName if defined, or the defaultConfig if not.
  */
 const getTwilio = async (
-  msgSrvcName: string,
+  msgSrvcName: string | undefined,
   defaultConfig: TwilioConfig,
 ): Promise<TwilioConfig> => {
   if (msgSrvcName) {

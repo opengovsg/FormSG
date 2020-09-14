@@ -39,12 +39,16 @@ export const isMobilePhoneNumber = (mobileNumber: string): boolean => {
     )
   }
 
+  // Not Singapore number, check type and early return if undefined.
+  const parsedType = parsedNumber.getType()
+  if (!parsedType) return false
+
   // All other countries uses number type to check for validity.
   return (
     isPhoneNumber(mobileNumber) &&
     // Have to include both MOBILE, FIXED_LINE_OR_MOBILE as some countries lump
     // the types together.
-    ['FIXED_LINE_OR_MOBILE', 'MOBILE'].includes(parsedNumber.getType())
+    ['FIXED_LINE_OR_MOBILE', 'MOBILE'].includes(parsedType)
   )
 }
 

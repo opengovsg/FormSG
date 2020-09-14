@@ -22,7 +22,7 @@ const createLongTextFieldSchema = () => {
       },
       selectedValidation: {
         type: String,
-        enum: Object.values(LongTextSelectedValidation).concat([null]),
+        enum: [...Object.values(LongTextSelectedValidation), null],
         default: null,
       },
     },

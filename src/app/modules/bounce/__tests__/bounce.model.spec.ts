@@ -146,12 +146,12 @@ describe('Bounce Model', () => {
           ).Message,
         )
         const actual = Bounce.fromSnsNotification(notification)
-        expect(omit(extractBounceObject(actual), 'expireAt')).toEqual({
+        expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
           hasAlarmed: false,
         })
-        expect(actual.expireAt).toBeInstanceOf(Date)
+        expect(actual!.expireAt).toBeInstanceOf(Date)
       })
 
       it('should create documents correctly when bounce notification is valid', () => {
@@ -166,12 +166,12 @@ describe('Bounce Model', () => {
           ).Message,
         )
         const actual = Bounce.fromSnsNotification(notification)
-        expect(omit(extractBounceObject(actual), 'expireAt')).toEqual({
+        expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: true }],
           hasAlarmed: false,
         })
-        expect(actual.expireAt).toBeInstanceOf(Date)
+        expect(actual!.expireAt).toBeInstanceOf(Date)
       })
     })
   })
