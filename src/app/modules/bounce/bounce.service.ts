@@ -167,6 +167,7 @@ const handleCriticalBounce = async (
       bounceType: bounceInfo?.bounceType,
       formTitle: form.title,
       formId: bounceDoc.formId,
+      submissionId,
     })
     bounceDoc.hasEmailed = true
   }
