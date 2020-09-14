@@ -134,6 +134,7 @@ export const getLogicUnitPreventingSubmit = (
   }
   const preventSubmitConditions = getPreventSubmitConditions(form)
   return preventSubmitConditions.find((logicUnit) =>
+    // TODO (#317): remove usage of non-null assertion
     isLogicUnitSatisfied(submission, logicUnit.conditions, visibleFieldIds!),
   )
 }

@@ -27,6 +27,7 @@ const getFilteredResponses = (
   const modeFilter = getModeFilter(form.responseMode)
 
   // _id must be transformed to string as form response is jsonified.
+  // TODO (#317): remove usage of non-null assertion
   const fieldIds = modeFilter(form.form_fields!).map((field) => ({
     _id: String(field._id),
   }))

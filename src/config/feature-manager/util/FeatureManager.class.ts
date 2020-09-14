@@ -112,6 +112,7 @@ export default class FeatureManager {
   get(name: FeatureNames): RegisteredFeature<FeatureNames> {
     return {
       isEnabled: this.isEnabled(name),
+      // TODO (#317): remove usage of non-null assertion
       props: this.props(name)!,
     }
   }

@@ -122,6 +122,7 @@ export const getNewOtp = async (
   fieldId: string,
   answer: string,
 ): Promise<void> => {
+  // TODO (#317): remove usage of non-null assertion
   if (isTransactionExpired(transaction.expireAt!)) {
     throwError(VfnErrors.TransactionNotFound)
   }
@@ -130,6 +131,7 @@ export const getNewOtp = async (
     return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
   }
   const { _id: transactionId, formId } = transaction
+  // TODO (#317): remove usage of non-null assertion
   const waitForSeconds = waitToResendOtpSeconds(field.hashCreatedAt!)
   if (waitForSeconds > 0) {
     return throwError(
@@ -177,6 +179,7 @@ export const verifyOtp = async (
   fieldId: string,
   inputOtp: string,
 ): Promise<string> => {
+  // TODO (#317): remove usage of non-null assertion
   if (isTransactionExpired(transaction.expireAt!)) {
     throwError(VfnErrors.TransactionNotFound)
   }

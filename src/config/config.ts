@@ -99,6 +99,7 @@ if (isDev) {
 }
 
 const dbConfig: DbConfig = {
+  // TODO (#317): remove usage of non-null assertion
   uri: dbUri!,
   options: {
     user: '',
