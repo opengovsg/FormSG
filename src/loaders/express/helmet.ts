@@ -96,7 +96,8 @@ const helmetMiddlewares = () => {
   // Add on reportUri CSP header if ReportUri exists
   // It is necessary to have the if statement for optional directives because falsey values
   // do not work - e.g. cspOptionalDirectives.reportUri = [false] will still set the reportUri header
-  // See https://github.com/helmetjs/helmet/blob/cb170160e7c1ccac314cc19d3b979cfc771f1349/middlewares/content-security-policy/index.ts#L135
+  // See https://github.com/helmetjs/csp/issues/36 and
+  // https://github.com/helmetjs/helmet/blob/cb170160e7c1ccac314cc19d3b979cfc771f1349/middlewares/content-security-policy/index.ts#L135
   if (reportUri) cspOptionalDirectives.reportUri = [reportUri]
 
   // Add on upgradeInsecureRequest CSP header if !config.isDev
