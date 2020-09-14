@@ -4,7 +4,7 @@ angular
   .module('forms')
   .directive('validateEmailDomainFromText', validateEmailDomainFromText)
 
-const validateEmailDomainFromText = () => {
+function validateEmailDomainFromText() {
   return {
     restrict: 'A',
     require: 'ngModel',
