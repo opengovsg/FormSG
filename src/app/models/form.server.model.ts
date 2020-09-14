@@ -429,6 +429,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this.permissionList.push({ email: currentOwner.email, write: true })
   }
 
+  // Deactivate the form
+  FormSchema.methods.deactivate = async function (this: IFormSchema) {
+    this.status = Status.Private
+    return this.save()
+  }
+
   // Statics
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (
