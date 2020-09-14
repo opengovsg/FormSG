@@ -416,18 +416,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         path: 'admin',
         select: 'email',
       })
-      if (!data) {
-        return null
-      }
-      const otpData: FormOtpData = {
-        form: data._id,
-        formAdmin: {
-          email: data.admin.email,
-          userId: data.admin._id,
-        },
-        msgSrvcName: data.msgSrvcName,
-      }
-      return otpData
+      return data
+        ? ({
+            form: data._id,
+            formAdmin: {
+              email: data.admin.email,
+              userId: data.admin._id,
+            },
+            msgSrvcName: data.msgSrvcName,
+          } as FormOtpData)
+        : null
     } catch {
       return null
     }
