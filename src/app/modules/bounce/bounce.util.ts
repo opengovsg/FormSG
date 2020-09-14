@@ -13,7 +13,7 @@ import {
 export const extractHeader = (
   body: IEmailNotification,
   header: string,
-): string => {
+): string | undefined => {
   return body.mail.headers.find(
     (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
   )?.value
