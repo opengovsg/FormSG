@@ -124,9 +124,6 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() without a reportUri if !cspReportUri', () => {
-    mockFeatureManager.props = jest.fn().mockImplementation(() => {
-      return
-    })
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith(
       expect.objectContaining({
