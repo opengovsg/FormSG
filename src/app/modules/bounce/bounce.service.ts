@@ -8,6 +8,7 @@ import {
   createLoggerWithLabel,
 } from '../../../config/logger'
 import {
+  BounceType,
   IBounceNotification,
   IBounceSchema,
   IEmailNotification,
@@ -159,6 +160,10 @@ const handleCriticalBounce = async (
     })
     return
   }
+  // TODO (private #30): enable form deactivation
+  // if (bounceInfo?.bounceType === BounceType.Permanent) {
+  //   await form.deactivate()
+  // }
   const emailRecipients = computeValidEmails(form, bounceDoc)
   if (emailRecipients.length > 0 && !bounceDoc.hasEmailed) {
     await MailService.sendBounceNotification({
