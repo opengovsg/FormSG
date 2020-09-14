@@ -11,9 +11,11 @@ import {
   IBounceNotification,
   IBounceSchema,
   IEmailNotification,
+  IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
+import getFormModel from '../../models/form.server.model'
 
 import getBounceModel from './bounce.model'
 import { extractHeader, isBounceNotification } from './bounce.util'
@@ -21,6 +23,7 @@ import { extractHeader, isBounceNotification } from './bounce.util'
 const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
+const Form = getFormModel(mongoose)
 
 // Note that these need to be ordered in order to generate
 // the correct string to sign
@@ -105,6 +108,7 @@ export const isValidSnsRequest = async (
   return isValid
 }
 
+// Writes a log message if all recipients have bounced
 const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   submissionId: string | undefined,
@@ -114,9 +118,10 @@ const logCriticalBounce = (
     message: 'Critical bounce',
     meta: {
       action: 'updateBounces',
+      hasEmailed: bounceDoc.hasEmailed,
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
-      recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
+      recipients: bounceDoc.getEmails(),
       // We know for sure that critical bounces can only happen because of bounce
       // notifications, so we don't expect this to be undefined
       bounceInfo: bounceInfo,
@@ -124,12 +129,45 @@ const logCriticalBounce = (
   })
 }
 
-// Writes a log message if all recipients have bounced
+const computeValidEmails = (
+  populatedForm: IPopulatedForm,
+  bounceDoc: IBounceSchema,
+): string[] => {
+  const collabEmails = populatedForm.permissionList
+    ? populatedForm.permissionList.map((collab) => collab.email)
+    : []
+  const possibleEmails = new Set(collabEmails.concat(populatedForm.admin.email))
+  bounceDoc.bounces.forEach((bouncedRecipient) =>
+    possibleEmails.delete(bouncedRecipient.email),
+  )
+  return Array.from(possibleEmails)
+}
+
 const handleCriticalBounce = async (
   bounceDoc: IBounceSchema,
-  submissionId: string,
+  submissionId: string | undefined,
   bounceInfo: IBounceNotification['bounce'] | undefined,
 ): Promise<void> => {
+  const form = await Form.getFullFormById(bounceDoc.formId)
+  if (!form) {
+    logger.warn({
+      message: 'Unable to retrieve form',
+      meta: {
+        action: 'updateBounces',
+        formId: bounceDoc.formId,
+      },
+    })
+    return
+  }
+  const validEmails = computeValidEmails(form, bounceDoc)
+  if (validEmails.length > 0) {
+    // await sendCriticalBounceEmail(
+    //   bounceDoc,
+    //   validEmails,
+    //   bounceInfo?.bounceType,
+    // )
+    // bounceDoc.hasEmailed = true
+  }
   logCriticalBounce(bounceDoc, submissionId, bounceInfo)
 }
 
