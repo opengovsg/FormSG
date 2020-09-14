@@ -14,7 +14,7 @@ describe('helmetMiddlewares', () => {
   jest.mock('src/config/config')
   const mockConfig = mocked(config, true)
 
-  it('should call the correct helmet functions', () => {
+  beforeEach(() => {
     mockHelmet.xssFilter = jest.fn().mockImplementation(() => 'xssFilter')
     mockHelmet.noSniff = jest.fn().mockImplementation(() => 'noSniff')
     mockHelmet.ieNoOpen = jest.fn().mockImplementation(() => 'ieNoOpen')
@@ -30,6 +30,13 @@ describe('helmetMiddlewares', () => {
     mockHelmet.contentSecurityPolicy = jest
       .fn()
       .mockImplementation(() => 'contentSecurityPolicy')
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('should call the correct helmet functions', () => {
     helmetMiddlewares()
     expect(mockHelmet.xssFilter).toHaveBeenCalled()
     expect(mockHelmet.noSniff).toHaveBeenCalled()
@@ -164,6 +171,4 @@ describe('helmetMiddlewares', () => {
     expect(result).toContain('referrerPolicy')
     expect(result).toContain('contentSecurityPolicy')
   })
-
-  jest.resetAllMocks()
 })
