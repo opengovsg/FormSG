@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/ban-types */
 // Internal type definitions for bson-ext 2.0.3
 // !!! Typings are not verified !!!
 // Definitions retrieved from https://www.npmjs.com/package/@types/bson and
