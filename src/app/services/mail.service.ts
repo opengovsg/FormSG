@@ -305,9 +305,13 @@ export class MailService {
   }
 
   /**
-   * Sends a login otp email to a valid email
-   * @param recipient the recipient email address
-   * @param otp the OTP to send
+   * Sends a notification for critical bounce
+   * @param args the parameter object
+   * @param args.emailRecipients emails to send to
+   * @param args.bouncedRecipients the emails which caused the critical bounce
+   * @param args.bounceType bounce type given by SNS
+   * @param args.formTitle title of form
+   * @param args.formId ID of form
    * @throws error if mail fails, to be handled by the caller
    */
   sendBounceNotification = async ({
