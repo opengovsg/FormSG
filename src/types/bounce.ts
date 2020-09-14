@@ -11,7 +11,7 @@ export interface ISingleBounce {
 export interface IBounce {
   formId: IFormSchema['_id']
   bounces: ISingleBounce[]
-  hasAlarmed: boolean
+  hasEmailed: boolean
   expireAt: Date
   _id: Document['_id']
 }

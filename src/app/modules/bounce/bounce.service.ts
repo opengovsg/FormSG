@@ -116,7 +116,6 @@ const logCriticalBounce = (
       message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
-        hasAlarmed: bounceDoc.hasAlarmed,
         formId: String(bounceDoc.formId),
         submissionId: submissionId,
         recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
@@ -125,9 +124,6 @@ const logCriticalBounce = (
         bounceInfo: bounceInfo,
       },
     })
-    // TODO (private #31): autoemail and set hasAlarmed to true. Currently
-    // hasAlarmed is a dangling key.
-    bounceDoc.hasAlarmed = true
     // TODO (private #31): convert bounceType to enum.
   }
 }

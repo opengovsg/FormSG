@@ -30,7 +30,7 @@ const BounceSchema = new Schema<IBounceSchema>({
     ref: FORM_SCHEMA_ID,
     required: 'Form ID is required',
   },
-  hasAlarmed: {
+  hasEmailed: {
     type: Boolean,
     default: false,
   },
