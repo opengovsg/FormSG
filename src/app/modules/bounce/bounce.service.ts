@@ -105,26 +105,32 @@ export const isValidSnsRequest = async (
   return isValid
 }
 
-// Writes a log message if all recipients have bounced
-const handleCriticalBounce = (
+const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   submissionId: string | undefined,
   bounceInfo: IBounceNotification['bounce'] | undefined,
 ): void => {
-  if (bounceDoc.isCriticalBounce()) {
-    logger.warn({
-      message: 'Critical bounce',
-      meta: {
-        action: 'updateBounces',
-        formId: String(bounceDoc.formId),
-        submissionId: submissionId,
-        recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
-        // We know for sure that critical bounces can only happen because of bounce
-        // notifications, so we don't expect this to be undefined
-        bounceInfo: bounceInfo,
-      },
-    })
-  }
+  logger.warn({
+    message: 'Critical bounce',
+    meta: {
+      action: 'updateBounces',
+      formId: String(bounceDoc.formId),
+      submissionId: submissionId,
+      recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
+      // We know for sure that critical bounces can only happen because of bounce
+      // notifications, so we don't expect this to be undefined
+      bounceInfo: bounceInfo,
+    },
+  })
+}
+
+// Writes a log message if all recipients have bounced
+const handleCriticalBounce = async (
+  bounceDoc: IBounceSchema,
+  submissionId: string,
+  bounceInfo: IBounceNotification['bounce'] | undefined,
+): Promise<void> => {
+  logCriticalBounce(bounceDoc, submissionId, bounceInfo)
 }
 
 /**
@@ -171,7 +177,9 @@ export const updateBounces = async (body: ISnsNotification): Promise<void> => {
   if (oldBounces) {
     oldBounces.merge(latestBounces, notification)
   }
-  const bounce = oldBounces ?? latestBounces
-  handleCriticalBounce(bounce, submissionId, bounceInfo)
-  await bounce.save()
+  const bounceDoc = oldBounces ?? latestBounces
+  if (bounceDoc.isCriticalBounce()) {
+    await handleCriticalBounce(bounceDoc, submissionId, bounceInfo)
+  }
+  await bounceDoc.save()
 }
