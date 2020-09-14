@@ -343,7 +343,7 @@ export class MailService {
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
         [EMAIL_HEADERS.formId]: formId,
-        [EMAIL_HEADERS.submissionId]: submissionId,
+        [EMAIL_HEADERS.submissionId]: submissionId ?? '',
       },
     }
 
