@@ -715,3 +715,9 @@
   padding-left: 16px !important;
   border: solid 1px #ccc;
 }
+
+#filter-by-submission-reset-link {
+  padding-top: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
