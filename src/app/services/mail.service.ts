@@ -3,18 +3,20 @@ import moment from 'moment-timezone'
 import { ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
-import { OperationOptions } from 'retry'
 import validator from 'validator'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
 import {
-  AutoReplyOptions,
+  AutoreplySummaryRenderData,
   IEmailFormSchema,
-  IFormSchema,
-  IPopulatedForm,
   ISubmissionSchema,
+  MailOptions,
+  MailServiceParams,
+  SendAutoReplyEmailsArgs,
+  SendMailOptions,
+  SendSingleAutoreplyMailArgs,
 } from '../../types'
 import { EMAIL_HEADERS, EmailType } from '../constants/mail'
 import { MailSendError } from '../modules/mail/mail.errors'
@@ -28,57 +30,6 @@ import {
 } from '../utils/mail'
 
 const logger = createLoggerWithLabel(module)
-
-type SendMailOptions = {
-  mailId?: string
-  formId?: string
-}
-
-type SendSingleAutoreplyMailArgs = {
-  form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
-  submission: Pick<ISubmissionSchema, 'id' | 'created'>
-  autoReplyMailData: AutoReplyMailData
-  attachments: Mail.Attachment[]
-  formSummaryRenderData: AutoreplySummaryRenderData
-  index: number
-}
-
-export type SendAutoReplyEmailsArgs = {
-  form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
-  submission: Pick<ISubmissionSchema, 'id' | 'created'>
-  attachments?: Mail.Attachment[]
-  responsesData: { question: string; answerTemplate: string[] }[]
-  autoReplyMailDatas: AutoReplyMailData[]
-}
-
-type MailServiceParams = {
-  appName?: string
-  appUrl?: string
-  transporter?: Mail
-  senderMail?: string
-  retryParams?: Partial<OperationOptions>
-}
-
-type AutoReplyMailData = {
-  email: string
-  subject?: AutoReplyOptions['autoReplySubject']
-  sender?: AutoReplyOptions['autoReplySender']
-  body?: AutoReplyOptions['autoReplyMessage']
-  includeFormSummary?: AutoReplyOptions['includeFormSummary']
-}
-
-export type AutoreplySummaryRenderData = {
-  refNo: ISubmissionSchema['_id']
-  formTitle: IFormSchema['title']
-  submissionTime: string
-  // TODO (#42): Add proper types once the type is determined.
-  formData: any
-  formUrl: string
-}
-
-export type MailOptions = Omit<Mail.Options, 'to'> & {
-  to: string | string[]
-}
 
 const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
   retries: 3,

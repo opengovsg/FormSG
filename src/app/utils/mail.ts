@@ -5,7 +5,11 @@ import { ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
 import validator from 'validator'
 
-import { IFormSchema, ISubmissionSchema } from 'src/types'
+import {
+  AutoreplyHtmlData,
+  AutoreplySummaryRenderData,
+  SubmissionToAdminHtmlData,
+} from 'src/types'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -59,33 +63,11 @@ export const generateVerificationOtpHtml = ({
   `
 }
 
-type SubmissionToAdminHtmlData = {
-  refNo: string
-  formTitle: string
-  submissionTime: string
-  // TODO (#42): Add proper types once the type is determined.
-  formData: any[]
-  jsonData: {
-    question: string
-    answer: string | number
-  }[]
-  appName: string
-}
-
 export const generateSubmissionToAdminHtml = async (
   htmlData: SubmissionToAdminHtmlData,
 ): Promise<string> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
   return ejs.renderFile(pathToTemplate, htmlData)
-}
-
-type AutoreplySummaryRenderData = {
-  refNo: ISubmissionSchema['_id']
-  formTitle: IFormSchema['title']
-  submissionTime: string
-  // TODO (#42): Add proper types once the type is determined.
-  formData: any
-  formUrl: string
 }
 
 export const generateAutoreplyPdf = async (
@@ -114,10 +96,6 @@ export const generateAutoreplyPdf = async (
   await browser.close()
   return pdfBuffer
 }
-
-type AutoreplyHtmlData =
-  | ({ autoReplyBody: string[] } & AutoreplySummaryRenderData)
-  | { autoReplyBody: string[] }
 
 export const generateAutoreplyHtml = async (
   htmlData: AutoreplyHtmlData,
