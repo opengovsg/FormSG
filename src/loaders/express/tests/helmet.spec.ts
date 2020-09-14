@@ -7,133 +7,161 @@ import featureManager from 'src/config/feature-manager'
 import helmetMiddlewares from '../helmet'
 
 describe('helmetMiddlewares', () => {
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it('should load the value of helmet.xssFilter()', () => {
-    jest.mock('helmet')
-    const mockHelmet = mocked(helmet, true)
-    mockHelmet.xssFilter = jest.fn().mockImplementation(() => 'xss')
-    const xssValue = helmetMiddlewares()[0]
-    expect(xssValue).toEqual('xss')
-  })
-
-  it('should load the value of helmet.noSniff()', () => {
-    jest.mock('helmet')
-    const mockHelmet = mocked(helmet, true)
-    mockHelmet.noSniff = jest.fn().mockImplementation(() => 'nosniff')
-    const noSniff = helmetMiddlewares()[1]
-    expect(noSniff).toEqual('nosniff')
-  })
-
-  it('should load the value of helmet.ieNoOpen()', () => {
-    jest.mock('helmet')
-    const mockHelmet = mocked(helmet, true)
-    mockHelmet.ieNoOpen = jest.fn().mockImplementation(() => 'ieNoOpen')
-    const ieNoOpen = helmetMiddlewares()[2]
-    expect(ieNoOpen).toEqual('ieNoOpen')
-  })
-
-  it('should load the value of helmet.dnsPrefetchControl()', () => {
-    jest.mock('helmet')
-    const mockHelmet = mocked(helmet, true)
-    mockHelmet.dnsPrefetchControl = jest
-      .fn()
-      .mockImplementation(() => 'dnsPrefetchControl')
-    const dnsPrefetchControl = helmetMiddlewares()[3]
-    expect(dnsPrefetchControl).toEqual('dnsPrefetchControl')
-  })
-
-  it('should load the value of helmet.hidePoweredBy()', () => {
-    jest.mock('helmet')
-    const mockHelmet = mocked(helmet, true)
-    mockHelmet.hidePoweredBy = jest
-      .fn()
-      .mockImplementation(() => 'hidePoweredBy')
-    const hidePoweredBy = helmetMiddlewares()[4]
-    expect(hidePoweredBy).toEqual('hidePoweredBy')
-  })
-
-  it('should load the value of helmet.referrerPolicy()', () => {
-    jest.mock('helmet')
-    const mockHelmet = mocked(helmet, true)
-    mockHelmet.referrerPolicy = jest
-      .fn()
-      .mockImplementation(() => 'referrerPolicy')
-    const referrerPolicy = helmetMiddlewares()[6]
-    expect(referrerPolicy).toEqual('referrerPolicy')
-  })
-
-  it('should pass the correct directive values to helmet.contentSecurityPolicy()', () => {
-    jest.mock('helmet')
-    const mockHelmet = mocked(helmet, true)
-    mockHelmet.contentSecurityPolicy = jest
-      .fn()
-      .mockImplementation((directiveObj) => JSON.stringify(directiveObj))
-    const contentSecurityPolicy = helmetMiddlewares()[7]
-    expect(contentSecurityPolicy).toContain(`"defaultSrc":["'self'"]`)
-    expect(contentSecurityPolicy).toContain(
-      `["'self'","data:","https://www.googletagmanager.com/","https://www.google-analytics.com/","https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/","${config.aws.imageBucketUrl}","${config.aws.logoBucketUrl}","*"]`,
-    )
-    expect(contentSecurityPolicy).toContain(
-      `"fontSrc":["'self'","data:","https://fonts.gstatic.com/"]`,
-    )
-    expect(contentSecurityPolicy).toContain(
-      `"scriptSrc":["'self'","https://www.googletagmanager.com/","https://ssl.google-analytics.com/","https://www.google-analytics.com/","https://www.tagmanager.google.com/","https://www.google.com/recaptcha/","https://www.recaptcha.net/recaptcha/","https://www.gstatic.com/recaptcha/","https://www.gstatic.cn/","https://www.google-analytics.com/"]`,
-    )
-    expect(contentSecurityPolicy).toContain(
-      `"connectSrc":["'self'","https://www.google-analytics.com/","https://ssl.google-analytics.com/","https://sentry.io/api/","${config.aws.attachmentBucketUrl}","${config.aws.imageBucketUrl}","${config.aws.logoBucketUrl}"]`,
-    )
-
-    expect(contentSecurityPolicy).toContain(
-      `"frameSrc":["'self'","https://www.google.com/recaptcha/","https://www.recaptcha.net/recaptcha/"]`,
-    )
-    expect(contentSecurityPolicy).toContain(`"objectSrc":["'none'"]`)
-    expect(contentSecurityPolicy).toContain(
-      `"styleSrc":["'self'","https://www.google.com/recaptcha/","https://www.recaptcha.net/recaptcha/","https://www.gstatic.com/recaptcha/","https://www.gstatic.cn/"]`,
-    )
-    expect(contentSecurityPolicy).toContain(`"formAction":["'self'"]`)
-  })
-})
-
-it('should pass the correct reportUri value to helmet.contentSecurityPolicy()', () => {
   jest.mock('helmet')
   const mockHelmet = mocked(helmet, true)
-  mockHelmet.contentSecurityPolicy = jest
-    .fn()
-    .mockImplementation((directiveObj) => JSON.stringify(directiveObj))
   jest.mock('src/config/feature-manager')
   const mockFeatureManager = mocked(featureManager, true)
-
-  mockFeatureManager.props = jest.fn().mockImplementation(() => {
-    return { cspReportUri: 'value' }
-  })
-  let contentSecurityPolicy = helmetMiddlewares()[7]
-  expect(contentSecurityPolicy).toContain(`"reportUri":["value"]`)
-
-  mockFeatureManager.props = jest.fn().mockImplementation(() => {
-    return
-  })
-  contentSecurityPolicy = helmetMiddlewares()[7]
-  expect(contentSecurityPolicy).not.toContain(`"reportUri"`)
-})
-
-it('should pass the correct upgradeInsecureRequest value to helmet.contentSecurityPolicy()', () => {
-  jest.mock('helmet')
-  const mockHelmet = mocked(helmet, true)
-  mockHelmet.contentSecurityPolicy = jest
-    .fn()
-    .mockImplementation((directiveObj) => JSON.stringify(directiveObj))
-
   jest.mock('src/config/config')
   const mockConfig = mocked(config, true)
 
-  mockConfig.isDev = false
-  let contentSecurityPolicy = helmetMiddlewares()[7]
-  expect(contentSecurityPolicy).toContain(`upgradeInsecureRequests`)
+  it('should call the correct helmet functions', () => {
+    mockHelmet.xssFilter = jest.fn().mockImplementation(() => 'xssFilter')
+    mockHelmet.noSniff = jest.fn().mockImplementation(() => 'noSniff')
+    mockHelmet.ieNoOpen = jest.fn().mockImplementation(() => 'ieNoOpen')
+    mockHelmet.dnsPrefetchControl = jest
+      .fn()
+      .mockImplementation(() => 'dnsPrefetchControl')
+    mockHelmet.hidePoweredBy = jest
+      .fn()
+      .mockImplementation(() => 'hidePoweredBy')
+    mockHelmet.referrerPolicy = jest
+      .fn()
+      .mockImplementation(() => 'referrerPolicy')
+    mockHelmet.contentSecurityPolicy = jest
+      .fn()
+      .mockImplementation(() => 'contentSecurityPolicy')
+    helmetMiddlewares()
+    expect(mockHelmet.xssFilter).toHaveBeenCalled()
+    expect(mockHelmet.noSniff).toHaveBeenCalled()
+    expect(mockHelmet.ieNoOpen).toHaveBeenCalled()
+    expect(mockHelmet.dnsPrefetchControl).toHaveBeenCalled()
+    expect(mockHelmet.hidePoweredBy).toHaveBeenCalled()
+    expect(mockHelmet.referrerPolicy).toHaveBeenCalled()
+    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalled()
+  })
 
-  mockConfig.isDev = true
-  contentSecurityPolicy = helmetMiddlewares()[7]
-  expect(contentSecurityPolicy).not.toContain(`upgradeInsecureRequests`)
+  it('should call helmet.contentSecurityPolicy() with the correct cspCoreDirectives', () => {
+    const cspCoreDirectives = {
+      defaultSrc: ["'self'"],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'https://www.googletagmanager.com/',
+        'https://www.google-analytics.com/',
+        `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`,
+        config.aws.imageBucketUrl,
+        config.aws.logoBucketUrl,
+        '*',
+      ],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
+      scriptSrc: [
+        "'self'",
+        'https://www.googletagmanager.com/',
+        'https://ssl.google-analytics.com/',
+        'https://www.google-analytics.com/',
+        'https://www.tagmanager.google.com/',
+        'https://www.google.com/recaptcha/',
+        'https://www.recaptcha.net/recaptcha/',
+        'https://www.gstatic.com/recaptcha/',
+        'https://www.gstatic.cn/',
+        'https://www.google-analytics.com/',
+      ],
+      connectSrc: [
+        "'self'",
+        'https://www.google-analytics.com/',
+        'https://ssl.google-analytics.com/',
+        'https://sentry.io/api/',
+        config.aws.attachmentBucketUrl,
+        config.aws.imageBucketUrl,
+        config.aws.logoBucketUrl,
+      ],
+      frameSrc: [
+        "'self'",
+        'https://www.google.com/recaptcha/',
+        'https://www.recaptcha.net/recaptcha/',
+      ],
+      objectSrc: ["'none'"],
+      styleSrc: [
+        "'self'",
+        'https://www.google.com/recaptcha/',
+        'https://www.recaptcha.net/recaptcha/',
+        'https://www.gstatic.com/recaptcha/',
+        'https://www.gstatic.cn/',
+      ],
+      formAction: ["'self'"],
+    }
+    helmetMiddlewares()
+    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        directives: expect.objectContaining({
+          ...cspCoreDirectives,
+        }),
+      }),
+    )
+  })
+
+  it('should call helmet.contentSecurityPolicy() with the correct reportUri if cspReportUri', () => {
+    mockFeatureManager.props = jest.fn().mockImplementation(() => {
+      return { cspReportUri: 'value' }
+    })
+    helmetMiddlewares()
+    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        directives: expect.objectContaining({
+          reportUri: ['value'],
+        }),
+      }),
+    )
+  })
+
+  it('should call helmet.contentSecurityPolicy() without a reportUri if !cspReportUri', () => {
+    mockFeatureManager.props = jest.fn().mockImplementation(() => {
+      return
+    })
+    helmetMiddlewares()
+    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        directives: expect.not.objectContaining({
+          reportUri: expect.anything(),
+        }),
+      }),
+    )
+  })
+
+  it('should call helmet.contentSecurityPolicy() with upgradeInsecureRequests if !isDev', () => {
+    mockConfig.isDev = false
+    helmetMiddlewares()
+    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        directives: expect.objectContaining({
+          upgradeInsecureRequests: [],
+        }),
+      }),
+    )
+  })
+
+  it('should call helmet.contentSecurityPolicy() without upgradeInsecureRequests if isDev', () => {
+    mockConfig.isDev = true
+    helmetMiddlewares()
+    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        directives: expect.not.objectContaining({
+          upgradeInsecureRequests: expect.anything(),
+        }),
+      }),
+    )
+  })
+
+  it('should return the correct values from helmet', () => {
+    const result = helmetMiddlewares()
+    expect(result).toContain('xssFilter')
+    expect(result).toContain('noSniff')
+    expect(result).toContain('ieNoOpen')
+    expect(result).toContain('dnsPrefetchControl')
+    expect(result).toContain('hidePoweredBy')
+    expect(result).toContain('referrerPolicy')
+    expect(result).toContain('contentSecurityPolicy')
+  })
+
+  jest.resetAllMocks()
 })
