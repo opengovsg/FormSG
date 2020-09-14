@@ -114,15 +114,17 @@ const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   submissionId: string | undefined,
   bounceInfo: IBounceNotification['bounce'] | undefined,
+  autoEmailRecipients: string[],
 ): void => {
   logger.warn({
     message: 'Critical bounce',
     meta: {
       action: 'updateBounces',
-      hasEmailed: bounceDoc.hasEmailed,
+      hasAutoEmailed: bounceDoc.hasEmailed,
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
       recipients: bounceDoc.getEmails(),
+      autoEmailRecipients,
       // We know for sure that critical bounces can only happen because of bounce
       // notifications, so we don't expect this to be undefined
       bounceInfo: bounceInfo,
@@ -168,7 +170,7 @@ const handleCriticalBounce = async (
     })
     bounceDoc.hasEmailed = true
   }
-  logCriticalBounce(bounceDoc, submissionId, bounceInfo)
+  logCriticalBounce(bounceDoc, submissionId, bounceInfo, emailRecipients)
 }
 
 /**
