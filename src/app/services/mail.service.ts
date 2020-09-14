@@ -10,6 +10,8 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
 import {
   AutoreplySummaryRenderData,
+  BounceNotificationHtmlData,
+  BounceType,
   IEmailFormSchema,
   ISubmissionSchema,
   MailOptions,
@@ -23,6 +25,7 @@ import { MailSendError } from '../modules/mail/mail.errors'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
+  generateBounceNotificationHtml,
   generateLoginOtpHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
@@ -299,6 +302,45 @@ export class MailService {
         },
       )
     })
+  }
+
+  /**
+   * Sends a login otp email to a valid email
+   * @param recipient the recipient email address
+   * @param otp the OTP to send
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendBounceNotification = async ({
+    emailRecipients,
+    bouncedRecipients,
+    bounceType,
+    formTitle,
+    formId,
+  }: {
+    emailRecipients: string[]
+    bouncedRecipients: string[]
+    bounceType: BounceType
+    formTitle: string
+    formId: string
+  }) => {
+    const htmlData: BounceNotificationHtmlData = {
+      formTitle,
+      formLink: `${this.#appUrl}/${formId}`,
+      bouncedRecipients: bouncedRecipients.join(', '),
+      appName: this.#appName,
+    }
+    const mail: MailOptions = {
+      to: emailRecipients,
+      from: this.#senderFromString,
+      subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
+      html: await generateBounceNotificationHtml(htmlData, bounceType),
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
+        [EMAIL_HEADERS.formId]: formId,
+      },
+    }
+
+    return this.#sendNodeMail(mail, { mailId: 'bounce' })
   }
 
   /**

@@ -8,6 +8,8 @@ import validator from 'validator'
 import {
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
+  BounceNotificationHtmlData,
+  BounceType,
   SubmissionToAdminHtmlData,
 } from 'src/types'
 
@@ -67,6 +69,19 @@ export const generateSubmissionToAdminHtml = async (
   htmlData: SubmissionToAdminHtmlData,
 ): Promise<string> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
+  return ejs.renderFile(pathToTemplate, htmlData)
+}
+
+export const generateBounceNotificationHtml = async (
+  htmlData: BounceNotificationHtmlData,
+  bounceType: BounceType,
+): Promise<string> => {
+  let pathToTemplate
+  if (bounceType === BounceType.Permanent) {
+    pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-permanent.server.view.html`
+  } else {
+    pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-transient.server.view.html`
+  }
   return ejs.renderFile(pathToTemplate, htmlData)
 }
 
