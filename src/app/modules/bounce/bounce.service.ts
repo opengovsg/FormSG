@@ -1,6 +1,6 @@
 import axios from 'axios'
 import crypto from 'crypto'
-import { isEmpty } from 'lodash'
+import { difference, isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
 import {
@@ -137,11 +137,8 @@ const computeValidEmails = (
   const collabEmails = populatedForm.permissionList
     ? populatedForm.permissionList.map((collab) => collab.email)
     : []
-  const possibleEmails = new Set(collabEmails.concat(populatedForm.admin.email))
-  bounceDoc.bounces.forEach((bouncedRecipient) =>
-    possibleEmails.delete(bouncedRecipient.email),
-  )
-  return Array.from(possibleEmails)
+  const possibleEmails = collabEmails.concat(populatedForm.admin.email)
+  return difference(possibleEmails, bounceDoc.getEmails())
 }
 
 const handleCriticalBounce = async (
