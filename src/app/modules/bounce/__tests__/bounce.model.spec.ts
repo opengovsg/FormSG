@@ -31,7 +31,7 @@ describe('Bounce Model', () => {
       expect(omit(savedBounceObject, 'expireAt')).toEqual({
         formId,
         bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
-        hasAlarmed: false,
+        hasEmailed: false,
       })
     })
 
@@ -40,7 +40,7 @@ describe('Bounce Model', () => {
         formId: new ObjectId(),
         bounces: [{ email: MOCK_EMAIL, hasBounced: true }],
         expireAt: new Date(Date.now()),
-        hasAlarmed: true,
+        hasEmailed: true,
       }
       const savedBounce = await new Bounce(params).save()
       const savedBounceObject = extractBounceObject(savedBounce)
@@ -149,7 +149,7 @@ describe('Bounce Model', () => {
         expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
-          hasAlarmed: false,
+          hasEmailed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
@@ -169,7 +169,7 @@ describe('Bounce Model', () => {
         expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: true }],
-          hasAlarmed: false,
+          hasEmailed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })

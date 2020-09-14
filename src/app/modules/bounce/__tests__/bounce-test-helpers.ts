@@ -119,7 +119,7 @@ export const extractBounceObject = (
 ): Omit<IBounce, '_id'> => {
   const extracted = pick(bounce.toObject(), [
     'formId',
-    'hasAlarmed',
+    'hasEmailed',
     'expireAt',
     'bounces',
   ])

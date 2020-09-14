@@ -151,7 +151,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: false,
+      hasEmailed: false,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -186,7 +186,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: false,
+      hasEmailed: false,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -220,7 +220,7 @@ describe('updateBounces', () => {
       message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
-        hasAlarmed: false,
+        hasEmailed: false,
         formId: formId.toHexString(),
         submissionId: submissionId.toHexString(),
         bounceInfo: parsedNotification.bounce,
@@ -228,7 +228,7 @@ describe('updateBounces', () => {
     })
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: true,
+      hasEmailed: true,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -272,7 +272,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: false,
+      hasEmailed: false,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -321,7 +321,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: false,
+      hasEmailed: false,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -373,7 +373,7 @@ describe('updateBounces', () => {
       message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
-        hasAlarmed: false,
+        hasEmailed: false,
         formId: formId.toHexString(),
         submissionId: submissionId2.toHexString(),
         bounceInfo: parsedNotification2.bounce,
@@ -381,7 +381,7 @@ describe('updateBounces', () => {
     })
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: true,
+      hasEmailed: true,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -426,7 +426,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: false,
+      hasEmailed: false,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -471,7 +471,7 @@ describe('updateBounces', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: false,
+      hasEmailed: false,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
@@ -511,13 +511,13 @@ describe('updateBounces', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled()
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: false,
+      hasEmailed: false,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
   })
 
-  it('should log a second critical bounce with hasAlarmed true', async () => {
+  it('should log a second critical bounce with hasEmailed true', async () => {
     const formId = new ObjectId()
     const submissionId1 = new ObjectId()
     const submissionId2 = new ObjectId()
@@ -559,7 +559,7 @@ describe('updateBounces', () => {
       message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
-        hasAlarmed: false,
+        hasEmailed: false,
         formId: formId.toHexString(),
         submissionId: submissionId1.toHexString(),
         bounceInfo: parsedNotification1.bounce,
@@ -569,7 +569,7 @@ describe('updateBounces', () => {
       message: 'Critical bounce',
       meta: {
         action: 'updateBounces',
-        hasAlarmed: true,
+        hasEmailed: true,
         formId: formId.toHexString(),
         submissionId: submissionId2.toHexString(),
         bounceInfo: parsedNotification2.bounce,
@@ -577,7 +577,7 @@ describe('updateBounces', () => {
     })
     expect(omit(actualBounce, 'expireAt')).toEqual({
       formId,
-      hasAlarmed: true,
+      hasEmailed: true,
       bounces: expectedBounces,
     })
     expect(actualBounce.expireAt).toBeInstanceOf(Date)
