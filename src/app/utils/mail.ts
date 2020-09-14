@@ -74,7 +74,7 @@ export const generateSubmissionToAdminHtml = async (
 
 export const generateBounceNotificationHtml = async (
   htmlData: BounceNotificationHtmlData,
-  bounceType: BounceType,
+  bounceType: BounceType | undefined,
 ): Promise<string> => {
   let pathToTemplate
   if (bounceType === BounceType.Permanent) {

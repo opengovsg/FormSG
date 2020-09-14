@@ -16,6 +16,7 @@ import {
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 import getFormModel from '../../models/form.server.model'
+import MailService from '../../services/mail.service'
 
 import getBounceModel from './bounce.model'
 import { extractHeader, isBounceNotification } from './bounce.util'
@@ -159,14 +160,16 @@ const handleCriticalBounce = async (
     })
     return
   }
-  const validEmails = computeValidEmails(form, bounceDoc)
-  if (validEmails.length > 0) {
-    // await sendCriticalBounceEmail(
-    //   bounceDoc,
-    //   validEmails,
-    //   bounceInfo?.bounceType,
-    // )
-    // bounceDoc.hasEmailed = true
+  const emailRecipients = computeValidEmails(form, bounceDoc)
+  if (emailRecipients.length > 0 && !bounceDoc.hasEmailed) {
+    await MailService.sendBounceNotification({
+      emailRecipients,
+      bouncedRecipients: bounceDoc.getEmails(),
+      bounceType: bounceInfo?.bounceType,
+      formTitle: form.title,
+      formId: bounceDoc.formId,
+    })
+    bounceDoc.hasEmailed = true
   }
   logCriticalBounce(bounceDoc, submissionId, bounceInfo)
 }

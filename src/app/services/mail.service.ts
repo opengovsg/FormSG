@@ -319,7 +319,7 @@ export class MailService {
   }: {
     emailRecipients: string[]
     bouncedRecipients: string[]
-    bounceType: BounceType
+    bounceType: BounceType | undefined
     formTitle: string
     formId: string
   }) => {
