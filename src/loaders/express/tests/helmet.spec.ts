@@ -111,6 +111,7 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if !cspReportUri and isDev', () => {
+    mockFeatureManager.props = jest.fn()
     mockConfig.isDev = true
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
