@@ -1,4 +1,5 @@
 import helmet from 'helmet'
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
 import config from 'src/config/config'
@@ -78,6 +79,9 @@ describe('helmetMiddlewares', () => {
     mockHelmet.contentSecurityPolicy = jest
       .fn()
       .mockReturnValue('contentSecurityPolicy')
+    mockHelmet.hsts = jest
+      .fn()
+      .mockReturnValue(jest.fn().mockReturnValue('hsts'))
   })
 
   afterEach(() => {
@@ -93,6 +97,22 @@ describe('helmetMiddlewares', () => {
     expect(mockHelmet.hidePoweredBy).toHaveBeenCalled()
     expect(mockHelmet.referrerPolicy).toHaveBeenCalled()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalled()
+  })
+
+  it('should call helmet.hsts() if req.secure', () => {
+    const mockReq = expressHandler.mockRequest({ secure: true })
+    const mockRes = expressHandler.mockResponse()
+
+    helmetMiddlewares()[5](mockReq, mockRes, jest.fn())
+    expect(mockHelmet.hsts).toHaveBeenCalled()
+  })
+
+  it('should not call helmet.hsts() if !req.secure', () => {
+    const mockReq = expressHandler.mockRequest({ secure: false })
+    const mockRes = expressHandler.mockResponse()
+
+    helmetMiddlewares()[5](mockReq, mockRes, jest.fn())
+    expect(mockHelmet.hsts).not.toHaveBeenCalled()
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if cspReportUri and !isDev', () => {
