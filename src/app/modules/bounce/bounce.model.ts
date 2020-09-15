@@ -132,14 +132,23 @@ BounceSchema.methods.merge = function (
   this.bounces = latestBounces.bounces
 }
 
+/**
+ * Returns true if the document indicates a critical bounce (all recipients
+ * bounced), false otherwise.
+ */
 BounceSchema.methods.isCriticalBounce = function (
   this: IBounceSchema,
 ): boolean {
   return this.bounces.every((emailInfo) => emailInfo.hasBounced)
 }
 
+/**
+ * Returns the list of email recipients for this form
+ */
 BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
-  return this.bounces.map((emailInfo) => emailInfo.email)
+  // Return a regular array to prevent unexpected bugs with mongoose
+  // CoreDocumentArray
+  return Array.from(this.bounces.map((emailInfo) => emailInfo.email))
 }
 
 const getBounceModel = (db: Mongoose): IBounceModel => {
