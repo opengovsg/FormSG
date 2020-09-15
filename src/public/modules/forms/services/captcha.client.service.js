@@ -93,7 +93,7 @@ function captchaService($window, vcRecaptchaService, Toastr) {
       vcRecaptchaService.execute(this.widgetId)
     } catch (err) {
       // If https://www.google.com/recaptcha/api.js?onload=vcRecaptchaApiLoaded&render=explicit
-      // could not loaded (eg, while on intranet). vcRecaptchaService throws an error.
+      // could not loaded. vcRecaptchaService throws an error.
       Toastr.error(
         'Please ensure you have internet connectivity for CAPTCHA to load on this form.',
       )

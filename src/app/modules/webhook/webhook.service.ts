@@ -273,7 +273,7 @@ const getFormattedResponse = (
  */
 export const pushData = async (
   webhookUrl: WebhookParams['webhookUrl'],
-  submissionWebhookView: WebhookView,
+  submissionWebhookView: WebhookView | null,
 ): Promise<any> => {
   const now = Date.now()
   // Log and return, this should not happen.
@@ -282,7 +282,6 @@ export const pushData = async (
       new WebhookValidationError('submissionWebhookView was null'),
       {
         webhookUrl,
-        submissionWebhookView,
         now,
       },
     )

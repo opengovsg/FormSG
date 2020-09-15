@@ -54,7 +54,7 @@ function verifySecretKeyDirective(FormSgSdk) {
             case 'reader-abort':
               return 'File could not be read. Please try again.'
             case 'invalid-key':
-              return 'Form activation unsuccessful. Secret Key error, please try again.'
+              return 'Secret Key error. Please try again.'
             default:
               return 'An error occurred. Please try again.'
           }

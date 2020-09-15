@@ -41,21 +41,19 @@ import {
 const Bounce = getBounceModel(mongoose)
 
 describe('isValidSnsRequest', () => {
-  let keys, body: ISnsNotification
-
-  beforeAll(() => {
-    keys = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
-      publicKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem',
-      },
-      privateKeyEncoding: {
-        type: 'pkcs8',
-        format: 'pem',
-      },
-    })
+  const keys = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: {
+      type: 'pkcs1',
+      format: 'pem',
+    },
+    privateKeyEncoding: {
+      type: 'pkcs8',
+      format: 'pem',
+    },
   })
+
+  let body: ISnsNotification
 
   beforeEach(() => {
     body = cloneDeep(MOCK_SNS_BODY)
@@ -65,12 +63,12 @@ describe('isValidSnsRequest', () => {
   })
 
   it('should gracefully reject when input is empty', () => {
-    return expect(isValidSnsRequest(undefined)).resolves.toBe(false)
+    return expect(isValidSnsRequest(undefined!)).resolves.toBe(false)
   })
 
   it('should reject requests when their structure is invalid', () => {
-    delete body.Type
-    return expect(isValidSnsRequest(body)).resolves.toBe(false)
+    const invalidBody = omit(cloneDeep(body), 'Type') as ISnsNotification
+    return expect(isValidSnsRequest(invalidBody)).resolves.toBe(false)
   })
 
   it('should reject requests when their certificate URL is invalid', () => {
@@ -140,7 +138,7 @@ describe('updateBounces', () => {
     )
     await updateBounces(notification)
     const actualBounceDoc = await Bounce.findOne({ formId })
-    const actualBounce = extractBounceObject(actualBounceDoc)
+    const actualBounce = extractBounceObject(actualBounceDoc!)
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: false,
@@ -175,7 +173,7 @@ describe('updateBounces', () => {
     )
     await updateBounces(notification)
     const actualBounceDoc = await Bounce.findOne({ formId })
-    const actualBounce = extractBounceObject(actualBounceDoc)
+    const actualBounce = extractBounceObject(actualBounceDoc!)
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: bounces[email],
@@ -208,7 +206,7 @@ describe('updateBounces', () => {
     )
     await updateBounces(notification)
     const actualBounceDoc = await Bounce.findOne({ formId })
-    const actualBounce = extractBounceObject(actualBounceDoc)
+    const actualBounce = extractBounceObject(actualBounceDoc!)
     const expectedBounces = recipientList.map((email) => ({
       email,
       hasBounced: true,

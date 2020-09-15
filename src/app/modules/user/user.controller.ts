@@ -128,7 +128,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
         action: 'handleFetchUser',
         userId: sessionUserId,
       },
-      error: dbErr,
+      error: dbErr ?? undefined,
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)

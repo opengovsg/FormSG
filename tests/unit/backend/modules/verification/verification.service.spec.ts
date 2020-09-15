@@ -90,8 +90,8 @@ describe('Verification service', () => {
       })
       expect(foundTransaction).toBeTruthy()
       expect(returnedTransaction).toEqual({
-        transactionId: foundTransaction._id,
-        expireAt: foundTransaction.expireAt,
+        transactionId: foundTransaction!._id,
+        expireAt: foundTransaction!.expireAt,
       })
     })
   })
@@ -138,7 +138,7 @@ describe('Verification service', () => {
       const hashRetries = 1
       const transaction = new Verification({
         formId,
-        fields: testForm.form_fields.map(({ _id, fieldType }) => ({
+        fields: testForm.form_fields!.map(({ _id, fieldType }) => ({
           _id,
           fieldType,
           hashCreatedAt,
@@ -148,19 +148,19 @@ describe('Verification service', () => {
         })),
       })
       await transaction.save()
-      await resetFieldInTransaction(transaction, testForm.form_fields[0]._id)
+      await resetFieldInTransaction(transaction, testForm.form_fields![0]._id)
       const actual = await Verification.findOne({ formId })
-      expect(actual.fields[0].toObject()).toEqual({
-        _id: String(testForm.form_fields[0]._id),
-        fieldType: testForm.form_fields[0].fieldType,
+      expect(actual!.fields[0].toObject()).toEqual({
+        _id: String(testForm.form_fields![0]._id),
+        fieldType: testForm.form_fields![0].fieldType,
         hashCreatedAt: null,
         hashedOtp: null,
         signedData: null,
         hashRetries: 0,
       })
-      expect(actual.fields[1].toObject()).toEqual({
-        _id: String(testForm.form_fields[1]._id),
-        fieldType: testForm.form_fields[1].fieldType,
+      expect(actual!.fields[1].toObject()).toEqual({
+        _id: String(testForm.form_fields![1]._id),
+        fieldType: testForm.form_fields![1].fieldType,
         hashCreatedAt,
         hashedOtp,
         signedData,
@@ -221,7 +221,7 @@ describe('Verification service', () => {
       })
       MockGenerateOtp.mockReturnValue(mockOtp)
       MockBcrypt.hash.mockReturnValue(Promise.resolve(hashedOtp))
-      MockFormsgSdk.verification.generateSignature.mockReturnValue(signedData)
+      MockFormsgSdk.verification.generateSignature!.mockReturnValue(signedData)
     })
 
     afterEach(async () => await dbHandler.clearDatabase())
@@ -260,7 +260,7 @@ describe('Verification service', () => {
       expect(MockGenerateOtp).toHaveBeenCalled()
       expect(MockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
       expect(
-        MockFormsgSdk.verification.generateSignature.mock.calls[0][0],
+        MockFormsgSdk.verification.generateSignature!.mock.calls[0][0],
       ).toEqual({
         transactionId: transaction._id,
         formId: transaction.formId,
@@ -274,10 +274,10 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashCreatedAt).toBeInstanceOf(Date)
-      expect(foundTransaction.fields[0].hashedOtp).toBe(hashedOtp)
-      expect(foundTransaction.fields[0].signedData).toBe(signedData)
-      expect(foundTransaction.fields[0].hashRetries).toBe(0)
+      expect(foundTransaction!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
+      expect(foundTransaction!.fields[0].hashedOtp).toBe(hashedOtp)
+      expect(foundTransaction!.fields[0].signedData).toBe(signedData)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(0)
     })
 
     it('should send OTP when params are valid for mobile field', async () => {
@@ -291,7 +291,7 @@ describe('Verification service', () => {
       expect(MockGenerateOtp).toHaveBeenCalled()
       expect(MockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
       expect(
-        MockFormsgSdk.verification.generateSignature.mock.calls[0][0],
+        MockFormsgSdk.verification.generateSignature!.mock.calls[0][0],
       ).toEqual({
         transactionId: transaction._id,
         formId: transaction.formId,
@@ -306,10 +306,10 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[1].hashCreatedAt).toBeInstanceOf(Date)
-      expect(foundTransaction.fields[1].hashedOtp).toBe(hashedOtp)
-      expect(foundTransaction.fields[1].signedData).toBe(signedData)
-      expect(foundTransaction.fields[1].hashRetries).toBe(0)
+      expect(foundTransaction!.fields[1].hashCreatedAt).toBeInstanceOf(Date)
+      expect(foundTransaction!.fields[1].hashedOtp).toBe(hashedOtp)
+      expect(foundTransaction!.fields[1].signedData).toBe(signedData)
+      expect(foundTransaction!.fields[1].hashRetries).toBe(0)
     })
 
     it('should catch and re-throw errors thrown when sending email', async () => {
@@ -390,7 +390,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(hashRetries)
     })
 
     it('should throw error when field ID is invalid', async () => {
@@ -402,7 +402,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(hashRetries)
     })
 
     it('should throw error when hashed OTP is invalid', async () => {
@@ -415,7 +415,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(hashRetries)
     })
 
     it('should throw error when hashCreatedAt is invalid', async () => {
@@ -428,7 +428,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(hashRetries)
     })
 
     it('should throw error when hash is expired', async () => {
@@ -442,7 +442,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(hashRetries)
     })
 
     it('should throw error when retries are maxed out', async () => {
@@ -456,7 +456,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(tooManyRetries)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(tooManyRetries)
     })
 
     it('should reject when OTP is invalid', async () => {
@@ -469,7 +469,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries + 1)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(hashRetries + 1)
     })
 
     it('should resolve when OTP is invalid', async () => {
@@ -482,7 +482,7 @@ describe('Verification service', () => {
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction.fields[0].hashRetries).toBe(hashRetries + 1)
+      expect(foundTransaction!.fields[0].hashRetries).toBe(hashRetries + 1)
     })
   })
 })
