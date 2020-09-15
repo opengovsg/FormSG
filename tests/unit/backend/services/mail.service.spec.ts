@@ -1004,7 +1004,7 @@ describe('mail.service', () => {
       return {
         to: MOCK_RECIPIENTS,
         from: MOCK_SENDER_STRING,
-        subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
+        subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
         html: await MailUtils.generateBounceNotificationHtml(
           {
             appName: MOCK_APP_NAME,
