@@ -15,21 +15,17 @@ describe('helmetMiddlewares', () => {
   const mockConfig = mocked(config, true)
 
   beforeAll(() => {
-    mockHelmet.xssFilter = jest.fn().mockImplementation(() => 'xssFilter')
-    mockHelmet.noSniff = jest.fn().mockImplementation(() => 'noSniff')
-    mockHelmet.ieNoOpen = jest.fn().mockImplementation(() => 'ieNoOpen')
+    mockHelmet.xssFilter = jest.fn().mockReturnValue('xssFilter')
+    mockHelmet.noSniff = jest.fn().mockReturnValue('noSniff')
+    mockHelmet.ieNoOpen = jest.fn().mockReturnValue('ieNoOpen')
     mockHelmet.dnsPrefetchControl = jest
       .fn()
-      .mockImplementation(() => 'dnsPrefetchControl')
-    mockHelmet.hidePoweredBy = jest
-      .fn()
-      .mockImplementation(() => 'hidePoweredBy')
-    mockHelmet.referrerPolicy = jest
-      .fn()
-      .mockImplementation(() => 'referrerPolicy')
+      .mockReturnValue('dnsPrefetchControl')
+    mockHelmet.hidePoweredBy = jest.fn().mockReturnValue('hidePoweredBy')
+    mockHelmet.referrerPolicy = jest.fn().mockReturnValue('referrerPolicy')
     mockHelmet.contentSecurityPolicy = jest
       .fn()
-      .mockImplementation(() => 'contentSecurityPolicy')
+      .mockReturnValue('contentSecurityPolicy')
   })
 
   afterEach(() => {
