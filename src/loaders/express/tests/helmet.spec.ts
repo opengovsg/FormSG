@@ -14,7 +14,7 @@ describe('helmetMiddlewares', () => {
   jest.mock('src/config/config')
   const mockConfig = mocked(config, true)
 
-  beforeEach(() => {
+  beforeAll(() => {
     mockHelmet.xssFilter = jest.fn().mockImplementation(() => 'xssFilter')
     mockHelmet.noSniff = jest.fn().mockImplementation(() => 'noSniff')
     mockHelmet.ieNoOpen = jest.fn().mockImplementation(() => 'ieNoOpen')
@@ -33,7 +33,7 @@ describe('helmetMiddlewares', () => {
   })
 
   afterEach(() => {
-    jest.resetAllMocks()
+    jest.clearAllMocks()
   })
 
   it('should call the correct helmet functions', () => {
