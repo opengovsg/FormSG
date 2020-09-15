@@ -72,16 +72,35 @@
               ><span class="stats">{{vm.responsesCount}}</span> response(s) to
               date</span
             >
-            <button
+            <a
+              id="filter-by-submission-filter-link"
               ng-show="!vm.filterBySubmissionShowFilterBox"
-              class="btn-custom"
               ng-click="vm.filterBySubmissionShowFilterBox = true"
             >
               <i class="bx bx-search"></i>
-            </button>
+            </a>
           </span>
         </div>
-        <div class="datepicker-export-container col-md-6">
+        <div
+          class="col-md-6"
+          ng-show="vm.filterBySubmissionShowFilterBox"
+          id="filter-by-submission-filter-textbox-container"
+        >
+          <input
+            class="input-custom input-medium"
+            ng-model="vm.filterBySubmissionRefIdTextbox"
+            ng-change="vm.filterBySubmissionChanged()"
+            ng-model-options="{ debounce: 500 }"
+            placeholder="Search by reference no."
+          />
+          <span
+            id="filter-by-submission-reset-link"
+            ng-show="vm.filterBySubmissionRefId !== ''"
+          >
+            <a ng-click="vm.filterBySubmissionReset()">Reset</a>
+          </span>
+        </div>
+        <div class="datepicker-export-container col-md-3">
           <date-range-picker-directive
             class="datepicker-container"
             ng-model="vm.datePicker.date"
@@ -94,24 +113,7 @@
         </div>
       </div>
       <div class="flex-row" ng-show="vm.filterBySubmissionShowFilterBox">
-        <div class="col-md-5">
-          <div class="col-md-9">
-            <input
-              class="input-custom input-medium"
-              ng-model="vm.filterBySubmissionRefIdTextbox"
-              ng-change="vm.filterBySubmissionChanged()"
-              ng-model-options="{ debounce: 500 }"
-              placeholder="Filter by Submission Ref No."
-            />
-          </div>
-          <div
-            class="col-md-3"
-            id="filter-by-submission-reset-link"
-            ng-show="vm.filterBySubmissionRefId !== ''"
-          >
-            <a ng-click="vm.filterBySubmissionReset()">Reset</a>
-          </div>
-        </div>
+        <div class="col-md-5"></div>
       </div>
       <div class="row">
         <div ng-if="vm.responsesCount > 0" class="col-md-12">

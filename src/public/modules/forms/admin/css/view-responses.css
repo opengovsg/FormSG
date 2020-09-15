@@ -101,7 +101,7 @@
 }
 
 #responses-tab .response-stats {
-  width: 100%;
+  white-space: nowrap;
 }
 
 #responses-tab .datepicker-export-container {
@@ -718,6 +718,18 @@
 
 #filter-by-submission-reset-link {
   padding-top: 13px;
+  padding-left: 13px;
   white-space: nowrap;
   cursor: pointer;
+}
+
+#filter-by-submission-filter-link {
+  padding-top: 13px;
+  padding-left: 5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#filter-by-submission-filter-textbox-container {
+  display: flex;
 }
