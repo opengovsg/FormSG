@@ -8,7 +8,8 @@ import {
   createLoggerWithLabel,
 } from '../../../config/logger'
 import {
-  BounceType,
+  // TODO (private #30): enable form deactivation
+  // BounceType,
   IBounceNotification,
   IBounceSchema,
   IEmailNotification,
