@@ -1,4 +1,5 @@
 import hasAnsi from 'has-ansi'
+import { isEmpty } from 'lodash'
 import omit from 'lodash/omit'
 import logform from 'logform'
 import path from 'path'
@@ -8,7 +9,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
-import defaults from './defaults'
+import { Environment } from '../types'
+
+import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
 
 // Params to enforce the logging format.
 type CustomLoggerParams = {
@@ -19,12 +22,6 @@ type CustomLoggerParams = {
   }
   error?: Error
 }
-
-// Cannot use config due to logger being instantiated first, and
-// having circular dependencies.
-const isDev = ['development', 'test'].includes(process.env.NODE_ENV)
-const customCloudWatchGroup = process.env.CUSTOM_CLOUDWATCH_LOG_GROUP
-const awsRegion = process.env.AWS_REGION || defaults.aws.region
 
 // A variety of helper functions to make winston logging like console logging,
 // allowing multiple arguments.
@@ -167,7 +164,7 @@ const createLoggerOptions = (label: string): LoggerOptions => {
     ),
     transports: [
       new transports.Console({
-        silent: process.env.NODE_ENV === 'test',
+        silent: nodeEnv === Environment.Test,
       }),
     ],
     exitOnError: false,
@@ -189,23 +186,52 @@ const getModuleLabel = (callingModule: NodeModule) => {
 /**
  * Overrides the given winston logger with a new signature, so as to enforce a
  * log format.
+ * TODO(#42): Remove try catch blocks when application is 100% TypeScript.
  * @param logger the logger to override
  */
 const createCustomLogger = (logger: Logger) => {
   return {
-    info: ({ message, meta }: Omit<CustomLoggerParams, 'error'>) =>
-      logger.info(message, { meta }),
-    warn: ({ message, meta, error }: CustomLoggerParams) => {
-      if (error) {
-        return logger.warn(message, { meta }, error)
+    info: (params: Omit<CustomLoggerParams, 'error'>) => {
+      try {
+        const { message, meta } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
+        return logger.info(message, { meta })
+      } catch {
+        return logger.info(params)
       }
-      return logger.warn(message, { meta })
     },
-    error: ({ message, meta, error }: CustomLoggerParams) => {
-      if (error) {
-        return logger.error(message, { meta }, error)
+    warn: (params: CustomLoggerParams) => {
+      try {
+        const { message, meta, error } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
+        if (error) {
+          return logger.warn(message, { meta }, error)
+        }
+        return logger.warn(message, { meta })
+      } catch {
+        return logger.warn(params)
       }
-      return logger.error(message, { meta })
+    },
+    error: (params: CustomLoggerParams) => {
+      try {
+        const { message, meta, error } = params
+        // Not the expected shape, throw to catch block.
+        if (!message || isEmpty(meta)) {
+          throw new Error('Wrong shape')
+        }
+        if (error) {
+          return logger.error(message, { meta }, error)
+        }
+        return logger.error(message, { meta })
+      } catch {
+        return logger.error(params)
+      }
     },
   }
 }
@@ -238,7 +264,7 @@ export const createCloudWatchLogger = (label: string) => {
         // not share sequence tokens. Hence generate a unique ID for each instance
         // of the logger.
         logStreamName: uuidv4(),
-        awsRegion,
+        awsRegion: aws.region,
         jsonMessage: true,
       }),
     ]

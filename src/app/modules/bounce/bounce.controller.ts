@@ -1,4 +1,5 @@
-import { Request, Response } from 'express'
+import { RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -13,10 +14,11 @@ const logger = createLoggerWithLabel(module)
  * @param req Express request object
  * @param res - Express response object
  */
-const handleSns = async (
-  req: Request<{}, {}, ISnsNotification>,
-  res: Response,
-) => {
+export const handleSns: RequestHandler<
+  ParamsDictionary,
+  never,
+  ISnsNotification
+> = async (req, res) => {
   // Since this function is for a public endpoint, catch all possible errors
   // so we never fail on malformed input. The response code is meaningless since
   // it is meant to go back to AWS.
@@ -38,5 +40,3 @@ const handleSns = async (
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 }
-
-export default handleSns

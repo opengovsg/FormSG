@@ -91,7 +91,7 @@ export interface IForm {
   webhook?: Webhook
   msgSrvcName?: string
 
-  responseMode?: ResponseMode
+  responseMode: ResponseMode
 
   // Schema properties
   _id: Document['_id']
@@ -105,7 +105,7 @@ export interface IForm {
 export interface IFormSchema extends IForm, Document {
   getMainFields(): Pick<IFormSchema, '_id' | 'title' | 'status'>
   getUniqMyinfoAttrs(): MyInfoAttribute[]
-  duplicate(overrideProps: object): Partial<IFormSchema>
+  duplicate(overrideProps: Partial<IForm>): Partial<IFormSchema>
 }
 
 export interface IPopulatedForm extends IFormSchema {

@@ -2,18 +2,22 @@ import { get } from 'lodash'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
-import { bounceLifeSpan } from '../../config/config'
+import { bounceLifeSpan } from '../../../config/config'
 import {
   IBounceNotification,
   IBounceSchema,
   IEmailNotification,
+  ISingleBounce,
+} from '../../../types'
+import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
+import { FORM_SCHEMA_ID } from '../../models/form.server.model'
+
+import {
+  extractHeader,
+  hasEmailBounced,
   isBounceNotification,
   isDeliveryNotification,
-  ISingleBounce,
-} from '../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
-
-import { FORM_SCHEMA_ID } from './form.server.model'
+} from './bounce.util'
 
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 
@@ -58,26 +62,6 @@ const BounceSchema = new Schema<IBounceSchema>({
 })
 BounceSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
-// Helper function for methods.
-// Extracts custom headers which we send with all emails, such as form ID, submission ID
-// and email type (admin response, email confirmation OTP etc).
-const extractHeader = (body: IEmailNotification, header: string): string => {
-  return get(body, 'mail.headers').find(
-    (mailHeader) => mailHeader.name.toLowerCase() === header.toLowerCase(),
-  )?.value
-}
-
-// Helper function for methods.
-// Whether a bounce notification says a given email has bounced
-const hasEmailBounced = (
-  bounceInfo: IBounceNotification,
-  email: string,
-): boolean => {
-  return get(bounceInfo, 'bounce.bouncedRecipients').some(
-    (emailInfo) => emailInfo.emailAddress === email,
-  )
-}
-
 // Create a new Bounce document from an SNS notification.
 // More info on format of SNS notifications:
 // https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
@@ -88,7 +72,7 @@ BounceSchema.statics.fromSnsNotification = function (
   const emailType = extractHeader(snsInfo, EMAIL_HEADERS.emailType)
   const formId = extractHeader(snsInfo, EMAIL_HEADERS.formId)
   // We only care about admin emails
-  if (emailType !== EMAIL_TYPES.adminResponse || !formId) {
+  if (emailType !== EmailType.AdminResponse || !formId) {
     return null
   }
   const isBounce = isBounceNotification(snsInfo)
@@ -117,7 +101,6 @@ BounceSchema.methods.merge = function (
   latestBounces: IBounceSchema,
   snsInfo: IEmailNotification,
 ): void {
-  const isDelivery = isDeliveryNotification(snsInfo)
   this.bounces.forEach((oldBounce) => {
     // If we were previously notified that a given email has bounced,
     // we want to retain that information
@@ -131,8 +114,8 @@ BounceSchema.methods.merge = function (
       // a false in latestBounces doesn't guarantee that the email was
       // delivered, only that the email has not bounced yet.
       const hasSubsequentlySucceeded =
-        isDelivery &&
-        get(snsInfo, 'delivery.recipients').includes(oldBounce.email)
+        isDeliveryNotification(snsInfo) &&
+        snsInfo.delivery.recipients.includes(oldBounce.email)
       if (matchedLatestBounce) {
         // Set the latest bounce status based on the latest notification
         matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
@@ -142,14 +125,17 @@ BounceSchema.methods.merge = function (
   this.bounces = latestBounces.bounces
 }
 
-const getBounceModel = (db: Mongoose) => {
+BounceSchema.methods.isCriticalBounce = function (
+  this: IBounceSchema,
+): boolean {
+  return this.bounces.every((emailInfo) => emailInfo.hasBounced)
+}
+
+const getBounceModel = (db: Mongoose): IBounceModel => {
   try {
     return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
   } catch {
-    return db.model<IBounceSchema>(
-      BOUNCE_SCHEMA_ID,
-      BounceSchema,
-    ) as IBounceModel
+    return db.model<IBounceSchema, IBounceModel>(BOUNCE_SCHEMA_ID, BounceSchema)
   }
 }
 

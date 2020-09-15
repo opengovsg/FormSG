@@ -2,7 +2,7 @@
  * A custom base error class that encapsulates the name, message, status code,
  * and logging meta string (if any) for the error.
  */
-export class ApplicationError extends Error {
+export abstract class ApplicationError extends Error {
   /**
    * Http status code for the error to be returned in the response.
    */

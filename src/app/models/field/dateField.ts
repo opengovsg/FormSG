@@ -7,13 +7,6 @@ import { MyInfoSchema } from './baseField'
 const createDateFieldSchema = () => {
   return new Schema<IDateFieldSchema>({
     myInfo: MyInfoSchema,
-
-    // TODO((#2437): Remove isFutureOnly key after 31 Aug 2020
-    isFutureOnly: {
-      type: Boolean,
-      default: false,
-    },
-
     dateValidation: {
       customMinDate: {
         type: Date,

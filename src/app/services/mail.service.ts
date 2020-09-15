@@ -15,7 +15,7 @@ import {
   IPopulatedForm,
   ISubmissionSchema,
 } from '../../types'
-import { EMAIL_HEADERS, EMAIL_TYPES } from '../constants/mail'
+import { EMAIL_HEADERS, EmailType } from '../constants/mail'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
@@ -257,7 +257,7 @@ export class MailService {
       headers: {
         [EMAIL_HEADERS.formId]: String(form._id),
         [EMAIL_HEADERS.submissionId]: submission.id,
-        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.emailConfirmation,
+        [EMAIL_HEADERS.emailType]: EmailType.EmailConfirmation,
       },
     }
 
@@ -291,7 +291,7 @@ export class MailService {
         otp,
       }),
       headers: {
-        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.verificationOtp,
+        [EMAIL_HEADERS.emailType]: EmailType.VerificationOtp,
       },
     }
     // Error gets caught in getNewOtp
@@ -324,7 +324,7 @@ export class MailService {
         otp,
       }),
       headers: {
-        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.loginOtp,
+        [EMAIL_HEADERS.emailType]: EmailType.LoginOtp,
       },
     }
 
@@ -399,7 +399,7 @@ export class MailService {
       headers: {
         [EMAIL_HEADERS.formId]: String(form._id),
         [EMAIL_HEADERS.submissionId]: refNo,
-        [EMAIL_HEADERS.emailType]: EMAIL_TYPES.adminResponse,
+        [EMAIL_HEADERS.emailType]: EmailType.AdminResponse,
       },
       // replyTo options only allow string format.
       replyTo: replyToEmails?.join(', '),
