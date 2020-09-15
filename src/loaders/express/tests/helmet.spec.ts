@@ -103,7 +103,11 @@ describe('helmetMiddlewares', () => {
     const mockReq = expressHandler.mockRequest({ secure: true })
     const mockRes = expressHandler.mockResponse()
 
-    helmetMiddlewares()[5](mockReq, mockRes, jest.fn())
+    helmetMiddlewares().filter((result) => typeof result === 'function')[0](
+      mockReq,
+      mockRes,
+      jest.fn(),
+    )
     expect(mockHelmet.hsts).toHaveBeenCalled()
   })
 
@@ -111,7 +115,11 @@ describe('helmetMiddlewares', () => {
     const mockReq = expressHandler.mockRequest({ secure: false })
     const mockRes = expressHandler.mockResponse()
 
-    helmetMiddlewares()[5](mockReq, mockRes, jest.fn())
+    helmetMiddlewares().filter((result) => typeof result === 'function')[0](
+      mockReq,
+      mockRes,
+      jest.fn(),
+    )
     expect(mockHelmet.hsts).not.toHaveBeenCalled()
   })
 
