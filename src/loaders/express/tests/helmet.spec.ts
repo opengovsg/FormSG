@@ -14,35 +14,6 @@ describe('helmetMiddlewares', () => {
   jest.mock('src/config/config')
   const mockConfig = mocked(config, true)
 
-  beforeAll(() => {
-    mockHelmet.xssFilter = jest.fn().mockReturnValue('xssFilter')
-    mockHelmet.noSniff = jest.fn().mockReturnValue('noSniff')
-    mockHelmet.ieNoOpen = jest.fn().mockReturnValue('ieNoOpen')
-    mockHelmet.dnsPrefetchControl = jest
-      .fn()
-      .mockReturnValue('dnsPrefetchControl')
-    mockHelmet.hidePoweredBy = jest.fn().mockReturnValue('hidePoweredBy')
-    mockHelmet.referrerPolicy = jest.fn().mockReturnValue('referrerPolicy')
-    mockHelmet.contentSecurityPolicy = jest
-      .fn()
-      .mockReturnValue('contentSecurityPolicy')
-  })
-
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it('should call the correct helmet functions', () => {
-    helmetMiddlewares()
-    expect(mockHelmet.xssFilter).toHaveBeenCalled()
-    expect(mockHelmet.noSniff).toHaveBeenCalled()
-    expect(mockHelmet.ieNoOpen).toHaveBeenCalled()
-    expect(mockHelmet.dnsPrefetchControl).toHaveBeenCalled()
-    expect(mockHelmet.hidePoweredBy).toHaveBeenCalled()
-    expect(mockHelmet.referrerPolicy).toHaveBeenCalled()
-    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalled()
-  })
-
   const cspCoreDirectives = {
     defaultSrc: ["'self'"],
     imgSrc: [
@@ -94,6 +65,35 @@ describe('helmetMiddlewares', () => {
     ],
     formAction: ["'self'"],
   }
+
+  beforeAll(() => {
+    mockHelmet.xssFilter = jest.fn().mockReturnValue('xssFilter')
+    mockHelmet.noSniff = jest.fn().mockReturnValue('noSniff')
+    mockHelmet.ieNoOpen = jest.fn().mockReturnValue('ieNoOpen')
+    mockHelmet.dnsPrefetchControl = jest
+      .fn()
+      .mockReturnValue('dnsPrefetchControl')
+    mockHelmet.hidePoweredBy = jest.fn().mockReturnValue('hidePoweredBy')
+    mockHelmet.referrerPolicy = jest.fn().mockReturnValue('referrerPolicy')
+    mockHelmet.contentSecurityPolicy = jest
+      .fn()
+      .mockReturnValue('contentSecurityPolicy')
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should call the correct helmet functions', () => {
+    helmetMiddlewares()
+    expect(mockHelmet.xssFilter).toHaveBeenCalled()
+    expect(mockHelmet.noSniff).toHaveBeenCalled()
+    expect(mockHelmet.ieNoOpen).toHaveBeenCalled()
+    expect(mockHelmet.dnsPrefetchControl).toHaveBeenCalled()
+    expect(mockHelmet.hidePoweredBy).toHaveBeenCalled()
+    expect(mockHelmet.referrerPolicy).toHaveBeenCalled()
+    expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalled()
+  })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if cspReportUri and !isDev', () => {
     mockFeatureManager.props = jest
