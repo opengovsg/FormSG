@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
+import { ContentSecurityPolicyOptions } from 'helmet/dist/middlewares/content-security-policy'
 import { get } from 'lodash'
 
 import config from '../../config/config'
@@ -27,13 +28,7 @@ const helmetMiddlewares = () => {
     policy: 'strict-origin-when-cross-origin',
   })
 
-  //Declare type of cspDirectives
-  //Workaround to extract the type from helmet because
-  //@types/helmet is out of date and helmet doesn’t export those specific types
-
-  type ICsp = Parameters<typeof helmet.contentSecurityPolicy>[0]
-
-  const cspCoreDirectives: ICsp['directives'] = {
+  const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] = {
     defaultSrc: ["'self'"],
     imgSrc: [
       "'self'",
@@ -91,7 +86,7 @@ const helmetMiddlewares = () => {
     undefined,
   )
 
-  const cspOptionalDirectives: ICsp['directives'] = {}
+  const cspOptionalDirectives: ContentSecurityPolicyOptions['directives'] = {}
 
   // Add on reportUri CSP header if ReportUri exists
   // It is necessary to have the if statement for optional directives because falsey values
