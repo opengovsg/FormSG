@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as AuthController from './auth.controller'
-import * as AuthMiddlewares from './auth.middlewares'
 
 export const AuthRouter = Router()
 
