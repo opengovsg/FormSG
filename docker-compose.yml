@@ -99,9 +99,13 @@ services:
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
+      - ATTACHMENT_S3_BUCKET=local-attachment-bucket
+      - IMAGE_S3_BUCKET=local-image-bucket
+      - LOGO_S3_BUCKET=local-logo-bucket
     volumes:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
+      - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
 
 volumes:
