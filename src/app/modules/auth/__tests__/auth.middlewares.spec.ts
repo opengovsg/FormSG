@@ -1,3 +1,4 @@
+import { err, ok } from 'neverthrow'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
@@ -20,8 +21,8 @@ describe('auth.middleware', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
-      MockAuthService.getAgencyWithEmail.mockResolvedValueOnce(
-        {} as IAgencySchema,
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        ok(<IAgencySchema>{}),
       )
 
       // Act
@@ -31,33 +32,14 @@ describe('auth.middleware', () => {
       expect(mockNext).toBeCalled()
     })
 
-    it('should return 500 when retrieving agency throws non ApplicationError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const mockNext = jest.fn()
-      MockAuthService.getAgencyWithEmail.mockRejectedValueOnce(
-        new Error('some error'),
-      )
-
-      // Act
-      await AuthMiddleware.validateDomain(MOCK_REQ, mockRes, mockNext)
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.send).toBeCalledWith(
-        expect.stringContaining(
-          'Unable to validate email domain. If this issue persists, please submit a Support Form',
-        ),
-      )
-      expect(mockNext).not.toBeCalled()
-    })
-
-    it('should return with ApplicationError status and message when retrieving agency throws ApplicationError', async () => {
+    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
       // Arrange
       const expectedError = new InvalidDomainError()
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
-      MockAuthService.getAgencyWithEmail.mockRejectedValueOnce(expectedError)
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        err(expectedError),
+      )
 
       // Act
       await AuthMiddleware.validateDomain(MOCK_REQ, mockRes, mockNext)

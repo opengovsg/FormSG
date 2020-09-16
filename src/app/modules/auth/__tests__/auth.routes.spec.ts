@@ -1,4 +1,5 @@
 import { pick } from 'lodash'
+import { err } from 'neverthrow'
 import supertest from 'supertest'
 import { CookieStore, setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -8,6 +9,7 @@ import MailService from 'src/app/services/mail.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema } from 'src/types'
 
+import { DatabaseError } from '../../core/core.errors'
 import * as UserService from '../../user/user.service'
 import { AuthRouter } from '../auth.routes'
 import * as AuthService from '../auth.service'
@@ -82,16 +84,17 @@ describe('auth.routes', () => {
       expect(response.text).toEqual('OK')
     })
 
-    it('should return 500 when validating domain throws an unknown error', async () => {
+    it('should return 500 when validating domain returns a database error', async () => {
       // Arrange
       // Insert agency
       const validDomain = 'example.com'
       const validEmail = `test@${validDomain}`
+      const mockErrorString = 'Unable to validate email domain.'
       await dbHandler.insertDefaultAgency({ mailDomain: validDomain })
 
       const getAgencySpy = jest
-        .spyOn(AuthService, 'getAgencyWithEmail')
-        .mockRejectedValueOnce(new Error('some error occured'))
+        .spyOn(AuthService, 'validateEmailDomain')
+        .mockResolvedValueOnce(err(new DatabaseError(mockErrorString)))
 
       // Act
       const response = await request
@@ -101,9 +104,7 @@ describe('auth.routes', () => {
       // Assert
       expect(getAgencySpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(
-        expect.stringContaining('Unable to validate email domain.'),
-      )
+      expect(response.text).toEqual(mockErrorString)
     })
   })
 
@@ -194,11 +195,12 @@ describe('auth.routes', () => {
       )
     })
 
-    it('should return 500 when validating domain throws an unknown error', async () => {
+    it('should return 500 when validating domain returns a database error', async () => {
       // Arrange
+      const mockErrorString = 'Unable to validate email domain.'
       const getAgencySpy = jest
-        .spyOn(AuthService, 'getAgencyWithEmail')
-        .mockRejectedValueOnce(new Error('some error occured'))
+        .spyOn(AuthService, 'validateEmailDomain')
+        .mockResolvedValueOnce(err(new DatabaseError(mockErrorString)))
 
       // Act
       const response = await request
@@ -208,9 +210,7 @@ describe('auth.routes', () => {
       // Assert
       expect(getAgencySpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(
-        expect.stringContaining('Unable to validate email domain.'),
-      )
+      expect(response.text).toEqual(mockErrorString)
     })
 
     it('should return 200 when otp is sent successfully', async () => {
@@ -323,11 +323,12 @@ describe('auth.routes', () => {
       )
     })
 
-    it('should return 500 when validating domain throws an unknown error', async () => {
+    it('should return 500 when validating domain returns a database error', async () => {
       // Arrange
+      const mockErrorString = 'Unable to validate email domain.'
       const getAgencySpy = jest
-        .spyOn(AuthService, 'getAgencyWithEmail')
-        .mockRejectedValueOnce(new Error('some error occured'))
+        .spyOn(AuthService, 'validateEmailDomain')
+        .mockResolvedValueOnce(err(new DatabaseError(mockErrorString)))
 
       // Act
       const response = await request
@@ -337,9 +338,7 @@ describe('auth.routes', () => {
       // Assert
       expect(getAgencySpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(
-        expect.stringContaining('Unable to validate email domain.'),
-      )
+      expect(response.text).toEqual(mockErrorString)
     })
 
     it('should return 422 when hash does not exist for body.otp', async () => {

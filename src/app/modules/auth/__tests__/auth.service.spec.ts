@@ -36,35 +36,40 @@ describe('auth.service', () => {
 
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('getAgencyWithEmail', () => {
+  describe('validateEmailDomain', () => {
     it('should retrieve agency successfully when email is valid and domain is in Agency collection', async () => {
       // Act
-      const actual = await AuthService.getAgencyWithEmail(VALID_EMAIL)
+      const actual = await AuthService.validateEmailDomain(VALID_EMAIL)
 
       // Assert
-      expect(actual.toObject()).toEqual(defaultAgency.toObject())
+      expect(actual.isOk()).toBe(true)
+      expect(actual._unsafeUnwrap().toObject()).toEqual(
+        defaultAgency.toObject(),
+      )
     })
 
-    it('should throw InvalidDomainError when email is invalid', async () => {
+    it('should return InvalidDomainError error result when email is invalid', async () => {
       // Arrange
       const notAnEmail = 'not an email'
 
       // Act
-      const actualPromise = AuthService.getAgencyWithEmail(notAnEmail)
+      const actual = await AuthService.validateEmailDomain(notAnEmail)
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(InvalidDomainError)
+      expect(actual.isErr()).toBe(true)
+      expect(actual._unsafeUnwrapErr()).toEqual(new InvalidDomainError())
     })
 
-    it('should throw InvalidDomainError when valid email domain is not in Agency collection', async () => {
+    it('should return InvalidDomainError error result when valid email domain is not in Agency collection', async () => {
       // Arrange
       const invalidEmail = 'invalid@example.com'
 
       // Act
-      const actualPromise = AuthService.getAgencyWithEmail(invalidEmail)
+      const actual = await AuthService.validateEmailDomain(invalidEmail)
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(InvalidDomainError)
+      expect(actual.isErr()).toBe(true)
+      expect(actual._unsafeUnwrapErr()).toEqual(new InvalidDomainError())
     })
   })
 
