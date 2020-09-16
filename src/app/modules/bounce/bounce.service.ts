@@ -151,6 +151,12 @@ const handleCriticalBounce = async (
   submissionId: string | undefined,
   bounceInfo: IBounceNotification['bounce'] | undefined,
 ): Promise<void> => {
+  const isPermanentCritical = bounceDoc.areAllPermanentBounces()
+  if (bounceDoc.hasEmailed && !isPermanentCritical) {
+    // No further action required
+    logCriticalBounce(bounceDoc, submissionId, bounceInfo, [])
+    return
+  }
   const form = await Form.getFullFormById(bounceDoc.formId)
   if (!form) {
     logger.warn({
@@ -162,13 +168,12 @@ const handleCriticalBounce = async (
     })
     return
   }
-  const isPermanentCritical = bounceDoc.areAllPermanentBounces()
   // TODO (private #30): enable form deactivation
   // if (isPermanentCritical) {
   //   await form.deactivate()
   // }
   const emailRecipients = computeValidEmails(form, bounceDoc)
-  if (emailRecipients.length > 0 && !bounceDoc.hasEmailed) {
+  if (emailRecipients.length > 0) {
     await MailService.sendBounceNotification({
       emailRecipients,
       bouncedRecipients: bounceDoc.getEmails(),
