@@ -3,6 +3,7 @@ import validator from 'validator'
 
 import { bounceLifeSpan } from '../../../config/config'
 import {
+  BounceType,
   IBounceNotification,
   IBounceSchema,
   IEmailNotification,
@@ -49,6 +50,10 @@ const BounceSchema = new Schema<IBounceSchema>({
         hasBounced: {
           type: Boolean,
           default: false,
+        },
+        bounceType: {
+          type: String,
+          enum: Object.values(BounceType),
         },
         _id: false,
       },
