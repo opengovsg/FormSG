@@ -106,7 +106,7 @@ export interface IFormSchema extends IForm, Document {
   getMainFields(): Pick<IFormSchema, '_id' | 'title' | 'status'>
   getUniqMyinfoAttrs(): MyInfoAttribute[]
   duplicate(overrideProps: Partial<IForm>): Partial<IFormSchema>
-  transferOwner(currentOwner: IUserSchema, newOwnerEmail: string)
+  transferOwner(currentOwner: IUserSchema, newOwnerEmail: string): void
 }
 
 export interface IPopulatedForm extends IFormSchema {
