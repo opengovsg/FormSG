@@ -71,6 +71,9 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock AuthService and MailService to return without errors
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        ok(<IAgencySchema>{}),
+      )
       MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
       MockMailService.sendLoginOtp.mockResolvedValueOnce(true)
 
@@ -85,9 +88,28 @@ describe('auth.controller', () => {
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)
     })
 
+    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+      // Arrange
+      const expectedError = new InvalidDomainError()
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        err(expectedError),
+      )
+
+      // Act
+      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
+    })
+
     it('should return 500 when there is an error generating login OTP', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        ok(<IAgencySchema>{}),
+      )
       // Mock createLoginOtp failure
       MockAuthService.createLoginOtp.mockRejectedValueOnce(
         new Error('otp creation error'),
@@ -109,6 +131,9 @@ describe('auth.controller', () => {
     it('should return 500 when there is an error sending login OTP', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        ok(<IAgencySchema>{}),
+      )
       // Mock createLoginOtp success but sendLoginOtp failure.
       MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
       MockMailService.sendLoginOtp.mockRejectedValueOnce(
@@ -142,12 +167,10 @@ describe('auth.controller', () => {
       const mockUser = {
         toObject: () => ({ id: 'imagine this is a user document from the db' }),
       } as IUserSchema
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
+      const mockRes = expressHandler.mockResponse()
 
       // Mock all service success.
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
       MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
       MockUserService.retrieveUser.mockResolvedValueOnce(mockUser)
 

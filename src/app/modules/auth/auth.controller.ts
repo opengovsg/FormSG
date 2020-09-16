@@ -75,12 +75,16 @@ export const handleCheckUser: RequestHandler<
 }
 
 /**
- * Precondition: AuthMiddlewares.validateDomain must precede this handler.
+ * Handler for POST /auth/sendotp endpoint.
+ * @return 200 when OTP has been been successfully sent
+ * @return 401 when email domain is invalid
+ * @return 500 when unknown errors occurs during generate OTP, or create/send the email that delivers the OTP to the user's email address
  */
-export const handleLoginSendOtp: RequestHandler = async (
-  req: Request<ParamsDictionary, string, { email: string }>,
-  res: ResponseAfter['validateDomain'],
-) => {
+export const handleLoginSendOtp: RequestHandler<
+  ParamsDictionary,
+  string,
+  { email: string }
+> = async (req, res) => {
   // Joi validation ensures existence.
   const { email } = req.body
   const requestIp = getRequestIp(req)
@@ -88,6 +92,22 @@ export const handleLoginSendOtp: RequestHandler = async (
     action: 'handleSendLoginOtp',
     email,
     ip: requestIp,
+  }
+
+  const validateResult = await AuthService.validateEmailDomain(email)
+  if (validateResult.isErr()) {
+    const { error } = validateResult
+    logger.error({
+      message: 'Domain validation error',
+      meta: {
+        action: 'handleLoginSendOtp',
+        ip: getRequestIp(req),
+        email,
+      },
+      error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).send(errorMessage)
   }
 
   // Create OTP.
