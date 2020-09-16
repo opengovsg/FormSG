@@ -108,7 +108,7 @@ describe('helmetMiddlewares', () => {
       mockRes,
       jest.fn(),
     )
-    expect(mockHelmet.hsts).toHaveBeenCalled()
+    expect(mockHelmet.hsts).toHaveBeenCalledWith({ maxAge: 5184000 })
   })
 
   it('should not call helmet.hsts() if !req.secure', () => {
