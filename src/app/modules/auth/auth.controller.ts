@@ -8,23 +8,70 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import MailService from '../../services/mail.service'
 import { getRequestIp } from '../../utils/request'
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 import * as UserService from '../user/user.service'
 
+import { InvalidDomainError } from './auth.errors'
 import * as AuthService from './auth.service'
 import { ResponseAfter, SessionUser } from './auth.types'
 
 const logger = createLoggerWithLabel(module)
 
 /**
- * Precondition: AuthMiddlewares.validateDomain must precede this handler.
- * @returns 200 regardless, assumed to have passed domain validation.
+ * Handler to map ApplicationErrors to their correct status code and error
+ * messages.
+ * @param error The error to retrieve the status codes and error messages
  */
-export const handleCheckUser: RequestHandler = async (
-  _req: Request,
-  res: ResponseAfter['validateDomain'],
-) => {
-  return res.sendStatus(StatusCodes.OK)
+const mapRouteError = (error: ApplicationError) => {
+  switch (error.constructor) {
+    case InvalidDomainError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: error.message,
+      }
+    case DatabaseError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+    default:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
+}
+
+/**
+ * Handler for GET /auth/checkuser endpoint.
+ * @returns 500 when there was an error validating body.email
+ * @returns 401 when domain of body.email is invalid
+ * @returns 200 if domain of body.email is valid
+ */
+export const handleCheckUser: RequestHandler<
+  ParamsDictionary,
+  string,
+  { email: string }
+> = async (req, res) => {
+  // Joi validation ensures existence.
+  const { email } = req.body
+
+  const validateResult = await AuthService.validateEmailDomain(email)
+  validateResult
+    .map(() => res.sendStatus(StatusCodes.OK))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Domain validation error',
+        meta: {
+          action: 'handleCheckUser',
+          ip: getRequestIp(req),
+          email,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).send(errorMessage)
+    })
 }
 
 /**

@@ -1,3 +1,4 @@
+import { err, ok } from 'neverthrow'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
@@ -6,7 +7,7 @@ import { IAgencySchema, IUserSchema } from 'src/types'
 
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
-import { InvalidOtpError } from '../auth.errors'
+import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
 import * as AuthService from '../auth.service'
 
 const VALID_EMAIL = 'test@example.com'
@@ -25,19 +26,38 @@ describe('auth.controller', () => {
   })
 
   describe('handleCheckUser', () => {
-    it('should return 200', async () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { email: 'test@example.com' },
+    })
+
+    it('should return 200 when domain is valid', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        ok(<IAgencySchema>{}),
+      )
 
       // Act
-      await AuthController.handleCheckUser(
-        expressHandler.mockRequest(),
-        mockRes,
-        jest.fn(),
-      )
+      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.sendStatus).toBeCalledWith(200)
+    })
+
+    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+      // Arrange
+      const expectedError = new InvalidDomainError()
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        err(expectedError),
+      )
+
+      // Act
+      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
     })
   })
 
