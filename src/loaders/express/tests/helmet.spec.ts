@@ -103,11 +103,15 @@ describe('helmetMiddlewares', () => {
     const mockReq = expressHandler.mockRequest({ secure: true })
     const mockRes = expressHandler.mockResponse()
 
-    helmetMiddlewares().filter((result) => typeof result === 'function')[0](
-      mockReq,
-      mockRes,
-      jest.fn(),
+    // Find works for helmet.hsts() because the other functions are mocked to return a string
+    const hstsFn = helmetMiddlewares().find(
+      (result) => typeof result === 'function',
     )
+    // Necessary to check for hstsFn because find() returns undefined by default, otherwise
+    // will throw TypeError
+    if (hstsFn) {
+      hstsFn(mockReq, mockRes, jest.fn())
+    }
     expect(mockHelmet.hsts).toHaveBeenCalledWith({ maxAge: 5184000 })
   })
 
@@ -115,11 +119,13 @@ describe('helmetMiddlewares', () => {
     const mockReq = expressHandler.mockRequest({ secure: false })
     const mockRes = expressHandler.mockResponse()
 
-    helmetMiddlewares().filter((result) => typeof result === 'function')[0](
-      mockReq,
-      mockRes,
-      jest.fn(),
+    const hstsFn = helmetMiddlewares().find(
+      (result) => typeof result === 'function',
     )
+    if (hstsFn) {
+      hstsFn(mockReq, mockRes, jest.fn())
+    }
+
     expect(mockHelmet.hsts).not.toHaveBeenCalled()
   })
 
