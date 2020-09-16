@@ -79,9 +79,7 @@ describe('helmetMiddlewares', () => {
     mockHelmet.contentSecurityPolicy = jest
       .fn()
       .mockReturnValue('contentSecurityPolicy')
-    mockHelmet.hsts = jest
-      .fn()
-      .mockReturnValue(jest.fn().mockReturnValue('hsts'))
+    mockHelmet.hsts = jest.fn().mockReturnValue(jest.fn())
   })
 
   afterEach(() => {
