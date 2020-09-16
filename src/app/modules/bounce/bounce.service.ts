@@ -8,6 +8,7 @@ import {
   createLoggerWithLabel,
 } from '../../../config/logger'
 import {
+  BounceType,
   // TODO (private #30): enable form deactivation
   // BounceType,
   IBounceNotification,
@@ -161,8 +162,9 @@ const handleCriticalBounce = async (
     })
     return
   }
+  const isPermanentCritical = bounceDoc.areAllPermanentBounces()
   // TODO (private #30): enable form deactivation
-  // if (bounceInfo?.bounceType === BounceType.Permanent) {
+  // if (isPermanentCritical) {
   //   await form.deactivate()
   // }
   const emailRecipients = computeValidEmails(form, bounceDoc)
@@ -170,7 +172,9 @@ const handleCriticalBounce = async (
     await MailService.sendBounceNotification({
       emailRecipients,
       bouncedRecipients: bounceDoc.getEmails(),
-      bounceType: bounceInfo?.bounceType,
+      bounceType: isPermanentCritical
+        ? BounceType.Permanent
+        : BounceType.Transient,
       formTitle: form.title,
       formId: bounceDoc.formId,
       submissionId,
