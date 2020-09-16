@@ -83,11 +83,14 @@ BounceSchema.statics.fromSnsNotification = function (
   if (emailType !== EmailType.AdminResponse || !formId) {
     return null
   }
-  const isBounce = isBounceNotification(snsInfo)
   const bounces: ISingleBounce[] = snsInfo.mail.commonHeaders.to.map(
     (email) => {
-      if (isBounce && hasEmailBounced(snsInfo as IBounceNotification, email)) {
-        return { email, hasBounced: true }
+      if (isBounceNotification(snsInfo) && hasEmailBounced(snsInfo, email)) {
+        return {
+          email,
+          hasBounced: true,
+          bounceType: snsInfo.bounce.bounceType,
+        }
       } else {
         return { email, hasBounced: false }
       }
