@@ -3,7 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { ISnsNotification } from '../../../types'
+import { IEmailNotification, ISnsNotification } from '../../../types'
 
 import * as BounceService from './bounce.service'
 
@@ -24,10 +24,23 @@ export const handleSns: RequestHandler<
   // it is meant to go back to AWS.
   try {
     const isValid = await BounceService.isValidSnsRequest(req.body)
-    if (!isValid) {
-      return res.sendStatus(StatusCodes.FORBIDDEN)
+    if (!isValid) return res.sendStatus(StatusCodes.FORBIDDEN)
+
+    const notification: IEmailNotification = JSON.parse(req.body.Message)
+    BounceService.logEmailNotification(notification)
+    const bounceDoc = await BounceService.getUpdatedBounceDoc(notification)
+    // Could not parse notification correctly
+    if (!bounceDoc) return res.sendStatus(StatusCodes.BAD_REQUEST)
+    // TODO (private #30): enable form deactivation
+    // if (bounceDoc.areAllPermanentBounces()) {
+    //   await BounceService.deactivateFormFromBounce(bounceDoc)
+    // }
+    if (bounceDoc.isCriticalBounce()) {
+      const emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)
+      BounceService.logCriticalBounce(bounceDoc, notification, emailRecipients)
+      bounceDoc.updateHasEmailed(emailRecipients)
     }
-    await BounceService.updateBounces(req.body)
+    await bounceDoc.save()
     return res.sendStatus(StatusCodes.OK)
   } catch (err) {
     logger.warn({
