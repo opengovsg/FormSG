@@ -196,6 +196,19 @@ BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
   return Array.from(this.bounces.map((emailInfo) => emailInfo.email))
 }
 
+/**
+ * Sets hasEmailed to true if at least one person has been emailed.
+ * @param emailRecipients Array of recipients who were emailed.
+ */
+BounceSchema.methods.updateHasEmailed = function (
+  this: IBounceSchema,
+  emailRecipients: string[],
+): void {
+  if (emailRecipients.length > 0) {
+    this.hasEmailed = true
+  }
+}
+
 const getBounceModel = (db: Mongoose): IBounceModel => {
   try {
     return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
