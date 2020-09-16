@@ -105,6 +105,8 @@ services:
     volumes:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
+      # This is where we add scripts to initialise AWS resources.
+      # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
       - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
 
