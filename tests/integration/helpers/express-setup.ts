@@ -1,7 +1,7 @@
 import compression from 'compression'
 import express, { Router } from 'express'
-import helmet from 'helmet'
 import mongoose from 'mongoose'
+import nocache from 'nocache'
 import { Response } from 'supertest'
 
 import errorHandlerMiddlewares from 'src/loaders/express/error-handler'
@@ -20,7 +20,7 @@ export const setupApp = (
   app.use(compression())
   app.use(parserMiddlewares())
   app.use(helmetMiddlewares())
-  app.use(helmet.noCache())
+  app.use(nocache())
 
   app.use(sessionMiddlewares(mongoose.connection))
 
@@ -43,7 +43,7 @@ export const setupApp = (
     .set('cookie', cookieStore.get());
  */
 export class CookieStore {
-  #currentCookie: string = ''
+  #currentCookie = ''
 
   handleCookie(res: Response) {
     this.set(res.header['set-cookie'][0])
