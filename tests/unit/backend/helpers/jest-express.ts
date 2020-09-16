@@ -15,7 +15,7 @@ const mockRequest = <P extends Record<string, string>, B>({
     body: body ?? {},
     params: params ?? {},
     session: session ?? {},
-    secure: secure ?? {},
+    secure: secure ?? true,
     get(name: string) {
       if (name === 'cf-connecting-ip') return 'MOCK_IP'
       return undefined
