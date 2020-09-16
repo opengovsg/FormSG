@@ -102,6 +102,7 @@ describe('helmetMiddlewares', () => {
   it('should call helmet.hsts() if req.secure', () => {
     const mockReq = expressHandler.mockRequest({ secure: true })
     const mockRes = expressHandler.mockResponse()
+    const mockNext = jest.fn()
 
     // Find works for helmet.hsts() because the other functions are mocked to return a string
     const hstsFn = helmetMiddlewares().find(
@@ -110,23 +111,26 @@ describe('helmetMiddlewares', () => {
     // Necessary to check for hstsFn because find() returns undefined by default, otherwise
     // will throw TypeError
     if (hstsFn) {
-      hstsFn(mockReq, mockRes, jest.fn())
+      hstsFn(mockReq, mockRes, mockNext)
     }
     expect(mockHelmet.hsts).toHaveBeenCalledWith({ maxAge: 5184000 })
+    expect(mockNext).not.toHaveBeenCalled()
   })
 
   it('should not call helmet.hsts() if !req.secure', () => {
     const mockReq = expressHandler.mockRequest({ secure: false })
     const mockRes = expressHandler.mockResponse()
+    const mockNext = jest.fn()
 
     const hstsFn = helmetMiddlewares().find(
       (result) => typeof result === 'function',
     )
     if (hstsFn) {
-      hstsFn(mockReq, mockRes, jest.fn())
+      hstsFn(mockReq, mockRes, mockNext)
     }
 
     expect(mockHelmet.hsts).not.toHaveBeenCalled()
+    expect(mockNext).toHaveBeenCalled()
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if cspReportUri and !isDev', () => {
