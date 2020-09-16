@@ -175,6 +175,19 @@ BounceSchema.methods.isCriticalBounce = function (
 }
 
 /**
+ * Returns true if the document indicates that all recipients bounced and
+ * all bounces were permanent, false otherwise.
+ */
+BounceSchema.methods.areAllPermanentBounces = function (
+  this: IBounceSchema,
+): boolean {
+  return this.bounces.every(
+    (emailInfo) =>
+      emailInfo.hasBounced && emailInfo.bounceType === BounceType.Permanent,
+  )
+}
+
+/**
  * Returns the list of email recipients for this form
  */
 BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
