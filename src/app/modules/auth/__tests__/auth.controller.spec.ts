@@ -185,13 +185,27 @@ describe('auth.controller', () => {
       })
     })
 
+    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+      // Arrange
+      const expectedError = new InvalidDomainError()
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
+        err(expectedError),
+      )
+
+      // Act
+      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
+    })
+
     it('should return 422 when verifying login OTP throws an InvalidOtpError', async () => {
       // Arrange
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
+      const mockRes = expressHandler.mockResponse()
       const expectedInvalidOtpError = new InvalidOtpError()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
       // Mock error from verifyLoginOtp.
       MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
         expectedInvalidOtpError,
@@ -210,10 +224,8 @@ describe('auth.controller', () => {
 
     it('should return 500 when verifying login OTP throws a non-InvalidOtpError', async () => {
       // Arrange
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
       // Mock generic error from verifyLoginOtp.
       MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
         new Error('generic error'),
@@ -234,10 +246,8 @@ describe('auth.controller', () => {
 
     it('should return 500 when an error is thrown while upserting user', async () => {
       // Arrange
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
       MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
       MockUserService.retrieveUser.mockRejectedValueOnce(
         new Error('upsert error'),

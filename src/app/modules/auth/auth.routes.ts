@@ -79,7 +79,6 @@ AuthRouter.post(
         .message('Please enter a valid otp'),
     }),
   }),
-  AuthMiddlewares.validateDomain,
   AuthController.handleLoginVerifyOtp,
 )
 

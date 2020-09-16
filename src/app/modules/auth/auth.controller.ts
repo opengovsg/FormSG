@@ -158,20 +158,38 @@ export const handleLoginSendOtp: RequestHandler<
 }
 
 /**
- * Precondition: AuthMiddlewares.validateDomain must precede this handler.
+ *  Handler for POST /auth/verifyotp endpoint.
+ * @returns 200 when user has successfully logged in, with session cookie set
+ * @returns 401 when the email domain is invalid
+ * @returns 422 when the OTP is invalid
+ * @returns 500 when error occurred whilst verifying the OTP
  */
-export const handleLoginVerifyOtp: RequestHandler = async (
-  req: Request<
-    ParamsDictionary,
-    string | SessionUser,
-    { email: string; otp: string }
-  >,
-  res: ResponseAfter['validateDomain'],
-) => {
+export const handleLoginVerifyOtp: RequestHandler<
+  ParamsDictionary,
+  string | SessionUser,
+  { email: string; otp: string }
+> = async (req, res) => {
   // Joi validation ensures existence.
   const { email, otp } = req.body
-  // validateDomain middleware will populate agency.
-  const { agency } = res.locals
+
+  const validateResult = await AuthService.validateEmailDomain(email)
+  if (validateResult.isErr()) {
+    const { error } = validateResult
+    logger.error({
+      message: 'Domain validation error',
+      meta: {
+        action: 'handleLoginVerifyOtp',
+        ip: getRequestIp(req),
+        email,
+      },
+      error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).send(errorMessage)
+  }
+
+  // Since there is no error, agency is retrieved from validation.
+  const agency = validateResult.value
 
   const logMeta = {
     action: 'handleLoginVerifyOtp',
@@ -206,7 +224,7 @@ export const handleLoginVerifyOtp: RequestHandler = async (
   // OTP is valid, proceed to login user.
   try {
     // TODO (#317): remove usage of non-null assertion
-    const user = await UserService.retrieveUser(email, agency!)
+    const user = await UserService.retrieveUser(email, agency)
     // Create user object to return to frontend.
     const userObj = { ...user.toObject(), agency }
 
@@ -249,7 +267,7 @@ export const handleSignout: RequestHandler = async (req, res) => {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  req.session!.destroy((error) => {
+  req.session?.destroy((error) => {
     if (error) {
       logger.error({
         message: 'Failed to destroy session',
