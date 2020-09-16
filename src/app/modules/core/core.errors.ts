@@ -26,3 +26,9 @@ export abstract class ApplicationError extends Error {
     this.meta = meta
   }
 }
+
+export class DatabaseError extends ApplicationError {
+  constructor(message?: string) {
+    super(message)
+  }
+}
