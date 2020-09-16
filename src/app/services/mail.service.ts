@@ -320,14 +320,12 @@ export class MailService {
     bounceType,
     formTitle,
     formId,
-    submissionId,
   }: {
     emailRecipients: string[]
     bouncedRecipients: string[]
     bounceType: BounceType | undefined
     formTitle: string
     formId: string
-    submissionId: string | undefined
   }) => {
     const htmlData: BounceNotificationHtmlData = {
       formTitle,
@@ -343,7 +341,6 @@ export class MailService {
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
         [EMAIL_HEADERS.formId]: formId,
-        [EMAIL_HEADERS.submissionId]: submissionId ?? '',
       },
     }
 
