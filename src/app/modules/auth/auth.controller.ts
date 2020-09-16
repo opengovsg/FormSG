@@ -1,5 +1,5 @@
 import to from 'await-to-js'
-import { Request, RequestHandler } from 'express'
+import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
@@ -13,7 +13,7 @@ import * as UserService from '../user/user.service'
 
 import { InvalidDomainError } from './auth.errors'
 import * as AuthService from './auth.service'
-import { ResponseAfter, SessionUser } from './auth.types'
+import { SessionUser } from './auth.types'
 
 const logger = createLoggerWithLabel(module)
 
