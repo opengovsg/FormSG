@@ -89,6 +89,7 @@ const formSchemaOptions: SchemaOptions = {
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
+  deactivateById(formId: string): Promise<IFormSchema | null>
 }
 
 type IEncryptedFormModel = Model<IEncryptedFormSchema>
@@ -429,12 +430,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this.permissionList.push({ email: currentOwner.email, write: true })
   }
 
-  // Deactivate the form
-  FormSchema.methods.deactivate = async function (this: IFormSchema) {
-    this.status = Status.Private
-    return this.save()
-  }
-
   // Statics
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (
@@ -473,6 +468,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
     })
     return data
+  }
+
+  // Deactivate form by ID
+  FormSchema.statics.deactivateById = async function (
+    this: IFormModel,
+    formId: string,
+  ): Promise<IFormSchema | null> {
+    const form = await this.findById(formId)
+    if (!form) return null
+    form.status = Status.Private
+    return form.save()
   }
 
   // Hooks
