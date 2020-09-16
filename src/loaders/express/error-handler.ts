@@ -1,4 +1,4 @@
-import { isCelebrate } from 'celebrate'
+import { isCelebrateError } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
@@ -27,7 +27,7 @@ const errorHandlerMiddlewares = () => {
       const genericErrorMessage =
         'Apologies, something odd happened. Please try again later!'
       // Error page
-      if (isCelebrate(err)) {
+      if (isCelebrateError(err)) {
         const errorMessage = get(
           err,
           'joi.details[0].message',
