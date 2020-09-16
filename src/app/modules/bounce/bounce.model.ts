@@ -14,6 +14,7 @@ import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 import {
   extractHeader,
+  hasEmailBeenDelivered,
   hasEmailBounced,
   isBounceNotification,
   isDeliveryNotification,
@@ -120,20 +121,43 @@ BounceSchema.methods.merge = function (
     // If we were previously notified that a given email has bounced,
     // we want to retain that information
     if (oldBounce.hasBounced) {
+      const currentEmail = oldBounce.email
       // Check if the latest recipient list contains that email
-      const matchedLatestBounce = latestBounces.bounces.find(
-        (newBounce) => newBounce.email === oldBounce.email,
+      const matchedIndex = latestBounces.bounces.findIndex(
+        (newBounce) => newBounce.email === currentEmail,
       )
-      // Check if the latest notification indicates that this email
-      // actually succeeded. We can't just use latestBounces because
-      // a false in latestBounces doesn't guarantee that the email was
-      // delivered, only that the email has not bounced yet.
-      const hasSubsequentlySucceeded =
-        isDeliveryNotification(snsInfo) &&
-        snsInfo.delivery.recipients.includes(oldBounce.email)
-      if (matchedLatestBounce) {
-        // Set the latest bounce status based on the latest notification
-        matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
+      if (matchedIndex >= 0) {
+        // Check if the latest notification indicates that this email
+        // actually succeeded. We can't just use latestBounces because
+        // a false in latestBounces doesn't guarantee that the email was
+        // delivered, only that the email has not bounced yet.
+        if (
+          isDeliveryNotification(snsInfo) &&
+          hasEmailBeenDelivered(snsInfo, currentEmail)
+        ) {
+          latestBounces.bounces[matchedIndex] = {
+            email: currentEmail,
+            hasBounced: false,
+          }
+        } else if (isBounceNotification(snsInfo)) {
+          // Does the latest notification contain the bounce type
+          // of this email? If so, update the bounce type.
+          // If not, retain the old bounce type.
+          if (hasEmailBounced(snsInfo, currentEmail)) {
+            latestBounces.bounces[matchedIndex] = {
+              email: currentEmail,
+              hasBounced: true,
+              bounceType: snsInfo.bounce.bounceType,
+            }
+          } else {
+            latestBounces.bounces[matchedIndex] = {
+              email: currentEmail,
+              hasBounced: true,
+              // TODO (private #44): remove undefined check
+              bounceType: oldBounce.bounceType ?? undefined,
+            }
+          }
+        }
       }
     }
   })
