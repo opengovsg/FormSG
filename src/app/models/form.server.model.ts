@@ -103,6 +103,25 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
 type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 
+// Function that coerces the string of comma-separated emails sent by the client
+// into an array of emails
+function parseEmails(v: string | string[]): string[] {
+  // Cases
+  // ['test@hotmail.com'] => ['test@hotmail.com'] ~ unchanged
+  // ['test@hotmail.com', 'test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com'] ~ unchanged
+  // ['test@hotmail.com, test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com']
+  // ['test@hotmail.com, test@gmail.com', 'test@yahoo.com'] => ['test@hotmail.com', 'test@gmail.com', 'test@yahoo.com']
+  // 'test@hotmail.com, test@gmail.com' => ['test@hotmail.com', 'test@gmail.com']
+  if (Array.isArray(v)) {
+    return v
+      .join(',')
+      .split(',')
+      .map((email) => email.trim())
+  } else {
+    return v.split(',').map((email) => email.trim())
+  }
+}
+
 const EmailFormSchema = new Schema<IEmailFormSchema>({
   emails: {
     type: [
@@ -111,18 +130,11 @@ const EmailFormSchema = new Schema<IEmailFormSchema>({
         trim: true,
       },
     ],
+    set: parseEmails,
     validate: {
       validator: (v: string[]) => {
-        if (!Array.isArray(v) || v.length === 0) return false
-        // Weird artifact of legacy code, emails are mostly a single
-        // string of emails separated by commas.
-        // Split the email strings into individual emails by commas (if
-        // possible) and validate them.
-        return v.every((emailString) =>
-          emailString
-            .split(',')
-            .every((email) => validator.isEmail(email.trim())),
-        )
+        if (!Array.isArray(v)) return false
+        return v.every((email) => validator.isEmail(email.trim()))
       },
       message: 'Please provide valid email addresses',
     },
