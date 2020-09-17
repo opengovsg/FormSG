@@ -9,6 +9,7 @@ import { IFormSchema, ISubmissionSchema } from 'src/types'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { MailSendError } from '../modules/mail/mail.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -17,7 +18,7 @@ export const generateLoginOtpHtml = (htmlData: {
   appName: string
   appUrl: string
   ipAddress: string
-}): ResultAsync<string, Error> => {
+}): ResultAsync<string, MailSendError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
   return ResultAsync.fromPromise(
     ejs.renderFile(pathToTemplate, htmlData),
@@ -30,7 +31,7 @@ export const generateLoginOtpHtml = (htmlData: {
         error,
       })
 
-      return error as Error
+      return new MailSendError()
     },
   )
 }

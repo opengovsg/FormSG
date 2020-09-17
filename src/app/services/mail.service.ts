@@ -1,5 +1,6 @@
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
+import { err, errAsync, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import { OperationOptions } from 'retry'
@@ -16,6 +17,7 @@ import {
   ISubmissionSchema,
 } from '../../types'
 import { EMAIL_HEADERS, EmailType } from '../constants/mail'
+import { MailSendError } from '../modules/mail/mail.errors'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
@@ -302,9 +304,10 @@ export class MailService {
    * Sends a login otp email to a valid email
    * @param recipient the recipient email address
    * @param otp the OTP to send
-   * @throws error if mail fails, to be handled by the caller
+   * @returns ok(never) if sending of mail succeeds
+   * @returns err(MailSendError) if sending of mail fails, to be handled by the caller
    */
-  sendLoginOtp = async ({
+  sendLoginOtp = ({
     recipient,
     otp,
     ipAddress,
@@ -312,37 +315,39 @@ export class MailService {
     recipient: string
     otp: string
     ipAddress: string
-  }) => {
-    const loginHtmlResult = await generateLoginOtpHtml({
+  }): ResultAsync<any, MailSendError> => {
+    return generateLoginOtpHtml({
       appName: this.#appName,
       appUrl: this.#appUrl,
       ipAddress: ipAddress,
       otp,
-    })
-
-    if (loginHtmlResult.isErr()) {
-      logger.error({
-        message: 'Error generating login OTP HTML',
-        meta: {
-          action: 'sendLoginOtp',
+    }).andThen((loginHtml) => {
+      const mail: MailOptions = {
+        to: recipient,
+        from: this.#senderFromString,
+        subject: `One-Time Password (OTP) for ${this.#appName}`,
+        html: loginHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.LoginOtp,
         },
-        error: loginHtmlResult.error,
-      })
+      }
 
-      throw loginHtmlResult.error
-    }
+      return ResultAsync.fromPromise(
+        this.#sendNodeMail(mail, { mailId: 'OTP' }),
+        (error) => {
+          logger.error({
+            message: 'Error sending login OTP to email',
+            meta: {
+              action: 'sendLoginOtp',
+              recipient,
+            },
+            error,
+          })
 
-    const mail: MailOptions = {
-      to: recipient,
-      from: this.#senderFromString,
-      subject: `One-Time Password (OTP) for ${this.#appName}`,
-      html: loginHtmlResult.value,
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.LoginOtp,
-      },
-    }
-
-    return this.#sendNodeMail(mail, { mailId: 'OTP' })
+          return new MailSendError()
+        },
+      )
+    })
   }
 
   /**

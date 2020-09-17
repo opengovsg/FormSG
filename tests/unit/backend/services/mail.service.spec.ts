@@ -3,6 +3,7 @@ import moment from 'moment-timezone'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
 import { ImportMock } from 'ts-mock-imports'
 
+import { MailSendError } from 'src/app/modules/mail/mail.errors'
 import {
   AutoreplySummaryRenderData,
   MailOptions,
@@ -48,7 +49,7 @@ describe('mail.service', () => {
   })
 
   describe('Constructor', () => {
-    it('should throw error when invalid senderMail param is passed ', () => {
+    it('should throw error when invalid senderMail param is passed', () => {
       // Arrange
       const invalidParams = {
         transporter: mockTransporter,
@@ -211,12 +212,14 @@ describe('mail.service', () => {
         to: MOCK_VALID_EMAIL,
         from: MOCK_SENDER_STRING,
         subject: `One-Time Password (OTP) for ${MOCK_APP_NAME}`,
-        html: await MailUtils.generateLoginOtpHtml({
-          otp: MOCK_OTP,
-          appName: MOCK_APP_NAME,
-          appUrl: MOCK_APP_URL,
-          ipAddress: MOCK_IP,
-        }),
+        html: (
+          await MailUtils.generateLoginOtpHtml({
+            otp: MOCK_OTP,
+            appName: MOCK_APP_NAME,
+            appUrl: MOCK_APP_URL,
+            ipAddress: MOCK_IP,
+          })
+        )._unsafeUnwrap(),
         headers: {
           // Hardcode in tests in case something changes this.
           'X-Formsg-Email-Type': 'Login OTP',
@@ -233,31 +236,33 @@ describe('mail.service', () => {
       const expectedArgument = await generateExpectedArg()
 
       // Act
-      const pendingSend = mailService.sendLoginOtp({
+      const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
         ipAddress: MOCK_IP,
       })
 
       // Assert
-      await expect(pendingSend).resolves.toEqual(mockedResponse)
+      expect(actualResult.isOk()).toBe(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
-    it('should reject with error when email is invalid', async () => {
+    it('should return a MailSendError when email is invalid', async () => {
       // Arrange
       const invalidEmail = 'notAnEmail'
 
       // Act
-      const pendingSend = mailService.sendLoginOtp({
+      const actualResult = await mailService.sendLoginOtp({
         recipient: invalidEmail,
         otp: MOCK_OTP,
         ipAddress: MOCK_IP,
       })
       // Assert
-      await expect(pendingSend).rejects.toThrowError('Invalid email error')
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MailSendError)
     })
 
     it('should autoretry when 4xx error is thrown by sendNodeMail and pass if second try passes', async () => {
@@ -275,14 +280,15 @@ describe('mail.service', () => {
       const expectedArgument = await generateExpectedArg()
 
       // Act
-      const pendingSendLoginOtp = mailService.sendLoginOtp({
+      const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
         ipAddress: MOCK_IP,
       })
 
       // Assert
-      await expect(pendingSendLoginOtp).resolves.toEqual(mockedResponse)
+      expect(actualResult.isOk()).toBe(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
       // Should have been called two times since it rejected the first one and
       // resolved
@@ -301,14 +307,15 @@ describe('mail.service', () => {
       const expectedArgument = await generateExpectedArg()
 
       // Act
-      const pendingSendLoginOtp = mailService.sendLoginOtp({
+      const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
         ipAddress: MOCK_IP,
       })
 
       // Assert
-      await expect(pendingSendLoginOtp).rejects.toEqual(mock4xxReject)
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MailSendError)
       // Check arguments passed to sendNodeMail
       // Should have been called MOCK_RETRY_COUNT + 1 times
       expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
@@ -329,14 +336,15 @@ describe('mail.service', () => {
       const expectedArgument = await generateExpectedArg()
 
       // Act
-      const pendingSendLoginOtp = mailService.sendLoginOtp({
+      const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
         ipAddress: MOCK_IP,
       })
 
       // Assert
-      await expect(pendingSendLoginOtp).rejects.toEqual(mockError)
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MailSendError)
       // Check arguments passed to sendNodeMail
       // Should only invoke two times and stop since the second rejected value
       // is non-4xx error.
