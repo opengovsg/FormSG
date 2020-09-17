@@ -1,4 +1,3 @@
-import to from 'await-to-js'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
@@ -9,6 +8,7 @@ import { LINKS } from '../../../shared/constants'
 import MailService from '../../services/mail.service'
 import { getRequestIp } from '../../utils/request'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { MailSendError } from '../mail/mail.errors'
 import * as UserService from '../user/user.service'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
@@ -35,6 +35,7 @@ const mapRouteError = (error: ApplicationError, coreErrorMessage?: string) => {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
+    case MailSendError:
     case ApplicationError:
     case DatabaseError:
       return {
@@ -100,68 +101,42 @@ export const handleLoginSendOtp: RequestHandler<
     ip: requestIp,
   }
 
-  const validateResult = await AuthService.validateEmailDomain(email)
-  if (validateResult.isErr()) {
-    const { error } = validateResult
-    logger.error({
-      message: 'Domain validation error',
-      meta: {
-        action: 'handleLoginSendOtp',
-        ip: getRequestIp(req),
-        email,
-      },
-      error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).send(errorMessage)
-  }
-
-  // Create OTP.
-  const otpResult = await AuthService.createLoginOtp(email)
-  if (otpResult.isErr()) {
-    const { error } = otpResult
-    logger.error({
-      message: 'Error generating OTP',
-      meta: logMeta,
-      error,
-    })
-
-    const { errorMessage, statusCode } = mapRouteError(
-      error,
-      /* coreErrorMessage= */ 'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-    )
-    return res.status(statusCode).send(errorMessage)
-  }
-
-  // Send OTP.
-  const [sendErr] = await to(
-    MailService.sendLoginOtp({
-      recipient: email,
-      otp: otpResult.value,
-      ipAddress: requestIp,
-    }),
-  )
-  if (sendErr) {
-    logger.error({
-      message: 'Error mailing OTP',
-      meta: logMeta,
-      error: sendErr,
-    })
-
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        'Error sending OTP. Please try again later and if the problem persists, contact us.',
+  return (
+    // Step 1: Validate email domain.
+    AuthService.validateEmailDomain(email)
+      // Step 2: Create login OTP.
+      .andThen(() => AuthService.createLoginOtp(email))
+      // Step 3: Send login OTP to email address.
+      .andThen((otp) =>
+        MailService.sendLoginOtp({
+          recipient: email,
+          otp,
+          ipAddress: requestIp,
+        }),
       )
-  }
+      // Step 4a: Successfully sent login otp.
+      .map(() => {
+        logger.info({
+          message: 'Login OTP sent successfully',
+          meta: logMeta,
+        })
 
-  // Successfully sent login otp.
-  logger.info({
-    message: 'Login OTP sent successfully',
-    meta: logMeta,
-  })
-
-  return res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)
+        return res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)
+      })
+      // Step 4b: Error occurred whilst sending otp.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error sending login OTP',
+          meta: logMeta,
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(
+          error,
+          /* coreErrorMessage=*/ 'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+        )
+        return res.status(statusCode).send(errorMessage)
+      })
+  )
 }
 
 /**

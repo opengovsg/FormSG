@@ -6,6 +6,7 @@ import MailService from 'src/app/services/mail.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { MailSendError } from '../../mail/mail.errors'
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
@@ -76,7 +77,7 @@ describe('auth.controller', () => {
         okAsync(<IAgencySchema>{}),
       )
       MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
-      MockMailService.sendLoginOtp.mockResolvedValueOnce(true)
+      MockMailService.sendLoginOtp.mockReturnValueOnce(okAsync(true))
 
       // Act
       await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
@@ -137,8 +138,8 @@ describe('auth.controller', () => {
       )
       // Mock createLoginOtp success but sendLoginOtp failure.
       MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
-      MockMailService.sendLoginOtp.mockRejectedValueOnce(
-        new Error('send error'),
+      MockMailService.sendLoginOtp.mockReturnValueOnce(
+        errAsync(new MailSendError('send error')),
       )
 
       // Act
@@ -147,7 +148,7 @@ describe('auth.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(
-        'Error sending OTP. Please try again later and if the problem persists, contact us.',
+        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       )
       // Services should have been invoked.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
