@@ -11,10 +11,8 @@ cache:
   - npm
   - pip
 
-# Setup browsers needed for end-to-end tests
-before_install:
-  - sudo apt-get clean && sudo apt-get update
-  - sudo apt-get install -y dpkg google-chrome-stable fluxbox chromium-browser
+addons:
+  chrome: stable
 
 notifications:
   email:
@@ -26,9 +24,8 @@ notifications:
     on_failure: always
 
 before_script:
-  - fluxbox >/dev/null 2>&1 &
   - pyenv global 3.7.1
-  - pip3 install --user localstack[full]
+  - pip3 install 'localstack==0.11.5' --force-reinstall
 
 script:
   - set -e
