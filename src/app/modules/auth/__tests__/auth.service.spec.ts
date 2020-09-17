@@ -110,11 +110,15 @@ describe('auth.service', () => {
       await expect(TokenModel.countDocuments()).resolves.toEqual(1)
 
       // Act
-      const actual = await AuthService.verifyLoginOtp(MOCK_OTP, VALID_EMAIL)
+      const actualResult = await AuthService.verifyLoginOtp(
+        MOCK_OTP,
+        VALID_EMAIL,
+      )
 
       // Assert
       // Resolves successfully.
-      expect(actual).toEqual(true)
+      expect(actualResult.isOk()).toBe(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Token document should be removed.
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
     })
@@ -125,13 +129,17 @@ describe('auth.service', () => {
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
 
       // Act
-      const verifyPromise = AuthService.verifyLoginOtp(MOCK_OTP, VALID_EMAIL)
+      const actualResult = await AuthService.verifyLoginOtp(
+        MOCK_OTP,
+        VALID_EMAIL,
+      )
 
       // Assert
       const expectedError = new InvalidOtpError(
         'OTP has expired. Please request for a new OTP.',
       )
-      await expect(verifyPromise).rejects.toThrowError(expectedError)
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
     it('should throw InvalidOtpError when verification has been attempted too many times', async () => {
@@ -145,13 +153,17 @@ describe('auth.service', () => {
       )
 
       // Act
-      const verifyPromise = AuthService.verifyLoginOtp(MOCK_OTP, VALID_EMAIL)
+      const actualResult = await AuthService.verifyLoginOtp(
+        MOCK_OTP,
+        VALID_EMAIL,
+      )
 
       // Assert
       const expectedError = new InvalidOtpError(
         'You have hit the max number of attempts. Please request for a new OTP.',
       )
-      await expect(verifyPromise).rejects.toThrowError(expectedError)
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
     it('should throw InvalidOtpError when the OTP hash does not match', async () => {
@@ -161,13 +173,17 @@ describe('auth.service', () => {
       const invalidOtp = '654321'
 
       // Act
-      const verifyPromise = AuthService.verifyLoginOtp(invalidOtp, VALID_EMAIL)
+      const actualResult = await AuthService.verifyLoginOtp(
+        invalidOtp,
+        VALID_EMAIL,
+      )
 
       // Assert
       const expectedError = new InvalidOtpError(
         'OTP is invalid. Please try again.',
       )
-      await expect(verifyPromise).rejects.toThrowError(expectedError)
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
     })
   })
 })

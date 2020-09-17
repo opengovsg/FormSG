@@ -11,7 +11,7 @@ import { getRequestIp } from '../../utils/request'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 import * as UserService from '../user/user.service'
 
-import { InvalidDomainError } from './auth.errors'
+import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 import * as AuthService from './auth.service'
 import { SessionUser } from './auth.types'
 
@@ -21,18 +21,25 @@ const logger = createLoggerWithLabel(module)
  * Handler to map ApplicationErrors to their correct status code and error
  * messages.
  * @param error The error to retrieve the status codes and error messages
+ * @param coreErrorMessage Any error message to return instead of the default core error message, if any
  */
-const mapRouteError = (error: ApplicationError) => {
+const mapRouteError = (error: ApplicationError, coreErrorMessage?: string) => {
   switch (error.constructor) {
     case InvalidDomainError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: error.message,
       }
+    case InvalidOtpError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case ApplicationError:
     case DatabaseError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
+        errorMessage: coreErrorMessage ?? error.message,
       }
     default:
       return {
@@ -118,11 +125,12 @@ export const handleLoginSendOtp: RequestHandler<
       meta: logMeta,
       error,
     })
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-      )
+
+    const { errorMessage, statusCode } = mapRouteError(
+      error,
+      /* coreErrorMessage= */ 'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+    )
+    return res.status(statusCode).send(errorMessage)
   }
 
   // Send OTP.
@@ -196,28 +204,24 @@ export const handleLoginVerifyOtp: RequestHandler<
     ip: getRequestIp(req),
   }
 
-  const [verifyErr] = await to(AuthService.verifyLoginOtp(otp, email))
+  const verifyResult = await AuthService.verifyLoginOtp(otp, email)
 
-  if (verifyErr) {
+  if (verifyResult.isErr()) {
+    const { error } = verifyResult
     logger.warn({
       message:
-        verifyErr instanceof ApplicationError
+        error instanceof InvalidOtpError
           ? 'Login OTP is invalid'
           : 'Error occurred when trying to validate login OTP',
       meta: logMeta,
-      error: verifyErr,
+      error,
     })
 
-    if (verifyErr instanceof ApplicationError) {
-      return res.status(verifyErr.status).send(verifyErr.message)
-    }
-
-    // Unknown error, return generic error response.
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
-      )
+    const { errorMessage, statusCode } = mapRouteError(
+      error,
+      /* coreErrorMessage= */ 'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
+    )
+    return res.status(statusCode).send(errorMessage)
   }
 
   // OTP is valid, proceed to login user.

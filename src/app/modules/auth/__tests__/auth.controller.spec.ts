@@ -5,7 +5,7 @@ import { mocked } from 'ts-jest/utils'
 import MailService from 'src/app/services/mail.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
-import { DatabaseError } from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
@@ -174,7 +174,7 @@ describe('auth.controller', () => {
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
         okAsync(MOCK_AGENCY),
       )
-      MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
       MockUserService.retrieveUser.mockResolvedValueOnce(mockUser)
 
       // Act
@@ -212,8 +212,8 @@ describe('auth.controller', () => {
         okAsync(MOCK_AGENCY),
       )
       // Mock error from verifyLoginOtp.
-      MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
-        expectedInvalidOtpError,
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(
+        errAsync(expectedInvalidOtpError),
       )
 
       // Act
@@ -234,8 +234,8 @@ describe('auth.controller', () => {
         okAsync(MOCK_AGENCY),
       )
       // Mock generic error from verifyLoginOtp.
-      MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
-        new Error('generic error'),
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(
+        errAsync(new ApplicationError('generic error')),
       )
 
       // Act
@@ -257,7 +257,7 @@ describe('auth.controller', () => {
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
         okAsync(MOCK_AGENCY),
       )
-      MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
       MockUserService.retrieveUser.mockRejectedValueOnce(
         new Error('upsert error'),
       )

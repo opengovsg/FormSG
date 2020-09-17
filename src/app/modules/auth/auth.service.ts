@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import { IAgencySchema, ITokenSchema } from 'src/types'
@@ -110,39 +110,25 @@ export const createLoginOtp = (
  * returned. Else, the document is kept in the database and an error is thrown.
  * @param otpToVerify the OTP to verify with the hashed counterpart
  * @param email the email used to retrieve the document from the database
- * @returns true on success
- * @throws {InvalidOtpError} if the OTP is invalid or expired.
- * @throws {Error} if any errors occur whilst retrieving from database or comparing hashes.
+ * @returns ok(true) on success
+ * @returns err(InvalidOtpError) if the OTP is invalid or expired
+ * @returns err(ApplicationError) if any error occurs whilst comparing hashes
+ * @returns err(DatabaseError) if any errors occur whilst querying the database
  */
-export const verifyLoginOtp = async (otpToVerify: string, email: string) => {
-  const updatedDocument = await TokenModel.incrementAttemptsByEmail(email)
-
-  // Does not exist, return expired error message.
-  if (!updatedDocument) {
-    throw new InvalidOtpError('OTP has expired. Please request for a new OTP.')
-  }
-
-  // Too many attempts.
-  if (updatedDocument.numOtpAttempts! > MAX_OTP_ATTEMPTS) {
-    throw new InvalidOtpError(
-      'You have hit the max number of attempts. Please request for a new OTP.',
-    )
-  }
-
-  // Compare otp with saved hash.
-  const isOtpMatch = await bcrypt.compare(
-    otpToVerify,
-    updatedDocument.hashedOtp,
+export const verifyLoginOtp = (
+  otpToVerify: string,
+  email: string,
+): ResultAsync<true, InvalidOtpError | DatabaseError | ApplicationError> => {
+  return (
+    // Step 1: Increment login attempts.
+    incrementLoginAttempts(email)
+      // Step 2: Compare otp with saved hash.
+      .andThen(({ hashedOtp }) => compareOtpHash(otpToVerify, hashedOtp))
+      // Step 3: Remove token document from collection since hash matches.
+      .andThen(() => removeTokenOnSuccess(email))
+      // Step 4: Return true (as success).
+      .map(() => true)
   )
-
-  if (!isOtpMatch) {
-    throw new InvalidOtpError('OTP is invalid. Please try again.')
-  }
-
-  // Hashed OTP matches, remove from collection.
-  await TokenModel.findOneAndRemove({ email })
-  // Finally return true (as success).
-  return true
 }
 
 // Private helper functions
@@ -172,6 +158,43 @@ const hashOtp = (otpToHash: string, logMeta: Record<string, unknown> = {}) => {
 }
 
 /**
+ * Compares otp with a given hash.
+ * @param otpToVerify The unhashed OTP to check match for
+ * @param hashedOtp The hashed OTP to check match for
+ * @param logMeta additional metadata for logging, if available
+ * @returns ok(true) if the hash matches
+ * @returns err(ApplicationError) if error occurs whilst comparing hashes
+ * @returns err(InvalidOtpError) if OTP hashes do not match
+ */
+const compareOtpHash = (
+  otpToVerify: string,
+  hashedOtp: string,
+  logMeta: Record<string, unknown> = {},
+): ResultAsync<true, ApplicationError | InvalidOtpError> => {
+  return ResultAsync.fromPromise(
+    bcrypt.compare(otpToVerify, hashedOtp),
+    (error) => {
+      logger.error({
+        message: 'bcrypt compare otp error',
+        meta: {
+          action: 'compareHash',
+          ...logMeta,
+        },
+        error,
+      })
+
+      return new ApplicationError()
+    },
+  ).andThen((isOtpMatch) => {
+    if (!isOtpMatch) {
+      return errAsync(new InvalidOtpError('OTP is invalid. Please try again.'))
+    }
+
+    return okAsync(isOtpMatch)
+  })
+}
+
+/**
  * Upserts the given otp hash into the document keyed by the given email
  * @param email the email to retrieve the current Token document for
  * @param hashedOtp the otp hash to upsert
@@ -193,6 +216,67 @@ const upsertOtp = (
         message: 'Database upsert OTP error',
         meta: {
           action: 'upsertOtp',
+          email,
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  )
+}
+
+/**
+ * Increment login attempts for the given email
+ * @param email the email to increment login attempts for
+ * @returns ok(updated document) if increment succeeds
+ * @returns err(DatabaseError) if any database error occurs whilst updating attempts
+ * @returns err(InvalidOtpError) if login has expired or if max number of attempts are reached
+ */
+const incrementLoginAttempts = (
+  email: string,
+): ResultAsync<ITokenSchema, InvalidOtpError | DatabaseError> => {
+  return ResultAsync.fromPromise(
+    TokenModel.incrementAttemptsByEmail(email),
+    (error) => {
+      logger.error({
+        message: 'Database increment OTP error',
+        meta: {
+          action: 'incrementAttempts',
+          email,
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  ).andThen((upsertedDoc) => {
+    // Document does not exist, return expired error message.
+    if (!upsertedDoc || !upsertedDoc.numOtpAttempts) {
+      return errAsync(
+        new InvalidOtpError('OTP has expired. Please request for a new OTP.'),
+      )
+    }
+    if (upsertedDoc.numOtpAttempts > MAX_OTP_ATTEMPTS) {
+      return errAsync(
+        new InvalidOtpError(
+          'You have hit the max number of attempts. Please request for a new OTP.',
+        ),
+      )
+    }
+
+    return okAsync(upsertedDoc)
+  })
+}
+
+const removeTokenOnSuccess = (email: string) => {
+  return ResultAsync.fromPromise(
+    TokenModel.findOneAndRemove({ email }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Database remove Token document error',
+        meta: {
+          action: 'removeTokenOnSuccess',
           email,
         },
         error,
