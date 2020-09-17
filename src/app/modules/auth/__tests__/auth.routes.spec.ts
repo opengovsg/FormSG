@@ -46,7 +46,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Please enter a valid email')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -136,7 +136,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Please enter a valid email')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -279,7 +279,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Please enter a valid email')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 400 when body.otp is less than 6 digits', async () => {
@@ -291,7 +291,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Please enter a valid otp')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 400 when body.otp is 6 characters but does not consist purely of digits', async () => {
@@ -303,7 +303,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Please enter a valid otp')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
