@@ -1,6 +1,6 @@
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { err, errAsync, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import { OperationOptions } from 'retry'
