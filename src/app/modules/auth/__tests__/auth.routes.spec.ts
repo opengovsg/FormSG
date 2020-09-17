@@ -1,5 +1,5 @@
 import { pick } from 'lodash'
-import { err, errAsync } from 'neverthrow'
+import { errAsync } from 'neverthrow'
 import supertest from 'supertest'
 import { CookieStore, setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'

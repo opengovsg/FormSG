@@ -1,4 +1,4 @@
-import { err, errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 

@@ -95,7 +95,7 @@ export const handleLoginSendOtp: RequestHandler<
   const { email } = req.body
   const requestIp = getRequestIp(req)
   const logMeta = {
-    action: 'handleSendLoginOtp',
+    action: 'handleLoginSendOtp',
     email,
     ip: requestIp,
   }
