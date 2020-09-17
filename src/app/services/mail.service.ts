@@ -313,16 +313,30 @@ export class MailService {
     otp: string
     ipAddress: string
   }) => {
+    const loginHtmlResult = await generateLoginOtpHtml({
+      appName: this.#appName,
+      appUrl: this.#appUrl,
+      ipAddress: ipAddress,
+      otp,
+    })
+
+    if (loginHtmlResult.isErr()) {
+      logger.error({
+        message: 'Error generating login OTP HTML',
+        meta: {
+          action: 'sendLoginOtp',
+        },
+        error: loginHtmlResult.error,
+      })
+
+      throw loginHtmlResult.error
+    }
+
     const mail: MailOptions = {
       to: recipient,
       from: this.#senderFromString,
       subject: `One-Time Password (OTP) for ${this.#appName}`,
-      html: await generateLoginOtpHtml({
-        appName: this.#appName,
-        appUrl: this.#appUrl,
-        ipAddress: ipAddress,
-        otp,
-      }),
+      html: loginHtmlResult.value,
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.LoginOtp,
       },

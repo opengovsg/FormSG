@@ -1,21 +1,38 @@
 import dedent from 'dedent-js'
 import ejs from 'ejs'
 import { flattenDeep } from 'lodash'
+import { ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
 import validator from 'validator'
 
 import { IFormSchema, ISubmissionSchema } from 'src/types'
 
 import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
+
+const logger = createLoggerWithLabel(module)
 
 export const generateLoginOtpHtml = (htmlData: {
   otp: string
   appName: string
   appUrl: string
   ipAddress: string
-}): Promise<string> => {
+}): ResultAsync<string, Error> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
-  return ejs.renderFile(pathToTemplate, htmlData)
+  return ResultAsync.fromPromise(
+    ejs.renderFile(pathToTemplate, htmlData),
+    (error) => {
+      logger.error({
+        message: 'Error occurred whilst rendering login otp ejs',
+        meta: {
+          action: 'generateLoginOtpHtml',
+        },
+        error,
+      })
+
+      return error as Error
+    },
+  )
 }
 
 export const generateVerificationOtpHtml = ({
