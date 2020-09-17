@@ -166,7 +166,7 @@ BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
  * Sets hasEmailed to true if at least one person has been emailed.
  * @param emailRecipients Array of recipients who were emailed.
  */
-BounceSchema.methods.updateHasEmailed = function (
+BounceSchema.methods.setHasEmailed = function (
   this: IBounceSchema,
   emailRecipients: string[],
 ): void {

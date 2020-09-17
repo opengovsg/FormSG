@@ -30,5 +30,5 @@ export interface IBounceSchema extends IBounce, Document {
   isCriticalBounce: () => boolean
   areAllPermanentBounces: () => boolean
   getEmails: () => string[]
-  updateHasEmailed: (emailRecipients: string[]) => void
+  setHasEmailed: (emailRecipients: string[]) => void
 }
