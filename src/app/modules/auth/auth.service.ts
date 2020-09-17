@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
-import { err, ok, Result } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import { IAgencySchema } from 'src/types'
@@ -29,46 +29,46 @@ export const MAX_OTP_ATTEMPTS = 10
  * @returns the agency document with the domain of the email only if it is valid.
  * @throws error if database query fails or if agency cannot be found.
  */
-export const validateEmailDomain = async (
+export const validateEmailDomain = (
   email: string,
-): Promise<Result<IAgencySchema, InvalidDomainError | DatabaseError>> => {
+): ResultAsync<IAgencySchema, InvalidDomainError | DatabaseError> => {
   // Extra guard even if Joi validation has already checked.
   if (!validator.isEmail(email)) {
-    return err(new InvalidDomainError())
+    return errAsync(new InvalidDomainError())
   }
 
   const emailDomain = email.split('@').pop()
-  try {
-    const agency = await AgencyModel.findOne({ emailDomain })
+  return ResultAsync.fromPromise(
+    AgencyModel.findOne({ emailDomain }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Database error when retrieving agency',
+        meta: {
+          action: 'validateEmailDomain',
+          emailDomain,
+        },
+        error,
+      })
+
+      return new DatabaseError(
+        `Unable to validate email domain. If this issue persists, please submit a Support Form at (${LINKS.supportFormLink})`,
+      )
+    },
+  ).andThen((agency) => {
     if (!agency) {
-      const error = new InvalidDomainError()
+      const noAgencyError = new InvalidDomainError()
       logger.warn({
         message: 'Agency not found',
         meta: {
           action: 'retrieveAgency',
           emailDomain,
         },
-        error,
+        error: noAgencyError,
       })
-      return err(error)
+      return errAsync(noAgencyError)
     }
-    return ok(agency)
-  } catch (error) {
-    logger.error({
-      message: 'Database error when retrieving agency',
-      meta: {
-        action: 'retrieveAgency',
-        emailDomain,
-      },
-      error,
-    })
-
-    return err(
-      new DatabaseError(
-        `Unable to validate email domain. If this issue persists, please submit a Support Form at (${LINKS.supportFormLink})`,
-      ),
-    )
-  }
+    return okAsync(agency)
+  })
 }
 
 /**

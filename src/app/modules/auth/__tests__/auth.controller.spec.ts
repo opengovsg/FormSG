@@ -1,4 +1,4 @@
-import { err, ok } from 'neverthrow'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
@@ -33,8 +33,8 @@ describe('auth.controller', () => {
     it('should return 200 when domain is valid', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
-        ok(<IAgencySchema>{}),
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
       )
 
       // Act
@@ -48,8 +48,8 @@ describe('auth.controller', () => {
       // Arrange
       const expectedError = new InvalidDomainError()
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
-        err(expectedError),
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        errAsync(expectedError),
       )
 
       // Act
@@ -71,8 +71,8 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock AuthService and MailService to return without errors
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
-        ok(<IAgencySchema>{}),
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
       )
       MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
       MockMailService.sendLoginOtp.mockResolvedValueOnce(true)
@@ -92,8 +92,8 @@ describe('auth.controller', () => {
       // Arrange
       const expectedError = new InvalidDomainError()
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
-        err(expectedError),
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        errAsync(expectedError),
       )
 
       // Act
@@ -107,8 +107,8 @@ describe('auth.controller', () => {
     it('should return 500 when there is an error generating login OTP', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
-        ok(<IAgencySchema>{}),
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
       )
       // Mock createLoginOtp failure
       MockAuthService.createLoginOtp.mockRejectedValueOnce(
@@ -131,8 +131,8 @@ describe('auth.controller', () => {
     it('should return 500 when there is an error sending login OTP', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
-        ok(<IAgencySchema>{}),
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
       )
       // Mock createLoginOtp success but sendLoginOtp failure.
       MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
@@ -170,7 +170,9 @@ describe('auth.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Mock all service success.
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
       MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
       MockUserService.retrieveUser.mockResolvedValueOnce(mockUser)
 
@@ -189,8 +191,8 @@ describe('auth.controller', () => {
       // Arrange
       const expectedError = new InvalidDomainError()
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(
-        err(expectedError),
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        errAsync(expectedError),
       )
 
       // Act
@@ -205,7 +207,9 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const expectedInvalidOtpError = new InvalidOtpError()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
       // Mock error from verifyLoginOtp.
       MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
         expectedInvalidOtpError,
@@ -225,7 +229,9 @@ describe('auth.controller', () => {
     it('should return 500 when verifying login OTP throws a non-InvalidOtpError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
       // Mock generic error from verifyLoginOtp.
       MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
         new Error('generic error'),
@@ -247,7 +253,9 @@ describe('auth.controller', () => {
     it('should return 500 when an error is thrown while upserting user', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain.mockResolvedValueOnce(ok(MOCK_AGENCY))
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
       MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
       MockUserService.retrieveUser.mockRejectedValueOnce(
         new Error('upsert error'),

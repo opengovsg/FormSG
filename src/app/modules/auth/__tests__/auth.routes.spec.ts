@@ -1,5 +1,5 @@
 import { pick } from 'lodash'
-import { err } from 'neverthrow'
+import { err, errAsync } from 'neverthrow'
 import supertest from 'supertest'
 import { CookieStore, setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -94,7 +94,7 @@ describe('auth.routes', () => {
 
       const getAgencySpy = jest
         .spyOn(AuthService, 'validateEmailDomain')
-        .mockResolvedValueOnce(err(new DatabaseError(mockErrorString)))
+        .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
       const response = await request
@@ -200,7 +200,7 @@ describe('auth.routes', () => {
       const mockErrorString = 'Unable to validate email domain.'
       const getAgencySpy = jest
         .spyOn(AuthService, 'validateEmailDomain')
-        .mockResolvedValueOnce(err(new DatabaseError(mockErrorString)))
+        .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
       const response = await request
@@ -328,7 +328,7 @@ describe('auth.routes', () => {
       const mockErrorString = 'Unable to validate email domain.'
       const getAgencySpy = jest
         .spyOn(AuthService, 'validateEmailDomain')
-        .mockResolvedValueOnce(err(new DatabaseError(mockErrorString)))
+        .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
       const response = await request

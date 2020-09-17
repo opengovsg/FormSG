@@ -56,8 +56,7 @@ export const handleCheckUser: RequestHandler<
   // Joi validation ensures existence.
   const { email } = req.body
 
-  const validateResult = await AuthService.validateEmailDomain(email)
-  validateResult
+  return AuthService.validateEmailDomain(email)
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
       logger.error({
