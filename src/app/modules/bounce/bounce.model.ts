@@ -4,7 +4,6 @@ import validator from 'validator'
 import { bounceLifeSpan } from '../../../config/config'
 import {
   BounceType,
-  IBounceNotification,
   IBounceSchema,
   IEmailNotification,
   ISingleBounce,
