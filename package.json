@@ -86,7 +86,6 @@
     "angular-translate-loader-partial": "^2.18.3",
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.22",
-    "async": "~1.5.2",
     "await-to-js": "^2.1.1",
     "aws-info": "^1.1.0",
     "aws-sdk": "^2.734.0",
