@@ -37,8 +37,8 @@ export const handleSns: RequestHandler<
     // }
     if (bounceDoc.isCriticalBounce()) {
       const emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)
-      BounceService.logCriticalBounce(bounceDoc, notification, emailRecipients)
       bounceDoc.updateHasEmailed(emailRecipients)
+      BounceService.logCriticalBounce(bounceDoc, notification, emailRecipients)
     }
     await bounceDoc.save()
     return res.sendStatus(StatusCodes.OK)
