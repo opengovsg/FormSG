@@ -154,16 +154,18 @@ export const handleLoginVerifyOtp: RequestHandler<
   // Joi validation ensures existence.
   const { email, otp } = req.body
 
+  const logMeta = {
+    action: 'handleLoginVerifyOtp',
+    email,
+    ip: getRequestIp(req),
+  }
+
   const validateResult = await AuthService.validateEmailDomain(email)
   if (validateResult.isErr()) {
     const { error } = validateResult
     logger.error({
       message: 'Domain validation error',
-      meta: {
-        action: 'handleLoginVerifyOtp',
-        ip: getRequestIp(req),
-        email,
-      },
+      meta: logMeta,
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
@@ -173,65 +175,55 @@ export const handleLoginVerifyOtp: RequestHandler<
   // Since there is no error, agency is retrieved from validation.
   const agency = validateResult.value
 
-  const logMeta = {
-    action: 'handleLoginVerifyOtp',
-    email,
-    ip: getRequestIp(req),
-  }
+  return AuthService.verifyLoginOtp(otp, email)
+    .map(async () => {
+      // OTP is valid, proceed to login user.
+      try {
+        // TODO (#317): remove usage of non-null assertion
+        const user = await UserService.retrieveUser(email, agency)
+        // Create user object to return to frontend.
+        const userObj = { ...user.toObject(), agency }
 
-  const verifyResult = await AuthService.verifyLoginOtp(otp, email)
+        if (!req.session) {
+          throw new Error('req.session not found')
+        }
 
-  if (verifyResult.isErr()) {
-    const { error } = verifyResult
-    logger.warn({
-      message:
-        error instanceof InvalidOtpError
-          ? 'Login OTP is invalid'
-          : 'Error occurred when trying to validate login OTP',
-      meta: logMeta,
-      error,
+        // TODO(#212): Should store only userId in session.
+        // Add user info to session.
+        req.session.user = userObj as SessionUser
+        logger.info({
+          message: `Successfully logged in user ${user.email}`,
+          meta: logMeta,
+        })
+
+        return res.status(StatusCodes.OK).send(userObj)
+      } catch (err) {
+        logger.error({
+          message: 'Error logging in user',
+          meta: logMeta,
+          error: err,
+        })
+
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .send(
+            `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
+          )
+      }
     })
+    .mapErr((error) => {
+      logger.warn({
+        message: 'Error occurred when trying to validate login OTP',
+        meta: logMeta,
+        error,
+      })
 
-    const { errorMessage, statusCode } = mapRouteError(
-      error,
-      /* coreErrorMessage= */ 'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
-    )
-    return res.status(statusCode).send(errorMessage)
-  }
-
-  // OTP is valid, proceed to login user.
-  try {
-    // TODO (#317): remove usage of non-null assertion
-    const user = await UserService.retrieveUser(email, agency)
-    // Create user object to return to frontend.
-    const userObj = { ...user.toObject(), agency }
-
-    if (!req.session) {
-      throw new Error('req.session not found')
-    }
-
-    // TODO(#212): Should store only userId in session.
-    // Add user info to session.
-    req.session.user = userObj as SessionUser
-    logger.info({
-      message: `Successfully logged in user ${user.email}`,
-      meta: logMeta,
-    })
-
-    return res.status(StatusCodes.OK).send(userObj)
-  } catch (err) {
-    logger.error({
-      message: 'Error logging in user',
-      meta: logMeta,
-      error: err,
-    })
-
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send(
-        `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
+      const { errorMessage, statusCode } = mapRouteError(
+        error,
+        /* coreErrorMessage= */ 'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
       )
-  }
+      return res.status(statusCode).send(errorMessage)
+    })
 }
 
 export const handleSignout: RequestHandler = async (req, res) => {
