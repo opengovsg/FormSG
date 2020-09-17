@@ -89,7 +89,7 @@ describe('auth.service', () => {
       await expect(TokenModel.countDocuments()).resolves.toEqual(1)
     })
 
-    it('should throw InvalidDomainError when email is invalid', async () => {
+    it('should return with InvalidDomainError when email is invalid', async () => {
       // Arrange
       const notAnEmail = 'not an email'
 
@@ -123,7 +123,7 @@ describe('auth.service', () => {
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
     })
 
-    it('should throw InvalidOtpError when Token document cannot be retrieved', async () => {
+    it('should return with InvalidOtpError when Token document cannot be retrieved', async () => {
       // Arrange
       // No OTP requested; should have no documents prior to acting.
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
@@ -142,7 +142,7 @@ describe('auth.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
-    it('should throw InvalidOtpError when verification has been attempted too many times', async () => {
+    it('should return with InvalidOtpError when verification has been attempted too many times', async () => {
       // Arrange
       // Add a Token document to verify against.
       await AuthService.createLoginOtp(VALID_EMAIL)
@@ -166,7 +166,7 @@ describe('auth.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
-    it('should throw InvalidOtpError when the OTP hash does not match', async () => {
+    it('should return with InvalidOtpError when the OTP hash does not match', async () => {
       // Arrange
       // Add a Token document to verify against.
       await AuthService.createLoginOtp(VALID_EMAIL)

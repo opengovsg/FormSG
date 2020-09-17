@@ -205,7 +205,7 @@ describe('auth.controller', () => {
       expect(mockRes.send).toBeCalledWith(expectedError.message)
     })
 
-    it('should return 422 when verifying login OTP throws an InvalidOtpError', async () => {
+    it('should return 422 when verifying login OTP returns an InvalidOtpError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const expectedInvalidOtpError = new InvalidOtpError()
@@ -228,7 +228,7 @@ describe('auth.controller', () => {
       expect(MockUserService.retrieveUser).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when verifying login OTP throws a non-InvalidOtpError', async () => {
+    it('should return 500 when verifying login OTP returns a non-InvalidOtpError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
@@ -252,7 +252,7 @@ describe('auth.controller', () => {
       expect(MockUserService.retrieveUser).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when an error is thrown while upserting user', async () => {
+    it('should return 500 when an error is returned while upserting user', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
@@ -320,7 +320,7 @@ describe('auth.controller', () => {
       expect(mockRes.sendStatus).toBeCalledWith(400)
     })
 
-    it('should return 500 when error is thrown when destroying session', async () => {
+    it('should return 500 when error is returned when destroying session', async () => {
       // Arrange
       const mockDestroyWithErr = jest
         .fn()

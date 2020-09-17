@@ -443,7 +443,7 @@ describe('auth.routes', () => {
       // Request for OTP so the hash exists.
       await requestForOtp(VALID_EMAIL)
 
-      // Mock error thrown when creating user
+      // Mock error returned when creating user
       const upsertSpy = jest
         .spyOn(UserService, 'retrieveUser')
         .mockRejectedValueOnce(new Error('some error'))
