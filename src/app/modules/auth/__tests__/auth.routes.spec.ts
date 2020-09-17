@@ -32,7 +32,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('"email" is required')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -122,7 +122,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('"email" is required')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -254,7 +254,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('"email" is required')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 400 when body.otp is not provided as a param', async () => {
@@ -265,7 +265,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('"otp" is required')
+      expect(response.text).toEqual('Some required parameters are missing')
     })
 
     it('should return 400 when body.email is invalid', async () => {
