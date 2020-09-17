@@ -110,13 +110,13 @@ export const handleLoginSendOtp: RequestHandler<
   }
 
   // Create OTP.
-  const [otpErr, otp] = await to(AuthService.createLoginOtp(email))
-
-  if (otpErr || !otp) {
+  const otpResult = await AuthService.createLoginOtp(email)
+  if (otpResult.isErr()) {
+    const { error } = otpResult
     logger.error({
       message: 'Error generating OTP',
       meta: logMeta,
-      error: otpErr ?? undefined,
+      error,
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -129,7 +129,7 @@ export const handleLoginSendOtp: RequestHandler<
   const [sendErr] = await to(
     MailService.sendLoginOtp({
       recipient: email,
-      otp,
+      otp: otpResult.value,
       ipAddress: requestIp,
     }),
   )

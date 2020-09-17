@@ -80,10 +80,11 @@ describe('auth.service', () => {
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
 
       // Act
-      const actualOtp = await AuthService.createLoginOtp(VALID_EMAIL)
+      const actualResult = await AuthService.createLoginOtp(VALID_EMAIL)
 
       // Assert
-      expect(actualOtp).toEqual(MOCK_OTP)
+      expect(actualResult.isOk()).toBe(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_OTP)
       // Should have new token document inserted.
       await expect(TokenModel.countDocuments()).resolves.toEqual(1)
     })
@@ -93,10 +94,11 @@ describe('auth.service', () => {
       const notAnEmail = 'not an email'
 
       // Act
-      const actualPromise = AuthService.createLoginOtp(notAnEmail)
+      const actualResult = await AuthService.createLoginOtp(notAnEmail)
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(InvalidDomainError)
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidDomainError)
     })
   })
 

@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { IAgencySchema } from 'src/types'
+import { IAgencySchema, ITokenSchema } from 'src/types'
 
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -11,7 +11,7 @@ import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
 import { generateOtp } from '../../utils/otp'
-import { DatabaseError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -26,8 +26,9 @@ export const MAX_OTP_ATTEMPTS = 10
  * Validates the domain of the given email. A domain is valid if it exists in
  * the Agency collection in the database.
  * @param email the email to validate the domain for
- * @returns the agency document with the domain of the email only if it is valid.
- * @throws error if database query fails or if agency cannot be found.
+ * @returns ok(the agency document) with the domain of the email if the domain is valid
+ * @returns err(InvalidDomainError) if the agency document cannot be found
+ * @returns err(DatabaseError) if database query fails
  */
 export const validateEmailDomain = (
   email: string,
@@ -74,25 +75,31 @@ export const validateEmailDomain = (
 /**
  * Creates a login OTP and saves its hash into the Token collection.
  * @param email the email to link the generated otp to
- * @returns the generated OTP if saving into DB is successful
- * @throws {InvalidDomainError} the given email is invalid
- * @throws {Error} if any error occur whilst creating the OTP or insertion of OTP into the database.
+ * @returns ok(the generated OTP) if saving into DB is successful
+ * @returns err(InvalidDomainError) if the given email is invalid
+ * @returns err(ApplicationError) if any error occur whilst hashing the OTP
+ * @returns err(DatabaseError) if error occurs during upsertion of hashed OTP into the database.
  */
-export const createLoginOtp = async (email: string) => {
+export const createLoginOtp = (
+  email: string,
+): ResultAsync<
+  string,
+  ApplicationError | DatabaseError | InvalidDomainError
+> => {
   if (!validator.isEmail(email)) {
-    throw new InvalidDomainError()
+    return errAsync(new InvalidDomainError())
   }
 
   const otp = generateOtp()
-  const hashedOtp = await bcrypt.hash(otp, DEFAULT_SALT_ROUNDS)
 
-  await TokenModel.upsertOtp({
-    email,
-    hashedOtp,
-    expireAt: new Date(Date.now() + config.otpLifeSpan),
-  })
-
-  return otp
+  return (
+    // Step 1: Hash OTP.
+    hashOtp(otp, { email })
+      // Step 2: Upsert otp hash into database.
+      .andThen((hashedOtp) => upsertOtp(email, hashedOtp))
+      // Step 3: Return generated OTP.
+      .map(() => otp)
+  )
 }
 
 /**
@@ -136,4 +143,62 @@ export const verifyLoginOtp = async (otpToVerify: string, email: string) => {
   await TokenModel.findOneAndRemove({ email })
   // Finally return true (as success).
   return true
+}
+
+// Private helper functions
+/**
+ * Hashes the given otp.
+ * @param otpToHash the otp to hash
+ * @param logMeta additional metadata for logging, if available
+ * @returns ok(hashed otp) if the hashing was successful
+ * @returns err(ApplicationError) if hashing error occurs
+ */
+const hashOtp = (otpToHash: string, logMeta: Record<string, unknown> = {}) => {
+  return ResultAsync.fromPromise(
+    bcrypt.hash(otpToHash, DEFAULT_SALT_ROUNDS),
+    (error) => {
+      logger.error({
+        message: 'bcrypt hash otp error',
+        meta: {
+          action: 'hashOtp',
+          ...logMeta,
+        },
+        error,
+      })
+
+      return new ApplicationError()
+    },
+  )
+}
+
+/**
+ * Upserts the given otp hash into the document keyed by the given email
+ * @param email the email to retrieve the current Token document for
+ * @param hashedOtp the otp hash to upsert
+ * @returns ok(upserted Token document) if upsert is successful
+ * @returns err(DatabaseError) if upsert fails
+ */
+const upsertOtp = (
+  email: string,
+  hashedOtp: string,
+): ResultAsync<ITokenSchema, DatabaseError> => {
+  return ResultAsync.fromPromise(
+    TokenModel.upsertOtp({
+      email,
+      hashedOtp,
+      expireAt: new Date(Date.now() + config.otpLifeSpan),
+    }),
+    (error) => {
+      logger.error({
+        message: 'Database upsert OTP error',
+        meta: {
+          action: 'upsertOtp',
+          email,
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  )
 }

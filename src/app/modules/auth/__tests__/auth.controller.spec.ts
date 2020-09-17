@@ -5,6 +5,7 @@ import { mocked } from 'ts-jest/utils'
 import MailService from 'src/app/services/mail.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
+import { DatabaseError } from '../../core/core.errors'
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
@@ -74,7 +75,7 @@ describe('auth.controller', () => {
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
         okAsync(<IAgencySchema>{}),
       )
-      MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
+      MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
       MockMailService.sendLoginOtp.mockResolvedValueOnce(true)
 
       // Act
@@ -111,8 +112,8 @@ describe('auth.controller', () => {
         okAsync(<IAgencySchema>{}),
       )
       // Mock createLoginOtp failure
-      MockAuthService.createLoginOtp.mockRejectedValueOnce(
-        new Error('otp creation error'),
+      MockAuthService.createLoginOtp.mockReturnValueOnce(
+        errAsync(new DatabaseError('otp creation error')),
       )
 
       // Act
@@ -135,7 +136,7 @@ describe('auth.controller', () => {
         okAsync(<IAgencySchema>{}),
       )
       // Mock createLoginOtp success but sendLoginOtp failure.
-      MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
+      MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
       MockMailService.sendLoginOtp.mockRejectedValueOnce(
         new Error('send error'),
       )

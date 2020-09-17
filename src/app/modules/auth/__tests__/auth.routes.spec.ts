@@ -9,7 +9,7 @@ import MailService from 'src/app/services/mail.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema } from 'src/types'
 
-import { DatabaseError } from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import * as UserService from '../../user/user.service'
 import { AuthRouter } from '../auth.routes'
 import * as AuthService from '../auth.service'
@@ -161,7 +161,7 @@ describe('auth.routes', () => {
       // Arrange
       const createLoginOtpSpy = jest
         .spyOn(AuthService, 'createLoginOtp')
-        .mockRejectedValueOnce(new Error('some error'))
+        .mockReturnValueOnce(errAsync(new ApplicationError()))
 
       // Act
       const response = await request
