@@ -28,11 +28,6 @@ const errorHandlerMiddlewares = () => {
         'Apologies, something odd happened. Please try again later!'
       // Error page
       if (isCelebrate(err)) {
-        const errorMessage = get(
-          err,
-          'joi.details[0].message',
-          genericErrorMessage,
-        )
         // formId is only present for Joi validated routes that require it
         const formId = get(req, 'form._id', null)
         logger.error({
@@ -43,7 +38,9 @@ const errorHandlerMiddlewares = () => {
           },
           error: err,
         })
-        return res.status(StatusCodes.BAD_REQUEST).send(errorMessage)
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send('Some required parameters are missing')
       }
 
       logger.error({
