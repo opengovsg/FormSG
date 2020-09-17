@@ -222,12 +222,9 @@ export const logEmailNotification = (
 export const getUpdatedBounceDoc = async (
   notification: IEmailNotification,
 ): Promise<IBounceSchema | null> => {
-  const latestBounces = Bounce.fromSnsNotification(notification)
-  if (!latestBounces) return null
-  const formId = latestBounces.formId
+  const formId = extractHeader(notification, EMAIL_HEADERS.formId)
   const oldBounces = await Bounce.findOne({ formId })
-  if (oldBounces) {
-    oldBounces.merge(latestBounces, notification)
-  }
-  return oldBounces ?? latestBounces
+  return oldBounces
+    ? oldBounces.updateBounceInfo(notification)
+    : Bounce.fromSnsNotification(notification)
 }

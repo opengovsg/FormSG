@@ -26,11 +26,14 @@ export const extractHeader = (
  * @returns true if the email as bounced, false otherwise
  */
 export const hasEmailBounced = (
-  snsInfo: IBounceNotification,
+  snsInfo: IEmailNotification,
   email: string,
-): boolean => {
-  return snsInfo.bounce.bouncedRecipients.some(
-    (emailInfo) => emailInfo.emailAddress === email,
+): snsInfo is IBounceNotification => {
+  return (
+    isBounceNotification(snsInfo) &&
+    snsInfo.bounce.bouncedRecipients.some(
+      (emailInfo) => emailInfo.emailAddress === email,
+    )
   )
 }
 
@@ -41,10 +44,13 @@ export const hasEmailBounced = (
  * @returns true if the email as bounced, false otherwise
  */
 export const hasEmailBeenDelivered = (
-  snsInfo: IDeliveryNotification,
+  snsInfo: IEmailNotification,
   email: string,
-): boolean => {
-  return snsInfo.delivery.recipients.includes(email)
+): snsInfo is IDeliveryNotification => {
+  return (
+    isDeliveryNotification(snsInfo) &&
+    snsInfo.delivery.recipients.includes(email)
+  )
 }
 
 // If an email notification is for bounces

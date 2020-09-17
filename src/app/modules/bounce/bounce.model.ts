@@ -1,9 +1,11 @@
+import { keyBy } from 'lodash'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import { bounceLifeSpan } from '../../../config/config'
 import {
   BounceType,
+  IBounceNotification,
   IBounceSchema,
   IEmailNotification,
   ISingleBounce,
@@ -85,7 +87,7 @@ BounceSchema.statics.fromSnsNotification = function (
   }
   const bounces: ISingleBounce[] = snsInfo.mail.commonHeaders.to.map(
     (email) => {
-      if (isBounceNotification(snsInfo) && hasEmailBounced(snsInfo, email)) {
+      if (hasEmailBounced(snsInfo, email)) {
         return {
           email,
           hasBounced: true,
@@ -100,67 +102,41 @@ BounceSchema.statics.fromSnsNotification = function (
 }
 
 /**
- * Updates an old bounce document with info from a new bounce document as well
- * as an SNS notification. This function does 3 things:
- * 1) If the old bounce document indicates that an email bounced, set
- *    `hasBounced` to `true` for that email.
- * 2) If the new delivery notification indicates that an email was delivered
- *    successfully, set `hasBounced` to `false` for that email, even if the old
- *    bounce document indicates that that email previously bounced.
- * 3) Update the old recipient list according to the newest bounce notification.
- * @param latestBounces the newer bounce document to merge into the current document
+ * Updates an old bounce document with info from an SNS notification.
  * @param snsInfo the notification information to merge
  */
-BounceSchema.methods.merge = function (
+BounceSchema.methods.updateBounceInfo = function (
   this: IBounceSchema,
-  latestBounces: IBounceSchema,
   snsInfo: IEmailNotification,
-): void {
-  this.bounces.forEach((oldBounce) => {
-    // If we were previously notified that a given email has bounced,
-    // we want to retain that information
-    if (oldBounce.hasBounced) {
-      const currentEmail = oldBounce.email
-      // Check if the latest recipient list contains that email
-      const matchedIndex = latestBounces.bounces.findIndex(
-        (newBounce) => newBounce.email === currentEmail,
-      )
-      if (matchedIndex >= 0) {
-        // Check if the latest notification indicates that this email
-        // actually succeeded. We can't just use latestBounces because
-        // a false in latestBounces doesn't guarantee that the email was
-        // delivered, only that the email has not bounced yet.
-        if (
-          isDeliveryNotification(snsInfo) &&
-          hasEmailBeenDelivered(snsInfo, currentEmail)
-        ) {
-          latestBounces.bounces[matchedIndex] = {
-            email: currentEmail,
-            hasBounced: false,
-          }
-        } else if (isBounceNotification(snsInfo)) {
-          // Does the latest notification contain the bounce type
-          // of this email? If so, update the bounce type.
-          // If not, retain the old bounce type.
-          if (hasEmailBounced(snsInfo, currentEmail)) {
-            latestBounces.bounces[matchedIndex] = {
-              email: currentEmail,
-              hasBounced: true,
-              bounceType: snsInfo.bounce.bounceType,
-            }
-          } else {
-            latestBounces.bounces[matchedIndex] = {
-              email: currentEmail,
-              hasBounced: true,
-              // TODO (private #44): remove undefined check
-              bounceType: oldBounce.bounceType ?? undefined,
-            }
-          }
-        }
+): IBounceSchema {
+  // First, get rid of outdated emails
+  const latestRecipients = new Set(snsInfo.mail.commonHeaders.to)
+  this.bounces = this.bounces.filter((bounceInfo) =>
+    latestRecipients.has(bounceInfo.email),
+  )
+  // Reshape this.bounces to avoid O(n^2) computation
+  const bouncesByEmail = keyBy(this.bounces, 'email')
+  // The following block needs to work for the cross product of cases:
+  // (notification type) *
+  // (does the notification confirm delivery/bounce for this email) *
+  // (does bouncesByEmail contain this email) *
+  // (does bouncesByEmail currently say this email has bounced)
+  snsInfo.mail.commonHeaders.to.forEach((email) => {
+    if (hasEmailBounced(snsInfo, email)) {
+      bouncesByEmail[email] = {
+        email,
+        hasBounced: true,
+        bounceType: snsInfo.bounce.bounceType,
       }
+    } else if (
+      hasEmailBeenDelivered(snsInfo, email) ||
+      !bouncesByEmail[email]
+    ) {
+      bouncesByEmail[email] = { email, hasBounced: false }
     }
   })
-  this.bounces = latestBounces.bounces
+  this.bounces = Object.values(bouncesByEmail)
+  return this
 }
 
 /**

@@ -26,7 +26,7 @@ export interface IBounce {
 }
 
 export interface IBounceSchema extends IBounce, Document {
-  merge: (latestBounces: IBounceSchema, snsInfo: IEmailNotification) => void
+  updateBounceInfo: (snsInfo: IEmailNotification) => IBounceSchema
   isCriticalBounce: () => boolean
   areAllPermanentBounces: () => boolean
   getEmails: () => string[]
