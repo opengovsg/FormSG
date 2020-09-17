@@ -2,6 +2,8 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
+import { EmailType } from 'src/app/constants/mail'
+
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IEmailNotification, ISnsNotification } from '../../../types'
 
@@ -28,9 +30,14 @@ export const handleSns: RequestHandler<
 
     const notification: IEmailNotification = JSON.parse(req.body.Message)
     BounceService.logEmailNotification(notification)
+    if (
+      BounceService.extractEmailType(notification) !== EmailType.AdminResponse
+    ) {
+      return res.sendStatus(StatusCodes.OK)
+    }
     const bounceDoc = await BounceService.getUpdatedBounceDoc(notification)
-    // Could not parse notification correctly
-    if (!bounceDoc) return res.sendStatus(StatusCodes.BAD_REQUEST)
+    // Missing headers in notification
+    if (!bounceDoc) return res.sendStatus(StatusCodes.OK)
     // TODO (private #30): enable form deactivation
     // if (bounceDoc.areAllPermanentBounces()) {
     //   await BounceService.deactivateFormFromBounce(bounceDoc)

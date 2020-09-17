@@ -217,14 +217,26 @@ export const logEmailNotification = (
 /**
  * Parses an SNS notification and updates the Bounce collection.
  * @param body The request body of the notification
- * @return the updated document from the Bounce collection.
+ * @return the updated document from the Bounce collection or null if there are missing headers.
  */
 export const getUpdatedBounceDoc = async (
   notification: IEmailNotification,
 ): Promise<IBounceSchema | null> => {
   const formId = extractHeader(notification, EMAIL_HEADERS.formId)
+  if (!formId) return null
   const oldBounces = await Bounce.findOne({ formId })
   return oldBounces
     ? oldBounces.updateBounceInfo(notification)
-    : Bounce.fromSnsNotification(notification)
+    : Bounce.fromSnsNotification(notification, formId)
+}
+
+/**
+ * Extracts the email type of a notification.
+ * @param body The request body of the notification
+ * @return the EmailType
+ */
+export const extractEmailType = (
+  notification: IEmailNotification,
+): string | undefined => {
+  return extractHeader(notification, EMAIL_HEADERS.emailType)
 }

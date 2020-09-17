@@ -5,26 +5,21 @@ import validator from 'validator'
 import { bounceLifeSpan } from '../../../config/config'
 import {
   BounceType,
-  IBounceNotification,
   IBounceSchema,
   IEmailNotification,
   ISingleBounce,
 } from '../../../types'
-import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-import {
-  extractHeader,
-  hasEmailBeenDelivered,
-  hasEmailBounced,
-  isBounceNotification,
-  isDeliveryNotification,
-} from './bounce.util'
+import { hasEmailBeenDelivered, hasEmailBounced } from './bounce.util'
 
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 
 export interface IBounceModel extends Model<IBounceSchema> {
-  fromSnsNotification: (snsInfo: IEmailNotification) => IBounceSchema | null
+  fromSnsNotification: (
+    snsInfo: IEmailNotification,
+    formId: string,
+  ) => IBounceSchema
 }
 
 const BounceSchema = new Schema<IBounceSchema>({
@@ -73,18 +68,14 @@ BounceSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
  * More info on format of SNS notifications:
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html.
  * @param snsInfo the SNS notification to create a document from
+ * @param snsInfo the SNS notification to create a document from
  * @returns the created Bounce document
  */
 BounceSchema.statics.fromSnsNotification = function (
   this: IBounceModel,
   snsInfo: IEmailNotification,
-): IBounceSchema | null {
-  const emailType = extractHeader(snsInfo, EMAIL_HEADERS.emailType)
-  const formId = extractHeader(snsInfo, EMAIL_HEADERS.formId)
-  // Only care about admin emails
-  if (emailType !== EmailType.AdminResponse || !formId) {
-    return null
-  }
+  formId: string,
+): IBounceSchema {
   const bounces: ISingleBounce[] = snsInfo.mail.commonHeaders.to.map(
     (email) => {
       if (hasEmailBounced(snsInfo, email)) {
