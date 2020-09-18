@@ -1000,7 +1000,7 @@ describe('mail.service', () => {
     const MOCK_FORM_TITLE = 'You are all individuals!'
     const MOCK_BOUNCE_TYPE = BounceType.Permanent
 
-    const generateExpectedArg = async () => {
+    const generateExpectedArg = async (bounceType: BounceType) => {
       return {
         to: MOCK_RECIPIENTS,
         from: MOCK_SENDER_STRING,
@@ -1012,7 +1012,7 @@ describe('mail.service', () => {
             formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
             formTitle: MOCK_FORM_TITLE,
           },
-          MOCK_BOUNCE_TYPE,
+          bounceType,
         ),
         headers: {
           // Hardcode in tests in case something changes this.
@@ -1023,12 +1023,7 @@ describe('mail.service', () => {
       }
     }
 
-    let expectedArgs: MailOptions
-    beforeAll(async () => {
-      expectedArgs = await generateExpectedArg()
-    })
-
-    it('should send bounce notification successfully', async () => {
+    it('should send permanent bounce notification successfully', async () => {
       // Arrange
       // sendMail should return mocked success response
       const mockedResponse = 'mockedSuccessResponse'
@@ -1037,13 +1032,34 @@ describe('mail.service', () => {
       // Act
       const sent = await mailService.sendBounceNotification({
         emailRecipients: MOCK_RECIPIENTS,
-        bounceType: MOCK_BOUNCE_TYPE,
+        bounceType: BounceType.Permanent,
         bouncedRecipients: MOCK_BOUNCED_EMAILS,
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
-        submissionId: MOCK_SUBMISSION_ID,
       })
+      const expectedArgs = await generateExpectedArg(BounceType.Permanent)
+      // Assert
+      expect(sent).toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+    })
 
+    it('should send transient bounce notification successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      // Act
+      const sent = await mailService.sendBounceNotification({
+        emailRecipients: MOCK_RECIPIENTS,
+        bounceType: BounceType.Transient,
+        bouncedRecipients: MOCK_BOUNCED_EMAILS,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
+      const expectedArgs = await generateExpectedArg(BounceType.Transient)
       // Assert
       expect(sent).toEqual(mockedResponse)
       // Check arguments passed to sendNodeMail
@@ -1062,7 +1078,6 @@ describe('mail.service', () => {
         bouncedRecipients: MOCK_BOUNCED_EMAILS,
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
-        submissionId: MOCK_SUBMISSION_ID,
       })
 
       // Assert
@@ -1088,8 +1103,8 @@ describe('mail.service', () => {
         bouncedRecipients: MOCK_BOUNCED_EMAILS,
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
-        submissionId: MOCK_SUBMISSION_ID,
       })
+      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
       expect(sent).toEqual(mockedResponse)
@@ -1115,8 +1130,8 @@ describe('mail.service', () => {
         bouncedRecipients: MOCK_BOUNCED_EMAILS,
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
-        submissionId: MOCK_SUBMISSION_ID,
       })
+      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
       await expect(sent).rejects.toEqual(mock4xxReject)
@@ -1144,8 +1159,8 @@ describe('mail.service', () => {
         bouncedRecipients: MOCK_BOUNCED_EMAILS,
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
-        submissionId: MOCK_SUBMISSION_ID,
       })
+      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
       await expect(sent).rejects.toEqual(mockError)
