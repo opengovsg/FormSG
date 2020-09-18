@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson'
 import { cloneDeep, merge, pick } from 'lodash'
 
+import { EmailType } from 'src/app/constants/mail'
 import {
   BounceType,
   IBounce,
@@ -27,7 +28,7 @@ const makeEmailNotification = (
   formId: ObjectId,
   submissionId: ObjectId,
   recipientList: string[],
-  emailType: 'Admin (response)' | 'Email confirmation',
+  emailType: EmailType,
 ): IEmailNotification => {
   return {
     notificationType,
@@ -57,15 +58,27 @@ const makeEmailNotification = (
   }
 }
 
-export const makeBounceNotification = (
-  formId: ObjectId = new ObjectId(),
-  submissionId: ObjectId = new ObjectId(),
-  recipientList: string[] = [],
-  bouncedList: string[] = [],
-  bounceType: BounceType = BounceType.Permanent,
-  emailType: 'Admin (response)' | 'Email confirmation' = 'Admin (response)',
-): ISnsNotification => {
-  const Message = merge(
+export const makeBounceNotification = ({
+  formId,
+  submissionId,
+  recipientList,
+  bouncedList,
+  bounceType,
+  emailType,
+}: {
+  formId?: ObjectId
+  submissionId?: ObjectId
+  recipientList?: string[]
+  bouncedList?: string[]
+  bounceType?: BounceType
+  emailType?: EmailType
+}): IBounceNotification => {
+  formId ??= new ObjectId()
+  submissionId ??= new ObjectId()
+  recipientList ??= []
+  bouncedList ??= []
+  emailType ??= EmailType.AdminResponse
+  return merge(
     makeEmailNotification(
       'Bounce',
       formId,
@@ -82,19 +95,27 @@ export const makeBounceNotification = (
       },
     },
   ) as IBounceNotification
-  const body = cloneDeep(MOCK_SNS_BODY)
-  body.Message = JSON.stringify(Message)
-  return body
 }
 
-export const makeDeliveryNotification = (
-  formId: ObjectId = new ObjectId(),
-  submissionId: ObjectId = new ObjectId(),
-  recipientList: string[] = [],
-  deliveredList: string[] = [],
-  emailType: 'Admin (response)' | 'Email confirmation' = 'Admin (response)',
-): ISnsNotification => {
-  const Message = merge(
+export const makeDeliveryNotification = ({
+  formId,
+  submissionId,
+  recipientList,
+  deliveredList,
+  emailType,
+}: {
+  formId?: ObjectId
+  submissionId?: ObjectId
+  recipientList?: string[]
+  deliveredList?: string[]
+  emailType?: EmailType
+}): IDeliveryNotification => {
+  formId ??= new ObjectId()
+  submissionId ??= new ObjectId()
+  recipientList ??= []
+  deliveredList ??= []
+  emailType ??= EmailType.AdminResponse
+  return merge(
     makeEmailNotification(
       'Delivery',
       formId,
@@ -108,9 +129,6 @@ export const makeDeliveryNotification = (
       },
     },
   ) as IDeliveryNotification
-  const body = cloneDeep(MOCK_SNS_BODY)
-  body.Message = JSON.stringify(Message)
-  return body
 }
 
 // Omit mongoose values from Bounce document
