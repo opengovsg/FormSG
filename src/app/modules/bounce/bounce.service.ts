@@ -9,8 +9,6 @@ import {
 } from '../../../config/logger'
 import {
   BounceType,
-  // TODO (private #30): enable form deactivation
-  // BounceType,
   IBounceSchema,
   IEmailNotification,
   IFormSchema,

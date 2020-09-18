@@ -38,10 +38,9 @@ export const handleSns: RequestHandler<
     const bounceDoc = await BounceService.getUpdatedBounceDoc(notification)
     // Missing headers in notification
     if (!bounceDoc) return res.sendStatus(StatusCodes.OK)
-    // TODO (private #30): enable form deactivation
-    // if (bounceDoc.areAllPermanentBounces()) {
-    //   await BounceService.deactivateFormFromBounce(bounceDoc)
-    // }
+    if (bounceDoc.areAllPermanentBounces()) {
+      await BounceService.deactivateFormFromBounce(bounceDoc)
+    }
     if (bounceDoc.isCriticalBounce()) {
       const emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)
       bounceDoc.setHasAutoEmailed(emailRecipients)
