@@ -699,7 +699,7 @@ describe('Form Model', () => {
       })
 
       it('should return null for invalid form ID', async () => {
-        const returned = await Form.deactivateById('invalidId')
+        const returned = await Form.deactivateById(String(new ObjectID()))
         expect(returned).toBeNull()
       })
     })
