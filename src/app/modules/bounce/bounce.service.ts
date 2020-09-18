@@ -122,6 +122,13 @@ export const logCriticalBounce = (
   const bounceInfo = isBounceNotification(notification)
     ? notification.bounce
     : undefined
+  // Out of all bounces, how many were transient
+  const numTransient = bounceDoc.bounces.reduce(
+    (total, bounce) =>
+      total +
+      Number(bounce.hasBounced && bounce.bounceType === BounceType.Transient),
+    0,
+  )
   logger.warn({
     message: 'Critical bounce',
     meta: {
@@ -130,6 +137,10 @@ export const logCriticalBounce = (
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
       recipients: bounceDoc.getEmails(),
+      numRecipients: bounceDoc.bounces.length,
+      numTransient,
+      // Assume that this function is correctly only called when all recipients bounced
+      numPermanent: bounceDoc.bounces.length - numTransient,
       autoEmailRecipients,
       // We know for sure that critical bounces can only happen because of bounce
       // notifications, so we don't expect this to be undefined
