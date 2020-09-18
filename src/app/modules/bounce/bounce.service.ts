@@ -132,7 +132,7 @@ export const logCriticalBounce = (
   logger.warn({
     message: 'Critical bounce',
     meta: {
-      action: 'updateBounces',
+      action: 'logCriticalBounce',
       hasAutoEmailed: bounceDoc.hasAutoEmailed,
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
@@ -176,7 +176,7 @@ export const notifyAdminOfBounce = async (
     logger.error({
       message: 'Unable to retrieve form',
       meta: {
-        action: 'updateBounces',
+        action: 'notifyAdminOfBounce',
         formId: bounceDoc.formId,
       },
     })
@@ -218,7 +218,7 @@ export const logEmailNotification = (
     logger.info({
       message: 'Email notification',
       meta: {
-        action: 'updateBounces',
+        action: 'logEmailNotification',
         ...notification,
       },
     })
