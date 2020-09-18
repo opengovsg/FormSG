@@ -2,10 +2,9 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { EmailType } from 'src/app/constants/mail'
-
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IEmailNotification, ISnsNotification } from '../../../types'
+import { EmailType } from '../../constants/mail'
 
 import * as BounceService from './bounce.service'
 

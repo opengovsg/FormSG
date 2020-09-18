@@ -2,7 +2,7 @@ import {
   IBounceNotification,
   IDeliveryNotification,
   IEmailNotification,
-} from 'src/types'
+} from '../../../types'
 /**
  * Extracts custom headers which we send with all emails, such as form ID, submission ID
  * and email type (admin response, email confirmation OTP etc).
