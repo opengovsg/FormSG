@@ -209,9 +209,10 @@ export const logEmailNotification = (
   // confirmation info goes to the short-term log group so we do not store
   // form fillers' information for too long, and everything else goes into the
   // main log group.
+  const emailType = extractHeader(notification, EMAIL_HEADERS.emailType)
   if (
-    extractHeader(notification, EMAIL_HEADERS.emailType) ===
-    EmailType.EmailConfirmation
+    emailType === EmailType.EmailConfirmation ||
+    emailType === EmailType.VerificationOtp
   ) {
     shortTermLogger.info(notification)
   } else {
