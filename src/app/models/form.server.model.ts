@@ -477,7 +477,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ): Promise<IFormSchema | null> {
     const form = await this.findById(formId)
     if (!form) return null
-    form.status = Status.Private
+    if (form.status === Status.Public) {
+      form.status = Status.Private
+    }
     return form.save()
   }
 
