@@ -72,7 +72,7 @@ export const makeBounceNotification = ({
   bouncedList?: string[]
   bounceType?: BounceType
   emailType?: EmailType
-}): IBounceNotification => {
+} = {}): IBounceNotification => {
   formId ??= new ObjectId()
   submissionId ??= new ObjectId()
   recipientList ??= []
@@ -109,7 +109,7 @@ export const makeDeliveryNotification = ({
   recipientList?: string[]
   deliveredList?: string[]
   emailType?: EmailType
-}): IDeliveryNotification => {
+} = {}): IDeliveryNotification => {
   formId ??= new ObjectId()
   submissionId ??= new ObjectId()
   recipientList ??= []
