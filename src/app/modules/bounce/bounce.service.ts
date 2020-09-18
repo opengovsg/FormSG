@@ -133,7 +133,7 @@ export const logCriticalBounce = (
     message: 'Critical bounce',
     meta: {
       action: 'updateBounces',
-      hasAutoEmailed: bounceDoc.hasEmailed,
+      hasAutoEmailed: bounceDoc.hasAutoEmailed,
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
       recipients: bounceDoc.getEmails(),
@@ -170,7 +170,7 @@ export const notifyAdminOfBounce = async (
   bounceDoc: IBounceSchema,
 ): Promise<string[]> => {
   // No further action required, no emails sent
-  if (bounceDoc.hasEmailed) return []
+  if (bounceDoc.hasAutoEmailed) return []
   const form = await Form.getFullFormById(bounceDoc.formId)
   if (!form) {
     logger.error({

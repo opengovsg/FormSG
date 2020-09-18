@@ -33,7 +33,7 @@ describe('Bounce Model', () => {
       expect(omit(savedBounceObject, 'expireAt')).toEqual({
         formId,
         bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
-        hasEmailed: false,
+        hasAutoEmailed: false,
       })
     })
 
@@ -44,7 +44,7 @@ describe('Bounce Model', () => {
           { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
         ],
         expireAt: new Date(Date.now()),
-        hasEmailed: true,
+        hasAutoEmailed: true,
       }
       const savedBounce = await new Bounce(params).save()
       const savedBounceObject = extractBounceObject(savedBounce)
@@ -66,45 +66,45 @@ describe('Bounce Model', () => {
   })
 
   describe('methods', () => {
-    describe('setHasEmailed', () => {
-      it('should set hasEmailed from false to true when there are email recipients', () => {
+    describe('setHasAutoEmailed', () => {
+      it('should set hasAutoEmailed from false to true when there are email recipients', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
-          hasEmailed: false,
+          hasAutoEmailed: false,
         })
-        bounce.setHasEmailed([MOCK_EMAIL])
-        expect(bounce.hasEmailed).toBe(true)
+        bounce.setHasAutoEmailed([MOCK_EMAIL])
+        expect(bounce.hasAutoEmailed).toBe(true)
       })
 
-      it('should keep hasEmailed as true when there are email recipients', () => {
+      it('should keep hasAutoEmailed as true when there are email recipients', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
-          hasEmailed: true,
+          hasAutoEmailed: true,
         })
-        bounce.setHasEmailed([MOCK_EMAIL])
-        expect(bounce.hasEmailed).toBe(true)
+        bounce.setHasAutoEmailed([MOCK_EMAIL])
+        expect(bounce.hasAutoEmailed).toBe(true)
       })
 
-      it('should keep original hasEmailed as true when there are no email recipients', () => {
+      it('should keep original hasAutoEmailed as true when there are no email recipients', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
-          hasEmailed: true,
+          hasAutoEmailed: true,
         })
-        bounce.setHasEmailed([])
-        expect(bounce.hasEmailed).toBe(true)
+        bounce.setHasAutoEmailed([])
+        expect(bounce.hasAutoEmailed).toBe(true)
       })
 
-      it('should keep original hasEmailed as false when there are no email recipients', () => {
+      it('should keep original hasAutoEmailed as false when there are no email recipients', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
-          hasEmailed: false,
+          hasAutoEmailed: false,
         })
-        bounce.setHasEmailed([])
-        expect(bounce.hasEmailed).toBe(false)
+        bounce.setHasAutoEmailed([])
+        expect(bounce.hasAutoEmailed).toBe(false)
       })
     })
 
@@ -520,7 +520,7 @@ describe('Bounce Model', () => {
         expect(omit(extractBounceObject(actual!), 'expireAt')).toEqual({
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
-          hasEmailed: false,
+          hasAutoEmailed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
@@ -542,7 +542,7 @@ describe('Bounce Model', () => {
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Transient' },
           ],
-          hasEmailed: false,
+          hasAutoEmailed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
@@ -564,7 +564,7 @@ describe('Bounce Model', () => {
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
           ],
-          hasEmailed: false,
+          hasAutoEmailed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
@@ -587,7 +587,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
             { email: MOCK_EMAIL, hasBounced: false },
           ],
-          hasEmailed: false,
+          hasAutoEmailed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })

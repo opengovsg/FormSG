@@ -28,7 +28,7 @@ const BounceSchema = new Schema<IBounceSchema>({
     ref: FORM_SCHEMA_ID,
     required: 'Form ID is required',
   },
-  hasEmailed: {
+  hasAutoEmailed: {
     type: Boolean,
     default: false,
   },
@@ -163,15 +163,15 @@ BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
 }
 
 /**
- * Sets hasEmailed to true if at least one person has been emailed.
+ * Sets hasAutoEmailed to true if at least one person has been emailed.
  * @param emailRecipients Array of recipients who were emailed.
  */
-BounceSchema.methods.setHasEmailed = function (
+BounceSchema.methods.setHasAutoEmailed = function (
   this: IBounceSchema,
   emailRecipients: string[],
 ): void {
   if (emailRecipients.length > 0) {
-    this.hasEmailed = true
+    this.hasAutoEmailed = true
   }
 }
 

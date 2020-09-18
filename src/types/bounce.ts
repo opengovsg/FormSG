@@ -20,7 +20,7 @@ export type ISingleBounce =
 export interface IBounce {
   formId: IFormSchema['_id']
   bounces: ISingleBounce[]
-  hasEmailed: boolean
+  hasAutoEmailed: boolean
   expireAt: Date
   _id: Document['_id']
 }
@@ -30,5 +30,5 @@ export interface IBounceSchema extends IBounce, Document {
   isCriticalBounce: () => boolean
   areAllPermanentBounces: () => boolean
   getEmails: () => string[]
-  setHasEmailed: (emailRecipients: string[]) => void
+  setHasAutoEmailed: (emailRecipients: string[]) => void
 }
