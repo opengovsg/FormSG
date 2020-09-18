@@ -1018,7 +1018,6 @@ describe('mail.service', () => {
           // Hardcode in tests in case something changes this.
           'X-Formsg-Email-Type': 'Admin (bounce notification)',
           'X-Formsg-Form-ID': MOCK_FORM_ID,
-          'X-Formsg-Submission-ID': MOCK_SUBMISSION_ID,
         },
       }
     }
