@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import dedent from 'dedent'
-import { cloneDeep, omit } from 'lodash'
+import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
@@ -10,24 +10,10 @@ import { mocked } from 'ts-jest/utils'
 
 import { EMAIL_HEADERS, EmailType } from 'src/app/constants/mail'
 import getFormModel from 'src/app/models/form.server.model'
-// Import modules which depend on config last so that mocks get imported correctly
-// eslint-disable-next-line import/first
-import getBounceModel from 'src/app/modules/bounce/bounce.model'
-// eslint-disable-next-line import/first
-import {
-  deactivateFormFromBounce,
-  extractEmailType,
-  getUpdatedBounceDoc,
-  isValidSnsRequest,
-  logCriticalBounce,
-  logEmailNotification,
-  notifyAdminOfBounce,
-} from 'src/app/modules/bounce/bounce.service'
 import MailService from 'src/app/services/mail.service'
 import * as LoggerModule from 'src/config/logger'
 import {
   BounceType,
-  IBounceNotification,
   IFormSchema,
   ISnsNotification,
   IUserSchema,
@@ -47,23 +33,36 @@ const mockLogger = getMockLogger()
 MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockShortTermLogger)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
+// Import modules which depend on config last so that mocks get imported correctly
+// eslint-disable-next-line import/first
+import getBounceModel from 'src/app/modules/bounce/bounce.model'
+// eslint-disable-next-line import/first
+import {
+  deactivateFormFromBounce,
+  extractEmailType,
+  getUpdatedBounceDoc,
+  isValidSnsRequest,
+  logCriticalBounce,
+  logEmailNotification,
+  notifyAdminOfBounce,
+} from 'src/app/modules/bounce/bounce.service'
+
 const Form = getFormModel(mongoose)
 const Bounce = getBounceModel(mongoose)
 
 const MOCK_EMAIL = 'email@example.com'
 const MOCK_EMAIL_2 = 'email2@example.com'
 const MOCK_FORM_ID = new ObjectId()
+const MOCK_ADMIN_ID = new ObjectId()
 const MOCK_SUBMISSION_ID = new ObjectId()
 
 describe('BounceService', () => {
   beforeAll(async () => await dbHandler.connect())
 
-  afterEach(async () => {
+  afterAll(async () => {
     await dbHandler.clearDatabase()
-    jest.resetAllMocks()
+    await dbHandler.closeDatabase()
   })
-
-  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('extractEmailType', () => {
     it('should extract the email type correctly', () => {
@@ -78,6 +77,11 @@ describe('BounceService', () => {
     beforeEach(() => {
       jest.resetAllMocks()
     })
+
+    afterEach(async () => {
+      await dbHandler.clearDatabase()
+    })
+
     it('should return null when there is no form ID', async () => {
       const notification = makeBounceNotification()
       const header = notification.mail.headers.find(
@@ -100,7 +104,9 @@ describe('BounceService', () => {
         formId: MOCK_FORM_ID,
       })
       const result = await getUpdatedBounceDoc(notification)
-      expect(result).toEqual(bounceDoc.updateBounceInfo(notification))
+      expect(result?.toObject()).toEqual(
+        bounceDoc.updateBounceInfo(notification).toObject(),
+      )
     })
 
     it('should call fromSnsNotification if the document does not exist', async () => {
@@ -109,10 +115,17 @@ describe('BounceService', () => {
         formId: MOCK_FORM_ID,
       })
       const result = await getUpdatedBounceDoc(notification)
-      expect(result).toEqual(
-        Bounce.fromSnsNotification(notification, String(MOCK_FORM_ID)),
-      )
-      expect(mock).toHaveBeenCalledWith(notification)
+      const actual = pick(result?.toObject(), [
+        'formId',
+        'bounces',
+        'hasAutoEmailed',
+      ])
+      expect(actual).toEqual({
+        formId: MOCK_FORM_ID,
+        bounces: [],
+        hasAutoEmailed: false,
+      })
+      expect(mock).toHaveBeenCalledWith(notification, String(MOCK_FORM_ID))
     })
   })
 
@@ -219,7 +232,7 @@ describe('BounceService', () => {
         recipientList: MOCK_RECIPIENT_LIST,
         bouncedList: MOCK_RECIPIENT_LIST,
         bounceType: BounceType.Transient,
-        emailType: EmailType.LoginOtp,
+        emailType: EmailType.VerificationOtp,
       })
       logEmailNotification(notification)
       expect(mockLogger.info).not.toHaveBeenCalled()
@@ -230,24 +243,29 @@ describe('BounceService', () => {
 
   describe('notifyAdminOfBounce', () => {
     const MOCK_FORM_TITLE = 'FormTitle'
-    let testForm: IFormSchema
     let testUser: IUserSchema
 
     beforeAll(async () => {
-      const { user } = await dbHandler.insertFormCollectionReqs()
+      const { user } = await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_ADMIN_ID,
+      })
       testUser = user
+    })
+
+    afterAll(async () => {
+      await dbHandler.clearDatabase()
     })
 
     beforeEach(async () => {
       jest.resetAllMocks()
-      const form = new Form({
-        admin: testUser._id,
-        title: MOCK_FORM_TITLE,
-      })
-      testForm = await form.save()
     })
 
     it('should auto-email when admin is not email recipient', async () => {
+      const form = new Form({
+        admin: MOCK_ADMIN_ID,
+        title: MOCK_FORM_TITLE,
+      })
+      const testForm = await form.save()
       const bounceDoc = new Bounce({
         formId: testForm._id,
         bounces: [
@@ -266,6 +284,10 @@ describe('BounceService', () => {
     })
 
     it('should auto-email when any collaborator is not email recipient', async () => {
+      const testForm = new Form({
+        admin: MOCK_ADMIN_ID,
+        title: MOCK_FORM_TITLE,
+      })
       const collabEmail = 'collaborator@test.gov.sg'
       testForm.permissionList = [{ email: collabEmail, write: true }]
       await testForm.save()
@@ -287,6 +309,11 @@ describe('BounceService', () => {
     })
 
     it('should not auto-email when admin is email recipient', async () => {
+      const testForm = new Form({
+        admin: MOCK_ADMIN_ID,
+        title: MOCK_FORM_TITLE,
+      })
+      await testForm.save()
       const bounceDoc = new Bounce({
         formId: testForm._id,
         bounces: [
@@ -299,6 +326,10 @@ describe('BounceService', () => {
     })
 
     it('should not auto-email when all collabs are email recipients', async () => {
+      const testForm = new Form({
+        admin: MOCK_ADMIN_ID,
+        title: MOCK_FORM_TITLE,
+      })
       const collabEmail = 'collaborator@test.gov.sg'
       testForm.permissionList = [{ email: collabEmail, write: false }]
       await testForm.save()
@@ -315,6 +346,11 @@ describe('BounceService', () => {
     })
 
     it('should not auto-email when hasAutoEmailed is true', async () => {
+      const testForm = new Form({
+        admin: MOCK_ADMIN_ID,
+        title: MOCK_FORM_TITLE,
+      })
+      await testForm.save()
       const bounceDoc = new Bounce({
         formId: testForm._id,
         bounces: [
@@ -329,13 +365,17 @@ describe('BounceService', () => {
   })
 
   describe('deactivateFormFromBounce', () => {
+    afterAll(() => {
+      jest.resetAllMocks()
+    })
+
     it('should call Form.deactivateById', async () => {
       const mock = jest.spyOn(Form, 'deactivateById')
       const bounceDoc = new Bounce({
         formId: MOCK_FORM_ID,
       })
       await deactivateFormFromBounce(bounceDoc)
-      expect(mock).toHaveBeenCalledWith(String(MOCK_FORM_ID))
+      expect(mock).toHaveBeenCalledWith(MOCK_FORM_ID)
     })
   })
 
