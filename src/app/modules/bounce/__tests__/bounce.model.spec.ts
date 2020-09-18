@@ -117,7 +117,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL_2, hasBounced: false },
           ],
         })
-        expect(bounce.getEmails()).toBe([MOCK_EMAIL, MOCK_EMAIL_2])
+        expect(bounce.getEmails()).toEqual([MOCK_EMAIL, MOCK_EMAIL_2])
       })
 
       it('should return the full email list when hasBounced is true for all', () => {
@@ -128,7 +128,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
           ],
         })
-        expect(bounce.getEmails()).toBe([MOCK_EMAIL, MOCK_EMAIL_2])
+        expect(bounce.getEmails()).toEqual([MOCK_EMAIL, MOCK_EMAIL_2])
       })
 
       it('should return the full email list when hasBounced is mixed', () => {
@@ -139,7 +139,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
           ],
         })
-        expect(bounce.getEmails()).toBe([MOCK_EMAIL, MOCK_EMAIL_2])
+        expect(bounce.getEmails()).toEqual([MOCK_EMAIL, MOCK_EMAIL_2])
       })
     })
 
@@ -585,7 +585,7 @@ describe('Bounce Model', () => {
           formId,
           bounces: [
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
-            { email: MOCK_EMAIL, hasBounced: false },
+            { email: MOCK_EMAIL_2, hasBounced: false },
           ],
           hasAutoEmailed: false,
         })
