@@ -996,7 +996,6 @@ describe('mail.service', () => {
     const MOCK_RECIPIENTS = [MOCK_VALID_EMAIL, MOCK_VALID_EMAIL_2]
     const MOCK_BOUNCED_EMAILS = [MOCK_VALID_EMAIL_3, MOCK_VALID_EMAIL_4]
     const MOCK_FORM_ID = 'mockFormId'
-    const MOCK_SUBMISSION_ID = 'mockSubmissionId'
     const MOCK_FORM_TITLE = 'You are all individuals!'
     const MOCK_BOUNCE_TYPE = BounceType.Permanent
 
@@ -1111,7 +1110,8 @@ describe('mail.service', () => {
       // Should have been called two times since it rejected the first one and
       // resolved
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+      expect(sendMailSpy).toHaveBeenNthCalledWith(1, expectedArgs)
+      expect(sendMailSpy).toHaveBeenNthCalledWith(2, expectedArgs)
     })
 
     it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
