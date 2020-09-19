@@ -1,4 +1,4 @@
-import { isCelebrate } from 'celebrate'
+import { isCelebrateError, Segments } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
@@ -27,14 +27,18 @@ const errorHandlerMiddlewares = () => {
       const genericErrorMessage =
         'Apologies, something odd happened. Please try again later!'
       // Error page
-      if (isCelebrate(err)) {
-        // formId is only present for Joi validated routes that require it
-        const formId = get(req, 'form._id', null)
+      if (isCelebrateError(err)) {
+        // Return only the first joi error message.
+        const errorMessage =
+          err.details.get(Segments.BODY)?.details[0].message ??
+          genericErrorMessage
+
         logger.error({
           message: 'Joi validation error',
           meta: {
             action: 'genericErrorHandlerMiddleware',
-            formId,
+            // formId is only present for Joi validated routes that require it
+            formId: get(req, 'form._id', null),
           },
           error: err,
         })
