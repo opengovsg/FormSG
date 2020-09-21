@@ -1,4 +1,4 @@
-const CSV = require('csv-string')
+const { stringify } = require('csv-string')
 const { triggerFileDownload } = require('./util')
 
 // Used to denote to Excel that the CSV is UTF8-encoded. See
@@ -30,7 +30,7 @@ module.exports = class CsvGenerator {
    * @param {Array} rowData array of data to be inserted
    */
   addLine(rowData) {
-    this.records[this.idx] = CSV.stringify(rowData)
+    this.records[this.idx] = stringify(rowData)
     this.idx++
   }
 
@@ -39,7 +39,7 @@ module.exports = class CsvGenerator {
    * @param {Array} headerLabels array of labels for header row
    */
   setHeader(headerLabels) {
-    this.records[this.startIdx - 1] = CSV.stringify(headerLabels)
+    this.records[this.startIdx - 1] = stringify(headerLabels)
   }
 
   /**
@@ -47,7 +47,7 @@ module.exports = class CsvGenerator {
    * @param {Array} metaDataRows array of arrays, metaDataRows[i][j] holds the data for row i, col j of the metaData table
    */
   addMetaData(metaDataRows) {
-    const metaData = metaDataRows.map((data) => CSV.stringify(data))
+    const metaData = metaDataRows.map((data) => stringify(data))
     // Start splicing at index 1 because BOM is at index 0.
     this.records.splice(1, this.numOfMetaDataRows, ...metaData)
   }
