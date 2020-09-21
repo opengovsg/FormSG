@@ -43,6 +43,14 @@ const mapRouteError = (error: ApplicationError, coreErrorMessage?: string) => {
         errorMessage: coreErrorMessage ?? error.message,
       }
     default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
