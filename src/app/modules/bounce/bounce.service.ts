@@ -160,8 +160,6 @@ const computeValidEmails = (
 export const notifyAdminOfBounce = async (
   bounceDoc: IBounceSchema,
 ): Promise<string[]> => {
-  // No further action required, no emails sent
-  if (bounceDoc.hasAutoEmailed) return []
   const form = await Form.getFullFormById(bounceDoc.formId)
   if (!form) {
     logger.error({

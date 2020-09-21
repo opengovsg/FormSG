@@ -32,6 +32,7 @@ interface IMockBounce extends IBounceSchema {
   isCriticalBounce: jest.Mock
   areAllPermanentBounces: jest.Mock
   setNotificationState: jest.Mock
+  hasNotified: jest.Mock
   save: jest.Mock
 }
 describe('handleSns', () => {
@@ -47,6 +48,7 @@ describe('handleSns', () => {
     bounceDoc.setNotificationState = jest.fn()
     bounceDoc.save = jest.fn()
     bounceDoc.areAllPermanentBounces = jest.fn()
+    bounceDoc.hasNotified = jest.fn()
     mockBounceDoc = bounceDoc as IMockBounce
   })
 
@@ -95,6 +97,7 @@ describe('handleSns', () => {
     MockBounceService.getUpdatedBounceDoc.mockResolvedValueOnce(mockBounceDoc)
     mockBounceDoc.areAllPermanentBounces.mockReturnValueOnce(true)
     mockBounceDoc.isCriticalBounce.mockReturnValueOnce(true)
+    mockBounceDoc.hasNotified.mockReturnValueOnce(false)
     MockBounceService.notifyAdminOfBounce.mockResolvedValueOnce(
       MOCK_EMAIL_RECIPIENTS,
     )
@@ -196,6 +199,7 @@ describe('handleSns', () => {
     MockBounceService.getUpdatedBounceDoc.mockResolvedValueOnce(mockBounceDoc)
     mockBounceDoc.areAllPermanentBounces.mockReturnValueOnce(true)
     mockBounceDoc.isCriticalBounce.mockReturnValueOnce(true)
+    mockBounceDoc.hasNotified.mockReturnValueOnce(false)
     MockBounceService.notifyAdminOfBounce.mockImplementationOnce(() => {
       throw new Error()
     })

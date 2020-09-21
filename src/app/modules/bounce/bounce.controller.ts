@@ -42,8 +42,11 @@ export const handleSns: RequestHandler<
       await FormService.deactivateForm(bounceDoc.formId)
     }
     if (bounceDoc.isCriticalBounce()) {
-      const emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)
-      bounceDoc.setNotificationState(emailRecipients)
+      let emailRecipients: string[] = []
+      if (!bounceDoc.hasNotified()) {
+        emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)
+        bounceDoc.setNotificationState(emailRecipients)
+      }
       BounceService.logCriticalBounce(bounceDoc, notification, emailRecipients)
     }
     await bounceDoc.save()

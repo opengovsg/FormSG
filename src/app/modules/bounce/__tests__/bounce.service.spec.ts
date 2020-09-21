@@ -343,24 +343,6 @@ describe('BounceService', () => {
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(emailRecipients).toEqual([])
     })
-
-    it('should not auto-email when hasAutoEmailed is true', async () => {
-      const testForm = new Form({
-        admin: MOCK_ADMIN_ID,
-        title: MOCK_FORM_TITLE,
-      })
-      await testForm.save()
-      const bounceDoc = new Bounce({
-        formId: testForm._id,
-        bounces: [
-          { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
-        ],
-        hasAutoEmailed: true,
-      })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
-      expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
-      expect(emailRecipients).toEqual([])
-    })
   })
 
   describe('logCriticalBounce', () => {
