@@ -27,7 +27,7 @@ script:
   - npm run lint-ci
   - npm run build
   - npm run test-ci
-  # - npm run test-e2e-ci
+  - npm run test-e2e-ci
 
 before_deploy:
   # Workaround to run before_deploy only once
