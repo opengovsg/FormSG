@@ -628,7 +628,7 @@
           <br />
           <div class="row label-custom label-medium">
             <div class="col-md-12">
-              Email domain restriction
+              Domains allowed
               <i
                 class="glyphicon glyphicon-question-sign"
                 uib-tooltip="Please enter one allowed email domain per line."
@@ -669,7 +669,8 @@
           </div>
         </div>
 
-        <div class="row" ng-show="vm.field.fieldType === 'email'"><br /></div>
+        <div ng-show="vm.field.fieldType === 'email'" class="Line"></div>
+
         <div class="row" ng-if="vm.field.fieldType === 'email'">
           <div class="toggle-option">
             <div class="col-xs-8 label-custom label-medium">

@@ -12,6 +12,9 @@ function validateEmailDomainFromText() {
       ngModel.$validators.emailDomainFromTextValidator = (
         allowedEmailDomainsFromText,
       ) => {
+        if (!allowedEmailDomainsFromText) {
+          return true
+        }
         // The last `filter` chain is needed to remove falsey values from the array e.g. [''].
         const emailDomains = allowedEmailDomainsFromText
           .split('\n')
