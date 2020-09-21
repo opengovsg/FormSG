@@ -7,56 +7,13 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import MailService from '../../services/mail.service'
 import { getRequestIp } from '../../utils/request'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
-import { MailSendError } from '../mail/mail.errors'
 import * as UserService from '../user/user.service'
 
-import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 import * as AuthService from './auth.service'
 import { SessionUser } from './auth.types'
+import { mapRouteError } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Handler to map ApplicationErrors to their correct status code and error
- * messages.
- * @param error The error to retrieve the status codes and error messages
- * @param coreErrorMessage Any error message to return instead of the default core error message, if any
- */
-const mapRouteError = (error: ApplicationError, coreErrorMessage?: string) => {
-  switch (error.constructor) {
-    case InvalidDomainError:
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        errorMessage: error.message,
-      }
-    case InvalidOtpError:
-      return {
-        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
-        errorMessage: error.message,
-      }
-    case MailSendError:
-    case ApplicationError:
-    case DatabaseError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage ?? error.message,
-      }
-    default:
-      logger.error({
-        message: 'Unknown route error observed',
-        meta: {
-          action: 'mapRouteError',
-        },
-        error,
-      })
-
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: 'Something went wrong. Please try again.',
-      }
-  }
-}
 
 /**
  * Handler for GET /auth/checkuser endpoint.
