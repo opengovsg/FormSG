@@ -227,7 +227,7 @@ export const handleLoginVerifyOtp: RequestHandler<
 }
 
 export const handleSignout: RequestHandler = async (req, res) => {
-  if (isEmpty(req.session)) {
+  if (!req.session || isEmpty(req.session)) {
     logger.error({
       message: 'Attempted to sign out without a session',
       meta: {
@@ -237,7 +237,7 @@ export const handleSignout: RequestHandler = async (req, res) => {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  req.session?.destroy((error) => {
+  req.session.destroy((error) => {
     if (error) {
       logger.error({
         message: 'Failed to destroy session',

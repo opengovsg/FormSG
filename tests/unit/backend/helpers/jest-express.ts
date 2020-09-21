@@ -10,7 +10,7 @@ const mockRequest = <P extends Record<string, string>, B>({
   body?: B
   session?: any
   secure?: boolean
-} = {}) => {
+} = {}): Request<P, any, B> => {
   return {
     body: body ?? {},
     params: params ?? {},
