@@ -446,7 +446,7 @@ describe('auth.routes', () => {
       // Mock error returned when creating user
       const upsertSpy = jest
         .spyOn(UserService, 'retrieveUser')
-        .mockRejectedValueOnce(new Error('some error'))
+        .mockReturnValueOnce(errAsync(new DatabaseError('some error')))
 
       // Act
       const response = await request
@@ -458,7 +458,7 @@ describe('auth.routes', () => {
       expect(upsertSpy).toBeCalled()
       expect(response.status).toEqual(500)
       expect(response.text).toEqual(
-        expect.stringContaining('User signin failed. Please try again later'),
+        expect.stringContaining('Failed to process OTP.'),
       )
     })
   })

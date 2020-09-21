@@ -159,6 +159,7 @@ export const handleLoginVerifyOtp: RequestHandler<
     email,
     ip: getRequestIp(req),
   }
+  const coreErrorMessage = `Failed to process OTP. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`
 
   const validateResult = await AuthService.validateEmailDomain(email)
   if (validateResult.isErr()) {
@@ -175,55 +176,50 @@ export const handleLoginVerifyOtp: RequestHandler<
   // Since there is no error, agency is retrieved from validation.
   const agency = validateResult.value
 
-  return AuthService.verifyLoginOtp(otp, email)
-    .map(async () => {
-      // OTP is valid, proceed to login user.
-      try {
-        // TODO (#317): remove usage of non-null assertion
-        const user = await UserService.retrieveUser(email, agency)
-        // Create user object to return to frontend.
-        const userObj = { ...user.toObject(), agency }
-
+  // Step 1: Verify login OTP.
+  return (
+    AuthService.verifyLoginOtp(otp, email)
+      // Step 2: OTP is valid, retrieve associated user.
+      .andThen(() => UserService.retrieveUser(email, agency._id))
+      // Step 3a: Set session and return user in response.
+      .map((user) => {
         if (!req.session) {
-          throw new Error('req.session not found')
+          logger.error({
+            message: 'Error logging in user; req.session is undefined',
+            meta: logMeta,
+          })
+
+          return res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send(coreErrorMessage)
         }
 
         // TODO(#212): Should store only userId in session.
         // Add user info to session.
-        req.session.user = userObj as SessionUser
+        const userObj = user.toObject() as SessionUser
+        req.session.user = userObj
         logger.info({
           message: `Successfully logged in user ${user.email}`,
           meta: logMeta,
         })
 
         return res.status(StatusCodes.OK).send(userObj)
-      } catch (err) {
-        logger.error({
-          message: 'Error logging in user',
+      })
+      // Step 3b: Error occured in one of the steps.
+      .mapErr((error) => {
+        logger.warn({
+          message: 'Error occurred when trying to validate login OTP',
           meta: logMeta,
-          error: err,
+          error,
         })
 
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send(
-            `User signin failed. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`,
-          )
-      }
-    })
-    .mapErr((error) => {
-      logger.warn({
-        message: 'Error occurred when trying to validate login OTP',
-        meta: logMeta,
-        error,
+        const { errorMessage, statusCode } = mapRouteError(
+          error,
+          coreErrorMessage,
+        )
+        return res.status(statusCode).send(errorMessage)
       })
-
-      const { errorMessage, statusCode } = mapRouteError(
-        error,
-        /* coreErrorMessage= */ 'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
-      )
-      return res.status(statusCode).send(errorMessage)
-    })
+  )
 }
 
 export const handleSignout: RequestHandler = async (req, res) => {

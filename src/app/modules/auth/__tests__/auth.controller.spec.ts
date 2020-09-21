@@ -176,17 +176,14 @@ describe('auth.controller', () => {
         okAsync(MOCK_AGENCY),
       )
       MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
-      MockUserService.retrieveUser.mockResolvedValueOnce(mockUser)
+      MockUserService.retrieveUser.mockReturnValueOnce(okAsync(mockUser))
 
       // Act
       await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith({
-        ...mockUser.toObject(),
-        agency: MOCK_AGENCY,
-      })
+      expect(mockRes.send).toBeCalledWith(mockUser.toObject())
     })
 
     it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
@@ -245,7 +242,7 @@ describe('auth.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(
-        'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
+        expect.stringContaining('Failed to process OTP.'),
       )
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
@@ -259,8 +256,8 @@ describe('auth.controller', () => {
         okAsync(MOCK_AGENCY),
       )
       MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
-      MockUserService.retrieveUser.mockRejectedValueOnce(
-        new Error('upsert error'),
+      MockUserService.retrieveUser.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
       )
 
       // Act
@@ -270,9 +267,7 @@ describe('auth.controller', () => {
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(
         // Use stringContaining here due to dynamic text and out of test scope.
-        expect.stringContaining(
-          'User signin failed. Please try again later and if the problem persists',
-        ),
+        expect.stringContaining('Failed to process OTP.'),
       )
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
