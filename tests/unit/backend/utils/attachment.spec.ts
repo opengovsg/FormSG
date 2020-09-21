@@ -11,6 +11,7 @@ import {
 } from 'src/app/utils/attachment'
 import {
   BasicField,
+  FieldResponse,
   IAttachmentResponse,
   ISingleAnswerResponse,
 } from 'src/types'
@@ -182,7 +183,7 @@ describe('addAttachmentToResponses', () => {
   })
 
   it('should do nothing when responses are empty', () => {
-    const responses = []
+    const responses: FieldResponse[] = []
     addAttachmentToResponses(responses, [validSingleFile])
     expect(responses).toEqual([])
   })

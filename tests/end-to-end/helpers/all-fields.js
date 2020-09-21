@@ -117,4 +117,9 @@ const allFieldInfo = [
   },
 ]
 const allFields = allFieldInfo.map(makeField)
-module.exports = { allFields }
+module.exports = {
+  allFields,
+  allFieldsEncrypt: allFields.filter(
+    (field) => field.fieldType !== 'attachment',
+  ),
+}

@@ -392,7 +392,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
     // Compact is used to remove undefined from array
-    return compact(uniq(this.form_fields.map((field) => field.myInfo?.attr)))
+    return compact(uniq(this.form_fields?.map((field) => field.myInfo?.attr)))
   }
 
   // Return a duplicate form object with the given properties
@@ -416,15 +416,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         path: 'admin',
         select: 'email',
       })
-      const otpData: FormOtpData = {
-        form: data._id,
-        formAdmin: {
-          email: data.admin.email,
-          userId: data.admin._id,
-        },
-        msgSrvcName: data.msgSrvcName,
-      }
-      return otpData
+      return data
+        ? ({
+            form: data._id,
+            formAdmin: {
+              email: data.admin.email,
+              userId: data.admin._id,
+            },
+            msgSrvcName: data.msgSrvcName,
+          } as FormOtpData)
+        : null
     } catch {
       return null
     }
@@ -434,8 +435,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.statics.getFullFormById = async function (
     this: IFormModel,
     formId: string,
-  ): Promise<IPopulatedForm> {
-    const data: IPopulatedForm = await this.findById(formId).populate({
+  ): Promise<IPopulatedForm | null> {
+    const data: IPopulatedForm | null = await this.findById(formId).populate({
       path: 'admin',
       populate: {
         path: 'agency',

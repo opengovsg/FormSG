@@ -122,21 +122,22 @@ export const customFormat = format.printf((info) => {
  * Function courtesy of
  * https://github.com/winstonjs/winston/issues/1243#issuecomment-463548194.
  */
-const jsonErrorReplacer = (_key: never, value: any) => {
+function jsonErrorReplacer(this: any, key: string, value: any) {
   if (value instanceof Error) {
     return Object.getOwnPropertyNames(value).reduce((all, valKey) => {
       if (valKey === 'stack') {
+        const errStack = value.stack ?? ''
         return {
           ...all,
-          at: value[valKey]
+          at: errStack
             .split('\n')
-            .filter((va) => va.trim().slice(0, 5) != 'Error')
-            .map((va, i) => `stack ${i} ${va.trim().slice(3).trim()}`),
+            .filter((va) => va.trim().slice(0, 5) !== 'Error')
+            .map((va, i) => `stack ${i} ${va.trim()}`),
         }
       } else {
         return {
           ...all,
-          [valKey]: value[valKey],
+          [valKey]: value[valKey as keyof Error],
         }
       }
     }, {})
@@ -180,7 +181,7 @@ const getModuleLabel = (callingModule: NodeModule) => {
   // Remove the file extension from the filename and split with path separator.
   const parts = callingModule.filename.replace(/\.[^/.]+$/, '').split(path.sep)
   // Join the last two parts of the file path together.
-  return path.join(parts[parts.length - 2], parts.pop())
+  return path.join(parts[parts.length - 2], parts.pop() ?? '')
 }
 
 /**

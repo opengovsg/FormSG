@@ -46,11 +46,11 @@ export const handleLoginSendOtp: RequestHandler = async (
   // Create OTP.
   const [otpErr, otp] = await to(AuthService.createLoginOtp(email))
 
-  if (otpErr) {
+  if (otpErr || !otp) {
     logger.error({
       message: 'Error generating OTP',
       meta: logMeta,
-      error: otpErr,
+      error: otpErr ?? undefined,
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -138,7 +138,8 @@ export const handleLoginVerifyOtp: RequestHandler = async (
 
   // OTP is valid, proceed to login user.
   try {
-    const user = await UserService.retrieveUser(email, agency)
+    // TODO (#317): remove usage of non-null assertion
+    const user = await UserService.retrieveUser(email, agency!)
     // Create user object to return to frontend.
     const userObj = { ...user.toObject(), agency }
 
@@ -181,7 +182,7 @@ export const handleSignout: RequestHandler = async (req, res) => {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  req.session.destroy((error) => {
+  req.session!.destroy((error) => {
     if (error) {
       logger.error({
         message: 'Failed to destroy session',

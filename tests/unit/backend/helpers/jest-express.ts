@@ -1,23 +1,26 @@
 import { Request, Response } from 'express'
 
-const mockRequest = ({
-  body,
+const mockRequest = <P extends Record<string, string>, B>({
   params,
+  body,
   session,
+  secure,
 }: {
-  body?: Record<string, string>
-  params?: Record<string, string>
+  params?: P
+  body?: B
   session?: any
+  secure?: boolean
 } = {}) => {
   return {
     body: body ?? {},
     params: params ?? {},
     session: session ?? {},
+    secure: secure ?? true,
     get(name: string) {
       if (name === 'cf-connecting-ip') return 'MOCK_IP'
-      return null
+      return undefined
     },
-  } as Request
+  } as Request<P, any, B>
 }
 
 const mockResponse = (extraArgs: Partial<Record<keyof Response, any>> = {}) => {

@@ -25,7 +25,7 @@ const createShortTextFieldSchema = () => {
       },
       selectedValidation: {
         type: String,
-        enum: Object.values(ShortTextSelectedValidation).concat([null]),
+        enum: [...Object.values(ShortTextSelectedValidation), null],
         default: null,
       },
     },

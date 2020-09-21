@@ -1,9 +1,9 @@
 import compression from 'compression'
 import express, { Express } from 'express'
 import device from 'express-device'
-import helmet from 'helmet'
 import http from 'http'
 import { Connection } from 'mongoose'
+import nocache from 'nocache'
 import path from 'path'
 import url from 'url'
 
@@ -23,25 +23,31 @@ import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
 
 const loadExpressApp = async (connection: Connection) => {
-  // Initialize express app
+  // Initialize express app.
   let app = express()
   app.locals = appLocals
 
-  const environmentConfigs = {
-    production(app: Express) {
-      // Trust the load balancer that is in front of the server
-      app.set('trust proxy', true)
-      return app
-    },
+  const getConfigFunctionFor = (environment: string) => {
+    switch (environment) {
+      case 'production': {
+        return function (app: Express) {
+          // Trust the load balancer that is in front of the server
+          app.set('trust proxy', true)
+          return app
+        }
+      }
+      default:
+        return null
+    }
   }
 
-  const configureEnvironmentFor = environmentConfigs[config.nodeEnv]
-  if (typeof configureEnvironmentFor === 'function') {
+  const configureEnvironmentFor = getConfigFunctionFor(config.nodeEnv)
+  if (configureEnvironmentFor) {
     app = configureEnvironmentFor(app)
   }
 
   app.use(function (req, res, next) {
-    const urlPath = url.parse(req.url).path.split('/')
+    const urlPath = url.parse(req.url).path?.split('/') ?? []
     if (
       urlPath.indexOf('static') > -1 &&
       urlPath.indexOf('view') === urlPath.indexOf('static') - 1
@@ -87,7 +93,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   // !!!!! DO NOT CHANGE THE ORDER OF THE NEXT 3 LINES !!!!!
   // The first line redirects requests to /public/fonts to
-  // ./dist/frontend/fonts. After that, helmet.noCache() ensures that
+  // ./dist/frontend/fonts. After that, nocache() ensures that
   // cache headers are not set on requests for fonts, which ensures that
   // fonts are shown correctly on IE11.
   // The last line redirects requests to /public to ./dist/frontend,
@@ -97,7 +103,7 @@ const loadExpressApp = async (connection: Connection) => {
     express.static(path.resolve('./dist/frontend/fonts')),
   )
 
-  app.use(helmet.noCache()) // Add headers to prevent browser caching front-end code
+  app.use(nocache()) // Add headers to prevent browser caching front-end code
 
   // Setting the app static folder
   app.use('/public', express.static(path.resolve('./dist/frontend')))

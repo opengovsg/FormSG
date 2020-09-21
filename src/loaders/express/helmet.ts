@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
+import { ContentSecurityPolicyOptions } from 'helmet/dist/middlewares/content-security-policy'
 import { get } from 'lodash'
 
 import config from '../../config/config'
@@ -27,7 +28,7 @@ const helmetMiddlewares = () => {
     policy: 'strict-origin-when-cross-origin',
   })
 
-  const cspCoreDirectives = {
+  const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] = {
     defaultSrc: ["'self'"],
     imgSrc: [
       "'self'",
@@ -73,9 +74,10 @@ const helmetMiddlewares = () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
+      // For inline styles in angular-sanitize.js
+      "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
     ],
     formAction: ["'self'"],
-    upgradeInsecureRequests: !config.isDev,
   }
 
   const reportUri = get(
@@ -83,7 +85,18 @@ const helmetMiddlewares = () => {
     'cspReportUri',
     undefined,
   )
-  const cspOptionalDirectives = reportUri ? { reportUri } : {}
+
+  const cspOptionalDirectives: ContentSecurityPolicyOptions['directives'] = {}
+
+  // Add on reportUri CSP header if ReportUri exists
+  // It is necessary to have the if statement for optional directives because falsey values
+  // do not work - e.g. cspOptionalDirectives.reportUri = [false] will still set the reportUri header
+  // See https://github.com/helmetjs/csp/issues/36 and
+  // https://github.com/helmetjs/helmet/blob/cb170160e7c1ccac314cc19d3b979cfc771f1349/middlewares/content-security-policy/index.ts#L135
+  if (reportUri) cspOptionalDirectives.reportUri = [reportUri]
+
+  // Add on upgradeInsecureRequest CSP header if !config.isDev
+  if (!config.isDev) cspOptionalDirectives.upgradeInsecureRequests = []
 
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
     directives: {

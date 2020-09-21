@@ -18,7 +18,7 @@ const createDateFieldSchema = () => {
       },
       selectedDateValidation: {
         type: String,
-        enum: Object.values(DateSelectedValidation).concat([null]),
+        enum: [...Object.values(DateSelectedValidation), null],
         default: null,
       },
     },

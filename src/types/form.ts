@@ -109,7 +109,7 @@ export interface IFormSchema extends IForm, Document {
 }
 
 export interface IPopulatedForm extends IFormSchema {
-  admin: IPopulatedUser | null
+  admin: IPopulatedUser
 }
 
 export interface IEncryptedForm extends IForm {

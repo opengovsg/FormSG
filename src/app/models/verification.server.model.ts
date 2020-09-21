@@ -28,7 +28,7 @@ const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
   hashRetries: { type: Number, default: 0 },
 })
 
-const compileVerificationModel = (db: Mongoose) => {
+const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   const VerificationSchema = new Schema<IVerificationSchema>({
     formId: {
       type: Schema.Types.ObjectId,

@@ -34,7 +34,7 @@ const basicVars = merge(optionalVars, compulsoryVars)
 const isDev =
   basicVars.core.nodeEnv === Environment.Dev ||
   basicVars.core.nodeEnv === Environment.Test
-const nodeEnv = isDev ? Environment.Dev : Environment.Prod
+const nodeEnv = isDev ? basicVars.core.nodeEnv : Environment.Prod
 
 // Load and validate configuration values which are compulsory only in production
 // If environment variables are not present, an error will be thrown
@@ -99,7 +99,8 @@ if (isDev) {
 }
 
 const dbConfig: DbConfig = {
-  uri: dbUri,
+  // TODO (#317): remove usage of non-null assertion
+  uri: dbUri!,
   options: {
     user: '',
     pass: '',
@@ -196,10 +197,10 @@ const configureAws = async () => {
       })
     }
     await getCredentials()
-    if (!aws.config.credentials.accessKeyId) {
+    if (!aws.config.credentials?.accessKeyId) {
       throw new Error(`AWS Access Key Id is missing`)
     }
-    if (!aws.config.credentials.secretAccessKey) {
+    if (!aws.config.credentials?.secretAccessKey) {
       throw new Error(`AWS Secret Access Key is missing`)
     }
   }
