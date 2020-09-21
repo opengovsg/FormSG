@@ -82,6 +82,7 @@
   }
 
   #admin-form #form-header #collab-circle-plus {
+    height: 36px;
     width: 36px;
   }
 }

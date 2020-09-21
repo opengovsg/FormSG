@@ -2,17 +2,17 @@
 <section id="admin-form" class="container" ng-if="user">
   <!-- Header -->
   <div id="form-header" class="vcenter">
-    <div id="header-myforms" class="col-md-2 col-sm-3 col-xs-2">
+    <div id="header-myforms" class="col-md-2 col-sm-3 col-xs-4">
       <a ui-sref="listForms" class="left-spacer">
         <i class="bx bx-arrow-back bx-lg icon-spacing back-arrow"></i>
         <span id="myforms-text" class="hidden-xs">My Forms</span>
       </a>
     </div>
-    <div class="col-md-8 col-sm-6 col-xs-8">
+    <div class="col-md-8 col-sm-6 col-xs-4">
       <p id="header-title">{{myform.title}}</p>
       <p id="header-last-saved">Saved at {{lastModifiedString}}</p>
     </div>
-    <div id="header-addcollab" class="col-md-2 col-sm-3 col-xs-2">
+    <div id="header-addcollab" class="col-md-2 col-sm-3 col-xs-4">
       <div class="right-spacer">
         <button
           id="collab-circle-plus"
