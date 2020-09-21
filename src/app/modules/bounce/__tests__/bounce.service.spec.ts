@@ -38,7 +38,6 @@ MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
 // eslint-disable-next-line import/first
 import {
-  deactivateFormFromBounce,
   extractEmailType,
   getUpdatedBounceDoc,
   isValidSnsRequest,
@@ -361,21 +360,6 @@ describe('BounceService', () => {
       const emailRecipients = await notifyAdminOfBounce(bounceDoc)
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(emailRecipients).toEqual([])
-    })
-  })
-
-  describe('deactivateFormFromBounce', () => {
-    afterAll(() => {
-      jest.resetAllMocks()
-    })
-
-    it('should call Form.deactivateById', async () => {
-      const mock = jest.spyOn(Form, 'deactivateById')
-      const bounceDoc = new Bounce({
-        formId: MOCK_FORM_ID,
-      })
-      await deactivateFormFromBounce(bounceDoc)
-      expect(mock).toHaveBeenCalledWith(MOCK_FORM_ID)
     })
   })
 

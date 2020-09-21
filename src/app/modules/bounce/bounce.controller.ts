@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IEmailNotification, ISnsNotification } from '../../../types'
 import { EmailType } from '../../constants/mail'
+import * as FormService from '../form/form.service'
 
 import * as BounceService from './bounce.service'
 
@@ -38,7 +39,7 @@ export const handleSns: RequestHandler<
     // Missing headers in notification
     if (!bounceDoc) return res.sendStatus(StatusCodes.OK)
     if (bounceDoc.areAllPermanentBounces()) {
-      await BounceService.deactivateFormFromBounce(bounceDoc)
+      await FormService.deactivateForm(bounceDoc.formId)
     }
     if (bounceDoc.isCriticalBounce()) {
       const emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)

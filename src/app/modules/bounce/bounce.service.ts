@@ -11,7 +11,6 @@ import {
   BounceType,
   IBounceSchema,
   IEmailNotification,
-  IFormSchema,
   IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
@@ -145,12 +144,6 @@ export const logCriticalBounce = (
       bounceInfo: bounceInfo,
     },
   })
-}
-
-export const deactivateFormFromBounce = async (
-  bounceDoc: IBounceSchema,
-): Promise<IFormSchema | null> => {
-  return Form.deactivateById(bounceDoc.formId)
 }
 
 const computeValidEmails = (
