@@ -31,7 +31,9 @@
 
   <!-- Storage Mode -->
   <div ng-if="!vm.loading && vm.isEncryptResponseMode">
-    <div ng-if="vm.responsesCount === 0">
+    <div
+      ng-if="vm.currentView === 1 && vm.responsesCount === 0 && vm.filterBySubmissionRefId === ''"
+    >
       <div class="flex-column">
         <img
           id="no-responses"
@@ -62,17 +64,43 @@
       >
       </verify-secret-key-directive>
     </div>
-    <div ng-if="vm.responsesCount > 0 && vm.currentView === 2">
+    <div ng-if="vm.currentView === 2">
       <div class="flex-row">
-        <div class="response-stats">
+        <div class="col-md-3 response-stats">
           <span class="stats-text">
             <span
               ><span class="stats">{{vm.responsesCount}}</span> response(s) to
               date</span
             >
+            <a
+              id="filter-by-submission-filter-link"
+              ng-show="!vm.filterBySubmissionShowFilterBox"
+              ng-click="vm.filterBySubmissionShowFilterBox = true"
+            >
+              <i class="bx bx-search"></i>
+            </a>
           </span>
         </div>
-        <div class="datepicker-export-container">
+        <div
+          class="col-md-6"
+          ng-show="vm.filterBySubmissionShowFilterBox"
+          id="filter-by-submission-filter-textbox-container"
+        >
+          <input
+            class="input-custom input-medium"
+            ng-model="vm.filterBySubmissionRefIdTextbox"
+            ng-change="vm.filterBySubmissionChanged()"
+            ng-model-options="{ debounce: 150 }"
+            placeholder="Search by reference no."
+          />
+          <span
+            id="filter-by-submission-reset-link"
+            ng-show="vm.filterBySubmissionRefId !== ''"
+          >
+            <a ng-click="vm.filterBySubmissionReset()">View&nbsp;All</a>
+          </span>
+        </div>
+        <div class="datepicker-export-container col-md-3">
           <date-range-picker-directive
             class="datepicker-container"
             ng-model="vm.datePicker.date"
@@ -84,8 +112,11 @@
           ></export-button-component>
         </div>
       </div>
+      <div class="flex-row" ng-show="vm.filterBySubmissionShowFilterBox">
+        <div class="col-md-5"></div>
+      </div>
       <div class="row">
-        <div class="col-md-12">
+        <div ng-if="vm.responsesCount > 0" class="col-md-12">
           <table class="table" ng-table="vm.tableParams" show-filter="false">
             <tr ng-repeat="row in $data" ng-click="vm.rowOnClick($index)">
               <td
@@ -107,6 +138,21 @@
               </td>
             </tr>
           </table>
+        </div>
+        <div
+          ng-if="vm.responsesCount === 0 && vm.filterBySubmissionRefId !== ''"
+        >
+          <div class="flex-column">
+            <img
+              ng-src="/public/modules/core/img/error-illustration.svg"
+              id="no-responses"
+            />
+            <div class="title">No results found</div>
+            <div class="subtitle">
+              Did you enter the right reference number? We can't seem to find
+              the response.
+            </div>
+          </div>
         </div>
       </div>
     </div>

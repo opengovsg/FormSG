@@ -146,9 +146,13 @@ function SubmissionsFactory(
     },
     getMetadata: function (params) {
       const deferred = $q.defer()
-      const resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/metadata?page=${
+      let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/metadata?page=${
         params.page
       }`
+
+      if (params.filterBySubmissionRefId) {
+        resUrl += `&submissionId=${params.filterBySubmissionRefId}`
+      }
 
       $http.get(resUrl).then(
         function (response) {
