@@ -66,6 +66,26 @@ describe('Bounce Model', () => {
   })
 
   describe('methods', () => {
+    describe('hasNotified', () => {
+      it('should return hasAutoEmailed if it is true', () => {
+        const bounce = new Bounce({
+          formId: new ObjectId(),
+          bounces: [],
+          hasAutoEmailed: true,
+        })
+        expect(bounce.hasNotified()).toBe(true)
+      })
+
+      it('should return hasAutoEmailed if it is false', () => {
+        const bounce = new Bounce({
+          formId: new ObjectId(),
+          bounces: [],
+          hasAutoEmailed: false,
+        })
+        expect(bounce.hasNotified()).toBe(false)
+      })
+    })
+
     describe('setHasAutoEmailed', () => {
       it('should set hasAutoEmailed from false to true when there are email recipients', () => {
         const bounce = new Bounce({

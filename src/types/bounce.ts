@@ -31,4 +31,5 @@ export interface IBounceSchema extends IBounce, Document {
   areAllPermanentBounces: () => boolean
   getEmails: () => string[]
   setHasAutoEmailed: (emailRecipients: string[]) => void
+  hasNotified: () => boolean
 }

@@ -175,6 +175,14 @@ BounceSchema.methods.setHasAutoEmailed = function (
   }
 }
 
+/**
+ * Returns true if an automated email has been sent for this form,
+ * false otherwise.
+ */
+BounceSchema.methods.hasNotified = function (this: IBounceSchema): boolean {
+  return this.hasAutoEmailed
+}
+
 const getBounceModel = (db: Mongoose): IBounceModel => {
   try {
     return db.model(BOUNCE_SCHEMA_ID) as IBounceModel
