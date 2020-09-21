@@ -415,7 +415,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const newOwner = await User.findOne({ email: newOwnerEmail })
     if (newOwner == null) {
       throw new Error(
-        `invalid email error: "${newOwnerEmail} must have logged in once before being added as Owner"`,
+        `${newOwnerEmail} must have logged in once before being added as Owner`,
       )
     }
 
