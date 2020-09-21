@@ -141,17 +141,9 @@
 /* Form collaborator modal */
 
 @media all and (max-width: 768px) {
-  #collaborator-modal .close-full-screen-modal {
-    display: none;
-  }
-
   #collaborator-modal-body {
-    padding: 3em;
-  }
-
-  #collaborator-modal-body .top-section-label .close-full-screen-modal {
-    display: block;
-    padding: 0;
+    padding-right: 3em;
+    padding-left: 3em;
   }
 
   #collaborator-modal-body .top-section-label {
@@ -183,9 +175,7 @@
 
 @media not all and (min-width: 768px) {
   #collaborator-modal-body {
-    position: fixed;
     width: 100%;
-    height: 100vh;
     top: 0;
     overflow-y: scroll;
   }
@@ -223,10 +213,6 @@
 
   #collab-role {
     padding-left: 0;
-  }
-
-  #collaborator-modal-body .top-section-label .close-full-screen-modal {
-    display: none;
   }
 
   #admin-form #top-section .role-column {
