@@ -31,11 +31,6 @@ const errorHandlerMiddlewares = (): (
         'Apologies, something odd happened. Please try again later!'
       // Error page
       if (isCelebrateError(err)) {
-        // Return only the first joi error message.
-        const errorMessage =
-          err.details.get(Segments.BODY)?.details[0].message ??
-          genericErrorMessage
-
         logger.error({
           message: 'Joi validation error',
           meta: {
