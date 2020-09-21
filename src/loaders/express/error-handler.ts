@@ -1,4 +1,4 @@
-import { isCelebrate } from 'celebrate'
+import { isCelebrateError, Segments } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
@@ -7,7 +7,10 @@ import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
 
-const errorHandlerMiddlewares = () => {
+const errorHandlerMiddlewares = (): (
+  | ErrorRequestHandler
+  | RequestHandler
+)[] => {
   // Assume 'not found' in the error msgs is a 404. this is somewhat silly, but valid, you can do whatever you like, set properties, use instanceof etc.
   const genericErrorHandlerMiddleware: ErrorRequestHandler = function (
     err,
@@ -27,23 +30,19 @@ const errorHandlerMiddlewares = () => {
       const genericErrorMessage =
         'Apologies, something odd happened. Please try again later!'
       // Error page
-      if (isCelebrate(err)) {
-        const errorMessage = get(
-          err,
-          'joi.details[0].message',
-          genericErrorMessage,
-        )
-        // formId is only present for Joi validated routes that require it
-        const formId = get(req, 'form._id', null)
+      if (isCelebrateError(err)) {
         logger.error({
           message: 'Joi validation error',
           meta: {
             action: 'genericErrorHandlerMiddleware',
-            formId,
+            // formId is only present for Joi validated routes that require it
+            formId: get(req, 'form._id', null),
           },
           error: err,
         })
-        return res.status(StatusCodes.BAD_REQUEST).send(errorMessage)
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send('Some required parameters are missing')
       }
 
       logger.error({
