@@ -9,12 +9,9 @@ language: node_js
 node_js: '12'
 cache:
   - npm
-  - pip
 
-# Setup browsers needed for end-to-end tests
-before_install:
-  - sudo apt-get clean && sudo apt-get update
-  - sudo apt-get install -y dpkg google-chrome-stable fluxbox chromium-browser
+addons:
+  chrome: stable
 
 notifications:
   email:
@@ -25,23 +22,17 @@ notifications:
     on_success: always
     on_failure: always
 
-before_script:
-  - fluxbox >/dev/null 2>&1 &
-  - pyenv global 3.7.1
-  - pip3 install --user localstack[full]
-
 script:
   - set -e
   - npm run lint-ci
   - npm run build
   - npm run test-ci
-  # - npm run test-e2e-ci
+  - npm run test-e2e-ci
 
 before_deploy:
   # Workaround to run before_deploy only once
   - >
     if ! [ "$TAG" ]; then
-      pip install --user awscli
       # Put AWS in path
       export PATH=$PATH:$HOME/.local/bin
       # Login to AWS ECR, credentials defined in $AWS_ACCESS_KEY_ID and $AWS_SECRET_ACCESS_KEY
