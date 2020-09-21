@@ -102,6 +102,7 @@
 
 #responses-tab .response-stats {
   white-space: nowrap;
+  min-width: 240px;
 }
 
 #responses-tab .datepicker-export-container {
@@ -732,4 +733,5 @@
 
 #filter-by-submission-filter-textbox-container {
   display: flex;
+  min-width: 240px;
 }

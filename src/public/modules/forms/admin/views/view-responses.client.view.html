@@ -90,14 +90,14 @@
             class="input-custom input-medium"
             ng-model="vm.filterBySubmissionRefIdTextbox"
             ng-change="vm.filterBySubmissionChanged()"
-            ng-model-options="{ debounce: 500 }"
+            ng-model-options="{ debounce: 150 }"
             placeholder="Search by reference no."
           />
           <span
             id="filter-by-submission-reset-link"
             ng-show="vm.filterBySubmissionRefId !== ''"
           >
-            <a ng-click="vm.filterBySubmissionReset()">Reset</a>
+            <a ng-click="vm.filterBySubmissionReset()">View&nbsp;All</a>
           </span>
         </div>
         <div class="datepicker-export-container col-md-3">
