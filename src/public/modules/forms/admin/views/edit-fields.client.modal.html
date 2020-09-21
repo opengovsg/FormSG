@@ -598,7 +598,7 @@
             >
               Restrict email domain?<i
                 class="glyphicon glyphicon-question-sign"
-                uib-tooltip="e.g. @mom.gov.sg, @moe.gov.sg. OTP verification needs to be activated first."
+                uib-tooltip="e.g. @mom.gov.sg, @moe.gov.sg OTP verification needs to be activated first."
                 tooltip-trigger="'click mouseenter'"
               ></i>
             </div>
@@ -644,7 +644,7 @@
                 ng-model="vm.field.allowedEmailDomainsFromText"
                 name="allowedEmailDomainsFromText"
                 validate-email-domain-from-text
-                placeholder="@example.com, @nextexample.com"
+                placeholder="{{ vm.field.allowedEmailDomainsPlaceholder }}"
               >
               </textarea>
             </div>

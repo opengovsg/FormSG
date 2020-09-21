@@ -58,13 +58,14 @@ function EditFieldsModalController(
   }
 
   // Serialize allowed email domains
-  if (
-    vm.field.fieldType === 'email' &&
-    vm.field.allowedEmailDomains.length > 0
-  ) {
-    vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
-      '\n',
-    )
+  if (vm.field.fieldType === 'email') {
+    const userEmailDomain = '@' + Auth.getUser().email.split('@').pop()
+    vm.field.allowedEmailDomainsPlaceholder = `${userEmailDomain}\n@agency.gov.sg`
+    if (vm.field.allowedEmailDomains.length > 0) {
+      vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
+        '\n',
+      )
+    }
   }
 
   // Set Validation Options on older paragraph fields - This ensures backward compatibility
