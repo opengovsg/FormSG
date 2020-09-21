@@ -31,7 +31,7 @@ const MOCK_EMAIL_RECIPIENTS = ['a@email.com', 'b@email.com']
 interface IMockBounce extends IBounceSchema {
   isCriticalBounce: jest.Mock
   areAllPermanentBounces: jest.Mock
-  setHasAutoEmailed: jest.Mock
+  setNotificationState: jest.Mock
   save: jest.Mock
 }
 describe('handleSns', () => {
@@ -44,7 +44,7 @@ describe('handleSns', () => {
       bounces: [],
     }).save()
     bounceDoc.isCriticalBounce = jest.fn()
-    bounceDoc.setHasAutoEmailed = jest.fn()
+    bounceDoc.setNotificationState = jest.fn()
     bounceDoc.save = jest.fn()
     bounceDoc.areAllPermanentBounces = jest.fn()
     mockBounceDoc = bounceDoc as IMockBounce
@@ -120,7 +120,7 @@ describe('handleSns', () => {
     expect(MockBounceService.notifyAdminOfBounce).toHaveBeenCalledWith(
       mockBounceDoc,
     )
-    expect(mockBounceDoc.setHasAutoEmailed).toHaveBeenCalledWith(
+    expect(mockBounceDoc.setNotificationState).toHaveBeenCalledWith(
       MOCK_EMAIL_RECIPIENTS,
     )
     expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith(

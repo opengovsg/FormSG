@@ -86,14 +86,14 @@ describe('Bounce Model', () => {
       })
     })
 
-    describe('setHasAutoEmailed', () => {
+    describe('setNotificationState', () => {
       it('should set hasAutoEmailed from false to true when there are email recipients', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
           hasAutoEmailed: false,
         })
-        bounce.setHasAutoEmailed([MOCK_EMAIL])
+        bounce.setNotificationState([MOCK_EMAIL])
         expect(bounce.hasAutoEmailed).toBe(true)
       })
 
@@ -103,7 +103,7 @@ describe('Bounce Model', () => {
           bounces: [],
           hasAutoEmailed: true,
         })
-        bounce.setHasAutoEmailed([MOCK_EMAIL])
+        bounce.setNotificationState([MOCK_EMAIL])
         expect(bounce.hasAutoEmailed).toBe(true)
       })
 
@@ -113,7 +113,7 @@ describe('Bounce Model', () => {
           bounces: [],
           hasAutoEmailed: true,
         })
-        bounce.setHasAutoEmailed([])
+        bounce.setNotificationState([])
         expect(bounce.hasAutoEmailed).toBe(true)
       })
 
@@ -123,7 +123,7 @@ describe('Bounce Model', () => {
           bounces: [],
           hasAutoEmailed: false,
         })
-        bounce.setHasAutoEmailed([])
+        bounce.setNotificationState([])
         expect(bounce.hasAutoEmailed).toBe(false)
       })
     })
