@@ -140,7 +140,6 @@
     "ngclipboard": "^2.0.0",
     "nocache": "^2.1.0",
     "node-cache": "^5.1.2",
-    "node-jose": "^2.0.0",
     "nodemailer": "^6.4.11",
     "nodemailer-direct-transport": "~3.3.2",
     "opossum": "^5.0.1",
