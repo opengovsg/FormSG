@@ -127,7 +127,7 @@ export const logCriticalBounce = (
     0,
   )
   logger.warn({
-    message: 'Critical bounce',
+    message: 'Bounced submission',
     meta: {
       action: 'logCriticalBounce',
       hasAutoEmailed: bounceDoc.hasAutoEmailed,
