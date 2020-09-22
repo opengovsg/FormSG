@@ -30,7 +30,6 @@
       </div>
     </div>
   </div>
-  <script></script>
 
   <!-- Collaborator Modal -->
   <div ng-if="collab.isModalShown" id="collaborator-modal">
@@ -284,11 +283,14 @@
   </div>
 
   <!-- Main window with tabs -->
-  <uib-tabset type="pills">
+  <uib-tabset class="admin-form-content" type="pills">
     <div id="admin-tab-bar">
       <div id="admin-tabs-container" drag-scroll="true">
         <uib-tab ng-repeat="viewTab in viewTabs" heading="{{viewTab.title}}">
-          <div ui-view="{{viewTab.route}}"></div>
+          <div
+            class="{{viewTab.route}}-container"
+            ui-view="{{viewTab.route}}"
+          ></div>
         </uib-tab>
       </div>
       <!-- Preview button -->

@@ -1,9 +1,16 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 /* BANNER COMPONENT */
 
 banner-component {
   -webkit-box-flex: 0;
-  -ms-flex: none;
-  flex: none;
+  -ms-flex: 0 1 auto;
+  flex: 0 1 auto;
 }
 
 .banner-container {
