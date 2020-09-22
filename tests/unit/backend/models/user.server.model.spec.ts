@@ -1,8 +1,7 @@
-import { omit } from 'lodash'
 import mongoose from 'mongoose'
 
 import getUserModel from 'src/app/models/user.server.model'
-import { IAgencySchema, IUser } from 'src/types'
+import { IAgencySchema, IUser, IUserSchema } from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
 
@@ -13,16 +12,24 @@ const VALID_USER_EMAIL = `test@${AGENCY_DOMAIN}`
 // Obtained from Twilio's
 // https://www.twilio.com/blog/2018/04/twilio-test-credentials-magic-numbers.html
 const VALID_CONTACT = '+15005550006'
+const MOCKED_DATE_NOW = Date.now()
+const MOCKED_DATE = new Date(MOCKED_DATE_NOW)
 
 describe('User Model', () => {
   let agency: IAgencySchema
 
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    jest.spyOn(Date, 'now').mockReturnValue(MOCKED_DATE_NOW)
+  })
   beforeEach(async () => {
     agency = await dbHandler.insertDefaultAgency({ mailDomain: AGENCY_DOMAIN })
   })
   afterEach(async () => await dbHandler.clearDatabase())
-  afterAll(async () => await dbHandler.closeDatabase())
+  afterAll(async () => {
+    await dbHandler.closeDatabase()
+    jest.restoreAllMocks()
+  })
 
   describe('Schema', () => {
     it('should create and save successfully', async () => {
@@ -41,13 +48,12 @@ describe('User Model', () => {
       // Object Id should be defined when successfully saved to MongoDB.
       expect(saved._id).toBeDefined()
       expect(saved.created).toBeInstanceOf(Date)
-      // Retrieve object and compare to params, remove indeterministic keys
-      const actualSavedObject = omit(saved.toObject(), [
-        '_id',
-        'created',
-        '__v',
-      ])
-      expect(actualSavedObject).toEqual(validParams)
+      expect(saved.toObject()).toEqual(
+        expect.objectContaining({
+          ...validParams,
+          updatedAt: MOCKED_DATE,
+        }),
+      )
     })
 
     it('should throw error when contact number is invalid', async () => {
@@ -143,6 +149,62 @@ describe('User Model', () => {
       await expect(user.save()).rejects.toThrowError(
         'This email is not a valid agency email',
       )
+    })
+  })
+
+  describe('Statics', () => {
+    describe('upsertUser', () => {
+      it('should create new User document when user does not yet exist in the collection', async () => {
+        // Arrange
+        const validEmail = `test@${AGENCY_DOMAIN}`
+        await expect(User.countDocuments()).resolves.toEqual(0)
+
+        // Act
+        const user = await User.upsertUser({
+          agency: agency._id,
+          email: validEmail,
+        })
+
+        // Assert
+        const expectedPartialUser: Partial<IUserSchema> = {
+          agency: agency.toObject(),
+          email: validEmail,
+          updatedAt: MOCKED_DATE,
+        }
+        await expect(User.countDocuments()).resolves.toEqual(1)
+        expect(user.toObject()).toEqual(
+          expect.objectContaining(expectedPartialUser),
+        )
+      })
+
+      it('should update user document with the new upserted parameters if the user already exists', async () => {
+        // Arrange
+        const validEmail = `test@${AGENCY_DOMAIN}`
+        const initialUser = await User.create({
+          agency: agency._id,
+          email: validEmail,
+        })
+        // Should have the initial user.
+        await expect(User.countDocuments()).resolves.toEqual(1)
+
+        // Act
+        // Upsert with updated lastAccessed.
+        const expectedDate = new Date()
+        const upsertedUser = await User.upsertUser({
+          agency: agency._id,
+          email: validEmail,
+          lastAccessed: expectedDate,
+        })
+
+        // Assert
+        const expectedUser = {
+          ...initialUser.toObject(),
+          agency: agency.toObject(),
+          lastAccessed: expectedDate,
+        }
+        await expect(User.countDocuments()).resolves.toEqual(1)
+        expect(upsertedUser.toObject()).toEqual(expectedUser)
+      })
     })
   })
 })
