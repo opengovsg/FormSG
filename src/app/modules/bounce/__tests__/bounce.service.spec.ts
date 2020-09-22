@@ -366,12 +366,13 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients = [MOCK_EMAIL, MOCK_EMAIL_2]
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients)
+      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, false)
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasDeactivated: false,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
           recipients: [MOCK_EMAIL, MOCK_EMAIL_2],
@@ -400,12 +401,13 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients: string[] = []
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients)
+      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, true)
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasDeactivated: true,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
           recipients: [MOCK_EMAIL, MOCK_EMAIL_2],
@@ -434,12 +436,13 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients: string[] = []
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients)
+      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, false)
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasDeactivated: false,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
           recipients: [MOCK_EMAIL, MOCK_EMAIL_2],

@@ -114,6 +114,7 @@ export const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   notification: IEmailNotification,
   autoEmailRecipients: string[],
+  hasDeactivated: boolean,
 ): void => {
   const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
   const bounceInfo = isBounceNotification(notification)
@@ -131,6 +132,7 @@ export const logCriticalBounce = (
     meta: {
       action: 'logCriticalBounce',
       hasAutoEmailed: bounceDoc.hasAutoEmailed,
+      hasDeactivated,
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
       recipients: bounceDoc.getEmails(),

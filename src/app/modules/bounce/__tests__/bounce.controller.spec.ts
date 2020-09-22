@@ -130,6 +130,7 @@ describe('handleSns', () => {
       mockBounceDoc,
       MOCK_NOTIFICATION,
       MOCK_EMAIL_RECIPIENTS,
+      true,
     )
     expect(mockBounceDoc.save).toHaveBeenCalled()
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
