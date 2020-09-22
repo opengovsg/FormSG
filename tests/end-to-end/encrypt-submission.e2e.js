@@ -16,17 +16,16 @@ const {
   createWebhookConfig,
   removeWebhookConfig,
 } = require('./helpers/encrypt-mode')
-const { allFields } = require('./helpers/all-fields')
+const { allFieldsEncrypt } = require('./helpers/all-fields')
 const { verifiableEmailField } = require('./helpers/verifiable-email-field')
 const {
-  hiddenFieldsData,
-  hiddenFieldsLogicData,
+  hiddenFieldsDataEncrypt,
+  hiddenFieldsLogicDataEncrypt,
 } = require('./helpers/all-hidden-form')
 
 const chainDisabled = require('./helpers/disabled-form-chained')
 
 const { cloneDeep } = require('lodash')
-const aws = require('aws-sdk')
 
 let User
 let Form
@@ -49,15 +48,6 @@ fixture('Storage mode submissions')
     govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
     // Check whether captcha is enabled in environment
     captchaEnabled = await getFeatureState('captcha')
-
-    // Create s3 bucket for attachments
-    const s3 = new aws.S3({
-      endpoint: process.env.AWS_ENDPOINT,
-      s3ForcePathStyle: true,
-    })
-    await s3
-      .createBucket({ Bucket: process.env.ATTACHMENT_S3_BUCKET })
-      .promise()
   })
   .after(async () => {
     // Delete models defined by mongoose and close connection
@@ -77,7 +67,7 @@ fixture('Storage mode submissions')
 // Form with all field types available in storage mode
 test.meta('basic-env', 'true').before(async (t) => {
   const formData = await getDefaultFormOptions()
-  formData.formFields = cloneDeep(allFields)
+  formData.formFields = cloneDeep(allFieldsEncrypt)
   t.ctx.formData = formData
 })('Create and submit form with all field types', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
@@ -87,8 +77,8 @@ test.meta('basic-env', 'true').before(async (t) => {
 // Form where all basic field types are hidden by logic
 test.meta('basic-env', 'true').before(async (t) => {
   const formData = await getDefaultFormOptions()
-  formData.formFields = cloneDeep(hiddenFieldsData)
-  formData.logicData = cloneDeep(hiddenFieldsLogicData)
+  formData.formFields = cloneDeep(hiddenFieldsDataEncrypt)
+  formData.logicData = cloneDeep(hiddenFieldsLogicDataEncrypt)
   t.ctx.formData = formData
 })('Create and submit form with all field types hidden', async (t) => {
   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
@@ -98,7 +88,7 @@ test.meta('basic-env', 'true').before(async (t) => {
 // Form where all fields are optional and no field is answered
 test.meta('basic-env', 'true').before(async (t) => {
   const formData = await getDefaultFormOptions()
-  formData.formFields = allFields.map((field) => {
+  formData.formFields = allFieldsEncrypt.map((field) => {
     return getBlankVersion(getOptionalVersion(field))
   })
   t.ctx.formData = formData

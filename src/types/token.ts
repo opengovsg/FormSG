@@ -18,5 +18,7 @@ export interface ITokenModel extends Model<ITokenSchema> {
     params: Omit<IToken, '_id' | 'numOtpSent'>,
   ) => Promise<ITokenSchema>
 
-  incrementAttemptsByEmail: (email: IToken['email']) => Promise<ITokenSchema>
+  incrementAttemptsByEmail: (
+    email: IToken['email'],
+  ) => Promise<ITokenSchema | null>
 }

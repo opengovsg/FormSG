@@ -1,6 +1,7 @@
 import to from 'await-to-js'
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
+import { errAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import getAdminVerificationModel from '../../../app/models/admin_verification.server.model'
@@ -8,10 +9,14 @@ import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
 import getUserModel from '../../../app/models/user.server.model'
 import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { IAgency, IPopulatedUser, IUserSchema } from '../../../types'
 import { InvalidDomainError } from '../auth/auth.errors'
+import { DatabaseError } from '../core/core.errors'
 
 import { InvalidOtpError, MalformedOtpError } from './user.errors'
+
+const logger = createLoggerWithLabel(module)
 
 const AdminVerificationModel = getAdminVerificationModel(mongoose)
 const UserModel = getUserModel(mongoose)
@@ -161,23 +166,35 @@ export const getPopulatedUserById = async (
  * new user document is created and returned.
  * @param email the email of the user to retrieve
  * @param agency the agency document to associate with the user
- * @returns the upserted user document
- * @throws {InvalidDomainError} on invalid email
- * @throws {Error} on upsert failure
+ * @returns ok(upserted user document) populated with agency details
+ * @returns err(InvalidDomainError) when given email is invalid
+ * @returns err(DatabaseError) on upsert failure
  */
-export const retrieveUser = async (email: string, agency: IAgency) => {
+export const retrieveUser = (
+  email: string,
+  agencyId: IAgency['_id'],
+): ResultAsync<IPopulatedUser, InvalidDomainError | DatabaseError> => {
   if (!validator.isEmail(email)) {
-    throw new InvalidDomainError()
+    return errAsync(new InvalidDomainError())
   }
 
-  const admin = await UserModel.upsertUser({
-    email,
-    agency: agency._id,
-  })
+  return ResultAsync.fromPromise(
+    UserModel.upsertUser({
+      email,
+      agency: agencyId,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Database error when upserting user',
+        meta: {
+          action: 'retrieveUser',
+          email,
+          agencyId,
+        },
+        error,
+      })
 
-  if (!admin) {
-    throw new Error('Failed to upsert user')
-  }
-
-  return admin
+      return new DatabaseError()
+    },
+  )
 }

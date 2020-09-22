@@ -746,5 +746,38 @@ function makeModule(connection) {
         },
       )
     },
+
+    /**
+     * Transfer a form to another user
+     * @param  {Object} req - Express request object
+     * @param  {Object} res - Express response object
+     */
+    transferOwner: async function (req, res) {
+      const newOwnerEmail = req.body.email
+
+      // Transfer owner and Save the form
+      try {
+        await req.form.transferOwner(req.session.user, newOwnerEmail)
+      } catch (err) {
+        logger.error({
+          message: err.message,
+          meta: {
+            action: 'makeModule.transferOwner',
+            ip: getRequestIp(req),
+            url: req.url,
+            headers: req.headers,
+          },
+          err,
+        })
+        return res.status(StatusCodes.CONFLICT).send({ message: err.message })
+      }
+      req.form.save(function (err, savedForm) {
+        if (err) return respondOnMongoError(req, res, err)
+        savedForm.populate('admin', (err) => {
+          if (err) return respondOnMongoError(req, res, err)
+          return res.json({ form: savedForm })
+        })
+      })
+    },
   }
 }

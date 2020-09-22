@@ -12,7 +12,7 @@ services:
       - /opt/formsg/node_modules
     ports:
       - '5000:5000'
-      - '4572:4572' # localstack ports
+      - '4566:4566' # localstack ports
       - '5156:5156' # mockpass ports
       - '9229:9229' # Node debugger port
     environment:
@@ -25,10 +25,11 @@ services:
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
       - FORMSG_SDK_MODE=development
-      - BOUNCE_LIFE_SPAN=1800000
+      - BOUNCE_LIFE_SPAN=86400000
       - AWS_ACCESS_KEY_ID=fakeKey
       - AWS_SECRET_ACCESS_KEY=fakeSecret
       - SESSION_SECRET=thisisasecret
+      - AWS_ENDPOINT=http://localhost:4566
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
@@ -64,7 +65,6 @@ services:
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
       - AGGREGATE_COLLECTION
-      - AWS_ENDPOINT=http://localhost:4572
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
@@ -92,17 +92,23 @@ services:
       - '27017:27017'
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:0.11.5
     container_name: formsg-localstack
     depends_on:
       - formsg
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
+      - ATTACHMENT_S3_BUCKET=local-attachment-bucket
+      - IMAGE_S3_BUCKET=local-image-bucket
+      - LOGO_S3_BUCKET=local-logo-bucket
     volumes:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
-    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4572 to localstack:4572
+      # This is where we add scripts to initialise AWS resources.
+      # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
+      - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
+    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
 
 volumes:
   mongodata:

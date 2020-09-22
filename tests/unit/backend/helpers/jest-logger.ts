@@ -16,11 +16,4 @@ const getMockLogger = (): MockLogger => {
   return logger as MockLogger
 }
 
-export const resetMockLogger = (logger: MockLogger) => {
-  logger.log.mockReset()
-  logger.warn.mockReset()
-  logger.info.mockReset()
-  logger.profile.mockReset()
-}
-
 export default getMockLogger

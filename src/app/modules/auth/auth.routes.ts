@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as AuthController from './auth.controller'
-import * as AuthMiddlewares from './auth.middlewares'
 
 export const AuthRouter = Router()
 
@@ -24,7 +23,6 @@ AuthRouter.post(
         .message('Please enter a valid email'),
     }),
   }),
-  AuthMiddlewares.validateDomain,
   AuthController.handleCheckUser,
 )
 
@@ -50,7 +48,6 @@ AuthRouter.post(
         .message('Please enter a valid email'),
     }),
   }),
-  AuthMiddlewares.validateDomain,
   AuthController.handleLoginSendOtp,
 )
 
@@ -81,7 +78,6 @@ AuthRouter.post(
         .message('Please enter a valid otp'),
     }),
   }),
-  AuthMiddlewares.validateDomain,
   AuthController.handleLoginVerifyOtp,
 )
 

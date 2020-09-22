@@ -3,13 +3,16 @@ import mongoose from 'mongoose'
 import { ImportMock } from 'ts-mock-imports'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
+import getUserModel from 'src/app/models/user.server.model'
+import { InvalidDomainError } from 'src/app/modules/auth/auth.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { IAgencySchema, IPopulatedUser, IUserSchema } from 'src/types'
 
 import dbHandler from '../../helpers/jest-db'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
+const UserModel = getUserModel(mongoose)
 
 describe('user.service', () => {
   // Obtained from Twilio's
@@ -17,27 +20,23 @@ describe('user.service', () => {
   const MOCK_CONTACT = '+15005550006'
   const MOCK_OTP = '123456'
   const USER_ID = new ObjectID()
+  const ALLOWED_DOMAIN = 'test.gov.sg'
 
   let defaultAgency: IAgencySchema
   let defaultUser: IUserSchema
 
-  beforeAll(async () => {
-    await dbHandler.connect()
-
+  beforeAll(async () => await dbHandler.connect())
+  beforeEach(async () => {
     // Insert user into collections.
     const { agency, user } = await dbHandler.insertFormCollectionReqs({
       userId: USER_ID,
+      mailDomain: ALLOWED_DOMAIN,
     })
 
     defaultAgency = agency.toObject()
     defaultUser = user.toObject()
   })
-  beforeEach(
-    async () =>
-      await dbHandler.clearCollection(
-        AdminVerification.collection.collectionName,
-      ),
-  )
+  afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('createContactOtp', () => {
@@ -230,6 +229,73 @@ describe('user.service', () => {
 
       // Assert
       await expect(userPromise).resolves.toBeNull()
+    })
+  })
+
+  describe('retrieveUser', () => {
+    it('should return InvalidDomainError on invalid email', async () => {
+      // Arrange
+      const notAnEmail = 'not an email'
+
+      // Act
+      const actualResult = await UserService.retrieveUser(
+        notAnEmail,
+        defaultAgency._id,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidDomainError)
+    })
+
+    it('should return new User document when user does not yet exist in the collection', async () => {
+      // Arrange
+      const newUserEmail = `newUser@${ALLOWED_DOMAIN}`
+      // Should have the default user document in collection.
+      await expect(UserModel.countDocuments()).resolves.toEqual(1)
+
+      // Act
+      const actualResult = await UserService.retrieveUser(
+        newUserEmail,
+        defaultAgency._id,
+      )
+
+      // Assert
+      const expectedUser: Partial<IPopulatedUser> = {
+        agency: defaultAgency,
+        email: newUserEmail,
+      }
+      expect(actualResult.isOk()).toBe(true)
+      // Should now have 2 user documents
+      await expect(UserModel.countDocuments()).resolves.toEqual(2)
+      expect(actualResult._unsafeUnwrap().toObject()).toEqual(
+        expect.objectContaining(expectedUser),
+      )
+    })
+
+    it('should return existing User document when user already exists', async () => {
+      // Arrange
+      // Should have the default user document in collection.
+      await expect(UserModel.countDocuments()).resolves.toEqual(1)
+      const userEmail = defaultUser.email
+
+      // Act
+      const actualResult = await UserService.retrieveUser(
+        userEmail,
+        defaultAgency._id,
+      )
+
+      // Assert
+      const expectedUser: Partial<IPopulatedUser> = {
+        ...defaultUser,
+        agency: defaultAgency,
+      }
+      expect(actualResult.isOk()).toBe(true)
+      // Should still only have 1 user document.
+      await expect(UserModel.countDocuments()).resolves.toEqual(1)
+      expect(actualResult._unsafeUnwrap().toObject()).toEqual(
+        expect.objectContaining(expectedUser),
+      )
     })
   })
 })

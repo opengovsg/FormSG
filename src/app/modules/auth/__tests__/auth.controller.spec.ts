@@ -1,12 +1,15 @@
+import { errAsync, okAsync } from 'neverthrow'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
 import MailService from 'src/app/services/mail.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { MailSendError } from '../../mail/mail.errors'
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
-import { InvalidOtpError } from '../auth.errors'
+import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
 import * as AuthService from '../auth.service'
 
 const VALID_EMAIL = 'test@example.com'
@@ -25,19 +28,38 @@ describe('auth.controller', () => {
   })
 
   describe('handleCheckUser', () => {
-    it('should return 200', async () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { email: 'test@example.com' },
+    })
+
+    it('should return 200 when domain is valid', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
+      )
 
       // Act
-      await AuthController.handleCheckUser(
-        expressHandler.mockRequest(),
-        mockRes,
-        jest.fn(),
-      )
+      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.sendStatus).toBeCalledWith(200)
+    })
+
+    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+      // Arrange
+      const expectedError = new InvalidDomainError()
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
     })
   })
 
@@ -51,8 +73,11 @@ describe('auth.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock AuthService and MailService to return without errors
-      MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
-      MockMailService.sendLoginOtp.mockResolvedValueOnce(true)
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
+      )
+      MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
+      MockMailService.sendLoginOtp.mockReturnValueOnce(okAsync(true))
 
       // Act
       await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
@@ -65,12 +90,31 @@ describe('auth.controller', () => {
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)
     })
 
+    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+      // Arrange
+      const expectedError = new InvalidDomainError()
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
+    })
+
     it('should return 500 when there is an error generating login OTP', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
+      )
       // Mock createLoginOtp failure
-      MockAuthService.createLoginOtp.mockRejectedValueOnce(
-        new Error('otp creation error'),
+      MockAuthService.createLoginOtp.mockReturnValueOnce(
+        errAsync(new DatabaseError('otp creation error')),
       )
 
       // Act
@@ -89,10 +133,13 @@ describe('auth.controller', () => {
     it('should return 500 when there is an error sending login OTP', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(<IAgencySchema>{}),
+      )
       // Mock createLoginOtp success but sendLoginOtp failure.
-      MockAuthService.createLoginOtp.mockResolvedValueOnce(MOCK_OTP)
-      MockMailService.sendLoginOtp.mockRejectedValueOnce(
-        new Error('send error'),
+      MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
+      MockMailService.sendLoginOtp.mockReturnValueOnce(
+        errAsync(new MailSendError('send error')),
       )
 
       // Act
@@ -101,7 +148,7 @@ describe('auth.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(
-        'Error sending OTP. Please try again later and if the problem persists, contact us.',
+        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       )
       // Services should have been invoked.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
@@ -122,36 +169,49 @@ describe('auth.controller', () => {
       const mockUser = {
         toObject: () => ({ id: 'imagine this is a user document from the db' }),
       } as IUserSchema
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
+      const mockRes = expressHandler.mockResponse()
 
       // Mock all service success.
-      MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
-      MockUserService.retrieveUser.mockResolvedValueOnce(mockUser)
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
+      MockUserService.retrieveUser.mockReturnValueOnce(okAsync(mockUser))
 
       // Act
       await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith({
-        ...mockUser.toObject(),
-        agency: MOCK_AGENCY,
-      })
+      expect(mockRes.send).toBeCalledWith(mockUser.toObject())
     })
 
-    it('should return 422 when verifying login OTP throws an InvalidOtpError', async () => {
+    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
       // Arrange
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
+      const expectedError = new InvalidDomainError()
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
+    })
+
+    it('should return 422 when verifying login OTP returns an InvalidOtpError', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
       const expectedInvalidOtpError = new InvalidOtpError()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
       // Mock error from verifyLoginOtp.
-      MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
-        expectedInvalidOtpError,
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(
+        errAsync(expectedInvalidOtpError),
       )
 
       // Act
@@ -165,15 +225,15 @@ describe('auth.controller', () => {
       expect(MockUserService.retrieveUser).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when verifying login OTP throws a non-InvalidOtpError', async () => {
+    it('should return 500 when verifying login OTP returns a non-InvalidOtpError', async () => {
       // Arrange
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
       // Mock generic error from verifyLoginOtp.
-      MockAuthService.verifyLoginOtp.mockRejectedValueOnce(
-        new Error('generic error'),
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(
+        errAsync(new ApplicationError('generic error')),
       )
 
       // Act
@@ -182,22 +242,22 @@ describe('auth.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(
-        'Failed to validate OTP. Please try again later and if the problem persists, contact us.',
+        expect.stringContaining('Failed to process OTP.'),
       )
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.retrieveUser).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when an error is thrown while upserting user', async () => {
+    it('should return 500 when an error is returned while upserting user', async () => {
       // Arrange
-      // Add agency into locals due to precondition.
-      const mockRes = expressHandler.mockResponse({
-        locals: { agency: MOCK_AGENCY },
-      })
-      MockAuthService.verifyLoginOtp.mockResolvedValueOnce(true)
-      MockUserService.retrieveUser.mockRejectedValueOnce(
-        new Error('upsert error'),
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain.mockReturnValueOnce(
+        okAsync(MOCK_AGENCY),
+      )
+      MockAuthService.verifyLoginOtp.mockReturnValueOnce(okAsync(true))
+      MockUserService.retrieveUser.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
       )
 
       // Act
@@ -207,9 +267,7 @@ describe('auth.controller', () => {
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(
         // Use stringContaining here due to dynamic text and out of test scope.
-        expect.stringContaining(
-          'User signin failed. Please try again later and if the problem persists',
-        ),
+        expect.stringContaining('Failed to process OTP.'),
       )
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
@@ -257,7 +315,7 @@ describe('auth.controller', () => {
       expect(mockRes.sendStatus).toBeCalledWith(400)
     })
 
-    it('should return 500 when error is thrown when destroying session', async () => {
+    it('should return 500 when error is returned when destroying session', async () => {
       // Arrange
       const mockDestroyWithErr = jest
         .fn()

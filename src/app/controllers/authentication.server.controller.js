@@ -4,8 +4,9 @@
  * Module dependencies.
  */
 const { StatusCodes } = require('http-status-codes')
-
 const PERMISSIONS = require('../utils/permission-levels').default
+const { getRequestIp } = require('../utils/request')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 /**
  * Middleware that authenticates admin-user
@@ -24,9 +25,41 @@ exports.authenticateUser = function (req, res, next) {
 }
 
 /**
+ * Returns the error message when a user cannot perform an action on a form
+ * @param {String} user -  user email
+ * @param {String} title -  form title
+ * @returns {String} - the error message
+ */
+const makeUnauthorizedMessage = (user, title) => {
+  return `User ${user} is not authorized to perform this operation on Form: ${title}.`
+}
+
+/**
+ * Logs an error message when a user cannot perform an action on a form
+ * @param {String} user -  user email
+ * @param {String} requiredPermission -  level of permission required
+ * @param {String} form -  form
+ * @returns {String} - the error message
+ */
+const logUnauthorizedAccess = (req, action, requiredPermission) => {
+  const user = req.session.user
+  const form = req.form
+  const msg = `User ${user.email} not authorized to perform ${requiredPermission} operation on Form ${form._id} with title: ${form.title}.`
+  logger.error({
+    message: msg,
+    meta: {
+      action: action,
+      ip: getRequestIp(req),
+      url: req.url,
+      headers: req.headers,
+    },
+    error: Error(msg),
+  })
+}
+
+/**
  * Returns a middleware function that ensures that only users with the requiredPermission will pass.
- * @param {String} requiredPermission - Either 'write' or 'delete', indicating what level of authorization
- *                                   the user needs
+ * @param {String} requiredPermission - one of PERMISSION_LEVELS, indicating the level of authorization required
  * @returns {function({Object}, {Object}, {Object})} - A middleware function that takes req, the express
  *   request object, and res, the express response object.
  */
@@ -40,9 +73,23 @@ exports.verifyPermission = (requiredPermission) =>
    * @param {function} next - Next middleware function
    */
   (req, res, next) => {
-    // Admins always have sufficient permission
-    let hasSufficientPermission =
+    const isFormAdmin =
       String(req.form.admin.id) === String(req.session.user._id)
+
+    // Forbidden if requiredPersmission is admin but user is not
+    if (!isFormAdmin && requiredPermission === PERMISSIONS.DELETE) {
+      logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
+      return res.status(StatusCodes.FORBIDDEN).send({
+        message: makeUnauthorizedMessage(
+          req.session.user.email,
+          req.form.title,
+        ),
+      })
+    }
+
+    // Admins always have sufficient permission
+    let hasSufficientPermission = isFormAdmin
+
     // Write users can access forms that require write/read
     if (
       requiredPermission === PERMISSIONS.WRITE ||
@@ -64,16 +111,14 @@ exports.verifyPermission = (requiredPermission) =>
         )
     }
 
-    if (hasSufficientPermission) {
-      return next()
-    } else {
+    if (!hasSufficientPermission) {
+      logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
       return res.status(StatusCodes.FORBIDDEN).send({
-        message:
-          'User ' +
-          req.session.user.email +
-          ' is not authorized to perform this operation on Form: ' +
-          req.form.title +
-          '.',
+        message: makeUnauthorizedMessage(
+          req.session.user.email,
+          req.form.title,
+        ),
       })
     }
+    return next()
   }

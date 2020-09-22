@@ -3,9 +3,11 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { ISnsNotification } from '../../../types'
+import { IEmailNotification, ISnsNotification } from '../../../types'
+import { EmailType } from '../../constants/mail'
+import * as FormService from '../form/form.service'
 
-import * as snsService from './bounce.service'
+import * as BounceService from './bounce.service'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -23,11 +25,37 @@ export const handleSns: RequestHandler<
   // so we never fail on malformed input. The response code is meaningless since
   // it is meant to go back to AWS.
   try {
-    const isValid = await snsService.isValidSnsRequest(req.body)
-    if (!isValid) {
-      return res.sendStatus(StatusCodes.FORBIDDEN)
+    const isValid = await BounceService.isValidSnsRequest(req.body)
+    if (!isValid) return res.sendStatus(StatusCodes.FORBIDDEN)
+
+    const notification: IEmailNotification = JSON.parse(req.body.Message)
+    BounceService.logEmailNotification(notification)
+    if (
+      BounceService.extractEmailType(notification) !== EmailType.AdminResponse
+    ) {
+      return res.sendStatus(StatusCodes.OK)
     }
-    await snsService.updateBounces(req.body)
+    const bounceDoc = await BounceService.getUpdatedBounceDoc(notification)
+    // Missing headers in notification
+    if (!bounceDoc) return res.sendStatus(StatusCodes.OK)
+    const shouldDeactivate = bounceDoc.areAllPermanentBounces()
+    if (shouldDeactivate) {
+      await FormService.deactivateForm(bounceDoc.formId)
+    }
+    if (bounceDoc.isCriticalBounce()) {
+      let emailRecipients: string[] = []
+      if (!bounceDoc.hasNotified()) {
+        emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)
+        bounceDoc.setNotificationState(emailRecipients)
+      }
+      BounceService.logCriticalBounce(
+        bounceDoc,
+        notification,
+        emailRecipients,
+        shouldDeactivate,
+      )
+    }
+    await bounceDoc.save()
     return res.sendStatus(StatusCodes.OK)
   } catch (err) {
     logger.warn({
