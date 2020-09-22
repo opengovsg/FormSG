@@ -9,6 +9,7 @@ language: node_js
 node_js: '12'
 cache:
   - npm
+  - pip
 
 addons:
   chrome: stable
@@ -33,6 +34,7 @@ before_deploy:
   # Workaround to run before_deploy only once
   - >
     if ! [ "$TAG" ]; then
+      pip install --user awscli
       # Put AWS in path
       export PATH=$PATH:$HOME/.local/bin
       # Login to AWS ECR, credentials defined in $AWS_ACCESS_KEY_ID and $AWS_SECRET_ACCESS_KEY
