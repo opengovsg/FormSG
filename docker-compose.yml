@@ -25,7 +25,7 @@ services:
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
       - FORMSG_SDK_MODE=development
-      - BOUNCE_LIFE_SPAN=1800000
+      - BOUNCE_LIFE_SPAN=86400000
       - AWS_ACCESS_KEY_ID=fakeKey
       - AWS_SECRET_ACCESS_KEY=fakeSecret
       - SESSION_SECRET=thisisasecret

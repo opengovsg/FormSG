@@ -1,6 +1,6 @@
 import axios from 'axios'
 import crypto from 'crypto'
-import { isEmpty } from 'lodash'
+import { difference, isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 
 import {
@@ -8,12 +8,15 @@ import {
   createLoggerWithLabel,
 } from '../../../config/logger'
 import {
-  IBounceNotification,
+  BounceType,
   IBounceSchema,
   IEmailNotification,
+  IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
+import getFormModel from '../../models/form.server.model'
+import MailService from '../../services/mail.service'
 
 import getBounceModel from './bounce.model'
 import { extractHeader, isBounceNotification } from './bounce.util'
@@ -21,6 +24,7 @@ import { extractHeader, isBounceNotification } from './bounce.util'
 const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
+const Form = getFormModel(mongoose)
 
 // Note that these need to be ordered in order to generate
 // the correct string to sign
@@ -106,47 +110,107 @@ export const isValidSnsRequest = async (
 }
 
 // Writes a log message if all recipients have bounced
-const logCriticalBounce = (
+export const logCriticalBounce = (
   bounceDoc: IBounceSchema,
-  submissionId: string | undefined,
-  bounceInfo: IBounceNotification['bounce'] | undefined,
+  notification: IEmailNotification,
+  autoEmailRecipients: string[],
+  hasDeactivated: boolean,
 ): void => {
-  if (bounceDoc.isCriticalBounce()) {
-    logger.warn({
-      message: 'Critical bounce',
+  const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
+  const bounceInfo = isBounceNotification(notification)
+    ? notification.bounce
+    : undefined
+  // Out of all bounces, how many were transient
+  const numTransient = bounceDoc.bounces.reduce(
+    (total, bounce) =>
+      total +
+      Number(bounce.hasBounced && bounce.bounceType === BounceType.Transient),
+    0,
+  )
+  logger.warn({
+    message: 'Bounced submission',
+    meta: {
+      action: 'logCriticalBounce',
+      hasAutoEmailed: bounceDoc.hasAutoEmailed,
+      hasDeactivated,
+      formId: String(bounceDoc.formId),
+      submissionId: submissionId,
+      recipients: bounceDoc.getEmails(),
+      numRecipients: bounceDoc.bounces.length,
+      numTransient,
+      // Assume that this function is correctly only called when all recipients bounced
+      numPermanent: bounceDoc.bounces.length - numTransient,
+      autoEmailRecipients,
+      // We know for sure that critical bounces can only happen because of bounce
+      // notifications, so we don't expect this to be undefined
+      bounceInfo: bounceInfo,
+    },
+  })
+}
+
+const computeValidEmails = (
+  populatedForm: IPopulatedForm,
+  bounceDoc: IBounceSchema,
+): string[] => {
+  const collabEmails = populatedForm.permissionList
+    ? populatedForm.permissionList.map((collab) => collab.email)
+    : []
+  const possibleEmails = collabEmails.concat(populatedForm.admin.email)
+  return difference(possibleEmails, bounceDoc.getEmails())
+}
+
+export const notifyAdminOfBounce = async (
+  bounceDoc: IBounceSchema,
+): Promise<string[]> => {
+  const form = await Form.getFullFormById(bounceDoc.formId)
+  if (!form) {
+    logger.error({
+      message: 'Unable to retrieve form',
       meta: {
-        action: 'updateBounces',
-        hasAlarmed: bounceDoc.hasAlarmed,
-        formId: String(bounceDoc.formId),
-        submissionId: submissionId,
-        recipients: bounceDoc.bounces.map((emailInfo) => emailInfo.email),
-        // We know for sure that critical bounces can only happen because of bounce
-        // notifications, so we don't expect this to be undefined
-        bounceInfo: bounceInfo,
+        action: 'notifyAdminOfBounce',
+        formId: bounceDoc.formId,
       },
     })
-    // TODO (private #31): autoemail and set hasAlarmed to true. Currently
-    // hasAlarmed is a dangling key.
-    bounceDoc.hasAlarmed = true
-    // TODO (private #31): convert bounceType to enum.
+    return []
   }
+  const emailRecipients = computeValidEmails(form, bounceDoc)
+  if (emailRecipients.length > 0) {
+    await MailService.sendBounceNotification({
+      emailRecipients,
+      bouncedRecipients: bounceDoc.getEmails(),
+      bounceType: bounceDoc.areAllPermanentBounces()
+        ? BounceType.Permanent
+        : BounceType.Transient,
+      formTitle: form.title,
+      formId: bounceDoc.formId,
+    })
+  }
+  return emailRecipients
 }
 
 /**
  * Logs the raw notification to the relevant log group.
  * @param notification The parsed SNS notification
  */
-const logEmailNotification = (notification: IEmailNotification): void => {
+export const logEmailNotification = (
+  notification: IEmailNotification,
+): void => {
+  // This is the crucial log statement which allows us to debug bounce-related
+  // issues, as it logs all the details about deliveries and bounces. Email
+  // confirmation info goes to the short-term log group so we do not store
+  // form fillers' information for too long, and everything else goes into the
+  // main log group.
+  const emailType = extractHeader(notification, EMAIL_HEADERS.emailType)
   if (
-    extractHeader(notification, EMAIL_HEADERS.emailType) ===
-    EmailType.EmailConfirmation
+    emailType === EmailType.EmailConfirmation ||
+    emailType === EmailType.VerificationOtp
   ) {
     shortTermLogger.info(notification)
   } else {
     logger.info({
       message: 'Email notification',
       meta: {
-        action: 'updateBounces',
+        action: 'logEmailNotification',
         ...notification,
       },
     })
@@ -156,27 +220,26 @@ const logEmailNotification = (notification: IEmailNotification): void => {
 /**
  * Parses an SNS notification and updates the Bounce collection.
  * @param body The request body of the notification
+ * @return the updated document from the Bounce collection or null if there are missing headers.
  */
-export const updateBounces = async (body: ISnsNotification): Promise<void> => {
-  const notification: IEmailNotification = JSON.parse(body.Message)
-  // This is the crucial log statement which allows us to debug bounce-related
-  // issues, as it logs all the details about deliveries and bounces. Email
-  // confirmation info goes to the short-term log group so we do not store
-  // form fillers' information for too long, and everything else goes into the
-  // main log group.
-  logEmailNotification(notification)
-  const latestBounces = Bounce.fromSnsNotification(notification)
-  if (!latestBounces) return
-  const formId = latestBounces.formId
-  const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
-  const bounceInfo = isBounceNotification(notification)
-    ? notification.bounce
-    : undefined
+export const getUpdatedBounceDoc = async (
+  notification: IEmailNotification,
+): Promise<IBounceSchema | null> => {
+  const formId = extractHeader(notification, EMAIL_HEADERS.formId)
+  if (!formId) return null
   const oldBounces = await Bounce.findOne({ formId })
-  if (oldBounces) {
-    oldBounces.merge(latestBounces, notification)
-  }
-  const bounce = oldBounces ?? latestBounces
-  logCriticalBounce(bounce, submissionId, bounceInfo)
-  await bounce.save()
+  return oldBounces
+    ? oldBounces.updateBounceInfo(notification)
+    : Bounce.fromSnsNotification(notification, formId)
+}
+
+/**
+ * Extracts the email type of a notification.
+ * @param body The request body of the notification
+ * @return the EmailType
+ */
+export const extractEmailType = (
+  notification: IEmailNotification,
+): string | undefined => {
+  return extractHeader(notification, EMAIL_HEADERS.emailType)
 }

@@ -89,6 +89,7 @@ const formSchemaOptions: SchemaOptions = {
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
+  deactivateById(formId: string): Promise<IFormSchema | null>
 }
 
 type IEncryptedFormModel = Model<IEncryptedFormSchema>
@@ -467,6 +468,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
     })
     return data
+  }
+
+  // Deactivate form by ID
+  FormSchema.statics.deactivateById = async function (
+    this: IFormModel,
+    formId: string,
+  ): Promise<IFormSchema | null> {
+    const form = await this.findById(formId)
+    if (!form) return null
+    if (form.status === Status.Public) {
+      form.status = Status.Private
+    }
+    return form.save()
   }
 
   // Hooks
