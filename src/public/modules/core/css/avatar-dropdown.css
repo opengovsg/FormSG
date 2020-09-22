@@ -14,7 +14,7 @@
 }
 
 .navbar__avatar__avatar {
-  display: block;
+  display: flex;
   color: #fff;
   text-transform: uppercase;
   border: 2px solid #484848;
@@ -26,6 +26,8 @@
   font-size: 16px;
   cursor: pointer;
   position: relative;
+  align-items: center;
+  justify-content: center;
 }
 
 @media not all and (min-width: 768px) {
