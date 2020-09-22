@@ -54,7 +54,10 @@ const compileUserModel = (db: Mongoose) => {
         },
       },
       lastAccessed: Date,
-      updatedAt: Date,
+      updatedAt: {
+        type: Date,
+        default: () => Date.now(),
+      },
       betaFlags: {},
     },
     {
@@ -119,7 +122,7 @@ const compileUserModel = (db: Mongoose) => {
  * @param db The mongoose instance to retrieve the User model from
  * @returns The User model
  */
-const getUserModel = (db: Mongoose) => {
+const getUserModel = (db: Mongoose): IUserModel => {
   try {
     return db.model(USER_SCHEMA_ID) as IUserModel
   } catch {
