@@ -16,6 +16,8 @@ angular
     'Toastr',
     '$uibModal',
     '$timeout',
+    '$location',
+    '$anchorScroll',
     'moment',
     'FormSgSdk',
     ViewResponsesController,
@@ -29,6 +31,8 @@ function ViewResponsesController(
   Toastr,
   $uibModal,
   $timeout,
+  $location,
+  $anchorScroll,
   moment,
   FormSgSdk,
 ) {
@@ -103,6 +107,18 @@ function ViewResponsesController(
       showWeeks: false,
       formatMonth: 'MMM',
     },
+  }
+
+  // Function to use $anchorScroll to scroll to top of responses.
+  vm.scrollToTop = function () {
+    // set the location.hash
+    $location.hash('responses-tab')
+
+    $anchorScroll()
+
+    // Remove hash
+    $location.hash('')
+    $location.replace()
   }
 
   // Trigger for export CSV
@@ -266,6 +282,7 @@ function ViewResponsesController(
   }
 
   vm.nextRespondent = function () {
+    vm.scrollToTop()
     if (vm.currentResponse.number <= 1) {
       // This is the last response
     } else if (vm.currentResponse.index >= vm.tableParams.data.length - 1) {
@@ -286,6 +303,7 @@ function ViewResponsesController(
   }
 
   vm.previousRespondent = function () {
+    vm.scrollToTop()
     if (vm.currentResponse.number >= vm.responsesCount) {
       // This is the first response
     } else if (vm.currentResponse.index <= 0) {

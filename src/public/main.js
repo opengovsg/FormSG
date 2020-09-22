@@ -192,7 +192,6 @@ require('./modules/forms/admin/directives/configure-form.client.directive.js')
 require('./modules/forms/admin/directives/configure-mobile.client.directive.js')
 require('./modules/forms/admin/directives/verify-secret-key.client.directive.js')
 require('./modules/forms/admin/directives/daterangepicker.client.directive.js')
-require('./modules/forms/admin/directives/scroll-to-id.client.directive.js')
 require('./modules/forms/admin/directives/edit-captcha.client.directive.js')
 require('./modules/forms/admin/controllers/create-form-template-modal.client.controller.js')
 
