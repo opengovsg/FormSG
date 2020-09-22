@@ -68,10 +68,8 @@
 @media all and (min-width: 768px) {
   #admin-form #current-fields {
     padding: 45px 10% 45px 10%;
-    -webkit-box-flex: 1;
-    -ms-flex: auto;
-    flex: auto;
     overflow: auto;
+    height: 100%;
   }
 
   #admin-form #current-fields .current-field-item .current-field-title {
@@ -86,6 +84,7 @@
   width: 270px;
   overflow-y: scroll;
   background-color: #f0f4f6;
+  height: 100%;
 }
 
 #admin-form #add-field #myinfo-disable-screen .myinfo-storage-overlay {
@@ -627,13 +626,6 @@
 
 #admin-form #edit-form {
   background-color: #fff;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: row;
-  flex-direction: row;
   height: 100%;
 }
 
