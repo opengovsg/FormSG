@@ -1,3 +1,4 @@
+import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 
 import getUserModel from 'src/app/models/user.server.model'
@@ -7,29 +8,24 @@ import dbHandler from '../helpers/jest-db'
 
 const User = getUserModel(mongoose)
 
+const MOCKED_DATE = new Date(Date.now())
+MockDate.set(MOCKED_DATE)
+
 const AGENCY_DOMAIN = 'example.com'
 const VALID_USER_EMAIL = `test@${AGENCY_DOMAIN}`
 // Obtained from Twilio's
 // https://www.twilio.com/blog/2018/04/twilio-test-credentials-magic-numbers.html
 const VALID_CONTACT = '+15005550006'
-const MOCKED_DATE_NOW = Date.now()
-const MOCKED_DATE = new Date(MOCKED_DATE_NOW)
 
 describe('User Model', () => {
   let agency: IAgencySchema
 
-  beforeAll(async () => {
-    await dbHandler.connect()
-    jest.spyOn(Date, 'now').mockReturnValue(MOCKED_DATE_NOW)
-  })
+  beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
     agency = await dbHandler.insertDefaultAgency({ mailDomain: AGENCY_DOMAIN })
   })
   afterEach(async () => await dbHandler.clearDatabase())
-  afterAll(async () => {
-    await dbHandler.closeDatabase()
-    jest.restoreAllMocks()
-  })
+  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {
     it('should create and save successfully', async () => {
@@ -189,18 +185,17 @@ describe('User Model', () => {
 
         // Act
         // Upsert with updated lastAccessed.
-        const expectedDate = new Date()
         const upsertedUser = await User.upsertUser({
           agency: agency._id,
           email: validEmail,
-          lastAccessed: expectedDate,
+          lastAccessed: MOCKED_DATE,
         })
 
         // Assert
         const expectedUser = {
           ...initialUser.toObject(),
           agency: agency.toObject(),
-          lastAccessed: expectedDate,
+          lastAccessed: MOCKED_DATE,
         }
         await expect(User.countDocuments()).resolves.toEqual(1)
         expect(upsertedUser.toObject()).toEqual(expectedUser)
