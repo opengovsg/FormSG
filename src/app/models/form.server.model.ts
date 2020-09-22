@@ -1,5 +1,5 @@
 import BSON from 'bson-ext'
-import { compact, pick, uniq } from 'lodash'
+import { compact, filter, pick, uniq } from 'lodash'
 import { Model, Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
@@ -20,6 +20,7 @@ import {
   ResponseMode,
   Status,
 } from '../../types'
+import { IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
@@ -403,6 +404,29 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const newForm = pick(this, FORM_DUPLICATE_KEYS)
     Object.assign(newForm, overrideProps)
     return newForm
+  }
+
+  // Transfer ownership of the form to another user
+  FormSchema.methods.transferOwner = async function (
+    currentOwner: IUserSchema,
+    newOwnerEmail: string,
+  ) {
+    // Verify that the new owner exists
+    const newOwner = await User.findOne({ email: newOwnerEmail })
+    if (newOwner == null) {
+      throw new Error(
+        `${newOwnerEmail} must have logged in once before being added as Owner`,
+      )
+    }
+
+    // Update form's admin to new owner's id
+    this.admin = newOwner._id
+
+    // Remove new owner from perm list and include previous owner as an editor
+    this.permissionList = filter(this.permissionList, (item) => {
+      return item.email !== newOwnerEmail
+    })
+    this.permissionList.push({ email: currentOwner.email, write: true })
   }
 
   // Statics

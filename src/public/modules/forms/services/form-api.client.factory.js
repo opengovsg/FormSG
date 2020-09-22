@@ -134,6 +134,11 @@ function FormApi($resource, FormErrorService, FormFields) {
         method: 'POST',
         interceptor: getInterceptor(true, 'useTemplate'),
       },
+      transferOwner: {
+        url: resourceUrl + '/transfer-owner',
+        method: 'POST',
+        interceptor: getInterceptor(false),
+      },
     },
   )
 }
