@@ -27,6 +27,7 @@
   }
 }
 
+.collaborator-modal-window,
 .create-form-template-modal-window,
 .full-screen-modal-window,
 .delete-field-modal-window,
@@ -44,6 +45,7 @@
   padding: 15px 40px;
 }
 
+.collaborator-modal-window .modal-content,
 .create-form-template-modal-window .modal-content,
 .full-screen-modal-window .modal-content,
 .submit-progress-modal-window .modal-content,

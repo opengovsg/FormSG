@@ -4,14 +4,16 @@ import Mail, { Attachment } from 'nodemailer/lib/mailer'
 import { ImportMock } from 'ts-mock-imports'
 
 import { MailSendError } from 'src/app/modules/mail/mail.errors'
+import { MailService } from 'src/app/services/mail.service'
+import * as MailUtils from 'src/app/utils/mail'
 import {
   AutoreplySummaryRenderData,
+  BounceType,
+  IPopulatedForm,
+  ISubmissionSchema,
   MailOptions,
-  MailService,
   SendAutoReplyEmailsArgs,
-} from 'src/app/services/mail.service'
-import * as MailUtils from 'src/app/utils/mail'
-import { IPopulatedForm, ISubmissionSchema } from 'src/types'
+} from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -987,6 +989,185 @@ describe('mail.service', () => {
       // is non-4xx error.
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    })
+  })
+
+  describe('sendBounceNotification', () => {
+    const MOCK_RECIPIENTS = [MOCK_VALID_EMAIL, MOCK_VALID_EMAIL_2]
+    const MOCK_BOUNCED_EMAILS = [MOCK_VALID_EMAIL_3, MOCK_VALID_EMAIL_4]
+    const MOCK_FORM_ID = 'mockFormId'
+    const MOCK_FORM_TITLE = 'You are all individuals!'
+    const MOCK_BOUNCE_TYPE = BounceType.Permanent
+
+    const generateExpectedArg = async (bounceType: BounceType) => {
+      return {
+        to: MOCK_RECIPIENTS,
+        from: MOCK_SENDER_STRING,
+        subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
+        html: await MailUtils.generateBounceNotificationHtml(
+          {
+            appName: MOCK_APP_NAME,
+            bouncedRecipients: MOCK_BOUNCED_EMAILS.join(', '),
+            formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
+            formTitle: MOCK_FORM_TITLE,
+          },
+          bounceType,
+        ),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Admin (bounce notification)',
+          'X-Formsg-Form-ID': MOCK_FORM_ID,
+        },
+      }
+    }
+
+    it('should send permanent bounce notification successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      // Act
+      const sent = await mailService.sendBounceNotification({
+        emailRecipients: MOCK_RECIPIENTS,
+        bounceType: BounceType.Permanent,
+        bouncedRecipients: MOCK_BOUNCED_EMAILS,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
+      const expectedArgs = await generateExpectedArg(BounceType.Permanent)
+      // Assert
+      expect(sent).toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+    })
+
+    it('should send transient bounce notification successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      sendMailSpy.mockResolvedValueOnce(mockedResponse)
+
+      // Act
+      const sent = await mailService.sendBounceNotification({
+        emailRecipients: MOCK_RECIPIENTS,
+        bounceType: BounceType.Transient,
+        bouncedRecipients: MOCK_BOUNCED_EMAILS,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
+      const expectedArgs = await generateExpectedArg(BounceType.Transient)
+      // Assert
+      expect(sent).toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+    })
+
+    it('should reject with error when email is invalid', async () => {
+      // Arrange
+      const invalidEmail = 'notAnEmail'
+
+      // Act
+      const sent = mailService.sendBounceNotification({
+        emailRecipients: [invalidEmail],
+        bounceType: MOCK_BOUNCE_TYPE,
+        bouncedRecipients: MOCK_BOUNCED_EMAILS,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
+
+      // Assert
+      await expect(sent).rejects.toThrowError('Invalid email error')
+    })
+
+    it('should autoretry when 4xx error is thrown by sendNodeMail and pass if second try passes', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      const mockedResponse = 'mockedSuccessResponse'
+      const mock4xxReject = {
+        responseCode: 454,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockReturnValueOnce(mockedResponse)
+
+      // Act
+      const sent = await mailService.sendBounceNotification({
+        emailRecipients: MOCK_RECIPIENTS,
+        bounceType: MOCK_BOUNCE_TYPE,
+        bouncedRecipients: MOCK_BOUNCED_EMAILS,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
+      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
+
+      // Assert
+      expect(sent).toEqual(mockedResponse)
+      // Check arguments passed to sendNodeMail
+      // Should have been called two times since it rejected the first one and
+      // resolved
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenNthCalledWith(1, expectedArgs)
+      expect(sendMailSpy).toHaveBeenNthCalledWith(2, expectedArgs)
+    })
+
+    it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
+      // Arrange
+      const mock4xxReject = {
+        responseCode: 413,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy.mockRejectedValue(mock4xxReject)
+
+      // Act
+      const sent = mailService.sendBounceNotification({
+        emailRecipients: MOCK_RECIPIENTS,
+        bounceType: MOCK_BOUNCE_TYPE,
+        bouncedRecipients: MOCK_BOUNCED_EMAILS,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
+      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
+
+      // Assert
+      await expect(sent).rejects.toEqual(mock4xxReject)
+      // Check arguments passed to sendNodeMail
+      // Should have been called MOCK_RETRY_COUNT + 1 times
+      expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+    })
+
+    it('should stop autoretrying when the returned error is not a 4xx error', async () => {
+      // Arrange
+      const mockError = new Error('this should be returned at the end')
+      const mock4xxReject = {
+        responseCode: 413,
+        message: 'oh no something went wrong',
+      }
+      sendMailSpy
+        .mockRejectedValueOnce(mock4xxReject)
+        .mockRejectedValueOnce(mockError)
+
+      // Act
+      const sent = mailService.sendBounceNotification({
+        emailRecipients: MOCK_RECIPIENTS,
+        bounceType: MOCK_BOUNCE_TYPE,
+        bouncedRecipients: MOCK_BOUNCED_EMAILS,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
+      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
+
+      // Assert
+      await expect(sent).rejects.toEqual(mockError)
+      // Check arguments passed to sendNodeMail
+      // Should retry two times and stop since the second rejected value is
+      // non-4xx error.
+      expect(sendMailSpy).toHaveBeenCalledTimes(2)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
     })
   })
 })

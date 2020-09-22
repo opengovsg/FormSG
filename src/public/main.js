@@ -194,6 +194,7 @@ require('./modules/forms/admin/directives/verify-secret-key.client.directive.js'
 require('./modules/forms/admin/directives/daterangepicker.client.directive.js')
 require('./modules/forms/admin/directives/edit-captcha.client.directive.js')
 require('./modules/forms/admin/controllers/create-form-template-modal.client.controller.js')
+require('./modules/forms/admin/controllers/collaborator-modal.client.controller.js')
 
 // forms admin components
 require('./modules/forms/admin/components/share-form.client.component.js')
@@ -505,6 +506,10 @@ app.run([
     $templateCache.put(
       'modules/forms/admin/views/create-form-template.client.modal.html',
       require('./modules/forms/admin/views/create-form-template.client.modal.html'),
+    )
+    $templateCache.put(
+      'modules/forms/admin/views/collaborator.client.modal.html',
+      require('./modules/forms/admin/views/collaborator.client.modal.html'),
     )
 
     // Forms base componentViews

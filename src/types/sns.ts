@@ -35,10 +35,15 @@ export interface IEmailNotification {
   }
 }
 
+export enum BounceType {
+  Permanent = 'Permanent',
+  Transient = 'Transient',
+}
+
 export interface IBounceNotification extends IEmailNotification {
   notificationType: 'Bounce'
   bounce: {
-    bounceType: string
+    bounceType: BounceType
     bounceSubType: string
     bouncedRecipients: {
       emailAddress: string

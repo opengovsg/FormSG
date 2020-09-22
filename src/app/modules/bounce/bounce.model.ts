@@ -1,27 +1,25 @@
+import { keyBy } from 'lodash'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import { bounceLifeSpan } from '../../../config/config'
 import {
-  IBounceNotification,
+  BounceType,
   IBounceSchema,
   IEmailNotification,
   ISingleBounce,
 } from '../../../types'
-import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-import {
-  extractHeader,
-  hasEmailBounced,
-  isBounceNotification,
-  isDeliveryNotification,
-} from './bounce.util'
+import { hasEmailBeenDelivered, hasEmailBounced } from './bounce.util'
 
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 
 export interface IBounceModel extends Model<IBounceSchema> {
-  fromSnsNotification: (snsInfo: IEmailNotification) => IBounceSchema | null
+  fromSnsNotification: (
+    snsInfo: IEmailNotification,
+    formId: string,
+  ) => IBounceSchema
 }
 
 const BounceSchema = new Schema<IBounceSchema>({
@@ -30,7 +28,7 @@ const BounceSchema = new Schema<IBounceSchema>({
     ref: FORM_SCHEMA_ID,
     required: 'Form ID is required',
   },
-  hasAlarmed: {
+  hasAutoEmailed: {
     type: Boolean,
     default: false,
   },
@@ -50,6 +48,10 @@ const BounceSchema = new Schema<IBounceSchema>({
           type: Boolean,
           default: false,
         },
+        bounceType: {
+          type: String,
+          enum: Object.values(BounceType),
+        },
         _id: false,
       },
     ],
@@ -66,23 +68,22 @@ BounceSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
  * More info on format of SNS notifications:
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html.
  * @param snsInfo the SNS notification to create a document from
+ * @param snsInfo the SNS notification to create a document from
  * @returns the created Bounce document
  */
 BounceSchema.statics.fromSnsNotification = function (
   this: IBounceModel,
   snsInfo: IEmailNotification,
-): IBounceSchema | null {
-  const emailType = extractHeader(snsInfo, EMAIL_HEADERS.emailType)
-  const formId = extractHeader(snsInfo, EMAIL_HEADERS.formId)
-  // Only care about admin emails
-  if (emailType !== EmailType.AdminResponse || !formId) {
-    return null
-  }
-  const isBounce = isBounceNotification(snsInfo)
+  formId: string,
+): IBounceSchema {
   const bounces: ISingleBounce[] = snsInfo.mail.commonHeaders.to.map(
     (email) => {
-      if (isBounce && hasEmailBounced(snsInfo as IBounceNotification, email)) {
-        return { email, hasBounced: true }
+      if (hasEmailBounced(snsInfo, email)) {
+        return {
+          email,
+          hasBounced: true,
+          bounceType: snsInfo.bounce.bounceType,
+        }
       } else {
         return { email, hasBounced: false }
       }
@@ -92,50 +93,94 @@ BounceSchema.statics.fromSnsNotification = function (
 }
 
 /**
- * Updates an old bounce document with info from a new bounce document as well
- * as an SNS notification. This function does 3 things:
- * 1) If the old bounce document indicates that an email bounced, set
- *    `hasBounced` to `true` for that email.
- * 2) If the new delivery notification indicates that an email was delivered
- *    successfully, set `hasBounced` to `false` for that email, even if the old
- *    bounce document indicates that that email previously bounced.
- * 3) Update the old recipient list according to the newest bounce notification.
- * @param latestBounces the newer bounce document to merge into the current document
+ * Updates an old bounce document with info from an SNS notification.
  * @param snsInfo the notification information to merge
  */
-BounceSchema.methods.merge = function (
+BounceSchema.methods.updateBounceInfo = function (
   this: IBounceSchema,
-  latestBounces: IBounceSchema,
   snsInfo: IEmailNotification,
-): void {
-  this.bounces.forEach((oldBounce) => {
-    // If we were previously notified that a given email has bounced,
-    // we want to retain that information
-    if (oldBounce.hasBounced) {
-      // Check if the latest recipient list contains that email
-      const matchedLatestBounce = latestBounces.bounces.find(
-        (newBounce) => newBounce.email === oldBounce.email,
-      )
-      // Check if the latest notification indicates that this email
-      // actually succeeded. We can't just use latestBounces because
-      // a false in latestBounces doesn't guarantee that the email was
-      // delivered, only that the email has not bounced yet.
-      const hasSubsequentlySucceeded =
-        isDeliveryNotification(snsInfo) &&
-        snsInfo.delivery.recipients.includes(oldBounce.email)
-      if (matchedLatestBounce) {
-        // Set the latest bounce status based on the latest notification
-        matchedLatestBounce.hasBounced = !hasSubsequentlySucceeded
+): IBounceSchema {
+  // First, get rid of outdated emails
+  const latestRecipients = new Set(snsInfo.mail.commonHeaders.to)
+  this.bounces = this.bounces.filter((bounceInfo) =>
+    latestRecipients.has(bounceInfo.email),
+  )
+  // Reshape this.bounces to avoid O(n^2) computation
+  const bouncesByEmail = keyBy(this.bounces, 'email')
+  // The following block needs to work for the cross product of cases:
+  // (notification type) *
+  // (does the notification confirm delivery/bounce for this email) *
+  // (does bouncesByEmail contain this email) *
+  // (does bouncesByEmail currently say this email has bounced)
+  snsInfo.mail.commonHeaders.to.forEach((email) => {
+    if (hasEmailBounced(snsInfo, email)) {
+      bouncesByEmail[email] = {
+        email,
+        hasBounced: true,
+        bounceType: snsInfo.bounce.bounceType,
       }
+    } else if (
+      hasEmailBeenDelivered(snsInfo, email) ||
+      !bouncesByEmail[email]
+    ) {
+      bouncesByEmail[email] = { email, hasBounced: false }
     }
   })
-  this.bounces = latestBounces.bounces
+  this.bounces = Object.values(bouncesByEmail)
+  return this
 }
 
+/**
+ * Returns true if the document indicates a critical bounce (all recipients
+ * bounced), false otherwise.
+ */
 BounceSchema.methods.isCriticalBounce = function (
   this: IBounceSchema,
 ): boolean {
   return this.bounces.every((emailInfo) => emailInfo.hasBounced)
+}
+
+/**
+ * Returns true if the document indicates that all recipients bounced and
+ * all bounces were permanent, false otherwise.
+ */
+BounceSchema.methods.areAllPermanentBounces = function (
+  this: IBounceSchema,
+): boolean {
+  return this.bounces.every(
+    (emailInfo) =>
+      emailInfo.hasBounced && emailInfo.bounceType === BounceType.Permanent,
+  )
+}
+
+/**
+ * Returns the list of email recipients for this form
+ */
+BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
+  // Return a regular array to prevent unexpected bugs with mongoose
+  // CoreDocumentArray
+  return Array.from(this.bounces.map((emailInfo) => emailInfo.email))
+}
+
+/**
+ * Sets hasAutoEmailed to true if at least one person has been emailed.
+ * @param emailRecipients Array of recipients who were emailed.
+ */
+BounceSchema.methods.setNotificationState = function (
+  this: IBounceSchema,
+  emailRecipients: string[],
+): void {
+  if (emailRecipients.length > 0) {
+    this.hasAutoEmailed = true
+  }
+}
+
+/**
+ * Returns true if an automated email has been sent for this form,
+ * false otherwise.
+ */
+BounceSchema.methods.hasNotified = function (this: IBounceSchema): boolean {
+  return this.hasAutoEmailed
 }
 
 const getBounceModel = (db: Mongoose): IBounceModel => {

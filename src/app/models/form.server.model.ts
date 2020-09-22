@@ -1,5 +1,5 @@
 import BSON from 'bson-ext'
-import { compact, pick, uniq } from 'lodash'
+import { compact, filter, pick, uniq } from 'lodash'
 import { Model, Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
@@ -20,6 +20,7 @@ import {
   ResponseMode,
   Status,
 } from '../../types'
+import { IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
@@ -88,6 +89,7 @@ const formSchemaOptions: SchemaOptions = {
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
+  deactivateById(formId: string): Promise<IFormSchema | null>
 }
 
 type IEncryptedFormModel = Model<IEncryptedFormSchema>
@@ -405,6 +407,29 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return newForm
   }
 
+  // Transfer ownership of the form to another user
+  FormSchema.methods.transferOwner = async function (
+    currentOwner: IUserSchema,
+    newOwnerEmail: string,
+  ) {
+    // Verify that the new owner exists
+    const newOwner = await User.findOne({ email: newOwnerEmail })
+    if (newOwner == null) {
+      throw new Error(
+        `${newOwnerEmail} must have logged in once before being added as Owner`,
+      )
+    }
+
+    // Update form's admin to new owner's id
+    this.admin = newOwner._id
+
+    // Remove new owner from perm list and include previous owner as an editor
+    this.permissionList = filter(this.permissionList, (item) => {
+      return item.email !== newOwnerEmail
+    })
+    this.permissionList.push({ email: currentOwner.email, write: true })
+  }
+
   // Statics
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (
@@ -443,6 +468,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
     })
     return data
+  }
+
+  // Deactivate form by ID
+  FormSchema.statics.deactivateById = async function (
+    this: IFormModel,
+    formId: string,
+  ): Promise<IFormSchema | null> {
+    const form = await this.findById(formId)
+    if (!form) return null
+    if (form.status === Status.Public) {
+      form.status = Status.Private
+    }
+    return form.save()
   }
 
   // Hooks
