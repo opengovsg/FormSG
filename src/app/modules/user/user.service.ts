@@ -149,6 +149,7 @@ export const updateUserContact = async (
   }
 
   admin.contact = contact
+  admin.updatedAt = new Date()
   return admin.save()
 }
 
