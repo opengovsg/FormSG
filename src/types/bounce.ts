@@ -8,9 +8,7 @@ export type ISingleBounce =
   | {
       email: string
       hasBounced: true
-      // TODO (private #44): this key should be required,
-      // but is currently optional for backwards compatibility reasons.
-      bounceType?: BounceType
+      bounceType: BounceType
     }
   | {
       email: string
