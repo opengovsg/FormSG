@@ -261,84 +261,84 @@ exports.getMetadata = function (req, res) {
     } else {
       return res.status(HttpStatus.OK).send({ metadata: [], count: 0 })
     }
-  }
-
-  Submission.aggregate([
-    {
-      $match: matchClause,
-    },
-    {
-      $sort: { created: -1 },
-    },
-    {
-      $facet: {
-        pageResults: [
-          {
-            $skip: numToSkip,
-          },
-          {
-            $limit: pageSize,
-          },
-          {
-            $project: {
-              _id: 1,
-              created: 1,
+  } else {
+    Submission.aggregate([
+      {
+        $match: matchClause,
+      },
+      {
+        $sort: { created: -1 },
+      },
+      {
+        $facet: {
+          pageResults: [
+            {
+              $skip: numToSkip,
             },
-          },
-        ],
-        allResults: [
-          {
-            $group: {
-              _id: null,
-              count: {
-                $sum: 1,
+            {
+              $limit: pageSize,
+            },
+            {
+              $project: {
+                _id: 1,
+                created: 1,
               },
             },
-          },
-          {
-            $project: {
-              _id: 0,
+          ],
+          allResults: [
+            {
+              $group: {
+                _id: null,
+                count: {
+                  $sum: 1,
+                },
+              },
             },
-          },
-        ],
+            {
+              $project: {
+                _id: 0,
+              },
+            },
+          ],
+        },
       },
-    },
-  ])
-    .allowDiskUse(true) // prevents out-of-memory for large search results (max 100MB)
-    .exec((err, result) => {
-      if (err || !result) {
-        logger.error({
-          message: 'Failure retrieving metadata from database',
-          meta: {
-            action: 'getMetadata',
-            ip: getRequestIp(req),
-            url: req.url,
-            headers: req.headers,
-          },
-          error: err,
-        })
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-          message: errorHandler.getMongoErrorMessage(err),
-        })
-      } else {
-        const [{ pageResults, allResults }] = result
-        let [numResults] = allResults
-        let count = (numResults && numResults.count) || 0
-        let number = count - numToSkip
-        let metadata = pageResults.map((data) => {
-          let entry = {
-            number,
-            refNo: data._id,
-            submissionTime: moment(data.created)
-              .tz('Asia/Singapore')
-              .format('Do MMM YYYY, h:mm:ss a'),
-          }
-          number--
-          return entry
-        })
-        return res.status(StatusCodes.OK).send({ metadata, count })
-      }
-    })
+    ])
+      .allowDiskUse(true) // prevents out-of-memory for large search results (max 100MB)
+      .exec((err, result) => {
+        if (err || !result) {
+          logger.error({
+            message: 'Failure retrieving metadata from database',
+            meta: {
+              action: 'getMetadata',
+              ip: getRequestIp(req),
+              url: req.url,
+              headers: req.headers,
+            },
+            error: err,
+          })
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+            message: errorHandler.getMongoErrorMessage(err),
+          })
+        } else {
+          const [{ pageResults, allResults }] = result
+          let [numResults] = allResults
+          let count = (numResults && numResults.count) || 0
+          let number = count - numToSkip
+          let metadata = pageResults.map((data) => {
+            let entry = {
+              number,
+              refNo: data._id,
+              submissionTime: moment(data.created)
+                .tz('Asia/Singapore')
+                .format('Do MMM YYYY, h:mm:ss a'),
+            }
+            number--
+            return entry
+          })
+          return res.status(StatusCodes.OK).send({ metadata, count })
+        }
+      })
+  }
 }
 
 /**
