@@ -11,53 +11,59 @@ export const USER_SCHEMA_ID = 'User'
 const compileUserModel = (db: Mongoose) => {
   const Agency = getAgencyModel(db)
 
-  const UserSchema = new Schema<IUserSchema>({
-    email: {
-      type: String,
-      trim: true,
-      unique: true,
-      required: 'Please enter your email',
-      validate: {
-        // Check if email entered exists in the Agency collection
-        validator: async (value: string) => {
-          if (!validator.isEmail(value)) {
-            return false
-          }
+  const UserSchema = new Schema<IUserSchema>(
+    {
+      email: {
+        type: String,
+        trim: true,
+        unique: true,
+        required: 'Please enter your email',
+        validate: {
+          // Check if email entered exists in the Agency collection
+          validator: async (value: string) => {
+            if (!validator.isEmail(value)) {
+              return false
+            }
 
-          const emailDomain = value.split('@').pop()
-          try {
-            const agency = await Agency.findOne({ emailDomain })
-            return !!agency
-          } catch {
-            return false
-          }
+            const emailDomain = value.split('@').pop()
+            try {
+              const agency = await Agency.findOne({ emailDomain })
+              return !!agency
+            } catch {
+              return false
+            }
+          },
+          message: 'This email is not a valid agency email',
         },
-        message: 'This email is not a valid agency email',
+      },
+      agency: {
+        type: Schema.Types.ObjectId,
+        ref: AGENCY_SCHEMA_ID,
+        required: 'Agency is required',
+      },
+      contact: {
+        type: String,
+        validate: {
+          // Check if phone number is valid.
+          validator: function (value: string) {
+            const phoneNumber = parsePhoneNumberFromString(value)
+            if (!phoneNumber) return false
+            return phoneNumber.isValid()
+          },
+          message: (props) => `${props.value} is not a valid mobile number`,
+        },
+      },
+      lastAccessed: Date,
+      updatedAt: Date,
+      betaFlags: {},
+    },
+    {
+      timestamps: {
+        createdAt: 'created',
+        updatedAt: false,
       },
     },
-    agency: {
-      type: Schema.Types.ObjectId,
-      ref: AGENCY_SCHEMA_ID,
-      required: 'Agency is required',
-    },
-    created: {
-      type: Date,
-      default: Date.now,
-    },
-    contact: {
-      type: String,
-      validate: {
-        // Check if phone number is valid.
-        validator: function (value: string) {
-          const phoneNumber = parsePhoneNumberFromString(value)
-          if (!phoneNumber) return false
-          return phoneNumber.isValid()
-        },
-        message: (props) => `${props.value} is not a valid mobile number`,
-      },
-    },
-    betaFlags: {},
-  })
+  )
 
   // Hooks
   /**
@@ -87,7 +93,7 @@ const compileUserModel = (db: Mongoose) => {
    */
   UserSchema.statics.upsertUser = async function (
     this: IUserModel,
-    upsertParams: Pick<IUser, 'email' | 'agency'>,
+    upsertParams: Pick<IUser, 'email' | 'agency' | 'lastAccessed'>,
   ) {
     return this.findOneAndUpdate(
       { email: upsertParams.email },

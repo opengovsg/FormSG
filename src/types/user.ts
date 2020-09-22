@@ -10,13 +10,15 @@ export interface IUser {
   email: string
   agency: IAgencySchema['_id']
   contact?: string
-  created?: Date
   betaFlags?: Record<string, never>
   _id?: Document['_id']
+  lastAccessed?: Date
+  updatedAt?: Date
 }
 
 export interface IUserSchema extends IUser, Document {
   _id: Document['_id']
+  created?: Date
 }
 
 export interface IUserModel extends Model<IUserSchema> {
