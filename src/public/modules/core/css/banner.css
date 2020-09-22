@@ -1,0 +1,58 @@
+/* BANNER COMPONENT */
+
+banner-component {
+  -webkit-box-flex: 0;
+  -ms-flex: none;
+  flex: none;
+}
+
+.banner-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 12px 50px 12px 20px;
+  background-color: #1e3e84;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  color: #f0f4f6;
+  line-height: 20px;
+  font-weight: 100;
+  overflow: hidden;
+  font-size: 16px;
+  z-index: 10;
+  width: 100%;
+  position: relative;
+}
+
+.banner-container div {
+  display: inline-block;
+}
+
+.banner-container #dismiss {
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 50px;
+  cursor: pointer;
+}
+
+.banner-container a {
+  color: #f0f4f6;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: normal;
+}
