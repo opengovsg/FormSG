@@ -1,19 +1,51 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 #sign-in {
+  height: 100%;
   background-color: #fff;
 }
 
 /* CSS shared by Email and OTP section */
 
 #sign-in .input-box {
-  height: 100vh;
-  width: 100vw;
+  min-height: 100%;
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: reverse;
+  -ms-flex-direction: row-reverse;
+  flex-direction: row-reverse;
+  position: relative;
 }
 
 #sign-in .input-container {
-  max-width: 100%;
-  padding-left: 10px;
-  padding-right: 20px;
+  height: 100%;
+  width: 60%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+#sign-in .input-container .input-wrapper {
+  max-width: 80%;
+  padding: 40px;
 }
 
 #sign-in .input-banner {
@@ -35,6 +67,8 @@
 
 @media not all and (max-width: 992px) {
   #sign-in .input-box {
+    -webkit-box-align: center;
+    -ms-flex-align: center;
     align-items: center;
   }
 
@@ -53,9 +87,25 @@
   }
 }
 
+@media (max-width: 992px) {
+  #sign-in .input-container {
+    width: initial;
+    max-width: 100%;
+  }
+
+  #sign-in .input-container .input-wrapper {
+    max-width: 100%;
+    padding: 0;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 992px) {
   #sign-in .input-box {
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
     justify-content: center;
+    -webkit-box-align: normal;
+    -ms-flex-align: normal;
     align-items: normal;
     padding-top: 448px;
   }
@@ -73,15 +123,15 @@
     max-height: 283px;
     max-width: 430px;
   }
-
-  #sign-in .input-container {
-    padding-right: 10px;
-  }
 }
 
 @media not all and (min-width: 768px) {
   #sign-in .input-box {
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
     justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
     align-items: center;
   }
 
@@ -94,7 +144,7 @@
   }
 
   #sign-in .input-container {
-    padding-right: 10px;
+    padding: 20px;
   }
 }
 
