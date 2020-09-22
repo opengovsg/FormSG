@@ -99,7 +99,6 @@
   background-color: rgba(77, 104, 117, 0.9);
   color: white;
   padding: 168px 40px 168px 40px;
-  margin: -20px -11px -20px -11px;
 }
 
 #admin-form #add-field #myinfo-disable-screen a {
@@ -157,10 +156,13 @@
   border-bottom: 3px solid white;
 }
 
+#admin-form #add-field .tab-content {
+  padding: 20px 8px;
+}
+
 #admin-form #add-field .tab-content .tab-pane .row {
   margin-left: 0;
   margin-right: 0;
-  padding: 20px 8px;
 }
 
 #admin-form #add-field .add-field-panel {
