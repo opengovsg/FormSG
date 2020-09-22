@@ -130,6 +130,45 @@ The following env variables are set in Travis:
 
 #### Banners
 
+These environment variables allow us to set notification banners in the
+application without a full redeployment of the application. Note the hierarchy
+of the banner content.
+
+In addition, you can change the color of the banner by adding a type encoding in
+the environment variable string. The default banner type will be `info` if no encoding is
+provided.
+
+The possible banner type prefixes are: `info:`, `warn:`, and `error:`. Other
+prefixes will not work and the invalid prefixes will be shown in the banner
+text.
+
+Examples:
+
+```
+SITE_BANNER_CONTENT=info:This is an info banner. You can also add links in the text like https://example.com. There is also a dismiss button to the right of the text.
+```
+
+![Info banner
+example](https://user-images.githubusercontent.com/22133008/93852946-8a867780-fce5-11ea-929f-a0ce1c6796b9.png)
+
+```
+SITE_BANNER_CONTENT=warn:This is a warning banner. You can also add links in the text like https://example.com
+```
+
+![Warning banner example](https://user-images.githubusercontent.com/22133008/93852559-cec54800-fce4-11ea-9376-9b2802e8ac62.png)
+
+```
+SITE_BANNER_CONTENT=error:This is an error banner. You can also add links in the text like https://example.com
+```
+
+![Error banner example](https://user-images.githubusercontent.com/22133008/93852689-1055f300-fce5-11ea-956d-d5966cbe86d8.png)
+
+```
+SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will be shown. The default banner type of `info` will used.
+```
+
+![Invalid banner default example](https://user-images.githubusercontent.com/22133008/93853306-392ab800-fce6-11ea-9891-f752bdad236e.png)
+
 | Variable                 | Description                                                                                                                                                                                                   |
 | :----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SITE_BANNER_CONTENT`    | If set, displays a banner message on both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. Overrides all other banner environment variables |
@@ -234,32 +273,32 @@ If this feature is enabled, forms will support authentication via [SingPass](htt
 
 Note that MyInfo is currently not supported for storage mode forms and enabling SingPass/CorpPass on storage mode forms also requires [SingPass/CorpPass for Storage Mode](#webhooks-and-singpasscorppass-for-storage-mode) to be enabled.
 
-| Variable                        | Description                                                                                                                                                            |
-| :------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPCP_COOKIE_MAX_AGE_PRESERVED` | Duration of SingPass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                           |
-| `SINGPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for SingPass authentication.                                                                             |
-| `SINGPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for SingPass authentication.                                                                               |
-| `SINGPASS_IDP_LOGIN_URL`        | URL of SingPass Login Page.                                                                                                                                            |
-| `SINGPASS_IDP_ENDPOINT`         | URL to retrieve NRIC of SingPass-validated user from.                                                                                                                  |
-| `SINGPASS_IDP_ID`               | Partner ID of National Digital Identity Office for SingPass authentication.                                                                                            |
-| `CORPPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for CorpPass authentication.                                                                             |
-| `CORPPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for CorpPass authentication.                                                                               |
-| `CORPPASS_IDP_LOGIN_URL`        | URL of CorpPass Login Page.                                                                                                                                            |
-| `CORPPASS_IDP_ENDPOINT`         | URL to retrieve UEN of CorpPass-validated user from.                                                                                                                   |
-| `CORPPASS_IDP_ID`               | Partner ID of National Digital Identity Office for CorpPass authentication.                                                                                            |
-| `SP_FORMSG_KEY_PATH`            | Path to X.509 key used for SingPass related communication with National Digital Identity office.                                                                       |
-| `SP_FORMSG_CERT_PATH`           | Path to X.509 cert used for SingPass related communication with National Digital Identity office.                                                                      |
-| `SP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for SingPass related communication.                                                                         |
-| `CP_FORMSG_KEY_PATH`            | Path to X.509 key used for CorpPass related communication with National Digital Identity office.                                                                       |
-| `CP_FORMSG_CERT_PATH`           | Path to X.509 cert used for CorpPass related communication with National Digital Identity office.                                                                      |
-| `CP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for CorpPass related communication.                                                                         |
-| `MYINFO_CLIENT_CONFIG`          | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints. |
-| `MYINFO_FORMSG_KEY_PATH`        | Filepath to MyInfo private key, which is used to decrypt returned responses.                                                                                           |
-| `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                             |
-| `IS_SP_MAINTENANCE`             | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                    |
-| `IS_CP_MAINTENANCE`             | If set, displays a banner message on CorpPass forms.                                                                                                                   |
-| `FILE_SYSTEM_ID`             | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                                   |
-| `CERT_PATH`             | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to SingPass, CorpPass and MyInfo.                                                                                                                   |
+| Variable                        | Description                                                                                                                                                                                     |
+| :------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SPCP_COOKIE_MAX_AGE_PRESERVED` | Duration of SingPass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                                                    |
+| `SINGPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for SingPass authentication.                                                                                                      |
+| `SINGPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for SingPass authentication.                                                                                                        |
+| `SINGPASS_IDP_LOGIN_URL`        | URL of SingPass Login Page.                                                                                                                                                                     |
+| `SINGPASS_IDP_ENDPOINT`         | URL to retrieve NRIC of SingPass-validated user from.                                                                                                                                           |
+| `SINGPASS_IDP_ID`               | Partner ID of National Digital Identity Office for SingPass authentication.                                                                                                                     |
+| `CORPPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for CorpPass authentication.                                                                                                      |
+| `CORPPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for CorpPass authentication.                                                                                                        |
+| `CORPPASS_IDP_LOGIN_URL`        | URL of CorpPass Login Page.                                                                                                                                                                     |
+| `CORPPASS_IDP_ENDPOINT`         | URL to retrieve UEN of CorpPass-validated user from.                                                                                                                                            |
+| `CORPPASS_IDP_ID`               | Partner ID of National Digital Identity Office for CorpPass authentication.                                                                                                                     |
+| `SP_FORMSG_KEY_PATH`            | Path to X.509 key used for SingPass related communication with National Digital Identity office.                                                                                                |
+| `SP_FORMSG_CERT_PATH`           | Path to X.509 cert used for SingPass related communication with National Digital Identity office.                                                                                               |
+| `SP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for SingPass related communication.                                                                                                  |
+| `CP_FORMSG_KEY_PATH`            | Path to X.509 key used for CorpPass related communication with National Digital Identity office.                                                                                                |
+| `CP_FORMSG_CERT_PATH`           | Path to X.509 cert used for CorpPass related communication with National Digital Identity office.                                                                                               |
+| `CP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for CorpPass related communication.                                                                                                  |
+| `MYINFO_CLIENT_CONFIG`          | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints.                          |
+| `MYINFO_FORMSG_KEY_PATH`        | Filepath to MyInfo private key, which is used to decrypt returned responses.                                                                                                                    |
+| `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                                                      |
+| `IS_SP_MAINTENANCE`             | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                             |
+| `IS_CP_MAINTENANCE`             | If set, displays a banner message on CorpPass forms.                                                                                                                                            |
+| `FILE_SYSTEM_ID`                | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                            |
+| `CERT_PATH`                     | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to SingPass, CorpPass and MyInfo. |
 
 #### Verified Emails/SMSes
 
