@@ -25,7 +25,7 @@ banner-component {
   -ms-flex-pack: center;
   justify-content: center;
   line-height: 20px;
-  font-weight: 100;
+  font-weight: normal;
   overflow: hidden;
   font-size: 16px;
   z-index: 10;
@@ -40,13 +40,31 @@ banner-component {
   color: #f0f4f6;
 }
 
+.banner-container-info a {
+  color: #f0f4f6;
+}
+
+.banner-container a {
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: normal;
+}
+
 .banner-container-warn {
   background-color: #ffe47a;
   color: #323232;
 }
 
+.banner-container-warn a {
+  color: #323232;
+}
+
 .banner-container-error {
   background-color: #a94442;
+  color: #fff;
+}
+
+.banner-container-error a {
   color: #fff;
 }
 
@@ -70,11 +88,4 @@ banner-component {
   height: 100%;
   width: 50px;
   cursor: pointer;
-}
-
-.banner-container a {
-  color: #f0f4f6;
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: normal;
 }
