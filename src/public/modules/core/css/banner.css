@@ -17,15 +17,13 @@ banner-component {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  padding: 12px 50px 12px 20px;
-  background-color: #1e3e84;
+  padding: 12px 20px;
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  color: #f0f4f6;
   line-height: 20px;
   font-weight: 100;
   overflow: hidden;
@@ -33,6 +31,23 @@ banner-component {
   z-index: 10;
   width: 100%;
   position: relative;
+}
+
+.banner-container-info {
+  /* Additional padding as opposed to the rest to accomodate dismiss button */
+  padding: 12px 50px 12px 20px;
+  background-color: #1e3e84;
+  color: #f0f4f6;
+}
+
+.banner-container-warn {
+  background-color: #ffe47a;
+  color: #323232;
+}
+
+.banner-container-error {
+  background-color: #a94442;
+  color: #fff;
 }
 
 .banner-container div {
