@@ -183,6 +183,7 @@ export const retrieveUser = (
     UserModel.upsertUser({
       email,
       agency: agencyId,
+      lastAccessed: new Date(),
     }),
     (error) => {
       logger.error({

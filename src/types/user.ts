@@ -30,7 +30,7 @@ export interface IUserModel extends Model<IUserSchema> {
    * @returns the user document after upsert with populated agency details
    */
   upsertUser: (
-    upsertParams: Pick<IUser, 'email' | 'agency'>,
+    upsertParams: Pick<IUser, 'email' | 'agency' | 'lastAccessed'>,
   ) => Promise<IPopulatedUser>
 }
 
