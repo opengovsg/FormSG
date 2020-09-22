@@ -109,9 +109,11 @@ export const getInvalidFileExtensionsInZip = (
 
   // We wrap this checker into a closure because the data format
   // needs to be different for frontend vs backend.
-  const checkZipForInvalidFiles = async function (file: File | Buffer) {
+  const checkZipForInvalidFiles = async (
+    file: Blob | Buffer,
+  ): Promise<string[]> => {
     const zip = await JSZip.loadAsync(file)
-    const invalidFileExtensions = []
+    const invalidFileExtensions: (string | string[] | Promise<string[]>)[] = []
     zip.forEach((relativePath, fileEntry) => {
       if (fileEntry.dir) return
       const fileExt = getFileExtension(fileEntry.name)
@@ -124,6 +126,7 @@ export const getInvalidFileExtensionsInZip = (
         )
       }
     })
+
     const results = await Promise.all(invalidFileExtensions)
     return uniq(flattenDeep(results))
   }

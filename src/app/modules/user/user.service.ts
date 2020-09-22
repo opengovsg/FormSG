@@ -98,7 +98,7 @@ export const verifyContactOtp = async (
   )
 
   if (contactHashErr || otpHashError) {
-    throw new MalformedOtpError(null, `bcrypt error for ${userId}`)
+    throw new MalformedOtpError(undefined, `bcrypt error for ${userId}`)
   }
 
   if (!isOtpMatch) {
@@ -149,7 +149,7 @@ export const updateUserContact = async (
 
 export const getPopulatedUserById = async (
   userId: IUserSchema['_id'],
-): Promise<IPopulatedUser> => {
+): Promise<IPopulatedUser | null> => {
   return UserModel.findById(userId).populate({
     path: 'agency',
     model: AGENCY_SCHEMA_ID,

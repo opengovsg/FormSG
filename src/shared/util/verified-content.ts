@@ -35,7 +35,7 @@ const CpVerifiedKeys: ICpVerifiedKeys = {
 
 // Array determines the order to process and display the verified fields in both
 // the detailed responses page and the csv file.
-export const CURRENT_VERIFIED_FIELDS: VerifiedKeys[] = []
+export const CURRENT_VERIFIED_FIELDS: VerifiedKeys[] = ([] as VerifiedKeys[])
   .concat(values(SpVerifiedKeys))
   .concat(values(CpVerifiedKeys))
 
@@ -68,10 +68,7 @@ const getVerifiedKeyMap = (type?: 'SP' | 'CP'): VerifiedKeyMap => {
  * @param newKeys The oldKey-newKey mapping
  * @returns A new object with the renamed keys
  */
-const renameKeys = (
-  obj: Record<VerifiedKeys, unknown>,
-  newKeys: VerifiedKeyMap,
-): Record<string, unknown> => {
+const renameKeys = (obj: Record<string, any>, newKeys: Record<string, any>) => {
   const keyValues = Object.keys(obj).map((key) => {
     const newKey = newKeys[key] || key
     return { [newKey]: obj[key] }
@@ -99,10 +96,7 @@ export const mapDataToKey = ({
   data,
 }: IMappableData): Record<string, unknown> => {
   const fieldMap = getVerifiedKeyMap(type)
-  const subsetKeys = pick(data, Object.keys(fieldMap)) as Record<
-    VerifiedKeys,
-    unknown
-  >
+  const subsetKeys = pick(data, Object.keys(fieldMap))
 
   return renameKeys(subsetKeys, fieldMap)
 }

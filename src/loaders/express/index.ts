@@ -23,30 +23,31 @@ import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
 
 const loadExpressApp = async (connection: Connection) => {
-  // Initialize express app
+  // Initialize express app.
   let app = express()
   app.locals = appLocals
 
-  const environmentConfigs = {
-    production(app: Express) {
-      // Add x-forwarded-proto headers to handle https cookie,
-      // and trust the proxy that is in front of you
-      app.use(function (req, res, next) {
-        req.headers['x-forwarded-proto'] = 'https'
-        return next()
-      })
-      app.set('trust proxy', 1)
-      return app
-    },
+  const getConfigFunctionFor = (environment: string) => {
+    switch (environment) {
+      case 'production': {
+        return function (app: Express) {
+          // Trust the load balancer that is in front of the server
+          app.set('trust proxy', true)
+          return app
+        }
+      }
+      default:
+        return null
+    }
   }
 
-  const configureEnvironmentFor = environmentConfigs[config.nodeEnv]
-  if (typeof configureEnvironmentFor === 'function') {
+  const configureEnvironmentFor = getConfigFunctionFor(config.nodeEnv)
+  if (configureEnvironmentFor) {
     app = configureEnvironmentFor(app)
   }
 
   app.use(function (req, res, next) {
-    const urlPath = url.parse(req.url).path.split('/')
+    const urlPath = url.parse(req.url).path?.split('/') ?? []
     if (
       urlPath.indexOf('static') > -1 &&
       urlPath.indexOf('view') === urlPath.indexOf('static') - 1

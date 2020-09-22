@@ -2,7 +2,7 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { BasicField, ResponseMode } from 'src/types'
+import { BasicField, IFieldSchema, ResponseMode } from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
 
@@ -121,9 +121,10 @@ const createAndReturnFormField = async (
 
   const formParam = {
     ...baseParams,
-    form_fields: [formFieldParams],
+    responseMode: formType,
+    form_fields: [formFieldParams] as IFieldSchema[],
   }
   const form = await Form.create(formParam)
 
-  return form.form_fields[0]
+  return form.form_fields![0]
 }

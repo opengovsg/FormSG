@@ -194,7 +194,7 @@ describe('SmsCount', () => {
           form: MOCK_FORM_ID,
         }).lean()
 
-        expect(actualLog._id).toBeDefined()
+        expect(actualLog!._id).toBeDefined()
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
         expect(actualSavedObject).toEqual(expectedLog)
@@ -220,7 +220,7 @@ describe('SmsCount', () => {
           form: MOCK_FORM_ID,
         }).lean()
 
-        expect(actualLog._id).toBeDefined()
+        expect(actualLog!._id).toBeDefined()
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
         expect(actualSavedObject).toEqual(expectedLog)

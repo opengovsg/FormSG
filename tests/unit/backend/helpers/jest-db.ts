@@ -1,4 +1,6 @@
+// @ts-ignore
 import mongoSetup from '@shelf/jest-mongodb/setup'
+// @ts-ignore
 import mongoTeardown from '@shelf/jest-mongodb/teardown'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
@@ -14,7 +16,7 @@ const connect = async () => {
   // Do it here so each test can have it's own mongoose instance.
   await mongoSetup()
   // process.env.MONGO_URL is now set by jest-mongodb.
-  const conn = await mongoose.connect(process.env.MONGO_URL, {
+  const conn = await mongoose.connect(process.env.MONGO_URL!, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,

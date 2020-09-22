@@ -76,7 +76,7 @@ describe('WebhooksService', () => {
 
   let testEncryptSubmission: IEncryptedSubmissionSchema
   let testConfig: AxiosRequestConfig
-  let testSubmissionWebhookView: WebhookView
+  let testSubmissionWebhookView: WebhookView | null
   let testSignature: string
 
   beforeEach(async () => {
@@ -147,7 +147,7 @@ describe('WebhooksService', () => {
       let submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
       )
-      expect(submission.webhookResponses[0]).toEqual(
+      expect(submission!.webhookResponses[0]).toEqual(
         expect.objectContaining({
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,
@@ -172,7 +172,7 @@ describe('WebhooksService', () => {
       let submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
       )
-      expect(submission.webhookResponses[0]).toEqual(
+      expect(submission!.webhookResponses[0]).toEqual(
         expect.objectContaining({
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,
@@ -188,7 +188,7 @@ describe('WebhooksService', () => {
         toJSON: () => {}
         config: object
         response: AxiosResponse
-        constructor(msg, response) {
+        constructor(msg: string, response: AxiosResponse) {
           super(msg)
           this.isAxiosError = false
           this.response = response
@@ -220,7 +220,7 @@ describe('WebhooksService', () => {
       let submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
       )
-      expect(submission.webhookResponses[0]).toEqual(
+      expect(submission!.webhookResponses[0]).toEqual(
         expect.objectContaining({
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,

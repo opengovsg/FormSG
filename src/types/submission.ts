@@ -31,10 +31,10 @@ export interface ISubmission {
 export interface WebhookData {
   formId: string
   submissionId: string
-  encryptedContent: string
-  verifiedContent: string
-  version: number
-  created: Date
+  encryptedContent: IEncryptedSubmissionSchema['encryptedContent']
+  verifiedContent: IEncryptedSubmissionSchema['verifiedContent']
+  version: IEncryptedSubmissionSchema['version']
+  created: IEncryptedSubmissionSchema['created']
 }
 
 export interface WebhookView {

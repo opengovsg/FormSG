@@ -33,12 +33,10 @@ const invalidOtpError = 'INVALID_OTP'
 
 describe('Verification controller', () => {
   describe('createTransaction', () => {
-    let mockReq
-    afterEach(() => jest.clearAllMocks())
-
-    beforeAll(() => {
-      mockReq = expressHandler.mockRequest({ body: { formId: MOCK_FORM_ID } })
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { formId: MOCK_FORM_ID },
     })
+    afterEach(() => jest.clearAllMocks())
 
     it('should correctly return transaction when parameters are valid', async () => {
       const returnValue = {
@@ -48,7 +46,7 @@ describe('Verification controller', () => {
       MockVfnService.createTransaction.mockReturnValueOnce(
         Promise.resolve(returnValue),
       )
-      await createTransaction(mockReq, MOCK_RES, noop)
+      await createTransaction(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.createTransaction).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
@@ -57,8 +55,8 @@ describe('Verification controller', () => {
     })
 
     it('should correctly return 200 when transaction is not found', async () => {
-      MockVfnService.createTransaction.mockReturnValueOnce(null)
-      await createTransaction(mockReq, MOCK_RES, noop)
+      MockVfnService.createTransaction.mockResolvedValueOnce(null)
+      await createTransaction(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.createTransaction).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
@@ -67,15 +65,11 @@ describe('Verification controller', () => {
   })
 
   describe('getTransactionMetadata', () => {
-    let mockReq
-    afterEach(() => jest.clearAllMocks())
-
-    beforeAll(() => {
-      mockReq = expressHandler.mockRequest({
-        body: {},
-        params: { transactionId: MOCK_TRANSACTION_ID },
-      })
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: {},
+      params: { transactionId: MOCK_TRANSACTION_ID },
     })
+    afterEach(() => jest.clearAllMocks())
 
     it('should correctly return metadata when parameters are valid', async () => {
       // Coerce type
@@ -85,7 +79,7 @@ describe('Verification controller', () => {
       MockVfnService.getTransactionMetadata.mockReturnValueOnce(
         Promise.resolve(transaction),
       )
-      await getTransactionMetadata(mockReq, MOCK_RES, noop)
+      await getTransactionMetadata(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransactionMetadata).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
@@ -99,7 +93,7 @@ describe('Verification controller', () => {
         error.name = notFoundError
         throw error
       })
-      await getTransactionMetadata(mockReq, MOCK_RES, noop)
+      await getTransactionMetadata(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransactionMetadata).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
@@ -109,22 +103,18 @@ describe('Verification controller', () => {
   })
 
   describe('resetFieldInTransaction', () => {
-    let mockReq
-    afterEach(() => jest.clearAllMocks())
-
-    beforeAll(() => {
-      mockReq = expressHandler.mockRequest({
-        body: { fieldId: MOCK_FIELD_ID },
-        params: { transactionId: MOCK_TRANSACTION_ID },
-      })
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { fieldId: MOCK_FIELD_ID },
+      params: { transactionId: MOCK_TRANSACTION_ID },
     })
+    afterEach(() => jest.clearAllMocks())
 
     it('should correctly call service when params are valid', async () => {
       const transaction = new Verification({ formId: new ObjectId() })
       MockVfnService.getTransaction.mockReturnValueOnce(
         Promise.resolve(transaction),
       )
-      await resetFieldInTransaction(mockReq, MOCK_RES, noop)
+      await resetFieldInTransaction(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
@@ -141,7 +131,7 @@ describe('Verification controller', () => {
         error.name = notFoundError
         throw error
       })
-      await resetFieldInTransaction(mockReq, MOCK_RES, noop)
+      await resetFieldInTransaction(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
@@ -151,27 +141,25 @@ describe('Verification controller', () => {
   })
 
   describe('getNewOtp', () => {
-    let mockReq, transaction
-    afterEach(() => jest.clearAllMocks())
-
-    beforeAll(() => {
-      mockReq = expressHandler.mockRequest({
-        body: { fieldId: MOCK_FIELD_ID, answer: MOCK_ANSWER },
-        params: { transactionId: MOCK_TRANSACTION_ID },
-      })
-      transaction = new Verification({ formId: new ObjectId() })
-      MockVfnService.getTransaction.mockReturnValue(
-        Promise.resolve(transaction),
-      )
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { fieldId: MOCK_FIELD_ID, answer: MOCK_ANSWER },
+      params: { transactionId: MOCK_TRANSACTION_ID },
     })
 
+    const MOCK_TRANSACTION = new Verification({ formId: new ObjectId() })
+    MockVfnService.getTransaction.mockReturnValue(
+      Promise.resolve(MOCK_TRANSACTION),
+    )
+
+    afterEach(() => jest.clearAllMocks())
+
     it('should call service correctly when params are valid', async () => {
-      await getNewOtp(mockReq, MOCK_RES, noop)
+      await getNewOtp(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
       expect(MockVfnService.getNewOtp).toHaveBeenCalledWith(
-        transaction,
+        MOCK_TRANSACTION,
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
@@ -184,12 +172,12 @@ describe('Verification controller', () => {
         error.name = notFoundError
         throw error
       })
-      await getNewOtp(mockReq, MOCK_RES, noop)
+      await getNewOtp(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
       expect(MockVfnService.getNewOtp).toHaveBeenCalledWith(
-        transaction,
+        MOCK_TRANSACTION,
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
@@ -203,12 +191,12 @@ describe('Verification controller', () => {
         error.name = waitOtpError
         throw error
       })
-      await getNewOtp(mockReq, MOCK_RES, noop)
+      await getNewOtp(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
       expect(MockVfnService.getNewOtp).toHaveBeenCalledWith(
-        transaction,
+        MOCK_TRANSACTION,
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
@@ -222,12 +210,12 @@ describe('Verification controller', () => {
         error.name = sendOtpError
         throw error
       })
-      await getNewOtp(mockReq, MOCK_RES, noop)
+      await getNewOtp(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
       expect(MockVfnService.getNewOtp).toHaveBeenCalledWith(
-        transaction,
+        MOCK_TRANSACTION,
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
@@ -237,29 +225,28 @@ describe('Verification controller', () => {
   })
 
   describe('verifyOtp', () => {
-    let mockReq, transaction
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { fieldId: MOCK_FIELD_ID, otp: MOCK_OTP },
+      params: { transactionId: MOCK_TRANSACTION_ID },
+    })
+    const MOCK_TRANSACTION = new Verification({ formId: new ObjectId() })
 
     afterEach(() => jest.clearAllMocks())
 
     beforeAll(() => {
-      mockReq = expressHandler.mockRequest({
-        body: { fieldId: MOCK_FIELD_ID, otp: MOCK_OTP },
-        params: { transactionId: MOCK_TRANSACTION_ID },
-      })
-      transaction = new Verification({ formId: new ObjectId() })
       MockVfnService.getTransaction.mockReturnValue(
-        Promise.resolve(transaction),
+        Promise.resolve(MOCK_TRANSACTION),
       )
     })
 
     it('should call service correctly when params are valid', async () => {
       MockVfnService.verifyOtp.mockReturnValue(Promise.resolve(MOCK_DATA))
-      await verifyOtp(mockReq, MOCK_RES, noop)
+      await verifyOtp(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
       expect(MockVfnService.verifyOtp).toHaveBeenCalledWith(
-        transaction,
+        MOCK_TRANSACTION,
         MOCK_FIELD_ID,
         MOCK_OTP,
       )
@@ -273,12 +260,12 @@ describe('Verification controller', () => {
         error.name = invalidOtpError
         throw error
       })
-      await verifyOtp(mockReq, MOCK_RES, noop)
+      await verifyOtp(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
       expect(MockVfnService.verifyOtp).toHaveBeenCalledWith(
-        transaction,
+        MOCK_TRANSACTION,
         MOCK_FIELD_ID,
         MOCK_OTP,
       )

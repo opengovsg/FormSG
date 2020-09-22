@@ -22,7 +22,7 @@ const createNumberFieldSchema = () => {
       },
       selectedValidation: {
         type: String,
-        enum: Object.values(NumberSelectedValidation).concat([null]),
+        enum: [...Object.values(NumberSelectedValidation), null],
         default: null,
       },
     },

@@ -6,10 +6,11 @@ import {
   ILogicSchema,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
+  LogicConditionState,
   LogicType,
 } from '../../types'
 
-type GroupedLogic = Record<IClientFieldSchema['_id'], IConditionSchema[][]>
+type GroupedLogic = Record<string, IConditionSchema[][]>
 type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
@@ -31,11 +32,13 @@ const isPreventSubmitLogic = (
 }
 
 /**
- * Parse logic into a map of fields that are shown/hidden depending on the values of other fields
- * Discards invalid logic, where the id in show or conditions do not exist in form_field
+ * Parse logic into a map of fields that are shown/hidden depending on the
+ * values of other fields.
+ * Discards invalid logic, where the id in show or conditions do not exist in
+ * the form_field.
  *
- * Example:
-  Show Email (_id: 1001) and Number (_id: 1002) if Dropdown (_id: 1003) is "Option 1" and Yes_No (_id: 1004) is "Yes"
+ * @example
+ * Show Email (_id: 1001) and Number (_id: 1002) if Dropdown (_id: 1003) is "Option 1" and Yes_No (_id: 1004) is "Yes"
   Then,
   form_logics: [
     {
@@ -54,30 +57,24 @@ const isPreventSubmitLogic = (
     "1002": [ [{field: "1003", ifValueType: "single-select", state: "is equals to", value: "Option 1"},
         {field: "1004", ifValueType: "single-select", state: "is equals to", value: "Yes"}] ]
   }
-
-  If "1001" is deleted, "1002" will still be rendered since we just won't add "1001" into logicUnitsGroupedByField
+ * @caption If "1001" is deleted, "1002" will still be rendered since we just won't add "1001" into logicUnitsGroupedByField
  *
- * @param {Object} form
- * @param {Mongoose.ObjectId} form._id : id of form
- * @param {Array} form.form_logics : An array of objects containing the conditions and ids of fields to be displayed. See FormLogicSchema
- * @param {Array} form.form_fields : An array of form fields containing the ids of the fields
- * @returns {Object} Object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
+ * @param form the form object to group its logic by field for
+ * @returns an object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
  */
 export const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
   const formId = form._id
-  const formLogics = form.form_logics.filter(isShowFieldsLogic)
+  const formLogics = form.form_logics?.filter(isShowFieldsLogic) ?? []
   const formFieldIds = new Set(
-    form.form_fields.map((field) => String(field._id)),
+    form.form_fields?.map((field) => String(field._id)),
   )
 
-  /**
-   * @type {Object.<string, Array<Array<ConditionSchema>>>} An index of logic units keyed by the field id to be shown. See FormLogicSchema
-   */
+  /** An index of logic units keyed by the field id to be shown. */
   const logicUnitsGroupedByField: GroupedLogic = {}
 
   let hasInvalidLogic = false
   formLogics.forEach(function (logicUnit) {
-    // Only add fields with valid logic conditions to the returned map
+    // Only add fields with valid logic conditions to the returned map.
     if (allConditionsExist(logicUnit.conditions, formFieldIds)) {
       logicUnit.show.forEach(function (fieldId) {
         fieldId = String(fieldId)
@@ -98,54 +95,55 @@ export const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
 }
 
 /**
- * Parse logic to get a list of conditions where, if any condition in this list is
- * fulfilled, form submission is prevented.
- * @param {Object} form Form object
- * @returns {Array} Array of conditions to prevent submission
+ * Parse logic to get a list of conditions where, if any condition in this list
+ * is fulfilled, form submission is prevented.
+ * @param form the form document to check
+ * @returns array of conditions that prevent submission, can be empty
  */
 const getPreventSubmitConditions = (
   form: IForm,
 ): IPreventSubmitLogicSchema[] => {
   const formFieldIds = new Set(
-    form.form_fields.map((field) => String(field._id)),
+    form.form_fields?.map((field) => String(field._id)),
   )
-  return form.form_logics.filter((formLogic) => {
-    return (
-      isPreventSubmitLogic(formLogic) &&
-      allConditionsExist(formLogic.conditions, formFieldIds)
-    )
-  })
+  const preventFormLogics =
+    form.form_logics?.filter(
+      (formLogic) =>
+        isPreventSubmitLogic(formLogic) &&
+        allConditionsExist(formLogic.conditions, formFieldIds),
+    ) ?? []
+
+  return preventFormLogics
 }
 
 /**
  * Determines whether the submission should be prevented by form logic. If so,
  * return the condition preventing the submission. If not, return undefined.
- * @param {Array} submission - form_fields (on client), or req.body.responses (on server)
- * @param {Object} form Form object
- * @param {Set} [visibleFieldIds] Optional set of currently visible fields. If this is not
- * provided, the function recomputes it.
- * @returns {Object} Condition if submission is to prevented, otherwise undefined
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param form the form document for the submission
+ * @param optionalVisibleFieldIds the optional set of currently visible fields. If this is not provided, it will be recomputed using the given form parameter.
+ * @returns a condition if submission is to prevented, otherwise `undefined`
  */
 export const getLogicUnitPreventingSubmit = (
   submission: LogicFieldArray,
   form: IForm,
   visibleFieldIds?: FieldIdSet,
-): IPreventSubmitLogicSchema => {
+): IPreventSubmitLogicSchema | undefined => {
   if (!visibleFieldIds) {
     visibleFieldIds = getVisibleFieldIds(submission, form)
   }
   const preventSubmitConditions = getPreventSubmitConditions(form)
   return preventSubmitConditions.find((logicUnit) =>
-    isLogicUnitSatisfied(submission, logicUnit.conditions, visibleFieldIds),
+    // TODO (#317): remove usage of non-null assertion
+    isLogicUnitSatisfied(submission, logicUnit.conditions, visibleFieldIds!),
   )
 }
 
 /**
- * Checks if the field ids in logic's conditions all exist in the fieldIds
- *
- * @param {Array} conditions
- * @param {Set} formFieldIds
- * @returns {Boolean}
+ * Checks if the field ids in logic's conditions all exist in the fieldIds.
+ * @param conditions the list of conditions to check
+ * @param formFieldIds the set of form field ids to check
+ * @returns true if every condition's related form field id exists in the set of formFieldIds, false otherwise.
  */
 const allConditionsExist = (
   conditions: IConditionSchema[],
@@ -158,13 +156,12 @@ const allConditionsExist = (
 
 /**
  * Gets the IDs of visible fields in a form according to its responses.
- * This function loops through all the form fields until the set of visible fields no longer
- * changes. The first loop adds all the fields with no conditions attached, the second adds
- * fields which are made visible due to fields added in the previous loop, and so on.
- * @param {Array} submission - form_fields (on client), or req.body.responses (on server)
- * @param {Object} form - Form object
- * @var {Array} logicUnits - Array of logic units
- * @returns {Set} Set of IDs of visible fields
+ * This function loops through all the form fields until the set of visible
+ * fields no longer changes. The first loop adds all the fields with no
+ * conditions attached, the second adds fields which are made visible due to fields added in the previous loop, and so on.
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param form the form document for the submission
+ * @returns a set of IDs of visible fields in the submission
  */
 export const getVisibleFieldIds = (
   submission: LogicFieldArray,
@@ -176,10 +173,12 @@ export const getVisibleFieldIds = (
   let changesMade = true
   while (changesMade) {
     changesMade = false
-    form.form_fields.forEach((field) => {
+    form.form_fields?.forEach((field) => {
       const logicUnits = logicUnitsGroupedByField[String(field._id)]
-      // If a field's visibility does not have any conditions, it is always visible.
-      // Otherwise, a field's visibility can be toggled by a combination of conditions.
+      // If a field's visibility does not have any conditions, it is always
+      // visible.
+      // Otherwise, a field's visibility can be toggled by a combination of
+      // conditions.
       // Eg. the following are logicUnits - just one of them has to be satisfied
       // 1) Show X if Y=yes and Z=yes
       // Or
@@ -201,9 +200,10 @@ export const getVisibleFieldIds = (
 
 /**
  * Checks if an array of conditions is satisfied.
- * @param {Object} submission - form_fields (on client), or req.body.responses (on server)
- * @param {Object} logicUnit - Object containing the conditions specified in a single modal of `add new logic` on the form logic tab
- * @param {Set} visibleFieldIds - Set of field IDs that are visible, which is used to ensure that conditions are visible
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param logicUnit an object containing the conditions specified in a single modal of `add new logic` on the form logic tab
+ * @param visibleFieldIds the set of field IDs that are visible, which is used to ensure that conditions are visible
+ * @returns true if all the conditions are satisfied, false otherwise
  */
 const isLogicUnitSatisfied = (
   submission: LogicFieldArray,
@@ -220,7 +220,9 @@ const isLogicUnitSatisfied = (
   })
 }
 
-const getCurrentValue = (field: LogicField): string => {
+const getCurrentValue = (
+  field: LogicField,
+): string | null | undefined | string[] => {
   if ('fieldValue' in field) {
     // client
     return field.fieldValue
@@ -250,11 +252,16 @@ const isConditionFulfilled = (
     currentValue.length === 0
   ) {
     return false
-  } else if (
-    condition.state === 'is equals to' ||
-    condition.state === 'is either'
+  }
+
+  if (
+    condition.state === LogicConditionState.Equal ||
+    condition.state === LogicConditionState.Either
   ) {
-    const conditionValues = [].concat(condition.value).map(String) // condition.value can be a string (is equals to), or an array (is either)
+    // condition.value can be a string (is equals to), or an array (is either)
+    const conditionValues = ([] as unknown[])
+      .concat(condition.value)
+      .map(String)
     currentValue = String(currentValue)
     /*
     Handling 'Others' for radiobutton
@@ -293,16 +300,16 @@ const isConditionFulfilled = (
 }
 
 /**
- * Find the field in the current submission corresponding to the condition to be checked
- *
- * @param {Array} submission - form_fields (on client), or req.body.responses (on server)
- * @param {String} fieldId - id of condition field
- * @returns
+ * Find the field in the current submission corresponding to the condition to be
+ * checked.
+ * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
+ * @param fieldId the id of condition field to find
+ * @returns the condition field if it exists, `undefined` otherwise
  */
 const findConditionField = (
   submission: LogicFieldArray,
   fieldId: IConditionSchema['field'],
-): LogicField => {
+): LogicField | undefined => {
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
   )

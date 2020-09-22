@@ -22,7 +22,7 @@ export const post = (
   // There should only be a webhook service, which is called within the submission controller
   // This will also remove the need for retrieval of form/submission from req.
   const { form, submission } = req
-  const webhookUrl = form.webhook.url
+  const webhookUrl = form.webhook?.url
   const submissionWebhookView = submission.getWebhookView()
   if (webhookUrl) {
     // Note that we push data to webhook endpoints on a best effort basis
