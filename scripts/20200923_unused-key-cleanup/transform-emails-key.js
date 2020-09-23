@@ -9,7 +9,7 @@ db.getCollection('forms').find({ responseMode: 'email' }).count()
 
 // Check total forms count with responseMode email and emails as an array 
 // ~ Should be the same number as the total number of email mode forms
-db.getCollection('forms').find({ responseMode: 'email', "emails": { $type: "array" } }).count()
+db.getCollection('forms').find({ responseMode: 'email', emails: { $type: 'array' } }).count()
 
 // Check total forms count with responseMode email and emails with delimiter ; 
 db.getCollection('forms').find({ emails: { $regex: /;/ }, responseMode: 'email' }).count()
@@ -72,7 +72,7 @@ db.getCollection('forms').find({ responseMode: 'email' }).count()
 
 // Check total forms count with responseMode email and emails as an array 
 // ~ Should be the same number as the total number of email mode forms
-db.getCollection('forms').find({ responseMode: 'email', "emails": { $type: "array" } }).count()
+db.getCollection('forms').find({ responseMode: 'email', emails: { $type: 'array' } }).count()
 
 // Check total forms count with responseMode email and emails with delimiter ; 
 // ~ should be zero
@@ -84,7 +84,6 @@ db.getCollection('forms').find({ emails: { $regex: /,/ }, responseMode: 'email' 
 
 // Check total forms count with responseMode email and emails in correct format
 // ~ Should be the same number as the total number of email mode forms
-// eslint-disable-line
 let isValidCountAfter = 0
 db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
   let isValid = form.emails.every((email) => {
