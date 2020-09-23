@@ -253,9 +253,9 @@ const send = async (
 
 /**
  * Gets the correct twilio client for the form and sends an otp to a valid phonenumber
- * @param recipient The phone number to send to.
- * @param otp The OTP to send.
- * @param formId Form id for logging.
+ * @param recipient The phone number to send to
+ * @param otp The OTP to send
+ * @param formId Form id for retrieving otp data.
  *
  */
 export const sendVerificationOtp = async (
