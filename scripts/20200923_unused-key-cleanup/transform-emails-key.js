@@ -17,6 +17,17 @@ db.getCollection('forms').find({ emails: { $regex: /;/ }, responseMode: 'email' 
 // Check total forms count with responseMode email and emails with delimiter ,
 db.getCollection('forms').find({ emails: { $regex: /,/ }, responseMode: 'email' }).count()
 
+// Check total forms count with responseMode email and emails in correct format
+let isValidCountBefore = 0 
+db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
+  let isValid = form.emails.every((email) => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    return re.test(email)
+  })
+  isValidCountBefore += (isValid ? 1 : 0)
+})
+print('isValidCountBefore', isValidCountBefore)
+
 // !!!! MAIN UPDATE SCRIPT !!!!
 
 // Cases
@@ -35,7 +46,7 @@ db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
     .join(',')
     .replace(/;/g, ',')
     .split(',')
-    .map(item => item.trim())
+    .map(item => item.trim().toLowerCase())
     .filter((email) => email.includes('@')) // remove ""
   requests.push({
     updateOne: {
@@ -70,3 +81,16 @@ db.getCollection('forms').find({ emails: { $regex: /;/ }, responseMode: 'email' 
 // Check total forms count with responseMode email and emails with delimiter ,
 // ~ should be zero
 db.getCollection('forms').find({ emails: { $regex: /,/ }, responseMode: 'email' }).count()
+
+// Check total forms count with responseMode email and emails in correct format
+// ~ Should be the same number as the total number of email mode forms
+// eslint-disable-line
+let isValidCountAfter = 0
+db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
+  let isValid = form.emails.every((email) => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    return re.test(email)
+  })
+  isValidCountAfter += (isValid ? 1 : 0)
+})
+print('isValidCountAfter', isValidCountAfter)
