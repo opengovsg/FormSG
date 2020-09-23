@@ -123,6 +123,12 @@ export const handleContactVerifyOtp: RequestHandler<
   )
 }
 
+/**
+ * Retrieves and returns the session user from the database.
+ * @route GET /
+ * @returns 200 with the retrieved user if session user is valid
+ * @returns 500 when user cannot be found or database errors occurs
+ */
 export const handleFetchUser: RequestHandler = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
   if (!sessionUserId) {
