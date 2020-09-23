@@ -56,12 +56,12 @@ db.getCollection('submissions').find({ submissionType: 'emailSubmission' }).forE
   })
   if (requests.length === 500) {
     //Execute per 500 operations and re-init
-    db.collection.bulkWrite(requests);
+    db.getCollection('submissions').bulkWrite(requests);
     requests = [];
   }
 })
 if (requests.length > 0) {
-  db.collection.bulkWrite(requests);
+  db.getCollection('submissions').bulkWrite(requests);
 }
 
 // !!!! END MAIN UPDATE SCRIPT !!!!

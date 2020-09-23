@@ -56,12 +56,12 @@ db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
   })
   if (requests.length === 500) {
     //Execute per 500 operations and re-init
-    db.collection.bulkWrite(requests);
+    db.getCollection('forms').bulkWrite(requests);
     requests = [];
   }
 })
 if (requests.length > 0) {
-  db.collection.bulkWrite(requests);
+  db.getCollection('forms').bulkWrite(requests);
 }
 
 // !!!! END MAIN UPDATE SCRIPT !!!!
