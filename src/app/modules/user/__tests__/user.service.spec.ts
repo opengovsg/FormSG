@@ -246,29 +246,32 @@ describe('user.service', () => {
       expect(user.contact).toBeUndefined()
 
       // Act
-      const updatedUser = await UserService.updateUserContact(
+      const actualResult = await UserService.updateUserContact(
         MOCK_CONTACT,
         user._id,
       )
 
       // Assert
-      expect(updatedUser.contact).toEqual(MOCK_CONTACT)
+      expect(actualResult.isOk()).toEqual(true)
+      const actualUser = actualResult._unsafeUnwrap()
+      expect(actualUser.contact).toEqual(MOCK_CONTACT)
       // Returned document's agency should be populated.
-      expect(updatedUser.agency.toObject()).toEqual(defaultAgency)
+      expect(actualUser.agency.toObject()).toEqual(defaultAgency)
     })
 
-    it('should throw error if userId is invalid', async () => {
+    it('should return MissingUserError if userId is invalid', async () => {
       // Arrange
       const invalidUserId = new ObjectID()
 
       // Act
-      const updatePromise = UserService.updateUserContact(
+      const actualResult = await UserService.updateUserContact(
         MOCK_CONTACT,
         invalidUserId,
       )
 
       // Assert
-      await expect(updatePromise).rejects.toThrowError('User id is invalid')
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
     })
   })
 

@@ -111,26 +111,50 @@ export const verifyContactOtp = (
  * the populated updated user.
  * @param contact the contact to update
  * @param userId the user id of the user document to update
- * @returns the updated user with populated references
- * @throws error if any db actions fail
+ * @returns ok(updated user) with populated references
+ * @returns err(MissingUserError) if user document cannot be found
+ * @returns err(DatabaseError) if any error occurs whilst querying the database
  */
-export const updateUserContact = async (
+export const updateUserContact = (
   contact: string,
   userId: IUserSchema['_id'],
-): Promise<IPopulatedUser> => {
-  // Retrieve user from database.
+): ResultAsync<IPopulatedUser, MissingUserError | DatabaseError> => {
+  // Retrieve user from database and.
   // Update user's contact details.
-  const admin = await UserModel.findById(userId).populate({
-    path: 'agency',
-    model: AGENCY_SCHEMA_ID,
-  })
-  if (!admin) {
-    throw new Error('User id is invalid')
-  }
+  return ResultAsync.fromPromise(
+    UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          contact,
+          updatedAt: new Date(),
+        },
+      },
+      { new: true },
+    )
+      .populate({
+        path: 'agency',
+        model: AGENCY_SCHEMA_ID,
+      })
+      .exec(),
+    (error) => {
+      logger.error({
+        message: 'Database error when updating user contacts',
+        meta: {
+          action: 'updateUserContact',
+          userId,
+        },
+        error,
+      })
 
-  admin.contact = contact
-  admin.updatedAt = new Date()
-  return admin.save()
+      return new DatabaseError()
+    },
+  ).andThen((admin) => {
+    if (!admin) {
+      return errAsync(new MissingUserError())
+    }
+    return okAsync(admin)
+  })
 }
 
 export const getPopulatedUserById = async (
