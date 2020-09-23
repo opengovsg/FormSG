@@ -1,13 +1,16 @@
-import { StatusCodes } from 'http-status-codes'
+import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import SmsFactory from 'src/app/factories/sms.factory'
 import * as UserController from 'src/app/modules/user/user.controller'
 import { InvalidOtpError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
+import { SmsSendError } from 'src/app/services/sms.service'
 import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
+
+import { DatabaseError } from '../../core/core.errors'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/factories/sms.factory')
@@ -34,13 +37,14 @@ describe('user.controller', () => {
         },
       },
     })
+
     it('should return 200 when successful', async () => {
       const mockRes = expressHandler.mockResponse()
       const expectedOtp = '123456'
 
       // Mock UserService and SmsFactory to pass without errors.
-      MockUserService.createContactOtp.mockResolvedValueOnce(expectedOtp)
-      MockSmsFactory.sendAdminContactOtp.mockResolvedValueOnce(true)
+      MockUserService.createContactOtp.mockReturnValueOnce(okAsync(expectedOtp))
+      MockSmsFactory.sendAdminContactOtp.mockReturnValueOnce(okAsync(true))
 
       // Act
       await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
@@ -56,7 +60,7 @@ describe('user.controller', () => {
         expectedOtp,
         MOCK_REQ.body.userId,
       )
-      expect(mockRes.sendStatus).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.sendStatus).toBeCalledWith(200)
     })
 
     it('should return 401 when user id is not in session', async () => {
@@ -78,7 +82,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -109,46 +113,50 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
 
-    it('should return 400 when sending of OTP fails', async () => {
+    it('should return 422 when sending of OTP fails', async () => {
       const mockRes = expressHandler.mockResponse()
-      const expectedError = new Error('mock error')
+      const expectedError = new SmsSendError('mock error')
 
       // Mock UserService to pass without errors.
-      MockUserService.createContactOtp.mockResolvedValueOnce('123456')
-      // Mock SmsFactory to throw error.
-      MockSmsFactory.sendAdminContactOtp.mockRejectedValueOnce(expectedError)
+      MockUserService.createContactOtp.mockReturnValueOnce(okAsync('123456'))
+      // Mock SmsFactory to return error.
+      MockSmsFactory.sendAdminContactOtp.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
 
       // Act
       await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.status).toBeCalledWith(422)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
 
-    it('should return 400 when creating of OTP fails', async () => {
+    it('should return 500 when creating of OTP fails', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedError = new Error('mock error')
+      const expectedError = new DatabaseError('mock error')
 
-      // Mock UserService to throw error.
-      MockUserService.createContactOtp.mockRejectedValueOnce(expectedError)
+      // Mock UserService to return error.
+      MockUserService.createContactOtp.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
 
       // Act
       await UserController.handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -199,7 +207,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.contact,
         MOCK_REQ.body.userId,
       )
-      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.send).toBeCalledWith(MOCK_UPDATED_USER)
     })
 
@@ -223,7 +231,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -255,7 +263,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
@@ -276,7 +284,7 @@ describe('user.controller', () => {
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).toHaveBeenCalledTimes(1)
@@ -313,7 +321,7 @@ describe('user.controller', () => {
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -367,7 +375,7 @@ describe('user.controller', () => {
 
       // Assert
       // Should trigger unauthorized response.
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
     })
 
@@ -381,7 +389,7 @@ describe('user.controller', () => {
       await UserController.handleFetchUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith('Unable to retrieve user')
     })
   })

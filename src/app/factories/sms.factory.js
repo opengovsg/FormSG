@@ -1,6 +1,6 @@
 const twilio = require('twilio')
 const featureManager = require('../../config/feature-manager').default
-const smsService = require('../services/sms.service')
+const SmsService = require('../services/sms.service')
 
 const smsFactory = ({ isEnabled, props }) => {
   let twilioClient
@@ -16,9 +16,9 @@ const smsFactory = ({ isEnabled, props }) => {
   }
 
   return {
-    async sendVerificationOtp(recipient, otp, formId) {
+    sendVerificationOtp(recipient, otp, formId) {
       if (isEnabled) {
-        return smsService.sendVerificationOtp(
+        return SmsService.sendVerificationOtp(
           recipient,
           otp,
           formId,
@@ -30,9 +30,9 @@ const smsFactory = ({ isEnabled, props }) => {
         )
       }
     },
-    async sendAdminContactOtp(recipient, otp, userId) {
+    sendAdminContactOtp(recipient, otp, userId) {
       if (isEnabled) {
-        return smsService.sendAdminContactOtp(
+        return SmsService.sendAdminContactOtp(
           recipient,
           otp,
           userId,

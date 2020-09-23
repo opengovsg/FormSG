@@ -3,6 +3,8 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
+import { getRequestIp } from 'src/app/utils/request'
+
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IPopulatedUser } from '../../../types'
 import SmsFactory from '../../factories/sms.factory'
@@ -14,6 +16,7 @@ import {
   updateUserContact,
   verifyContactOtp,
 } from './user.service'
+import { mapRouteError } from './user.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -38,15 +41,37 @@ export const handleContactSendOtp: RequestHandler<
     return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
   }
 
-  try {
-    const generatedOtp = await createContactOtp(userId, contact)
-    await SmsFactory.sendAdminContactOtp(contact, generatedOtp, userId)
-
-    return res.sendStatus(StatusCodes.OK)
-  } catch (err) {
-    // TODO(#193): Send different error messages according to error.
-    return res.status(StatusCodes.BAD_REQUEST).send(err.message)
+  const logMeta = {
+    action: 'handleContactSendOtp',
+    userId,
+    ip: getRequestIp(req),
   }
+
+  return (
+    // Step 1: Create OTP for contact verification.
+    createContactOtp(userId, contact)
+      // Step 2: Send verification OTP to contact.
+      .andThen((otp) => SmsFactory.sendAdminContactOtp(contact, otp, userId))
+      // Step 3a: Successfully sent OTP.
+      .map(() => {
+        logger.info({
+          message: 'Contact verification OTP sent successfully',
+          meta: logMeta,
+        })
+        return res.sendStatus(StatusCodes.OK)
+      })
+      // Step 3b: Error occurred whilst sending OTP.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error sending contact verification OTP',
+          meta: logMeta,
+          error,
+        })
+
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).send(errorMessage)
+      })
+  )
 }
 
 /**
