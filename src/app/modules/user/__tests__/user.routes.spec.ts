@@ -1,7 +1,10 @@
 import { ObjectId } from 'bson-ext'
-import { errAsync } from 'neverthrow'
+import mongoose from 'mongoose'
+import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
+import getUserModel from 'src/app/models/user.server.model'
+import * as SmsService from 'src/app/services/sms.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
 import { getAuthedSession } from 'tests/integration/helpers/express-auth'
@@ -11,6 +14,8 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { DatabaseError } from '../../core/core.errors'
 import UserRouter from '../user.routes'
 import * as UserService from '../user.service'
+
+const UserModel = getUserModel(mongoose)
 
 const app = setupApp('/user', UserRouter, {
   setupWithAuth: true,
@@ -91,6 +96,138 @@ describe('user.routes', () => {
       expect(retrieveUserSpy).toBeCalled()
       expect(response.status).toEqual(500)
       expect(response.text).toEqual(mockErrorString)
+    })
+  })
+
+  describe('POST /user/contact/sendotp', () => {
+    // Obtained from Twilio's
+    // https://www.twilio.com/blog/2018/04/twilio-test-credentials-magic-numbers.html
+    const VALID_CONTACT = '+15005550006'
+
+    it('should return 400 when body.contact is not provided as a param', async () => {
+      // Act
+      const response = await request.post('/user/contact/sendotp').send({
+        userId: defaultUser.email,
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.text).toEqual('Some required parameters are missing')
+    })
+
+    it('should return 400 when body.userId is not provided as a param', async () => {
+      // Act
+      const response = await request.post('/user/contact/sendotp').send({
+        contact: VALID_CONTACT,
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.text).toEqual('Some required parameters are missing')
+    })
+
+    it('should return 401 when body.userId does not match current session userId', async () => {
+      // Arrange
+      const session = await getAuthedSession(defaultUser.email, request)
+      const invalidUserId = new ObjectId()
+
+      // Act
+      const response = await session.post('/user/contact/sendotp').send({
+        contact: VALID_CONTACT,
+        userId: invalidUserId,
+      })
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.text).toEqual('User is unauthorized.')
+    })
+
+    it('should return 401 when user is not currently logged in', async () => {
+      // Act
+      // POSTing without first logging in.
+      const response = await request.post('/user/contact/sendotp').send({
+        contact: VALID_CONTACT,
+        userId: defaultUser._id,
+      })
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.text).toEqual('User is unauthorized.')
+    })
+
+    it('should return 200 when otp is sent successfully', async () => {
+      // Arrange
+      const session = await getAuthedSession(defaultUser.email, request)
+      const sendSmsOtpSpy = jest
+        .spyOn(SmsService, 'sendAdminContactOtp')
+        .mockReturnValueOnce(okAsync(true))
+
+      // Act
+      const response = await session.post('/user/contact/sendotp').send({
+        contact: VALID_CONTACT,
+        userId: defaultUser._id,
+      })
+
+      // Assert
+      expect(sendSmsOtpSpy).toHaveBeenCalled()
+      expect(response.status).toEqual(200)
+      expect(response.text).toEqual('OK')
+    })
+
+    it('should return 500 when creating an OTP returns a database error', async () => {
+      // Arrange
+      const session = await getAuthedSession(defaultUser.email, request)
+      const mockErrorString = 'Big database oof'
+      const createOtpSpy = jest
+        .spyOn(UserService, 'createContactOtp')
+        .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
+
+      // Act
+      const response = await session.post('/user/contact/sendotp').send({
+        contact: VALID_CONTACT,
+        userId: defaultUser._id,
+      })
+
+      // Assert
+      expect(createOtpSpy).toBeCalled()
+      expect(response.status).toEqual(500)
+      expect(response.text).toEqual(mockErrorString)
+    })
+
+    it('should return 422 when userId cannot be found in the database', async () => {
+      // Arrange
+      const session = await getAuthedSession(defaultUser.email, request)
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await session.post('/user/contact/sendotp').send({
+        contact: VALID_CONTACT,
+        userId: defaultUser._id,
+      })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.text).toEqual('User not found')
+    })
+
+    it('should return 422 when OTP fails to be sent', async () => {
+      // Arrange
+      const session = await getAuthedSession(defaultUser.email, request)
+      const sendSmsOtpSpy = jest
+        .spyOn(SmsService, 'sendAdminContactOtp')
+        .mockReturnValueOnce(errAsync(new SmsService.SmsSendError()))
+
+      // Act
+      const response = await session.post('/user/contact/sendotp').send({
+        contact: VALID_CONTACT,
+        userId: defaultUser._id,
+      })
+
+      // Assert
+      expect(sendSmsOtpSpy).toHaveBeenCalled()
+      expect(response.status).toEqual(422)
+      expect(response.text).toEqual('Failed to send SMS')
     })
   })
 })

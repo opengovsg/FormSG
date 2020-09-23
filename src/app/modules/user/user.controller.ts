@@ -22,7 +22,10 @@ const logger = createLoggerWithLabel(module)
  * Generates an OTP and sends the OTP to the given contact in request body.
  * @route POST /contact/sendotp
  * @returns 200 if OTP was successfully sent
- * @returns 400 on OTP creation or SMS send failure
+ * @returns 401 if user id does not match current session user or if user is not currently logged in
+ * @returns 422 on OTP creation or SMS send failure
+ * @returns 422 if user id does not exist in the database
+ * @returns 500 if database errors occurs
  */
 export const handleContactSendOtp: RequestHandler<
   ParamsDictionary,
@@ -77,6 +80,7 @@ export const handleContactSendOtp: RequestHandler<
  * number if the hash matches.
  * @route POST /contact/verifyotp
  * @returns 200 when user contact update success
+ * @returns 401 if user id does not match current session user or if user is not currently logged in
  * @returns 422 when OTP is invalid
  * @returns 500 when OTP is malformed or for unknown errors
  */
@@ -127,6 +131,7 @@ export const handleContactVerifyOtp: RequestHandler<
  * Retrieves and returns the session user from the database.
  * @route GET /
  * @returns 200 with the retrieved user if session user is valid
+ * @returns 401 if user is not currently logged in
  * @returns 500 when user cannot be found or database errors occurs
  */
 export const handleFetchUser: RequestHandler = async (req, res) => {
