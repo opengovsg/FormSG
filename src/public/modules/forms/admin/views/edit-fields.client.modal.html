@@ -628,7 +628,9 @@
           </div>
         </div>
 
-        <div ng-show="vm.field.fieldType === 'email'">
+        <div
+          ng-show="vm.field.fieldType === 'email' && vm.field.hasAllowedEmailDomains"
+        >
           <br />
           <div class="row label-custom label-medium">
             <div class="col-md-12">
