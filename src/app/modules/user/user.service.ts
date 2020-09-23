@@ -1,27 +1,31 @@
 import to from 'await-to-js'
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import getAdminVerificationModel from '../../../app/models/admin_verification.server.model'
 import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
 import getUserModel from '../../../app/models/user.server.model'
-import { generateOtp } from '../../../app/utils/otp'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IAgency, IPopulatedUser, IUserSchema } from '../../../types'
+import { hashData } from '../../utils/hash'
+import { generateOtp } from '../../utils/otp'
 import { InvalidDomainError } from '../auth/auth.errors'
-import { DatabaseError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 
-import { InvalidOtpError, MalformedOtpError } from './user.errors'
+import {
+  InvalidOtpError,
+  MalformedOtpError,
+  MissingUserError,
+} from './user.errors'
 
 const logger = createLoggerWithLabel(module)
 
 const AdminVerificationModel = getAdminVerificationModel(mongoose)
 const UserModel = getUserModel(mongoose)
 
-const DEFAULT_SALT_ROUNDS = 10
 export const MAX_OTP_ATTEMPTS = 10
 
 /**
@@ -31,28 +35,28 @@ export const MAX_OTP_ATTEMPTS = 10
  * @returns the generated OTP if saving into DB is successful
  * @throws error if any error occur whilst creating the OTP or insertion of OTP into the database.
  */
-export const createContactOtp = async (
+export const createContactOtp = (
   userId: IUserSchema['_id'],
   contact: string,
-): Promise<string> => {
-  // Verify existence of userId
-  const admin = await UserModel.findById(userId)
-  if (!admin) {
-    throw new Error('User id is invalid')
-  }
-
+): ResultAsync<string, ApplicationError | DatabaseError | MissingUserError> => {
   const otp = generateOtp()
-  const hashedOtp = await bcrypt.hash(otp, DEFAULT_SALT_ROUNDS)
-  const hashedContact = await bcrypt.hash(contact, DEFAULT_SALT_ROUNDS)
-
-  await AdminVerificationModel.upsertOtp({
-    admin: userId,
-    expireAt: new Date(Date.now() + config.otpLifeSpan),
-    hashedContact,
-    hashedOtp,
-  })
-
-  return otp
+  // Step 1: Verify existence of userId.
+  return (
+    findAdminById(userId)
+      // Step 2: Hash OTP and contact number.
+      .andThen(() => hashOtpAndContact(otp, contact))
+      // Step 3: Upsert hashed data into database..
+      .andThen(({ hashedOtp, hashedContact }) =>
+        upsertContactOtp({
+          admin: userId,
+          expireAt: new Date(Date.now() + config.otpLifeSpan),
+          hashedContact,
+          hashedOtp,
+        }),
+      )
+      // Step 4: Return generated OTP.
+      .map(() => otp)
+  )
 }
 
 /**
@@ -192,6 +196,68 @@ export const retrieveUser = (
           action: 'retrieveUser',
           email,
           agencyId,
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  )
+}
+
+// Private helper functions
+const findAdminById = (
+  userId: string,
+): ResultAsync<IUserSchema, MissingUserError | DatabaseError> => {
+  return ResultAsync.fromPromise(UserModel.findById(userId).exec(), (error) => {
+    logger.error({
+      message: 'Database find user error',
+      meta: {
+        action: 'findAdminById',
+        userId,
+      },
+      error,
+    })
+    return new DatabaseError()
+  }).andThen((admin) => {
+    if (!admin) {
+      return errAsync(new MissingUserError())
+    }
+    return okAsync(admin)
+  })
+}
+
+const hashOtpAndContact = (
+  otp: string,
+  contact: string,
+  logMeta?: Record<string, unknown>,
+) => {
+  return (
+    // Step 1: Hash OTP.
+    hashData(otp, logMeta)
+      // Step 2: Hash contact.
+      .andThen((hashedOtp) =>
+        hashData(contact, logMeta)
+          // If successful, return both hashedOtp and hashedContact.
+          .map((hashedContact) => ({
+            hashedOtp,
+            hashedContact,
+          })),
+      )
+  )
+}
+
+const upsertContactOtp = (
+  params: Parameters<typeof AdminVerificationModel.upsertOtp>[0],
+) => {
+  return ResultAsync.fromPromise(
+    AdminVerificationModel.upsertOtp(params),
+    (error) => {
+      logger.error({
+        message: 'Database upsert contact OTP error',
+        meta: {
+          action: 'upsertContactOtp',
+          admin: params.admin,
         },
         error,
       })

@@ -16,3 +16,9 @@ export class MalformedOtpError extends ApplicationError {
     super(message, StatusCodes.INTERNAL_SERVER_ERROR, meta)
   }
 }
+
+export class MissingUserError extends ApplicationError {
+  constructor(message = 'User not found') {
+    super(message, StatusCodes.BAD_REQUEST)
+  }
+}

@@ -1,16 +1,21 @@
 import { ObjectID } from 'bson'
 import MockDate from 'mockdate'
 import mongoose from 'mongoose'
+import { errAsync, okAsync } from 'neverthrow'
 import { ImportMock } from 'ts-mock-imports'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { InvalidDomainError } from 'src/app/modules/auth/auth.errors'
 import * as UserService from 'src/app/modules/user/user.service'
+import * as HashUtils from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema, IPopulatedUser, IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
+import { ApplicationError } from '../../core/core.errors'
+import { MissingUserError } from '../user.errors'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
 const UserModel = getUserModel(mongoose)
@@ -29,7 +34,10 @@ describe('user.service', () => {
   let defaultAgency: IAgencySchema
   let defaultUser: IUserSchema
 
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    ImportMock.mockFunction(OtpUtils, 'generateOtp', MOCK_OTP)
+  })
   beforeEach(async () => {
     // Insert user into collections.
     const { agency, user } = await dbHandler.insertFormCollectionReqs({
@@ -40,38 +48,66 @@ describe('user.service', () => {
     defaultAgency = agency.toObject()
     defaultUser = user.toObject()
   })
-  afterEach(async () => await dbHandler.clearDatabase())
+  afterEach(async () => {
+    await dbHandler.clearDatabase()
+    jest.restoreAllMocks()
+  })
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('createContactOtp', () => {
     it('should create a new AdminVerification document and return otp', async () => {
       // Arrange
-      // All calls to generateOtp will return MOCK_OTP.
-      ImportMock.mockFunction(OtpUtils, 'generateOtp', MOCK_OTP)
       // Should have no documents prior to this.
       await expect(AdminVerification.countDocuments()).resolves.toEqual(0)
 
       // Act
-      const actualOtp = await UserService.createContactOtp(
+      const actualResult = await UserService.createContactOtp(
         USER_ID,
         MOCK_CONTACT,
       )
 
       // Assert
-      expect(actualOtp).toEqual(MOCK_OTP)
+      expect(actualResult.isOk()).toBe(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_OTP)
       // An AdminVerification document should have been created.
       // Tests on the schema will be done in the schema's tests.
       await expect(AdminVerification.countDocuments()).resolves.toEqual(1)
     })
 
-    it('should throw error when userId is invalid', async () => {
+    it('should return MissingUserError when userId is invalid', async () => {
       // Arrange
       const invalidUserId = new ObjectID()
 
-      // Act + Assert
-      await expect(
-        UserService.createContactOtp(invalidUserId, MOCK_CONTACT),
-      ).rejects.toThrowError('User id is invalid')
+      // Act
+      const actualResult = await UserService.createContactOtp(
+        invalidUserId,
+        MOCK_CONTACT,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
+    })
+
+    it('should return ApplicationError when hash fails', async () => {
+      // Arrange
+      // Should have no documents prior to this.
+      await expect(AdminVerification.countDocuments()).resolves.toEqual(0)
+      // First hash succeeds, second hash fails.
+      jest
+        .spyOn(HashUtils, 'hashData')
+        .mockReturnValueOnce(okAsync('some hash'))
+        .mockReturnValueOnce(errAsync(new ApplicationError()))
+
+      // Act
+      const actualResult = await UserService.createContactOtp(
+        USER_ID,
+        MOCK_CONTACT,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
     })
   })
 
