@@ -368,7 +368,7 @@ describe('user.controller', () => {
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
     })
 
-    it('should return 500 when MissingUserError is returned when retrieving user', async () => {
+    it('should return 422 when MissingUserError is returned when retrieving user', async () => {
       // Arrange
       // Mock resolve to null.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
@@ -380,7 +380,7 @@ describe('user.controller', () => {
       await UserController.handleFetchUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.status).toBeCalledWith(422)
       expect(mockRes.send).toBeCalledWith('User not found')
     })
   })

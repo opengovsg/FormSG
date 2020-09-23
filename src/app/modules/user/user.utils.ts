@@ -27,7 +27,7 @@ export const mapRouteError = (
       }
     case UserErrors.MissingUserError:
       return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
     case SmsSendError:
