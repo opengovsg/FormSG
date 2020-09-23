@@ -3,7 +3,10 @@ import { mocked } from 'ts-jest/utils'
 
 import SmsFactory from 'src/app/factories/sms.factory'
 import * as UserController from 'src/app/modules/user/user.controller'
-import { InvalidOtpError } from 'src/app/modules/user/user.errors'
+import {
+  InvalidOtpError,
+  MissingUserError,
+} from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { SmsSendError } from 'src/app/services/sms.service'
 import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
@@ -183,14 +186,15 @@ describe('user.controller', () => {
         },
       },
     })
+
     it('should return 200 with updated user when successful', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
 
       // Mock all UserService calls to pass.
-      MockUserService.verifyContactOtp.mockResolvedValueOnce(true)
-      MockUserService.updateUserContact.mockResolvedValueOnce(
-        MOCK_UPDATED_USER as IUserSchema,
+      MockUserService.verifyContactOtp.mockReturnValueOnce(okAsync(true))
+      MockUserService.updateUserContact.mockReturnValueOnce(
+        okAsync(MOCK_UPDATED_USER as IUserSchema),
       )
 
       // Act
@@ -270,15 +274,17 @@ describe('user.controller', () => {
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when updating user contact fails', async () => {
+    it('should return 500 when updating user contact fails due to a database error', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedError = new Error('mock update error')
+      const expectedError = new DatabaseError('mock update error')
 
       // Mock verify to pass.
-      MockUserService.verifyContactOtp.mockResolvedValueOnce(true)
+      MockUserService.verifyContactOtp.mockReturnValueOnce(okAsync(true))
       // Mock update to fail.
-      MockUserService.updateUserContact.mockRejectedValueOnce(expectedError)
+      MockUserService.updateUserContact.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
 
       // Act
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
@@ -295,33 +301,16 @@ describe('user.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const expectedError = new InvalidOtpError('mock error')
 
-      // Mock UserService to throw error.
-      MockUserService.verifyContactOtp.mockRejectedValueOnce(expectedError)
+      // Mock UserService to return error.
+      MockUserService.verifyContactOtp.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
 
       // Act
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(expectedError.status)
-      expect(mockRes.send).toBeCalledWith(expectedError.message)
-      expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
-      expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
-    })
-
-    it('should return 500 when verifying contact throws non-ApplicationError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      // Non ApplicationError instantiation.
-      const expectedError = new Error('mock error')
-
-      // Mock UserService to throw error.
-      MockUserService.verifyContactOtp.mockRejectedValueOnce(expectedError)
-
-      // Act
-      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -348,8 +337,8 @@ describe('user.controller', () => {
       }
 
       // Mock resolved value.
-      MockUserService.getPopulatedUserById.mockResolvedValueOnce(
-        mockPopulatedUser as IPopulatedUser,
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(mockPopulatedUser as IPopulatedUser),
       )
 
       // Act
@@ -379,10 +368,12 @@ describe('user.controller', () => {
       expect(mockRes.send).toBeCalledWith('User is unauthorized.')
     })
 
-    it('should return 500 when retrieved user is null', async () => {
+    it('should return 500 when MissingUserError is returned when retrieving user', async () => {
       // Arrange
       // Mock resolve to null.
-      MockUserService.getPopulatedUserById.mockResolvedValueOnce(null)
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError()),
+      )
       const mockRes = expressHandler.mockResponse()
 
       // Act
@@ -390,7 +381,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.send).toBeCalledWith('Unable to retrieve user')
+      expect(mockRes.send).toBeCalledWith('User not found')
     })
   })
 })
