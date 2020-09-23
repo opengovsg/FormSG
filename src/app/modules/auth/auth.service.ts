@@ -10,6 +10,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
+import { hashData } from '../../utils/hash'
 import { generateOtp } from '../../utils/otp'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
@@ -19,7 +20,6 @@ const logger = createLoggerWithLabel(module)
 const TokenModel = getTokenModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
-const DEFAULT_SALT_ROUNDS = 10
 export const MAX_OTP_ATTEMPTS = 10
 
 /**
@@ -94,7 +94,7 @@ export const createLoginOtp = (
 
   return (
     // Step 1: Hash OTP.
-    hashOtp(otp, { email })
+    hashData(otp, { email })
       // Step 2: Upsert otp hash into database.
       .andThen((hashedOtp) => upsertOtp(email, hashedOtp))
       // Step 3: Return generated OTP.
@@ -132,30 +132,6 @@ export const verifyLoginOtp = (
 }
 
 // Private helper functions
-/**
- * Hashes the given otp.
- * @param otpToHash the otp to hash
- * @param logMeta additional metadata for logging, if available
- * @returns ok(hashed otp) if the hashing was successful
- * @returns err(ApplicationError) if hashing error occurs
- */
-const hashOtp = (otpToHash: string, logMeta: Record<string, unknown> = {}) => {
-  return ResultAsync.fromPromise(
-    bcrypt.hash(otpToHash, DEFAULT_SALT_ROUNDS),
-    (error) => {
-      logger.error({
-        message: 'bcrypt hash otp error',
-        meta: {
-          action: 'hashOtp',
-          ...logMeta,
-        },
-        error,
-      })
-
-      return new ApplicationError()
-    },
-  )
-}
 
 /**
  * Compares otp with a given hash.
