@@ -1,5 +1,6 @@
 import { SecretsManager } from 'aws-sdk'
 import mongoose from 'mongoose'
+import { ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
@@ -16,6 +17,7 @@ import {
 } from '../../types'
 import getFormModel from '../models/form.server.model'
 import getSmsCountModel from '../models/sms_count.server.model'
+import { ApplicationError } from '../modules/core/core.errors'
 
 const logger = createLoggerWithLabel(module)
 const SmsCount = getSmsCountModel(mongoose)
@@ -33,6 +35,13 @@ type TwilioCredentials = {
   apiKey: string
   apiSecret: string
   messagingServiceSid: string
+}
+
+// TODO(#42): Split this service file into its own `sms` folder.
+export class SmsSendError extends ApplicationError {
+  constructor(message = 'Failed to send SMS') {
+    super(message)
+  }
 }
 
 /**
@@ -249,7 +258,7 @@ const send = async (
  * @param formId Form id for logging.
  *
  */
-const sendVerificationOtp = async (
+export const sendVerificationOtp = async (
   recipient: string,
   otp: string,
   formId: string,
@@ -282,12 +291,12 @@ const sendVerificationOtp = async (
   return send(twilioData, otpData, recipient, message, SmsType.verification)
 }
 
-const sendAdminContactOtp = async (
+export const sendAdminContactOtp = (
   recipient: string,
   otp: string,
   userId: string,
   defaultConfig: TwilioConfig,
-) => {
+): ResultAsync<boolean, SmsSendError> => {
   logger.info({
     message: `Sending admin contact verification OTP for ${userId}`,
     meta: {
@@ -302,7 +311,21 @@ const sendAdminContactOtp = async (
     admin: userId,
   }
 
-  return send(defaultConfig, otpData, recipient, message, SmsType.adminContact)
+  return ResultAsync.fromPromise(
+    send(defaultConfig, otpData, recipient, message, SmsType.adminContact),
+    (error) => {
+      logger.error({
+        message: 'Failed to send OTP for admin contact verification',
+        meta: {
+          action: 'sendAdminContactOtp',
+          recipient,
+        },
+        error,
+      })
+
+      return new SmsSendError()
+    },
+  )
 }
 
 class TwilioError extends Error {
@@ -319,9 +342,4 @@ class TwilioError extends Error {
     // See https://github.com/facebook/jest/issues/8279
     Object.setPrototypeOf(this, TwilioError.prototype)
   }
-}
-
-module.exports = {
-  sendVerificationOtp,
-  sendAdminContactOtp,
 }

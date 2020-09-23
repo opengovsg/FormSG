@@ -154,4 +154,58 @@ describe('sms.service', () => {
       expect(SMS_COUNT_SPY).toHaveBeenCalledWith(expectedLogParams)
     })
   })
+
+  describe('sendAdminContactOtp', () => {
+    const MOCK_USER_ID = 'mock user id'
+    const MOCK_OTP_DATA = {
+      admin: MOCK_USER_ID,
+    }
+    it('should log and send contact otp successfully when no errors occurs', async () => {
+      // Act
+      const actualResult = await SmsService.sendAdminContactOtp(
+        /* recipient= */ TWILIO_TEST_NUMBER,
+        /* otp= */ '111111',
+        /* userId= */ MOCK_USER_ID,
+        /* defaultConfig= */ MOCK_VALID_CONFIG,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Logging should also have happened.
+      const expectedLogParams = {
+        msgSrvcSid: MOCK_MSG_SRVC_SID,
+        otpData: MOCK_OTP_DATA,
+        smsType: SmsType.adminContact,
+        logType: LogType.success,
+      }
+      expect(SMS_COUNT_SPY).toHaveBeenCalledTimes(1)
+      expect(SMS_COUNT_SPY).toHaveBeenCalledWith(expectedLogParams)
+    })
+
+    it('should log failure and return error when twilio fails to send', async () => {
+      // Act
+      const actualResult = await SmsService.sendAdminContactOtp(
+        /* recipient= */ TWILIO_TEST_NUMBER,
+        /* otp= */ '111111',
+        /* userId= */ MOCK_USER_ID,
+        /* defaultConfig= */ MOCK_INVALID_CONFIG,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        SmsService.SmsSendError,
+      )
+      // Logging should also have happened.
+      const expectedLogParams = {
+        msgSrvcSid: MOCK_MSG_SRVC_SID,
+        otpData: MOCK_OTP_DATA,
+        smsType: SmsType.adminContact,
+        logType: LogType.failure,
+      }
+      expect(SMS_COUNT_SPY).toHaveBeenCalledTimes(1)
+      expect(SMS_COUNT_SPY).toHaveBeenCalledWith(expectedLogParams)
+    })
+  })
 })
