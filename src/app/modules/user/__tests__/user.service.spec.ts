@@ -15,7 +15,7 @@ import { IAgencySchema, IPopulatedUser, IUserSchema } from 'src/types'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { ApplicationError } from '../../core/core.errors'
-import { MissingUserError } from '../user.errors'
+import { InvalidOtpError, MissingUserError } from '../user.errors'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
 const UserModel = getUserModel(mongoose)
@@ -119,37 +119,54 @@ describe('user.service', () => {
       await expect(AdminVerification.countDocuments()).resolves.toEqual(1)
 
       // Act
-      const verifyPromise = UserService.verifyContactOtp(
+      const actualResult = await UserService.verifyContactOtp(
         MOCK_OTP,
         MOCK_CONTACT,
         USER_ID,
       )
 
       // Assert
-      // Resolves successfully.
-      await expect(verifyPromise).resolves.toEqual(true)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
       // AdminVerification document should be removed.
       await expect(AdminVerification.countDocuments()).resolves.toEqual(0)
     })
 
-    it('should throw error when AdminVerification document cannot be retrieved', async () => {
+    it('should return MissingUserError when userId is invalid', async () => {
+      // Arrange
+      const invalidUserId = new ObjectID()
+
+      // Act
+      const actualResult = await UserService.verifyContactOtp(
+        MOCK_OTP,
+        MOCK_CONTACT,
+        invalidUserId,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
+    })
+
+    it('should return InvalidOtpError when AdminVerification document does not exist', async () => {
       // Arrange
       // No OTP requested; should have no documents prior to acting.
       await expect(AdminVerification.countDocuments()).resolves.toEqual(0)
 
       // Act
-      const verifyPromise = UserService.verifyContactOtp(
+      const actualResult = await UserService.verifyContactOtp(
         MOCK_OTP,
         MOCK_CONTACT,
         USER_ID,
       )
-      // Act + Assert
-      await expect(verifyPromise).rejects.toThrowError(
-        'OTP has expired. Please request for a new OTP.',
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new InvalidOtpError('OTP has expired. Please request for a new OTP.'),
       )
     })
 
-    it('should throw error when verification has been attempted too many times', async () => {
+    it('should return InvalidOtpError when verification has been attempted too many times', async () => {
       // Arrange
       // Insert new AdminVerification document with initial MAX_OTP_ATTEMPTS.
       await UserService.createContactOtp(USER_ID, MOCK_CONTACT)
@@ -159,53 +176,60 @@ describe('user.service', () => {
       )
 
       // Act
-      const verifyPromise = UserService.verifyContactOtp(
+      const actualResult = await UserService.verifyContactOtp(
         MOCK_OTP,
         MOCK_CONTACT,
         USER_ID,
       )
 
       // Assert
-      await expect(verifyPromise).rejects.toThrowError(
-        'You have hit the max number of attempts. Please request for a new OTP.',
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new InvalidOtpError(
+          'You have hit the max number of attempts. Please request for a new OTP.',
+        ),
       )
     })
 
-    it('should throw error when OTP hash does not match', async () => {
+    it('should return InvalidOtpError when OTP hash does not match', async () => {
       // Arrange
       // Insert new AdminVerification document.
       await UserService.createContactOtp(USER_ID, MOCK_CONTACT)
       const invalidOtp = '654321'
 
       // Act
-      const verifyPromise = UserService.verifyContactOtp(
+      const actualResult = await UserService.verifyContactOtp(
         invalidOtp,
         MOCK_CONTACT,
         USER_ID,
       )
 
       // Assert
-      await expect(verifyPromise).rejects.toThrowError(
-        'OTP is invalid. Please try again.',
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new InvalidOtpError('OTP is invalid. Please try again.'),
       )
     })
 
-    it('should throw error when contact hash does not match', async () => {
+    it('should return InvalidOtpError when contact hash does not match', async () => {
       // Arrange
       // Insert new AdminVerification document.
       await UserService.createContactOtp(USER_ID, MOCK_CONTACT)
       const invalidContact = '123456'
 
       // Act
-      const verifyPromise = UserService.verifyContactOtp(
+      const actualResult = await UserService.verifyContactOtp(
         MOCK_OTP,
         invalidContact,
         USER_ID,
       )
 
       // Assert
-      await expect(verifyPromise).rejects.toThrowError(
-        'Contact number given does not match the number the OTP is sent to. Please try again with the correct contact number.',
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new InvalidOtpError(
+          'Contact number given does not match the number the OTP is sent to. Please try again with the correct contact number.',
+        ),
       )
     })
   })
