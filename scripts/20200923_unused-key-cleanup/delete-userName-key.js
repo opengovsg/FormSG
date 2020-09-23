@@ -14,7 +14,8 @@ db.getCollection('logins')
 
 // !!!! MAIN UPDATE SCRIPT !!!!
 
-// Delete unused userName key ~ number updated should match number which had key
+// Delete unused userName key 
+// ~ number updated should match number which had key
 db.getCollection('logins').updateMany({}, {
   $unset: {
     'userName': 1,
@@ -23,7 +24,8 @@ db.getCollection('logins').updateMany({}, {
 
 // !!!! END MAIN UPDATE SCRIPT !!!!
 
-// Check number of logins with userName flag ~ Should be zero
+// Check number of logins with userName flag 
+// ~ Should be zero
 db.getCollection('logins')
   .find({ 'userName': { $exists: true } })
   .count()

@@ -14,7 +14,8 @@ db.getCollection('users')
 
 // !!!! MAIN UPDATE SCRIPT !!!!
 
-// Delete unused isBeta key ~ number updated should match number which had key
+// Delete unused isBeta key 
+// ~ number updated should match number which had key
 db.getCollection('users').updateMany({}, {
   $unset: {
     'isBeta': 1,
@@ -23,7 +24,8 @@ db.getCollection('users').updateMany({}, {
 
 // !!!! END MAIN UPDATE SCRIPT !!!!
 
-// Check number of users with isBeta flag ~ Should be zero
+// Check number of users with isBeta flag 
+// ~ Should be zero
 db.getCollection('users')
   .find({ 'isBeta': { $exists: true } })
   .count()

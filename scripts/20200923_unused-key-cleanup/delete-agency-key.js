@@ -14,7 +14,8 @@ db.getCollection('formfeedback')
 
 // !!!! MAIN UPDATE SCRIPT !!!!
 
-// Delete unused agency key ~ number updated should match number which had key
+// Delete unused agency key 
+// ~ number updated should match number which had key
 db.getCollection('formfeedback').updateMany({}, {
   $unset: {
     'agency': 1,
@@ -23,7 +24,8 @@ db.getCollection('formfeedback').updateMany({}, {
 
 // !!!! END MAIN UPDATE SCRIPT !!!!
 
-// Check number of formfeedback with agency flag ~ Should be zero
+// Check number of formfeedback with agency flag 
+// ~ Should be zero
 db.getCollection('formfeedback')
   .find({ 'agency': { $exists: true } })
   .count()
