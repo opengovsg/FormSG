@@ -565,7 +565,7 @@
           <br />
           <div class="toggle-option">
             <div class="col-xs-8 label-custom label-medium">
-              Verification via OTP
+              OTP Verification
               <i
                 class="glyphicon glyphicon-question-sign"
                 uib-tooltip="When enabled, respondents must verify by entering a code sent to their email address"
@@ -600,7 +600,7 @@
               ng-class="{'toggle-option--disabled' : !vm.field.isVerifiable}"
               class="col-xs-8 label-custom label-medium"
             >
-              Restrict email domain?<i
+              Restrict email domains<i
                 class="glyphicon glyphicon-question-sign"
                 uib-tooltip="e.g. @mom.gov.sg, @moe.gov.sg OTP verification needs to be activated first."
                 tooltip-trigger="'click mouseenter'"
@@ -629,18 +629,11 @@
         </div>
 
         <div
-          ng-show="vm.field.fieldType === 'email' && vm.field.hasAllowedEmailDomains"
+          ng-show="vm.field.fieldType === 'email' && vm.field.isVerifiable && vm.field.hasAllowedEmailDomains"
         >
           <br />
           <div class="row label-custom label-medium">
-            <div class="col-md-12">
-              Domains allowed
-              <i
-                class="glyphicon glyphicon-question-sign"
-                uib-tooltip="Please enter one allowed email domain per line."
-                tooltip-trigger="'click mouseenter'"
-              ></i>
-            </div>
+            <div class="col-md-12">Domains allowed</div>
           </div>
           <div class="row">
             <div class="col-md-12">
