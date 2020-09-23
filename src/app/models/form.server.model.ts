@@ -103,6 +103,14 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
 type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 
+// Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
+function transformEmailString(v: string): string[] {
+  return v
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter((email) => email.includes('@')) // remove ""
+}
+
 // Function that coerces the string of comma-separated emails sent by the client
 // into an array of emails
 function transformEmails(v: string | string[]): string[] {
@@ -113,14 +121,9 @@ function transformEmails(v: string | string[]): string[] {
   // ['test@hotmail.com, test@gmail.com', 'test@yahoo.com'] => ['test@hotmail.com', 'test@gmail.com', 'test@yahoo.com']
   // 'test@hotmail.com, test@gmail.com' => ['test@hotmail.com', 'test@gmail.com']
   if (Array.isArray(v)) {
-    return v
-      .join(',')
-      .replace(/;/g, ',')
-      .split(',')
-      .map((item) => item.trim().toLowerCase())
-      .filter((email) => email.includes('@')) // remove ""
+    return transformEmailString(v.join(','))
   } else {
-    return v.split(',').map((email) => email.trim())
+    return transformEmailString(v)
   }
 }
 
