@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import nocache from 'nocache'
 import { Response } from 'supertest'
 
+import { AuthRouter } from 'src/app/modules/auth/auth.routes'
 import errorHandlerMiddlewares from 'src/loaders/express/error-handler'
 import helmetMiddlewares from 'src/loaders/express/helmet'
 import loggingMiddleware from 'src/loaders/express/logging'
@@ -13,7 +14,7 @@ import sessionMiddlewares from 'src/loaders/express/session'
 export const setupApp = (
   route: string,
   router: Router,
-  options: { showLogs?: boolean } = {},
+  options: { showLogs?: boolean; setupWithAuth?: boolean } = {},
 ) => {
   const app = express()
 
@@ -29,6 +30,10 @@ export const setupApp = (
   }
 
   app.use(route, router)
+
+  if (options.setupWithAuth) {
+    app.use('/auth', AuthRouter)
+  }
 
   app.use(errorHandlerMiddlewares())
 
