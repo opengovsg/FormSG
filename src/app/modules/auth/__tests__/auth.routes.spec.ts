@@ -1,13 +1,14 @@
 import { pick } from 'lodash'
 import { errAsync, okAsync } from 'neverthrow'
 import supertest from 'supertest'
-import { CookieStore, setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import validator from 'validator'
 
 import MailService from 'src/app/services/mail.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema } from 'src/types'
+
+import { CookieStore, setupApp } from 'tests/integration/helpers/express-setup'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { MailSendError } from '../../mail/mail.errors'

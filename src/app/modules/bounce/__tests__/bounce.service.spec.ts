@@ -4,8 +4,6 @@ import crypto from 'crypto'
 import dedent from 'dedent'
 import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 import { mocked } from 'ts-jest/utils'
 
 import { EMAIL_HEADERS, EmailType } from 'src/app/constants/mail'
@@ -18,6 +16,9 @@ import {
   ISnsNotification,
   IUserSchema,
 } from 'src/types'
+
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 

@@ -1,8 +1,6 @@
 import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
 import { EmailType } from 'src/app/constants/mail'
@@ -12,6 +10,9 @@ import getBounceModel from 'src/app/modules/bounce/bounce.model'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
 import * as FormService from 'src/app/modules/form/form.service'
 import { IBounceSchema, ISnsNotification } from 'src/types'
+
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 const Bounce = getBounceModel(mongoose)
 
