@@ -105,7 +105,7 @@ type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 
 // Function that coerces the string of comma-separated emails sent by the client
 // into an array of emails
-function parseEmails(v: string | string[]): string[] {
+function transformEmails(v: string | string[]): string[] {
   // Cases
   // ['test@hotmail.com'] => ['test@hotmail.com'] ~ unchanged
   // ['test@hotmail.com', 'test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com'] ~ unchanged
@@ -130,7 +130,7 @@ const EmailFormSchema = new Schema<IEmailFormSchema>({
         trim: true,
       },
     ],
-    set: parseEmails,
+    set: transformEmails,
     validate: {
       validator: (v: string[]) => {
         if (!Array.isArray(v)) return false
