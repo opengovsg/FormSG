@@ -284,18 +284,23 @@ describe('user.service', () => {
       }
 
       // Act
-      const actual = await UserService.getPopulatedUserById(USER_ID)
+      const actualResult = await UserService.getPopulatedUserById(USER_ID)
 
       // Assert
-      expect(actual?.toObject()).toEqual(expected)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()?.toObject()).toEqual(expected)
     })
 
-    it('should return null when user cannot be found', async () => {
+    it('should return MissingUserError when user cannot be found', async () => {
+      // Arrange
+      const invalidUser = new ObjectID()
+
       // Act
-      const userPromise = UserService.getPopulatedUserById(new ObjectID())
+      const actualResult = await UserService.getPopulatedUserById(invalidUser)
 
       // Assert
-      await expect(userPromise).resolves.toBeNull()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
     })
   })
 

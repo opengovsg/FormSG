@@ -157,12 +157,46 @@ export const updateUserContact = (
   })
 }
 
-export const getPopulatedUserById = async (
+/**
+ * Retrieved the user with populated references by given id.
+ * @param userId the id of the user to retrieve
+ * @returns ok(populated user document) if user exists
+ * @returns err(MissingUserError) if user document cannot be retrieved with given id
+ * @returns err(DatabaseError) if any errors occur whilst querying the database
+ */
+export const getPopulatedUserById = (
   userId: IUserSchema['_id'],
-): Promise<IPopulatedUser | null> => {
-  return UserModel.findById(userId).populate({
-    path: 'agency',
-    model: AGENCY_SCHEMA_ID,
+): ResultAsync<IPopulatedUser, DatabaseError | MissingUserError> => {
+  const logMeta = {
+    action: 'getPopulatedUserById',
+    userId,
+  }
+
+  return ResultAsync.fromPromise(
+    UserModel.findById(userId)
+      .populate({
+        path: 'agency',
+        model: AGENCY_SCHEMA_ID,
+      })
+      .exec(),
+    (error) => {
+      logger.error({
+        message: 'Database error when retrieving populated user by id',
+        meta: logMeta,
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  ).andThen((retrievedUser) => {
+    if (!retrievedUser) {
+      logger.warn({
+        message: 'Unable to retrieve user',
+        meta: logMeta,
+      })
+      return errAsync(new MissingUserError())
+    }
+    return okAsync(retrievedUser)
   })
 }
 
