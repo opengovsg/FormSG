@@ -10,7 +10,7 @@ import * as UserService from 'src/app/modules/user/user.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema, IPopulatedUser, IUserSchema } from 'src/types'
 
-import dbHandler from '../../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
 const UserModel = getUserModel(mongoose)

@@ -7,7 +7,7 @@ import { InvalidOtpError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
 
-import expressHandler from '../../helpers/jest-express'
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/factories/sms.factory')
