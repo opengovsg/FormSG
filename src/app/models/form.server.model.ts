@@ -115,8 +115,10 @@ function transformEmails(v: string | string[]): string[] {
   if (Array.isArray(v)) {
     return v
       .join(',')
+      .replace(/;/g, ',')
       .split(',')
-      .map((email) => email.trim())
+      .map((item) => item.trim().toLowerCase())
+      .filter((email) => email.includes('@')) // remove ""
   } else {
     return v.split(',').map((email) => email.trim())
   }
