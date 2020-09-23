@@ -82,7 +82,7 @@ const createEmailFieldSchema = () => {
   })
 
   EmailFieldSchema.pre<IEmailFieldSchema>('save', function (next) {
-    if (!this.isVerifiable()) {
+    if (!this.isVerifiable) {
       this.hasAllowedEmailDomains = false
     }
 

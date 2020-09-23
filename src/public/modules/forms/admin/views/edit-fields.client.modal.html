@@ -578,7 +578,11 @@
                 ng-class="vm.field.isVerifiable? 'toggle-selector-on' : ''"
                 onclick=""
               >
-                <input type="checkbox" ng-model="vm.field.isVerifiable" />
+                <input
+                  type="checkbox"
+                  ng-model="vm.field.isVerifiable"
+                  is-verifiable-save-interceptor
+                />
                 <div class="toggle-selector-switch">
                   <i
                     ng-class="vm.field.isVerifiable ? 'bx bx-check' : 'bx bx-x' "
