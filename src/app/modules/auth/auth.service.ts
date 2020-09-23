@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
@@ -10,7 +9,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
-import { hashData } from '../../utils/hash'
+import { compareData, hashData } from '../../utils/hash'
 import { generateOtp } from '../../utils/otp'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
@@ -123,7 +122,7 @@ export const verifyLoginOtp = (
     // Step 1: Increment login attempts.
     incrementLoginAttempts(email)
       // Step 2: Compare otp with saved hash.
-      .andThen(({ hashedOtp }) => compareOtpHash(otpToVerify, hashedOtp))
+      .andThen(({ hashedOtp }) => assertHashMatch(otpToVerify, hashedOtp))
       // Step 3: Remove token document from collection since hash matches.
       .andThen(() => removeTokenOnSuccess(email))
       // Step 4: Return true (as success).
@@ -132,41 +131,23 @@ export const verifyLoginOtp = (
 }
 
 // Private helper functions
-
 /**
- * Compares otp with a given hash.
- * @param otpToVerify The unhashed OTP to check match for
- * @param hashedOtp The hashed OTP to check match for
+ * Asserts that the otp matches with the given hash.
+ * @param otp the otp to check match for
+ * @param otpHash the hashed form of the otp to check match with
  * @param logMeta additional metadata for logging, if available
  * @returns ok(true) if the hash matches
  * @returns err(ApplicationError) if error occurs whilst comparing hashes
- * @returns err(InvalidOtpError) if OTP hashes do not match
+ * @returns err(InvalidOtpError) if the hashes do not match
  */
-const compareOtpHash = (
-  otpToVerify: string,
-  hashedOtp: string,
+const assertHashMatch = (
+  otp: string,
+  otpHash: string,
   logMeta: Record<string, unknown> = {},
 ): ResultAsync<true, ApplicationError | InvalidOtpError> => {
-  return ResultAsync.fromPromise(
-    bcrypt.compare(otpToVerify, hashedOtp),
-    (error) => {
-      logger.error({
-        message: 'bcrypt compare otp error',
-        meta: {
-          action: 'compareHash',
-          ...logMeta,
-        },
-        error,
-      })
-
-      return new ApplicationError()
-    },
-  ).andThen((isOtpMatch) => {
-    if (!isOtpMatch) {
-      return errAsync(new InvalidOtpError('OTP is invalid. Please try again.'))
-    }
-
-    return okAsync(isOtpMatch)
+  return compareData(otp, otpHash, logMeta).andThen((isMatch) => {
+    if (isMatch) return okAsync(true)
+    return errAsync(new InvalidOtpError('OTP is invalid. Please try again.'))
   })
 }
 
@@ -218,7 +199,7 @@ const incrementLoginAttempts = (
       logger.error({
         message: 'Database increment OTP error',
         meta: {
-          action: 'incrementAttempts',
+          action: 'incrementLoginAttempts',
           email,
         },
         error,
@@ -245,6 +226,12 @@ const incrementLoginAttempts = (
   })
 }
 
+/**
+ * Removes token document from the database
+ * @param email the email of the token document to remove
+ * @returns ok(removed document) if removal is successful
+ * @returns err(DatabaseError) if database error occurs whilst removing document
+ */
 const removeTokenOnSuccess = (email: string) => {
   return ResultAsync.fromPromise(
     TokenModel.findOneAndRemove({ email }).exec(),

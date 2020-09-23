@@ -34,3 +34,30 @@ export const hashData = (
     },
   )
 }
+
+/**
+ * Neverthrown version of bcrypt.compare.
+ * @param data the unhashed data to compare with
+ * @param encrypted the hashed data to check match for
+ * @param logMeta additional metadata for logging, if available
+ * @returns ok(boolean) if the hash matches
+ * @returns err(ApplicationError) if error occurs whilst comparing hashes
+ */
+export const compareData = (
+  data: unknown,
+  encrypted: string,
+  logMeta: Record<string, unknown> = {},
+): ResultAsync<boolean, ApplicationError> => {
+  return ResultAsync.fromPromise(bcrypt.compare(data, encrypted), (error) => {
+    logger.error({
+      message: 'bcrypt compare error',
+      meta: {
+        action: 'compareData',
+        ...logMeta,
+      },
+      error,
+    })
+
+    return new ApplicationError()
+  })
+}
