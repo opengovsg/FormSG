@@ -464,7 +464,7 @@ async function createBasicField(t, field) {
   switch (field.fieldType) {
     case 'email':
       if (field.isVerifiable) {
-        await t.click(editFieldModal.getToggle('Verification via OTP'))
+        await t.click(editFieldModal.getToggle('OTP verification'))
       }
       break
     case 'radiobutton':
