@@ -25,11 +25,6 @@ export const mapRouteError = (
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
-    case UserErrors.MalformedOtpError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-      }
     case SmsSendError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
