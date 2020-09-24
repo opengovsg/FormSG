@@ -1,8 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { SmsSendError } from 'src/app/services/sms.service'
-
 import { createLoggerWithLabel } from '../../../config/logger'
+import { SmsSendError } from '../../services/sms.service'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
