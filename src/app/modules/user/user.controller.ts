@@ -2,11 +2,10 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { getRequestIp } from 'src/app/utils/request'
-
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IPopulatedUser } from '../../../types'
 import SmsFactory from '../../factories/sms.factory'
+import { getRequestIp } from '../../utils/request'
 
 import {
   createContactOtp,
