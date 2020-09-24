@@ -55,7 +55,9 @@ UserRouter.post(
   celebrate({
     [Segments.BODY]: Joi.object().keys({
       userId: Joi.string().required(),
-      otp: Joi.string().length(6).required(),
+      otp: Joi.string()
+        .required()
+        .regex(/^\d{6}$/),
       contact: Joi.string().required(),
     }),
   }),
