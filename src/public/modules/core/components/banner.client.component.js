@@ -35,7 +35,7 @@ function bannerController() {
   }
 
   const processBannerMessage = () => {
-    // Retrieve banenr type from message, but it is possible that no types
+    // Retrieve banner type from message, but it is possible that no types
     // exist.
     const vmMessage = vm.message || ''
     const type = vmMessage.split(':').shift().toLowerCase()
