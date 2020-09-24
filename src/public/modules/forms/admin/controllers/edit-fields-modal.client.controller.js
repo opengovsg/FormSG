@@ -27,6 +27,7 @@ angular
     '$q',
     'Betas',
     'Auth',
+    '$state',
     EditFieldsModalController,
   ])
 
@@ -41,6 +42,7 @@ function EditFieldsModalController(
   $q,
   Betas,
   Auth,
+  $state,
 ) {
   const vm = this
 
@@ -58,8 +60,9 @@ function EditFieldsModalController(
   }
 
   // Serialize allowed email domains
+  vm.user = Auth.getUser() || $state.go('signin')
   if (vm.field.fieldType === 'email') {
-    const userEmailDomain = '@' + Auth.getUser().email.split('@').pop()
+    const userEmailDomain = '@' + vm.user.email.split('@').pop()
     vm.field.allowedEmailDomainsPlaceholder = `${userEmailDomain}\n@agency.gov.sg`
     if (vm.field.allowedEmailDomains.length > 0) {
       vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
