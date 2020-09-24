@@ -6,7 +6,7 @@ services:
   - xvfb
 
 language: node_js
-node_js: '14'
+node_js: '12'
 cache:
   - npm
   - pip
