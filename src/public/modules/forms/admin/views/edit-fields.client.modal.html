@@ -607,6 +607,8 @@
               ></i>
             </div>
             <div class="col-xs-4 field-input">
+              <!-- Warning: Do not touch onclick="" unless you know what you are doing. -->
+              <!-- Reference: https://github.com/ghinda/css-toggle-switch#browser-support -->
               <label
                 class="toggle-selector pull-right"
                 ng-class="{'toggle-selector-on': vm.field.isVerifiable && vm.field.hasAllowedEmailDomains, 'toggle-selector--disabled': !vm.field.isVerifiable}"
@@ -668,7 +670,7 @@
           </div>
         </div>
 
-        <div ng-show="vm.field.fieldType === 'email'" class="Line"></div>
+        <div ng-show="vm.field.fieldType === 'email'" class="line"></div>
 
         <div class="row" ng-if="vm.field.fieldType === 'email'">
           <div class="toggle-option">

@@ -1,5 +1,5 @@
-import EmailValidator = require('../../../../../src/app/utils/field-validation/validators/EmailValidator.class')
-import validateField = require('../../../../../src/app/utils/field-validation')
+import validateField from 'src/app/utils/field-validation'
+import EmailValidator from 'src/app/utils/field-validation/validators/EmailValidator.class'
 
 describe('Email field validation', () => {
   beforeEach(() => {
