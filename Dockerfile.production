@@ -3,7 +3,7 @@ FROM node:12.18.4-alpine3.12 AS node-modules-builder
 # Python version must be specified starting in alpine3.12
 RUN apk update && apk upgrade && \
     apk --no-cache add --virtual native-deps \
-    g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python2 git curl && \
+    g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl && \
     npm install --quiet node-gyp -g
 WORKDIR /opt/formsg
 COPY package* /opt/formsg/
