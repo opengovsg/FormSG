@@ -15,4 +15,6 @@ export interface IEmailField extends IField {
   allowedEmailDomains: string[]
 }
 
-export interface IEmailFieldSchema extends IEmailField, IFieldSchema {}
+export interface IEmailFieldSchema extends IEmailField, IFieldSchema {
+  isVerifiable: boolean
+}
