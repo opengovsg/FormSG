@@ -17,6 +17,7 @@ const DATE_VALIDATION_OPTIONS = {
 angular
   .module('forms')
   .controller('EditFieldsModalController', [
+    '$scope',
     '$uibModalInstance',
     'externalScope',
     'responseModeEnum',
@@ -32,6 +33,7 @@ angular
   ])
 
 function EditFieldsModalController(
+  $scope,
   $uibModalInstance,
   externalScope,
   responseModeEnum,
@@ -69,6 +71,14 @@ function EditFieldsModalController(
         '\n',
       )
     }
+    $scope.$watch('vm.field.allowedEmailDomainsFromText', (newValue) => {
+      if (newValue) {
+        vm.tooltipText = 'e.g. @mom.gov.sg, @moe.gov.sg'
+      } else {
+        vm.tooltipText =
+          'e.g. @mom.gov.sg, @moe.gov.sg<br>OTP verification needs to be activated first.'
+      }
+    })
   }
 
   // Set Validation Options on older paragraph fields - This ensures backward compatibility
