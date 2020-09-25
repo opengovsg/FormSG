@@ -73,9 +73,9 @@ function EditFieldsModalController(
     }
     $scope.$watch('vm.field.allowedEmailDomainsFromText', (newValue) => {
       if (newValue) {
-        vm.tooltipText = 'e.g. @mom.gov.sg, @moe.gov.sg'
+        vm.tooltipHtml = 'e.g. @mom.gov.sg, @moe.gov.sg'
       } else {
-        vm.tooltipText =
+        vm.tooltipHtml =
           'e.g. @mom.gov.sg, @moe.gov.sg<br>OTP verification needs to be activated first.'
       }
     })
