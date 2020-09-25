@@ -565,7 +565,7 @@
           <br />
           <div class="toggle-option">
             <div class="col-xs-8 label-custom label-medium">
-              Verified?
+              OTP verification
               <i
                 class="glyphicon glyphicon-question-sign"
                 uib-tooltip="When enabled, respondents must verify by entering a code sent to their email address"
@@ -578,7 +578,11 @@
                 ng-class="vm.field.isVerifiable? 'toggle-selector-on' : ''"
                 onclick=""
               >
-                <input type="checkbox" ng-model="vm.field.isVerifiable" />
+                <input
+                  type="checkbox"
+                  ng-model="vm.field.isVerifiable"
+                  is-verifiable-save-interceptor
+                />
                 <div class="toggle-selector-switch">
                   <i
                     ng-class="vm.field.isVerifiable ? 'bx bx-check' : 'bx bx-x' "
@@ -589,7 +593,88 @@
           </div>
         </div>
 
-        <div class="row" ng-show="vm.field.fieldType === 'email'"><br /></div>
+        <div class="row" ng-show="vm.field.fieldType === 'email'">
+          <br />
+          <div class="toggle-option">
+            <div
+              ng-class="{'toggle-option--disabled' : !vm.field.isVerifiable}"
+              class="col-xs-8 label-custom label-medium"
+            >
+              Restrict email domains<i
+                class="glyphicon glyphicon-question-sign"
+                uib-tooltip-html="vm.tooltipHtml"
+                tooltip-trigger="'click mouseenter'"
+              ></i>
+            </div>
+            <div class="col-xs-4 field-input">
+              <!-- Warning: Do not touch onclick="" unless you know what you are doing. -->
+              <!-- Reference: https://github.com/ghinda/css-toggle-switch#browser-support -->
+              <label
+                class="toggle-selector pull-right"
+                ng-class="{'toggle-selector-on': vm.field.isVerifiable && vm.field.hasAllowedEmailDomains, 'toggle-selector--disabled': !vm.field.isVerifiable}"
+                onclick=""
+              >
+                <input
+                  type="checkbox"
+                  ng-model="vm.field.hasAllowedEmailDomains"
+                />
+                <div class="toggle-selector-switch">
+                  <i
+                    ng-show="vm.field.isVerifiable"
+                    ng-class="vm.field.hasAllowedEmailDomains ? 'bx bx-check' : 'bx bx-x'"
+                  ></i>
+                  <i ng-show="!vm.field.isVerifiable" class="bx bxs-lock"></i>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div
+          ng-show="vm.field.fieldType === 'email' && vm.field.isVerifiable && vm.field.hasAllowedEmailDomains"
+        >
+          <br />
+          <div class="row label-custom label-medium">
+            <div class="col-md-12">Domains allowed</div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <textarea
+                class="input-custom input-medium"
+                ng-disabled="!vm.field.isVerifiable || !vm.field.hasAllowedEmailDomains"
+                ng-model="vm.field.allowedEmailDomainsFromText"
+                name="allowedEmailDomainsFromText"
+                validate-email-domain-from-text
+                placeholder="{{ vm.field.allowedEmailDomainsPlaceholder }}"
+              >
+              </textarea>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div
+                ng-messages="vm.editFieldForm.allowedEmailDomainsFromText.$error"
+              >
+                <div
+                  ng-message="emailDomainFromTextValidator"
+                  class="alert-custom alert-error"
+                >
+                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                  <span class="alert-msg">
+                    You may have duplicate or invalid email domains. Please
+                    check.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          ng-show="vm.field.fieldType === 'email'"
+          class="edit-fields-line"
+        ></div>
+
         <div class="row" ng-if="vm.field.fieldType === 'email'">
           <div class="toggle-option">
             <div class="col-xs-8 label-custom label-medium">

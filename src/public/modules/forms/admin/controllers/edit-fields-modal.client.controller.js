@@ -17,6 +17,7 @@ const DATE_VALIDATION_OPTIONS = {
 angular
   .module('forms')
   .controller('EditFieldsModalController', [
+    '$scope',
     '$uibModalInstance',
     'externalScope',
     'responseModeEnum',
@@ -27,10 +28,12 @@ angular
     '$q',
     'Betas',
     'Auth',
+    '$state',
     EditFieldsModalController,
   ])
 
 function EditFieldsModalController(
+  $scope,
   $uibModalInstance,
   externalScope,
   responseModeEnum,
@@ -41,6 +44,7 @@ function EditFieldsModalController(
   $q,
   Betas,
   Auth,
+  $state,
 ) {
   const vm = this
 
@@ -55,6 +59,26 @@ function EditFieldsModalController(
     vm.field.fieldOptionsFromText = vm.field.fieldOptions.join('\n')
   } else if (['radiobutton', 'checkbox'].includes(vm.field.fieldType)) {
     vm.field.manualOptions = vm.field.fieldOptions
+  }
+
+  // Serialize allowed email domains
+  vm.user = Auth.getUser() || $state.go('signin')
+  if (vm.field.fieldType === 'email') {
+    const userEmailDomain = '@' + vm.user.email.split('@').pop()
+    vm.field.allowedEmailDomainsPlaceholder = `${userEmailDomain}\n@agency.gov.sg`
+    if (vm.field.allowedEmailDomains.length > 0) {
+      vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
+        '\n',
+      )
+    }
+    $scope.$watch('vm.field.allowedEmailDomainsFromText', (newValue) => {
+      if (newValue) {
+        vm.tooltipHtml = 'e.g. @mom.gov.sg, @moe.gov.sg'
+      } else {
+        vm.tooltipHtml =
+          'e.g. @mom.gov.sg, @moe.gov.sg<br>OTP verification needs to be activated first.'
+      }
+    })
   }
 
   // Set Validation Options on older paragraph fields - This ensures backward compatibility
@@ -418,6 +442,19 @@ function EditFieldsModalController(
     } else {
       field.fieldOptions = field.manualOptions
     }
+
+    // Deserialize allowed email domains
+    if (field.fieldType === 'email') {
+      if (!field.allowedEmailDomainsFromText) {
+        field.allowedEmailDomains = []
+      } else {
+        field.allowedEmailDomains = field.allowedEmailDomainsFromText
+          .split('\n')
+          .map((s) => s.trim())
+          .filter((s) => s)
+      }
+    }
+
     // set total attachment size left
     if (field.fieldType === 'attachment') {
       Attachment.attachmentsTotal =

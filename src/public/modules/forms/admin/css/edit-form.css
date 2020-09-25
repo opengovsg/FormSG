@@ -1253,3 +1253,9 @@ a.modal-cancel-btn:hover {
   font-size: 24px;
   cursor: pointer;
 }
+
+.edit-fields-line {
+  border: solid 1px #9b9b9b;
+  height: 2px;
+  margin: 30px 0;
+}

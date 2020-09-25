@@ -12,6 +12,8 @@ class EmailField extends VerifiableField {
       includeFormSummary: false,
     }
     fieldData.isVerifiable = false
+    fieldData.hasAllowedEmailDomains = false
+    fieldData.allowedEmailDomains = []
     return fieldData
   }
 }
