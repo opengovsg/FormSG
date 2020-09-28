@@ -137,21 +137,21 @@ export const sortByRelevance: Record<string, unknown>[] = [
  *
  * Aggregation step to sort forms by the last submitted date.
  */
-export const sortByLastSubmitted = [
+export const sortByLastSubmitted: Record<string, unknown>[] = [
   {
     $sort: { lastSubmission: -1 },
   },
 ]
 
 /**
- * Precondition: `_id` field corresponding to the form's id must be retrieved
+ * Precondition: `_id` field corresponding to the forms' ids must be retrieved
  * beforehand, which can be done using groupSubmissionsByFormId or
  * searchFormsForText.
  *
  * Aggregation step to retrieve `formFeedbackInfo` from the formfeedback
  * collection for each of the `formId`s specified.
  */
-export const lookupFormFeedback = [
+export const lookupFormFeedback: Record<string, unknown>[] = [
   {
     $lookup: {
       from: 'formfeedback',
@@ -163,14 +163,14 @@ export const lookupFormFeedback = [
 ]
 
 /**
- * Precondition: `_id` field corresponding to form's id must be retrieved
+ * Precondition: `_id` field corresponding to the forms' ids must be retrieved
  * beforehand, which can be done by grouping submissions using
  * groupSubmissionsByFormId.
  *
  * Aggregation step to retrieve `formInfo` from the forms collection for each
  * form's form id.
  */
-export const lookupFormInfo = [
+export const lookupFormInfo: Record<string, unknown>[] = [
   {
     $lookup: {
       from: 'forms',
@@ -182,5 +182,148 @@ export const lookupFormInfo = [
   // There should only be one form with this _id
   {
     $unwind: '$formInfo',
+  },
+]
+
+/**
+ * Precondition: `_id` field corresponding to the forms' ids must be retrieved
+ * beforehand, which can be done using groupSubmissionsByFormId or
+ * searchFormsForText.
+ *
+ * Aggregation step to retrieve `submissionInfo` by looking up, sorting and
+ * grouping submissions with the form ids specified.
+ */
+export const lookupFormStatisticsInfo: Record<string, unknown>[] = [
+  {
+    $lookup: {
+      from: 'formStatisticsTotal',
+      localField: '_id',
+      foreignField: 'formId',
+      as: 'submissionInfo',
+    },
+  },
+  // Unwind results in multiple copies of each form, where each copy has its own
+  // submissionInfo.
+  {
+    $unwind: '$submissionInfo',
+  },
+  {
+    $project: {
+      _id: '$_id',
+      count: '$submissionInfo.totalCount',
+      formInfo: 1,
+      agencyInfo: 1,
+      lastSubmission: '$submissionInfo.lastSubmission',
+      textScore: { $meta: 'textScore' }, // Used to sort by relevance
+    },
+  },
+]
+
+/**
+ * Precondition: `_id` field corresponding to forms' ids must be retrieved
+ * beforehand, which can be done using groupSubmissionsByFormId or
+ * searchFormsForText.
+ *
+ * Aggregation step to retrieve submissionInfo by looking up, sorting and
+ * grouping submissions with form ids specified.
+ *
+ */
+export const lookupSubmissionInfo = [
+  {
+    $lookup: {
+      from: 'submissions',
+      localField: '_id',
+      foreignField: 'form',
+      as: 'submissionInfo',
+    },
+  },
+  // Unwind results in multiple copies of each form, where each copy has its own submissionInfo
+  {
+    $unwind: '$submissionInfo',
+  },
+  {
+    $sort: { 'submissionInfo.created': 1 },
+  },
+  // Retrieve only the necessary information from the submissionInfo
+  {
+    $group: {
+      _id: '$_id',
+      count: { $sum: 1 },
+      formInfo: { $first: '$formInfo' },
+      agencyInfo: { $first: '$agencyInfo' },
+      lastSubmission: { $last: '$submissionInfo.created' },
+      textScore: { $first: { $meta: 'textScore' } }, // Used to sort by relevance
+    },
+  },
+]
+
+/**
+ * Precondition: `_id` field corresponding to forms' ids must be retrieved
+ * beforehand.
+ *
+ * !Note: Can only used on pipelines working with the Submissions collection.
+ *
+ * Aggregation step to group submissions by form id, count the number of
+ * submissions, and get the last submission date.
+ */
+export const groupSubmissionsByFormId = [
+  {
+    $group: {
+      _id: '$form',
+      count: { $sum: 1 },
+      lastSubmission: { $last: '$created' },
+    },
+  },
+]
+
+/**
+ * Precondition: `_id` field corresponding to forms' ids must be retrieved
+ * beforehand.
+ *
+ * !Note: Can only used on pipelines working with the FormStatisticsTotal collection.
+ *
+ * Aggregation step to project submissions by form id, get submission count, and
+ * get the last submission date.
+ */
+export const projectSubmissionInfo: Record<string, unknown>[] = [
+  {
+    $project: {
+      _id: '$formId',
+      count: '$totalCount',
+      lastSubmission: 1,
+    },
+  },
+]
+
+/**
+ * Aggregation step to produce an object containing the pageResults and
+ * totalCount.
+ * pageResults will only contain condensed information to be displayed on an
+ * example card.
+ * @param limit Number of forms to return information about.
+ * @param offset Number of forms that have already been returned previously and should be skipped in this query.
+ */
+export const selectAndProjectCardInfo = (
+  limit: number,
+  offset: number,
+): Record<string, unknown>[] => [
+  {
+    $skip: offset,
+  },
+  {
+    $limit: limit,
+  },
+  {
+    $project: {
+      _id: 1,
+      count: 1,
+      lastSubmission: 1,
+      title: '$formInfo.title',
+      form_fields: '$formInfo.form_fields',
+      logo: '$agencyInfo.logo',
+      agency: '$agencyInfo.shortName',
+      colorTheme: '$formInfo.startPage.colorTheme',
+      avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+    },
   },
 ]
