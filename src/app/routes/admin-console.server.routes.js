@@ -4,7 +4,9 @@
  * Module dependencies.
  */
 const auth = require('../../app/controllers/authentication.server.controller')
-const aggregStatsFactory = require('../factories/aggregate-stats.factory')
+const {
+  AggregateStatsFactory,
+} = require('../factories/aggregate-stats.factory')
 
 module.exports = function (app) {
   /**
@@ -24,7 +26,7 @@ module.exports = function (app) {
    */
   app
     .route('/examples')
-    .get(auth.authenticateUser, aggregStatsFactory.getExampleForms)
+    .get(auth.authenticateUser, AggregateStatsFactory.getExampleForms)
 
   /**
    * Lists publicly available forms that can be used as templates.
@@ -43,5 +45,5 @@ module.exports = function (app) {
    */
   app
     .route('/examples/:formId([a-fA-F0-9]{24})')
-    .get(auth.authenticateUser, aggregStatsFactory.getSingleExampleForm)
+    .get(auth.authenticateUser, AggregateStatsFactory.getSingleExampleForm)
 }
