@@ -2,8 +2,7 @@ import ejs from 'ejs'
 import { get } from 'lodash'
 
 import config from '../../config/config'
-import featureManager from '../../config/feature-manager'
-import { FeatureNames } from '../../config/feature-manager/types'
+import featureManager, { FeatureNames } from '../../config/feature-manager'
 
 // Construct js with environment variables needed by frontend
 const frontendVars = {
