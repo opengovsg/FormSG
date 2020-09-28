@@ -38,7 +38,7 @@ function bannerController() {
     // Retrieve banner type from message, but it is possible that no types
     // exist.
     const vmMessage = vm.message || ''
-    const type = vmMessage.split(':').shift().toLowerCase()
+    const type = vmMessage.split(':').shift().trim().toLowerCase()
     const retrievedType = vm.BANNER_TYPES[type]
 
     vm.bannerType = retrievedType || vm.BANNER_TYPES.info
@@ -47,7 +47,7 @@ function bannerController() {
     // the message.
     // The + 1 is to also remove the semicolon from the encoding
     vm.bannerMessage = retrievedType
-      ? vmMessage.substring(retrievedType.length + 1).trim()
+      ? vmMessage.substring(vmMessage.indexOf(':') + 1).trim()
       : vmMessage
   }
 }
