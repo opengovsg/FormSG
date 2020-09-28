@@ -152,12 +152,6 @@ function ListFormsController(
     vm.showFormBtns[formId] = true
   }
 
-  // Hide form buttons if area
-  // outside form buttons is clicked
-  vm.closeListFormModal = () => {
-    vm.clearFormBtns()
-  }
-
   vm.clearFormBtns = () => {
     vm.showFormBtns = []
   }
