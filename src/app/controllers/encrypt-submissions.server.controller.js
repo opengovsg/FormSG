@@ -241,7 +241,16 @@ exports.getMetadata = function (req, res) {
         .read('primary')
         .exec((err, result) => {
           if (err) {
-            logger.error(getRequestIp(req), req.url, req.headers, err)
+            logger.error({
+              message: 'Failure retrieving metadata from database',
+              meta: {
+                action: 'getMetadata',
+                ip: getRequestIp(req),
+                url: req.url,
+                headers: req.headers,
+              },
+              error: err,
+            })
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
               message: errorHandler.getMongoErrorMessage(err),
             })
