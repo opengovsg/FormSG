@@ -80,6 +80,11 @@ export interface IFeatureManager {
   [FeatureNames.WebhookVerifiedContent]: IWebhookVerifiedContent
 }
 
+export interface RegisteredFeature<T extends FeatureNames> {
+  isEnabled: boolean
+  props: IFeatureManager[T]
+}
+
 export interface RegisterableFeature<K extends FeatureNames> {
   name: K
   schema: Schema<IFeatureManager[K]>

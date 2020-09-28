@@ -3,9 +3,8 @@ import { get } from 'lodash'
 
 import * as vfnConstants from '../shared/util/verification'
 
-import { FeatureNames } from './feature-manager/types'
 import { formsgSdkMode } from './config'
-import featureManager from './feature-manager'
+import featureManager, { FeatureNames } from './feature-manager'
 
 const formsgSdk = formsgSdkPackage({
   webhookSecretKey: get(
