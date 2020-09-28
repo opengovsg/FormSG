@@ -1,8 +1,7 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import featureManager from '../../../config/feature-manager'
-import { FeatureNames } from '../../../config/feature-manager/types'
+import featureManager, { FeatureNames } from '../../../config/feature-manager'
 
 import * as verification from './verification.controller'
 
