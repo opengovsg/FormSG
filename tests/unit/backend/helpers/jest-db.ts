@@ -1,22 +1,21 @@
-// @ts-ignore
 import mongoSetup from '@shelf/jest-mongodb/setup'
-// @ts-ignore
 import mongoTeardown from '@shelf/jest-mongodb/teardown'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getUserModel from 'src/app/models/user.server.model'
+import { IAgencySchema, IUserSchema } from 'src/types'
 
 /**
  * Connect to the in-memory database using MONGO_URL exposed by
  * \@shelf/jest-mongodb.
  */
-const connect = async () => {
+const connect = async (): Promise<typeof mongoose> => {
   // Do it here so each test can have it's own mongoose instance.
   await mongoSetup()
   // process.env.MONGO_URL is now set by jest-mongodb.
-  const conn = await mongoose.connect(process.env.MONGO_URL!, {
+  const conn = await mongoose.connect(process.env.MONGO_URL ?? '', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
@@ -28,7 +27,7 @@ const connect = async () => {
 /**
  * Disconnect all mongoose connections.
  */
-const closeDatabase = async () => {
+const closeDatabase = async (): Promise<void> => {
   await mongoose.disconnect()
   await mongoTeardown()
 }
@@ -36,7 +35,7 @@ const closeDatabase = async () => {
 /**
  * Remove all the data for all db collections.
  */
-const clearDatabase = async () => {
+const clearDatabase = async (): Promise<void> => {
   const collections = mongoose.connection.collections
 
   for (const key in collections) {
@@ -45,7 +44,7 @@ const clearDatabase = async () => {
   }
 }
 
-const clearCollection = async (collection: string) => {
+const clearCollection = async (collection: string): Promise<void> => {
   await mongoose.connection.collections[collection].deleteMany({})
 }
 
@@ -53,7 +52,7 @@ const insertDefaultAgency = async ({
   mailDomain = 'test.gov.sg',
 }: {
   mailDomain?: string
-} = {}) => {
+} = {}): Promise<IAgencySchema> => {
   const Agency = getAgencyModel(mongoose)
   const agency = await Agency.create({
     shortName: 'govtest',
@@ -75,7 +74,7 @@ const insertUser = async ({
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
-}) => {
+}): Promise<IUserSchema> => {
   const User = getUserModel(mongoose)
 
   return User.create({
@@ -99,7 +98,10 @@ const insertFormCollectionReqs = async ({
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
-} = {}) => {
+} = {}): Promise<{
+  agency: IAgencySchema
+  user: IUserSchema
+}> => {
   const User = getUserModel(mongoose)
 
   const agency = await insertDefaultAgency({ mailDomain })

@@ -149,6 +149,7 @@ export const updateUserContact = async (
   }
 
   admin.contact = contact
+  admin.updatedAt = new Date()
   return admin.save()
 }
 
@@ -182,6 +183,7 @@ export const retrieveUser = (
     UserModel.upsertUser({
       email,
       agency: agencyId,
+      lastAccessed: new Date(),
     }),
     (error) => {
       logger.error({
