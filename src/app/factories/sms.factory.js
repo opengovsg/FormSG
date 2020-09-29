@@ -1,6 +1,9 @@
 const twilio = require('twilio')
+const {
+  sendVerificationOtp,
+  sendAdminContactOtp,
+} = require('../services/sms/sms.service')
 const featureManager = require('../../config/feature-manager').default
-const smsService = require('../services/sms.service')
 
 const smsFactory = ({ isEnabled, props }) => {
   let twilioClient
@@ -18,12 +21,7 @@ const smsFactory = ({ isEnabled, props }) => {
   return {
     async sendVerificationOtp(recipient, otp, formId) {
       if (isEnabled) {
-        return smsService.sendVerificationOtp(
-          recipient,
-          otp,
-          formId,
-          twilioConfig,
-        )
+        return sendVerificationOtp(recipient, otp, formId, twilioConfig)
       } else {
         throw new Error(
           `Verification OTP has not been configured to be sent for mobile fields`,
@@ -32,12 +30,7 @@ const smsFactory = ({ isEnabled, props }) => {
     },
     async sendAdminContactOtp(recipient, otp, userId) {
       if (isEnabled) {
-        return smsService.sendAdminContactOtp(
-          recipient,
-          otp,
-          userId,
-          twilioConfig,
-        )
+        return sendAdminContactOtp(recipient, otp, userId, twilioConfig)
       } else {
         throw new Error(`Send Admin Contact OTP has not been enabled`)
       }

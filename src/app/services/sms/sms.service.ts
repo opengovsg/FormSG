@@ -3,19 +3,22 @@ import mongoose from 'mongoose'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
-import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
-import { isPhoneNumber } from '../../shared/util/phone-num-validation'
-import { VfnErrors } from '../../shared/util/verification'
+import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { isPhoneNumber } from '../../../shared/util/phone-num-validation'
+import { VfnErrors } from '../../../shared/util/verification'
+import { AdminContactOtpData, FormOtpData } from '../../../types'
+import getFormModel from '../../models/form.server.model'
+
+import getSmsCountModel from './sms_count.server.model'
+import { SmsSendError } from './sms.errors'
 import {
-  AdminContactOtpData,
-  FormOtpData,
   LogSmsParams,
   LogType,
   SmsType,
-} from '../../types'
-import getFormModel from '../models/form.server.model'
-import getSmsCountModel from '../models/sms_count.server.model'
+  TwilioConfig,
+  TwilioCredentials,
+} from './sms.types'
 
 const logger = createLoggerWithLabel(module)
 const SmsCount = getSmsCountModel(mongoose)
@@ -27,13 +30,6 @@ const secretsManager = new SecretsManager({ region: config.aws.region })
 // secretsManager, the app will need to be redeployed to retrieve new
 // credentials, or wait 10 seconds before.
 const twilioClientCache = new NodeCache({ deleteOnExpire: true, stdTTL: 10 })
-
-type TwilioCredentials = {
-  accountSid: string
-  apiKey: string
-  apiSecret: string
-  messagingServiceSid: string
-}
 
 /**
  * Retrieves credentials from secrets manager
@@ -69,11 +65,6 @@ const getCredentials = async (
     })
   }
   return null
-}
-
-type TwilioConfig = {
-  client: Twilio.Twilio
-  msgSrvcSid: string
 }
 
 /**
@@ -179,7 +170,17 @@ const send = async (
       // Sent but with error code.
       // Throw error to be caught in catch block.
       if (!sid || errorCode) {
-        throw new TwilioError(errorMessage, errorCode, status)
+        const smsSendError = new SmsSendError(errorMessage)
+        logger.error({
+          message: 'Error sending SMS OTP via Twilio',
+          meta: {
+            action: 'send',
+            errorCode,
+            status,
+          },
+          error: smsSendError,
+        })
+        throw smsSendError
       }
 
       // Log success
@@ -249,7 +250,7 @@ const send = async (
  * @param formId Form id for logging.
  *
  */
-const sendVerificationOtp = async (
+export const sendVerificationOtp = async (
   recipient: string,
   otp: string,
   formId: string,
@@ -282,7 +283,7 @@ const sendVerificationOtp = async (
   return send(twilioData, otpData, recipient, message, SmsType.verification)
 }
 
-const sendAdminContactOtp = async (
+export const sendAdminContactOtp = async (
   recipient: string,
   otp: string,
   userId: string,
@@ -303,25 +304,4 @@ const sendAdminContactOtp = async (
   }
 
   return send(defaultConfig, otpData, recipient, message, SmsType.adminContact)
-}
-
-class TwilioError extends Error {
-  code: number
-  status: string
-
-  constructor(message: string, code: number, status: string) {
-    super(message)
-    this.code = code
-    this.status = status
-    this.name = this.constructor.name
-
-    // Set the prototype explicitly.
-    // See https://github.com/facebook/jest/issues/8279
-    Object.setPrototypeOf(this, TwilioError.prototype)
-  }
-}
-
-module.exports = {
-  sendVerificationOtp,
-  sendAdminContactOtp,
 }
