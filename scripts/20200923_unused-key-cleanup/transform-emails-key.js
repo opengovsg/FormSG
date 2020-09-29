@@ -86,11 +86,15 @@ db.getCollection('forms').find({ emails: { $regex: /,/ }, responseMode: 'email' 
 // Check total forms count with responseMode email and emails in correct format
 // ~ Should be the same number as the total number of email mode forms
 let isValidCountAfter = 0
+let invalidEmails = []
 db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
   let isValid = form.emails.every((email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     return re.test(email)
   })
   isValidCountAfter += (isValid ? 1 : 0)
+  if (!isValid) invalidEmails.push({ emails: form.emails, id: form._id, status: form.status, created: form.created, lastModified: form.lastModified })
 })
 print('isValidCountAfter', isValidCountAfter)
+print('invalid count', invalidEmails.length)
+print('invalid forms and emails', invalidEmails)
