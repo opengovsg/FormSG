@@ -179,6 +179,7 @@
     "@types/cookie-parser": "^1.4.2",
     "@types/ejs": "^3.0.4",
     "@types/express": "^4.17.8",
+    "@types/express-rate-limit": "^5.1.0",
     "@types/express-session": "^1.17.0",
     "@types/has-ansi": "^3.0.0",
     "@types/helmet": "0.0.48",
