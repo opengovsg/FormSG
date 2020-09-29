@@ -2,7 +2,7 @@ import {
   IBounceNotification,
   IDeliveryNotification,
   IEmailNotification,
-} from 'src/types'
+} from '../../../types'
 /**
  * Extracts custom headers which we send with all emails, such as form ID, submission ID
  * and email type (admin response, email confirmation OTP etc).
@@ -26,11 +26,30 @@ export const extractHeader = (
  * @returns true if the email as bounced, false otherwise
  */
 export const hasEmailBounced = (
-  bounceInfo: IBounceNotification,
+  snsInfo: IEmailNotification,
   email: string,
-): boolean => {
-  return bounceInfo.bounce.bouncedRecipients.some(
-    (emailInfo) => emailInfo.emailAddress === email,
+): snsInfo is IBounceNotification => {
+  return (
+    isBounceNotification(snsInfo) &&
+    snsInfo.bounce.bouncedRecipients.some(
+      (emailInfo) => emailInfo.emailAddress === email,
+    )
+  )
+}
+
+/**
+ * Whether a bounce notification says a given email has been delivered.
+ * @param bounceInfo Bounce notification from SNS
+ * @param email Email address to check
+ * @returns true if the email as bounced, false otherwise
+ */
+export const hasEmailBeenDelivered = (
+  snsInfo: IEmailNotification,
+  email: string,
+): snsInfo is IDeliveryNotification => {
+  return (
+    isDeliveryNotification(snsInfo) &&
+    snsInfo.delivery.recipients.includes(email)
   )
 }
 

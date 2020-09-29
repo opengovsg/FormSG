@@ -1,24 +1,31 @@
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
+import { ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
-import { OperationOptions } from 'retry'
 import validator from 'validator'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
 import {
-  AutoReplyOptions,
+  AutoreplySummaryRenderData,
+  BounceNotificationHtmlData,
+  BounceType,
   IEmailFormSchema,
-  IFormSchema,
-  IPopulatedForm,
   ISubmissionSchema,
+  MailOptions,
+  MailServiceParams,
+  SendAutoReplyEmailsArgs,
+  SendMailOptions,
+  SendSingleAutoreplyMailArgs,
 } from '../../types'
 import { EMAIL_HEADERS, EmailType } from '../constants/mail'
+import { MailSendError } from '../modules/mail/mail.errors'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
+  generateBounceNotificationHtml,
   generateLoginOtpHtml,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
@@ -26,57 +33,6 @@ import {
 } from '../utils/mail'
 
 const logger = createLoggerWithLabel(module)
-
-type SendMailOptions = {
-  mailId?: string
-  formId?: string
-}
-
-type SendSingleAutoreplyMailArgs = {
-  form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
-  submission: Pick<ISubmissionSchema, 'id' | 'created'>
-  autoReplyMailData: AutoReplyMailData
-  attachments: Mail.Attachment[]
-  formSummaryRenderData: AutoreplySummaryRenderData
-  index: number
-}
-
-export type SendAutoReplyEmailsArgs = {
-  form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
-  submission: Pick<ISubmissionSchema, 'id' | 'created'>
-  attachments?: Mail.Attachment[]
-  responsesData: { question: string; answerTemplate: string[] }[]
-  autoReplyMailDatas: AutoReplyMailData[]
-}
-
-type MailServiceParams = {
-  appName?: string
-  appUrl?: string
-  transporter?: Mail
-  senderMail?: string
-  retryParams?: Partial<OperationOptions>
-}
-
-type AutoReplyMailData = {
-  email: string
-  subject?: AutoReplyOptions['autoReplySubject']
-  sender?: AutoReplyOptions['autoReplySender']
-  body?: AutoReplyOptions['autoReplyMessage']
-  includeFormSummary?: AutoReplyOptions['includeFormSummary']
-}
-
-export type AutoreplySummaryRenderData = {
-  refNo: ISubmissionSchema['_id']
-  formTitle: IFormSchema['title']
-  submissionTime: string
-  // TODO (#42): Add proper types once the type is determined.
-  formData: any
-  formUrl: string
-}
-
-export type MailOptions = Omit<Mail.Options, 'to'> & {
-  to: string | string[]
-}
 
 const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
   retries: 3,
@@ -302,9 +258,10 @@ export class MailService {
    * Sends a login otp email to a valid email
    * @param recipient the recipient email address
    * @param otp the OTP to send
-   * @throws error if mail fails, to be handled by the caller
+   * @returns ok(never) if sending of mail succeeds
+   * @returns err(MailSendError) if sending of mail fails, to be handled by the caller
    */
-  sendLoginOtp = async ({
+  sendLoginOtp = ({
     recipient,
     otp,
     ipAddress,
@@ -312,23 +269,82 @@ export class MailService {
     recipient: string
     otp: string
     ipAddress: string
+  }): ResultAsync<any, MailSendError> => {
+    return generateLoginOtpHtml({
+      appName: this.#appName,
+      appUrl: this.#appUrl,
+      ipAddress: ipAddress,
+      otp,
+    }).andThen((loginHtml) => {
+      const mail: MailOptions = {
+        to: recipient,
+        from: this.#senderFromString,
+        subject: `One-Time Password (OTP) for ${this.#appName}`,
+        html: loginHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.LoginOtp,
+        },
+      }
+
+      return ResultAsync.fromPromise(
+        this.#sendNodeMail(mail, { mailId: 'OTP' }),
+        (error) => {
+          logger.error({
+            message: 'Error sending login OTP to email',
+            meta: {
+              action: 'sendLoginOtp',
+              recipient,
+            },
+            error,
+          })
+
+          return new MailSendError()
+        },
+      )
+    })
+  }
+
+  /**
+   * Sends a notification for critical bounce
+   * @param args the parameter object
+   * @param args.emailRecipients emails to send to
+   * @param args.bouncedRecipients the emails which caused the critical bounce
+   * @param args.bounceType bounce type given by SNS
+   * @param args.formTitle title of form
+   * @param args.formId ID of form
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendBounceNotification = async ({
+    emailRecipients,
+    bouncedRecipients,
+    bounceType,
+    formTitle,
+    formId,
+  }: {
+    emailRecipients: string[]
+    bouncedRecipients: string[]
+    bounceType: BounceType | undefined
+    formTitle: string
+    formId: string
   }) => {
+    const htmlData: BounceNotificationHtmlData = {
+      formTitle,
+      formLink: `${this.#appUrl}/${formId}`,
+      bouncedRecipients: bouncedRecipients.join(', '),
+      appName: this.#appName,
+    }
     const mail: MailOptions = {
-      to: recipient,
+      to: emailRecipients,
       from: this.#senderFromString,
-      subject: `One-Time Password (OTP) for ${this.#appName}`,
-      html: await generateLoginOtpHtml({
-        appName: this.#appName,
-        appUrl: this.#appUrl,
-        ipAddress: ipAddress,
-        otp,
-      }),
+      subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
+      html: await generateBounceNotificationHtml(htmlData, bounceType),
       headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.LoginOtp,
+        [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
+        [EMAIL_HEADERS.formId]: formId,
       },
     }
 
-    return this.#sendNodeMail(mail, { mailId: 'OTP' })
+    return this.#sendNodeMail(mail, { mailId: 'bounce' })
   }
 
   /**

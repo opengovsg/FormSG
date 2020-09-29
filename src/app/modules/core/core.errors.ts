@@ -2,7 +2,7 @@
  * A custom base error class that encapsulates the name, message, status code,
  * and logging meta string (if any) for the error.
  */
-export abstract class ApplicationError extends Error {
+export class ApplicationError extends Error {
   /**
    * Http status code for the error to be returned in the response.
    */
@@ -24,5 +24,11 @@ export abstract class ApplicationError extends Error {
     this.status = status || 500
 
     this.meta = meta
+  }
+}
+
+export class DatabaseError extends ApplicationError {
+  constructor(message?: string) {
+    super(message)
   }
 }

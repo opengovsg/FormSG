@@ -28,6 +28,14 @@
   position: relative;
 }
 
+@media not all and (min-width: 768px) {
+  .navbar__avatar__avatar {
+    height: 36px;
+    width: 36px;
+    font-size: 14px;
+  }
+}
+
 .navbar__avatar__avatar--alert {
   position: absolute;
   bottom: 12px;

@@ -98,7 +98,10 @@ const compileUserModel = (db: Mongoose) => {
         runValidators: true,
         setDefaultsOnInsert: true,
       },
-    )
+    ).populate({
+      path: 'agency',
+      model: AGENCY_SCHEMA_ID,
+    })
   }
 
   return db.model<IUserSchema, IUserModel>(USER_SCHEMA_ID, UserSchema)

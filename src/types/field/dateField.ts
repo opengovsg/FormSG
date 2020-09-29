@@ -13,7 +13,6 @@ export type DateValidationOptions = {
 }
 
 export interface IDateField extends IField {
-  isFutureOnly: boolean
   dateValidation: DateValidationOptions
 }
 

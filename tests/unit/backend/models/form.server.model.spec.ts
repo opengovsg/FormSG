@@ -12,6 +12,7 @@ import {
   IUserSchema,
   Permission,
   ResponseMode,
+  Status,
 } from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
@@ -674,6 +675,35 @@ describe('Form Model', () => {
   })
 
   describe('Statics', () => {
+    describe('deactivateById', () => {
+      it('should correctly deactivate form for valid ID', async () => {
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: preloadedAdmin,
+          status: Status.Public,
+        })
+        const form = await Form.create(formParams)
+        await Form.deactivateById(form._id)
+        const updated = await Form.findById(form._id)
+        expect(updated!.status).toBe('PRIVATE')
+      })
+
+      it('should not deactivate archived form', async () => {
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: preloadedAdmin,
+          status: Status.Archived,
+        })
+        const form = await Form.create(formParams)
+        await Form.deactivateById(form._id)
+        const updated = await Form.findById(form._id)
+        expect(updated!.status).toBe('ARCHIVED')
+      })
+
+      it('should return null for invalid form ID', async () => {
+        const returned = await Form.deactivateById(String(new ObjectID()))
+        expect(returned).toBeNull()
+      })
+    })
+
     describe('getFullFormById', () => {
       it('should return null when the formId is invalid', async () => {
         // Arrange

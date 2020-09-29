@@ -38,4 +38,4 @@ EXPOSE 5000
 # e.g. chromium when launched to create a new PDF
 ENTRYPOINT [ "tini", "--" ]
 # Create local S3 buckets before building the app
-CMD sh init-localstack.sh && npm run docker-dev
+CMD npm run docker-dev

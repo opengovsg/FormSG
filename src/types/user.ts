@@ -11,7 +11,7 @@ export interface IUser {
   agency: IAgencySchema['_id']
   contact?: string
   created?: Date
-  betaFlag?: Record<string, never>
+  betaFlags?: Record<string, never>
   _id?: Document['_id']
 }
 
@@ -20,9 +20,16 @@ export interface IUserSchema extends IUser, Document {
 }
 
 export interface IUserModel extends Model<IUserSchema> {
+  /**
+   * Upsert into User collection with given email and agencyId.
+   * If user with given email does not exist, a new document will be created.
+   * If user with given email already exists, the user's agency will be updated
+   * and populated before being returned.
+   * @returns the user document after upsert with populated agency details
+   */
   upsertUser: (
     upsertParams: Pick<IUser, 'email' | 'agency'>,
-  ) => Promise<IUserSchema>
+  ) => Promise<IPopulatedUser>
 }
 
 export interface IPopulatedUser extends IUserSchema {

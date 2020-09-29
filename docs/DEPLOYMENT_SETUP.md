@@ -158,20 +158,20 @@ The following env variables are set in Travis:
 
 #### Email and Nodemailer
 
-| Variable              | Description                                                                                                                                                                                                         |
-| :-------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SES_HOST`            | SMTP hostname.                                                                                                                                                                                                      |
-| `SES_PORT`            | SMTP port number.                                                                                                                                                                                                   |
-| `SES_USER`            | SMTP username.                                                                                                                                                                                                      |
-| `SES_PASS`            | SMTP password.                                                                                                                                                                                                      |
-| `SES_MAX_MESSAGES`    | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`.                      |
-| `SES_POOL`            | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                                     |
-| `MAIL_FROM`           | Sender email address. Defaults to `'donotreply@mail.form.gov.sg'`.                                                                                                                                                  |
-| `MAIL_SOCKET_TIMEOUT` | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                                               |
-| `MAIL_LOGGER`         | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                                        |
-| `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                                                   |
-| `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                                            |
-| `BOUNCE_LIFE_SPAN`    | Time in milliseconds that bounces are tracked for each form. Defaults to 10800000ms or 3 hours. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
+| Variable              | Description                                                                                                                                                                                                          |
+| :-------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SES_HOST`            | SMTP hostname.                                                                                                                                                                                                       |
+| `SES_PORT`            | SMTP port number.                                                                                                                                                                                                    |
+| `SES_USER`            | SMTP username.                                                                                                                                                                                                       |
+| `SES_PASS`            | SMTP password.                                                                                                                                                                                                       |
+| `SES_MAX_MESSAGES`    | Nodemailer configuration. Connection removed and new one created when this limit is reached. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `100`.                       |
+| `SES_POOL`            | Connection pool to send email in parallel to the SMTP server. Defaults to `38`.                                                                                                                                      |
+| `MAIL_FROM`           | Sender email address. Defaults to `'donotreply@mail.form.gov.sg'`.                                                                                                                                                   |
+| `MAIL_SOCKET_TIMEOUT` | Milliseconds of inactivity to allow before killing a connection. This helps to keep the connection up-to-date for long-running email messaging. Defaults to `600000`.                                                |
+| `MAIL_LOGGER`         | If set to true then logs to console. If value is not set or is false then nothing is logged.                                                                                                                         |
+| `MAIL_DEBUG`          | If set to `true`, then logs SMTP traffic, otherwise logs only transaction events.                                                                                                                                    |
+| `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                                             |
+| `BOUNCE_LIFE_SPAN`    | Time in milliseconds that bounces are tracked for each form. Defaults to 86400000ms or 24 hours. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
 
 ### Additional Features
 
@@ -234,32 +234,32 @@ If this feature is enabled, forms will support authentication via [SingPass](htt
 
 Note that MyInfo is currently not supported for storage mode forms and enabling SingPass/CorpPass on storage mode forms also requires [SingPass/CorpPass for Storage Mode](#webhooks-and-singpasscorppass-for-storage-mode) to be enabled.
 
-| Variable                        | Description                                                                                                                                                            |
-| :------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPCP_COOKIE_MAX_AGE_PRESERVED` | Duration of SingPass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                           |
-| `SINGPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for SingPass authentication.                                                                             |
-| `SINGPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for SingPass authentication.                                                                               |
-| `SINGPASS_IDP_LOGIN_URL`        | URL of SingPass Login Page.                                                                                                                                            |
-| `SINGPASS_IDP_ENDPOINT`         | URL to retrieve NRIC of SingPass-validated user from.                                                                                                                  |
-| `SINGPASS_IDP_ID`               | Partner ID of National Digital Identity Office for SingPass authentication.                                                                                            |
-| `CORPPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for CorpPass authentication.                                                                             |
-| `CORPPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for CorpPass authentication.                                                                               |
-| `CORPPASS_IDP_LOGIN_URL`        | URL of CorpPass Login Page.                                                                                                                                            |
-| `CORPPASS_IDP_ENDPOINT`         | URL to retrieve UEN of CorpPass-validated user from.                                                                                                                   |
-| `CORPPASS_IDP_ID`               | Partner ID of National Digital Identity Office for CorpPass authentication.                                                                                            |
-| `SP_FORMSG_KEY_PATH`            | Path to X.509 key used for SingPass related communication with National Digital Identity office.                                                                       |
-| `SP_FORMSG_CERT_PATH`           | Path to X.509 cert used for SingPass related communication with National Digital Identity office.                                                                      |
-| `SP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for SingPass related communication.                                                                         |
-| `CP_FORMSG_KEY_PATH`            | Path to X.509 key used for CorpPass related communication with National Digital Identity office.                                                                       |
-| `CP_FORMSG_CERT_PATH`           | Path to X.509 cert used for CorpPass related communication with National Digital Identity office.                                                                      |
-| `CP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for CorpPass related communication.                                                                         |
-| `MYINFO_CLIENT_CONFIG`          | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints. |
-| `MYINFO_FORMSG_KEY_PATH`        | Filepath to MyInfo private key, which is used to decrypt returned responses.                                                                                           |
-| `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                             |
-| `IS_SP_MAINTENANCE`             | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                    |
-| `IS_CP_MAINTENANCE`             | If set, displays a banner message on CorpPass forms.                                                                                                                   |
-| `FILE_SYSTEM_ID`             | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                                   |
-| `CERT_PATH`             | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to SingPass, CorpPass and MyInfo.                                                                                                                   |
+| Variable                        | Description                                                                                                                                                                                     |
+| :------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SPCP_COOKIE_MAX_AGE_PRESERVED` | Duration of SingPass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                                                    |
+| `SINGPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for SingPass authentication.                                                                                                      |
+| `SINGPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for SingPass authentication.                                                                                                        |
+| `SINGPASS_IDP_LOGIN_URL`        | URL of SingPass Login Page.                                                                                                                                                                     |
+| `SINGPASS_IDP_ENDPOINT`         | URL to retrieve NRIC of SingPass-validated user from.                                                                                                                                           |
+| `SINGPASS_IDP_ID`               | Partner ID of National Digital Identity Office for SingPass authentication.                                                                                                                     |
+| `CORPPASS_ESRVC_ID`             | e-service ID registered with National Digital Identity office for CorpPass authentication.                                                                                                      |
+| `CORPPASS_PARTNER_ENTITY_ID`    | Partner ID registered with National Digital Identity Office for CorpPass authentication.                                                                                                        |
+| `CORPPASS_IDP_LOGIN_URL`        | URL of CorpPass Login Page.                                                                                                                                                                     |
+| `CORPPASS_IDP_ENDPOINT`         | URL to retrieve UEN of CorpPass-validated user from.                                                                                                                                            |
+| `CORPPASS_IDP_ID`               | Partner ID of National Digital Identity Office for CorpPass authentication.                                                                                                                     |
+| `SP_FORMSG_KEY_PATH`            | Path to X.509 key used for SingPass related communication with National Digital Identity office.                                                                                                |
+| `SP_FORMSG_CERT_PATH`           | Path to X.509 cert used for SingPass related communication with National Digital Identity office.                                                                                               |
+| `SP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for SingPass related communication.                                                                                                  |
+| `CP_FORMSG_KEY_PATH`            | Path to X.509 key used for CorpPass related communication with National Digital Identity office.                                                                                                |
+| `CP_FORMSG_CERT_PATH`           | Path to X.509 cert used for CorpPass related communication with National Digital Identity office.                                                                                               |
+| `CP_IDP_CERT_PATH`              | Path to National Digital Identity office's X.509 cert used for CorpPass related communication.                                                                                                  |
+| `MYINFO_CLIENT_CONFIG`          | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints.                          |
+| `MYINFO_FORMSG_KEY_PATH`        | Filepath to MyInfo private key, which is used to decrypt returned responses.                                                                                                                    |
+| `MYINFO_APP_KEY`                | (deprecated) Directly specify contents of the MyInfo FormSG private key. Only works if `NODE_ENV` is set to `development`.                                                                      |
+| `IS_SP_MAINTENANCE`             | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                             |
+| `IS_CP_MAINTENANCE`             | If set, displays a banner message on CorpPass forms.                                                                                                                                            |
+| `FILE_SYSTEM_ID`                | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                            |
+| `CERT_PATH`                     | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to SingPass, CorpPass and MyInfo. |
 
 #### Verified Emails/SMSes
 

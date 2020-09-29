@@ -1,4 +1,4 @@
-import CSV from 'csv-string'
+import { stringify } from 'csv-string'
 import moment from 'moment-timezone'
 
 import CsvMergedHeadersGenerator from '../../../../../src/public/modules/forms/helpers/CsvMergedHeadersGenerator'
@@ -273,7 +273,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Assert
         // Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
-        const expectedHeaderRow = CSV.stringify([
+        const expectedHeaderRow = stringify([
           'Reference number',
           'Timestamp',
           mockDecryptedRecord[0].question,
@@ -281,7 +281,7 @@ describe('CsvMergedHeadersGenerator', () => {
           mockDecryptedRecord[2].question,
           mockDecryptedRecord[3].question,
         ])
-        const expectedSubmissionRow = CSV.stringify([
+        const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
           moment(mockRecord.created)
             .tz('Asia/Singapore')
@@ -335,7 +335,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Assert
         // Should have 1 header row and 2 submission row
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
-        const expectedHeaderRow = CSV.stringify([
+        const expectedHeaderRow = stringify([
           'Reference number',
           'Timestamp',
           mockFirstDecryptedRecord[0].question,
@@ -343,7 +343,7 @@ describe('CsvMergedHeadersGenerator', () => {
           mockFirstDecryptedRecord[2].question,
           mockFirstDecryptedRecord[3].question,
         ])
-        const expectedSubmissionRow1 = CSV.stringify([
+        const expectedSubmissionRow1 = stringify([
           mockFirstRecord.submissionId,
           moment(mockFirstRecord.created)
             .tz('Asia/Singapore')
@@ -355,7 +355,7 @@ describe('CsvMergedHeadersGenerator', () => {
         ])
         // Second processed row should be mockReversedRecord's answers in reversed
         // order since the fieldIds are reversed
-        const expectedSubmissionRow2 = CSV.stringify([
+        const expectedSubmissionRow2 = stringify([
           mockReversedRecord.submissionId,
           moment(mockReversedRecord.created)
             .tz('Asia/Singapore')
@@ -408,7 +408,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Assert
         // Should have 1 header row and 2 submission row
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
-        const expectedHeaderRow = CSV.stringify([
+        const expectedHeaderRow = stringify([
           'Reference number',
           'Timestamp',
           mockDecryptedRecord[0].question,
@@ -421,7 +421,7 @@ describe('CsvMergedHeadersGenerator', () => {
         ])
 
         // First row should be the first submission
-        const expectedSubmissionRow1 = CSV.stringify([
+        const expectedSubmissionRow1 = stringify([
           mockRecord.submissionId,
           moment(mockRecord.created)
             .tz('Asia/Singapore')
@@ -436,7 +436,7 @@ describe('CsvMergedHeadersGenerator', () => {
         // Second processed row should be second submission, with fields it does
         // not have blank.
         // Should only have questionId of `intersectFieldId` and `new` filled.
-        const expectedSubmissionRow2 = CSV.stringify([
+        const expectedSubmissionRow2 = stringify([
           mockNewRecord.submissionId,
           moment(mockNewRecord.created)
             .tz('Asia/Singapore')
@@ -476,13 +476,13 @@ describe('CsvMergedHeadersGenerator', () => {
         // Assert
         // Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
-        const expectedHeaderRow = CSV.stringify([
+        const expectedHeaderRow = stringify([
           'Reference number',
           'Timestamp',
           mockDecryptedRecord[0].question,
         ])
 
-        const expectedSubmissionRow = CSV.stringify([
+        const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
           moment(mockRecord.created)
             .tz('Asia/Singapore')
@@ -524,14 +524,14 @@ describe('CsvMergedHeadersGenerator', () => {
         // Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
         // Question is repeated for two columns
-        const expectedHeaderRow = CSV.stringify([
+        const expectedHeaderRow = stringify([
           'Reference number',
           'Timestamp',
           mockDecryptedRecord[0].question,
           mockDecryptedRecord[0].question,
         ])
 
-        const expectedSubmissionRow = CSV.stringify([
+        const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
           moment(mockRecord.created)
             .tz('Asia/Singapore')
@@ -571,14 +571,14 @@ describe('CsvMergedHeadersGenerator', () => {
         // Assert
         // Should have 1 header row and 2 submission rows
         expect(generator.records.length).toEqual(3 + BOM_LENGTH)
-        const expectedHeaderRow = CSV.stringify([
+        const expectedHeaderRow = stringify([
           'Reference number',
           'Timestamp',
           mockAnswerArray[0].question,
         ])
 
         // First row is answer array
-        const expectedSubmissionRow1 = CSV.stringify([
+        const expectedSubmissionRow1 = stringify([
           mockAnswerArrayRecord.submissionId,
           moment(mockAnswerArrayRecord.created)
             .tz('Asia/Singapore')
@@ -587,7 +587,7 @@ describe('CsvMergedHeadersGenerator', () => {
           mockAnswerArray[0].answerArray.join(';'),
         ])
         // Second row is answer, but same field Id, so same number of headers
-        const expectedSubmissionRow2 = CSV.stringify([
+        const expectedSubmissionRow2 = stringify([
           mockAnswerRecord.submissionId,
           moment(mockAnswerRecord.created)
             .tz('Asia/Singapore')
