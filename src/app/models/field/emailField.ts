@@ -1,5 +1,6 @@
 import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
+import validator from 'validator'
 
 import { IEmailFieldSchema, ResponseMode } from '../../../types'
 
@@ -49,19 +50,21 @@ const createEmailFieldSchema = () => {
         {
           type: String,
           trim: true,
-          match: [/.+\..+/, 'There are one or more invalid email domains.'],
         },
       ],
-      // If there allowedEmailDomains is empty, then all email domains should be allowed.
+      // If allowedEmailDomains is empty, then all email domains should be allowed.
       default: [],
       validate: {
         validator: (emailDomains: string[]) => {
           return (
             isEmpty(emailDomains) ||
-            new Set(emailDomains).size === emailDomains.length
+            (new Set(emailDomains).size === emailDomains.length &&
+              emailDomains.every((emailDomain) =>
+                validator.isEmail('bob' + emailDomain),
+              ))
           )
         },
-        message: 'There are one or more duplicate email domains.',
+        message: 'There are one or more duplicate or invalid email domains.',
       },
     },
   })
