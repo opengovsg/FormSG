@@ -3,7 +3,6 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import smsFactory from 'src/app/factories/sms.factory'
 import getFormModel from 'src/app/models/form.server.model'
 import getVerificationModel from 'src/app/models/verification.server.model'
 import {
@@ -14,6 +13,7 @@ import {
   verifyOtp,
 } from 'src/app/modules/verification/verification.service'
 import MailService from 'src/app/services/mail.service'
+import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { generateOtp } from 'src/app/utils/otp'
 import formsgSdk from 'src/config/formsg-sdk'
 import { BasicField, IUserSchema, IVerificationSchema } from 'src/types'
@@ -29,8 +29,8 @@ jest.mock('src/app/utils/otp')
 const MockGenerateOtp = mocked(generateOtp, true)
 jest.mock('src/config/formsg-sdk')
 const MockFormsgSdk = mocked(formsgSdk, true)
-jest.mock('src/app/factories/sms.factory')
-const MockSmsFactory = mocked(smsFactory, true)
+jest.mock('src/app/services/sms/sms.factory')
+const MockSmsFactory = mocked(SmsFactory, true)
 jest.mock('src/app/services/mail.service')
 const MockMailService = mocked(MailService, true)
 jest.mock('bcrypt')

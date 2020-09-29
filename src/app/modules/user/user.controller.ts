@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IPopulatedUser } from '../../../types'
-import SmsFactory from '../../factories/sms.factory'
+import { SmsFactory } from '../../services/sms/sms.factory'
 import { ApplicationError } from '../core/core.errors'
 
 import {

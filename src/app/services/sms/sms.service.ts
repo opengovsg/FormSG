@@ -201,6 +201,14 @@ const send = async (
         })
       })
 
+      logger.info({
+        message: 'Successfully sent sms',
+        meta: {
+          action: 'send',
+          otpData,
+        },
+      })
+
       return true
     })
     .catch((err) => {
