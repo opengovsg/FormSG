@@ -38,8 +38,8 @@
         <uib-tab-heading> MyInfo </uib-tab-heading>
         <!-- Only show fields if form type is not storage form -->
         <div ng-if="myform.authType==='SP' && !isStorageForm">
-          <div class="myinfo-category">PERSONAL</div>
           <div class="row">
+            <div class="myinfo-category">PERSONAL</div>
             <div
               class="col-sm-6 col-md-6 col-lg-6 col-xl-6 add-field-panel"
               ng-repeat="type in addField.myInfoTypes | filter: { category: 'personal'}"
@@ -62,8 +62,8 @@
 
           <hr />
 
-          <div class="myinfo-category">CONTACT</div>
           <div class="row">
+            <div class="myinfo-category">CONTACT</div>
             <div
               class="col-sm-6 col-md-6 col-lg-6 col-xl-6 add-field-panel"
               ng-repeat="type in addField.myInfoTypes | filter: { category: 'contact'}"
@@ -84,8 +84,8 @@
 
           <hr />
 
-          <div class="myinfo-category">EMPLOYMENT & EDUCATION</div>
           <div class="row">
+            <div class="myinfo-category">EMPLOYMENT & EDUCATION</div>
             <div
               class="col-sm-6 col-md-6 col-lg-6 col-xl-6 add-field-panel"
               ng-repeat="type in addField.myInfoTypes | filter: { category: 'employment_education'}"
@@ -106,8 +106,8 @@
 
           <hr />
 
-          <div class="myinfo-category">FAMILY</div>
           <div class="row">
+            <div class="myinfo-category">FAMILY</div>
             <div
               class="col-sm-6 col-md-6 col-lg-6 col-xl-6 add-field-panel"
               ng-repeat="type in addField.myInfoTypes | filter: { category: 'family'}"

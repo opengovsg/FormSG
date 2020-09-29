@@ -1,3 +1,10 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 /* Global Variables */
 
 a {
@@ -12,8 +19,13 @@ input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 30px white inset !important;
 }
 
+html,
 body {
-  overflow-x: hidden;
+  height: 100%;
+  margin: 0;
+}
+
+body {
   font-family: 'Muli', sans-serif;
   font-size: 16px;
   overscroll-behavior-y: none;
@@ -23,6 +35,17 @@ body {
   display: inline-block;
   vertical-align: middle;
   float: none;
+}
+
+.page-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-flow: column;
+  flex-flow: column;
+  height: 100vh;
 }
 
 /* ====================================================== */
@@ -132,6 +155,7 @@ textarea.input-custom {
 
 .input-custom:focus {
   border: solid 2px #2f60ce;
+  -webkit-box-shadow: none;
   box-shadow: none;
   outline: none;
 }
@@ -141,20 +165,34 @@ textarea.input-custom {
   border: solid 1px #ccc;
 }
 
-.input-custom::placeholder {
+.input-custom::-webkit-input-placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #b8b8b8;
+  opacity: 1; /* Firefox */
+}
+
+.input-custom::-moz-placeholder {
   /* Chrome, Firefox, Opera, Safari 10.1+ */
   color: #b8b8b8;
   opacity: 1; /* Firefox */
 }
 
 .input-custom:-ms-input-placeholder {
-  /* Internet Explorer 10-11 */
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
   color: #b8b8b8;
+  opacity: 1; /* Firefox */
 }
 
 .input-custom::-ms-input-placeholder {
-  /* Microsoft Edge */
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
   color: #b8b8b8;
+  opacity: 1; /* Firefox */
+}
+
+.input-custom::placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #b8b8b8;
+  opacity: 1; /* Firefox */
 }
 
 /* ====================================================== */
@@ -302,6 +340,8 @@ button.btn-delete > .bx-trash {
   padding: 2px;
   border-radius: 23px;
   background-color: #dcdcdc;
+  -webkit-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
   margin-bottom: 0;
 }
@@ -316,9 +356,17 @@ button.btn-delete > .bx-trash {
   width: 30px;
   background-color: white;
   border-radius: 50%;
+  -webkit-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
   border: solid 1px #b8b8b8;
   color: #b8b8b8;
@@ -344,6 +392,8 @@ button.btn-delete > .bx-trash {
 }
 
 .toggle-selector-on .toggle-selector-switch {
+  -webkit-transform: translateX(101%);
+  -ms-transform: translateX(101%);
   transform: translateX(101%);
   border: solid 1px #07926e;
   color: #07926e;
@@ -546,6 +596,7 @@ body #toast-container > div {
 }
 
 body #toast-container > div:hover {
+  -webkit-box-shadow: none;
   box-shadow: none;
 }
 
@@ -574,7 +625,11 @@ body #toast-container .toast .toast-message .toast-custom-icon {
   left: 10px;
   font-size: 35px;
   height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
 }
 
@@ -646,8 +701,14 @@ i.glyphicon-question-sign {
   width: 100%;
   background-color: rgba(255, 255, 255, 0.7);
   z-index: 1000;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
 }
 

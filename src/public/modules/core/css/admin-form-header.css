@@ -1,8 +1,21 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 /* Form header */
 
 #admin-form .vcenter {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
 }
 
@@ -10,6 +23,9 @@
   padding-top: 10px;
   padding-bottom: 10px;
   background-color: white;
+  -webkit-box-flex: 0;
+  -ms-flex: 0 1 auto;
+  flex: 0 1 auto;
 }
 
 #admin-form #form-header #header-myforms {
@@ -26,8 +42,14 @@
 
 #admin-form #form-header .right-spacer {
   margin-right: 15px;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
   justify-content: flex-end;
 }
 
@@ -48,6 +70,7 @@
 
 #admin-form #form-header #header-myforms a:hover {
   color: #2f60ce;
+  -webkit-text-decoration-line: none;
   text-decoration-line: none;
 }
 
@@ -61,6 +84,7 @@
   margin-bottom: 0;
   white-space: nowrap;
   overflow: hidden;
+  -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
 }
 
@@ -205,6 +229,8 @@
     width: 700px;
     top: 125px;
     left: 50%;
+    -webkit-transform: translate(-50%);
+    -ms-transform: translate(-50%);
     transform: translate(-50%);
   }
 
@@ -379,6 +405,7 @@
   margin-bottom: 10px;
   white-space: nowrap;
   overflow: hidden;
+  -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
 }
 
@@ -396,9 +423,15 @@
   cursor: pointer;
   height: 20px;
   width: 20px;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   font-size: 30px;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
   color: #979797;
   margin-left: 20px;

@@ -58,7 +58,7 @@ function startPageController(SpcpSession, Toastr) {
     if ($('#start-page-container').length) {
       let elementTop = $('#start-page-container').offset().top
       let elementBottom =
-        elementTop + $('#start-page-container').outerHeight() - 110
+        elementTop + $('#start-page-container').outerHeight() - 80
       let viewportTop = $(window).scrollTop()
       let viewportBottom = viewportTop + $(window).height()
       return elementBottom > viewportTop && elementTop < viewportBottom
@@ -74,6 +74,11 @@ function startPageController(SpcpSession, Toastr) {
     if (!header) {
       return
     }
+
+    const banner = document.getElementById('notification-banner')
+    const bannerHeight = banner ? `${banner.offsetHeight + 20}px` : '0px'
+    // Update height of header
+    header.style.paddingTop = bannerHeight
 
     if (isInViewport()) {
       header.style.visibility = 'hidden'

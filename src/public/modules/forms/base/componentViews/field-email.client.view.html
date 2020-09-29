@@ -36,6 +36,7 @@
         ng-required="vm.field.required"
         ng-disabled="vm.field.disabled"
         ng-pattern="vm.pattern"
+        validate-email-domain
         ng-model-options="{ allowInvalid: true }"
         ng-keyup="vm.forms.myForm[(vm.field._id || 'defaultID')].$setTouched()"
         placeholder="me@example.com"
@@ -58,6 +59,10 @@
       <div ng-message="pattern" class="alert-custom alert-error">
         <i class="bx bx-exclamation bx-md icon-spacing"></i>
         <span class="alert-msg">Please enter a valid email.</span>
+      </div>
+      <div ng-message="emailDomainValidator" class="alert-custom alert-error">
+        <i class="bx bx-exclamation bx-md icon-spacing"></i>
+        <span class="alert-msg">Not an allowed email domain</span>
       </div>
       <div ng-message="verified" class="alert-custom alert-error">
         <i class="bx bx-exclamation bx-md icon-spacing"></i>
