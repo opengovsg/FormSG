@@ -127,17 +127,6 @@ const getTwilio = async (
 }
 
 /**
- * Retrieve the relevant data required to send an OTP from given formId
- * @param formId The form to retrieve data from
- * @returns Relevant OTP data containing the linked messaging service name (if available), and form details such as its id and the admin.
- *
- */
-const getOtpDataFromForm = async (formId: string) => {
-  const otpData = await Form.getOtpData(formId)
-  return otpData
-}
-
-/**
  * Sends a message to a valid phone number
  * @param twilioConfig The configuration used to send OTPs with
  * @param twilioData.client The client to use
@@ -170,17 +159,7 @@ const send = async (
       // Sent but with error code.
       // Throw error to be caught in catch block.
       if (!sid || errorCode) {
-        const smsSendError = new SmsSendError(errorMessage)
-        logger.error({
-          message: 'Error sending SMS OTP via Twilio',
-          meta: {
-            action: 'send',
-            errorCode,
-            status,
-          },
-          error: smsSendError,
-        })
-        throw smsSendError
+        throw new SmsSendError(errorMessage, errorCode, status)
       }
 
       // Log success
@@ -241,7 +220,7 @@ const send = async (
       // Invalid number error code, throw a more reasonable error for error
       // handling.
       // See https://www.twilio.com/docs/api/errors/21211
-      if (err.code === 21211) {
+      if (err?.code === 21211) {
         const invalidOtpError = new Error(VfnErrors.InvalidMobileNumber)
         invalidOtpError.name = VfnErrors.SendOtpFailed
         throw invalidOtpError
@@ -263,7 +242,7 @@ export const sendVerificationOtp = async (
   otp: string,
   formId: string,
   defaultConfig: TwilioConfig,
-) => {
+): Promise<boolean> => {
   logger.info({
     message: `Sending verification OTP for ${formId}`,
     meta: {
@@ -271,7 +250,7 @@ export const sendVerificationOtp = async (
       formId,
     },
   })
-  const otpData = await getOtpDataFromForm(formId)
+  const otpData = await Form.getOtpData(formId)
 
   if (!otpData) {
     const errMsg = `Unable to retrieve otpData from ${formId}`
@@ -296,7 +275,7 @@ export const sendAdminContactOtp = async (
   otp: string,
   userId: string,
   defaultConfig: TwilioConfig,
-) => {
+): Promise<boolean> => {
   logger.info({
     message: `Sending admin contact verification OTP for ${userId}`,
     meta: {
