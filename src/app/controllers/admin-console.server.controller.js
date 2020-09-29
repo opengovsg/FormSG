@@ -428,7 +428,7 @@ let sortByCreated = [
 let searchSubmissionsForForm = (key, formId) => [
   {
     $match: {
-      key: mongoose.Types.ObjectId(formId),
+      [key]: mongoose.Types.ObjectId(formId),
     },
   },
 ]
