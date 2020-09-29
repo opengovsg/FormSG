@@ -111,12 +111,12 @@
 #admin-form #add-field .myinfo-category {
   font-size: 13px;
   margin-left: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 13px;
 }
 
 #admin-form #add-field hr {
   border: solid 1px #dee7eb;
-  margin-left: 5px;
+  margin: 0 13px;
 }
 
 #admin-form #add-field .nav-tabs {
