@@ -155,13 +155,10 @@
   border-bottom: 3px solid white;
 }
 
-#admin-form #add-field .tab-content {
-  padding: 20px 8px;
-}
-
 #admin-form #add-field .tab-content .tab-pane .row {
   margin-left: 0;
   margin-right: 0;
+  padding: 20px 8px;
 }
 
 #admin-form #add-field .add-field-panel {
