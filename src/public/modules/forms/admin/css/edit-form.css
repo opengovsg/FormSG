@@ -1,3 +1,10 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 .modal-body {
   overflow-x: hidden;
 }
@@ -5,6 +12,44 @@
 /* Center all dialogs */
 .modal-dialog {
   margin: auto;
+}
+
+#admin-form .admin-form-content .tab-content .tab-pane .logic-container,
+#admin-form .admin-form-content .tab-content .tab-pane .settings-container,
+#admin-form .admin-form-content .tab-content .tab-pane .share-container,
+#admin-form .admin-form-content .tab-content .tab-pane .results-container,
+#admin-form .admin-form-content .tab-content .tab-pane .build-container {
+  overflow: auto;
+  height: 100%;
+}
+
+#admin-form .admin-form-content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-flow: column;
+  flex-flow: column;
+
+  /* Height of header and navbar */
+  height: calc(100% - 135px);
+}
+
+#admin-form .admin-form-content .nav-pills {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 1 auto;
+  flex: 0 1 auto;
+}
+
+#admin-form .admin-form-content .tab-content {
+  height: 100%;
+
+  /* overflow: hidden; */
+}
+
+#admin-form .admin-form-content .tab-content .tab-pane {
+  height: 100%;
 }
 
 /* Left/bottom side of edit form: Add field icons */
@@ -22,9 +67,9 @@
 
 @media all and (min-width: 768px) {
   #admin-form #current-fields {
-    height: calc(100vh - 135px);
-    overflow-y: scroll;
     padding: 45px 10% 45px 10%;
+    overflow: auto;
+    height: 100%;
   }
 
   #admin-form #current-fields .current-field-item .current-field-title {
@@ -37,9 +82,9 @@
 #admin-form #add-field {
   float: left;
   width: 270px;
-  height: calc(100vh - 135px);
   overflow-y: scroll;
   background-color: #f0f4f6;
+  height: 100%;
 }
 
 #admin-form #add-field #myinfo-disable-screen .myinfo-storage-overlay {
@@ -53,7 +98,6 @@
   background-color: rgba(77, 104, 117, 0.9);
   color: white;
   padding: 168px 40px 168px 40px;
-  margin: -20px -11px -20px -11px;
 }
 
 #admin-form #add-field #myinfo-disable-screen a {
@@ -67,16 +111,18 @@
 #admin-form #add-field .myinfo-category {
   font-size: 13px;
   margin-left: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 13px;
 }
 
 #admin-form #add-field hr {
   border: solid 1px #dee7eb;
-  margin-left: 5px;
+  margin: 0 13px;
 }
 
 #admin-form #add-field .nav-tabs {
   width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
 }
 
@@ -109,13 +155,10 @@
   border-bottom: 3px solid white;
 }
 
-#admin-form #add-field .tab-content {
-  padding: 20px 8px;
-}
-
 #admin-form #add-field .tab-content .tab-pane .row {
   margin-left: 0;
   margin-right: 0;
+  padding: 20px 8px;
 }
 
 #admin-form #add-field .add-field-panel {
@@ -202,8 +245,14 @@
 #admin-form #add-field-mobile #add-field-btn {
   position: fixed;
   z-index: 50;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
   cursor: pointer;
   bottom: 10px;
@@ -242,6 +291,8 @@
 
 #add-field-modal .nav-tabs {
   width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
 }
 
@@ -278,8 +329,13 @@
 }
 
 #add-field-modal .add-field-modal-panel {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -ms-flex-wrap: wrap;
   flex-wrap: wrap;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
 }
 
@@ -323,8 +379,14 @@
   bottom: 30px;
   left: calc(50% - 25px);
   z-index: 2000;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
   color: #fff;
   font-size: 25px;
@@ -371,7 +433,11 @@
 
 #admin-form #current-fields .start-end-item {
   text-align: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
   font-size: 18px;
   line-height: 1.22;
@@ -379,11 +445,19 @@
 }
 
 #admin-form #current-fields .current-field-item {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
   flex-direction: row;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
   height: 60px;
   border: solid 1px #23489b;
+  -webkit-box-shadow: 1px 2px 6px 0 rgba(0, 0, 0, 0.1);
   box-shadow: 1px 2px 6px 0 rgba(0, 0, 0, 0.1);
   padding: 0 17px 0 17px;
   background-color: #fff;
@@ -427,6 +501,8 @@
   .current-field-item
   .current-field-icon
   *:first-child {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
 }
 
@@ -435,6 +511,7 @@
   line-height: 1.22;
   color: #4a4a4a;
   overflow: hidden;
+  -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -442,7 +519,11 @@
 #admin-form #current-fields .current-field-item .current-field-options,
 #admin-form #current-fields .current-field-item .current-field-opt-icon-group {
   margin-left: auto;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
 }
 
@@ -454,8 +535,14 @@
   background: none;
   border: none;
   outline: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
 }
 
@@ -467,8 +554,14 @@
   font-size: 10px;
   color: #767676;
   background-color: #f0f0f0;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
   justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
 }
 
@@ -517,6 +610,7 @@
 
 #admin-form #current-fields .current-field-hidden {
   border: 1px solid #dcdcdc;
+  -webkit-box-shadow: none;
   box-shadow: none;
 }
 
@@ -529,6 +623,7 @@
 
 #admin-form #edit-form {
   background-color: #fff;
+  height: 100%;
 }
 
 .edit-modal-window .modal-dialog {
@@ -547,7 +642,11 @@
 }
 
 .full-page-modal .modal-header > .modal-title {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
 }
 
@@ -572,6 +671,7 @@
   border: none;
   border-radius: 0;
   overflow: auto;
+  -webkit-box-shadow: none;
   box-shadow: none;
 }
 
@@ -606,7 +706,11 @@
   > .modal-content
   > .modal-body
   .preview-field-panel {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
   background-color: white;
   padding-top: 50px;
@@ -696,6 +800,8 @@
 }
 
 .edit-modal-window .modal-body > .row {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
 }
 
@@ -840,6 +946,8 @@
   position: absolute;
   bottom: 0;
   left: 0;
+  -webkit-transform: translate(-10px, 7px);
+  -ms-transform: translate(-10px, 7px);
   transform: translate(-10px, 7px);
 }
 
@@ -945,7 +1053,11 @@
 }
 
 .edit-modal-window .edit-panel .table-column-title {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
   padding-bottom: 10px;
 }
@@ -1002,7 +1114,10 @@
 /* Color options on Edit Start Page modal */
 
 .color-field {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -ms-flex-pack: distribute;
   justify-content: space-around;
 }
 
@@ -1032,6 +1147,8 @@
 }
 
 .color-field .selected-color-field {
+  -webkit-transform: scale(1.2);
+  -ms-transform: scale(1.2);
   transform: scale(1.2);
 }
 
@@ -1169,7 +1286,11 @@ a.modal-cancel-btn:hover {
 /* Components */
 
 .toggle-option {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
 }
 
@@ -1201,15 +1322,27 @@ a.modal-cancel-btn:hover {
 /* Image */
 
 #upload-image {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
   flex-direction: row;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
   justify-content: space-between;
   border: solid 1px #b8b8b8;
   background-color: #fff;
 }
 
 #image-details {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
   flex-direction: column;
   padding: 14px 0 14px 20px;
 }
@@ -1225,7 +1358,11 @@ a.modal-cancel-btn:hover {
 }
 
 #upload-button-footer {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
   justify-content: space-between;
   margin-top: 4px;
   margin-bottom: 8px;
@@ -1244,7 +1381,11 @@ a.modal-cancel-btn:hover {
 }
 
 #remove-image {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
   padding: 0 20px;
 }

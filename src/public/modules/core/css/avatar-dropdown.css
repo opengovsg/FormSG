@@ -1,3 +1,10 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 .navbar__avatar {
   position: relative;
   display: -webkit-inline-box;
@@ -14,7 +21,9 @@
 }
 
 .navbar__avatar__avatar {
-  display: block;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
   color: #fff;
   text-transform: uppercase;
   border: 2px solid #484848;
@@ -26,6 +35,12 @@
   font-size: 16px;
   cursor: pointer;
   position: relative;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
 }
 
 @media not all and (min-width: 768px) {

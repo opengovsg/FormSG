@@ -171,8 +171,6 @@
           </div>
           <div id="next-previous">
             <button
-              scroll-to-id
-              scroll-to="#responses-tab"
               class="btn-custom btn-small btn-respondent"
               ng-click="vm.previousRespondent()"
               ng-disabled="vm.currentResponse.number >= vm.responsesCount"
@@ -180,8 +178,6 @@
               <i class="bx bx-chevron-left bx-lg"></i>
             </button>
             <button
-              scroll-to-id
-              scroll-to="#responses-tab"
               class="btn-custom btn-small btn-respondent"
               ng-click="vm.nextRespondent()"
               ng-disabled="vm.currentResponse.number <= 1"

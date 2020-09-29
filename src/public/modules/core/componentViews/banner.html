@@ -1,8 +1,16 @@
-<div class="banner-container" ng-if="!vm.bannerHidden">
+<div
+  id="notification-banner"
+  class="banner-container banner-container-{{vm.bannerType}}"
+  ng-if="!vm.bannerHidden"
+>
   <div>
-    <span ng-bind-html="vm.message"></span>
+    <span ng-bind-html="vm.bannerMessage"></span>
   </div>
-  <div id="dismiss" ng-click="vm.dismissBanner()">
+  <div
+    ng-if="vm.bannerType === vm.BANNER_TYPES.info"
+    id="dismiss"
+    ng-click="vm.dismissBanner()"
+  >
     <i class="bx bx-x bx-md"></i>
   </div>
 </div>

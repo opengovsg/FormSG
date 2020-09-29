@@ -1,3 +1,10 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
 /* Standardised padding */
 
 #admin-form #edit-logic,
@@ -20,7 +27,11 @@
   background-color: #2f60ce;
   white-space: nowrap;
   height: 53px;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
   justify-content: flex-end;
 }
 
@@ -73,6 +84,8 @@
 }
 
 #preview-admin-tabs #preview-form-btn {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   float: right;
   white-space: nowrap;
@@ -80,6 +93,7 @@
   background-color: #82a0e2;
   border: none;
   color: white;
+  -webkit-text-decoration-line: none;
   text-decoration-line: none;
   font-weight: bold;
   text-transform: uppercase;
@@ -145,7 +159,18 @@
 /* Datepicker styles */
 
 div[uib-datepicker] {
+  -webkit-animation: datepicker-fade-in 0.4s ease;
   animation: datepicker-fade-in 0.4s ease;
+}
+
+@-webkit-keyframes datepicker-fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes datepicker-fade-in {
@@ -216,6 +241,7 @@ ul.dropdown-menu[uib-datepicker-popup-wrap] {
   background-position: right 8px center;
   border: 1px solid #ccc;
   border-radius: 3px;
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
 }
 
@@ -234,14 +260,21 @@ ul.dropdown-menu[uib-datepicker-popup-wrap] {
   border-width: 1px 0;
 }
 
-#admin-form {
-  min-height: 100vh;
-}
-
 #admin-form.container {
-  margin: 0;
+  -webkit-box-flex: 1;
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
   width: 100%;
   padding: 0;
+  overflow-y: hidden;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-flow: column;
+  flex-flow: column;
+  height: 100vh;
 }
 
 #admin-form .form-controls .row {
@@ -345,12 +378,18 @@ ul.dropdown-menu[uib-datepicker-popup-wrap] {
   font-size: 0.9em;
   height: 42px;
   color: #a94442;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
   align-items: center;
 }
 
 @media not all and (min-width: 1200px) {
   .save-changes-err {
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
     justify-content: center;
     margin-top: 10px;
     text-align: center;
