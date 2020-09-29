@@ -3,7 +3,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { VfnErrors } from 'src/shared/util/verification'
-import { FormOtpData, IFormSchema, ResponseMode } from 'src/types'
+import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
 
 import getSmsCountModel from '../sms_count.server.model'
 import * as SmsService from '../sms.service'
@@ -18,59 +18,64 @@ const TWILIO_TEST_NUMBER = '+15005550006'
 
 const MOCK_MSG_SRVC_SID = 'mockMsgSrvcSid'
 
-describe('sms.service', () => {
-  const MOCK_VALID_CONFIG = ({
-    msgSrvcSid: MOCK_MSG_SRVC_SID,
-    client: {
-      messages: {
-        create: jest.fn().mockResolvedValue({
-          status: 'testStatus',
-          sid: 'testSid',
-        }),
-      },
+const MOCK_VALID_CONFIG = ({
+  msgSrvcSid: MOCK_MSG_SRVC_SID,
+  client: {
+    messages: {
+      create: jest.fn().mockResolvedValue({
+        status: 'testStatus',
+        sid: 'testSid',
+      }),
     },
-  } as unknown) as TwilioConfig
+  },
+} as unknown) as TwilioConfig
 
-  const MOCK_INVALID_CONFIG = ({
-    msgSrvcSid: MOCK_MSG_SRVC_SID,
-    client: {
-      messages: {
-        create: jest.fn().mockResolvedValue({
-          status: 'testStatus',
-          sid: undefined,
-          errorCode: 21211,
-        }),
-      },
+const MOCK_INVALID_CONFIG = ({
+  msgSrvcSid: MOCK_MSG_SRVC_SID,
+  client: {
+    messages: {
+      create: jest.fn().mockResolvedValue({
+        status: 'testStatus',
+        sid: undefined,
+        errorCode: 21211,
+      }),
     },
-  } as unknown) as TwilioConfig
+  },
+} as unknown) as TwilioConfig
+
+const smsCountSpy = jest.spyOn(SmsCountModel, 'logSms')
+
+describe('sms.service', () => {
+  let testUser: IUserSchema
 
   beforeAll(async () => await dbHandler.connect())
+  beforeEach(async () => {
+    const { user } = await dbHandler.insertFormCollectionReqs()
+    testUser = user
+    smsCountSpy.mockClear()
+  })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('sendVerificationOtp', () => {
-    let testForm: IFormSchema
     let mockOtpData: FormOtpData
+    let testForm: IFormSchema
 
     beforeEach(async () => {
-      const { user } = await dbHandler.insertFormCollectionReqs()
-
-      const emailForm = await FormModel.create({
+      testForm = await FormModel.create({
         title: 'Test Form',
-        emails: [user.email],
-        admin: user._id,
+        emails: [testUser.email],
+        admin: testUser._id,
         responseMode: ResponseMode.Email,
       })
 
       mockOtpData = {
-        form: emailForm._id,
+        form: testForm._id,
         formAdmin: {
-          email: user.email,
-          userId: user._id,
+          email: testUser.email,
+          userId: testUser._id,
         },
       }
-
-      testForm = emailForm
     })
 
     it('should throw error when retrieved otpData is null', async () => {
@@ -92,7 +97,6 @@ describe('sms.service', () => {
     it('should log and send verification OTP when sending has no errors', async () => {
       // Arrange
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
-      const smsCountSpy = jest.spyOn(SmsCountModel, 'logSms')
 
       // Act
       const actualPromise = SmsService.sendVerificationOtp(
@@ -115,10 +119,9 @@ describe('sms.service', () => {
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
     })
 
-    it('should log failure and throw error when sms fails to send', async () => {
+    it('should log failure and throw error when verification OTP fails to send', async () => {
       // Arrange
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
-      const smsCountSpy = jest.spyOn(SmsCountModel, 'logSms')
 
       // Act
       const actualPromise = SmsService.sendVerificationOtp(
@@ -142,5 +145,57 @@ describe('sms.service', () => {
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
     })
+  })
+
+  describe('sendAdminContactOtp', () => {
+    it('should log and send contact OTP when sending has no errors', async () => {
+      // Act
+      const actualPromise = SmsService.sendAdminContactOtp(
+        /* recipient= */ TWILIO_TEST_NUMBER,
+        /* otp= */ '111111',
+        /* userId= */ testUser._id,
+        /* defaultConfig= */ MOCK_VALID_CONFIG,
+      )
+
+      // Assert
+      // Should resolve to true
+      await expect(actualPromise).resolves.toEqual(true)
+      // Logging should also have happened.
+      const expectedLogParams = {
+        otpData: {
+          admin: testUser._id,
+        },
+        msgSrvcSid: MOCK_MSG_SRVC_SID,
+        smsType: SmsType.adminContact,
+        logType: LogType.success,
+      }
+      expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
+    })
+  })
+
+  it('should log failure and throw error when contact OTP fails to send', async () => {
+    // Act
+    const actualPromise = SmsService.sendAdminContactOtp(
+      /* recipient= */ TWILIO_TEST_NUMBER,
+      /* otp= */ '111111',
+      /* userId= */ testUser._id,
+      /* defaultConfig= */ MOCK_INVALID_CONFIG,
+    )
+
+    // Assert
+    const expectedError = new Error(VfnErrors.InvalidMobileNumber)
+    expectedError.name = VfnErrors.SendOtpFailed
+
+    await expect(actualPromise).rejects.toThrow(expectedError)
+    // Logging should also have happened.
+    const expectedLogParams = {
+      otpData: {
+        admin: testUser._id,
+      },
+      msgSrvcSid: MOCK_MSG_SRVC_SID,
+      smsType: SmsType.adminContact,
+      logType: LogType.failure,
+    }
+    expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
   })
 })

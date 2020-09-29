@@ -169,6 +169,7 @@ const send = async (
         msgSrvcSid,
         logType: LogType.success,
       }
+
       SmsCount.logSms(logParams).catch((err) => {
         logger.error({
           message: 'Error logging sms count to database',
