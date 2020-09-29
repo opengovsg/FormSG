@@ -1,6 +1,5 @@
 import { Schema } from 'mongoose'
-
-import { validateEmailDomains } from 'src/shared/util/email-domain-validation'
+import { validateEmailDomains } from 'shared/util/email-domain-validation'
 
 import { IEmailFieldSchema, ResponseMode } from '../../../types'
 
