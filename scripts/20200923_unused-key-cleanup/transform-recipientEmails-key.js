@@ -45,6 +45,7 @@ db.getCollection('submissions').find({ submissionType: 'emailSubmission' }).forE
   let parsedEmails = submission.recipientEmails
     .join(',')
     .replace(/;/g, ',')
+    .replace(/\s/g, ',')
     .split(',')
     .map(item => item.trim().toLowerCase())
     .filter((email) => email.includes('@')) // remove ""
