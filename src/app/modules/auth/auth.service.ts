@@ -9,7 +9,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
-import { compareData, hashData } from '../../utils/hash'
+import { compareHash, hashData } from '../../utils/hash'
 import { generateOtp } from '../../utils/otp'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
@@ -145,7 +145,7 @@ const assertHashMatch = (
   otpHash: string,
   logMeta: Record<string, unknown> = {},
 ): ResultAsync<true, ApplicationError | InvalidOtpError> => {
-  return compareData(otp, otpHash, logMeta).andThen((isMatch) => {
+  return compareHash(otp, otpHash, logMeta).andThen((isMatch) => {
     if (isMatch) return okAsync(true)
     return errAsync(new InvalidOtpError('OTP is invalid. Please try again.'))
   })

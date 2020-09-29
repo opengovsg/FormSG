@@ -14,7 +14,7 @@ import {
   IUserSchema,
   UpsertOtpParams,
 } from '../../../types'
-import { compareData, hashData } from '../../utils/hash'
+import { compareHash, hashData } from '../../utils/hash'
 import { generateOtp } from '../../utils/otp'
 import { InvalidDomainError } from '../auth/auth.errors'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
@@ -323,7 +323,7 @@ const assertHashesMatch = (
 ): ResultAsync<true, ApplicationError | InvalidOtpError> => {
   // Compare OTP hashes first.
   return (
-    compareData(otp, otpHash, logMeta)
+    compareHash(otp, otpHash, logMeta)
       .andThen((isOtpMatch) => {
         if (isOtpMatch) return okAsync(true)
         return errAsync(
@@ -331,7 +331,7 @@ const assertHashesMatch = (
         )
       })
       // Must be success match if reaches here.
-      .andThen(() => compareData(contact, contactHash, logMeta))
+      .andThen(() => compareHash(contact, contactHash, logMeta))
       .andThen((isContactMatch) => {
         if (isContactMatch) return okAsync(true)
         return errAsync(
