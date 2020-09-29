@@ -153,7 +153,8 @@ describe('User Model', () => {
       it('should create new User document when user does not yet exist in the collection', async () => {
         // Arrange
         const validEmail = `test@${AGENCY_DOMAIN}`
-        await expect(User.countDocuments()).resolves.toEqual(0)
+        const initialUserCount = await User.countDocuments()
+        expect(initialUserCount).toEqual(0)
 
         // Act
         const user = await User.upsertUser({
@@ -167,7 +168,9 @@ describe('User Model', () => {
           email: validEmail,
           updatedAt: MOCKED_DATE,
         }
-        await expect(User.countDocuments()).resolves.toEqual(1)
+        // Should now have 1 user since user should be created.
+        const afterUserCount = await User.countDocuments()
+        expect(afterUserCount).toEqual(1)
         expect(user.toObject()).toEqual(
           expect.objectContaining(expectedPartialUser),
         )
@@ -181,7 +184,8 @@ describe('User Model', () => {
           email: validEmail,
         })
         // Should have the initial user.
-        await expect(User.countDocuments()).resolves.toEqual(1)
+        const initialUserCount = await User.countDocuments()
+        expect(initialUserCount).toEqual(1)
 
         // Act
         // Upsert with updated lastAccessed.
@@ -197,7 +201,9 @@ describe('User Model', () => {
           agency: agency.toObject(),
           lastAccessed: MOCKED_DATE,
         }
-        await expect(User.countDocuments()).resolves.toEqual(1)
+        // Should continue having 1 user since it is an upsert.
+        const afterUserCount = await User.countDocuments()
+        expect(afterUserCount).toEqual(1)
         expect(upsertedUser.toObject()).toEqual(expectedUser)
       })
     })
