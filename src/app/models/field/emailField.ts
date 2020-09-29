@@ -3,10 +3,8 @@ import { Schema } from 'mongoose'
 import { validateEmailDomains } from '../../../shared/util/email-domain-validation'
 import { IEmailFieldSchema, ResponseMode } from '../../../types'
 
-const createEmailFieldSchema = () => {
-  const EmailFieldSchema: Schema<IEmailFieldSchema> = new Schema<
-    IEmailFieldSchema
-  >({
+const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
+  const EmailFieldSchema = new Schema<IEmailFieldSchema>({
     autoReplyOptions: {
       hasAutoReply: {
         type: Boolean,
