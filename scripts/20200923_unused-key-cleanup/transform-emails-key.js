@@ -45,6 +45,7 @@ db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
   let parsedEmails = form.emails
     .join(',')
     .replace(/;/g, ',')
+    .replace(/\s/g, ',')
     .split(',')
     .map(item => item.trim().toLowerCase())
     .filter((email) => email.includes('@')) // remove ""
