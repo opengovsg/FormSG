@@ -2,8 +2,6 @@ import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync, ResultAsync } from 'neverthrow'
 
-import { IAgency, IForm, StartPage } from 'src/types'
-
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
 import getFormModel from '../../models/form.server.model'
@@ -20,6 +18,14 @@ import {
   selectAndProjectCardInfo,
 } from './examples.queries'
 import {
+  QueryData,
+  QueryExecResult,
+  QueryExecResultWithTotal,
+  QueryPageResultWithTotal,
+  QueryParams,
+  RetrievalType,
+} from './examples.types'
+import {
   createGeneralQueryPipeline,
   createSearchQueryPipeline,
 } from './examples.utils'
@@ -29,56 +35,6 @@ const FormStatisticsModel = getFormStatisticsTotalModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 
 const logger = createLoggerWithLabel(module)
-
-enum RetrievalType {
-  Stats = 'statistics',
-  Submissions = 'submissions',
-}
-
-type QueryData = {
-  [k in RetrievalType]: {
-    generalQueryModel: typeof FormStatisticsModel | typeof SubmissionModel
-    lookUpMiddleware: Record<string, unknown>[]
-    groupByMiddleware: Record<string, unknown>[]
-  }
-}
-
-type QueryExecResult = {
-  _id: string
-  count: number
-  lastSubmission: Date
-  title: IForm['title']
-  form_fields: IForm['form_fields']
-  logo: IAgency['logo']
-  agency: IAgency['shortName']
-  colorTheme: StartPage['colorTheme']
-  avgFeedback: number
-}
-
-type QueryExecResultWithTotal = {
-  pageResults: QueryExecResult[]
-  totalCount: {
-    count: number
-  }[]
-}[]
-
-type FormattedQueryExecResult = QueryExecResult & {
-  timeText: string
-}
-
-type QueryPageResultWithTotal = {
-  forms: FormattedQueryExecResult[]
-  totalNumResults: number
-}
-
-type QueryParams =
-  | {
-      pageNo: string
-      agency: string
-      searchTerm?: string
-      shouldGetTotalNumResults?: string
-    }
-  | Record<string, never>
 
 /**
  * Maps retrieval type to the middlewares and query model used for general
