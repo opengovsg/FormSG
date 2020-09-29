@@ -86,11 +86,15 @@ db.getCollection('submissions').find({ recipientEmails: { $regex: /,/ }, submiss
 // Check total submissions count with submissionType emailSubmission and recipientEmails in correct format
 // ~ Should be the same number as the total number of email mode forms
 let isValidCountAfter = 0 
+let invalidSubmissions = []
 db.getCollection('submissions').find({ submissionType: 'emailSubmission' }).forEach((submission) => {
   let isValid = submission.recipientEmails.every((email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     return re.test(email)
   })
   isValidCountAfter += (isValid ? 1 : 0)
+  if (!isValid) invalidSubmissions.push({ recipientEmails: submission.recipientEmails, id: submission._id })
 })
 print('isValidCountAfter', isValidCountAfter)
+print('invalid count', invalidSubmissions.length)
+print('invalid submissions and recipientEmails', invalidSubmissions)
