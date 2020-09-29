@@ -19,7 +19,7 @@ db.getCollection('submissions').find({ recipientEmails: { $regex: /,/ }, submiss
 
 // Check total submissions count with submissionType emailSubmission and recipientEmails in correct format
 let isValidCountBefore = 0 
-db.getCollection('submissions').find({ submissionType: 'emailSubmission' }).forEach((submission) => {
+db.getCollection('submissions').find({ submissionType: 'emailSubmission', recipientEmails: { $exists: true } }).forEach((submission) => {
   let isValid = submission.recipientEmails.every((email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     return re.test(email)
@@ -41,7 +41,7 @@ print('isValidCountBefore', isValidCountBefore)
 
 // Update structure of recipientEmails key
 let requests = []
-db.getCollection('submissions').find({ submissionType: 'emailSubmission' }).forEach((submission) => {
+db.getCollection('submissions').find({ submissionType: 'emailSubmission', recipientEmails: { $exists: true } }).forEach((submission) => {
   let parsedEmails = submission.recipientEmails
     .join(',')
     .replace(/;/g, ',')
@@ -87,7 +87,7 @@ db.getCollection('submissions').find({ recipientEmails: { $regex: /,/ }, submiss
 // ~ Should be the same number as the total number of email mode forms
 let isValidCountAfter = 0 
 let invalidSubmissions = []
-db.getCollection('submissions').find({ submissionType: 'emailSubmission' }).forEach((submission) => {
+db.getCollection('submissions').find({ submissionType: 'emailSubmission', recipientEmails: { $exists: true } }).forEach((submission) => {
   let isValid = submission.recipientEmails.every((email) => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     return re.test(email)
