@@ -47,31 +47,48 @@ export const handleContactSendOtp: RequestHandler<
     ip: getRequestIp(req),
   }
 
-  return (
-    // Step 1: Create OTP for contact verification.
-    createContactOtp(userId, contact)
-      // Step 2: Send verification OTP to contact.
-      .andThen((otp) => SmsFactory.sendAdminContactOtp(contact, otp, userId))
-      // Step 3a: Successfully sent OTP.
-      .map(() => {
-        logger.info({
-          message: 'Contact verification OTP sent successfully',
-          meta: logMeta,
-        })
-        return res.sendStatus(StatusCodes.OK)
-      })
-      // Step 3b: Error occurred whilst sending OTP.
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error sending contact verification OTP',
-          meta: logMeta,
-          error,
-        })
+  // Step 1: Create OTP for contact verification.
+  const createResult = await createContactOtp(userId, contact)
 
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).send(errorMessage)
-      })
+  // Error creating OTP.
+  if (createResult.isErr()) {
+    const { error } = createResult
+    logger.error({
+      message: 'Error creating contact verification OTP',
+      meta: logMeta,
+      error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).send(errorMessage)
+  }
+
+  // Step 2: No error, send verification OTP to contact.
+  const otp = createResult.value
+  const sendOtpResult = await SmsFactory.sendAdminContactOtp(
+    contact,
+    otp,
+    userId,
   )
+
+  // Error sending OTP.
+  if (sendOtpResult.isErr()) {
+    logger.error({
+      message: 'Error sending contact verification OTP',
+      meta: logMeta,
+      error: sendOtpResult.error,
+    })
+
+    return res
+      .status(StatusCodes.UNPROCESSABLE_ENTITY)
+      .send('Failed to send emergency contact verification SMS')
+  }
+
+  // No errors, successfully sent SMS, return success to client.
+  logger.info({
+    message: 'Contact verification OTP sent successfully',
+    meta: logMeta,
+  })
+  return res.sendStatus(StatusCodes.OK)
 }
 
 /**
@@ -102,28 +119,43 @@ export const handleContactVerifyOtp: RequestHandler<
     return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
   }
 
-  // Step 1: Verify contact and otp of user matches with stored hash.
-  return (
-    verifyContactOtp(otp, contact, userId)
-      // Step 2: Matches, update user with new contact.
-      .andThen(() => updateUserContact(contact, userId))
-      // Step 3a: No error, return updated user.
-      .map((updatedUser) => res.status(StatusCodes.OK).send(updatedUser))
-      // Step 3b: Error occured in the chain, log and return error status.
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error verifying contact verification OTP',
-          meta: {
-            action: 'handleContactVerifyOtp',
-            userId,
-          },
-          error,
-        })
+  const logMeta = {
+    action: 'handleContactVerifyOtp',
+    userId,
+    ip: getRequestIp(req),
+  }
 
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).send(errorMessage)
-      })
-  )
+  // Step 1: Verify contact and otp of user matches with stored hash.
+  const verifyResult = await verifyContactOtp(otp, contact, userId)
+
+  if (verifyResult.isErr()) {
+    const { error } = verifyResult
+    logger.error({
+      message: 'Error verifying contact verification OTP',
+      meta: logMeta,
+      error,
+    })
+
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).send(errorMessage)
+  }
+
+  // Step 2: Contact and OTP hashes match, update user with new contact.
+  const updateResult = await updateUserContact(contact, userId)
+  if (updateResult.isErr()) {
+    const { error } = updateResult
+    logger.error({
+      message: 'Error updating user emergency contact number',
+      meta: logMeta,
+      error,
+    })
+
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).send(errorMessage)
+  }
+
+  // No errors, return updated user to client.
+  return res.status(StatusCodes.OK).send(updateResult.value)
 }
 
 /**
@@ -140,9 +172,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
   }
 
   return getPopulatedUserById(sessionUserId)
-    .map((retrievedUser) => {
-      return res.send(retrievedUser)
-    })
+    .map((retrievedUser) => res.send(retrievedUser))
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred whilst retrieving user',

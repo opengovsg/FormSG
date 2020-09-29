@@ -125,7 +125,7 @@ describe('user.controller', () => {
 
     it('should return 422 when sending of OTP fails', async () => {
       const mockRes = expressHandler.mockResponse()
-      const expectedError = new SmsSendError('mock error')
+      const expectedError = new SmsSendError()
 
       // Mock UserService to pass without errors.
       MockUserService.createContactOtp.mockReturnValueOnce(okAsync('123456'))
@@ -139,7 +139,9 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.send).toBeCalledWith(expectedError.message)
+      expect(mockRes.send).toBeCalledWith(
+        'Failed to send emergency contact verification SMS',
+      )
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()

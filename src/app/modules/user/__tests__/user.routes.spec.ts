@@ -208,7 +208,9 @@ describe('user.routes', () => {
       // Assert
       expect(sendSmsOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual('Failed to send SMS')
+      expect(response.text).toEqual(
+        'Failed to send emergency contact verification SMS',
+      )
     })
 
     it('should return 500 when creating an OTP returns a database error', async () => {
