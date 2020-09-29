@@ -1,5 +1,7 @@
 'use strict'
 
+const { validateEmailDomains } = require('shared/util/email-domain-validation')
+
 angular
   .module('forms')
   .directive('validateEmailDomainFromText', validateEmailDomainFromText)
@@ -20,11 +22,7 @@ function validateEmailDomainFromText() {
           .split('\n')
           .map((s) => s.trim())
           .filter((s) => s)
-        if (emailDomains.length === 0) return true
-        const validDedupedDomainsSet = new Set(
-          emailDomains.filter((s) => s.match(/@.+\..+/)),
-        )
-        return validDedupedDomainsSet.size === emailDomains.length
+        return validateEmailDomains(emailDomains)
       }
     },
   }

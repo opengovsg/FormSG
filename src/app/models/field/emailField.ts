@@ -1,11 +1,13 @@
-import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
-import validator from 'validator'
+
+import { validateEmailDomains } from 'src/shared/util/email-domain-validation'
 
 import { IEmailFieldSchema, ResponseMode } from '../../../types'
 
 const createEmailFieldSchema = () => {
-  const EmailFieldSchema = new Schema<IEmailFieldSchema>({
+  const EmailFieldSchema: Schema<IEmailFieldSchema> = new Schema<
+    IEmailFieldSchema
+  >({
     autoReplyOptions: {
       hasAutoReply: {
         type: Boolean,
@@ -55,14 +57,8 @@ const createEmailFieldSchema = () => {
       // If allowedEmailDomains is empty, then all email domains should be allowed.
       default: [],
       validate: {
-        validator: (emailDomains: string[]) => {
-          return (
-            isEmpty(emailDomains) ||
-            (new Set(emailDomains).size === emailDomains.length &&
-              emailDomains.every((emailDomain) =>
-                validator.isEmail('bob' + emailDomain),
-              ))
-          )
+        validator: (emailDomains: string[]): boolean => {
+          return validateEmailDomains(emailDomains)
         },
         message: 'There are one or more duplicate or invalid email domains.',
       },
