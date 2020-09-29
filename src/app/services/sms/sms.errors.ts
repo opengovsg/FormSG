@@ -1,4 +1,4 @@
-import { ApplicationError } from 'src/app/modules/core/core.errors'
+import { ApplicationError } from '../../modules/core/core.errors'
 
 export class SmsSendError extends ApplicationError {
   constructor(
