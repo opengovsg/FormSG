@@ -1,3 +1,9 @@
+/**
+ * ! Important: Note that this service class should only be called by
+ * ! BillingFactory in billing.factory as access to the functions in this class
+ * ! should be determined by whether the `spcp-myinfo` feature is enabled.
+ */
+
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
@@ -11,6 +17,8 @@ const logger = createLoggerWithLabel(module)
 const LoginModel = getLoginModel(mongoose)
 
 /**
+ * !!! This function should only be called by {@link BillingFactory}.
+ *
  * Retrieves SingPass login statistics including total logins for each of the
  * forms with given esrvcId in the given date range.
  * @param esrvcId the esrvcId to filter retrieved login statistics
