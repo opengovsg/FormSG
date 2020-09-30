@@ -126,7 +126,7 @@ exports.submitFeedback = function (req, res) {
 exports.limitRate = function (options = {}) {
   const defaultOptions = {
     windowMs: 15 * 60 * 1000,
-    max: 3,
+    max: 600,
     handler: (req, _res, next) => {
       logger.warn({
         message: 'Rate limit exceeded',
