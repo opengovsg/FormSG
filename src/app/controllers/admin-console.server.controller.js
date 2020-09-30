@@ -3,24 +3,23 @@
 /**
  * Module dependencies.
  */
+const _ = require('lodash')
 const mongoose = require('mongoose')
 const moment = require('moment-timezone')
 const { StatusCodes } = require('http-status-codes')
 
-const getLoginModel = require('../models/login.server.model').default
 const getSubmissionModel = require('../models/submission.server.model').default
 const getFormStatisticsTotalModel = require('../models/form_statistics_total.server.model')
   .default
 const getFormModel = require('../models/form.server.model').default
+const { getRequestIp } = require('../utils/request')
+const { getSpLoginStats } = require('../modules/billing/billing.service')
 
-const Login = getLoginModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
 const FormStatisticsTotal = getFormStatisticsTotalModel(mongoose)
 const Form = getFormModel(mongoose)
-const _ = require('lodash')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { getRequestIp } = require('../utils/request')
 
 // Examples search-specific constants
 const PAGE_SIZE = 16 // maximum number of results to return
@@ -748,26 +747,13 @@ exports.getLoginStats = async function (req, res) {
     .startOf('month')
   const endOfMonth = moment(startOfMonth).endOf('month')
 
-  try {
-    const loginStats = await Login.aggregateLoginStats(
-      esrvcId,
-      startOfMonth.toDate(),
-      endOfMonth.toDate(),
-    )
+  const loginStatsResult = await getSpLoginStats(
+    esrvcId,
+    startOfMonth.toDate(),
+    endOfMonth.toDate(),
+  )
 
-    logger.info({
-      message: `Billing search for ${esrvcId} by ${
-        req.session.user && req.session.user.email
-      }`,
-      meta: {
-        action: 'getLoginStats',
-      },
-    })
-
-    return res.send({
-      loginStats,
-    })
-  } catch (error) {
+  if (loginStatsResult.isErr()) {
     logger.error({
       message: 'Failed to retrieve billing records',
       meta: {
@@ -776,10 +762,23 @@ exports.getLoginStats = async function (req, res) {
         url: req.url,
         headers: req.headers,
       },
-      error,
+      error: loginStatsResult.error,
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send('Error in retrieving billing records')
   }
+
+  logger.info({
+    message: `Billing search for ${esrvcId} by ${
+      req.session.user && req.session.user.email
+    }`,
+    meta: {
+      action: 'getLoginStats',
+    },
+  })
+
+  return res.send({
+    loginStats: loginStatsResult.value,
+  })
 }
