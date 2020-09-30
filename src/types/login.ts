@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose'
+import { Aggregate, Document, Model } from 'mongoose'
 
 import { IAgencySchema } from './agency'
 import { AuthType, IFormSchema } from './form'
@@ -29,5 +29,5 @@ export interface ILoginModel extends Model<ILoginSchema> {
     esrvcId: string,
     gte: Date,
     lte: Date,
-  ) => LoginStatistic[]
+  ) => Aggregate<LoginStatistic[]>
 }
