@@ -13,7 +13,6 @@ const getFormStatisticsTotalModel = require('../models/form_statistics_total.ser
   .default
 const getFormModel = require('../models/form.server.model').default
 const { getRequestIp } = require('../utils/request')
-const { getSpLoginStats } = require('../modules/billing/billing.service')
 
 const Submission = getSubmissionModel(mongoose)
 const FormStatisticsTotal = getFormStatisticsTotalModel(mongoose)
@@ -735,50 +734,4 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
       return res.status(status).send(result)
     },
   )
-}
-
-exports.getLoginStats = async function (req, res) {
-  let { yr, mth, esrvcId } = req.query
-  let year = parseInt(yr)
-  let month = parseInt(mth)
-
-  const startOfMonth = moment
-    .tz([year, month], 'Asia/Singapore')
-    .startOf('month')
-  const endOfMonth = moment(startOfMonth).endOf('month')
-
-  const loginStatsResult = await getSpLoginStats(
-    esrvcId,
-    startOfMonth.toDate(),
-    endOfMonth.toDate(),
-  )
-
-  if (loginStatsResult.isErr()) {
-    logger.error({
-      message: 'Failed to retrieve billing records',
-      meta: {
-        action: 'getLoginStats',
-        ip: getRequestIp(req),
-        url: req.url,
-        headers: req.headers,
-      },
-      error: loginStatsResult.error,
-    })
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send('Error in retrieving billing records')
-  }
-
-  logger.info({
-    message: `Billing search for ${esrvcId} by ${
-      req.session.user && req.session.user.email
-    }`,
-    meta: {
-      action: 'getLoginStats',
-    },
-  })
-
-  return res.send({
-    loginStats: loginStatsResult.value,
-  })
 }
