@@ -1,6 +1,8 @@
 'use strict'
 
-const { validateEmailDomains } = require('shared/util/email-domain-validation')
+const {
+  validateEmailDomains,
+} = require('../../../../../shared/util/email-domain-validation')
 
 angular
   .module('forms')
