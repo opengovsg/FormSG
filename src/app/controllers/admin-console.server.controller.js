@@ -738,7 +738,7 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
   )
 }
 
-exports.getLoginStats = function (req, res) {
+exports.getLoginStats = async function (req, res) {
   let { yr, mth, esrvcId } = req.query
   let year = parseInt(yr)
   let month = parseInt(mth)
@@ -747,93 +747,39 @@ exports.getLoginStats = function (req, res) {
     .tz([year, month], 'Asia/Singapore')
     .startOf('month')
   const endOfMonth = moment(startOfMonth).endOf('month')
-  Login.aggregate(
-    [
-      {
-        $match: {
-          esrvcId,
-          created: {
-            $gte: startOfMonth.toDate(),
-            $lte: endOfMonth.toDate(),
-          },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            form: '$form',
-            admin: '$admin',
-            authType: '$authType',
-          },
-          total: { $sum: 1 },
-        },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id.admin',
-          foreignField: '_id',
-          as: 'userInfo',
-        },
-      },
-      {
-        $unwind: '$userInfo',
-      },
-      {
-        $lookup: {
-          from: 'forms',
-          localField: '_id.form',
-          foreignField: '_id',
-          as: 'formInfo',
-        },
-      },
-      {
-        $unwind: '$formInfo',
-      },
-      {
-        $project: {
-          _id: 0,
-          adminEmail: '$userInfo.email',
-          formName: '$formInfo.title',
-          total: '$total',
-          formId: '$_id.form',
-          authType: '$_id.authType',
-        },
-      },
-    ],
-    function (error, loginStats) {
-      if (error) {
-        logger.error({
-          message: 'Failed to retrieve billing records',
-          meta: {
-            action: 'getLoginStats',
-            ip: getRequestIp(req),
-            url: req.url,
-            headers: req.headers,
-          },
-          error,
-        })
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send('Error in retrieving billing records')
-      } else if (!loginStats) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .send('No billing records found')
-      } else {
-        logger.info({
-          message: `Billing search for ${esrvcId} by ${
-            req.session.user && req.session.user.email
-          }`,
-          meta: {
-            action: 'getLoginStats',
-          },
-        })
 
-        return res.send({
-          loginStats,
-        })
-      }
-    },
-  )
+  try {
+    const loginStats = await Login.aggregateLoginStats(
+      esrvcId,
+      startOfMonth.toDate(),
+      endOfMonth.toDate(),
+    )
+
+    logger.info({
+      message: `Billing search for ${esrvcId} by ${
+        req.session.user && req.session.user.email
+      }`,
+      meta: {
+        action: 'getLoginStats',
+      },
+    })
+
+    return res.send({
+      loginStats,
+    })
+  } catch (error) {
+    logger.error({
+      message: 'Failed to retrieve billing records',
+      meta: {
+        action: 'getLoginStats',
+        ip: getRequestIp(req),
+        url: req.url,
+        headers: req.headers,
+      },
+      error,
+    })
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send('Error in retrieving billing records')
+  }
 }
