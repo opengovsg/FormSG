@@ -4,6 +4,8 @@ const mongoose = require('mongoose')
 const { StatusCodes } = require('http-status-codes')
 
 const { getRequestIp, getTrace } = require('../utils/request')
+const RateLimit = require('express-rate-limit')
+const { merge } = require('lodash')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormFeedbackModel = require('../models/form_feedback.server.model')
   .default
@@ -112,6 +114,34 @@ exports.submitFeedback = function (req, res) {
       }
     },
   )
+}
+
+/**
+ * Returns a middleware which logs a message if the rate of requests
+ * to an API endpoint exceeds a given rate.
+ * TODO (private #49): update this documentation.
+ * @param {RateLimit.Options} options Custom options to be passed to RateLimit
+ * @return {RateLimit.RateLimit} Rate-limiting middleware
+ */
+exports.limitRate = function (options = {}) {
+  const defaultOptions = {
+    windowMs: 15 * 60 * 1000,
+    max: 3,
+    handler: (req, _res, next) => {
+      logger.warn({
+        message: 'Rate limit exceeded',
+        meta: {
+          action: 'limitRate',
+          url: req.url,
+          method: req.method,
+          rateLimitInfo: req.rateLimit,
+        },
+      })
+      // TODO (private #49): terminate the request with 429
+      return next()
+    },
+  }
+  return RateLimit(merge(defaultOptions, options))
 }
 
 /**
