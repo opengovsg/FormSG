@@ -7,7 +7,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { getRequestIp } from '../../utils/request'
 import { isUserInSession } from '../auth/auth.utils'
 
-import * as BillingService from './billing.service'
+import { BillingFactory } from './billing.factory'
 
 const logger = createLoggerWithLabel(module)
 
@@ -39,7 +39,7 @@ export const handleGetBillInfo: RequestHandler<
     .startOf('month')
   const endOfMonth = moment(startOfMonth).endOf('month')
 
-  const loginStatsResult = await BillingService.getSpLoginStats(
+  const loginStatsResult = await BillingFactory.getSpLoginStats(
     esrvcId,
     startOfMonth.toDate(),
     endOfMonth.toDate(),
