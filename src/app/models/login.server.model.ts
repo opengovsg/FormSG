@@ -57,7 +57,7 @@ LoginSchema.statics.aggregateLoginStats = function (
   esrvcId: string,
   gte: Date,
   lte: Date,
-) {
+): Promise<LoginStatistic[]> {
   return this.aggregate<LoginStatistic>([
     {
       $match: {
@@ -110,7 +110,7 @@ LoginSchema.statics.aggregateLoginStats = function (
         authType: '$_id.authType',
       },
     },
-  ])
+  ]).exec()
 }
 
 const compileLoginModel = (db: Mongoose) =>

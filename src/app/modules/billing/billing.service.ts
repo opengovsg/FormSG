@@ -33,7 +33,7 @@ export const getSpLoginStats = (
   maxDate: Date,
 ): ResultAsync<LoginStatistic[], DatabaseError> => {
   return ResultAsync.fromPromise(
-    LoginModel.aggregateLoginStats(esrvcId, minDate, maxDate).exec(),
+    LoginModel.aggregateLoginStats(esrvcId, minDate, maxDate),
     (error) => {
       const errMsg = 'Failed to retrieve billing records'
       logger.error({

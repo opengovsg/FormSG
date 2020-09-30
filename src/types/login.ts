@@ -29,5 +29,5 @@ export interface ILoginModel extends Model<ILoginSchema> {
     esrvcId: string,
     gte: Date,
     lte: Date,
-  ) => Aggregate<LoginStatistic[]>
+  ) => Promise<LoginStatistic[]>
 }
