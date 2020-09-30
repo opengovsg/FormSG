@@ -133,6 +133,7 @@ exports.limitRate = function (options = {}) {
         meta: {
           action: 'limitRate',
           url: req.url,
+          ip: getRequestIp(req),
           method: req.method,
           rateLimitInfo: req.rateLimit,
         },
