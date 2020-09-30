@@ -9,9 +9,9 @@ const submissions = require('../../app/controllers/submissions.server.controller
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 const { celebrate, Joi } = require('celebrate')
-const captchaFactory = require('../factories/captcha.factory')
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
+const { CaptchaFactory } = require('../factories/captcha.factory')
 
 module.exports = function (app) {
   /**
@@ -138,10 +138,10 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    */
   app.route('/v2/submissions/email/:formId([a-fA-F0-9]{24})').post(
-    captchaFactory.validateCaptcha,
+    CaptchaFactory.validateCaptcha,
     forms.formById,
     publicForms.isFormPublic,
-    captchaFactory.captchaCheck,
+    CaptchaFactory.captchaCheck,
     spcpFactory.isSpcpAuthenticated,
     emailSubmissions.receiveEmailSubmissionUsingBusBoy,
     celebrate({
@@ -199,7 +199,7 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    */
   app.route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})').post(
-    captchaFactory.validateCaptcha,
+    CaptchaFactory.validateCaptcha,
     celebrate({
       body: Joi.object({
         responses: Joi.array()
@@ -244,7 +244,7 @@ module.exports = function (app) {
     }),
     forms.formById,
     publicForms.isFormPublic,
-    captchaFactory.captchaCheck,
+    CaptchaFactory.captchaCheck,
     encryptSubmissions.validateEncryptSubmission,
     spcpFactory.isSpcpAuthenticated,
     spcpFactory.verifyMyInfoVals,
