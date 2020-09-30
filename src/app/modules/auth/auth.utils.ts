@@ -1,3 +1,4 @@
+import { Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -55,4 +56,8 @@ export const mapRouteError = (
         errorMessage: 'Something went wrong. Please try again.',
       }
   }
+}
+
+export const isUserInSession = (req: Request): boolean => {
+  return !!req.session?.user
 }
