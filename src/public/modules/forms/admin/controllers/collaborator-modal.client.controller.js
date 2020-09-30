@@ -219,11 +219,11 @@ function CollaboratorModalController(
       if (err) {
         // Make the alert message correspond to the error code
         if (err.status === HttpStatus.BAD_REQUEST) {
-          Toastr.error('Outdated admin page, please refresh')
+          Toastr.error('Outdated admin page, please refresh.')
         } else if (err.status === HttpStatus.UNPROCESSABLE_ENTITY) {
-          Toastr.error(`${email} is not part of a whitelisted agency`)
+          Toastr.error(`${email} is not part of a whitelisted agency.`)
         } else {
-          Toastr.error('Error adding collaborator')
+          Toastr.error('Error adding collaborator.')
         }
         resetCollabForm()
         return
