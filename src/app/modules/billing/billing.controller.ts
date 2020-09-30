@@ -11,6 +11,12 @@ import * as BillingService from './billing.service'
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Handler for GET /billing endpoint.
+ * @return 200 with login statistics when query is valid
+ * @return 401 when request does not contain a user session
+ * @return 500 when error occurs whilst querying database
+ */
 export const handleGetBillInfo: RequestHandler<
   ParamsDictionary,
   unknown,

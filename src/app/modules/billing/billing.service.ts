@@ -10,6 +10,15 @@ import { DatabaseError } from '../core/core.errors'
 const logger = createLoggerWithLabel(module)
 const LoginModel = getLoginModel(mongoose)
 
+/**
+ * Retrieves SingPass login statistics including total logins for each of the
+ * forms with given esrvcId in the given date range.
+ * @param esrvcId the esrvcId to filter retrieved login statistics
+ * @param minDate the minimum date to retrieve statistics for
+ * @param maxDate the maximum date to retrieve statistics for
+ * @returns ok(login statistics list) when successful
+ * @returns err(DatabaseError) when error occurs whilst running database aggregation pipeline
+ */
 export const getSpLoginStats = (
   esrvcId: string,
   minDate: Date,
