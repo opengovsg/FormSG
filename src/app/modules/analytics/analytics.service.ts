@@ -19,7 +19,7 @@ const logger = createLoggerWithLabel(module)
  * @returns ok(user count) on success
  * @returns err(DatabaseError) on query failure
  */
-export const getUsersCount = (): ResultAsync<number, DatabaseError> => {
+export const getUserCount = (): ResultAsync<number, DatabaseError> => {
   return ResultAsync.fromPromise(
     UserModel.estimatedDocumentCount().exec(),
     (error) => {
@@ -41,7 +41,7 @@ export const getUsersCount = (): ResultAsync<number, DatabaseError> => {
  * @returns ok(submissions count) on success
  * @returns err(DatabaseError) on query failure
  */
-export const getSubmissionsCount = (): ResultAsync<number, DatabaseError> => {
+export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
   return ResultAsync.fromPromise(
     SubmissionModel.estimatedDocumentCount().exec(),
     (error) => {

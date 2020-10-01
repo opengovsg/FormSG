@@ -10,7 +10,7 @@ export const AnalyticsRouter = Router()
  * @group analytics - form usage statistics
  * @returns 200 with the number of forms with more than 10 submissions
  */
-AnalyticsRouter.get('/forms', AnalyticsController.handleGetFormCountAnalytics)
+AnalyticsRouter.get('/forms', AnalyticsController.handleGetFormCount)
 
 /**
  * Retrieves the number of users building forms on the application.
@@ -19,7 +19,7 @@ AnalyticsRouter.get('/forms', AnalyticsController.handleGetFormCountAnalytics)
  * @returns 200 with the number of users building forms
  * @returns 500 when database error occurs whilst retrieving user count
  */
-AnalyticsRouter.get('/users', AnalyticsController.handleGetUserAnalytics)
+AnalyticsRouter.get('/users', AnalyticsController.handleGetUserCount)
 
 /**
  * Retrieves the total number of submissions of forms across the application.
@@ -29,5 +29,5 @@ AnalyticsRouter.get('/users', AnalyticsController.handleGetUserAnalytics)
  */
 AnalyticsRouter.get(
   '/submissions',
-  AnalyticsController.handleGetSubmissionsAnalytics,
+  AnalyticsController.handleGetSubmissionCount,
 )

@@ -6,7 +6,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { getRequestIp } from '../../utils/request'
 
 import { AnalyticsFactory } from './analytics.factory'
-import { getSubmissionsCount, getUsersCount } from './analytics.service'
+import { getSubmissionCount, getUserCount } from './analytics.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -16,8 +16,8 @@ const logger = createLoggerWithLabel(module)
  * @returns 200 with the number of users building forms
  * @returns 500 when database error occurs whilst retrieving user count
  */
-export const handleGetUserAnalytics: RequestHandler = async (req, res) => {
-  const countResult = await getUsersCount()
+export const handleGetUserCount: RequestHandler = async (req, res) => {
+  const countResult = await getUserCount()
 
   if (countResult.isErr()) {
     logger.error({
@@ -45,11 +45,8 @@ export const handleGetUserAnalytics: RequestHandler = async (req, res) => {
  * @returns 200 with the number of submissions across forms
  * @returns 500 when database error occurs whilst retrieving submissions count
  */
-export const handleGetSubmissionsAnalytics: RequestHandler = async (
-  req,
-  res,
-) => {
-  const countResult = await getSubmissionsCount()
+export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
+  const countResult = await getSubmissionCount()
 
   if (countResult.isErr()) {
     logger.error({
@@ -80,7 +77,7 @@ export const handleGetSubmissionsAnalytics: RequestHandler = async (
  * @returns 200 with the number of popular forms on the application
  * @returns 500 when database error occurs whilst retrieving form count
  */
-export const handleGetFormCountAnalytics: RequestHandler = async (req, res) => {
+export const handleGetFormCount: RequestHandler = async (req, res) => {
   const countResult = await AnalyticsFactory.getFormCount()
 
   if (countResult.isErr()) {
