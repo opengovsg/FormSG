@@ -17,6 +17,7 @@ import { MIN_SUB_COUNT } from '../analytics.constants'
 import {
   getFormCountWithStatsCollection,
   getFormCountWithSubmissionCollection,
+  getSubmissionCount,
   getUserCount,
 } from '../analytics.service'
 
@@ -227,6 +228,63 @@ describe('analytics.service', () => {
 
       // Act
       const actualResult = await getUserCount()
+
+      // Assert
+      expect(execSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+    })
+  })
+
+  describe('getSubmissionCount', () => {
+    it('should return 0 when there are no submissions in the database', async () => {
+      // Arrange
+      const initialSubCount = await SubmissionModel.estimatedDocumentCount()
+      expect(initialSubCount).toEqual(0)
+
+      // Act
+      const actualResult = await getSubmissionCount()
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(0)
+    })
+
+    it('should return number of submissions in the database', async () => {
+      // Arrange
+      const expectedNumSubs = 10
+      const submissionPromises = times(expectedNumSubs, () =>
+        SubmissionModel.create({
+          form: mongoose.Types.ObjectId(),
+          myInfoFields: [],
+          submissionType: SubmissionType.Email,
+          responseHash: 'hash',
+          responseSalt: 'salt',
+        }),
+      )
+      await Promise.all(submissionPromises)
+      const initialUserCount = await SubmissionModel.estimatedDocumentCount()
+      expect(initialUserCount).toEqual(expectedNumSubs)
+
+      // Act
+      const actualResult = await getSubmissionCount()
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedNumSubs)
+    })
+
+    it('should return DatabaseError when error occurs whilst retrieving submission count', async () => {
+      // Arrange
+      const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
+      jest
+        .spyOn(SubmissionModel, 'estimatedDocumentCount')
+        .mockReturnValueOnce(({
+          exec: execSpy,
+        } as unknown) as Query<number>)
+
+      // Act
+      const actualResult = await getSubmissionCount()
 
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
