@@ -5,6 +5,7 @@ import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getRequestIp } from '../../utils/request'
 
+import { AnalyticsFactory } from './analytics.factory'
 import { getSubmissionsCount, getUsersCount } from './analytics.service'
 
 const logger = createLoggerWithLabel(module)
@@ -71,4 +72,33 @@ export const handleGetSubmissionsAnalytics: RequestHandler = async (
   // archived (and thus deleted from the database).
   const totalProperCount = countResult.value + submissionsTopUp
   return res.json(totalProperCount)
+}
+
+/**
+ * Handler for GET /analytics/forms
+ * @route GET /analytics/forms
+ * @returns 200 with the number of popular forms on the application
+ * @returns 500 when database error occurs whilst retrieving form count
+ */
+export const handleGetFormCountAnalytics: RequestHandler = async (req, res) => {
+  const countResult = await AnalyticsFactory.getFormCount()
+
+  if (countResult.isErr()) {
+    logger.error({
+      message: 'Mongo form count error',
+      meta: {
+        action: 'handleGetFormCountAnalytics',
+        ip: getRequestIp(req),
+        url: req.url,
+        headers: req.headers,
+      },
+      error: countResult.error,
+    })
+
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json('Unable to retrieve number of forms from the database')
+  }
+
+  return res.json(countResult.value)
 }

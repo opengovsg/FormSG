@@ -1,7 +1,5 @@
 import { Router } from 'express'
 
-import AggregateStatsFactory from '../../factories/aggregate-stats.factory'
-
 import * as AnalyticsController from './analytics.controller'
 
 export const AnalyticsRouter = Router()
@@ -12,7 +10,7 @@ export const AnalyticsRouter = Router()
  * @group analytics - form usage statistics
  * @returns 200 with the number of forms with more than 10 submissions
  */
-AnalyticsRouter.get('/forms', AggregateStatsFactory.formCount)
+AnalyticsRouter.get('/forms', AnalyticsController.handleGetFormCountAnalytics)
 
 /**
  * Retrieves the number of users building forms on the application.

@@ -36,6 +36,11 @@ export const getUsersCount = (): ResultAsync<number, DatabaseError> => {
   )
 }
 
+/**
+ * Retrieves the number of submission documents in the database.
+ * @returns ok(submissions count) on success
+ * @returns err(DatabaseError) on query failure
+ */
 export const getSubmissionsCount = (): ResultAsync<number, DatabaseError> => {
   return ResultAsync.fromPromise(
     SubmissionModel.estimatedDocumentCount().exec(),
@@ -58,7 +63,10 @@ export const getSubmissionsCount = (): ResultAsync<number, DatabaseError> => {
  *
  * ! Access to this function should be determined by whether the `aggregate-stats` feature is enabled.
  *
- * @returns the number of forms that has more than MIN_SUB_COUNT responses using the form statistics collection
+ * Retrieves the number of forms that has more than MIN_SUB_COUNT responses
+ * using the form statistics collection.
+ * @returns ok(form count) on success
+ * @returns err(DatabaseError) on query failure
  */
 export const getFormCountWithStatsCollection = (): ResultAsync<
   number,
@@ -88,7 +96,10 @@ export const getFormCountWithStatsCollection = (): ResultAsync<
  *
  * ! Access to this function should be determined by whether the `aggregate-stats` feature is enabled.
  *
- * @returns the number of forms that has more than MIN_SUB_COUNT responses using the submission collection
+ * Retrieves the number of forms that has more than MIN_SUB_COUNT responses
+ * using the submissions collection.
+ * @returns ok(form count) on success
+ * @returns err(DatabaseError) on query failure
  */
 export const getFormCountWithSubmissionCollection = (): ResultAsync<
   number,
