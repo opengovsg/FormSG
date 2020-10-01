@@ -1,11 +1,13 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
-import { IFormStatisticsTotalSchema } from '../../types'
+import {
+  AggregateFormCountResult,
+  IFormStatisticsTotalModel,
+  IFormStatisticsTotalSchema,
+} from '../../types'
 
 const FORM_STATS_TOTAL_SCHEMA_ID = 'FormStatisticsTotal'
 const FORM_STATS_COLLECTION_NAME = 'formStatisticsTotal'
-
-type IFormStatisticsTotalModel = Model<IFormStatisticsTotalSchema>
 
 const compileFormStatisticsTotalModel = (db: Mongoose) => {
   const FormStatisticsTotalSchema = new Schema<IFormStatisticsTotalSchema>(
@@ -37,6 +39,25 @@ const compileFormStatisticsTotalModel = (db: Mongoose) => {
     },
   )
 
+  // Static functions
+  FormStatisticsTotalSchema.statics.aggregateFormCount = function (
+    this: IFormStatisticsTotalModel,
+    minSubCount: number,
+  ): Promise<AggregateFormCountResult> {
+    return this.aggregate([
+      {
+        $match: {
+          totalCount: {
+            $gt: minSubCount,
+          },
+        },
+      },
+      {
+        $count: 'numActiveForms',
+      },
+    ]).exec()
+  }
+
   const FormStatisticsTotalModel = db.model<
     IFormStatisticsTotalSchema,
     IFormStatisticsTotalModel
@@ -55,7 +76,9 @@ const compileFormStatisticsTotalModel = (db: Mongoose) => {
  * @param db The mongoose instance to retrieve the FormStatisticsTotal model from
  * @returns The FormStatisticsTotal model
  */
-const getFormStatisticsTotalModel = (db: Mongoose) => {
+const getFormStatisticsTotalModel = (
+  db: Mongoose,
+): IFormStatisticsTotalModel => {
   try {
     return db.model(FORM_STATS_TOTAL_SCHEMA_ID) as IFormStatisticsTotalModel
   } catch {
