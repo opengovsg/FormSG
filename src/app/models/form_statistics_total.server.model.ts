@@ -6,12 +6,19 @@ import {
   IFormStatisticsTotalSchema,
 } from '../../types'
 
+import { FORM_SCHEMA_ID } from './form.server.model'
+
 const FORM_STATS_TOTAL_SCHEMA_ID = 'FormStatisticsTotal'
 const FORM_STATS_COLLECTION_NAME = 'formStatisticsTotal'
 
 const compileFormStatisticsTotalModel = (db: Mongoose) => {
   const FormStatisticsTotalSchema = new Schema<IFormStatisticsTotalSchema>(
     {
+      formId: {
+        type: Schema.Types.ObjectId,
+        ref: FORM_SCHEMA_ID,
+        required: true,
+      },
       totalCount: {
         type: Number,
         required: true,
