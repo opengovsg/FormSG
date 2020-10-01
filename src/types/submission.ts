@@ -11,12 +11,12 @@ export enum SubmissionType {
 
 export interface ISubmission {
   form: IFormSchema['_id']
-  authType: AuthType
-  myInfoFields: MyInfoAttribute[]
+  authType?: AuthType
+  myInfoFields?: MyInfoAttribute[]
   submissionType: SubmissionType
   created?: Date
   lastModified?: Date
-  _id: Document['_id']
+  _id?: Document['_id']
   recipientEmails?: string[]
   responseHash?: string
   responseSalt?: string
@@ -42,6 +42,7 @@ export interface WebhookView {
 }
 
 export interface ISubmissionSchema extends ISubmission, Document {
+  _id: Document['_id']
   getWebhookView(): WebhookView | null
 }
 

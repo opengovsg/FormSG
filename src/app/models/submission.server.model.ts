@@ -1,4 +1,4 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
 import {
   AuthType,
@@ -7,7 +7,6 @@ import {
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
-  IFormSchema,
   ISubmissionModel,
   ISubmissionSchema,
   IWebhookResponseSchema,
