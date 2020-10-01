@@ -13,7 +13,8 @@ interface IBillingFactory {
 
 const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
-const createBillingFactory = ({
+// Exported for testing.
+export const createBillingFactory = ({
   isEnabled,
   props,
 }: RegisteredFeature<FeatureNames.SpcpMyInfo>): IBillingFactory => {
