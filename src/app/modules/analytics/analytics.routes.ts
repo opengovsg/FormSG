@@ -1,6 +1,5 @@
 import { Router } from 'express'
 
-import * as CoreController from '../../controllers/core.server.controller'
 import AggregateStatsFactory from '../../factories/aggregate-stats.factory'
 
 import * as AnalyticsController from './analytics.controller'
@@ -30,4 +29,7 @@ AnalyticsRouter.get('/users', AnalyticsController.handleGetUserAnalytics)
  * @group analytics - form usage statistics
  * @returns 200 with the total number of submissions of forms
  */
-AnalyticsRouter.get('/submissions', CoreController.submissionCount)
+AnalyticsRouter.get(
+  '/submissions',
+  AnalyticsController.handleGetSubmissionsAnalytics,
+)

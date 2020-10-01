@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 const _ = require('lodash')
 const { StatusCodes } = require('http-status-codes')
 
-const config = require('../../config/config')
 const { getRequestIp } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
@@ -107,30 +106,4 @@ exports.formCountUsingSubmissionsCollection = (req, res) => {
       }
     },
   )
-}
-
-/**
- * Returns total number of form submissions
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- */
-exports.submissionCount = (req, res) => {
-  let Submission = getSubmissionModel(mongoose)
-  Submission.estimatedDocumentCount(function (err, ct) {
-    if (err) {
-      logger.error({
-        message: 'Mongo submission count error',
-        meta: {
-          action: 'submissionCount',
-          ip: getRequestIp(req),
-          url: req.url,
-          headers: req.headers,
-        },
-        error: err,
-      })
-    } else {
-      let totalCount = ct + config.submissionsTopUp
-      res.json(totalCount)
-    }
-  })
 }
