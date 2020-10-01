@@ -115,15 +115,6 @@
 }
 
 .navbar__dropdown__user__avatar {
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
   color: #fff;
   text-transform: uppercase;
   height: 40px;
@@ -134,6 +125,9 @@
   border-radius: 50%;
   outline: none;
   margin-right: 16px;
+  display: inline-table;
+  text-align: center;
+  line-height: 36px;
 }
 
 .navbar__dropdown__user__details {
@@ -143,6 +137,7 @@
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
+  word-break: break-all;
 }
 
 .navbar__dropdown__user__details--email {
