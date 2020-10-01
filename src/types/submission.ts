@@ -45,6 +45,17 @@ export interface ISubmissionSchema extends ISubmission, Document {
   getWebhookView(): WebhookView | null
 }
 
+export type FindFormsWithSubsAboveResult = {
+  _id: IFormSchema['_id']
+  count: number
+}
+
+export interface ISubmissionModel extends Model<ISubmissionSchema> {
+  findFormsWithSubsAbove(
+    minSubCount: number,
+  ): Promise<FindFormsWithSubsAboveResult[]>
+}
+
 export interface IEmailSubmission extends ISubmission {
   recipientEmails: string[]
   responseHash: string
@@ -85,7 +96,9 @@ export interface IWebhookResponse {
   }
 }
 
-export type IEmailSubmissionModel = Model<IEmailSubmissionSchema>
-export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema>
+export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
+  ISubmissionModel
+export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
+  ISubmissionModel
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

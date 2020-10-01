@@ -2,10 +2,13 @@ import { Model, Mongoose, Schema } from 'mongoose'
 
 import {
   AuthType,
+  FindFormsWithSubsAboveResult,
   IEmailSubmissionModel,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
+  IFormSchema,
+  ISubmissionModel,
   ISubmissionSchema,
   IWebhookResponseSchema,
   MyInfoAttribute,
@@ -56,9 +59,29 @@ SubmissionSchema.index({
   created: -1,
 })
 
-// Instance methods
+// Base schema static methods
+SubmissionSchema.statics.findFormsWithSubsAbove = function (
+  this: ISubmissionModel,
+  minSubCount: number,
+): Promise<FindFormsWithSubsAboveResult[]> {
+  return this.aggregate<FindFormsWithSubsAboveResult>([
+    {
+      $group: {
+        _id: '$form',
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $match: {
+        count: {
+          $gt: minSubCount,
+        },
+      },
+    },
+  ]).exec()
+}
 
-const emailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
+const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
   recipientEmails: {
     type: [
       {
@@ -83,10 +106,11 @@ const emailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
   },
 })
 
+// EmailSubmission Instance methods
 /**
  * Returns null as email submission does not have a webhook view
  */
-emailSubmissionSchema.methods.getWebhookView = function (): null {
+EmailSubmissionSchema.methods.getWebhookView = function (): null {
   return null
 }
 
@@ -110,7 +134,7 @@ const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
   },
 )
 
-const encryptSubmissionSchema = new Schema<IEncryptedSubmissionSchema>({
+const EncryptSubmissionSchema = new Schema<IEncryptedSubmissionSchema>({
   encryptedContent: {
     type: String,
     trim: true,
@@ -135,7 +159,7 @@ const encryptSubmissionSchema = new Schema<IEncryptedSubmissionSchema>({
  * Returns an object which represents the encrypted submission
  * which will be posted to the webhook URL.
  */
-encryptSubmissionSchema.methods.getWebhookView = function (
+EncryptSubmissionSchema.methods.getWebhookView = function (
   this: IEncryptedSubmissionSchema,
 ): WebhookView {
   const webhookData: WebhookData = {
@@ -152,27 +176,34 @@ encryptSubmissionSchema.methods.getWebhookView = function (
   }
 }
 
-const compileSubmissionModel = (db: Mongoose) => {
+const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const Submission = db.model('Submission', SubmissionSchema)
-  Submission.discriminator(SubmissionType.Email, emailSubmissionSchema)
-  Submission.discriminator(SubmissionType.Encrypt, encryptSubmissionSchema)
-  return db.model<ISubmissionSchema>(SUBMISSION_SCHEMA_ID, SubmissionSchema)
+  Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)
+  Submission.discriminator(SubmissionType.Encrypt, EncryptSubmissionSchema)
+  return db.model<ISubmissionSchema>(
+    SUBMISSION_SCHEMA_ID,
+    SubmissionSchema,
+  ) as ISubmissionModel
 }
 
-const getSubmissionModel = (db: Mongoose) => {
+const getSubmissionModel = (db: Mongoose): ISubmissionModel => {
   try {
-    return db.model(SUBMISSION_SCHEMA_ID) as Model<ISubmissionSchema>
+    return db.model(SUBMISSION_SCHEMA_ID) as ISubmissionModel
   } catch {
     return compileSubmissionModel(db)
   }
 }
 
-export const getEmailSubmissionModel = (db: Mongoose) => {
+export const getEmailSubmissionModel = (
+  db: Mongoose,
+): IEmailSubmissionModel => {
   getSubmissionModel(db)
   return db.model(SubmissionType.Email) as IEmailSubmissionModel
 }
 
-export const getEncryptSubmissionModel = (db: Mongoose) => {
+export const getEncryptSubmissionModel = (
+  db: Mongoose,
+): IEncryptSubmissionModel => {
   getSubmissionModel(db)
   return db.model(SubmissionType.Encrypt) as IEncryptSubmissionModel
 }
