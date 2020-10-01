@@ -3,6 +3,8 @@ import { Router } from 'express'
 import * as CoreController from '../../controllers/core.server.controller'
 import AggregateStatsFactory from '../../factories/aggregate-stats.factory'
 
+import * as AnalyticsController from './analytics.controller'
+
 export const AnalyticsRouter = Router()
 
 /**
@@ -18,8 +20,9 @@ AnalyticsRouter.get('/forms', AggregateStatsFactory.formCount)
  * @route GET /analytics/users
  * @group analytics - form usage statistics
  * @returns 200 with the number of users building forms
+ * @returns 500 when database error occurs whilst retrieving user count
  */
-AnalyticsRouter.get('/users', CoreController.userCount)
+AnalyticsRouter.get('/users', AnalyticsController.handleGetUserAnalytics)
 
 /**
  * Retrieves the total number of submissions of forms across the application.

@@ -9,7 +9,6 @@ const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormStatisticsTotalModel = require('../models/form_statistics_total.server.model')
   .default
 const getSubmissionModel = require('../models/submission.server.model').default
-const getUserModel = require('../models/user.server.model').default
 
 const FormStatisticsTotal = getFormStatisticsTotalModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
@@ -108,31 +107,6 @@ exports.formCountUsingSubmissionsCollection = (req, res) => {
       }
     },
   )
-}
-
-/**
- * Returns total number of users
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- */
-exports.userCount = (req, res) => {
-  let User = getUserModel(mongoose)
-  User.estimatedDocumentCount(function (err, ct) {
-    if (err) {
-      logger.error({
-        message: 'Mongo user count error',
-        meta: {
-          action: 'userCount',
-          ip: getRequestIp(req),
-          url: req.url,
-          headers: req.headers,
-        },
-        error: err,
-      })
-    } else {
-      res.json(ct)
-    }
-  })
 }
 
 /**
