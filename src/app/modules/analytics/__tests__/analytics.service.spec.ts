@@ -1,10 +1,12 @@
 import { times } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { Query } from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
+import getUserModel from 'src/app/models/user.server.model'
 import {
+  IAgencySchema,
   IFormStatisticsTotalSchema,
   ISubmissionSchema,
   SubmissionType,
@@ -15,10 +17,12 @@ import { MIN_SUB_COUNT } from '../analytics.constants'
 import {
   getFormCountWithStatsCollection,
   getFormCountWithSubmissionCollection,
+  getUserCount,
 } from '../analytics.service'
 
 const FormStatsModel = getFormStatisticsTotalModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
+const UserModel = getUserModel(mongoose)
 
 describe('analytics.service', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -165,6 +169,67 @@ describe('analytics.service', () => {
 
       // Assert
       expect(aggregateSpy).toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+    })
+  })
+
+  describe('getUserCount', () => {
+    const VALID_DOMAIN = 'example.com'
+    let testAgency: IAgencySchema
+
+    beforeEach(async () => {
+      testAgency = await dbHandler.insertDefaultAgency({
+        mailDomain: VALID_DOMAIN,
+      })
+    })
+
+    it('should return 0 when there are no users in the database', async () => {
+      // Arrange
+      const initialUserCount = await UserModel.estimatedDocumentCount()
+      expect(initialUserCount).toEqual(0)
+
+      // Act
+      const actualResult = await getUserCount()
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(0)
+    })
+
+    it('should return number of users in the database', async () => {
+      // Arrange
+      const expectedNumUsers = 10
+      const userPromises = times(expectedNumUsers, () =>
+        UserModel.create({
+          agency: testAgency._id,
+          email: `${Math.random()}@${VALID_DOMAIN}`,
+        }),
+      )
+      await Promise.all(userPromises)
+      const initialUserCount = await UserModel.estimatedDocumentCount()
+      expect(initialUserCount).toEqual(expectedNumUsers)
+
+      // Act
+      const actualResult = await getUserCount()
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedNumUsers)
+    })
+
+    it('should return DatabaseError when error occurs whilst retrieving user count', async () => {
+      // Arrange
+      const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
+      jest.spyOn(UserModel, 'estimatedDocumentCount').mockReturnValueOnce(({
+        exec: execSpy,
+      } as unknown) as Query<number>)
+
+      // Act
+      const actualResult = await getUserCount()
+
+      // Assert
+      expect(execSpy).toHaveBeenCalledTimes(1)
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
     })
