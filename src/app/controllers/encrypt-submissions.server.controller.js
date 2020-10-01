@@ -15,7 +15,7 @@ const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
 const { ConflictError } = require('../modules/submission/submission.errors')
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
@@ -46,6 +46,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
       meta: {
         action: 'validateEncryptSubmission',
         ip: getRequestIp(req),
+        trace: getTrace(req),
         formId: form._id,
       },
       error,
@@ -65,6 +66,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
         meta: {
           action: 'validateEncryptSubmission',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           formId: form._id,
         },
         error: err,
@@ -113,6 +115,7 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
     meta: {
       action: 'onEncryptSubmissionFailure',
       ip: getRequestIp(req),
+      trace: getTrace(req),
       url: req.url,
       headers: req.headers,
     },
@@ -246,6 +249,7 @@ exports.getMetadata = function (req, res) {
               meta: {
                 action: 'getMetadata',
                 ip: getRequestIp(req),
+                trace: getTrace(req),
                 url: req.url,
                 headers: req.headers,
               },
@@ -320,6 +324,7 @@ exports.getMetadata = function (req, res) {
             meta: {
               action: 'getMetadata',
               ip: getRequestIp(req),
+              trace: getTrace(req),
               url: req.url,
               headers: req.headers,
             },
@@ -379,6 +384,7 @@ exports.getEncryptedResponse = function (req, res) {
         meta: {
           action: 'getEncryptedResponse',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           url: req.url,
           headers: req.headers,
         },
@@ -455,6 +461,7 @@ exports.streamEncryptedResponses = async function (req, res) {
         meta: {
           action: 'streamEncryptedResponse',
           ip: getRequestIp(req),
+          trace: getTrace(req),
         },
         error: err,
       })
@@ -471,6 +478,7 @@ exports.streamEncryptedResponses = async function (req, res) {
         meta: {
           action: 'streamEncryptedResponse',
           ip: getRequestIp(req),
+          trace: getTrace(req),
         },
         error: err,
       })
@@ -485,6 +493,7 @@ exports.streamEncryptedResponses = async function (req, res) {
         meta: {
           action: 'streamEncryptedResponse',
           ip: getRequestIp(req),
+          trace: getTrace(req),
         },
         error: err,
       })

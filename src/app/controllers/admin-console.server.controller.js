@@ -20,7 +20,7 @@ const Form = getFormModel(mongoose)
 const _ = require('lodash')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 
 // Examples search-specific constants
 const PAGE_SIZE = 16 // maximum number of results to return
@@ -577,6 +577,7 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           meta: {
             action: 'getExampleFormsUsingAggregateCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -609,6 +610,7 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           meta: {
             action: 'getExampleFormsUsingSubmissionsCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -699,6 +701,7 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           meta: {
             action: 'getSingleExampleFormUsingSubmissionCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -727,6 +730,7 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           meta: {
             action: 'getSingleExampleFormUsingAggregateCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -808,6 +812,7 @@ exports.getLoginStats = function (req, res) {
           meta: {
             action: 'getLoginStats',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
