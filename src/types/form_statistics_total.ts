@@ -16,6 +16,7 @@ export interface IFormStatisticsTotalSchema
 export type AggregateFormCountResult =
   | [{ numActiveForms: number } | undefined]
   | never[]
+
 export interface IFormStatisticsTotalModel
   extends Model<IFormStatisticsTotalSchema> {
   aggregateFormCount(minSubCount: number): Promise<AggregateFormCountResult>
