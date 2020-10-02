@@ -1,5 +1,8 @@
-const FieldValidatorFactory = require('./FieldValidatorFactory.class')
-const { FIELDS_TO_REJECT, ALLOWED_VALIDATORS } = require('./config')
+import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+import { IFieldSchema } from 'src/types/field/baseField'
+
+import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
+import FieldValidatorFactory from './FieldValidatorFactory.class'
 
 const fieldValidatorFactory = new FieldValidatorFactory()
 
@@ -11,7 +14,11 @@ const fieldValidatorFactory = new FieldValidatorFactory()
  * @param {Object} response A client-side response that is to be untrusted
  * @throws {Error}
  */
-function validateField(formId, formField, response) {
+export default function validateField(
+  formId: string,
+  formField: IFieldSchema,
+  response: ProcessedFieldResponse,
+): void {
   if (FIELDS_TO_REJECT.includes(response.fieldType)) {
     throw new Error(`Rejected field type "${response.fieldType}"`)
   }
@@ -33,5 +40,3 @@ function validateField(formId, formField, response) {
     }
   }
 }
-
-module.exports = validateField
