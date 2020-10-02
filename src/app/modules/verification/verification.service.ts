@@ -257,7 +257,7 @@ const sendOTPForField = async (
   field: IVerificationFieldSchema,
   recipient: string,
   otp: string,
-): Promise<unknown> => {
+): Promise<boolean> => {
   const { fieldType } = field
   switch (fieldType) {
     case 'mobile':
