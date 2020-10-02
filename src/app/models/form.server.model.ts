@@ -493,7 +493,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
     // Validate that admin exists before form is created.
-    User.findById(this.admin, function (error, admin) {
+    void User.findById(this.admin, function (error, admin) {
       if (error) {
         return next(Error(`Error validating admin for form.`))
       }
