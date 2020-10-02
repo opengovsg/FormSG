@@ -1,3 +1,5 @@
+import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
+
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { IFieldSchema } from 'src/types/field/baseField'
 
@@ -5,6 +7,20 @@ import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import FieldValidatorFactory from './FieldValidatorFactory.class'
 
 const fieldValidatorFactory = new FieldValidatorFactory()
+
+/**
+ * Compares the response field type to the form field type
+ * @param formField The form field to compare the response to
+ * @param response The submitted response
+ */
+const isFieldTypeValid = (
+  formField: IFieldSchema,
+  response: ProcessedFieldResponse,
+): Either<string, boolean> => {
+  return response.fieldType !== formField.fieldType
+    ? left(`Response fieldType (${response.fieldType}) did not match`)
+    : right(true)
+}
 
 /**
  * Single function that abstracts away the complexity of field validation
@@ -22,13 +38,16 @@ export default function validateField(
   if (FIELDS_TO_REJECT.includes(response.fieldType)) {
     throw new Error(`Rejected field type "${response.fieldType}"`)
   }
+
   const fieldValidator = fieldValidatorFactory.createFieldValidator(
     formId,
     formField,
     response,
   )
 
-  if (!fieldValidator.isFieldTypeValid()) {
+  const fieldTypeEither = isFieldTypeValid(formField, response)
+
+  if (isLeft(fieldTypeEither)) {
     throw new Error('Invalid field type submitted')
   }
 

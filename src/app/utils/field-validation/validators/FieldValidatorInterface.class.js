@@ -13,9 +13,6 @@ class FieldValidatorInterface {
       throw new Error('Abstract FieldValidatorInterface cannot be instantiated')
     }
   }
-  isFieldTypeValid() {
-    throw new Error('isFieldTypeValid is not implemented')
-  }
 
   isAnswerValid() {
     throw new Error('isAnswerValid is not implemented')
