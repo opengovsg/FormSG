@@ -26,7 +26,7 @@ export const getUserCount = (): ResultAsync<number, DatabaseError> => {
       logger.error({
         message: 'Database error when retrieving user collection count',
         meta: {
-          action: 'getUsersCount',
+          action: 'getUserCount',
         },
         error,
       })
@@ -48,7 +48,7 @@ export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
       logger.error({
         message: 'Database error when retrieving submission collection count',
         meta: {
-          action: 'getSubmissionsCount',
+          action: 'getSubmissionCount',
         },
         error,
       })
