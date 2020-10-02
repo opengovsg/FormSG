@@ -39,17 +39,19 @@ export default function validateField(
     throw new Error(`Rejected field type "${response.fieldType}"`)
   }
 
-  const fieldValidator = fieldValidatorFactory.createFieldValidator(
-    formId,
-    formField,
-    response,
-  )
-
+  // Validate that the form field type matches the response type
   const fieldTypeEither = isFieldTypeValid(formField, response)
 
   if (isLeft(fieldTypeEither)) {
     throw new Error('Invalid field type submitted')
   }
+
+  // Validate that the answers in the response adhere to the form field
+  const fieldValidator = fieldValidatorFactory.createFieldValidator(
+    formId,
+    formField,
+    response,
+  )
 
   if (!fieldValidator.isAnswerValid()) {
     // TODO: Remove after soft launch of validation. Should throw Error for all validators
