@@ -3,7 +3,7 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { IFieldSchema } from 'src/types/field/baseField'
 
-import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
+import { FIELDS_TO_REJECT } from './config'
 import FieldValidatorFactory from './FieldValidatorFactory.class'
 
 const fieldValidatorFactory = new FieldValidatorFactory()
@@ -47,17 +47,18 @@ export default function validateField(
   }
 
   // Validate that the answers in the response adhere to the form field
-  const fieldValidator = fieldValidatorFactory.createFieldValidator(
-    formId,
-    formField,
-    response,
-  )
+  switch (formField.fieldType) {
+    default:
+      // eslint-disable-next-line no-case-declarations
+      const fieldValidator = fieldValidatorFactory.createFieldValidator(
+        formId,
+        formField,
+        response,
+      )
 
-  if (!fieldValidator.isAnswerValid()) {
-    // TODO: Remove after soft launch of validation. Should throw Error for all validators
-    // fieldValidator.constructor.name only returns the name of the class if code is not minified!
-    if (ALLOWED_VALIDATORS.includes(fieldValidator.constructor.name)) {
-      throw new Error('Invalid answer submitted')
-    }
+      if (!fieldValidator.isAnswerValid()) {
+        throw new Error('Invalid answer submitted')
+      }
+      return
   }
 }
