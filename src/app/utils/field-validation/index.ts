@@ -3,8 +3,14 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { IFieldSchema } from 'src/types/field/baseField'
 
+import { createLoggerWithLabel } from '../../../config/logger'
+
+import sectionValidator from './validators/sectionValidator'
 import { FIELDS_TO_REJECT } from './config'
+// Deprecated
 import FieldValidatorFactory from './FieldValidatorFactory.class'
+
+const logger = createLoggerWithLabel(module)
 
 const fieldValidatorFactory = new FieldValidatorFactory()
 
@@ -20,6 +26,30 @@ const isFieldTypeValid = (
   return response.fieldType !== formField.fieldType
     ? left(`Response fieldType (${response.fieldType}) did not match`)
     : right(true)
+}
+
+/**
+ * Generic logging function for invalid fields
+ * @param {String} formId id of form, for logging
+ * @param {Object} formField A form field from the database
+ * @param {string} message Message to log
+ * @throws {Error}
+ */
+const logInvalidAnswer = (
+  formId: string,
+  formField: IFieldSchema,
+  message: string,
+) => {
+  formField.fieldType
+  logger.error({
+    message: `Invalid answer: ${message}`,
+    meta: {
+      action: 'InvalidAnswer',
+      formId,
+      fieldId: String(formField._id),
+      fieldType: formField.fieldType,
+    },
+  })
 }
 
 /**
@@ -48,6 +78,16 @@ export default function validateField(
 
   // Validate that the answers in the response adhere to the form field
   switch (formField.fieldType) {
+    // New validators
+    case 'section':
+      // eslint-disable-next-line no-case-declarations
+      const either = sectionValidator(response)
+      if (isLeft(either)) {
+        logInvalidAnswer(formId, formField, 'Answer not allowed')
+        throw new Error('Invalid answer submitted')
+      }
+      return
+    // TODO: deprecated, remove once all form fields have been migrated
     default:
       // eslint-disable-next-line no-case-declarations
       const fieldValidator = fieldValidatorFactory.createFieldValidator(
