@@ -1,4 +1,5 @@
 const validateField = require('../../../../../dist/backend/app/utils/field-validation')
+  .default
 describe('Checkbox validation', () => {
   const makeCheckboxField = (fieldId, fieldOptions, options) => {
     const checkbox = {

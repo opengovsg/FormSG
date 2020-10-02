@@ -1,4 +1,5 @@
 const validateField = require('../../../../../dist/backend/app/utils/field-validation')
+  .default
 
 describe('NRIC field validation', () => {
   it('should allow valid NRIC with S prefix', () => {

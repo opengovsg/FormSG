@@ -1,4 +1,5 @@
 const validateField = require('../../../../../dist/backend/app/utils/field-validation')
+  .default
 
 describe('Radio button validation', () => {
   it('should allow valid option', () => {

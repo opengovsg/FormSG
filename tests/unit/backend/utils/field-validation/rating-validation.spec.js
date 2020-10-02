@@ -1,4 +1,5 @@
 const validateField = require('../../../../../dist/backend/app/utils/field-validation')
+  .default
 
 describe('Rating field validation', () => {
   it('should allow answer within range', () => {
