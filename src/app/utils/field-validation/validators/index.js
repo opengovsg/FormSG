@@ -1,4 +1,3 @@
-module.exports.AnswerNotAllowedValidator = require('./AnswerNotAllowedValidator.class')
 module.exports.BaseFieldValidator = require('./BaseFieldValidator.class')
 module.exports.CheckboxValidator = require('./CheckboxValidator.class')
 module.exports.DecimalValidator = require('./DecimalValidator.class')
