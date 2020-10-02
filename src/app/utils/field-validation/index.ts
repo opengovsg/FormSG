@@ -1,10 +1,10 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
-import { ISectionFieldSchema } from 'src/types/field'
 import { IFieldSchema } from 'src/types/field/baseField'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { isSectionField } from '../../../types/field/utils/guards'
 
 import sectionValidator from './validators/sectionValidator'
 import { FIELDS_TO_REJECT } from './config'
@@ -30,7 +30,8 @@ const isFieldTypeValid = (
 }
 
 /**
- * Generic logging function for invalid fields
+ * Generic logging function for invalid fields.
+ * Incomplete for table fields as the columnType is not logged.
  * @param {String} formId id of form, for logging
  * @param {Object} formField A form field from the database
  * @param {string} message Message to log
@@ -57,12 +58,6 @@ type ResponseValidator = (
   response: ProcessedFieldResponse,
 ) => Either<string, boolean>
 
-const isSectionField = (
-  formField: IFieldSchema,
-): formField is ISectionFieldSchema => {
-  return formField.fieldType === 'section'
-}
-
 const constructValidationFn = (formField: IFieldSchema): ResponseValidator => {
   if (isSectionField(formField)) {
     return (response: ProcessedFieldResponse) => sectionValidator(response)
@@ -71,8 +66,8 @@ const constructValidationFn = (formField: IFieldSchema): ResponseValidator => {
 }
 
 /**
- * Single function that abstracts away the complexity of field validation
- * and factory methods away from the controller
+ * Single exported function that abstracts away the complexities
+ * of field validation.
  * @param {String} formId id of form, for logging
  * @param {Object} formField A form field from the database
  * @param {Object} response A client-side response that is to be untrusted
@@ -94,20 +89,20 @@ export default function validateField(
     throw new Error('Invalid field type submitted')
   }
 
-  // Validate that the answers in the response adhere to the form field
+  // Validate that the answers in the response adhere to the form field definition
   switch (formField.fieldType) {
-    // New validators
+    /* eslint-disable no-case-declarations */
+
+    // Migrated validators
     case 'section':
-      // eslint-disable-next-line no-case-declarations
       const either = constructValidationFn(formField)(response)
       if (isLeft(either)) {
         logInvalidAnswer(formId, formField, 'Answer not allowed')
         throw new Error('Invalid answer submitted')
       }
       return
-    // TODO: deprecated, remove once all form fields have been migrated
+    // TODO: Remove default branch once all form fields have been migrated
     default:
-      // eslint-disable-next-line no-case-declarations
       const fieldValidator = fieldValidatorFactory.createFieldValidator(
         formId,
         formField,
@@ -118,5 +113,6 @@ export default function validateField(
         throw new Error('Invalid answer submitted')
       }
       return
+    /* eslint-enable no-case-declarations */
   }
 }
