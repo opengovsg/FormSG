@@ -1,6 +1,7 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+import { ISectionFieldSchema } from 'src/types/field'
 import { IFieldSchema } from 'src/types/field/baseField'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -52,6 +53,23 @@ const logInvalidAnswer = (
   })
 }
 
+type ResponseValidator = (
+  response: ProcessedFieldResponse,
+) => Either<string, boolean>
+
+const isSectionField = (
+  formField: IFieldSchema,
+): formField is ISectionFieldSchema => {
+  return formField.fieldType === 'section'
+}
+
+const constructValidationFn = (formField: IFieldSchema): ResponseValidator => {
+  if (isSectionField(formField)) {
+    return (response: ProcessedFieldResponse) => sectionValidator(response)
+  }
+  return () => left('Unsupported field validation function')
+}
+
 /**
  * Single function that abstracts away the complexity of field validation
  * and factory methods away from the controller
@@ -81,7 +99,7 @@ export default function validateField(
     // New validators
     case 'section':
       // eslint-disable-next-line no-case-declarations
-      const either = sectionValidator(response)
+      const either = constructValidationFn(formField)(response)
       if (isLeft(either)) {
         logInvalidAnswer(formId, formField, 'Answer not allowed')
         throw new Error('Invalid answer submitted')
