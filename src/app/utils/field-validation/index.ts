@@ -1,13 +1,18 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
-import { IFieldSchema } from 'src/types/field/baseField'
+import { IField } from 'src/types/field/baseField'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { isSectionField } from '../../../types/field/utils/guards'
+import {
+  isLongTextField,
+  isSectionField,
+  isShortTextField,
+} from '../../../types/field/utils/guards'
 
 import constructSectionValidator from './validators/sectionValidator'
+import constructTextValidator from './validators/textValidator'
 import { FIELDS_TO_REJECT } from './config'
 import FieldValidatorFactory from './FieldValidatorFactory.class'
 
@@ -21,7 +26,7 @@ const fieldValidatorFactory = new FieldValidatorFactory()
  * @param response The submitted response
  */
 const isFieldTypeValid = (
-  formField: IFieldSchema,
+  formField: IField,
   response: ProcessedFieldResponse,
 ): Either<string, boolean> => {
   return response.fieldType !== formField.fieldType
@@ -39,7 +44,7 @@ const isFieldTypeValid = (
  */
 const logInvalidAnswer = (
   formId: string,
-  formField: IFieldSchema,
+  formField: IField,
   message: string,
 ) => {
   formField.fieldType
@@ -58,9 +63,11 @@ const logInvalidAnswer = (
  * Factory function that returns a validation function for the form field.
  * @param formField A form field from a form object
  */
-const constructValidationFn = (formField: IFieldSchema): ResponseValidator => {
+const constructValidationFn = (formField: IField): ResponseValidator => {
   if (isSectionField(formField)) {
     return constructSectionValidator()
+  } else if (isShortTextField(formField) || isLongTextField(formField)) {
+    return constructTextValidator(formField)
   }
   return () => left('Unsupported field validation function')
 }
@@ -75,7 +82,7 @@ const constructValidationFn = (formField: IFieldSchema): ResponseValidator => {
  */
 export default function validateField(
   formId: string,
-  formField: IFieldSchema,
+  formField: IField,
   response: ProcessedFieldResponse,
 ): void {
   if (FIELDS_TO_REJECT.includes(response.fieldType)) {
@@ -95,6 +102,8 @@ export default function validateField(
 
     // Migrated validators
     case 'section':
+    case 'textfield': // short text
+    case 'textarea': // long text
       const either = constructValidationFn(formField)(response)
       if (isLeft(either)) {
         logInvalidAnswer(formId, formField, 'Answer not allowed')
