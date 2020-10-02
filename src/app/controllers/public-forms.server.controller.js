@@ -58,6 +58,7 @@ exports.redirect = async function (req, res) {
       message: 'Error fetching metatags',
       meta: {
         action: 'redirect',
+        trace: getTrace(req),
       },
       error: err,
     })

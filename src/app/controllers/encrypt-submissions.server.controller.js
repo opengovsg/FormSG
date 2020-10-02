@@ -188,6 +188,7 @@ exports.saveResponseToDb = function (req, res, next) {
             message: 'Attachment upload error',
             meta: {
               action: 'saveResponseToDb',
+              trace: getTrace(req),
             },
             error: err,
           })

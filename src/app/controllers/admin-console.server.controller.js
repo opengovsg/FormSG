@@ -832,6 +832,7 @@ exports.getLoginStats = function (req, res) {
           }`,
           meta: {
             action: 'getLoginStats',
+            trace: getTrace(req),
           },
         })
 

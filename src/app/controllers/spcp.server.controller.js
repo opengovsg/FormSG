@@ -261,6 +261,7 @@ exports.validateESrvcId = (req, res) => {
           message: 'Could not find title',
           meta: {
             action: 'validateESrvcId',
+            trace: getTrace(req),
             redirectUrl: redirectURL,
             data,
           },
@@ -292,6 +293,7 @@ exports.validateESrvcId = (req, res) => {
         message: 'Could not contact singpass to validate eservice id',
         meta: {
           action: 'validateESrvcId',
+          trace: getTrace(req),
           redirectUrl: redirectURL,
           statusCode,
         },
