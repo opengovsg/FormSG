@@ -23,6 +23,7 @@ const myInfoTypes = require('../../../shared/resources/myinfo').types
  *  Factory for creating validators based on the field type found in the response
  *
  * @class FieldValidatorFactory
+ * @deprecated
  */
 class FieldValidatorFactory {
   /**

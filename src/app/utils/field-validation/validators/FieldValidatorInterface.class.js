@@ -6,6 +6,7 @@ const logger = require('../../../../config/logger').createLoggerWithLabel(
  * Interface which all field validators must implement
  *
  * @class FieldValidatorInterface
+ * @deprecated
  */
 class FieldValidatorInterface {
   constructor() {

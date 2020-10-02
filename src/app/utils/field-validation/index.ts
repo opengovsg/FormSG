@@ -2,13 +2,13 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { IFieldSchema } from 'src/types/field/baseField'
+import { ResponseValidator } from 'src/types/field/utils/validation'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isSectionField } from '../../../types/field/utils/guards'
 
-import sectionValidator from './validators/sectionValidator'
+import constructSectionValidator from './validators/sectionValidator'
 import { FIELDS_TO_REJECT } from './config'
-// Deprecated
 import FieldValidatorFactory from './FieldValidatorFactory.class'
 
 const logger = createLoggerWithLabel(module)
@@ -54,13 +54,13 @@ const logInvalidAnswer = (
   })
 }
 
-type ResponseValidator = (
-  response: ProcessedFieldResponse,
-) => Either<string, boolean>
-
+/**
+ * Factory function that returns a validation function for the form field.
+ * @param formField A form field from a form object
+ */
 const constructValidationFn = (formField: IFieldSchema): ResponseValidator => {
   if (isSectionField(formField)) {
-    return (response: ProcessedFieldResponse) => sectionValidator(response)
+    return constructSectionValidator()
   }
   return () => left('Unsupported field validation function')
 }
