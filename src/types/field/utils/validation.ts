@@ -4,4 +4,4 @@ import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.ty
 
 export type ResponseValidator = (
   response: ProcessedFieldResponse,
-) => Either<string, boolean>
+) => Either<string, ProcessedFieldResponse>
