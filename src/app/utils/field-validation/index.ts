@@ -28,10 +28,10 @@ const fieldValidatorFactory = new FieldValidatorFactory()
 const isFieldTypeValid = (
   formField: IField,
   response: ProcessedFieldResponse,
-): Either<string, boolean> => {
+): Either<string, undefined> => {
   return response.fieldType !== formField.fieldType
     ? left(`Response fieldType (${response.fieldType}) did not match`)
-    : right(true)
+    : right(undefined)
 }
 
 /**
