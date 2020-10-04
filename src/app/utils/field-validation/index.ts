@@ -39,6 +39,13 @@ const isFieldTypeValid = (
     : right(undefined)
 }
 
+const answerRequiresValidation = (
+  formField: IField,
+  response: ProcessedFieldResponse,
+) => {
+  return formField.required && response.isVisible
+}
+
 /**
  * Generic logging function for invalid fields.
  * Incomplete for table fields as the columnType is not logged.
@@ -103,7 +110,10 @@ export default function validateField(
     throw new Error('Invalid field type submitted')
   }
 
-  if (isProcessedSingleAnswerResponse(response)) {
+  if (
+    answerRequiresValidation(formField, response) &&
+    isProcessedSingleAnswerResponse(response)
+  ) {
     switch (formField.fieldType) {
       /* eslint-disable no-case-declarations */
       // Migrated validators

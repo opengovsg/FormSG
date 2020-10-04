@@ -5,17 +5,11 @@ import { ILongTextField, IShortTextField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { ISingleAnswerResponse } from 'src/types/response'
 
+import { notEmptySingleAnswerResponse } from './common'
+
 type textFieldValidatorConstructor = (
   textField: IShortTextField | ILongTextField,
 ) => ResponseValidator<ISingleAnswerResponse>
-
-const requiredValidator: textFieldValidatorConstructor = (textField) => (
-  response,
-) => {
-  if (textField.required && response.answer.trim().length === 0)
-    return left('TextValidator.required')
-  return right(response)
-}
 
 const minLengthValidator: textFieldValidatorConstructor = (textField) => (
   response,
@@ -74,7 +68,7 @@ const constructTextValidator: textFieldValidatorConstructor = (textField) => (
   response,
 ) => {
   return pipe(
-    requiredValidator(textField)(response),
+    notEmptySingleAnswerResponse(response),
     chain(lengthValidator(textField)),
   )
 }
