@@ -15,6 +15,7 @@ const {
   AttachmentValidator,
   DateValidator,
   RatingValidator,
+  AnswerNotAllowedValidator,
 } = require('./validators')
 
 const myInfoTypes = require('../../../shared/resources/myinfo').types
@@ -40,6 +41,9 @@ class FieldValidatorFactory {
 
     // 'statement' and 'image' are rejected prior to the creation of a field validator
     switch (fieldType) {
+      case 'section':
+        // Answers are disallowed for these fields
+        return new AnswerNotAllowedValidator(...arguments)
       case 'radiobutton':
         return new RadiobuttonValidator(...arguments)
       case 'dropdown':

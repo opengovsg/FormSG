@@ -2,6 +2,30 @@ const FIELDS_TO_REJECT = require('../../../shared/resources/basic')
   .types.filter((f) => !f.submitted)
   .map((f) => f.name)
 
+// deprecated
+const ALLOWED_VALIDATORS = [
+  'YesNoValidator',
+  'EmailValidator',
+  'DropdownValidator',
+  'RadiobuttonValidator',
+  'NricValidator',
+  'AnswerNotAllowedValidator',
+  'DecimalValidator',
+  'NumberValidator',
+  'MobileValidator',
+  'HomeNoValidator',
+  'RatingValidator',
+  'TextValidator',
+  'DateValidator',
+  'TableValidator',
+  'AttachmentValidator',
+  'CheckboxValidator',
+  // BaseFieldValidator can be constructed by the FieldValidatorFactory,
+  // but is missing from this list.
+  // 'BaseFieldValidator',
+]
+
 module.exports = {
   FIELDS_TO_REJECT,
+  ALLOWED_VALIDATORS,
 }

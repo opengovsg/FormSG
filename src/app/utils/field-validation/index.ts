@@ -15,7 +15,7 @@ import { isSingleAnswerResponse } from '../../../types/response/guards'
 
 import constructSectionValidator from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
-import { FIELDS_TO_REJECT } from './config'
+import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import FieldValidatorFactory from './FieldValidatorFactory.class'
 
 const logger = createLoggerWithLabel(module)
@@ -140,6 +140,10 @@ function classBasedValidation(
   )
 
   if (!fieldValidator.isAnswerValid()) {
-    throw new Error('Invalid answer submitted')
+    // TODO: Remove after soft launch of validation. Should throw Error for all validators
+    // fieldValidator.constructor.name only returns the name of the class if code is not minified!
+    if (ALLOWED_VALIDATORS.includes(fieldValidator.constructor.name)) {
+      throw new Error('Invalid answer submitted')
+    }
   }
 }
