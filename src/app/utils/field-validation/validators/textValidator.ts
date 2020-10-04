@@ -1,15 +1,16 @@
-import { chain, Either, left, right } from 'fp-ts/lib/Either'
+import { chain, left, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 
-import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { ILongTextField, IShortTextField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-const requiredValidator = (
+type textFieldValidatorConstructor = (
   textField: IShortTextField | ILongTextField,
-): ResponseValidator => (
-  response: ProcessedFieldResponse,
-): Either<string, ProcessedFieldResponse> => {
+) => ResponseValidator
+
+const requiredValidator: textFieldValidatorConstructor = (textField) => (
+  response,
+) => {
   if (typeof response.answer !== 'string')
     return left('TextValidator.notString')
   if (textField.required && response.answer.trim().length === 0)
@@ -17,11 +18,9 @@ const requiredValidator = (
   return right(response)
 }
 
-const minLengthValidator = (
-  textField: IShortTextField | ILongTextField,
-): ResponseValidator => (
-  response: ProcessedFieldResponse,
-): Either<string, ProcessedFieldResponse> => {
+const minLengthValidator: textFieldValidatorConstructor = (textField) => (
+  response,
+) => {
   if (typeof response.answer !== 'string')
     return left('TextValidator.notString')
   const { customMin } = textField.ValidationOptions
@@ -32,11 +31,9 @@ const minLengthValidator = (
     : left(`TextValidator.minLength`)
 }
 
-const maxLengthValidator = (
-  textField: IShortTextField | ILongTextField,
-): ResponseValidator => (
-  response: ProcessedFieldResponse,
-): Either<string, ProcessedFieldResponse> => {
+const maxLengthValidator: textFieldValidatorConstructor = (textField) => (
+  response,
+) => {
   if (typeof response.answer !== 'string')
     return left('TextValidator.notString')
   const { customMax } = textField.ValidationOptions
@@ -47,11 +44,9 @@ const maxLengthValidator = (
     : left(`TextValidator.maxLength`)
 }
 
-const exactLengthValidator = (
-  textField: IShortTextField | ILongTextField,
-): ResponseValidator => (
-  response: ProcessedFieldResponse,
-): Either<string, ProcessedFieldResponse> => {
+const exactLengthValidator: textFieldValidatorConstructor = (textField) => (
+  response,
+) => {
   if (typeof response.answer !== 'string')
     return left('TextValidator.notString')
   const { customMin, customMax } = textField.ValidationOptions
@@ -67,11 +62,9 @@ const exactLengthValidator = (
     : left(`TextValidator.exactLength`)
 }
 
-const lengthValidator = (
-  textField: IShortTextField | ILongTextField,
-): ResponseValidator => (
-  response: ProcessedFieldResponse,
-): Either<string, ProcessedFieldResponse> => {
+const lengthValidator: textFieldValidatorConstructor = (textField) => (
+  response,
+) => {
   switch (textField.ValidationOptions.selectedValidation) {
     case 'Exact':
       return exactLengthValidator(textField)(response)
@@ -84,11 +77,9 @@ const lengthValidator = (
   }
 }
 
-const constructTextValidator = (
-  textField: IShortTextField | ILongTextField,
-): ResponseValidator => (
-  response: ProcessedFieldResponse,
-): Either<string, ProcessedFieldResponse> => {
+const constructTextValidator: textFieldValidatorConstructor = (textField) => (
+  response,
+) => {
   return pipe(
     requiredValidator(textField)(response),
     chain(lengthValidator(textField)),
