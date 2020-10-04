@@ -2,11 +2,12 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 import { ILongTextField, IShortTextField } from 'src/types/field'
-import { SingleAnswerResponseValidator } from 'src/types/field/utils/validation'
+import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ISingleAnswerResponse } from 'src/types/response'
 
 type textFieldValidatorConstructor = (
   textField: IShortTextField | ILongTextField,
-) => SingleAnswerResponseValidator
+) => ResponseValidator<ISingleAnswerResponse>
 
 const requiredValidator: textFieldValidatorConstructor = (textField) => (
   response,

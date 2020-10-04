@@ -1,8 +1,11 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
-import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+import {
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from 'src/app/modules/submission/submission.types'
 import { IField } from 'src/types/field/baseField'
-import { SingleAnswerResponseValidator } from 'src/types/field/utils/validation'
+import { ResponseValidator } from 'src/types/field/utils/validation'
 import { FieldResponse } from 'src/types/response'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -11,7 +14,7 @@ import {
   isSectionField,
   isShortTextField,
 } from '../../../types/field/utils/guards'
-import { isSingleAnswerResponse } from '../../../types/response/guards'
+import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
 
 import constructSectionValidator from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
@@ -67,7 +70,7 @@ const logInvalidAnswer = (
  */
 const constructValidationFn = (
   formField: IField,
-): SingleAnswerResponseValidator => {
+): ResponseValidator<ProcessedSingleAnswerResponse> => {
   if (isSectionField(formField)) {
     return constructSectionValidator()
   } else if (isShortTextField(formField) || isLongTextField(formField)) {
@@ -100,7 +103,7 @@ export default function validateField(
     throw new Error('Invalid field type submitted')
   }
 
-  if (isSingleAnswerResponse(response)) {
+  if (isProcessedSingleAnswerResponse(response)) {
     switch (formField.fieldType) {
       /* eslint-disable no-case-declarations */
       // Migrated validators
