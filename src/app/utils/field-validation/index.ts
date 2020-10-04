@@ -39,12 +39,16 @@ const isFieldTypeValid = (
     : right(undefined)
 }
 
+/**
+ * Determines whether a response requires validation. A required field
+ * may not receive an answer if it is not visible due to logic.
+ * @param formField The form field to compare the response to
+ * @param response The submitted response
+ */
 const answerRequiresValidation = (
   formField: IField,
   response: ProcessedFieldResponse,
-) => {
-  return formField.required && response.isVisible
-}
+) => formField.required && response.isVisible
 
 /**
  * Generic logging function for invalid fields.
@@ -72,10 +76,11 @@ const logInvalidAnswer = (
 }
 
 /**
- * Factory function that returns a validation function for the form field.
+ * Constructs a validation function from a form field. Only meant to
+ * validate single answer responses.
  * @param formField A form field from a form object
  */
-const constructValidationFn = (
+const constructSingleAnswerValidator = (
   formField: IField,
 ): ResponseValidator<ProcessedSingleAnswerResponse> => {
   if (isSectionField(formField)) {
@@ -83,7 +88,7 @@ const constructValidationFn = (
   } else if (isShortTextField(formField) || isLongTextField(formField)) {
     return constructTextValidator(formField)
   }
-  return () => left('Unsupported field validation function')
+  return () => left('Unsupported field type')
 }
 
 /**
@@ -110,26 +115,26 @@ export default function validateField(
     throw new Error('Invalid field type submitted')
   }
 
-  if (
-    answerRequiresValidation(formField, response) &&
-    isProcessedSingleAnswerResponse(response)
-  ) {
-    switch (formField.fieldType) {
-      /* eslint-disable no-case-declarations */
-      // Migrated validators
-      case 'section':
-      case 'textfield': // short text
-      case 'textarea': // long text
-        const either = constructValidationFn(formField)(response)
-        if (isLeft(either)) {
-          logInvalidAnswer(formId, formField, 'Answer not allowed')
-          throw new Error('Invalid answer submitted')
-        }
-        return
-      // Fallback
-      default:
-        classBasedValidation(formId, formField, response)
-      /* eslint-enable no-case-declarations */
+  if (answerRequiresValidation(formField, response)) {
+    if (isProcessedSingleAnswerResponse(response)) {
+      switch (formField.fieldType) {
+        /* eslint-disable no-case-declarations */
+        // Migrated validators
+        case 'section':
+        case 'textfield': // short text
+        case 'textarea': // long text
+          const validator = constructSingleAnswerValidator(formField)
+          const validEither = validator(response)
+          if (isLeft(validEither)) {
+            logInvalidAnswer(formId, formField, 'Answer not allowed')
+            throw new Error('Invalid answer submitted')
+          }
+          return
+        // Fallback for un-migrated validators
+        default:
+          classBasedValidation(formId, formField, response)
+        /* eslint-enable no-case-declarations */
+      }
     }
   } else {
     classBasedValidation(formId, formField, response)
