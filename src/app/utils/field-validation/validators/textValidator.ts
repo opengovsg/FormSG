@@ -11,8 +11,6 @@ type textFieldValidatorConstructor = (
 const requiredValidator: textFieldValidatorConstructor = (textField) => (
   response,
 ) => {
-  if (typeof response.answer !== 'string')
-    return left('TextValidator.notString')
   if (textField.required && response.answer.trim().length === 0)
     return left('TextValidator.required')
   return right(response)
@@ -21,8 +19,6 @@ const requiredValidator: textFieldValidatorConstructor = (textField) => (
 const minLengthValidator: textFieldValidatorConstructor = (textField) => (
   response,
 ) => {
-  if (typeof response.answer !== 'string')
-    return left('TextValidator.notString')
   const { customMin } = textField.ValidationOptions
   const min = customMin !== null ? Number(customMin) : null
   if (min === null) return right(response)
@@ -34,8 +30,6 @@ const minLengthValidator: textFieldValidatorConstructor = (textField) => (
 const maxLengthValidator: textFieldValidatorConstructor = (textField) => (
   response,
 ) => {
-  if (typeof response.answer !== 'string')
-    return left('TextValidator.notString')
   const { customMax } = textField.ValidationOptions
   const max = customMax !== null ? Number(customMax) : null
   if (max === null) return right(response)
@@ -47,8 +41,6 @@ const maxLengthValidator: textFieldValidatorConstructor = (textField) => (
 const exactLengthValidator: textFieldValidatorConstructor = (textField) => (
   response,
 ) => {
-  if (typeof response.answer !== 'string')
-    return left('TextValidator.notString')
   const { customMin, customMax } = textField.ValidationOptions
   const exact =
     customMin !== null
