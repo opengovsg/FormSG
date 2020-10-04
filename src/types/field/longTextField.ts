@@ -8,9 +8,9 @@ export enum LongTextSelectedValidation {
 }
 
 export type LongTextValidationOptions = {
-  customMax: number
-  customMin: number
-  customVal: number
+  customMax: number | null
+  customMin: number | null
+  customVal: number | null
   selectedValidation: LongTextSelectedValidation | null
 }
 
