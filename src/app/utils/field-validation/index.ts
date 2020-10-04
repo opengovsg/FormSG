@@ -2,7 +2,8 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { IField } from 'src/types/field/baseField'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { SingleAnswerResponseValidator } from 'src/types/field/utils/validation'
+import { FieldResponse } from 'src/types/response'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -10,6 +11,7 @@ import {
   isSectionField,
   isShortTextField,
 } from '../../../types/field/utils/guards'
+import { isSingleAnswerResponse } from '../../../types/response/guards'
 
 import constructSectionValidator from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
@@ -63,7 +65,9 @@ const logInvalidAnswer = (
  * Factory function that returns a validation function for the form field.
  * @param formField A form field from a form object
  */
-const constructValidationFn = (formField: IField): ResponseValidator => {
+const constructValidationFn = (
+  formField: IField,
+): SingleAnswerResponseValidator => {
   if (isSectionField(formField)) {
     return constructSectionValidator()
   } else if (isShortTextField(formField) || isLongTextField(formField)) {
@@ -83,7 +87,7 @@ const constructValidationFn = (formField: IField): ResponseValidator => {
 export default function validateField(
   formId: string,
   formField: IField,
-  response: ProcessedFieldResponse,
+  response: FieldResponse,
 ): void {
   if (FIELDS_TO_REJECT.includes(response.fieldType)) {
     throw new Error(`Rejected field type "${response.fieldType}"`)
@@ -96,32 +100,46 @@ export default function validateField(
     throw new Error('Invalid field type submitted')
   }
 
-  // Validate that the answers in the response adhere to the form field definition
-  switch (formField.fieldType) {
-    /* eslint-disable no-case-declarations */
+  if (isSingleAnswerResponse(response)) {
+    switch (formField.fieldType) {
+      /* eslint-disable no-case-declarations */
+      // Migrated validators
+      case 'section':
+      case 'textfield': // short text
+      case 'textarea': // long text
+        const either = constructValidationFn(formField)(response)
+        if (isLeft(either)) {
+          logInvalidAnswer(formId, formField, 'Answer not allowed')
+          throw new Error('Invalid answer submitted')
+        }
+        return
+      // Fallback
+      default:
+        classBasedValidation(formId, formField, response)
+      /* eslint-enable no-case-declarations */
+    }
+  } else {
+    classBasedValidation(formId, formField, response)
+  }
+}
 
-    // Migrated validators
-    case 'section':
-    case 'textfield': // short text
-    case 'textarea': // long text
-      const either = constructValidationFn(formField)(response)
-      if (isLeft(either)) {
-        logInvalidAnswer(formId, formField, 'Answer not allowed')
-        throw new Error('Invalid answer submitted')
-      }
-      return
-    // TODO: Remove default branch once all form fields have been migrated
-    default:
-      const fieldValidator = fieldValidatorFactory.createFieldValidator(
-        formId,
-        formField,
-        response,
-      )
+/**
+ * Validate that the answers in the response adhere to the form field definition
+ * using the deprecated class-based field validators.
+ * @deprecated
+ */
+function classBasedValidation(
+  formId: string,
+  formField: IField,
+  response: FieldResponse,
+) {
+  const fieldValidator = fieldValidatorFactory.createFieldValidator(
+    formId,
+    formField,
+    response,
+  )
 
-      if (!fieldValidator.isAnswerValid()) {
-        throw new Error('Invalid answer submitted')
-      }
-      return
-    /* eslint-enable no-case-declarations */
+  if (!fieldValidator.isAnswerValid()) {
+    throw new Error('Invalid answer submitted')
   }
 }

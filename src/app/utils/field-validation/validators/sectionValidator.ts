@@ -1,8 +1,8 @@
 import { left, right } from 'fp-ts/lib/Either'
 
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { SingleAnswerResponseValidator } from 'src/types/field/utils/validation'
 
-type sectionValidatorConstructor = () => ResponseValidator
+type sectionValidatorConstructor = () => SingleAnswerResponseValidator
 
 /**
  * A function that returns a validation function for a section field when called.

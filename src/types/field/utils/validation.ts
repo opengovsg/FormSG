@@ -1,7 +1,7 @@
 import { Either } from 'fp-ts/lib/Either'
 
-import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+import { ISingleAnswerResponse } from 'src/types/response'
 
-export type ResponseValidator = (
-  response: ProcessedFieldResponse,
-) => Either<string, ProcessedFieldResponse>
+export type SingleAnswerResponseValidator = (
+  response: ISingleAnswerResponse,
+) => Either<string, ISingleAnswerResponse>
