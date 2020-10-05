@@ -25,7 +25,10 @@ export const createQueryWithDateParam = (
  * @param date the date to format to its relative string representation
  * @returns the relative string representation of the given date
  */
-export const formatToRelativeString = (date: Date): string => {
+export const formatToRelativeString = (date: Date | null): string => {
+  if (!date) {
+    return '-'
+  }
   const timeDiffDays = moment().diff(date, 'days')
 
   if (timeDiffDays <= 1) {
