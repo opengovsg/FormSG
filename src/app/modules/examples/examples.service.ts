@@ -69,7 +69,7 @@ const RETRIEVAL_TO_QUERY_DATA_MAP: QueryData = {
  */
 const getExamplesQueryBuilder = ({
   type,
-  query = {},
+  query,
 }: {
   type: RetrievalType
   query: ExamplesQueryParams
@@ -243,7 +243,7 @@ const getFormInfo = (
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  */
 export const getExampleForms = (type: RetrievalType) => (
-  query: ExamplesQueryParams = {},
+  query: ExamplesQueryParams,
 ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
   const queryBuilder = getExamplesQueryBuilder({ type, query })
 

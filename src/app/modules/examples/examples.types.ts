@@ -66,14 +66,12 @@ export type QueryPageResultWithTotal = {
   totalNumResults: number
 }
 
-export type ExamplesQueryParams =
-  | {
-      pageNo: string
-      agency?: string
-      searchTerm?: string
-      shouldGetTotalNumResults?: string
-    }
-  | Record<string, never>
+export type ExamplesQueryParams = {
+  pageNo: string
+  agency?: string
+  searchTerm?: string
+  shouldGetTotalNumResults?: 'true' | 'false'
+}
 
 export type FormInfo = QueryExecResult & {
   timeText: string
