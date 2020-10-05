@@ -55,8 +55,8 @@ db.getCollection('submissions').find({ submissionType: 'emailSubmission', recipi
       update: { $set: { recipientEmails: parsedEmails } }
     }
   })
-  if (requests.length === 500) {
-    //Execute per 500 operations and re-init
+  if (requests.length === 100000) {
+    //Execute per 100000 operations and re-init
     db.getCollection('submissions').bulkWrite(requests);
     requests = [];
   }

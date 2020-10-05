@@ -55,8 +55,8 @@ db.getCollection('forms').find({ responseMode: 'email' }).forEach((form) => {
       update: { $set: { emails: parsedEmails } }
     }
   })
-  if (requests.length === 500) {
-    //Execute per 500 operations and re-init
+  if (requests.length === 100000) {
+    //Execute per 100000 operations and re-init
     db.getCollection('forms').bulkWrite(requests);
     requests = [];
   }
