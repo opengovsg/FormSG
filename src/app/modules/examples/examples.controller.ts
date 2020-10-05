@@ -47,6 +47,13 @@ export const handleGetExamples: RequestHandler<
     })
 }
 
+/**
+ * Handler for GET /examples/:formId endpoint.
+ * @returns 200 with the retrieved form example
+ * @returns 401 when user does not exist in session
+ * @returns 404 when the form with given formId does not exist in the database
+ * @returns 500 when error occurs whilst querying the database
+ */
 export const handleGetExampleByFormId: RequestHandler<{
   formId: string
 }> = (req, res) => {
