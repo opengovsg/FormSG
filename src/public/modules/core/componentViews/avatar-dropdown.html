@@ -11,7 +11,9 @@
   ng-mouseleave="vm.isDropdownHover=false"
 >
   <button class="navbar__avatar__avatar">{{vm.avatarText}}</button>
-  <div ng-show="!vm.user.contact" class="navbar__avatar__avatar--alert">!</div>
+  <div ng-show="vm.showExclamation" class="navbar__avatar__avatar--alert">
+    !
+  </div>
   <div ng-show="vm.isDropdownOpen" class="navbar__dropdown">
     <ul>
       <!-- User details block -->

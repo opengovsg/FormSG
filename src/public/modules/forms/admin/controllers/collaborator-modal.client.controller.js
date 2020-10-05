@@ -57,21 +57,14 @@ function CollaboratorModalController(
   $scope.lockCollaboratorScroll = false
 
   $scope.isDisplayTransferOwnerModal = false
-  $scope.isDisplayTransferSuccessMessage = false
-  $scope.isDisplayAlertMessage = false
   $scope.transferOwnerEmail = undefined
-  $scope.successMessage = undefined
-  $scope.alertMessage = undefined
 
   /**
    * Transfers ownership of the form to the selected user, reset UI messages
    */
   $scope.transferOwner = () => {
-    $scope.resetMessages()
-
     if ($scope.transferOwnerEmail === $scope.myform.admin.email) {
-      $scope.isDisplayAlertMessage = true
-      $scope.alertMessage = 'You are already the owner of this form'
+      Toastr.error('You are already the owner of this form')
       $scope.isDisplayTransferOwnerModal = false
       return
     }
@@ -83,11 +76,11 @@ function CollaboratorModalController(
       .$promise.then((res) => {
         $scope.myform = res.form
         externalScope.refreshFormDataFromCollab($scope.myform)
-        $scope.isDisplayTransferSuccessMessage = true
+        Toastr.success('Form ownership transferred. You are now an Editor.')
       })
       .catch((err) => {
-        $scope.alertMessage = err.data.message
-        $scope.isDisplayAlertMessage = true
+        Toastr.error(err.data.message)
+        return
       })
       .finally(() => {
         $scope.isDisplayTransferOwnerModal = false
@@ -108,8 +101,7 @@ function CollaboratorModalController(
         externalScope.refreshFormDataFromCollab($scope.myform)
       })
       .catch((err) => {
-        $scope.alertMessage = err.data.message
-        $scope.isDisplayAlertMessage = true
+        Toastr.error(err.data.message)
         return err
       })
   }
@@ -121,8 +113,6 @@ function CollaboratorModalController(
    * @param {Role} newRole - The selected role
    */
   $scope.updateRole = function (index, newRole) {
-    $scope.resetMessages()
-
     if (
       $scope.myform.permissionList &&
       index > -1 &&
@@ -194,8 +184,6 @@ function CollaboratorModalController(
    * Admins, the user themselves, and users already in the permissionList cannot be added to the form.
    */
   $scope.saveCollabEmail = () => {
-    $scope.resetMessages()
-
     let email = $scope.collab.form.email.toLowerCase()
     let permissions = $scope.roleToPermissions($scope.collab.form.role)
 
@@ -207,9 +195,7 @@ function CollaboratorModalController(
       ) ||
       email === $scope.myform.admin.email
     ) {
-      $scope.isDisplayAlertMessage = true
-      $scope.alertMessage =
-        'This user is an existing collaborator. Edit role below.'
+      Toastr.error('This user is an existing collaborator. Edit role below.')
       return
     }
 
@@ -233,20 +219,19 @@ function CollaboratorModalController(
       if (err) {
         // Make the alert message correspond to the error code
         if (err.status === HttpStatus.BAD_REQUEST) {
-          $scope.alertMessage = 'Outdated admin page, please refresh'
+          Toastr.error('Outdated admin page, please refresh.')
         } else if (err.status === HttpStatus.UNPROCESSABLE_ENTITY) {
-          $scope.alertMessage = `${email} is not part of a whitelisted agency`
+          Toastr.error(`${email} is not part of a whitelisted agency.`)
         } else {
-          $scope.alertMessage = 'Error adding collaborator'
+          Toastr.error('Error adding collaborator.')
         }
         resetCollabForm()
-        $scope.resetMessages()
         return
       }
       // If no error, clear email input
       $scope.btnStatus = 3 // pressed; saved
       $scope.closeEditCollaboratorDropdowns()
-      $scope.resetMessages()
+
       $timeout(() => {
         resetCollabForm()
       }, 1000)
@@ -277,14 +262,6 @@ function CollaboratorModalController(
       (_state) => false,
     )
     $scope.lockCollaboratorScroll = false
-  }
-
-  /**
-   *  Clear all error and success messages
-   */
-  $scope.resetMessages = () => {
-    $scope.isDisplayTransferSuccessMessage = false
-    $scope.isDisplayAlertMessage = false
   }
 
   /**
