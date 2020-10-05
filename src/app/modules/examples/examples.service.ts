@@ -19,12 +19,13 @@ import {
   selectAndProjectCardInfo,
 } from './examples.queries'
 import {
+  ExamplesQueryParams,
   FormInfo,
   QueryData,
   QueryExecResult,
   QueryExecResultWithTotal,
+  QueryPageResult,
   QueryPageResultWithTotal,
-  QueryParams,
   RetrievalType,
   RetrieveSubmissionsExecResult,
   SingleFormInfoQueryResult,
@@ -70,7 +71,7 @@ const getExamplesQueryBuilder = ({
   query = {},
 }: {
   type: RetrievalType
-  query: QueryParams
+  query: ExamplesQueryParams
 }): mongoose.Aggregate<unknown[]> => {
   const { agency, searchTerm } = query
 
@@ -155,13 +156,13 @@ const execExamplesQueryWithTotal = (
 const execExamplesQuery = (
   queryBuilder: mongoose.Aggregate<unknown[]>,
   offset: number,
-): ResultAsync<QueryExecResult[], DatabaseError> => {
+): ResultAsync<QueryPageResult, DatabaseError> => {
   return ResultAsync.fromPromise(
     queryBuilder
       .append(
         selectAndProjectCardInfo(/* limit= */ PAGE_SIZE, /* offset= */ offset),
       )
-      .exec(),
+      .exec() as Promise<QueryExecResult[]>,
     (error) => {
       logger.error({
         message: 'Error in retrieving example forms',
@@ -174,13 +175,12 @@ const execExamplesQuery = (
       return new DatabaseError()
     },
   ).andThen((results) => {
-    const pageResults = results as QueryExecResult[]
-    const formattedResults = pageResults.map((x) => ({
+    const formattedResults = results.map((x) => ({
       ...x,
       timeText: formatToRelativeString(x.lastSubmission),
     }))
 
-    return okAsync(formattedResults)
+    return okAsync({ forms: formattedResults })
   })
 }
 
@@ -242,8 +242,8 @@ const getFormInfo = (
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  */
 export const getExampleForms = (type: RetrievalType) => (
-  query: QueryParams = {},
-): ResultAsync<QueryPageResultWithTotal | QueryExecResult[], DatabaseError> => {
+  query: ExamplesQueryParams = {},
+): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
   const queryBuilder = getExamplesQueryBuilder({ type, query })
 
   const { pageNo, shouldGetTotalNumResults } = query

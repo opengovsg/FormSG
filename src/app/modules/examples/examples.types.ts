@@ -57,15 +57,19 @@ export type FormattedQueryExecResult = QueryExecResult & {
   timeText: string
 }
 
+export type QueryPageResult = {
+  forms: FormattedQueryExecResult[]
+}
+
 export type QueryPageResultWithTotal = {
   forms: FormattedQueryExecResult[]
   totalNumResults: number
 }
 
-export type QueryParams =
+export type ExamplesQueryParams =
   | {
       pageNo: string
-      agency: string
+      agency?: string
       searchTerm?: string
       shouldGetTotalNumResults?: string
     }
