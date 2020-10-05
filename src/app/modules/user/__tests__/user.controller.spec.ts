@@ -13,7 +13,7 @@ import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import { DatabaseError } from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/factories/sms.factory')
@@ -298,7 +298,7 @@ describe('user.controller', () => {
       expect(MockUserService.updateUserContact).toHaveBeenCalledTimes(1)
     })
 
-    it('should return correct status and message when verifying contact throws ApplicationError', async () => {
+    it('should return 401 when verifying contact returns InvalidOtpError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const expectedError = new InvalidOtpError('mock error')
@@ -312,7 +312,47 @@ describe('user.controller', () => {
       await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.status).toBeCalledWith(401)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
+      expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
+      expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when verifying contact returns MissingUserError', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedError = new MissingUserError('mock missing user error')
+
+      // Mock UserService to return error.
+      MockUserService.verifyContactOtp.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(422)
+      expect(mockRes.send).toBeCalledWith(expectedError.message)
+      expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
+      expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when verifying contact returns ApplicationError', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedError = new ApplicationError('mock missing user error')
+
+      // Mock UserService to return error.
+      MockUserService.verifyContactOtp.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await UserController.handleContactVerifyOtp(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.send).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
