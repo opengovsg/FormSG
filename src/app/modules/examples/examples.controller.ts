@@ -12,6 +12,12 @@ import { mapRouteError } from './examples.utils'
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Handler for GET /examples endpoint.
+ * @returns 200 with an array of forms to be listed on the examples page
+ * @returns 401 when user does not exist in session
+ * @returns 500 when error occurs whilst querying the database
+ */
 export const handleGetExamples: RequestHandler<
   ParamsDictionary,
   unknown,
