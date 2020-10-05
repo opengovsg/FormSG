@@ -1,5 +1,8 @@
 import { Mongoose, Schema } from 'mongoose'
 
+import { FORM_SCHEMA_ID } from '../../models/form.server.model'
+import { USER_SCHEMA_ID } from '../../models/user.server.model'
+
 import {
   IAdminContactSmsCountSchema,
   ISmsCount,
@@ -9,10 +12,7 @@ import {
   LogSmsParams,
   LogType,
   SmsType,
-} from '../../types'
-
-import { FORM_SCHEMA_ID } from './form.server.model'
-import { USER_SCHEMA_ID } from './user.server.model'
+} from './sms.types'
 
 const SMS_COUNT_SCHEMA_NAME = 'SmsCount'
 
@@ -101,7 +101,7 @@ const compileSmsCountModel = (db: Mongoose) => {
  * @param db The mongoose instance to retrieve the SmsCount model from
  * @returns The SmsCount model
  */
-const getSmsCountModel = (db: Mongoose) => {
+const getSmsCountModel = (db: Mongoose): ISmsCountModel => {
   try {
     return db.model(SMS_COUNT_SCHEMA_NAME) as ISmsCountModel
   } catch {

@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson'
 import { cloneDeep, merge, omit } from 'lodash'
 import mongoose from 'mongoose'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import getSmsCountModel from 'src/app/models/sms_count.server.model'
-import { IVerificationSmsCount, LogType, SmsType } from 'src/types'
-
-import dbHandler from '../helpers/jest-db'
+import getSmsCountModel from '../sms_count.server.model'
+import { IVerificationSmsCount, LogType, SmsType } from '../sms.types'
 
 const SmsCount = getSmsCountModel(mongoose)
 
@@ -194,7 +194,7 @@ describe('SmsCount', () => {
           form: MOCK_FORM_ID,
         }).lean()
 
-        expect(actualLog!._id).toBeDefined()
+        expect(actualLog?._id).toBeDefined()
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
         expect(actualSavedObject).toEqual(expectedLog)
@@ -220,7 +220,7 @@ describe('SmsCount', () => {
           form: MOCK_FORM_ID,
         }).lean()
 
-        expect(actualLog!._id).toBeDefined()
+        expect(actualLog?._id).toBeDefined()
         // Retrieve object and compare to params, remove indeterministic keys
         const actualSavedObject = omit(actualLog, ['_id', 'createdAt', '__v'])
         expect(actualSavedObject).toEqual(expectedLog)
