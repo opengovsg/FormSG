@@ -21,7 +21,7 @@ export const mapRouteError = (
   switch (error.constructor) {
     case UserErrors.InvalidOtpError:
       return {
-        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: error.message,
       }
     case UserErrors.MissingUserError:
