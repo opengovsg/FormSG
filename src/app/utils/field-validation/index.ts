@@ -41,14 +41,15 @@ const isFieldTypeValid = (
 
 /**
  * Determines whether a response requires validation. A required field
- * may not receive an answer if it is not visible due to logic.
+ * may not require an answer if it is not visible due to logic. However,
+ * if an answer is presented, it should be validated.
  * @param formField The form field to compare the response to
  * @param response The submitted response
  */
-const answerRequiresValidation = (
+const singleAnswerRequiresValidation = (
   formField: IField,
-  response: ProcessedFieldResponse,
-) => formField.required && response.isVisible
+  response: ProcessedSingleAnswerResponse,
+) => (formField.required && response.isVisible) || response.answer.trim() !== ''
 
 /**
  * Generic logging function for invalid fields.
@@ -115,8 +116,8 @@ export default function validateField(
     throw new Error('Invalid field type submitted')
   }
 
-  if (answerRequiresValidation(formField, response)) {
-    if (isProcessedSingleAnswerResponse(response)) {
+  if (isProcessedSingleAnswerResponse(response)) {
+    if (singleAnswerRequiresValidation(formField, response)) {
       switch (formField.fieldType) {
         /* eslint-disable no-case-declarations */
         // Migrated validators
@@ -130,13 +131,14 @@ export default function validateField(
             throw new Error('Invalid answer submitted')
           }
           return
-        // Fallback for un-migrated validators
+        // Fallback for un-migrated single answer validators
         default:
           classBasedValidation(formId, formField, response)
         /* eslint-enable no-case-declarations */
       }
     }
   } else {
+    // fallback for processed checkbox/table/attachment responses
     classBasedValidation(formId, formField, response)
   }
 }
