@@ -29,6 +29,7 @@ import {
   RetrievalType,
   RetrieveSubmissionsExecResult,
   SingleFormInfoQueryResult,
+  SingleFormResult,
 } from './examples.types'
 import {
   createFormIdInfoPipeline,
@@ -266,7 +267,7 @@ export const getExampleForms = (type: RetrievalType) => (
  */
 export const getSingleExampleForm = (type: RetrievalType) => (
   formId: string,
-): ResultAsync<FormInfo, DatabaseError | ResultsNotFoundError> => {
+): ResultAsync<SingleFormResult, DatabaseError | ResultsNotFoundError> => {
   const { singleSearchPipeline, generalQueryModel } = mapRetrievalToQueryData[
     type
   ]
@@ -306,7 +307,7 @@ export const getSingleExampleForm = (type: RetrievalType) => (
               timeText: '-',
               avgFeedback: null,
             }
-            return emptyStatsExampleInfo
+            return { form: emptyStatsExampleInfo }
           }
 
           // Statistics can be found.
@@ -318,7 +319,7 @@ export const getSingleExampleForm = (type: RetrievalType) => (
             avgFeedback: statistics.avgFeedback,
             timeText: formatToRelativeString(statistics.lastSubmission),
           }
-          return processedExampleInfo
+          return { form: processedExampleInfo }
         }),
       )
   )

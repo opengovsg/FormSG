@@ -1,3 +1,10 @@
+import { StatusCodes } from 'http-status-codes'
+
+import { createLoggerWithLabel } from '../../../config/logger'
+import { MapRouteError } from '../../../types/routing'
+import { DatabaseError } from '../core/core.errors'
+
+import { ResultsNotFoundError } from './examples.errors'
 import {
   addAvgFeedback,
   filterByAgencyId,
@@ -17,6 +24,42 @@ import {
   sortByLastSubmitted,
   sortByRelevance,
 } from './examples.queries'
+
+const logger = createLoggerWithLabel(module)
+
+/**
+ * Handler to map ApplicationErrors to their correct status code and error
+ * messages.
+ * @param error The error to retrieve the status codes and error messages
+ * @param coreErrorMessage Any error message to return instead of the default core error message, if any
+ */
+export const mapRouteError: MapRouteError = (error) => {
+  switch (error.constructor) {
+    case ResultsNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case DatabaseError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
+}
 
 /**
  * Creates a query pipeline that can be used to retrieve forms for the /examples
