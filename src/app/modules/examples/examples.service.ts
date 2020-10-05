@@ -49,7 +49,7 @@ const logger = createLoggerWithLabel(module)
  * Maps retrieval type to the middlewares and query model used for general
  * queries to use when creating the aggregation pipeline
  */
-const mapRetrievalToQueryData: QueryData = {
+const RETRIEVAL_TO_QUERY_DATA_MAP: QueryData = {
   [RetrievalType.Stats]: {
     generalQueryModel: FormStatisticsModel,
     lookUpMiddleware: lookupFormStatisticsInfo,
@@ -81,7 +81,7 @@ const getExamplesQueryBuilder = ({
     lookUpMiddleware,
     groupByMiddleware,
     generalQueryModel,
-  } = mapRetrievalToQueryData[type]
+  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
 
   const modelToUse = searchTerm ? FormModel : generalQueryModel
   const pipeline = searchTerm
@@ -268,9 +268,10 @@ export const getExampleForms = (type: RetrievalType) => (
 export const getSingleExampleForm = (type: RetrievalType) => (
   formId: string,
 ): ResultAsync<SingleFormResult, DatabaseError | ResultsNotFoundError> => {
-  const { singleSearchPipeline, generalQueryModel } = mapRetrievalToQueryData[
-    type
-  ]
+  const {
+    singleSearchPipeline,
+    generalQueryModel,
+  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
 
   return (
     // Step 1: Retrieve base form info to augment.
