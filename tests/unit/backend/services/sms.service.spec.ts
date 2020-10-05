@@ -50,13 +50,13 @@ describe('sms.service', () => {
     },
   } as unknown) as Parameters<typeof SmsService.sendVerificationOtp>[3]
 
-  const SMS_COUNT_SPY = jest.spyOn(SmsCount, 'logSms')
+  const smsCountSpy = jest.spyOn(SmsCount, 'logSms')
 
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => {
     await dbHandler.clearDatabase()
     ImportMock.restore()
-    SMS_COUNT_SPY.mockClear()
+    smsCountSpy.mockClear()
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -122,8 +122,8 @@ describe('sms.service', () => {
         smsType: SmsType.verification,
         logType: LogType.success,
       }
-      expect(SMS_COUNT_SPY).toHaveBeenCalledTimes(1)
-      expect(SMS_COUNT_SPY).toHaveBeenCalledWith(expectedLogParams)
+      expect(smsCountSpy).toHaveBeenCalledTimes(1)
+      expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
     })
 
     it('should log failure and throw error if twilio failed to send', async () => {
@@ -150,8 +150,8 @@ describe('sms.service', () => {
         smsType: SmsType.verification,
         logType: LogType.failure,
       }
-      expect(SMS_COUNT_SPY).toHaveBeenCalledTimes(1)
-      expect(SMS_COUNT_SPY).toHaveBeenCalledWith(expectedLogParams)
+      expect(smsCountSpy).toHaveBeenCalledTimes(1)
+      expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
     })
   })
 
@@ -179,8 +179,8 @@ describe('sms.service', () => {
         smsType: SmsType.adminContact,
         logType: LogType.success,
       }
-      expect(SMS_COUNT_SPY).toHaveBeenCalledTimes(1)
-      expect(SMS_COUNT_SPY).toHaveBeenCalledWith(expectedLogParams)
+      expect(smsCountSpy).toHaveBeenCalledTimes(1)
+      expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
     })
 
     it('should log failure and return error when twilio fails to send', async () => {
@@ -204,8 +204,8 @@ describe('sms.service', () => {
         smsType: SmsType.adminContact,
         logType: LogType.failure,
       }
-      expect(SMS_COUNT_SPY).toHaveBeenCalledTimes(1)
-      expect(SMS_COUNT_SPY).toHaveBeenCalledWith(expectedLogParams)
+      expect(smsCountSpy).toHaveBeenCalledTimes(1)
+      expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
     })
   })
 })
