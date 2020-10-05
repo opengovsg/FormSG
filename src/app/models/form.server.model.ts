@@ -139,6 +139,7 @@ const EmailFormSchema = new Schema<IEmailFormSchema>({
     validate: {
       validator: (v: string[]) => {
         if (!Array.isArray(v)) return false
+        if (v.length === 0) return false
         return v.every((email) => validator.isEmail(email))
       },
       message: 'Please provide valid email addresses',
