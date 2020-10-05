@@ -315,7 +315,7 @@ export const getSingleExampleForm = (type: RetrievalType) => (
             ...formInfo,
             count: statistics.count,
             lastSubmission: statistics.lastSubmission,
-            avgFeedback: statistics.avgFeddback,
+            avgFeedback: statistics.avgFeedback,
             timeText: formatToRelativeString(statistics.lastSubmission),
           }
           return processedExampleInfo

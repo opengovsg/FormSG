@@ -40,7 +40,7 @@ export type RetrieveSubmissionsExecResult =
         count: number
         lastSubmission: Date
         formFeedbackInfo: IFormFeedbackSchema[]
-        avgFeddback: number | null
+        avgFeedback: number | null
       },
     ]
   | undefined
@@ -77,6 +77,10 @@ export type ExamplesQueryParams =
 
 export type FormInfo = QueryExecResult & {
   timeText: string
+}
+
+export type SingleFormResult = {
+  form: FormInfo
 }
 
 export type SingleFormInfoQueryResult = [FormInfo] | undefined | []
