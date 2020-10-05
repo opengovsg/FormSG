@@ -1,17 +1,25 @@
 import {
+  addAvgFeedback,
   filterByAgencyId,
   filterBySubmissionCount,
   filterInactiveAndUnlistedForms,
+  groupSubmissionsByFormId,
   lookupAgencyInfo,
   lookupFormFeedback,
   lookupFormInfo,
+  projectAvgFeedback,
+  projectFormDetails,
+  projectSubmissionInfo,
+  searchFormsById,
   searchFormsWithText,
+  searchSubmissionsForForm,
+  sortByCreated,
   sortByLastSubmitted,
   sortByRelevance,
 } from './examples.queries'
 
 /**
- * Creates a query pipeline that is used to retrieve forms for the /examples
+ * Creates a query pipeline that can be used to retrieve forms for the /examples
  * page with search parameters.
  *
  * This pipeline, when aggregated upon, will return forms sorted by last
@@ -60,7 +68,8 @@ export const createSearchQueryPipeline = ({
 }
 
 /**
- * Creates a query that is used to retrieve forms for the /examples page.
+ * Creates a query pipeline that can be used to retrieve forms for the /examples
+ * page.
  *
  * This query will return forms sorted by last submitted date, filtered by
  * number of submissions (greater than given minSubmissionCount), public forms,
@@ -93,5 +102,59 @@ export const createGeneralQueryPipeline = ({
     agencyId ? filterByAgencyId(agencyId) : [],
     // Retrieve form feedback from the forms that reach this step.
     lookupFormFeedback,
+  )
+}
+
+/**
+ * Creates a query pipeline that can be used to retrieve the example card data
+ * for the /examples page with the specified form id.
+ * This pipeline only provides formId, form title, agency logo and color theme.
+ * @param formId The specific form to query.
+ */
+export const createFormIdInfoPipeline = (
+  formId: string,
+): Record<string, unknown>[] => {
+  return searchFormsById(formId).concat(
+    filterInactiveAndUnlistedForms,
+    lookupAgencyInfo,
+    projectFormDetails,
+  )
+}
+
+/**
+ * Creates a query pipeline that can be used to retrieve a single example form
+ * for the /examples page using the submission collection.
+ *
+ * This pipeline will return the average feedback for the form id referenced to
+ * be shown in the example form.
+ * @param formId. The id of the form to retrieve data for
+ */
+export const createSingleSearchSubmissionPipeline = (
+  formId: string,
+): Record<string, unknown>[] => {
+  return searchSubmissionsForForm('form', formId).concat(
+    sortByCreated,
+    groupSubmissionsByFormId,
+    sortByLastSubmitted,
+    lookupFormFeedback,
+    addAvgFeedback,
+  )
+}
+
+/**
+ * Creates a query pipeline that can be used to retrieve a single example form
+ * for the /examples page using the formStatisticsTotal collection.
+ *
+ * This pipeline will return the average feedback for the form id referenced to
+ * be shown in the example form.
+ * @param formId. The id of the form to retrieve data for
+ */
+export const createSingleSearchStatsPipeline = (
+  formId: string,
+): Record<string, unknown>[] => {
+  return searchSubmissionsForForm('formId', formId).concat(
+    projectSubmissionInfo,
+    lookupFormFeedback,
+    projectAvgFeedback,
   )
 }
