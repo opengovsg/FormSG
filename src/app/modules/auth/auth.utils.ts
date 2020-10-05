@@ -2,9 +2,9 @@ import { Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { MapRouteError } from '../../../types/routing'
 import * as MailErrors from '../../services/mail/mail.errors'
 import * as CoreErrors from '../core/core.errors'
-import { ErrorResponseData } from '../core/core.types'
 
 import * as AuthErrors from './auth.errors'
 
@@ -16,10 +16,7 @@ const logger = createLoggerWithLabel(module)
  * @param error The error to retrieve the status codes and error messages
  * @param coreErrorMessage Any error message to return instead of the default core error message, if any
  */
-export const mapRouteError = (
-  error: CoreErrors.ApplicationError,
-  coreErrorMessage?: string,
-): ErrorResponseData => {
+export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
   switch (error.constructor) {
     case AuthErrors.InvalidDomainError:
       return {
