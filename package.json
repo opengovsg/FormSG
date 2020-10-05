@@ -199,7 +199,7 @@
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.0",
     "auto-changelog": "^2.2.1",
-    "axios-mock-adapter": "^1.18.1",
+    "axios-mock-adapter": "^1.18.2",
     "babel-loader": "^8.0.5",
     "concurrently": "^5.3.0",
     "copy-webpack-plugin": "^6.0.2",
