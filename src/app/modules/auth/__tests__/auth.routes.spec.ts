@@ -498,6 +498,7 @@ describe('auth.routes', () => {
     })
 
     it('should return 200 even when user has not signed in before', async () => {
+      // Note that no log in calls have been made with request yet.
       // Act
       const response = await request.get('/auth/signout')
 
