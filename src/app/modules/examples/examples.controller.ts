@@ -3,7 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { getRequestIp } from '../../utils/request'
+import { getRequestIp, getTrace } from '../../utils/request'
 import { isUserInSession } from '../auth/auth.utils'
 
 import { ExamplesFactory } from './examples.factory'
@@ -38,6 +38,7 @@ export const handleGetExamples: RequestHandler<
           ip: getRequestIp(req),
           url: req.url,
           headers: req.headers,
+          trace: getTrace(req),
         },
         error,
       })
@@ -73,6 +74,7 @@ export const handleGetExampleByFormId: RequestHandler<{
           ip: getRequestIp(req),
           url: req.url,
           headers: req.headers,
+          trace: getTrace(req),
           formId,
         },
         error,
