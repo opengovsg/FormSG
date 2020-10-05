@@ -1,7 +1,12 @@
 import { Document, Model } from 'mongoose'
+import { Twilio } from 'twilio'
 
-import { FormOtpData, IFormSchema } from './form'
-import { AdminContactOtpData, IUserSchema } from './user'
+import {
+  AdminContactOtpData,
+  FormOtpData,
+  IFormSchema,
+  IUserSchema,
+} from 'src/types'
 
 export enum SmsType {
   verification = 'VERIFICATION',
@@ -49,4 +54,16 @@ export type IAdminContactSmsCountSchema = ISmsCountSchema
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
+}
+
+export type TwilioCredentials = {
+  accountSid: string
+  apiKey: string
+  apiSecret: string
+  messagingServiceSid: string
+}
+
+export type TwilioConfig = {
+  client: Twilio
+  msgSrvcSid: string
 }
