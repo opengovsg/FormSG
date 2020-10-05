@@ -92,7 +92,7 @@ export interface IFormModel extends Model<IFormSchema> {
   deactivateById(formId: string): Promise<IFormSchema | null>
 }
 
-type IEncryptedFormModel = Model<IEncryptedFormSchema>
+type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -101,7 +101,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   },
 })
 
-type IEmailFormModel = Model<IEmailFormSchema>
+type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 
 const EmailFormSchema = new Schema<IEmailFormSchema>({
   emails: {

@@ -12,10 +12,10 @@ import {
   IVerificationFieldSchema,
   IVerificationSchema,
 } from '../../../types'
-import smsFactory from '../../factories/sms.factory'
 import getFormModel from '../../models/form.server.model'
 import getVerificationModel from '../../models/verification.server.model'
 import MailService from '../../services/mail.service'
+import { SmsFactory } from '../../services/sms/sms.factory'
 import { generateOtp } from '../../utils/otp'
 
 import { ITransaction } from './verification.types'
@@ -257,17 +257,15 @@ const sendOTPForField = async (
   field: IVerificationFieldSchema,
   recipient: string,
   otp: string,
-): Promise<void> => {
+): Promise<boolean> => {
   const { fieldType } = field
   switch (fieldType) {
     case 'mobile':
       // call sms - it should validate the recipient
-      await smsFactory.sendVerificationOtp(recipient, otp, formId)
-      break
+      return SmsFactory.sendVerificationOtp(recipient, otp, formId)
     case 'email':
       // call email - it should validate the recipient
-      await MailService.sendVerificationOtp(recipient, otp)
-      break
+      return MailService.sendVerificationOtp(recipient, otp)
     default:
       throw new Error(`sendOTPForField: ${fieldType} is unsupported`)
   }
