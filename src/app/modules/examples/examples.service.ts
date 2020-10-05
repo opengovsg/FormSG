@@ -241,16 +241,9 @@ const getFormInfo = (
  * @returns ok(list of retrieved example forms) if `shouldGetTotalNumResults` is not of string `"true"`
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  */
-export const getExamplesForm = ({
-  type,
-  query = {},
-}: {
-  type: RetrievalType
-  query: QueryParams
-}): ResultAsync<
-  QueryPageResultWithTotal | QueryExecResult[],
-  DatabaseError
-> => {
+export const getExampleForms = (type: RetrievalType) => (
+  query: QueryParams = {},
+): ResultAsync<QueryPageResultWithTotal | QueryExecResult[], DatabaseError> => {
   const queryBuilder = getExamplesQueryBuilder({ type, query })
 
   const { pageNo, shouldGetTotalNumResults } = query
@@ -271,13 +264,9 @@ export const getExamplesForm = ({
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  * @returns err(ResultsNotFoundError) if form info cannot be retrieved with the given form id
  */
-export const getSingleExampleForm = ({
-  type,
-  formId,
-}: {
-  type: RetrievalType
-  formId: string
-}): ResultAsync<FormInfo, DatabaseError | ResultsNotFoundError> => {
+export const getSingleExampleForm = (type: RetrievalType) => (
+  formId: string,
+): ResultAsync<FormInfo, DatabaseError | ResultsNotFoundError> => {
   const { singleSearchPipeline, generalQueryModel } = mapRetrievalToQueryData[
     type
   ]
