@@ -25,6 +25,23 @@ export const searchFormsWithText = (
 ]
 
 /**
+ * Produces an aggregation step to retrieve form with the specified formId.
+ * @param formId The _id field of the form to be retrieved
+ */
+export const searchFormsById = (formId: string): Record<string, unknown>[] => [
+  {
+    $match: {
+      _id: mongoose.Types.ObjectId(formId),
+    },
+  },
+  {
+    $project: {
+      formInfo: '$$ROOT',
+    },
+  },
+]
+
+/**
  * Precondition: `formInfo` must be retrieved beforehand, which can be done with
  * lookupFormInfo or searchFormsWithText.
  *
@@ -119,7 +136,7 @@ export const filterBySubmissionCount = (
 /**
  * Precondition: A match by text was called earlier, which can be done with
  * searchFormsWithText.
-
+ *
  * Aggregation step to sort forms by their textScore relevance; i.e. how well
  * the search terms were matched.
  */
@@ -140,6 +157,18 @@ export const sortByRelevance: Record<string, unknown>[] = [
 export const sortByLastSubmitted: Record<string, unknown>[] = [
   {
     $sort: { lastSubmission: -1 },
+  },
+]
+
+/**
+ * Precondition: `created` field must have already been retrieved from the
+ * submissions collection via searchSubmissionsForForm.
+ *
+ * Aggregation step to sort forms by the creation date.
+ */
+export const sortByCreated = [
+  {
+    $sort: { created: 1 },
   },
 ]
 
@@ -296,6 +325,44 @@ export const projectSubmissionInfo: Record<string, unknown>[] = [
 ]
 
 /**
+ * Precondition: `formFeedbackInfo` must have been retrieved in a previous step,
+ * which can be done using lookupFormFeedback.
+ *
+ * Aggregation step to project submissions by form id, get submission count, get
+ * the last submission date, along with the average feedback of the submissions.
+ */
+export const projectAvgFeedback: Record<string, unknown>[] = [
+  {
+    $project: {
+      _id: '$formId',
+      count: 1,
+      lastSubmission: 1,
+      avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+    },
+  },
+]
+
+/**
+ * Precondition: `formInfo` must be retrieved beforehand, which can be done with
+ * lookupFormInfo, searchFormsWithText or searchFormsById.
+ *
+ * Aggregation step to project form information without submission/feedback
+ * information.
+ */
+export const projectFormDetails: Record<string, unknown>[] = [
+  {
+    $project: {
+      _id: 1,
+      title: '$formInfo.title',
+      form_fields: '$formInfo.form_fields',
+      logo: '$agencyInfo.logo',
+      agency: '$agencyInfo.shortName',
+      colorTheme: '$formInfo.startPage.colorTheme',
+    },
+  },
+]
+
+/**
  * Aggregation step to produce an object containing the pageResults and
  * totalCount.
  * pageResults will only contain condensed information to be displayed on an
@@ -324,6 +391,39 @@ export const selectAndProjectCardInfo = (
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
       avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+    },
+  },
+]
+
+/**
+ * Produces an aggregation step to retrieve submissions for the form with the
+ * specified formId.
+ * @param key The key of the formId to be retrieved from
+ * @param formId The _id field of the form to be retrieved
+ */
+export const searchSubmissionsForForm = (
+  key: string,
+  formId: string,
+): Record<string, unknown>[] => [
+  {
+    $match: {
+      [key]: mongoose.Types.ObjectId(formId),
+    },
+  },
+]
+
+/**
+ * Precondition: `formFeedbackInfo` must have been retrieved in a previous step,
+ * which can be done using lookupFormFeedback.
+ *
+ * Aggregation step to add the average feedback field.
+ */
+export const addAvgFeedback = [
+  {
+    $addFields: {
+      avgFeedback: {
+        $avg: '$formFeedbackInfo.rating',
+      },
     },
   },
 ]
