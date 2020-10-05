@@ -56,7 +56,9 @@ describe('sms.factory', () => {
   })
 
   describe('sms feature enabled', () => {
-    const MOCK_ENABLED_SMS_FEATURE: RegisteredFeature<FeatureNames.Sms> = {
+    const MOCK_ENABLED_SMS_FEATURE: Required<RegisteredFeature<
+      FeatureNames.Sms
+    >> = {
       isEnabled: true,
       props: {
         twilioAccountSid: 'ACrandomTwilioSid',
