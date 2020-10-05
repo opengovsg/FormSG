@@ -5,7 +5,7 @@
  */
 const { StatusCodes } = require('http-status-codes')
 const PERMISSIONS = require('../utils/permission-levels').default
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 /**
@@ -50,6 +50,7 @@ const logUnauthorizedAccess = (req, action, requiredPermission) => {
     meta: {
       action: action,
       ip: getRequestIp(req),
+      trace: getTrace(req),
       url: req.url,
       headers: req.headers,
     },

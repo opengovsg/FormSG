@@ -3,7 +3,7 @@ const _ = require('lodash')
 const { StatusCodes } = require('http-status-codes')
 
 const config = require('../../config/config')
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 const getFormStatisticsTotalModel = require('../models/form_statistics_total.server.model')
@@ -53,6 +53,7 @@ exports.formCountUsingAggregateCollection = (req, res) => {
           meta: {
             action: 'formCountUsingAggregateCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -97,6 +98,7 @@ exports.formCountUsingSubmissionsCollection = (req, res) => {
           meta: {
             action: 'formCountUsingSubmissionsCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -124,6 +126,7 @@ exports.userCount = (req, res) => {
         meta: {
           action: 'userCount',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           url: req.url,
           headers: req.headers,
         },
@@ -149,6 +152,7 @@ exports.submissionCount = (req, res) => {
         meta: {
           action: 'submissionCount',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           url: req.url,
           headers: req.headers,
         },

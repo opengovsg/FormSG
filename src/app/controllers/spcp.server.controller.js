@@ -9,7 +9,7 @@ const crypto = require('crypto')
 const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
 
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 const getFormModel = require('../models/form.server.model').default
@@ -148,6 +148,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
             meta: {
               action: 'handleOOBAuthenticationWith',
               ip: getRequestIp(req),
+              trace: getTrace(req),
               url: req.url,
               headers: req.headers,
             },
@@ -260,6 +261,7 @@ exports.validateESrvcId = (req, res) => {
           message: 'Could not find title',
           meta: {
             action: 'validateESrvcId',
+            trace: getTrace(req),
             redirectUrl: redirectURL,
             data,
           },
@@ -291,6 +293,7 @@ exports.validateESrvcId = (req, res) => {
         message: 'Could not contact singpass to validate eservice id',
         meta: {
           action: 'validateESrvcId',
+          trace: getTrace(req),
           redirectUrl: redirectURL,
           statusCode,
         },
@@ -353,6 +356,7 @@ exports.addSpcpSessionInfo = (authClients) => {
             meta: {
               action: 'addSpcpSessionInfo',
               ip: getRequestIp(req),
+              trace: getTrace(req),
               url: req.url,
               headers: req.headers,
             },
@@ -415,6 +419,7 @@ exports.encryptedVerifiedFields = (signingSecretKey) => {
           action: 'encryptedVerifiedFields',
           formId: req.form._id,
           ip: getRequestIp(req),
+          trace: getTrace(req),
         },
         error,
       })
@@ -483,6 +488,7 @@ exports.isSpcpAuthenticated = (authClients) => {
             meta: {
               action: 'isSpcpAuthenticated',
               ip: getRequestIp(req),
+              trace: getTrace(req),
               url: req.url,
               headers: req.headers,
             },
