@@ -1,6 +1,6 @@
 import { get } from 'lodash'
 import mongoose from 'mongoose'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
@@ -10,6 +10,7 @@ import { formatToRelativeString } from '../../utils/date'
 import { DatabaseError } from '../core/core.errors'
 
 import { MIN_SUB_COUNT, PAGE_SIZE } from './examples.constants'
+import { ResultsNotFoundError } from './examples.errors'
 import {
   groupSubmissionsByFormId,
   lookupFormStatisticsInfo,
@@ -18,16 +19,22 @@ import {
   selectAndProjectCardInfo,
 } from './examples.queries'
 import {
+  FormInfo,
   QueryData,
   QueryExecResult,
   QueryExecResultWithTotal,
   QueryPageResultWithTotal,
   QueryParams,
   RetrievalType,
+  RetrieveSubmissionsExecResult,
+  SingleFormInfoQueryResult,
 } from './examples.types'
 import {
+  createFormIdInfoPipeline,
   createGeneralQueryPipeline,
   createSearchQueryPipeline,
+  createSingleSearchStatsPipeline,
+  createSingleSearchSubmissionPipeline,
 } from './examples.utils'
 
 const FormModel = getFormModel(mongoose)
@@ -45,11 +52,13 @@ const mapRetrievalToQueryData: QueryData = {
     generalQueryModel: FormStatisticsModel,
     lookUpMiddleware: lookupFormStatisticsInfo,
     groupByMiddleware: projectSubmissionInfo,
+    singleSearchPipeline: createSingleSearchStatsPipeline,
   },
   [RetrievalType.Submissions]: {
     generalQueryModel: SubmissionModel,
     lookUpMiddleware: lookupSubmissionInfo,
     groupByMiddleware: groupSubmissionsByFormId,
+    singleSearchPipeline: createSingleSearchSubmissionPipeline,
   },
 }
 
@@ -176,6 +185,54 @@ const execExamplesQuery = (
 }
 
 /**
+ * Returns the relevant form information (formId, form title, agency logo and
+ * color theme) of the given form id.
+ * @param formId the id of the form to retrieve information for
+ * @returns ok(form info) if form can be found in the database
+ * @returns err(ResultsNotFoundError) if form cannot be found in the database
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+const getFormInfo = (
+  formId: string,
+): ResultAsync<FormInfo, DatabaseError | ResultsNotFoundError> => {
+  const formIdInfoPipeline = createFormIdInfoPipeline(formId)
+
+  return ResultAsync.fromPromise(
+    FormModel.aggregate<FormInfo>(formIdInfoPipeline)
+      .read('secondary')
+      .allowDiskUse(true)
+      .exec() as Promise<SingleFormInfoQueryResult>,
+    (error) => {
+      logger.error({
+        message: 'Database error retrieving example form info',
+        meta: {
+          action: 'getFormInfo',
+          formId,
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  ).andThen((result) => {
+    if (!result) {
+      return errAsync(new ResultsNotFoundError('Invalid aggregation pipeline'))
+    }
+    const [retrievedFormInfo] = result
+    // No form data retrieved inside result (formId likely invalid)
+    if (!retrievedFormInfo) {
+      return errAsync(
+        new ResultsNotFoundError(
+          'Error in retrieving template form - form not found.',
+        ),
+      )
+    }
+
+    return okAsync(retrievedFormInfo)
+  })
+}
+
+/**
  * Retrieves example forms from either the FormStatisticsTotal aggregated
  * collection or from the Submissions collection via the given type parameter.
  * @param type the type of collection to retrieve from
@@ -202,4 +259,78 @@ export const getExamplesForm = ({
   return shouldGetTotalNumResults === 'true'
     ? execExamplesQueryWithTotal(queryBuilder, offset)
     : execExamplesQuery(queryBuilder, offset)
+}
+
+/**
+ * Retrieves a single form for examples from either the FormStatisticsTotal
+ * aggregated collection or from the Submissions collection via the given type
+ * parameter.
+ * @param type the type of collection to retrieve from
+ * @param formId the form id of the form to transform into an example response
+ * @returns ok(example form info) if successful
+ * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
+ * @returns err(ResultsNotFoundError) if form info cannot be retrieved with the given form id
+ */
+export const getSingleExampleForm = ({
+  type,
+  formId,
+}: {
+  type: RetrievalType
+  formId: string
+}): ResultAsync<FormInfo, DatabaseError | ResultsNotFoundError> => {
+  const { singleSearchPipeline, generalQueryModel } = mapRetrievalToQueryData[
+    type
+  ]
+
+  return (
+    // Step 1: Retrieve base form info to augment.
+    getFormInfo(formId)
+      // Step 2a: Execute aggregate query with relevant single search pipeline.
+      .andThen((formInfo) =>
+        ResultAsync.fromPromise(
+          generalQueryModel
+            .aggregate(singleSearchPipeline(formId))
+            .read('secondary')
+            .exec() as Promise<RetrieveSubmissionsExecResult>,
+          (error) => {
+            logger.error({
+              message: 'Failed to retrieve a single example form',
+              meta: {
+                action: 'getSingleExampleForm',
+              },
+              error,
+            })
+
+            return new DatabaseError()
+          },
+          // Step 2b: Augment the initial base form info with the retrieved
+          // statistics from the aggregate pipeline.
+        ).map((queryResult) => {
+          // Process result depending on whether search pipeline returned
+          // results.
+          // If the statistics cannot be found, add default "null" fields.
+          if (!queryResult || queryResult.length === 0) {
+            const emptyStatsExampleInfo: FormInfo = {
+              ...formInfo,
+              count: 0,
+              lastSubmission: null,
+              timeText: '-',
+              avgFeedback: null,
+            }
+            return emptyStatsExampleInfo
+          }
+
+          // Statistics can be found.
+          const [statistics] = queryResult
+          const processedExampleInfo: FormInfo = {
+            ...formInfo,
+            count: statistics.count,
+            lastSubmission: statistics.lastSubmission,
+            avgFeedback: statistics.avgFeddback,
+            timeText: formatToRelativeString(statistics.lastSubmission),
+          }
+          return processedExampleInfo
+        }),
+      )
+  )
 }
