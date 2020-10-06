@@ -123,7 +123,7 @@ export const validateField = (
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
           if (isLeft(validEither)) {
-            logInvalidAnswer(formId, formField, 'Answer not allowed')
+            logInvalidAnswer(formId, formField, validEither.left)
             throw new Error('Invalid answer submitted')
           }
           return

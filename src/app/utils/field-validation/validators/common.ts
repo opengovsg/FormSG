@@ -7,6 +7,8 @@ export const notEmptySingleAnswerResponse: ResponseValidator<ISingleAnswerRespon
   response,
 ) => {
   if (response.answer.trim().length === 0)
-    return left('notEmptySingleAnswerResponse')
+    return left(
+      'CommonValidator.notEmptySingleAnswerResponse:\tanswer is an empty string',
+    )
   return right(response)
 }

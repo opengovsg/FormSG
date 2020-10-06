@@ -19,7 +19,7 @@ const minLengthValidator: textFieldValidatorConstructor = (textField) => (
   if (min === null) return right(response)
   return response.answer.length >= min
     ? right(response)
-    : left(`TextValidator.minLength`)
+    : left(`TextValidator.minLength:\tanswer is less than minimum of ${min}`)
 }
 
 const maxLengthValidator: textFieldValidatorConstructor = (textField) => (
@@ -30,7 +30,7 @@ const maxLengthValidator: textFieldValidatorConstructor = (textField) => (
   if (max === null) return right(response)
   return response.answer.length <= max
     ? right(response)
-    : left(`TextValidator.maxLength`)
+    : left(`TextValidator.maxLength:\tanswer is greater than maximum of ${max}`)
 }
 
 const exactLengthValidator: textFieldValidatorConstructor = (textField) => (
@@ -46,7 +46,9 @@ const exactLengthValidator: textFieldValidatorConstructor = (textField) => (
   if (exact === null) return right(response)
   return response.answer.length === exact
     ? right(response)
-    : left(`TextValidator.exactLength`)
+    : left(
+        `TextValidator.exactLength:\tanswer is not exactly equal to ${exact}`,
+      )
 }
 
 const lengthValidator: textFieldValidatorConstructor = (textField) => (

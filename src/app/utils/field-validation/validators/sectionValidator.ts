@@ -13,5 +13,7 @@ type sectionValidatorConstructor = () => ResponseValidator<
 export const constructSectionValidator: sectionValidatorConstructor = () => (
   response,
 ) => {
-  return response.answer === '' ? right(response) : left('Answer not allowed')
+  return response.answer === ''
+    ? right(response)
+    : left(`SectionValidator.emptyAnswer:\tanswer is not an empty string`)
 }
