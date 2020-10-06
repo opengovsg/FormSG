@@ -1,6 +1,7 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
 import { IField } from 'src/types/field/baseField'
+import { BasicField } from 'src/types/field/fieldTypes'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { FieldResponse } from 'src/types/response'
 
@@ -117,10 +118,9 @@ export default function validateField(
     if (singleAnswerRequiresValidation(formField, response)) {
       switch (formField.fieldType) {
         // Migrated validators
-        case 'section':
-        case 'textfield': // short text
-        case 'textarea': {
-          // long text
+        case BasicField.Section:
+        case BasicField.ShortText:
+        case BasicField.LongText: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
           if (isLeft(validEither)) {
