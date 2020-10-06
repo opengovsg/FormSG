@@ -19,11 +19,9 @@ import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
 import constructSectionValidator from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
-import FieldValidatorFactory from './FieldValidatorFactory.class'
+import fieldValidatorFactory from './FieldValidatorFactory.class'
 
 const logger = createLoggerWithLabel(module)
-
-const fieldValidatorFactory = new FieldValidatorFactory()
 
 /**
  * Compares the response field type to the form field type

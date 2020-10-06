@@ -102,4 +102,4 @@ class FieldValidatorFactory {
   }
 }
 
-module.exports = FieldValidatorFactory
+module.exports = new FieldValidatorFactory()
