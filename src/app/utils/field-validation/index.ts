@@ -1,20 +1,19 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
-import { IField } from 'src/types/field/baseField'
-import { BasicField } from 'src/types/field/fieldTypes'
-import { ResponseValidator } from 'src/types/field/utils/validation'
-import { FieldResponse } from 'src/types/response'
-
 import {
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
 } from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { IField } from '../../../types/field/baseField'
+import { BasicField } from '../../../types/field/fieldTypes'
 import {
   isLongTextField,
   isSectionField,
   isShortTextField,
 } from '../../../types/field/utils/guards'
+import { ResponseValidator } from '../../../types/field/utils/validation'
+import { FieldResponse } from '../../../types/response'
 import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
 
 import { constructSectionValidator } from './validators/sectionValidator'

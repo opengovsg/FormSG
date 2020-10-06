@@ -5,7 +5,8 @@ import {
   IShortTextField,
 } from 'src/types/field'
 import { IField } from 'src/types/field/baseField'
-import { BasicField } from 'src/types/field/fieldTypes'
+
+import { BasicField } from '../../../types/field/fieldTypes'
 
 export const isSectionField = (
   formField: IField,
