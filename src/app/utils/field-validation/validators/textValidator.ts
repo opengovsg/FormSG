@@ -2,6 +2,7 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 import { ILongTextField, IShortTextField } from 'src/types/field'
+import { TextValidationOptions } from 'src/types/field/baseField'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { ISingleAnswerResponse } from 'src/types/response'
 
@@ -55,11 +56,11 @@ const lengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
 ) => {
   switch (textField.ValidationOptions.selectedValidation) {
-    case 'Exact':
+    case TextValidationOptions.Exact:
       return exactLengthValidator(textField)(response)
-    case 'Minimum':
+    case TextValidationOptions.Min:
       return minLengthValidator(textField)(response)
-    case 'Maximum':
+    case TextValidationOptions.Max:
       return maxLengthValidator(textField)(response)
     default:
       return right(response)
