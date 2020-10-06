@@ -12,7 +12,7 @@ const getSubmissionModel = require('../models/submission.server.model').default
 const getFormStatisticsTotalModel = require('../models/form_statistics_total.server.model')
   .default
 const getFormModel = require('../models/form.server.model').default
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 
 const Submission = getSubmissionModel(mongoose)
 const FormStatisticsTotal = getFormStatisticsTotalModel(mongoose)
@@ -575,6 +575,7 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           meta: {
             action: 'getExampleFormsUsingAggregateCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -607,6 +608,7 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           meta: {
             action: 'getExampleFormsUsingSubmissionsCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -697,6 +699,7 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           meta: {
             action: 'getSingleExampleFormUsingSubmissionCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -725,6 +728,7 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           meta: {
             action: 'getSingleExampleFormUsingAggregateCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },

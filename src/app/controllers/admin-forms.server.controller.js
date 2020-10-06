@@ -11,7 +11,7 @@ const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('./errors.server.controller')
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const { FormLogoState } = require('../../types')
 
 const {
@@ -69,6 +69,7 @@ function makeModule(connection) {
         meta: {
           action: 'respondOnMongoError',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           url: req.url,
           headers: req.headers,
         },
@@ -290,6 +291,7 @@ function makeModule(connection) {
             meta: {
               action: 'makeModule.update',
               ip: getRequestIp(req),
+              trace: getTrace(req),
               formId: form._id,
             },
           })
@@ -307,6 +309,7 @@ function makeModule(connection) {
               meta: {
                 action: 'makeModule.update',
                 ip: getRequestIp(req),
+                trace: getTrace(req),
                 formId: form._id,
               },
               error,
@@ -521,6 +524,7 @@ function makeModule(connection) {
             meta: {
               action: 'makeModule.countFeedback',
               ip: getRequestIp(req),
+              trace: getTrace(req),
               url: req.url,
               headers: req.headers,
             },
@@ -550,6 +554,7 @@ function makeModule(connection) {
             meta: {
               action: 'makeModule.streamFeedback',
               ip: getRequestIp(req),
+              trace: getTrace(req),
             },
             error: err,
           })
@@ -564,6 +569,7 @@ function makeModule(connection) {
             meta: {
               action: 'makeModule.streamFeedback',
               ip: getRequestIp(req),
+              trace: getTrace(req),
             },
             error: err,
           })
@@ -578,6 +584,7 @@ function makeModule(connection) {
             meta: {
               action: 'makeModule.streamFeedback',
               ip: getRequestIp(req),
+              trace: getTrace(req),
             },
             error: err,
           })
@@ -689,6 +696,7 @@ function makeModule(connection) {
               meta: {
                 action: 'makeModule.streamFeedback',
                 ip: getRequestIp(req),
+                trace: getTrace(req),
               },
               error: err,
             })
@@ -736,6 +744,7 @@ function makeModule(connection) {
               meta: {
                 action: 'makeModule.streamFeedback',
                 ip: getRequestIp(req),
+                trace: getTrace(req),
               },
               error: err,
             })
@@ -764,6 +773,7 @@ function makeModule(connection) {
           meta: {
             action: 'makeModule.transferOwner',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
