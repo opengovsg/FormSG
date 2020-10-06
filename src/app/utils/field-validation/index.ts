@@ -1,13 +1,13 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 
-import {
-  ProcessedFieldResponse,
-  ProcessedSingleAnswerResponse,
-} from 'src/app/modules/submission/submission.types'
 import { IField } from 'src/types/field/baseField'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { FieldResponse } from 'src/types/response'
 
+import {
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   isLongTextField,
