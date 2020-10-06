@@ -12,6 +12,12 @@ const { celebrate, Joi } = require('celebrate')
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../factories/captcha.factory')
+const { limitRate } = require('../utils/limit-rate')
+
+/**
+ * @constant {number} SUBMISSIONS_RATE_LIMIT Per-minute, per-IP limit on submissions endpoint
+ */
+const SUBMISSIONS_RATE_LIMIT = 200
 
 module.exports = function (app) {
   /**
@@ -138,6 +144,7 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    */
   app.route('/v2/submissions/email/:formId([a-fA-F0-9]{24})').post(
+    limitRate({ max: SUBMISSIONS_RATE_LIMIT }),
     CaptchaFactory.validateCaptcha,
     forms.formById,
     publicForms.isFormPublic,
@@ -199,6 +206,7 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    */
   app.route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})').post(
+    limitRate({ max: SUBMISSIONS_RATE_LIMIT }),
     CaptchaFactory.validateCaptcha,
     celebrate({
       body: Joi.object({
