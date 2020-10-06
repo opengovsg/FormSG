@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson-ext'
-import { times } from 'lodash'
+import { flatten, times } from 'lodash'
 import mongoose from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -38,6 +38,8 @@ type TestData = {
     searchTerm: string
     // Number of forms with title containing key.
     formCount: number
+    // Number of times the form was submitted.
+    submissionCount: number
     // The forms themselves.
     forms: IFormSchema[]
     // Expected form info to be returned by query.
@@ -431,6 +433,7 @@ const prepareTestData = async (
     first: {
       searchTerm: 'first',
       formCount: 2,
+      submissionCount: 3,
       forms: [],
       expectedFormInfo: [],
       feedbacks: [],
@@ -438,13 +441,15 @@ const prepareTestData = async (
     second: {
       searchTerm: 'second',
       formCount: 3,
+      submissionCount: 5,
       forms: [],
       expectedFormInfo: [],
       feedbacks: [],
     },
     total: {
-      formCount: 5,
       searchTerm: '',
+      formCount: 5,
+      submissionCount: 8,
       forms: [],
       expectedFormInfo: [],
       feedbacks: [],
@@ -480,24 +485,51 @@ const prepareTestData = async (
   testData.second.forms = await Promise.all(secondFormsPromises)
 
   // Add submissions to all forms.
-  testData.total.forms = testData.first.forms.concat(testData.second.forms)
-  const submissionPromises = testData.total.forms.map((form) =>
-    SubmissionModel.create({
-      form: form._id,
-      submissionType: SubmissionType.Email,
-      responseSalt: 'some salt',
-      responseHash: 'some hash',
-    }),
+  const firstSubmissionPromises = flatten(
+    testData.first.forms.map((form) =>
+      times(testData.first.submissionCount, () =>
+        SubmissionModel.create({
+          form: form._id,
+          submissionType: SubmissionType.Email,
+          responseSalt: 'some salt',
+          responseHash: 'some hash',
+        }),
+      ),
+    ),
+  )
+  const secondSubmissionPromises = flatten(
+    testData.second.forms.map((form) =>
+      times(testData.second.submissionCount, () =>
+        SubmissionModel.create({
+          form: form._id,
+          submissionType: SubmissionType.Email,
+          responseSalt: 'some salt',
+          responseHash: 'some hash',
+        }),
+      ),
+    ),
   )
 
+  testData.total.forms = testData.first.forms.concat(testData.second.forms)
+
   // Add form statistics for "submissions".
-  const formStatsPromises = testData.total.forms.map((form) =>
-    FormStatsModel.create({
-      lastSubmission: new Date(),
-      totalCount: 1,
-      formId: form._id,
-    }),
-  )
+  const formStatsPromises = testData.first.forms
+    .map((form) =>
+      FormStatsModel.create({
+        lastSubmission: new Date(),
+        totalCount: testData.first.submissionCount,
+        formId: form._id,
+      }),
+    )
+    .concat(
+      testData.second.forms.map((form) =>
+        FormStatsModel.create({
+          lastSubmission: new Date(),
+          totalCount: testData.second.submissionCount,
+          formId: form._id,
+        }),
+      ),
+    )
 
   // Add feedback to first forms.
   const randomNumber = (min: number, max: number) =>
@@ -514,7 +546,7 @@ const prepareTestData = async (
     })
   })
 
-  await Promise.all(submissionPromises)
+  await Promise.all(firstSubmissionPromises.concat(secondSubmissionPromises))
   await Promise.all(formStatsPromises)
   const feedbacks = await Promise.all(feedbackPromises)
   testData.total.feedbacks = feedbacks
@@ -524,22 +556,25 @@ const prepareTestData = async (
   const createFormInfo = (
     forms: IFormSchema[],
     titlePrefix: 'first' | 'second',
-  ): FormInfo[] =>
-    forms.map((form, i) => ({
+  ): FormInfo[] => {
+    const isFirst = titlePrefix === 'first'
+    return forms.map((form, i) => ({
       _id: form._id,
       agency: agency.shortName,
-      avgFeedback:
-        titlePrefix === 'first'
-          ? testData.first.feedbacks[i].rating
-          : testData.second.feedbacks[i].rating,
+      avgFeedback: isFirst
+        ? testData.first.feedbacks[i].rating
+        : testData.second.feedbacks[i].rating,
       colorTheme: form.startPage!.colorTheme,
-      count: 1,
+      count: isFirst
+        ? testData.first.submissionCount
+        : testData.second.submissionCount,
       form_fields: [],
       logo: agency.logo,
       timeText: 'less than 1 day ago',
       lastSubmission: expect.anything(),
       title: form.title,
     }))
+  }
 
   testData.first.expectedFormInfo = createFormInfo(
     testData.first.forms,
