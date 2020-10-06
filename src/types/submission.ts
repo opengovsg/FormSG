@@ -11,12 +11,12 @@ export enum SubmissionType {
 
 export interface ISubmission {
   form: IFormSchema['_id']
-  authType: AuthType
-  myInfoFields: MyInfoAttribute[]
+  authType?: AuthType
+  myInfoFields?: MyInfoAttribute[]
   submissionType: SubmissionType
   created?: Date
   lastModified?: Date
-  _id: Document['_id']
+  _id?: Document['_id']
   recipientEmails?: string[]
   responseHash?: string
   responseSalt?: string
@@ -42,7 +42,19 @@ export interface WebhookView {
 }
 
 export interface ISubmissionSchema extends ISubmission, Document {
+  _id: Document['_id']
   getWebhookView(): WebhookView | null
+}
+
+export type FindFormsWithSubsAboveResult = {
+  _id: IFormSchema['_id']
+  count: number
+}
+
+export interface ISubmissionModel extends Model<ISubmissionSchema> {
+  findFormsWithSubsAbove(
+    minSubCount: number,
+  ): Promise<FindFormsWithSubsAboveResult[]>
 }
 
 export interface IEmailSubmission extends ISubmission {
@@ -85,7 +97,9 @@ export interface IWebhookResponse {
   }
 }
 
-export type IEmailSubmissionModel = Model<IEmailSubmissionSchema>
-export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema>
+export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
+  ISubmissionModel
+export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
+  ISubmissionModel
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
