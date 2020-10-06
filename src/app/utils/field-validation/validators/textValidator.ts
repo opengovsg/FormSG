@@ -7,11 +7,11 @@ import { ISingleAnswerResponse } from 'src/types/response'
 
 import { notEmptySingleAnswerResponse } from './common'
 
-type textFieldValidatorConstructor = (
+type TextFieldValidatorConstructor = (
   textField: IShortTextField | ILongTextField,
 ) => ResponseValidator<ISingleAnswerResponse>
 
-const minLengthValidator: textFieldValidatorConstructor = (textField) => (
+const minLengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
 ) => {
   const { customMin } = textField.ValidationOptions
@@ -22,7 +22,7 @@ const minLengthValidator: textFieldValidatorConstructor = (textField) => (
     : left(`TextValidator.minLength:\tanswer is less than minimum of ${min}`)
 }
 
-const maxLengthValidator: textFieldValidatorConstructor = (textField) => (
+const maxLengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
 ) => {
   const { customMax } = textField.ValidationOptions
@@ -33,7 +33,7 @@ const maxLengthValidator: textFieldValidatorConstructor = (textField) => (
     : left(`TextValidator.maxLength:\tanswer is greater than maximum of ${max}`)
 }
 
-const exactLengthValidator: textFieldValidatorConstructor = (textField) => (
+const exactLengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
 ) => {
   const { customMin, customMax } = textField.ValidationOptions
@@ -51,7 +51,7 @@ const exactLengthValidator: textFieldValidatorConstructor = (textField) => (
       )
 }
 
-const lengthValidator: textFieldValidatorConstructor = (textField) => (
+const lengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
 ) => {
   switch (textField.ValidationOptions.selectedValidation) {
@@ -66,7 +66,7 @@ const lengthValidator: textFieldValidatorConstructor = (textField) => (
   }
 }
 
-const constructTextValidator: textFieldValidatorConstructor = (textField) => (
+const constructTextValidator: TextFieldValidatorConstructor = (textField) => (
   response,
 ) => {
   return pipe(
