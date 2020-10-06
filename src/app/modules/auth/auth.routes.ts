@@ -1,9 +1,16 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import { limitRate } from '../../utils/limit-rate'
+
 import * as AuthController from './auth.controller'
 
 export const AuthRouter = Router()
+
+/**
+ * @constant {number} SEND_OTP_RATE_LIMIT Per-minute, per-IP limit on /sendotp endpoint
+ */
+const SEND_OTP_RATE_LIMIT = 60
 
 /**
  * Check if email domain is a valid agency
@@ -40,6 +47,7 @@ AuthRouter.post(
  */
 AuthRouter.post(
   '/sendotp',
+  limitRate({ max: SEND_OTP_RATE_LIMIT }),
   celebrate({
     [Segments.BODY]: Joi.object().keys({
       email: Joi.string()
