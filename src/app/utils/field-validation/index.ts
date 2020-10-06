@@ -16,7 +16,7 @@ import {
 } from '../../../types/field/utils/guards'
 import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
 
-import constructSectionValidator from './validators/sectionValidator'
+import { constructSectionValidator } from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import fieldValidatorFactory from './FieldValidatorFactory.class'
