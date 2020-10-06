@@ -62,7 +62,6 @@ const logInvalidAnswer = (
   formField: IField,
   message: string,
 ) => {
-  formField.fieldType
   logger.error({
     message: `Invalid answer: ${message}`,
     meta: {
