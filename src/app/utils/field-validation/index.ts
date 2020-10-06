@@ -116,11 +116,11 @@ export default function validateField(
   if (isProcessedSingleAnswerResponse(response)) {
     if (singleAnswerRequiresValidation(formField, response)) {
       switch (formField.fieldType) {
-        /* eslint-disable no-case-declarations */
         // Migrated validators
         case 'section':
         case 'textfield': // short text
-        case 'textarea': // long text
+        case 'textarea': {
+          // long text
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
           if (isLeft(validEither)) {
@@ -128,10 +128,11 @@ export default function validateField(
             throw new Error('Invalid answer submitted')
           }
           return
+        }
         // Fallback for un-migrated single answer validators
-        default:
+        default: {
           classBasedValidation(formId, formField, response)
-        /* eslint-enable no-case-declarations */
+        }
       }
     }
   } else {
