@@ -49,6 +49,10 @@ function isNumberOfCharactersValid(answer, validationOptions) {
   return true
 }
 
+/**
+ * Text validator class that is only used for table field validation
+ * @deprecated
+ */
 class TextValidator extends BaseFieldValidator {
   /**
    * Overrides _isValueEmpty to catch for strings that are whitespace only for required fields
