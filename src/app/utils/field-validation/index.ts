@@ -146,11 +146,11 @@ export default function validateField(
  * using the deprecated class-based field validators.
  * @deprecated
  */
-function classBasedValidation(
+const classBasedValidation = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-) {
+) => {
   const fieldValidator = fieldValidatorFactory.createFieldValidator(
     formId,
     formField,
