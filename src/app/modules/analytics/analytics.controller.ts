@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { getRequestIp } from '../../utils/request'
+import { getRequestIp, getTrace } from '../../utils/request'
 
 import { AnalyticsFactory } from './analytics.factory'
 import { getSubmissionCount, getUserCount } from './analytics.service'
@@ -23,10 +23,11 @@ export const handleGetUserCount: RequestHandler = async (req, res) => {
     logger.error({
       message: 'Mongo user count error',
       meta: {
-        action: 'handleGetUserAnalytics',
+        action: 'handleGetUserCount',
         ip: getRequestIp(req),
         url: req.url,
         headers: req.headers,
+        trace: getTrace(req),
       },
       error: countResult.error,
     })
@@ -52,10 +53,11 @@ export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
     logger.error({
       message: 'Mongo submissions count error',
       meta: {
-        action: 'handleGetSubmissionsAnalytics',
+        action: 'handleGetSubmissionCount',
         ip: getRequestIp(req),
         url: req.url,
         headers: req.headers,
+        trace: getTrace(req),
       },
       error: countResult.error,
     })
@@ -84,10 +86,11 @@ export const handleGetFormCount: RequestHandler = async (req, res) => {
     logger.error({
       message: 'Mongo form count error',
       meta: {
-        action: 'handleGetFormCountAnalytics',
+        action: 'handleGetFormCount',
         ip: getRequestIp(req),
         url: req.url,
         headers: req.headers,
+        trace: getTrace(req),
       },
       error: countResult.error,
     })

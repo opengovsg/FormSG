@@ -3,7 +3,7 @@
 const mongoose = require('mongoose')
 const { StatusCodes } = require('http-status-codes')
 
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormFeedbackModel = require('../models/form_feedback.server.model')
   .default
@@ -58,6 +58,7 @@ exports.redirect = async function (req, res) {
       message: 'Error fetching metatags',
       meta: {
         action: 'redirect',
+        trace: getTrace(req),
       },
       error: err,
     })
@@ -97,6 +98,7 @@ exports.submitFeedback = function (req, res) {
           meta: {
             action: 'submitFeedback',
             ip: getRequestIp(req),
+            trace: getTrace(req),
           },
           error: err,
         })
