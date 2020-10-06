@@ -51,7 +51,7 @@ export interface IClientFieldSchema extends IFieldSchema {
   fieldValue: string
 }
 
-export enum TextValidationOptions {
+export enum TextSelectedValidation {
   Maximum = 'Maximum',
   Minimum = 'Minimum',
   Exact = 'Exact',

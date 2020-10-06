@@ -1,10 +1,10 @@
-import { IField, IFieldSchema, TextValidationOptions } from './baseField'
+import { IField, IFieldSchema, TextSelectedValidation } from './baseField'
 
 export type LongTextValidationOptions = {
   customMax: number | null
   customMin: number | null
   customVal: number | null
-  selectedValidation: TextValidationOptions | null
+  selectedValidation: TextSelectedValidation | null
 }
 
 export interface ILongTextField extends IField {
