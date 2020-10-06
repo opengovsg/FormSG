@@ -92,7 +92,7 @@ export interface IFormModel extends Model<IFormSchema> {
   deactivateById(formId: string): Promise<IFormSchema | null>
 }
 
-type IEncryptedFormModel = Model<IEncryptedFormSchema>
+type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -101,7 +101,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   },
 })
 
-type IEmailFormModel = Model<IEmailFormSchema>
+type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 
 const EmailFormSchema = new Schema<IEmailFormSchema>({
   emails: {
@@ -484,7 +484,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Hooks
-  FormSchema.pre<IFormSchema>('validate', function (next) {
+  FormSchema.pre<IFormSchema>('validate', async function (next) {
     // Reject save if form document is too large
     if (bson.calculateObjectSize(this) > 10 * MB) {
       const err = new Error('Form size exceeded.')
@@ -493,7 +493,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
     // Validate that admin exists before form is created.
-    User.findById(this.admin, function (error, admin) {
+    await User.findById(this.admin, function (error, admin) {
       if (error) {
         return next(Error(`Error validating admin for form.`))
       }

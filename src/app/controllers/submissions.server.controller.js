@@ -9,7 +9,7 @@ const Submission = getSubmissionModel(mongoose)
 
 const { StatusCodes } = require('http-status-codes')
 
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail.service').default
@@ -38,6 +38,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
             action: 'captchaCheck',
             formId: req.form._id,
             ip: getRequestIp(req),
+            trace: getTrace(req),
           },
         })
         return res.status(StatusCodes.BAD_REQUEST).send({
@@ -60,6 +61,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
                   action: 'captchaCheck',
                   formId: req.form._id,
                   ip: getRequestIp(req),
+                  trace: getTrace(req),
                 },
               })
               return res.status(StatusCodes.BAD_REQUEST).send({
@@ -76,6 +78,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
                 action: 'captchaCheck',
                 formId: req.form._id,
                 ip: getRequestIp(req),
+                trace: getTrace(req),
               },
               error: err,
             })
@@ -180,6 +183,7 @@ const sendEmailAutoReplies = async function (req) {
       meta: {
         action: 'sendEmailAutoReplies',
         ip: getRequestIp(req),
+        trace: getTrace(req),
         formId: req.form._id,
         submissionId: submission.id,
       },
@@ -223,6 +227,7 @@ exports.count = function (req, res) {
         meta: {
           action: 'count',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           url: req.url,
           headers: req.headers,
         },

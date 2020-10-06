@@ -21,4 +21,4 @@ const initServer = async () => {
   })
 }
 
-initServer()
+void initServer()

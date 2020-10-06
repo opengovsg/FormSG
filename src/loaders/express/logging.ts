@@ -2,6 +2,7 @@ import expressWinston from 'express-winston'
 import get from 'lodash/get'
 import winston from 'winston'
 
+import { getTrace } from '../../app/utils/request'
 import config from '../../config/config'
 import { customFormat } from '../../config/logger'
 
@@ -12,6 +13,7 @@ type LogMeta = {
   userId: string
   contentLength?: string
   transactionId?: string
+  trace?: string
 }
 
 const loggingMiddleware = () => {
@@ -44,6 +46,7 @@ const loggingMiddleware = () => {
         // Define our own token for client ip
         // req.headers['cf-connecting-ip'] : Cloudflare
         // req.ip : Contains the remote IP address of the request.
+        // trace: use cloudflare cf-ray header, with x-request-id header as backup
         // If trust proxy setting is true, the value of this property is
         // derived from the left-most entry in the X-Forwarded-For header.
         // This header can be set by the client or by the proxy.
@@ -52,6 +55,7 @@ const loggingMiddleware = () => {
         // req.connection.remoteAddress.
         clientIp: req.get('cf-connecting-ip') || req.ip,
         userId: get(req, 'session.user._id', ''),
+        trace: getTrace(req),
       }
 
       const contentLength = res.get('content-length')

@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
 const _ = require('lodash')
 const { StatusCodes } = require('http-status-codes')
 
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormModel = require('../models/form.server.model').default
 
@@ -121,6 +121,7 @@ exports.formById = async function (req, res, next) {
       meta: {
         action: 'formById',
         ip: getRequestIp(req),
+        trace: getTrace(req),
         url: req.url,
         headers: req.headers,
       },
