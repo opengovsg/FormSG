@@ -27,7 +27,7 @@ const smsFeature = FeatureManager.get(FeatureNames.Sms)
 export const createSmsFactory = (
   smsFeature: RegisteredFeature<FeatureNames.Sms>,
 ): ISmsFactory => {
-  if (!smsFeature.isEnabled) {
+  if (!smsFeature.isEnabled || !smsFeature.props) {
     const errorMessage = 'SMS feature must be enabled in Feature Manager first'
     return {
       sendAdminContactOtp: () => {
