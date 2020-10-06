@@ -39,7 +39,7 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema>(
  * @param db Active DB Connection
  * @return Mongoose Model
  */
-const getFormFeedbackModel = (db: Mongoose) => {
+const getFormFeedbackModel = (db: Mongoose): Model<IFormFeedbackSchema> => {
   try {
     return db.model(FORM_FEEDBACK_SCHEMA_ID) as Model<IFormFeedbackSchema>
   } catch {
