@@ -52,8 +52,8 @@ export interface IClientFieldSchema extends IFieldSchema {
 }
 
 export enum TextValidationOptions {
-  Max = 'Maximum',
-  Min = 'Minimum',
+  Maximum = 'Maximum',
+  Minimum = 'Minimum',
   Exact = 'Exact',
   Range = 'Range', // TODO(#408) - questionable value
 }

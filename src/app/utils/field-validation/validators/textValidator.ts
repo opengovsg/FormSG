@@ -58,9 +58,9 @@ const lengthValidator: TextFieldValidatorConstructor = (textField) => (
   switch (textField.ValidationOptions.selectedValidation) {
     case TextValidationOptions.Exact:
       return exactLengthValidator(textField)(response)
-    case TextValidationOptions.Min:
+    case TextValidationOptions.Minimum:
       return minLengthValidator(textField)(response)
-    case TextValidationOptions.Max:
+    case TextValidationOptions.Maximum:
       return maxLengthValidator(textField)(response)
     default:
       return right(response)
