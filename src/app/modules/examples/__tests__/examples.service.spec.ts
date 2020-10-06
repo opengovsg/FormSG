@@ -10,7 +10,7 @@ import {
   IAgencySchema,
   IFormFeedbackSchema,
   IFormSchema,
-  ISubmissionSchema,
+  IUserSchema,
   ResponseMode,
   Status,
   SubmissionType,
@@ -43,135 +43,12 @@ type TestData = {
 
 describe('examples.service', () => {
   const INVALID_SEARCH_TERM = 'invalidsearchterm'
-  let testAgency: IAgencySchema
-  const testData: TestData = {
-    first: {
-      searchTerm: 'first',
-      count: 2,
-      forms: [],
-      expectedFormInfo: [],
-      feedbacks: [],
-    },
-    second: {
-      searchTerm: 'second',
-      count: 3,
-      forms: [],
-      expectedFormInfo: [],
-      feedbacks: [],
-    },
-    total: {
-      count: 5,
-      searchTerm: '',
-      forms: [],
-      expectedFormInfo: [],
-      feedbacks: [],
-    },
-  }
+  let testData: TestData
 
   beforeAll(async () => {
     await dbHandler.connect()
     const { user, agency } = await dbHandler.insertFormCollectionReqs()
-    testAgency = agency
-
-    const baseFormParams = {
-      admin: user._id,
-      responseMode: ResponseMode.Email,
-      emails: [user.email],
-      // Important for form status to be public and listed so examples can
-      // surface.
-      status: Status.Public,
-      isListed: true,
-    }
-
-    const firstFormsPromises = times(testData.first.count, () =>
-      FormModel.create({
-        ...baseFormParams,
-        title: `${testData.first.searchTerm} ${Math.random()}`,
-      }),
-    )
-
-    testData.first.forms = await Promise.all(firstFormsPromises)
-
-    const secondFormsPromises = times(testData.second.count, () =>
-      FormModel.create({
-        ...baseFormParams,
-        title: `${testData.second.searchTerm} ${Math.random()}`,
-      }),
-    )
-
-    testData.second.forms = await Promise.all(secondFormsPromises)
-
-    const submissionPromises: Promise<ISubmissionSchema>[] = []
-    // Add submissions to all forms.
-    testData.total.forms = testData.first.forms.concat(testData.second.forms)
-    testData.total.forms.forEach((form) => {
-      submissionPromises.push(
-        SubmissionModel.create({
-          form: form._id,
-          submissionType: SubmissionType.Email,
-          responseSalt: 'some salt',
-          responseHash: 'some hash',
-        }),
-      )
-    })
-
-    // Add feedback to first forms.
-    const randomNumber = (min: number, max: number) =>
-      Math.floor(Math.random() * (max - min + 1)) + min
-
-    const feedbackScores = times(testData.total.forms.length, () =>
-      randomNumber(1, 5),
-    )
-
-    const feedbackPromises = feedbackScores.map((score, i) => {
-      return FeedbackModel.create({
-        rating: score,
-        formId: testData.total.forms[i]._id,
-      })
-    })
-
-    await Promise.all(submissionPromises)
-    const feedbacks = await Promise.all(feedbackPromises)
-    testData.total.feedbacks = feedbacks
-    testData.first.feedbacks = feedbacks.slice(
-      0,
-      testData.first.forms.length + 1,
-    )
-    testData.second.feedbacks = feedbacks.slice(testData.first.forms.length)
-
-    // Second form info.
-    const createFormInfo = (
-      forms: IFormSchema[],
-      titlePrefix: 'first' | 'second',
-    ): FormInfo[] =>
-      forms.map((form, i) => ({
-        _id: form._id,
-        agency: testAgency.shortName,
-        avgFeedback:
-          titlePrefix === 'first'
-            ? testData.first.feedbacks[i].rating
-            : testData.second.feedbacks[i].rating,
-        colorTheme: form.startPage!.colorTheme,
-        count: 1,
-        form_fields: [],
-        logo: testAgency.logo,
-        timeText: 'less than 1 day ago',
-        lastSubmission: expect.anything(),
-        title: form.title,
-      }))
-
-    testData.first.expectedFormInfo = createFormInfo(
-      testData.first.forms,
-      'first',
-    )
-    testData.second.expectedFormInfo = createFormInfo(
-      testData.second.forms,
-      'second',
-    )
-
-    testData.total.expectedFormInfo = testData.first.expectedFormInfo.concat(
-      testData.second.expectedFormInfo,
-    )
+    testData = await prepareTestData(user, agency)
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -436,3 +313,137 @@ describe('examples.service', () => {
     })
   })
 })
+
+const prepareTestData = async (
+  user: IUserSchema,
+  agency: IAgencySchema,
+): Promise<TestData> => {
+  const testData: TestData = {
+    first: {
+      searchTerm: 'first',
+      formCount: 2,
+      forms: [],
+      expectedFormInfo: [],
+      feedbacks: [],
+    },
+    second: {
+      searchTerm: 'second',
+      formCount: 3,
+      forms: [],
+      expectedFormInfo: [],
+      feedbacks: [],
+    },
+    total: {
+      formCount: 5,
+      searchTerm: '',
+      forms: [],
+      expectedFormInfo: [],
+      feedbacks: [],
+    },
+  }
+
+  const baseFormParams = {
+    admin: user._id,
+    responseMode: ResponseMode.Email,
+    emails: [user.email],
+    // Important for form status to be public and listed so examples can
+    // surface.
+    status: Status.Public,
+    isListed: true,
+  }
+
+  const firstFormsPromises = times(testData.first.formCount, () =>
+    FormModel.create({
+      ...baseFormParams,
+      title: `${testData.first.searchTerm} ${Math.random()}`,
+    }),
+  )
+
+  testData.first.forms = await Promise.all(firstFormsPromises)
+
+  const secondFormsPromises = times(testData.second.formCount, () =>
+    FormModel.create({
+      ...baseFormParams,
+      title: `${testData.second.searchTerm} ${Math.random()}`,
+    }),
+  )
+
+  testData.second.forms = await Promise.all(secondFormsPromises)
+
+  // Add submissions to all forms.
+  testData.total.forms = testData.first.forms.concat(testData.second.forms)
+  const submissionPromises = testData.total.forms.map((form) =>
+    SubmissionModel.create({
+      form: form._id,
+      submissionType: SubmissionType.Email,
+      responseSalt: 'some salt',
+      responseHash: 'some hash',
+    }),
+  )
+
+  // Add form statistics for "submissions".
+  const formStatsPromises = testData.total.forms.map((form) =>
+    FormStatsModel.create({
+      lastSubmission: new Date(),
+      totalCount: 1,
+      formId: form._id,
+    }),
+  )
+
+  // Add feedback to first forms.
+  const randomNumber = (min: number, max: number) =>
+    Math.floor(Math.random() * (max - min + 1)) + min
+
+  const feedbackScores = times(testData.total.forms.length, () =>
+    randomNumber(1, 5),
+  )
+
+  const feedbackPromises = feedbackScores.map((score, i) => {
+    return FeedbackModel.create({
+      rating: score,
+      formId: testData.total.forms[i]._id,
+    })
+  })
+
+  await Promise.all(submissionPromises)
+  await Promise.all(formStatsPromises)
+  const feedbacks = await Promise.all(feedbackPromises)
+  testData.total.feedbacks = feedbacks
+  testData.first.feedbacks = feedbacks.slice(0, testData.first.forms.length + 1)
+  testData.second.feedbacks = feedbacks.slice(testData.first.forms.length)
+
+  const createFormInfo = (
+    forms: IFormSchema[],
+    titlePrefix: 'first' | 'second',
+  ): FormInfo[] =>
+    forms.map((form, i) => ({
+      _id: form._id,
+      agency: agency.shortName,
+      avgFeedback:
+        titlePrefix === 'first'
+          ? testData.first.feedbacks[i].rating
+          : testData.second.feedbacks[i].rating,
+      colorTheme: form.startPage!.colorTheme,
+      count: 1,
+      form_fields: [],
+      logo: agency.logo,
+      timeText: 'less than 1 day ago',
+      lastSubmission: expect.anything(),
+      title: form.title,
+    }))
+
+  testData.first.expectedFormInfo = createFormInfo(
+    testData.first.forms,
+    'first',
+  )
+  testData.second.expectedFormInfo = createFormInfo(
+    testData.second.forms,
+    'second',
+  )
+
+  testData.total.expectedFormInfo = testData.first.expectedFormInfo.concat(
+    testData.second.expectedFormInfo,
+  )
+
+  return testData
+}
