@@ -466,6 +466,7 @@ const prepareTestData = async (
     isListed: true,
   }
 
+  // Populate forms in database with prespecified number of times.
   const firstFormsPromises = times(testData.first.formCount, () =>
     FormModel.create({
       ...baseFormParams,
@@ -484,7 +485,7 @@ const prepareTestData = async (
 
   testData.second.forms = await Promise.all(secondFormsPromises)
 
-  // Add submissions to all forms.
+  // Add submissions to all forms with the prespecified number of submissions.
   const firstSubmissionPromises = flatten(
     testData.first.forms.map((form) =>
       times(testData.first.submissionCount, () =>
@@ -510,9 +511,10 @@ const prepareTestData = async (
     ),
   )
 
+  // Assign all forms in test data.
   testData.total.forms = testData.first.forms.concat(testData.second.forms)
 
-  // Add form statistics for "submissions".
+  // Add form statistics for "submissions" for both form prefixes.
   const formStatsPromises = testData.first.forms
     .map((form) =>
       FormStatsModel.create({
@@ -531,14 +533,16 @@ const prepareTestData = async (
       ),
     )
 
-  // Add feedback to first forms.
+  // Function to generate random number between min and max.
   const randomNumber = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min
 
+  // Generate random feedback scores for all forms.
   const feedbackScores = times(testData.total.forms.length, () =>
     randomNumber(1, 5),
   )
 
+  // Populate feedback collection with generated feedback scores.
   const feedbackPromises = feedbackScores.map((score, i) => {
     return FeedbackModel.create({
       rating: score,
@@ -549,10 +553,14 @@ const prepareTestData = async (
   await Promise.all(firstSubmissionPromises.concat(secondSubmissionPromises))
   await Promise.all(formStatsPromises)
   const feedbacks = await Promise.all(feedbackPromises)
+
+  // Assign all feedbacks into test data.
   testData.total.feedbacks = feedbacks
   testData.first.feedbacks = feedbacks.slice(0, testData.first.forms.length + 1)
   testData.second.feedbacks = feedbacks.slice(testData.first.forms.length)
 
+  // Internal function to create expected aggregate pipeline results to insert
+  // into test data.
   const createFormInfo = (
     forms: IFormSchema[],
     titlePrefix: 'first' | 'second',
@@ -576,6 +584,7 @@ const prepareTestData = async (
     }))
   }
 
+  // Create expected results from running example aggregate pipelines.
   testData.first.expectedFormInfo = createFormInfo(
     testData.first.forms,
     'first',
