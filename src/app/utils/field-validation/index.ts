@@ -97,11 +97,11 @@ const constructSingleAnswerValidator = (
  * @param response A client-side response that is to be untrusted
  * @throws
  */
-export default function validateField(
+export const validateField = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-): void {
+): void => {
   if (FIELDS_TO_REJECT.includes(response.fieldType)) {
     throw new Error(`Rejected field type "${response.fieldType}"`)
   }

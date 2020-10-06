@@ -1,4 +1,4 @@
-import validateField from 'src/app/utils/field-validation'
+import { validateField } from 'src/app/utils/field-validation'
 import EmailValidator from 'src/app/utils/field-validation/validators/EmailValidator.class'
 import { BasicField } from 'src/types/field/fieldTypes'
 import { ISingleAnswerResponse } from 'src/types/response'

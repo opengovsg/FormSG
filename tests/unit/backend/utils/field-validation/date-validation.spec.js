@@ -1,5 +1,6 @@
-const validateField = require('../../../../../dist/backend/app/utils/field-validation')
-  .default
+const {
+  validateField,
+} = require('../../../../../dist/backend/app/utils/field-validation')
 
 describe('Date field validation', () => {
   it('should allow valid date <DD MMM YYYY>', () => {

@@ -1,5 +1,6 @@
-const validateField = require('../../../../../dist/backend/app/utils/field-validation')
-  .default
+const {
+  validateField,
+} = require('../../../../../dist/backend/app/utils/field-validation')
 
 describe('Attachment validation', () => {
   const makeField = (fieldId, size, options) => {

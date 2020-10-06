@@ -1,5 +1,6 @@
-const validateField = require('../../../../../dist/backend/app/utils/field-validation')
-  .default
+const {
+  validateField,
+} = require('../../../../../dist/backend/app/utils/field-validation')
 
 describe('Number field validation', () => {
   it('should allow number with valid maximum', () => {

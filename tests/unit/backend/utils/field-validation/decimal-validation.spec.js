@@ -1,5 +1,6 @@
-const validateField = require('../../../../../dist/backend/app/utils/field-validation')
-  .default
+const {
+  validateField,
+} = require('../../../../../dist/backend/app/utils/field-validation')
 
 describe('Decimal Validation', () => {
   it('should allow decimal with valid maximum', () => {
