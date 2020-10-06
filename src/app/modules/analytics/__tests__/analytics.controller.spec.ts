@@ -24,6 +24,7 @@ describe('analytics.controller', () => {
 
       // Assert
       expect(getUserSpy).toHaveBeenCalledTimes(1)
+      expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(mockUserCount)
     })
 
@@ -63,6 +64,7 @@ describe('analytics.controller', () => {
 
       // Assert
       expect(getSubsSpy).toHaveBeenCalledTimes(1)
+      expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(mockSubmissionCount)
     })
 
@@ -103,6 +105,7 @@ describe('analytics.controller', () => {
 
       // Assert
       expect(getFormSpy).toHaveBeenCalledTimes(1)
+      expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(mockFormCount)
     })
 
