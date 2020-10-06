@@ -31,12 +31,10 @@ module.exports = function (app) {
    */
   app
     .route('/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?')
-    .get(publicForms.limitRate(), publicForms.redirect)
+    .get(publicForms.redirect)
 
   // TODO: Remove this embed endpoint
-  app
-    .route('/:Id([a-fA-F0-9]{24})/embed')
-    .get(publicForms.limitRate(), publicForms.redirect)
+  app.route('/:Id([a-fA-F0-9]{24})/embed').get(publicForms.redirect)
 
   /**
    * Redirect a form to the main index, with the specified path
@@ -58,12 +56,12 @@ module.exports = function (app) {
     .route(
       '/forms/:agency/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
     )
-    .get(publicForms.limitRate(), publicForms.redirect)
+    .get(publicForms.redirect)
 
   // TODO: Remove this embed endpoint
   app
     .route('/forms/:agency/:Id([a-fA-F0-9]{24})/embed')
-    .get(publicForms.limitRate(), publicForms.redirect)
+    .get(publicForms.redirect)
 
   /**
    * @typedef Feedback
@@ -84,12 +82,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/feedback')
-    .post(
-      publicForms.limitRate(),
-      forms.formById,
-      publicForms.isFormPublic,
-      publicForms.submitFeedback,
-    )
+    .post(forms.formById, publicForms.isFormPublic, publicForms.submitFeedback)
 
   /**
    * @typedef PublicForm
@@ -113,7 +106,6 @@ module.exports = function (app) {
   app
     .route('/:formId([a-fA-F0-9]{24})/publicform')
     .get(
-      publicForms.limitRate(),
       forms.formById,
       publicForms.isFormPublic,
       spcpFactory.addSpcpSessionInfo,
@@ -146,7 +138,6 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    */
   app.route('/v2/submissions/email/:formId([a-fA-F0-9]{24})').post(
-    publicForms.limitRate(),
     CaptchaFactory.validateCaptcha,
     forms.formById,
     publicForms.isFormPublic,
@@ -208,7 +199,6 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    */
   app.route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})').post(
-    publicForms.limitRate(),
     CaptchaFactory.validateCaptcha,
     celebrate({
       body: Joi.object({
