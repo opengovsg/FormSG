@@ -65,6 +65,7 @@ export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
  *
  * Retrieves the number of forms that has more than MIN_SUB_COUNT responses
  * using the form statistics collection.
+ * @private
  * @returns ok(form count) on success
  * @returns err(DatabaseError) on query failure
  */
@@ -98,6 +99,7 @@ export const getFormCountWithStatsCollection = (): ResultAsync<
  *
  * Retrieves the number of forms that has more than MIN_SUB_COUNT responses
  * using the submissions collection.
+ * @private
  * @returns ok(form count) on success
  * @returns err(DatabaseError) on query failure
  */
