@@ -101,7 +101,8 @@
 }
 
 #responses-tab .response-stats {
-  width: 100%;
+  white-space: nowrap;
+  min-width: 240px;
 }
 
 #responses-tab .datepicker-export-container {
@@ -714,4 +715,23 @@
   background: transparent;
   padding-left: 16px !important;
   border: solid 1px #ccc;
+}
+
+#filter-by-submission-reset-link {
+  padding-top: 13px;
+  padding-left: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#filter-by-submission-filter-link {
+  padding-top: 13px;
+  padding-left: 5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#filter-by-submission-filter-textbox-container {
+  display: flex;
+  min-width: 240px;
 }

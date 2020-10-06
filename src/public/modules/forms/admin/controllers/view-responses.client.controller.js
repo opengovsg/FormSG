@@ -16,6 +16,8 @@ angular
     'Toastr',
     '$uibModal',
     '$timeout',
+    '$location',
+    '$anchorScroll',
     'moment',
     'FormSgSdk',
     ViewResponsesController,
@@ -29,6 +31,8 @@ function ViewResponsesController(
   Toastr,
   $uibModal,
   $timeout,
+  $location,
+  $anchorScroll,
   moment,
   FormSgSdk,
 ) {
@@ -40,7 +44,12 @@ function ViewResponsesController(
   vm.isEncryptResponseMode = vm.myform.responseMode === responseModeEnum.ENCRYPT
   vm.encryptionKey = null // will be set to an instance of EncryptionKey when form is unlocked successfully
   vm.csvDownloading = false // whether CSV export is in progress
+
   vm.attachmentDownloadUrls = new Map()
+  vm.filterBySubmissionRefId = '' // whether to filter submissions by a specific ID
+  vm.filterBySubmissionRefIdTextbox = ''
+  vm.filterBySubmissionRefIdMatcher = /^[0-9A-Fa-f]{24}$/
+  vm.filterBySubmissionShowFilterBox = false
 
   // Three views:
   // 1 - Unlock view for verifying form password
@@ -98,6 +107,18 @@ function ViewResponsesController(
       showWeeks: false,
       formatMonth: 'MMM',
     },
+  }
+
+  // Function to use $anchorScroll to scroll to top of responses.
+  vm.scrollToTop = function () {
+    // set the location.hash
+    $location.hash('responses-tab')
+
+    $anchorScroll()
+
+    // Remove hash
+    $location.hash('')
+    $location.replace()
   }
 
   // Trigger for export CSV
@@ -261,6 +282,7 @@ function ViewResponsesController(
   }
 
   vm.nextRespondent = function () {
+    vm.scrollToTop()
     if (vm.currentResponse.number <= 1) {
       // This is the last response
     } else if (vm.currentResponse.index >= vm.tableParams.data.length - 1) {
@@ -281,6 +303,7 @@ function ViewResponsesController(
   }
 
   vm.previousRespondent = function () {
+    vm.scrollToTop()
     if (vm.currentResponse.number >= vm.responsesCount) {
       // This is the first response
     } else if (vm.currentResponse.index <= 0) {
@@ -318,12 +341,29 @@ function ViewResponsesController(
     }
   })
 
+  vm.filterBySubmissionChanged = function () {
+    // We only reload the table if the text box has changed. This prevents excessive
+    // requests being sent by users clicking on the "Filter" button repeatedly.
+    if (
+      vm.filterBySubmissionRefIdTextbox !== '' &&
+      vm.filterBySubmissionRefId !== vm.filterBySubmissionRefIdTextbox
+    ) {
+      vm.filterBySubmissionRefId = vm.filterBySubmissionRefIdTextbox
+      vm.tableParams.reload()
+    }
+  }
+
+  vm.filterBySubmissionReset = function () {
+    vm.filterBySubmissionShowFilterBox = false
+    vm.filterBySubmissionRefId = ''
+    vm.filterBySubmissionRefIdTextbox = ''
+    vm.tableParams.reload()
+  }
+
   // Called by child directive unlockResponsesForm after key is verified to get responses
-  vm.loadResponses = function (formPassword) {
-    vm.formPassword = formPassword
+  vm.loadResponses = function () {
     vm.currentView = 2
     vm.loading = true
-
     vm.tableParams = new NgTableParams(
       {
         page: 1, // show first page
@@ -334,6 +374,7 @@ function ViewResponsesController(
           let { page } = params.url()
           return Submissions.getMetadata({
             formId: vm.myform._id,
+            filterBySubmissionRefId: vm.filterBySubmissionRefId,
             page,
           })
             .then((data) => {

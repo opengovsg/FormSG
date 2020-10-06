@@ -11,6 +11,8 @@ export type AutoReplyOptions = {
 export interface IEmailField extends IField {
   autoReplyOptions: AutoReplyOptions
   isVerifiable: boolean
+  hasAllowedEmailDomains: boolean
+  allowedEmailDomains: string[]
 }
 
 export interface IEmailFieldSchema extends IEmailField, IFieldSchema {

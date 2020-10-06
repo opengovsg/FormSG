@@ -1,12 +1,15 @@
-import { omit } from 'lodash'
+import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 
 import getUserModel from 'src/app/models/user.server.model'
-import { IAgencySchema, IUser } from 'src/types'
+import { IAgencySchema, IUser, IUserSchema } from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
 
 const User = getUserModel(mongoose)
+
+const MOCKED_DATE = new Date(Date.now())
+MockDate.set(MOCKED_DATE)
 
 const AGENCY_DOMAIN = 'example.com'
 const VALID_USER_EMAIL = `test@${AGENCY_DOMAIN}`
@@ -41,13 +44,12 @@ describe('User Model', () => {
       // Object Id should be defined when successfully saved to MongoDB.
       expect(saved._id).toBeDefined()
       expect(saved.created).toBeInstanceOf(Date)
-      // Retrieve object and compare to params, remove indeterministic keys
-      const actualSavedObject = omit(saved.toObject(), [
-        '_id',
-        'created',
-        '__v',
-      ])
-      expect(actualSavedObject).toEqual(validParams)
+      expect(saved.toObject()).toEqual(
+        expect.objectContaining({
+          ...validParams,
+          updatedAt: MOCKED_DATE,
+        }),
+      )
     })
 
     it('should throw error when contact number is invalid', async () => {
@@ -143,6 +145,67 @@ describe('User Model', () => {
       await expect(user.save()).rejects.toThrowError(
         'This email is not a valid agency email',
       )
+    })
+  })
+
+  describe('Statics', () => {
+    describe('upsertUser', () => {
+      it('should create new User document when user does not yet exist in the collection', async () => {
+        // Arrange
+        const validEmail = `test@${AGENCY_DOMAIN}`
+        const initialUserCount = await User.countDocuments()
+        expect(initialUserCount).toEqual(0)
+
+        // Act
+        const user = await User.upsertUser({
+          agency: agency._id,
+          email: validEmail,
+        })
+
+        // Assert
+        const expectedPartialUser: Partial<IUserSchema> = {
+          agency: agency.toObject(),
+          email: validEmail,
+          updatedAt: MOCKED_DATE,
+        }
+        // Should now have 1 user since user should be created.
+        const afterUserCount = await User.countDocuments()
+        expect(afterUserCount).toEqual(1)
+        expect(user.toObject()).toEqual(
+          expect.objectContaining(expectedPartialUser),
+        )
+      })
+
+      it('should update user document with the new upserted parameters if the user already exists', async () => {
+        // Arrange
+        const validEmail = `test@${AGENCY_DOMAIN}`
+        const initialUser = await User.create({
+          agency: agency._id,
+          email: validEmail,
+        })
+        // Should have the initial user.
+        const initialUserCount = await User.countDocuments()
+        expect(initialUserCount).toEqual(1)
+
+        // Act
+        // Upsert with updated lastAccessed.
+        const upsertedUser = await User.upsertUser({
+          agency: agency._id,
+          email: validEmail,
+          lastAccessed: MOCKED_DATE,
+        })
+
+        // Assert
+        const expectedUser = {
+          ...initialUser.toObject(),
+          agency: agency.toObject(),
+          lastAccessed: MOCKED_DATE,
+        }
+        // Should continue having 1 user since it is an upsert.
+        const afterUserCount = await User.countDocuments()
+        expect(afterUserCount).toEqual(1)
+        expect(upsertedUser.toObject()).toEqual(expectedUser)
+      })
     })
   })
 })

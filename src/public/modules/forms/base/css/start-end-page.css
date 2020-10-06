@@ -126,12 +126,11 @@
 /* Page Header */
 
 #start-page-header {
+  padding: 20px 0;
   position: fixed;
   z-index: 99;
   top: 0;
   width: 100%;
-  height: 70px;
-  max-height: 20vh;
   display: flex;
   opacity: 1;
   transition: opacity 0.2s ease-in-out;

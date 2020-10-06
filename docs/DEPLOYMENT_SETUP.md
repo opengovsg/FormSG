@@ -130,6 +130,45 @@ The following env variables are set in Travis:
 
 #### Banners
 
+These environment variables allow us to set notification banners in the
+application without a full redeployment of the application. Note the hierarchy
+of the banner content.
+
+In addition, you can change the color of the banner by adding a type encoding in
+the environment variable string. The default banner type will be `info` if no encoding is
+provided.
+
+The possible banner type prefixes are: `info:`, `warn:`, and `error:`. Other
+prefixes will not work and the invalid prefixes will be shown in the banner
+text.
+
+Examples:
+
+```
+SITE_BANNER_CONTENT=info:This is an info banner. You can also add links in the text like https://example.com. There is also a dismiss button to the right of the text.
+```
+
+![Info banner
+example](https://user-images.githubusercontent.com/22133008/93852946-8a867780-fce5-11ea-929f-a0ce1c6796b9.png)
+
+```
+SITE_BANNER_CONTENT=warn:This is a warning banner. You can also add links in the text like https://example.com
+```
+
+![Warning banner example](https://user-images.githubusercontent.com/22133008/93852559-cec54800-fce4-11ea-9376-9b2802e8ac62.png)
+
+```
+SITE_BANNER_CONTENT=error:This is an error banner. You can also add links in the text like https://example.com
+```
+
+![Error banner example](https://user-images.githubusercontent.com/22133008/93852689-1055f300-fce5-11ea-956d-d5966cbe86d8.png)
+
+```
+SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will be shown. The default banner type of `info` will used.
+```
+
+![Invalid banner default example](https://user-images.githubusercontent.com/22133008/93853306-392ab800-fce6-11ea-9891-f752bdad236e.png)
+
 | Variable                 | Description                                                                                                                                                                                                   |
 | :----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SITE_BANNER_CONTENT`    | If set, displays a banner message on both private routes that `ADMIN_BANNER_CONTENT` covers **and** public form routes that `IS_GENERAL_MAINTENANCE` covers. Overrides all other banner environment variables |

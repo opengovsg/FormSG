@@ -1,4 +1,5 @@
 import { ObjectID } from 'bson'
+import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 import { ImportMock } from 'ts-mock-imports'
 
@@ -13,6 +14,9 @@ import dbHandler from '../../helpers/jest-db'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
 const UserModel = getUserModel(mongoose)
+
+const MOCKED_DATE = new Date(Date.now())
+MockDate.set(MOCKED_DATE)
 
 describe('user.service', () => {
   // Obtained from Twilio's
@@ -220,7 +224,7 @@ describe('user.service', () => {
       const actual = await UserService.getPopulatedUserById(USER_ID)
 
       // Assert
-      expect(actual!.toObject()).toEqual(expected)
+      expect(actual?.toObject()).toEqual(expected)
     })
 
     it('should return null when user cannot be found', async () => {
@@ -264,6 +268,7 @@ describe('user.service', () => {
       const expectedUser: Partial<IPopulatedUser> = {
         agency: defaultAgency,
         email: newUserEmail,
+        lastAccessed: MOCKED_DATE,
       }
       expect(actualResult.isOk()).toBe(true)
       // Should now have 2 user documents
@@ -289,6 +294,7 @@ describe('user.service', () => {
       const expectedUser: Partial<IPopulatedUser> = {
         ...defaultUser,
         agency: defaultAgency,
+        lastAccessed: MOCKED_DATE,
       }
       expect(actualResult.isOk()).toBe(true)
       // Should still only have 1 user document.
