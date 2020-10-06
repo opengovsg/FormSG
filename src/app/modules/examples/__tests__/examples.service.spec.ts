@@ -34,9 +34,13 @@ jest.mock('../examples.constants', () => ({
 type TestData = {
   [section: string]: {
     searchTerm: string
-    count: number
+    // Number of forms with title containing key.
+    formCount: number
+    // The forms themselves.
     forms: IFormSchema[]
+    // Expected form info to be returned by query.
     expectedFormInfo: FormInfo[]
+    // Feedbacks for each of the forms.
     feedbacks: IFormFeedbackSchema[]
   }
 }
@@ -60,7 +64,21 @@ describe('examples.service', () => {
 
       describe('when query.searchTerm exists', () => {
         describe('when query.shouldGetTotalNumResults is true', () => {
-          it('should return list of form info that match the search term with results count', async () => {})
+          it('should return list of form info that match the search term with results count', async () => {
+            // Act
+            const actualResults = await getExampleFormsUsingStats({
+              searchTerm: testData.second.searchTerm,
+              pageNo: '0',
+              shouldGetTotalNumResults: 'true',
+            })
+
+            // Assert
+            expect(actualResults.isOk()).toEqual(true)
+            expect(actualResults._unsafeUnwrap()).toEqual({
+              totalNumResults: testData.second.formCount,
+              forms: expect.arrayContaining(testData.second.expectedFormInfo),
+            })
+          })
 
           it('should return empty list if no forms match search term with 0 result count', async () => {
             // Act
@@ -80,7 +98,20 @@ describe('examples.service', () => {
         })
 
         describe('when query.shouldGetTotalNumResults is false', () => {
-          it('should return only list of form info that match the search term', async () => {})
+          it('should return only list of form info that match the search term', async () => {
+            // Act
+            const actualResults = await getExampleFormsUsingStats({
+              searchTerm: testData.first.searchTerm,
+              pageNo: '0',
+              shouldGetTotalNumResults: 'false',
+            })
+
+            // Assert
+            expect(actualResults.isOk()).toEqual(true)
+            expect(actualResults._unsafeUnwrap()).toEqual({
+              forms: expect.arrayContaining(testData.first.expectedFormInfo),
+            })
+          })
 
           it('should return empty list if no forms match search term', async () => {
             // Act
@@ -97,15 +128,26 @@ describe('examples.service', () => {
             })
           })
         })
-
-        it('should return DatabaseError when database aggregate pipeline fails', async () => {})
       })
 
       describe('when query.searchTerm does not exist', () => {
         describe('when query.shouldGetTotalNumResults is true', () => {
-          it('should return list of form info with results count', async () => {})
+          it('should return list of form info with results count', async () => {
+            // Act
+            const actualResults = await getExampleFormsUsingStats({
+              pageNo: '0',
+              shouldGetTotalNumResults: 'true',
+            })
 
-          it('should return empty list with 0 result count when offset is more than number of documents in collection', async () => {
+            // Assert
+            expect(actualResults.isOk()).toEqual(true)
+            expect(actualResults._unsafeUnwrap()).toEqual({
+              totalNumResults: testData.total.formCount,
+              forms: expect.arrayContaining(testData.total.expectedFormInfo),
+            })
+          })
+
+          it('should return empty list with number of forms with submissions when offset is more than number of documents in collection', async () => {
             // Arrange
             const overOffset = String(
               (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1,
@@ -120,13 +162,25 @@ describe('examples.service', () => {
             expect(actualResults.isOk()).toEqual(true)
             expect(actualResults._unsafeUnwrap()).toEqual({
               forms: [],
-              totalNumResults: 0,
+              totalNumResults: testData.total.formCount,
             })
           })
         })
 
         describe('when query.shouldGetTotalNumResults is false', () => {
-          it('should return list of form info', async () => {})
+          it('should return list of form info', async () => {
+            // Act
+            const actualResults = await getExampleFormsUsingStats({
+              pageNo: '0',
+              shouldGetTotalNumResults: 'false',
+            })
+
+            // Assert
+            expect(actualResults.isOk()).toEqual(true)
+            expect(actualResults._unsafeUnwrap()).toEqual({
+              forms: expect.arrayContaining(testData.total.expectedFormInfo),
+            })
+          })
 
           it('should return empty list when offset is more than number of documents', async () => {
             // Arrange
@@ -146,8 +200,6 @@ describe('examples.service', () => {
             })
           })
         })
-
-        it('should return DatabaseError when database aggregate pipeline fails', async () => {})
       })
     })
 
@@ -169,7 +221,7 @@ describe('examples.service', () => {
             // Assert
             expect(actualResults.isOk()).toEqual(true)
             expect(actualResults._unsafeUnwrap()).toEqual({
-              totalNumResults: testData.second.count,
+              totalNumResults: testData.second.formCount,
               forms: expect.arrayContaining(testData.second.expectedFormInfo),
             })
           })
@@ -236,7 +288,7 @@ describe('examples.service', () => {
             // Assert
             expect(actualResults.isOk()).toEqual(true)
             expect(actualResults._unsafeUnwrap()).toEqual({
-              totalNumResults: testData.total.count,
+              totalNumResults: testData.total.formCount,
               forms: expect.arrayContaining(testData.total.expectedFormInfo),
             })
           })
@@ -256,7 +308,7 @@ describe('examples.service', () => {
             expect(actualResults.isOk()).toEqual(true)
             expect(actualResults._unsafeUnwrap()).toEqual({
               forms: [],
-              totalNumResults: testData.total.count,
+              totalNumResults: testData.total.formCount,
             })
           })
         })
