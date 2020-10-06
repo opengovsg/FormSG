@@ -52,9 +52,9 @@ const singleAnswerRequiresValidation = (
 /**
  * Generic logging function for invalid fields.
  * Incomplete for table fields as the columnType is not logged.
- * @param {String} formId id of form, for logging
- * @param {Object} formField A form field from the database
- * @param {string} message Message to log
+ * @param formId id of form, for logging
+ * @param formField A form field from the database
+ * @param message Message to log
  * @throws {Error}
  */
 const logInvalidAnswer = (
@@ -93,10 +93,10 @@ const constructSingleAnswerValidator = (
 /**
  * Single exported function that abstracts away the complexities
  * of field validation.
- * @param {String} formId id of form, for logging
- * @param {Object} formField A form field from the database
- * @param {Object} response A client-side response that is to be untrusted
- * @throws {Error}
+ * @param formId id of form, for logging
+ * @param formField A form field from the database
+ * @param response A client-side response that is to be untrusted
+ * @throws
  */
 export default function validateField(
   formId: string,
