@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson-ext'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -17,6 +18,7 @@ import {
 } from 'src/types'
 
 import { PAGE_SIZE } from '../examples.constants'
+import { ResultsNotFoundError } from '../examples.errors'
 import * as ExamplesService from '../examples.service'
 import { FormInfo, RetrievalType } from '../examples.types'
 
@@ -353,15 +355,70 @@ describe('examples.service', () => {
 
   describe('getSingleExampleForm', () => {
     describe('with RetrievalType.Stats', () => {
-      it('should return form info of given formId when form exists in the database', async () => {})
+      const getSingleFormUsingSubs = ExamplesService.getSingleExampleForm(
+        RetrievalType.Submissions,
+      )
 
-      it('should return ResultsNotFoundError when form does not exist in the database', async () => {})
+      it('should return form info of given formId when form exists in the database', async () => {
+        // Arrange
+        const expectedFormInfo = testData.first.expectedFormInfo[0]
+
+        // Act
+        const actualResults = await getSingleFormUsingSubs(expectedFormInfo._id)
+
+        // Assert
+        expect(actualResults.isOk()).toEqual(true)
+        expect(actualResults._unsafeUnwrap()).toEqual({
+          form: expectedFormInfo,
+        })
+      })
+
+      it('should return ResultsNotFoundError when form does not exist in the database', async () => {
+        // Act
+        const actualResults = await getSingleFormUsingSubs(
+          String(new ObjectId()),
+        )
+
+        // Assert
+        expect(actualResults.isErr()).toEqual(true)
+        expect(actualResults._unsafeUnwrapErr()).toBeInstanceOf(
+          ResultsNotFoundError,
+        )
+      })
     })
 
     describe('with RetrievalType.Submissions', () => {
-      it('should return form info of given formId when form exists in the database', async () => {})
+      const getSingleFormUsingStats = ExamplesService.getSingleExampleForm(
+        RetrievalType.Stats,
+      )
+      it('should return form info of given formId when form exists in the database', async () => {
+        // Arrange
+        const expectedFormInfo = testData.second.expectedFormInfo[1]
 
-      it('should return ResultsNotFoundError when form does not exist in the database', async () => {})
+        // Act
+        const actualResults = await getSingleFormUsingStats(
+          expectedFormInfo._id,
+        )
+
+        // Assert
+        expect(actualResults.isOk()).toEqual(true)
+        expect(actualResults._unsafeUnwrap()).toEqual({
+          form: expectedFormInfo,
+        })
+      })
+
+      it('should return ResultsNotFoundError when form does not exist in the database', async () => {
+        // Act
+        const actualResults = await getSingleFormUsingStats(
+          String(new ObjectId()),
+        )
+
+        // Assert
+        expect(actualResults.isErr()).toEqual(true)
+        expect(actualResults._unsafeUnwrapErr()).toBeInstanceOf(
+          ResultsNotFoundError,
+        )
+      })
     })
   })
 })
