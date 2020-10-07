@@ -9,7 +9,7 @@ const crypto = require('crypto')
 const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
 
-const { getRequestIp, getTrace } = require('../utils/request')
+const { getRequestIp, getTrace, getMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 const getFormModel = require('../models/form.server.model').default
@@ -147,10 +147,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
             message: 'Error retrieving attributes from auth client',
             meta: {
               action: 'handleOOBAuthenticationWith',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...getMeta(req),
             },
             error: err,
           })
@@ -357,10 +354,7 @@ exports.addSpcpSessionInfo = (authClients) => {
             message: 'Failed to verify JWT with auth client',
             meta: {
               action: 'addSpcpSessionInfo',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...getMeta(req),
             },
             error: err,
           })
@@ -489,10 +483,7 @@ exports.isSpcpAuthenticated = (authClients) => {
             message: 'Failed to verify JWT with auth client',
             meta: {
               action: 'isSpcpAuthenticated',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...getMeta(req),
             },
             error: err,
           })

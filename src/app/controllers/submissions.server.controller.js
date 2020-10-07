@@ -9,7 +9,7 @@ const Submission = getSubmissionModel(mongoose)
 
 const { StatusCodes } = require('http-status-codes')
 
-const { getRequestIp, getTrace } = require('../utils/request')
+const { getRequestIp, getTrace, getMeta } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail/mail.service').default
@@ -226,10 +226,7 @@ exports.count = function (req, res) {
         message: 'Error counting submission documents from database',
         meta: {
           action: 'count',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
-          url: req.url,
-          headers: req.headers,
+          ...getMeta(req),
         },
         error: err,
       })

@@ -15,7 +15,7 @@ const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
 const { ConflictError } = require('../modules/submission/submission.errors')
-const { getRequestIp, getTrace } = require('../utils/request')
+const { getRequestIp, getTrace, getMeta } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
@@ -114,10 +114,7 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
     message: 'Encrypt submission error',
     meta: {
       action: 'onEncryptSubmissionFailure',
-      ip: getRequestIp(req),
-      trace: getTrace(req),
-      url: req.url,
-      headers: req.headers,
+      ...getMeta(req),
     },
     error: err,
   })
@@ -249,10 +246,7 @@ exports.getMetadata = function (req, res) {
               message: 'Failure retrieving metadata from database',
               meta: {
                 action: 'getMetadata',
-                ip: getRequestIp(req),
-                trace: getTrace(req),
-                url: req.url,
-                headers: req.headers,
+                ...getMeta(req),
               },
               error: err,
             })
@@ -384,10 +378,7 @@ exports.getEncryptedResponse = function (req, res) {
         message: 'Failure retrieving encrypted submission from database',
         meta: {
           action: 'getEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
-          url: req.url,
-          headers: req.headers,
+          ...getMeta(req),
         },
         error: err,
       })

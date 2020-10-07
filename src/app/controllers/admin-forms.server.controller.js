@@ -11,7 +11,7 @@ const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('./errors.server.controller')
-const { getRequestIp, getTrace } = require('../utils/request')
+const { getRequestIp, getTrace, getMeta } = require('../utils/request')
 const { FormLogoState } = require('../../types')
 
 const {
@@ -68,10 +68,7 @@ function makeModule(connection) {
         message: 'Responding to Mongo error',
         meta: {
           action: 'respondOnMongoError',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
-          url: req.url,
-          headers: req.headers,
+          ...getMeta(req),
         },
         error: err,
       })
@@ -523,10 +520,7 @@ function makeModule(connection) {
             message: 'Error counting documents in FormFeedback',
             meta: {
               action: 'makeModule.countFeedback',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...getMeta(req),
             },
             error: err,
           })
@@ -774,10 +768,7 @@ function makeModule(connection) {
           message: err.message,
           meta: {
             action: 'makeModule.transferOwner',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...getMeta(req),
           },
           err,
         })

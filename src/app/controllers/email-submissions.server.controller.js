@@ -9,7 +9,7 @@ const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const { StatusCodes } = require('http-status-codes')
-const { getRequestIp, getTrace } = require('../utils/request')
+const { getRequestIp, getTrace, getMeta } = require('../utils/request')
 const { ConflictError } = require('../modules/submission/submission.errors')
 const { MB } = require('../constants/filesize')
 const {
@@ -509,10 +509,7 @@ function onSubmissionEmailFailure(err, req, res, submission) {
     message: 'Error submitting email form',
     meta: {
       action: 'onSubmissionEmailFailure',
-      ip: getRequestIp(req),
-      trace: getTrace(req),
-      url: req.url,
-      headers: req.headers,
+      ...getMeta(req),
     },
     error: err,
   })

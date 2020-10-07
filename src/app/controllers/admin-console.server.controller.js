@@ -20,7 +20,7 @@ const Form = getFormModel(mongoose)
 const _ = require('lodash')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { getRequestIp, getTrace } = require('../utils/request')
+const { getMeta, getTrace } = require('../utils/request')
 
 // Examples search-specific constants
 const PAGE_SIZE = 16 // maximum number of results to return
@@ -576,10 +576,7 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           message: 'Failed to retrieve example forms',
           meta: {
             action: 'getExampleFormsUsingAggregateCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...getMeta(req),
           },
           error,
         })
@@ -609,10 +606,7 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           message: 'Failed to retrieve example forms',
           meta: {
             action: 'getExampleFormsUsingSubmissionsCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...getMeta(req),
           },
           error,
         })
@@ -700,10 +694,7 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           message: 'Failed to retrieve a single example form',
           meta: {
             action: 'getSingleExampleFormUsingSubmissionCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...getMeta(req),
           },
           error,
         })
@@ -729,10 +720,7 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           message: 'Failed to retrieve single example form',
           meta: {
             action: 'getSingleExampleFormUsingAggregateCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...getMeta(req),
           },
           error: err,
         })
@@ -811,10 +799,7 @@ exports.getLoginStats = function (req, res) {
           message: 'Failed to retrieve billing records',
           meta: {
             action: 'getLoginStats',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...getMeta(req),
           },
           error,
         })
