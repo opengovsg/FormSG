@@ -18,7 +18,7 @@ describe('Authentication Controller', () => {
       '../utils/otp': {
         generateOtp: () => TEST_OTP,
       },
-      '../services/mail.service': {
+      '../services/mail/mail.service': {
         sendNodeMail: mockSendNodeMail,
       },
       bcrypt,

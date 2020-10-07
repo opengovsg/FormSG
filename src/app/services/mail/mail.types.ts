@@ -1,9 +1,12 @@
 import Mail from 'nodemailer/lib/mailer'
 import { OperationOptions } from 'retry'
 
-import { AutoReplyOptions } from './field'
-import { IFormSchema, IPopulatedForm } from './form'
-import { ISubmissionSchema } from './submission'
+import {
+  AutoReplyOptions,
+  IFormSchema,
+  IPopulatedForm,
+  ISubmissionSchema,
+} from '../../../types'
 
 export type SendMailOptions = {
   mailId?: string

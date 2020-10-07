@@ -12,7 +12,7 @@ const { StatusCodes } = require('http-status-codes')
 const { getRequestIp, getTrace } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const MailService = require('../services/mail.service').default
+const MailService = require('../services/mail/mail.service').default
 
 const GOOGLE_RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
 

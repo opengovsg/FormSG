@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IEmailNotification, ISnsNotification } from '../../../types'
-import { EmailType } from '../../constants/mail'
+import { EmailType } from '../../services/mail/mail.constants'
 import * as FormService from '../form/form.service'
 
 import * as BounceService from './bounce.service'
