@@ -612,9 +612,11 @@ function makeModule(connection) {
       ) {
         return res
           .status(StatusCodes.BAD_REQUEST)
-          .send('Form feedback data not passed in')
+          .json({ message: 'Form feedback data not passed in' })
       } else {
-        return res.status(StatusCodes.OK).send('Successfully received feedback')
+        return res
+          .status(StatusCodes.OK)
+          .json({ message: 'Successfully received feedback' })
       }
     },
     /**
