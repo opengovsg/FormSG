@@ -17,7 +17,7 @@ const VALID_EMAIL = 'test@example.com'
 // Mock services invoked by AuthController
 jest.mock('../auth.service')
 jest.mock('../../user/user.service')
-jest.mock('src/app/services/mail.service')
+jest.mock('src/app/services/mail/mail.service')
 const MockAuthService = mocked(AuthService)
 const MockMailService = mocked(MailService)
 const MockUserService = mocked(UserService)

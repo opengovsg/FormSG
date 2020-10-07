@@ -20,7 +20,7 @@ jest.mock('axios')
 const mockAxios = mocked(axios, true)
 jest.mock('src/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
-jest.mock('src/app/services/mail.service')
+jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
 
 const mockShortTermLogger = getMockLogger()
