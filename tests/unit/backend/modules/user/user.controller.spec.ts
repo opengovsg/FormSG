@@ -200,7 +200,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.userId,
       )
       expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
-      expect(mockRes.send).toBeCalledWith(MOCK_UPDATED_USER)
+      expect(mockRes.json).toBeCalledWith(MOCK_UPDATED_USER)
     })
 
     it('should return 401 when user id is not in session', async () => {
@@ -348,7 +348,7 @@ describe('user.controller', () => {
       await UserController.handleFetchUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.send).toBeCalledWith(mockPopulatedUser)
+      expect(mockRes.json).toBeCalledWith(mockPopulatedUser)
     })
 
     it('should return 401 when user id is not in session', async () => {
