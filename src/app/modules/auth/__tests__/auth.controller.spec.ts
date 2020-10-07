@@ -2,11 +2,11 @@ import { errAsync, okAsync } from 'neverthrow'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
-import MailService from 'src/app/services/mail.service'
+import MailService from 'src/app/services/mail/mail.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
+import { MailSendError } from '../../../services/mail/mail.errors'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
-import { MailSendError } from '../../mail/mail.errors'
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'

@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
-import MailService from '../../services/mail.service'
+import MailService from '../../services/mail/mail.service'
 import { getRequestIp, getTrace } from '../../utils/request'
 import * as UserService from '../user/user.service'
 
