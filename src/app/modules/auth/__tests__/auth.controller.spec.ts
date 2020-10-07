@@ -183,7 +183,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith(mockUser.toObject())
+      expect(mockRes.json).toBeCalledWith(mockUser.toObject())
     })
 
     it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {

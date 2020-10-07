@@ -97,7 +97,7 @@ export const handleContactVerifyOtp: RequestHandler<
   // No error, update user with given contact.
   try {
     const updatedUser = await updateUserContact(contact, userId)
-    return res.status(StatusCodes.OK).send(updatedUser)
+    return res.status(StatusCodes.OK).json(updatedUser)
   } catch (updateErr) {
     // Handle update error.
     logger.warn({
@@ -135,7 +135,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
       .send('Unable to retrieve user')
   }
 
-  return res.send(retrievedUser)
+  return res.json(retrievedUser)
 }
 
 // TODO(#212): Save userId instead of entire user collection in session.

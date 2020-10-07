@@ -30,15 +30,15 @@ const verifiedFieldsFactory = ({
     const errMsg = 'Verified fields feature is not enabled'
     return {
       createTransaction: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       getTransactionMetadata: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       resetFieldInTransaction: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       getNewOtp: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       verifyOtp: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
     }
   }
 }

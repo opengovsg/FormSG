@@ -91,7 +91,7 @@ function makeModule(connection) {
         statusCode = StatusCodes.INTERNAL_SERVER_ERROR
       }
 
-      return res.status(statusCode).send({
+      return res.status(statusCode).json({
         message: errorHandler.getMongoErrorMessage(err),
       })
     }
@@ -220,7 +220,7 @@ function makeModule(connection) {
      */
     isFormActive: function (req, res, next) {
       if (req.form.status === 'ARCHIVED') {
-        return res.status(StatusCodes.NOT_FOUND).send({
+        return res.status(StatusCodes.NOT_FOUND).json({
           message: 'Form has been archived',
         })
       } else {
@@ -235,7 +235,7 @@ function makeModule(connection) {
      */
     isFormEncryptMode: function (req, res, next) {
       if (req.form.responseMode !== 'encrypt') {
-        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
           message: 'Form is not encrypt mode',
         })
       }
@@ -248,7 +248,7 @@ function makeModule(connection) {
      */
     create: function (req, res) {
       if (!req.body.form) {
-        return res.status(StatusCodes.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message: 'Invalid Input',
         })
       }
@@ -297,7 +297,7 @@ function makeModule(connection) {
           })
           return res
             .status(StatusCodes.BAD_REQUEST)
-            .send({ message: 'Invalid update to form' })
+            .json({ message: 'Invalid update to form' })
         } else {
           const { error, formFields } = getEditedFormFields(
             _.cloneDeep(form.form_fields),
@@ -314,7 +314,7 @@ function makeModule(connection) {
               },
               error,
             })
-            return res.status(StatusCodes.BAD_REQUEST).send({ message: error })
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: error })
           }
           form.form_fields = formFields
           delete updatedForm.editFormField
@@ -377,7 +377,7 @@ function makeModule(connection) {
         } else if (!form) {
           return res
             .status(StatusCodes.NOT_FOUND)
-            .send({ message: 'Form not found for duplication' })
+            .json({ message: 'Form not found for duplication' })
         } else {
           let responseMode = req.body.responseMode || 'email'
           // Custom properties on the new form
@@ -453,7 +453,7 @@ function makeModule(connection) {
           if (err) {
             return respondOnMongoError(req, res, err)
           } else if (!forms) {
-            return res.status(StatusCodes.NOT_FOUND).send({
+            return res.status(StatusCodes.NOT_FOUND).json({
               message: 'No user-created and collaborated-on forms found',
             })
           }
@@ -477,7 +477,7 @@ function makeModule(connection) {
         } else if (!feedback) {
           return res
             .status(StatusCodes.NOT_FOUND)
-            .send({ message: 'No feedback found' })
+            .json({ message: 'No feedback found' })
         } else {
           let sum = 0
           let count = 0
@@ -530,7 +530,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: errorHandler.getMongoErrorMessage(err),
           })
         } else {
@@ -558,7 +558,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Error retrieving from database.',
           })
         })
@@ -573,7 +573,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Error converting feedback to JSON',
           })
         })
@@ -588,7 +588,7 @@ function makeModule(connection) {
             },
             error: err,
           })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Error writing feedback to HTTP stream',
           })
         })
@@ -700,9 +700,9 @@ function makeModule(connection) {
               },
               error: err,
             })
-            return res.status(StatusCodes.BAD_REQUEST).send(err)
+            return res.status(StatusCodes.BAD_REQUEST).json(err)
           } else {
-            return res.status(StatusCodes.OK).send(presignedPostObject)
+            return res.status(StatusCodes.OK).json(presignedPostObject)
           }
         },
       )
@@ -748,9 +748,9 @@ function makeModule(connection) {
               },
               error: err,
             })
-            return res.status(StatusCodes.BAD_REQUEST).send(err)
+            return res.status(StatusCodes.BAD_REQUEST).json(err)
           } else {
-            return res.status(StatusCodes.OK).send(presignedPostObject)
+            return res.status(StatusCodes.OK).json(presignedPostObject)
           }
         },
       )
@@ -779,7 +779,7 @@ function makeModule(connection) {
           },
           err,
         })
-        return res.status(StatusCodes.CONFLICT).send({ message: err.message })
+        return res.status(StatusCodes.CONFLICT).json({ message: err.message })
       }
       req.form.save(function (err, savedForm) {
         if (err) return respondOnMongoError(req, res, err)

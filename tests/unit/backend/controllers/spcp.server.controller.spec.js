@@ -67,6 +67,7 @@ describe('SPCP Controller', () => {
       'redirect',
       'cookie',
       'locals',
+      'sendStatus',
     ])
     res.status.and.returnValue(res)
     res.send.and.returnValue(res)
@@ -155,9 +156,11 @@ describe('SPCP Controller', () => {
   }
 
   const expectResponse = (code, content) => {
-    expect(res.status).toHaveBeenCalledWith(code)
     if (content) {
-      expect(res.send).toHaveBeenCalledWith(content)
+      expect(res.status).toHaveBeenCalledWith(code)
+      expect(res.json).toHaveBeenCalledWith(content)
+    } else {
+      expect(res.sendStatus).toHaveBeenCalledWith(code)
     }
   }
 
@@ -177,22 +180,26 @@ describe('SPCP Controller', () => {
     it('should return 400 if target not provided', () => {
       req.query.target = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(StatusCodes.BAD_REQUEST)
+      expect(res.status).toHaveBeenCalledWith(400)
+      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
     })
 
     it('should return 400 if authType not provided', () => {
       req.query.authType = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(StatusCodes.BAD_REQUEST)
+      expect(res.status).toHaveBeenCalledWith(400)
+      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
     })
     it('should return 400 if esrvcId not provided', () => {
       req.query.esrvcId = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(StatusCodes.BAD_REQUEST)
+      expect(res.status).toHaveBeenCalledWith(400)
+      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
     })
     it('should return 400 if authType is NIL', () => {
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
-      expectResponse(StatusCodes.BAD_REQUEST)
+      expect(res.status).toHaveBeenCalledWith(400)
+      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
     })
     it('should return 200 and redirectUrl if authType is SP', () => {
       req.query.authType = 'SP'
@@ -363,7 +370,7 @@ describe('SPCP Controller', () => {
     let expectedRelayState
 
     const expectBadRequestOnLogin = (statusCode, done) => {
-      res.status.and.callFake((status) => {
+      res.sendStatus.and.callFake((status) => {
         expect(status).toEqual(statusCode)
         done()
         return res

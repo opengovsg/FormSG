@@ -583,7 +583,7 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           },
           error,
         })
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -617,7 +617,7 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -708,7 +708,7 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -737,7 +737,7 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           error: err,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -836,7 +836,7 @@ exports.getLoginStats = function (req, res) {
           },
         })
 
-        return res.send({
+        return res.json({
           loginStats,
         })
       }
