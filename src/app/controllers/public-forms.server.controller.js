@@ -24,7 +24,7 @@ exports.isFormPublic = function (req, res, next) {
     case 'ARCHIVED':
       return res.sendStatus(StatusCodes.GONE)
     default:
-      return res.status(StatusCodes.NOT_FOUND).send({
+      return res.status(StatusCodes.NOT_FOUND).json({
         message: req.form.inactiveMessage,
         isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
         formTitle: req.form.title,

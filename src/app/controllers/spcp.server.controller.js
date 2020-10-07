@@ -112,7 +112,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     const payloads = String(relayState).split(',')
 
     if (payloads.length !== 2) {
-      return res.status(StatusCodes.BAD_REQUEST).send()
+      return res.sendStatus(StatusCodes.BAD_REQUEST)
     }
 
     const destination = payloads[0]
@@ -126,7 +126,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
         authType,
       )
     ) {
-      res.status(StatusCodes.UNAUTHORIZED).send()
+      res.sendStatus(StatusCodes.UNAUTHORIZED)
       return
     }
 
@@ -134,11 +134,11 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     samlArt = String(samlArt).replace(/ /g, '+')
 
     if (!destinationIsValid(destination))
-      return res.status(StatusCodes.BAD_REQUEST).send()
+      return res.sendStatus(StatusCodes.BAD_REQUEST)
 
     getForm(destination, (err, form) => {
       if (err || !form || form.authType !== authType) {
-        res.status(StatusCodes.NOT_FOUND).send()
+        res.sendStatus(StatusCodes.NOT_FOUND)
         return
       }
       authClient.getAttributes(samlArt, destination, (err, data) => {
@@ -225,7 +225,7 @@ exports.createSpcpRedirectURL = (authClients) => {
 }
 
 exports.returnSpcpRedirectURL = function (req, res) {
-  return res.status(StatusCodes.OK).send({ redirectURL: req.redirectURL })
+  return res.status(StatusCodes.OK).json({ redirectURL: req.redirectURL })
 }
 
 const getSubstringBetween = (text, markerStart, markerEnd) => {
@@ -266,12 +266,12 @@ exports.validateESrvcId = (req, res) => {
             data,
           },
         })
-        return res.status(StatusCodes.BAD_GATEWAY).send({
+        return res.status(StatusCodes.BAD_GATEWAY).json({
           message: 'Singpass returned incomprehensible content',
         })
       }
       if (title.indexOf('Error') === -1) {
-        return res.status(StatusCodes.OK).send({
+        return res.status(StatusCodes.OK).json({
           isValid: true,
         })
       }
@@ -282,7 +282,7 @@ exports.validateESrvcId = (req, res) => {
         'System Code:&nbsp<b>',
         '</b>',
       )
-      return res.status(StatusCodes.OK).send({
+      return res.status(StatusCodes.OK).json({
         isValid: false,
         errorCode,
       })
@@ -299,7 +299,7 @@ exports.validateESrvcId = (req, res) => {
         },
         error: err,
       })
-      return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
+      return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
         message: 'Failed to contact Singpass',
       })
     })
@@ -425,7 +425,7 @@ exports.encryptedVerifiedFields = (signingSecretKey) => {
       })
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .send({ message: 'Invalid data was found. Please submit again.' })
+        .json({ message: 'Invalid data was found. Please submit again.' })
     }
   }
 }
@@ -494,7 +494,7 @@ exports.isSpcpAuthenticated = (authClients) => {
             },
             error: err,
           })
-          res.status(StatusCodes.UNAUTHORIZED).send({
+          res.status(StatusCodes.UNAUTHORIZED).json({
             message: 'User is not SPCP authenticated',
             spcpSubmissionFailure: true,
           })

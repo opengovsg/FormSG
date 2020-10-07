@@ -171,7 +171,7 @@ export const handleLoginVerifyOtp: RequestHandler<
           meta: logMeta,
         })
 
-        return res.status(StatusCodes.OK).send(userObj)
+        return res.status(StatusCodes.OK).json(userObj)
       })
       // Step 3b: Error occured in one of the steps.
       .mapErr((error) => {

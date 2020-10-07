@@ -133,7 +133,7 @@ const spcpFactory = ({ isEnabled, props }) => {
       encryptedVerifiedFields: (req, res, next) => next(),
       passThroughSpcp: (req, res, next) => next(),
       getLoginStats: (req, res) =>
-        res.send({
+        res.json({
           loginStats: [],
         }),
       verifyMyInfoVals: (req, res, next) => next(),
