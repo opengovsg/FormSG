@@ -115,7 +115,9 @@ export const handleContactVerifyOtp: RequestHandler<
 export const handleFetchUser: RequestHandler = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
   if (!sessionUserId) {
-    return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'User is unauthorized.' })
   }
 
   // Retrieve user with id in session
@@ -132,7 +134,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send('Unable to retrieve user')
+      .json({ message: 'Unable to retrieve user' })
   }
 
   return res.json(retrievedUser)
