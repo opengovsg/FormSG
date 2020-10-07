@@ -514,7 +514,7 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
-    it('should send submission mail to admin successfully if form.emails is an array with a mixture of emails, semi-colon, and comma separated emails strings', async () => {
+    it('should reject with error when if form.emails is an array with a mixture of emails, semi-colon, and comma separated emails strings', async () => {
       // Arrange
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
 
@@ -525,16 +525,11 @@ describe('mail.service', () => {
       const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       modifiedParams.form.emails = formEmailsMixture
 
-      const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
-
       // Act
       const pendingSend = mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
-      await expect(pendingSend).resolves.toEqual(true)
-      // Check arguments passed to sendNodeMail
-      expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+      await expect(pendingSend).rejects.toThrowError('Invalid email error')
     })
 
     it('should reject with error when form.emails array contains an invalid email string', async () => {
