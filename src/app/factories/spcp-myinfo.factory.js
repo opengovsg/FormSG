@@ -138,17 +138,17 @@ const spcpFactory = ({ isEnabled, props }) => {
         }),
       verifyMyInfoVals: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       singPassLogin: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       corpPassLogin: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       addSpcpSessionInfo: (req, res, next) => next(),
       isSpcpAuthenticated: (req, res, next) => next(),
       createSpcpRedirectURL: (req, res, next) => next(),
       addMyInfo: (req, res, next) => next(),
       validateESrvcId: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(errMsg),
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
     }
   }
 }
