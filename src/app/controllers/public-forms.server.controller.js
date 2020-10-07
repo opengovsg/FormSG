@@ -82,7 +82,7 @@ exports.submitFeedback = function (req, res) {
   ) {
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .send('Form feedback data not passed in')
+      .json({ message: 'Form feedback data not passed in' })
   }
 
   FormFeedback.create(
@@ -104,11 +104,11 @@ exports.submitFeedback = function (req, res) {
         })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send('Form feedback could not be created')
+          .json({ message: 'Form feedback could not be created' })
       } else {
         return res
           .status(StatusCodes.OK)
-          .send('Successfully submitted feedback')
+          .json({ message: 'Successfully submitted feedback' })
       }
     },
   )
