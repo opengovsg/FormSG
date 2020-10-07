@@ -42,7 +42,7 @@ const errorHandlerMiddlewares = (): (
         })
         return res
           .status(StatusCodes.BAD_REQUEST)
-          .send('Some required parameters are missing')
+          .json({ message: 'Some required parameters are missing' })
       }
 
       logger.error({
