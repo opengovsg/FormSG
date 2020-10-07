@@ -1,6 +1,9 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../config/config'
+import { limitRate } from '../../utils/limit-rate'
+
 import * as AuthController from './auth.controller'
 
 export const AuthRouter = Router()
@@ -40,6 +43,7 @@ AuthRouter.post(
  */
 AuthRouter.post(
   '/sendotp',
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
   celebrate({
     [Segments.BODY]: Joi.object().keys({
       email: Joi.string()
