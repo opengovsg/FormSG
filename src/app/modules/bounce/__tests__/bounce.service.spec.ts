@@ -12,12 +12,7 @@ import { EMAIL_HEADERS, EmailType } from 'src/app/constants/mail'
 import getFormModel from 'src/app/models/form.server.model'
 import MailService from 'src/app/services/mail.service'
 import * as LoggerModule from 'src/config/logger'
-import {
-  BounceType,
-  IFormSchema,
-  ISnsNotification,
-  IUserSchema,
-} from 'src/types'
+import { BounceType, ISnsNotification, IUserSchema } from 'src/types'
 
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 

@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson'
-import { cloneDeep, merge, pick } from 'lodash'
+import { merge, pick } from 'lodash'
 
 import { EmailType } from 'src/app/constants/mail'
 import {
