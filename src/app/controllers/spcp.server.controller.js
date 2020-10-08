@@ -219,7 +219,9 @@ exports.createSpcpRedirectURL = (authClients) => {
       req.redirectURL = authClient.createRedirectURL(target, esrvcId)
       return next()
     } else {
-      return res.status(StatusCodes.BAD_REQUEST).send('Redirect URL malformed')
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Redirect URL malformed' })
     }
   }
 }

@@ -820,11 +820,11 @@ exports.getLoginStats = function (req, res) {
         })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send('Error in retrieving billing records')
+          .json({ message: 'Error in retrieving billing records' })
       } else if (!loginStats) {
         return res
           .status(StatusCodes.NOT_FOUND)
-          .send('No billing records found')
+          .json({ message: 'No billing records found' })
       } else {
         logger.info({
           message: `Billing search for ${esrvcId} by ${

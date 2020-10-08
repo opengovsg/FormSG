@@ -181,25 +181,33 @@ describe('SPCP Controller', () => {
       req.query.target = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Redirect URL malformed',
+      })
     })
 
     it('should return 400 if authType not provided', () => {
       req.query.authType = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Redirect URL malformed',
+      })
     })
     it('should return 400 if esrvcId not provided', () => {
       req.query.esrvcId = ''
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Redirect URL malformed',
+      })
     })
     it('should return 400 if authType is NIL', () => {
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(res.status).toHaveBeenCalledWith(400)
-      expect(res.send).toHaveBeenCalledWith('Redirect URL malformed')
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Redirect URL malformed',
+      })
     })
     it('should return 200 and redirectUrl if authType is SP', () => {
       req.query.authType = 'SP'

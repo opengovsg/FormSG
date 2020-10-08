@@ -368,7 +368,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
-      expect(mockRes.send).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
     })
 
     it('should return 500 when retrieved user is null', async () => {
@@ -382,7 +382,9 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
-      expect(mockRes.send).toBeCalledWith('Unable to retrieve user')
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Unable to retrieve user',
+      })
     })
   })
 })
