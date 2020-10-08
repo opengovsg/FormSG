@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { MailSendError } from '../../services/mail/mail.errors'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
-import { MailSendError } from '../mail/mail.errors'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 

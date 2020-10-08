@@ -24,7 +24,7 @@ const {
   getProcessedResponses,
 } = require('../modules/submission/submission.service')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const MailService = require('../services/mail.service').default
+const MailService = require('../services/mail/mail.service').default
 
 const { sessionSecret } = config
 
