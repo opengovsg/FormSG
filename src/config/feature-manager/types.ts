@@ -82,7 +82,7 @@ export interface IFeatureManager {
 
 export interface RegisteredFeature<T extends FeatureNames> {
   isEnabled: boolean
-  props: IFeatureManager[T]
+  props?: IFeatureManager[T]
 }
 
 export interface RegisterableFeature<K extends FeatureNames> {

@@ -42,7 +42,7 @@ const errorHandlerMiddlewares = (): (
         })
         return res
           .status(StatusCodes.BAD_REQUEST)
-          .send('Some required parameters are missing')
+          .json({ message: 'Some required parameters are missing' })
       }
 
       logger.error({
@@ -54,7 +54,7 @@ const errorHandlerMiddlewares = (): (
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({ message: genericErrorMessage })
+        .json({ message: genericErrorMessage })
     }
   }
 
@@ -63,7 +63,7 @@ const errorHandlerMiddlewares = (): (
     _req,
     res,
   ) {
-    res.status(StatusCodes.NOT_FOUND).send()
+    res.sendStatus(StatusCodes.NOT_FOUND)
   }
 
   return [genericErrorHandlerMiddleware, catchNonExistentRoutesMiddleware]

@@ -46,6 +46,11 @@ export type MailConfig = {
   transporter: Mail
 }
 
+export type RateLimitConfig = {
+  submissions: number
+  sendAuthOtp: number
+}
+
 export type Config = {
   app: AppConfig
   db: DbConfig
@@ -68,6 +73,7 @@ export type Config = {
   isLoginBanner: string
   siteBannerContent: string
   adminBannerContent: string
+  rateLimitConfig: RateLimitConfig
 
   // Functions
   configureAws: () => Promise<void>
@@ -121,6 +127,10 @@ export interface IOptionalVarsSchema {
     maxMessages: number
     maxConnections: number
     socketTimeout: number
+  }
+  rateLimit: {
+    submissions: number
+    sendAuthOtp: number
   }
 }
 

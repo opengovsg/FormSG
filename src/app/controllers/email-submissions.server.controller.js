@@ -62,7 +62,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       },
       error: err,
     })
-    return res.status(StatusCodes.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'Required headers are missing',
     })
   }
@@ -133,7 +133,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       })
       return res
         .status(StatusCodes.REQUEST_TOO_LONG)
-        .send({ message: 'Your submission is too large.' })
+        .json({ message: 'Your submission is too large.' })
     }
 
     // Log hash of submission for incident investigation purposes
@@ -176,13 +176,13 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
             formId: req.form._id,
           },
         })
-        return res.status(StatusCodes.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message: 'Some files were invalid. Try uploading another file.',
         })
       }
 
       if (areAttachmentsMoreThan7MB(attachments)) {
-        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
           message: 'Please keep the size of your attachments under 7MB.',
         })
       }
@@ -206,7 +206,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({ message: 'Unable to process submission.' })
+        .json({ message: 'Unable to process submission.' })
     }
   })
 
@@ -223,7 +223,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: 'Unable to process submission.' })
+      .json({ message: 'Unable to process submission.' })
   })
 
   req.pipe(busboy)
@@ -259,12 +259,12 @@ exports.validateEmailSubmission = function (req, res, next) {
         error: err,
       })
       if (err instanceof ConflictError) {
-        return res.status(err.status).send({
+        return res.status(err.status).json({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
       } else {
-        return res.status(StatusCodes.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message:
             'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
         })
@@ -516,7 +516,7 @@ function onSubmissionEmailFailure(err, req, res, submission) {
     },
     error: err,
   })
-  return res.status(StatusCodes.BAD_REQUEST).send({
+  return res.status(StatusCodes.BAD_REQUEST).json({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
     submissionId: submission._id,

@@ -183,7 +183,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith(mockUser.toObject())
+      expect(mockRes.json).toBeCalledWith(mockUser.toObject())
     })
 
     it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
@@ -294,7 +294,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith('Sign out successful')
+      expect(mockRes.json).toBeCalledWith({ message: 'Sign out successful' })
       expect(mockClearCookie).toBeCalledTimes(1)
       expect(mockDestroy).toBeCalledTimes(1)
     })
@@ -335,7 +335,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.send).toBeCalledWith('Sign out failed')
+      expect(mockRes.json).toBeCalledWith({ message: 'Sign out failed' })
       expect(mockDestroyWithErr).toBeCalledTimes(1)
       expect(mockClearCookie).not.toBeCalled()
     })

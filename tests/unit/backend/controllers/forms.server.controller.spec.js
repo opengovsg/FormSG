@@ -57,7 +57,7 @@ describe('Form Controller', () => {
         'betaFlags',
       ])
       Controller.read(Controller.REQUEST_TYPE.ADMIN)(req, res)
-      expect(res.send).toHaveBeenCalledWith({
+      expect(res.json).toHaveBeenCalledWith({
         form: expectedForm,
         spcpSession: res.locals.spcpSession,
         myInfoError: res.locals.myInfoError,
@@ -95,7 +95,7 @@ describe('Form Controller', () => {
       ])
 
       Controller.read(Controller.REQUEST_TYPE.PUBLIC)(req, res)
-      expect(res.send).toHaveBeenCalledWith({
+      expect(res.json).toHaveBeenCalledWith({
         form: expectedForm,
         spcpSession: res.locals.spcpSession,
         myInfoError: res.locals.myInfoError,

@@ -226,6 +226,7 @@ const config: Config = {
   isLoginBanner: basicVars.banner.isLoginBanner,
   siteBannerContent: basicVars.banner.siteBannerContent,
   adminBannerContent: basicVars.banner.adminBannerContent,
+  rateLimitConfig: basicVars.rateLimit,
   configureAws,
 }
 

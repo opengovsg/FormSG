@@ -199,7 +199,7 @@ exports.verifyMyInfoVals = function (req, res, next) {
             },
             error: err,
           })
-          return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
+          return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
             message: 'MyInfo verification unavailable, please try again later.',
             spcpSubmissionFailure: true,
           })
@@ -215,7 +215,7 @@ exports.verifyMyInfoVals = function (req, res, next) {
               formId: formObjId,
             },
           })
-          return res.status(StatusCodes.GONE).send({
+          return res.status(StatusCodes.GONE).json({
             message:
               'MyInfo verification expired, please refresh and try again.',
             spcpSubmissionFailure: true,
@@ -264,7 +264,7 @@ exports.verifyMyInfoVals = function (req, res, next) {
                   failedFields: hashFailedAttrs,
                 },
               })
-              return res.status(StatusCodes.UNAUTHORIZED).send({
+              return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: 'MyInfo verification failed.',
                 spcpSubmissionFailure: true,
               })

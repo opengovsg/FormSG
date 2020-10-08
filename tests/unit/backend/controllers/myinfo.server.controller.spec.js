@@ -686,6 +686,7 @@ describe('MyInfo Controller', () => {
                 ),
               ).toBeTruthy()
               expect(res.send).not.toHaveBeenCalled()
+              expect(res.json).not.toHaveBeenCalled()
               done()
             })
             Controller.verifyMyInfoVals(req, res, next)

@@ -171,7 +171,7 @@ export const handleLoginVerifyOtp: RequestHandler<
           meta: logMeta,
         })
 
-        return res.status(StatusCodes.OK).send(userObj)
+        return res.status(StatusCodes.OK).json(userObj)
       })
       // Step 3b: Error occured in one of the steps.
       .mapErr((error) => {
@@ -212,11 +212,11 @@ export const handleSignout: RequestHandler = async (req, res) => {
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send('Sign out failed')
+        .json({ message: 'Sign out failed' })
     }
 
     // No error.
     res.clearCookie('connect.sid')
-    return res.status(StatusCodes.OK).send('Sign out successful')
+    return res.status(StatusCodes.OK).json({ message: 'Sign out successful' })
   })
 }

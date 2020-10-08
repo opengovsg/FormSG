@@ -583,7 +583,7 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           },
           error,
         })
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -617,7 +617,7 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -708,7 +708,7 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -737,7 +737,7 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           error: err,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -820,11 +820,11 @@ exports.getLoginStats = function (req, res) {
         })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send('Error in retrieving billing records')
+          .json({ message: 'Error in retrieving billing records' })
       } else if (!loginStats) {
         return res
           .status(StatusCodes.NOT_FOUND)
-          .send('No billing records found')
+          .json({ message: 'No billing records found' })
       } else {
         logger.info({
           message: `Billing search for ${esrvcId} by ${
@@ -836,7 +836,7 @@ exports.getLoginStats = function (req, res) {
           },
         })
 
-        return res.send({
+        return res.json({
           loginStats,
         })
       }

@@ -20,7 +20,7 @@ exports.authenticateUser = function (req, res, next) {
   } else {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .send({ message: 'User is unauthorized.' })
+      .json({ message: 'User is unauthorized.' })
   }
 }
 
@@ -80,7 +80,7 @@ exports.verifyPermission = (requiredPermission) =>
     // Forbidden if requiredPersmission is admin but user is not
     if (!isFormAdmin && requiredPermission === PERMISSIONS.DELETE) {
       logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
-      return res.status(StatusCodes.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).json({
         message: makeUnauthorizedMessage(
           req.session.user.email,
           req.form.title,
@@ -114,7 +114,7 @@ exports.verifyPermission = (requiredPermission) =>
 
     if (!hasSufficientPermission) {
       logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
-      return res.status(StatusCodes.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).json({
         message: makeUnauthorizedMessage(
           req.session.user.email,
           req.form.title,
