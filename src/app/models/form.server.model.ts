@@ -103,6 +103,30 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
 type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 
+// Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
+function transformEmailString(v: string): string[] {
+  return v
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter((email) => email.includes('@')) // remove ""
+}
+
+// Function that coerces the string of comma-separated emails sent by the client
+// into an array of emails
+function transformEmails(v: string | string[]): string[] {
+  // Cases
+  // ['test@hotmail.com'] => ['test@hotmail.com'] ~ unchanged
+  // ['test@hotmail.com', 'test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com'] ~ unchanged
+  // ['test@hotmail.com, test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com']
+  // ['test@hotmail.com, test@gmail.com', 'test@yahoo.com'] => ['test@hotmail.com', 'test@gmail.com', 'test@yahoo.com']
+  // 'test@hotmail.com, test@gmail.com' => ['test@hotmail.com', 'test@gmail.com']
+  if (Array.isArray(v)) {
+    return transformEmailString(v.join(','))
+  } else {
+    return transformEmailString(v)
+  }
+}
+
 const EmailFormSchema = new Schema<IEmailFormSchema>({
   emails: {
     type: [
@@ -111,18 +135,12 @@ const EmailFormSchema = new Schema<IEmailFormSchema>({
         trim: true,
       },
     ],
+    set: transformEmails,
     validate: {
       validator: (v: string[]) => {
-        if (!Array.isArray(v) || v.length === 0) return false
-        // Weird artifact of legacy code, emails are mostly a single
-        // string of emails separated by commas.
-        // Split the email strings into individual emails by commas (if
-        // possible) and validate them.
-        return v.every((emailString) =>
-          emailString
-            .split(',')
-            .every((email) => validator.isEmail(email.trim())),
-        )
+        if (!Array.isArray(v)) return false
+        if (v.length === 0) return false
+        return v.every((email) => validator.isEmail(email))
       },
       message: 'Please provide valid email addresses',
     },
