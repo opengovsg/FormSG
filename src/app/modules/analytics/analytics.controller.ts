@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { createReqMeta, getRequestIp, getTrace } from '../../utils/request'
+import { createReqMeta } from '../../utils/request'
 
 import { AnalyticsFactory } from './analytics.factory'
 import { getSubmissionCount, getUserCount } from './analytics.service'

@@ -20,7 +20,7 @@ const Form = getFormModel(mongoose)
 const _ = require('lodash')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { createReqMeta, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 
 // Examples search-specific constants
 const PAGE_SIZE = 16 // maximum number of results to return
@@ -817,7 +817,7 @@ exports.getLoginStats = function (req, res) {
           }`,
           meta: {
             action: 'getLoginStats',
-            trace: getTrace(req),
+            ...createReqMeta(req),
           },
         })
 

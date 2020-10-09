@@ -9,7 +9,7 @@ const Submission = getSubmissionModel(mongoose)
 
 const { StatusCodes } = require('http-status-codes')
 
-const { getRequestIp, getTrace, createReqMeta } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail/mail.service').default
@@ -37,8 +37,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
           meta: {
             action: 'captchaCheck',
             formId: req.form._id,
-            ip: getRequestIp(req),
-            trace: getTrace(req),
+            ...createReqMeta(req),
           },
         })
         return res.status(StatusCodes.BAD_REQUEST).json({
@@ -60,8 +59,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
                 meta: {
                   action: 'captchaCheck',
                   formId: req.form._id,
-                  ip: getRequestIp(req),
-                  trace: getTrace(req),
+                  ...createReqMeta(req),
                 },
               })
               return res.status(StatusCodes.BAD_REQUEST).json({
@@ -77,8 +75,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
               meta: {
                 action: 'captchaCheck',
                 formId: req.form._id,
-                ip: getRequestIp(req),
-                trace: getTrace(req),
+                ...createReqMeta(req),
               },
               error: err,
             })
@@ -182,8 +179,7 @@ const sendEmailAutoReplies = async function (req) {
       message: 'Failed to send autoreply emails',
       meta: {
         action: 'sendEmailAutoReplies',
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         formId: req.form._id,
         submissionId: submission.id,
       },

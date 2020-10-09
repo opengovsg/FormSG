@@ -9,7 +9,7 @@ const crypto = require('crypto')
 const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
 
-const { getRequestIp, getTrace, createReqMeta } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 const getFormModel = require('../models/form.server.model').default
@@ -260,7 +260,7 @@ exports.validateESrvcId = (req, res) => {
           message: 'Could not find title',
           meta: {
             action: 'validateESrvcId',
-            trace: getTrace(req),
+            ...createReqMeta(req),
             redirectUrl: redirectURL,
             data,
           },
@@ -292,7 +292,7 @@ exports.validateESrvcId = (req, res) => {
         message: 'Could not contact singpass to validate eservice id',
         meta: {
           action: 'validateESrvcId',
-          trace: getTrace(req),
+          ...createReqMeta(req),
           redirectUrl: redirectURL,
           statusCode,
         },
@@ -414,8 +414,7 @@ exports.encryptedVerifiedFields = (signingSecretKey) => {
         meta: {
           action: 'encryptedVerifiedFields',
           formId: req.form._id,
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error,
       })

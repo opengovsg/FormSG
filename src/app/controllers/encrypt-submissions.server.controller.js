@@ -15,7 +15,7 @@ const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
 const { ConflictError } = require('../modules/submission/submission.errors')
-const { getRequestIp, getTrace, createReqMeta } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
@@ -45,8 +45,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
       message: 'Invalid encryption',
       meta: {
         action: 'validateEncryptSubmission',
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         formId: form._id,
       },
       error,
@@ -65,8 +64,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
         message: 'Error processing responses',
         meta: {
           action: 'validateEncryptSubmission',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           formId: form._id,
         },
         error: err,
@@ -185,7 +183,7 @@ exports.saveResponseToDb = function (req, res, next) {
             message: 'Attachment upload error',
             meta: {
               action: 'saveResponseToDb',
-              trace: getTrace(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -318,10 +316,7 @@ exports.getMetadata = function (req, res) {
             message: 'Failure retrieving metadata from database',
             meta: {
               action: 'getMetadata',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -452,8 +447,7 @@ exports.streamEncryptedResponses = async function (req, res) {
         message: 'Error streaming submissions from database',
         meta: {
           action: 'streamEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error: err,
       })
@@ -469,8 +463,7 @@ exports.streamEncryptedResponses = async function (req, res) {
         message: 'Error converting submissions to JSON',
         meta: {
           action: 'streamEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error: err,
       })
@@ -484,8 +477,7 @@ exports.streamEncryptedResponses = async function (req, res) {
         message: 'Error writing submissions to HTTP stream',
         meta: {
           action: 'streamEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error: err,
       })
