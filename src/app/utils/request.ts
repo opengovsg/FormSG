@@ -1,5 +1,4 @@
 import { Request } from 'express'
-import { IncomingHttpHeaders } from 'http'
 
 export const getRequestIp = (req: Request) => {
   // Define our own token for client ip
