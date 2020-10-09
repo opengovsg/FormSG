@@ -51,6 +51,10 @@ function avatarDropdownController(
       if (trueUser.contact) return
 
       const features = await Features.getFeatureStates()
+
+      // Only show exclamation mark in avatar if sms feature is enabled.
+      vm.showExclamation = features.sms && !vm.user.contact
+
       // Do not proceed if sms feature is not available.
       if (!features.sms) return
 

@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import * as MailErrors from '../../services/mail/mail.errors'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
-import * as MailErrors from '../mail/mail.errors'
 
 import * as AuthErrors from './auth.errors'
 

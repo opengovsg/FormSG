@@ -3,15 +3,15 @@ import validator from 'convict-format-with-validator'
 import _ from 'lodash'
 
 import { createLoggerWithLabel } from '../../logger'
-import { FeatureNames, IFeatureManager, RegisterableFeature } from '../types'
+import {
+  FeatureNames,
+  IFeatureManager,
+  RegisterableFeature,
+  RegisteredFeature,
+} from '../types'
 
 const logger = createLoggerWithLabel(module)
 convict.addFormat(validator.url)
-
-interface RegisteredFeature<T extends FeatureNames> {
-  isEnabled: boolean
-  props: IFeatureManager[T]
-}
 
 export default class FeatureManager {
   public states: Partial<Record<FeatureNames, boolean>>
@@ -96,9 +96,9 @@ export default class FeatureManager {
    * Return props registered for requested feature
    * @param name the feature to return properties for
    */
-  props<K extends FeatureNames>(name: K) {
+  props<K extends FeatureNames>(name: K): IFeatureManager[K] {
     if (this.states[name] !== undefined) {
-      return this.properties[name]
+      return this.properties[name] as IFeatureManager[K]
     }
     // Not enabled or not in state.
     throw new Error(`A feature called ${name} does not exist`)
@@ -109,11 +109,10 @@ export default class FeatureManager {
    * and whether requested feature is enabled
    * @param name the name of the feature to return
    */
-  get(name: FeatureNames): RegisteredFeature<FeatureNames> {
+  get<K extends FeatureNames>(name: K): RegisteredFeature<K> {
     return {
       isEnabled: this.isEnabled(name),
-      // TODO (#317): remove usage of non-null assertion
-      props: this.props(name)!,
+      props: this.props<K>(name),
     }
   }
 }

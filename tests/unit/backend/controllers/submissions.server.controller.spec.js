@@ -11,7 +11,7 @@ const Submission = dbHandler.makeModel('submission.server.model', 'Submission')
 
 describe('Submissions Controller', () => {
   // Declare global variables
-  const mailServicePath = '../services/mail.service'
+  const mailServicePath = '../services/mail/mail.service'
   const mockAxios = new MockAdapter(axios)
   const mockSendNodeMail = jasmine.createSpy()
 

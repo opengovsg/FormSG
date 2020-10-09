@@ -97,7 +97,7 @@ export default async (): Promise<Connection> => {
       emailDomain: 'data.gov.sg',
       logo: '/public/modules/core/img/govtech.jpg',
     })
-    agency.save()
+    await agency.save()
   }
 
   return mongoose.connection

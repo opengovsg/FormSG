@@ -76,7 +76,7 @@ function startPageController(SpcpSession, Toastr) {
     }
 
     const banner = document.getElementById('notification-banner')
-    const bannerHeight = banner ? `${banner.offsetHeight + 20}px` : '0px'
+    const bannerHeight = banner ? `${banner.offsetHeight + 20}px` : '20px'
     // Update height of header
     header.style.paddingTop = bannerHeight
 

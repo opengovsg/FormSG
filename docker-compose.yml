@@ -30,6 +30,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=fakeSecret
       - SESSION_SECRET=thisisasecret
       - AWS_ENDPOINT=http://localhost:4566
+      - SUBMISSIONS_RATE_LIMIT=200
+      - SEND_AUTH_OTP_RATE_LIMIT=60
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID

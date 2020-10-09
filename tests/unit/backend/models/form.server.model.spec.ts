@@ -522,6 +522,43 @@ describe('Form Model', () => {
         expect(Object.keys(saved)).not.toContain('extra')
       })
 
+      it('should coerce comma-separated email string into an array of emails', async () => {
+        // Arrange + Act
+        const mockEmailsString = 'test1@b.com, test2@b.com'
+        const mockEmailsArray = ['test1@b.com', 'test2@b.com']
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          emails: mockEmailsString,
+        })
+        const validForm = new EmailForm(formParams)
+        const saved = await validForm.save()
+
+        // Assert
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        // Remove permissionList too due to objects inside having
+        // indeterministic IDs, check separately.
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+          'emails',
+          'permissionList',
+        ])
+        const expectedObject = merge(
+          {},
+          omit(EMAIL_FORM_DEFAULTS, 'permissionList'),
+          omit(MOCK_EMAIL_FORM_PARAMS, 'emails'),
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+
+        const actualEmails = saved.toObject().emails
+        expect(actualEmails).toEqual(mockEmailsArray)
+      })
+
       it('should create and save successfully with valid permissionList emails', async () => {
         // Arrange
         // permissionList has email with valid domain

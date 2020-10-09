@@ -6,16 +6,11 @@ import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import { EMAIL_HEADERS, EmailType } from 'src/app/constants/mail'
 import getFormModel from 'src/app/models/form.server.model'
-import MailService from 'src/app/services/mail.service'
+import { EMAIL_HEADERS, EmailType } from 'src/app/services/mail/mail.constants'
+import MailService from 'src/app/services/mail/mail.service'
 import * as LoggerModule from 'src/config/logger'
-import {
-  BounceType,
-  IFormSchema,
-  ISnsNotification,
-  IUserSchema,
-} from 'src/types'
+import { BounceType, ISnsNotification, IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
@@ -26,7 +21,7 @@ jest.mock('axios')
 const mockAxios = mocked(axios, true)
 jest.mock('src/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
-jest.mock('src/app/services/mail.service')
+jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
 
 const mockShortTermLogger = getMockLogger()

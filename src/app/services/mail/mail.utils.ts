@@ -5,16 +5,17 @@ import { ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
 import validator from 'validator'
 
-import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
+import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { BounceType } from '../../../types'
+
+import { MailSendError } from './mail.errors'
 import {
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
-  BounceType,
   SubmissionToAdminHtmlData,
-} from '../../types'
-import { MailSendError } from '../modules/mail/mail.errors'
+} from './mail.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -128,9 +129,7 @@ export const isToFieldValid = (addresses: string | string[]): boolean => {
   const mails = flattenDeep(
     flattenDeep([addresses]).map((addrString) =>
       String(addrString)
-        // Split by both commas and semicolons, as some legacy emails are
-        // delimited by semicolons.
-        .split(/,|;/)
+        .split(',')
         .map((addr) => addr.trim()),
     ),
   )

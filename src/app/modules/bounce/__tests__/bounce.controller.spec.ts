@@ -3,12 +3,12 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import { EmailType } from 'src/app/constants/mail'
 // eslint-disable-next-line import/first
 import { handleSns } from 'src/app/modules/bounce/bounce.controller'
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
 import * as FormService from 'src/app/modules/form/form.service'
+import { EmailType } from 'src/app/services/mail/mail.constants'
 import { IBounceSchema, ISnsNotification } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'

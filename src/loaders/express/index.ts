@@ -1,12 +1,14 @@
 import compression from 'compression'
 import express, { Express } from 'express'
 import device from 'express-device'
+import addRequestId from 'express-request-id'
 import http from 'http'
 import { Connection } from 'mongoose'
 import nocache from 'nocache'
 import path from 'path'
 import url from 'url'
 
+import { AnalyticsRouter } from '../../app/modules/analytics/analytics.routes'
 import { AuthRouter } from '../../app/modules/auth/auth.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import UserRouter from '../../app/modules/user/user.routes'
@@ -105,6 +107,9 @@ const loadExpressApp = async (connection: Connection) => {
 
   app.use(nocache()) // Add headers to prevent browser caching front-end code
 
+  // Generate UUID for request and add it to X-Request-Id header
+  app.use(addRequestId())
+
   // Setting the app static folder
   app.use('/public', express.static(path.resolve('./dist/frontend')))
 
@@ -130,6 +135,7 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/user', UserRouter)
   app.use('/emailnotifications', BounceRouter)
   app.use('/transaction', VfnRouter)
+  app.use('/analytics', AnalyticsRouter)
 
   app.use(sentryMiddlewares())
 

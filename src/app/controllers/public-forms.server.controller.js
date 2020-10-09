@@ -3,7 +3,7 @@
 const mongoose = require('mongoose')
 const { StatusCodes } = require('http-status-codes')
 
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormFeedbackModel = require('../models/form_feedback.server.model')
   .default
@@ -24,7 +24,7 @@ exports.isFormPublic = function (req, res, next) {
     case 'ARCHIVED':
       return res.sendStatus(StatusCodes.GONE)
     default:
-      return res.status(StatusCodes.NOT_FOUND).send({
+      return res.status(StatusCodes.NOT_FOUND).json({
         message: req.form.inactiveMessage,
         isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
         formTitle: req.form.title,
@@ -58,6 +58,7 @@ exports.redirect = async function (req, res) {
       message: 'Error fetching metatags',
       meta: {
         action: 'redirect',
+        trace: getTrace(req),
       },
       error: err,
     })
@@ -81,7 +82,7 @@ exports.submitFeedback = function (req, res) {
   ) {
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .send('Form feedback data not passed in')
+      .json({ message: 'Form feedback data not passed in' })
   }
 
   FormFeedback.create(
@@ -97,16 +98,17 @@ exports.submitFeedback = function (req, res) {
           meta: {
             action: 'submitFeedback',
             ip: getRequestIp(req),
+            trace: getTrace(req),
           },
           error: err,
         })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send('Form feedback could not be created')
+          .json({ message: 'Form feedback could not be created' })
       } else {
         return res
           .status(StatusCodes.OK)
-          .send('Successfully submitted feedback')
+          .json({ message: 'Successfully submitted feedback' })
       }
     },
   )

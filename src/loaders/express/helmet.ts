@@ -4,8 +4,7 @@ import { ContentSecurityPolicyOptions } from 'helmet/dist/middlewares/content-se
 import { get } from 'lodash'
 
 import config from '../../config/config'
-import featureManager from '../../config/feature-manager'
-import { FeatureNames } from '../../config/feature-manager/types'
+import featureManager, { FeatureNames } from '../../config/feature-manager'
 
 const helmetMiddlewares = () => {
   // Only add the "Strict-Transport-Security" header if request is https.

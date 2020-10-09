@@ -5,23 +5,22 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
-import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
+import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
+import { BounceType, IEmailFormSchema, ISubmissionSchema } from '../../../types'
+
+import { EMAIL_HEADERS, EmailType } from './mail.constants'
+import { MailSendError } from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
-  BounceType,
-  IEmailFormSchema,
-  ISubmissionSchema,
   MailOptions,
   MailServiceParams,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
-} from '../../types'
-import { EMAIL_HEADERS, EmailType } from '../constants/mail'
-import { MailSendError } from '../modules/mail/mail.errors'
+} from './mail.types'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
@@ -30,7 +29,7 @@ import {
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
   isToFieldValid,
-} from '../utils/mail'
+} from './mail.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -107,7 +106,10 @@ export class MailService {
    * @param mail Mail data to send with
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
    */
-  #sendNodeMail = async (mail: MailOptions, sendOptions?: SendMailOptions) => {
+  #sendNodeMail = async (
+    mail: MailOptions,
+    sendOptions?: SendMailOptions,
+  ): Promise<boolean> => {
     const logMeta = {
       action: '#sendNodeMail',
       mailId: sendOptions?.mailId,
@@ -141,12 +143,12 @@ export class MailService {
       })
 
       try {
-        const response = await this.#transporter.sendMail(mail)
+        await this.#transporter.sendMail(mail)
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,
           meta: logMeta,
         })
-        return response
+        return true
       } catch (err) {
         // Pass errors to the callback
         logger.error({
@@ -182,7 +184,7 @@ export class MailService {
     form,
     submission,
     index,
-  }: SendSingleAutoreplyMailArgs) => {
+  }: SendSingleAutoreplyMailArgs): Promise<boolean> => {
     const emailSubject =
       autoReplyMailData.subject || `Thank you for submitting ${form.title}`
     // Sender's name appearing after "("" symbol gets truncated. Escaping it
@@ -229,7 +231,10 @@ export class MailService {
    * @param otp the otp to send
    * @throws error if mail fails, to be handled by the caller
    */
-  sendVerificationOtp = async (recipient: string, otp: string) => {
+  sendVerificationOtp = async (
+    recipient: string,
+    otp: string,
+  ): Promise<boolean> => {
     // TODO(#42): Remove param guards once whole backend is TypeScript.
     if (!otp) {
       throw new Error('OTP is missing.')
@@ -269,7 +274,7 @@ export class MailService {
     recipient: string
     otp: string
     ipAddress: string
-  }): ResultAsync<any, MailSendError> => {
+  }): ResultAsync<boolean, MailSendError> => {
     return generateLoginOtpHtml({
       appName: this.#appName,
       appUrl: this.#appUrl,
@@ -326,7 +331,7 @@ export class MailService {
     bounceType: BounceType | undefined
     formTitle: string
     formId: string
-  }) => {
+  }): Promise<boolean> => {
     const htmlData: BounceNotificationHtmlData = {
       formTitle,
       formLink: `${this.#appUrl}/${formId}`,
@@ -374,7 +379,7 @@ export class MailService {
       question: string
       answer: string | number
     }[]
-  }) => {
+  }): Promise<boolean> => {
     const refNo = submission.id
     const formTitle = form.title
     const submissionTime = moment(submission.created)
@@ -447,7 +452,7 @@ export class MailService {
     responsesData,
     autoReplyMailDatas,
     attachments = [],
-  }: SendAutoReplyEmailsArgs) => {
+  }: SendAutoReplyEmailsArgs): Promise<PromiseSettledResult<boolean>[]> => {
     // Data to render both the submission details mail HTML body PDF.
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,

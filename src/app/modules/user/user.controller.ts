@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IPopulatedUser } from '../../../types'
-import SmsFactory from '../../factories/sms.factory'
+import { SmsFactory } from '../../services/sms/sms.factory'
 import { getRequestIp } from '../../utils/request'
 
 import {
@@ -168,7 +168,9 @@ export const handleContactVerifyOtp: RequestHandler<
 export const handleFetchUser: RequestHandler = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
   if (!sessionUserId) {
-    return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'User is unauthorized.' })
   }
 
   return getPopulatedUserById(sessionUserId)

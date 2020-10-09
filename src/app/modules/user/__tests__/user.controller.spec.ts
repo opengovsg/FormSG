@@ -1,14 +1,14 @@
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import SmsFactory from 'src/app/factories/sms.factory'
 import * as UserController from 'src/app/modules/user/user.controller'
 import {
   InvalidOtpError,
   MissingUserError,
 } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
-import { SmsSendError } from 'src/app/services/sms.service'
+import { SmsSendError } from 'src/app/services/sms/sms.errors'
+import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
@@ -16,7 +16,7 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 
 jest.mock('src/app/modules/user/user.service')
-jest.mock('src/app/factories/sms.factory')
+jest.mock('src/app/services/sms/sms.factory')
 const MockUserService = mocked(UserService)
 const MockSmsFactory = mocked(SmsFactory)
 
@@ -214,7 +214,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.userId,
       )
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith(MOCK_UPDATED_USER)
+      expect(mockRes.json).toBeCalledWith(MOCK_UPDATED_USER)
     })
 
     it('should return 401 when user id is not in session', async () => {
@@ -387,7 +387,7 @@ describe('user.controller', () => {
       await UserController.handleFetchUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.send).toBeCalledWith(mockPopulatedUser)
+      expect(mockRes.json).toBeCalledWith(mockPopulatedUser)
     })
 
     it('should return 401 when user id is not in session', async () => {
@@ -407,7 +407,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.send).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
     })
 
     it('should return 422 when MissingUserError is returned when retrieving user', async () => {
@@ -423,7 +423,9 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.send).toBeCalledWith('User not found')
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Unable to retrieve user',
+      })
     })
   })
 })

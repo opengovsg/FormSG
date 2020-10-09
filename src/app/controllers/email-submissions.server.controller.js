@@ -9,7 +9,7 @@ const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const { StatusCodes } = require('http-status-codes')
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const { ConflictError } = require('../modules/submission/submission.errors')
 const { MB } = require('../constants/filesize')
 const {
@@ -24,7 +24,7 @@ const {
   getProcessedResponses,
 } = require('../modules/submission/submission.service')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const MailService = require('../services/mail.service').default
+const MailService = require('../services/mail/mail.service').default
 
 const { sessionSecret } = config
 
@@ -57,11 +57,12 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       meta: {
         action: 'receiveEmailSubmissionUsingBusBoy',
         ip: getRequestIp(req),
+        trace: getTrace(req),
         formId: _.get(req, 'form._id'),
       },
       error: err,
     })
-    return res.status(StatusCodes.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'Required headers are missing',
     })
   }
@@ -108,6 +109,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
           meta: {
             action: 'receiveEmailSubmissionUsingBusBoy',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             formId: req.form._id,
           },
           error: err,
@@ -125,12 +127,13 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         meta: {
           action: 'receiveEmailSubmissionUsingBusBoy',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           formId: req.form._id,
         },
       })
       return res
         .status(StatusCodes.REQUEST_TOO_LONG)
-        .send({ message: 'Your submission is too large.' })
+        .json({ message: 'Your submission is too large.' })
     }
 
     // Log hash of submission for incident investigation purposes
@@ -155,6 +158,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         action: 'receiveEmailSubmissionUsingBusBoy',
         formId: req.form._id,
         ip: getRequestIp(req),
+        trace: getTrace(req),
         uin: hashedUinFin,
         submission: hashedSubmission,
       },
@@ -168,16 +172,17 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
           meta: {
             action: 'receiveEmailSubmissionUsingBusBoy',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             formId: req.form._id,
           },
         })
-        return res.status(StatusCodes.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message: 'Some files were invalid. Try uploading another file.',
         })
       }
 
       if (areAttachmentsMoreThan7MB(attachments)) {
-        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
           message: 'Please keep the size of your attachments under 7MB.',
         })
       }
@@ -192,6 +197,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         meta: {
           action: 'receiveEmailSubmissionUsingBusBoy',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           formId: req.form._id,
           uin: hashedUinFin,
           submission: hashedSubmission,
@@ -200,7 +206,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({ message: 'Unable to process submission.' })
+        .json({ message: 'Unable to process submission.' })
     }
   })
 
@@ -210,13 +216,14 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       meta: {
         action: 'receiveEmailSubmissionUsingBusBoy',
         ip: getRequestIp(req),
+        trace: getTrace(req),
         formId: req.form._id,
       },
       error: err,
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: 'Unable to process submission.' })
+      .json({ message: 'Unable to process submission.' })
   })
 
   req.pipe(busboy)
@@ -246,17 +253,18 @@ exports.validateEmailSubmission = function (req, res, next) {
         meta: {
           action: 'validateEmailSubmission',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           formId: req.form._id,
         },
         error: err,
       })
       if (err instanceof ConflictError) {
-        return res.status(err.status).send({
+        return res.status(err.status).json({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
       } else {
-        return res.status(StatusCodes.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message:
             'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
         })
@@ -502,12 +510,13 @@ function onSubmissionEmailFailure(err, req, res, submission) {
     meta: {
       action: 'onSubmissionEmailFailure',
       ip: getRequestIp(req),
+      trace: getTrace(req),
       url: req.url,
       headers: req.headers,
     },
     error: err,
   })
-  return res.status(StatusCodes.BAD_REQUEST).send({
+  return res.status(StatusCodes.BAD_REQUEST).json({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
     submissionId: submission._id,
@@ -601,6 +610,7 @@ exports.saveMetadataToDb = function (req, res, next) {
           submissionId: submission.id,
           formId: form._id,
           ip: getRequestIp(req),
+          trace: getTrace(req),
           responseHash: submission.responseHash,
         },
       })
@@ -643,6 +653,7 @@ exports.sendAdminEmail = async function (req, res, next) {
         submissionId: submission.id,
         formId: form._id,
         ip: getRequestIp(req),
+        trace: getTrace(req),
         submissionHash: submission.responseHash,
       },
     })
@@ -665,6 +676,7 @@ exports.sendAdminEmail = async function (req, res, next) {
         submissionId: submission.id,
         formId: form._id,
         ip: getRequestIp(req),
+        trace: getTrace(req),
         submissionHash: submission.responseHash,
       },
       error: err,
