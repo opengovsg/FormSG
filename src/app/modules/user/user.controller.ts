@@ -155,7 +155,7 @@ export const handleContactVerifyOtp: RequestHandler<
   }
 
   // No errors, return updated user to client.
-  return res.status(StatusCodes.OK).send(updateResult.value)
+  return res.status(StatusCodes.OK).json(updateResult.value)
 }
 
 /**
@@ -174,7 +174,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
   }
 
   return getPopulatedUserById(sessionUserId)
-    .map((retrievedUser) => res.send(retrievedUser))
+    .map((retrievedUser) => res.json(retrievedUser))
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred whilst retrieving user',
@@ -186,7 +186,7 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
       })
 
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).send(errorMessage)
+      return res.status(statusCode).json({ message: errorMessage })
     })
 }
 

@@ -124,14 +124,15 @@ describe('user.controller', () => {
     })
 
     it('should return 422 when sending of OTP fails', async () => {
+      // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedError = new SmsSendError()
+      const mockErrorString = 'otp send failure'
 
       // Mock UserService to pass without errors.
       MockUserService.createContactOtp.mockReturnValueOnce(okAsync('123456'))
       // Mock SmsFactory to return error.
       MockSmsFactory.sendAdminContactOtp.mockReturnValueOnce(
-        errAsync(expectedError),
+        errAsync(new SmsSendError(mockErrorString)),
       )
 
       // Act
@@ -139,9 +140,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.send).toBeCalledWith(
-        'Failed to send emergency contact verification SMS',
-      )
+      expect(mockRes.send).toBeCalledWith(mockErrorString)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -378,7 +377,6 @@ describe('user.controller', () => {
         _id: VALID_SESSION_USER_ID,
       }
 
-      // Mock resolved value.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         okAsync(mockPopulatedUser as IPopulatedUser),
       )
@@ -412,7 +410,6 @@ describe('user.controller', () => {
 
     it('should return 422 when MissingUserError is returned when retrieving user', async () => {
       // Arrange
-      // Mock resolve to null.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         errAsync(new MissingUserError()),
       )
@@ -424,7 +421,7 @@ describe('user.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
       expect(mockRes.json).toBeCalledWith({
-        message: 'Unable to retrieve user',
+        message: 'User not found',
       })
     })
   })

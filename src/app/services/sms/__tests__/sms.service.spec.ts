@@ -151,7 +151,7 @@ describe('sms.service', () => {
   describe('sendAdminContactOtp', () => {
     it('should log and send contact OTP when sending has no errors', async () => {
       // Act
-      const actualPromise = SmsService.sendAdminContactOtp(
+      const actualResult = await SmsService.sendAdminContactOtp(
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* userId= */ testUser._id,
@@ -160,7 +160,8 @@ describe('sms.service', () => {
 
       // Assert
       // Should resolve to true
-      await expect(actualPromise).resolves.toEqual(true)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
         otpData: {
@@ -176,7 +177,7 @@ describe('sms.service', () => {
 
   it('should log failure and throw error when contact OTP fails to send', async () => {
     // Act
-    const actualPromise = SmsService.sendAdminContactOtp(
+    const actualResult = await SmsService.sendAdminContactOtp(
       /* recipient= */ TWILIO_TEST_NUMBER,
       /* otp= */ '111111',
       /* userId= */ testUser._id,
@@ -187,7 +188,8 @@ describe('sms.service', () => {
     const expectedError = new Error(VfnErrors.InvalidMobileNumber)
     expectedError.name = VfnErrors.SendOtpFailed
 
-    await expect(actualPromise).rejects.toThrow(expectedError)
+    expect(actualResult.isErr()).toEqual(true)
+
     // Logging should also have happened.
     const expectedLogParams = {
       otpData: {

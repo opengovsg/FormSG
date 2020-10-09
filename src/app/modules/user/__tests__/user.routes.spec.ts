@@ -5,7 +5,8 @@ import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
-import * as SmsService from 'src/app/services/sms.service'
+import { SmsSendError } from 'src/app/services/sms/sms.errors'
+import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
@@ -80,7 +81,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({
+        message: 'User is unauthorized.',
+      })
     })
 
     it('should return 500 when retrieving user returns a database error', async () => {
@@ -100,7 +103,7 @@ describe('user.routes', () => {
       // Assert
       expect(retrieveUserSpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(mockErrorString)
+      expect(response.body).toEqual({ message: mockErrorString })
     })
   })
 
@@ -132,7 +135,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.userId is not provided as a param', async () => {
@@ -143,7 +148,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 401 when body.userId does not match current session userId', async () => {
@@ -194,10 +201,11 @@ describe('user.routes', () => {
 
     it('should return 422 when OTP fails to be sent', async () => {
       // Arrange
+      const mockErrorString = 'mock sms send error! oh no'
       const session = await getAuthedSession(defaultUser.email, request)
       const sendSmsOtpSpy = jest
         .spyOn(SmsService, 'sendAdminContactOtp')
-        .mockReturnValueOnce(errAsync(new SmsService.SmsSendError()))
+        .mockReturnValueOnce(errAsync(new SmsSendError(mockErrorString)))
 
       // Act
       const response = await session.post('/user/contact/sendotp').send({
@@ -208,9 +216,7 @@ describe('user.routes', () => {
       // Assert
       expect(sendSmsOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual(
-        'Failed to send emergency contact verification SMS',
-      )
+      expect(response.text).toEqual(mockErrorString)
     })
 
     it('should return 500 when creating an OTP returns a database error', async () => {
@@ -278,7 +284,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.userId is not provided as a param', async () => {
@@ -290,7 +298,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.otp is not provided as a param', async () => {
@@ -302,7 +312,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 401 when body.userId does not match current session userId', async () => {

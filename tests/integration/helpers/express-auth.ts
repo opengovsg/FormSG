@@ -1,7 +1,7 @@
 import { okAsync } from 'neverthrow'
 import { Session } from 'supertest-session'
 
-import MailService from 'src/app/services/mail.service'
+import MailService from 'src/app/services/mail/mail.service'
 import * as OtpUtils from 'src/app/utils/otp'
 
 const MOCK_VALID_OTP = '123456'
