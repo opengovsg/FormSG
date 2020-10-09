@@ -304,7 +304,17 @@ export const sendAdminContactOtp = (
         error,
       })
 
-      return new SmsSendError()
+      let processedErrMsg = 'Failed to send emergency contact verification SMS'
+
+      // Return appropriate error message.
+      if (
+        error instanceof Error &&
+        error.message === VfnErrors.InvalidMobileNumber
+      ) {
+        processedErrMsg = 'Please enter a valid phone number'
+      }
+
+      return new SmsSendError(processedErrMsg)
     },
   )
 }

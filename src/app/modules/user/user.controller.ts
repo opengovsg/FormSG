@@ -78,9 +78,9 @@ export const handleContactSendOtp: RequestHandler<
       error: sendOtpResult.error,
     })
 
-    return res
-      .status(StatusCodes.UNPROCESSABLE_ENTITY)
-      .send('Failed to send emergency contact verification SMS')
+    const { statusCode, errorMessage } = mapRouteError(sendOtpResult.error)
+
+    return res.status(statusCode).send(errorMessage)
   }
 
   // No errors, successfully sent SMS, return success to client.

@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { SmsSendError } from '../../services/sms.service'
+import * as SmsErrors from '../../services/sms/sms.errors'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
@@ -25,11 +25,7 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case UserErrors.MissingUserError:
-      return {
-        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
-        errorMessage: error.message,
-      }
-    case SmsSendError:
+    case SmsErrors.SmsSendError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
