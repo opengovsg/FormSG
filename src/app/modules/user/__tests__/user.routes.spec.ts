@@ -166,7 +166,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({
+        message: 'User is unauthorized.',
+      })
     })
 
     it('should return 401 when user is not currently logged in', async () => {
@@ -179,7 +181,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({
+        message: 'User is unauthorized.',
+      })
     })
 
     it('should return 422 when userId cannot be found in the database', async () => {
@@ -196,7 +200,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual('User not found')
+      expect(response.body).toEqual({
+        message: 'User not found',
+      })
     })
 
     it('should return 422 when OTP fails to be sent', async () => {
@@ -216,7 +222,9 @@ describe('user.routes', () => {
       // Assert
       expect(sendSmsOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual(mockErrorString)
+      expect(response.body).toEqual({
+        message: mockErrorString,
+      })
     })
 
     it('should return 500 when creating an OTP returns a database error', async () => {
@@ -236,7 +244,9 @@ describe('user.routes', () => {
       // Assert
       expect(createOtpSpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(mockErrorString)
+      expect(response.body).toEqual({
+        message: mockErrorString,
+      })
     })
   })
 
@@ -331,7 +341,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({
+        message: 'User is unauthorized.',
+      })
     })
 
     it('should return 401 when user is not currently logged in', async () => {
@@ -345,7 +357,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({
+        message: 'User is unauthorized.',
+      })
     })
 
     it('should return 401 when hashes does not exist for current contact', async () => {
@@ -361,9 +375,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual(
-        'OTP has expired. Please request for a new OTP.',
-      )
+      expect(response.body).toEqual({
+        message: 'OTP has expired. Please request for a new OTP.',
+      })
     })
 
     it('should return 401 when given otp does not match hashed otp', async () => {
@@ -380,7 +394,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual('OTP is invalid. Please try again.')
+      expect(response.body).toEqual({
+        message: 'OTP is invalid. Please try again.',
+      })
     })
 
     it('should return 401 when given contact does not match hashed contact', async () => {
@@ -398,9 +414,10 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual(
-        'Contact number given does not match the number the OTP is sent to. Please try again with the correct contact number.',
-      )
+      expect(response.body).toEqual({
+        message:
+          'Contact number given does not match the number the OTP is sent to. Please try again with the correct contact number.',
+      })
     })
 
     it('should return 401 when otp has been attempted too many times', async () => {
@@ -422,13 +439,13 @@ describe('user.routes', () => {
         )
       }
       const results = (await Promise.all(verifyPromises)).map((resolve) =>
-        pick(resolve, ['status', 'text']),
+        pick(resolve, ['status', 'body']),
       )
       // Should be all invalid OTP responses.
       expect(results).toEqual(
         Array(UserService.MAX_OTP_ATTEMPTS).fill({
           status: 401,
-          text: 'OTP is invalid. Please try again.',
+          body: { message: 'OTP is invalid. Please try again.' },
         }),
       )
 
@@ -442,9 +459,10 @@ describe('user.routes', () => {
       // Assert
       // Should still reject with max OTP attempts error.
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual(
-        'You have hit the max number of attempts. Please request for a new OTP.',
-      )
+      expect(response.body).toEqual({
+        message:
+          'You have hit the max number of attempts. Please request for a new OTP.',
+      })
     })
 
     it('should return 422 when user cannot be found in the database', async () => {
@@ -463,7 +481,7 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual('User not found')
+      expect(response.body).toEqual({ message: 'User not found' })
     })
 
     it('should return 500 when database errors occurs whilst verifying otp', async () => {
@@ -486,7 +504,9 @@ describe('user.routes', () => {
       // Assert
       expect(incrementSpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(mockErrorString)
+      expect(response.body).toEqual({
+        message: mockErrorString,
+      })
     })
 
     it('should return 500 when database errors occurs whilst updating contact', async () => {
@@ -509,7 +529,9 @@ describe('user.routes', () => {
       // Assert
       expect(uodateSpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(mockErrorString)
+      expect(response.body).toEqual({
+        message: mockErrorString,
+      })
     })
   })
 })
