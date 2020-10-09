@@ -24,16 +24,25 @@ import fieldValidatorFactory from './FieldValidatorFactory.class'
 const logger = createLoggerWithLabel(module)
 
 /**
+ * Verifies whether the response field type should be accepted
+ * @param response The submitted response
+ */
+const isValidResponseFieldType = (response: ProcessedFieldResponse): boolean =>
+  FIELDS_TO_REJECT.includes(response.fieldType) ? false : true
+
+/**
  * Compares the response field type to the form field type
  * @param formField The form field to compare the response to
  * @param response The submitted response
  */
-const doesFieldTypeMatch = (
+const doFieldTypesMatch = (
   formField: IField,
   response: ProcessedFieldResponse,
 ): Either<string, undefined> => {
   return response.fieldType !== formField.fieldType
-    ? left(`Response fieldType (${response.fieldType}) did not match`)
+    ? left(
+        `Response fieldType (${response.fieldType}) did not match field ${formField.fieldType}`,
+      )
     : right(undefined)
 }
 
@@ -102,15 +111,14 @@ export const validateField = (
   formField: IField,
   response: FieldResponse,
 ): void => {
-  if (FIELDS_TO_REJECT.includes(response.fieldType)) {
+  if (!isValidResponseFieldType(response)) {
     throw new Error(`Rejected field type "${response.fieldType}"`)
   }
 
-  // Validate that the form field type matches the response type
-  const fieldTypeEither = doesFieldTypeMatch(formField, response)
+  const fieldTypeEither = doFieldTypesMatch(formField, response)
 
   if (isLeft(fieldTypeEither)) {
-    throw new Error('Invalid field type submitted')
+    throw new Error(fieldTypeEither.left)
   }
 
   if (isProcessedSingleAnswerResponse(response)) {
