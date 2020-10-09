@@ -16,15 +16,6 @@ class BaseFieldValidator extends FieldValidatorInterface {
     this.response = response
   }
 
-  isFieldTypeValid() {
-    const isValid = this.response.fieldType === this.formField.fieldType
-    this.logIfInvalid(
-      isValid,
-      `Response fieldType (${this.response.fieldType}) did not match`,
-    )
-    return isValid
-  }
-
   /**
    * Public function that validates the answer
    * If an optional question has no answer, it is valid

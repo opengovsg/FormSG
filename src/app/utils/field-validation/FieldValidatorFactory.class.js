@@ -1,5 +1,4 @@
 const {
-  AnswerNotAllowedValidator,
   DropdownValidator,
   RadiobuttonValidator,
   CheckboxValidator,
@@ -8,7 +7,6 @@ const {
   TableValidator,
   NumberValidator,
   YesNoValidator,
-  TextValidator,
   MobileValidator,
   HomeNoValidator,
   BaseFieldValidator,
@@ -24,6 +22,7 @@ const myInfoTypes = require('../../../shared/resources/myinfo').types
  *  Factory for creating validators based on the field type found in the response
  *
  * @class FieldValidatorFactory
+ * @deprecated
  */
 class FieldValidatorFactory {
   /**
@@ -41,8 +40,9 @@ class FieldValidatorFactory {
     // 'statement' and 'image' are rejected prior to the creation of a field validator
     switch (fieldType) {
       case 'section':
-        // Answers are disallowed for these fields
-        return new AnswerNotAllowedValidator(...arguments)
+      case 'textfield': // short text
+      case 'textarea': // long text
+        throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'radiobutton':
         return new RadiobuttonValidator(...arguments)
       case 'dropdown':
@@ -63,9 +63,6 @@ class FieldValidatorFactory {
         return new YesNoValidator(...arguments)
       case 'decimal':
         return new DecimalValidator(...arguments)
-      case 'textfield': // short text
-      case 'textarea': // long text
-        return new TextValidator(...arguments)
       case 'attachment':
         return new AttachmentValidator(...arguments)
       case 'date':
@@ -101,4 +98,4 @@ class FieldValidatorFactory {
   }
 }
 
-module.exports = FieldValidatorFactory
+module.exports = new FieldValidatorFactory()

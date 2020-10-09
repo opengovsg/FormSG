@@ -1,9 +1,7 @@
 import { Schema } from 'mongoose'
 
-import {
-  ILongTextFieldSchema,
-  LongTextSelectedValidation,
-} from '../../../types'
+import { ILongTextFieldSchema } from '../../../types'
+import { TextSelectedValidation } from '../../../types/field/baseField'
 
 const createLongTextFieldSchema = () => {
   return new Schema<ILongTextFieldSchema>({
@@ -22,7 +20,7 @@ const createLongTextFieldSchema = () => {
       },
       selectedValidation: {
         type: String,
-        enum: [...Object.values(LongTextSelectedValidation), null],
+        enum: [...Object.values(TextSelectedValidation), null],
         default: null,
       },
     },

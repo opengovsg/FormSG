@@ -1,4 +1,7 @@
-const validateField = require('../../../../../dist/backend/app/utils/field-validation')
+const {
+  validateField,
+} = require('../../../../../dist/backend/app/utils/field-validation')
+
 describe('Checkbox validation', () => {
   const makeCheckboxField = (fieldId, fieldOptions, options) => {
     const checkbox = {
