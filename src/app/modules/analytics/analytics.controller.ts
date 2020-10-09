@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { getMeta, getRequestIp, getTrace } from '../../utils/request'
+import { createReqMeta, getRequestIp, getTrace } from '../../utils/request'
 
 import { AnalyticsFactory } from './analytics.factory'
 import { getSubmissionCount, getUserCount } from './analytics.service'
@@ -24,7 +24,7 @@ export const handleGetUserCount: RequestHandler = async (req, res) => {
       message: 'Mongo user count error',
       meta: {
         action: 'handleGetUserCount',
-        ...getMeta(req),
+        ...createReqMeta(req),
       },
       error: countResult.error,
     })
@@ -51,7 +51,7 @@ export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
       message: 'Mongo submissions count error',
       meta: {
         action: 'handleGetSubmissionCount',
-        ...getMeta(req),
+        ...createReqMeta(req),
       },
       error: countResult.error,
     })
@@ -81,7 +81,7 @@ export const handleGetFormCount: RequestHandler = async (req, res) => {
       message: 'Mongo form count error',
       meta: {
         action: 'handleGetFormCount',
-        ...getMeta(req),
+        ...createReqMeta(req),
       },
       error: countResult.error,
     })

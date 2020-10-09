@@ -9,7 +9,7 @@ const crypto = require('crypto')
 const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
 
-const { getRequestIp, getTrace, getMeta } = require('../utils/request')
+const { getRequestIp, getTrace, createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 const getFormModel = require('../models/form.server.model').default
@@ -147,7 +147,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
             message: 'Error retrieving attributes from auth client',
             meta: {
               action: 'handleOOBAuthenticationWith',
-              ...getMeta(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -354,7 +354,7 @@ exports.addSpcpSessionInfo = (authClients) => {
             message: 'Failed to verify JWT with auth client',
             meta: {
               action: 'addSpcpSessionInfo',
-              ...getMeta(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -483,7 +483,7 @@ exports.isSpcpAuthenticated = (authClients) => {
             message: 'Failed to verify JWT with auth client',
             meta: {
               action: 'isSpcpAuthenticated',
-              ...getMeta(req),
+              ...createReqMeta(req),
             },
             error: err,
           })

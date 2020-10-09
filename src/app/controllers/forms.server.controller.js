@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
 const _ = require('lodash')
 const { StatusCodes } = require('http-status-codes')
 
-const { getMeta } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormModel = require('../models/form.server.model').default
 
@@ -120,7 +120,7 @@ exports.formById = async function (req, res, next) {
       message: 'Error retrieving form from database',
       meta: {
         action: 'formById',
-        ...getMeta(req),
+        ...createReqMeta(req),
       },
       error: err,
     })

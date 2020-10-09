@@ -9,7 +9,7 @@ export const getTrace = (req: Request) => {
   return req.get('cf-ray') ?? req.id // trace using cloudflare cf-ray header, with x-request-id header as backup
 }
 
-export const getMeta = (req: Request) => {
+export const createReqMeta = (req: Request) => {
   return {
     ip: req.get('cf-connecting-ip') ?? req.ip,
     trace: req.get('cf-ray') ?? req.id, // trace using cloudflare cf-ray header, with x-request-id header as backup

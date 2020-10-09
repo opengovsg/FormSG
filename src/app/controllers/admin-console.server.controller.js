@@ -20,7 +20,7 @@ const Form = getFormModel(mongoose)
 const _ = require('lodash')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { getMeta, getTrace } = require('../utils/request')
+const { createReqMeta, getTrace } = require('../utils/request')
 
 // Examples search-specific constants
 const PAGE_SIZE = 16 // maximum number of results to return
@@ -576,7 +576,7 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           message: 'Failed to retrieve example forms',
           meta: {
             action: 'getExampleFormsUsingAggregateCollection',
-            ...getMeta(req),
+            ...createReqMeta(req),
           },
           error,
         })
@@ -606,7 +606,7 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           message: 'Failed to retrieve example forms',
           meta: {
             action: 'getExampleFormsUsingSubmissionsCollection',
-            ...getMeta(req),
+            ...createReqMeta(req),
           },
           error,
         })
@@ -694,7 +694,7 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           message: 'Failed to retrieve a single example form',
           meta: {
             action: 'getSingleExampleFormUsingSubmissionCollection',
-            ...getMeta(req),
+            ...createReqMeta(req),
           },
           error,
         })
@@ -720,7 +720,7 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           message: 'Failed to retrieve single example form',
           meta: {
             action: 'getSingleExampleFormUsingAggregateCollection',
-            ...getMeta(req),
+            ...createReqMeta(req),
           },
           error: err,
         })
@@ -799,7 +799,7 @@ exports.getLoginStats = function (req, res) {
           message: 'Failed to retrieve billing records',
           meta: {
             action: 'getLoginStats',
-            ...getMeta(req),
+            ...createReqMeta(req),
           },
           error,
         })
