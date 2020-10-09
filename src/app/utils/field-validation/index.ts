@@ -28,7 +28,7 @@ const logger = createLoggerWithLabel(module)
  * @param formField The form field to compare the response to
  * @param response The submitted response
  */
-const isFieldTypeValid = (
+const doesFieldTypeMatch = (
   formField: IField,
   response: ProcessedFieldResponse,
 ): Either<string, undefined> => {
@@ -107,7 +107,7 @@ export const validateField = (
   }
 
   // Validate that the form field type matches the response type
-  const fieldTypeEither = isFieldTypeValid(formField, response)
+  const fieldTypeEither = doesFieldTypeMatch(formField, response)
 
   if (isLeft(fieldTypeEither)) {
     throw new Error('Invalid field type submitted')
