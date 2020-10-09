@@ -235,7 +235,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "prettier": "^2.1.2",
     "regenerator": "^0.14.4",
-    "sinon": "^9.0.3",
+    "sinon": "^9.2.0",
     "stylelint": "^13.3.3",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-standard": "^20.0.0",
