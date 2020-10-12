@@ -9,7 +9,7 @@ const mongoose = require('mongoose')
 const { getEmailSubmissionModel } = require('../models/submission.server.model')
 const emailSubmission = getEmailSubmissionModel(mongoose)
 const { StatusCodes } = require('http-status-codes')
-const { getRequestIp, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const { ConflictError } = require('../modules/submission/submission.errors')
 const { MB } = require('../constants/filesize')
 const {
@@ -56,8 +56,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       message: 'Busboy error',
       meta: {
         action: 'receiveEmailSubmissionUsingBusBoy',
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         formId: _.get(req, 'form._id'),
       },
       error: err,
@@ -108,8 +107,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
           message: 'Invalid form data',
           meta: {
             action: 'receiveEmailSubmissionUsingBusBoy',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
+            ...createReqMeta(req),
             formId: req.form._id,
           },
           error: err,
@@ -126,8 +124,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         message: 'Content is too large',
         meta: {
           action: 'receiveEmailSubmissionUsingBusBoy',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           formId: req.form._id,
         },
       })
@@ -157,8 +154,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       meta: {
         action: 'receiveEmailSubmissionUsingBusBoy',
         formId: req.form._id,
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         uin: hashedUinFin,
         submission: hashedSubmission,
       },
@@ -171,8 +167,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
           message: 'Invalid attachments',
           meta: {
             action: 'receiveEmailSubmissionUsingBusBoy',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
+            ...createReqMeta(req),
             formId: req.form._id,
           },
         })
@@ -196,8 +191,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
         message: 'receiveSubmission error',
         meta: {
           action: 'receiveEmailSubmissionUsingBusBoy',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           formId: req.form._id,
           uin: hashedUinFin,
           submission: hashedSubmission,
@@ -215,8 +209,7 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
       message: 'Multipart error',
       meta: {
         action: 'receiveEmailSubmissionUsingBusBoy',
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         formId: req.form._id,
       },
       error: err,
@@ -252,8 +245,7 @@ exports.validateEmailSubmission = function (req, res, next) {
             : 'Error processing responses',
         meta: {
           action: 'validateEmailSubmission',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           formId: req.form._id,
         },
         error: err,
@@ -509,10 +501,7 @@ function onSubmissionEmailFailure(err, req, res, submission) {
     message: 'Error submitting email form',
     meta: {
       action: 'onSubmissionEmailFailure',
-      ip: getRequestIp(req),
-      trace: getTrace(req),
-      url: req.url,
-      headers: req.headers,
+      ...createReqMeta(req),
     },
     error: err,
   })
@@ -609,8 +598,7 @@ exports.saveMetadataToDb = function (req, res, next) {
           action: 'saveMetadataToDb',
           submissionId: submission.id,
           formId: form._id,
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           responseHash: submission.responseHash,
         },
       })
@@ -652,8 +640,7 @@ exports.sendAdminEmail = async function (req, res, next) {
         action: 'sendAdminEmail',
         submissionId: submission.id,
         formId: form._id,
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         submissionHash: submission.responseHash,
       },
     })
@@ -675,8 +662,7 @@ exports.sendAdminEmail = async function (req, res, next) {
         action: 'sendAdminEmail',
         submissionId: submission.id,
         formId: form._id,
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         submissionHash: submission.responseHash,
       },
       error: err,

@@ -11,7 +11,7 @@ const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('./errors.server.controller')
-const { getRequestIp, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const { FormLogoState } = require('../../types')
 
 const {
@@ -68,10 +68,7 @@ function makeModule(connection) {
         message: 'Responding to Mongo error',
         meta: {
           action: 'respondOnMongoError',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
-          url: req.url,
-          headers: req.headers,
+          ...createReqMeta(req),
         },
         error: err,
       })
@@ -290,8 +287,7 @@ function makeModule(connection) {
             message: 'form_fields should not exist in updatedForm',
             meta: {
               action: 'makeModule.update',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
+              ...createReqMeta(req),
               formId: form._id,
             },
           })
@@ -308,8 +304,7 @@ function makeModule(connection) {
               message: 'Error getting edited form fields',
               meta: {
                 action: 'makeModule.update',
-                ip: getRequestIp(req),
-                trace: getTrace(req),
+                ...createReqMeta(req),
                 formId: form._id,
               },
               error,
@@ -523,10 +518,7 @@ function makeModule(connection) {
             message: 'Error counting documents in FormFeedback',
             meta: {
               action: 'makeModule.countFeedback',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -553,8 +545,7 @@ function makeModule(connection) {
             message: 'Error streaming feedback from MongoDB',
             meta: {
               action: 'makeModule.streamFeedback',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -568,8 +559,7 @@ function makeModule(connection) {
             message: 'Error converting feedback to JSON',
             meta: {
               action: 'makeModule.streamFeedback',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -583,8 +573,7 @@ function makeModule(connection) {
             message: 'Error writing feedback to HTTP stream',
             meta: {
               action: 'makeModule.streamFeedback',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -697,8 +686,7 @@ function makeModule(connection) {
               message: 'Presigning post data encountered an error',
               meta: {
                 action: 'makeModule.streamFeedback',
-                ip: getRequestIp(req),
-                trace: getTrace(req),
+                ...createReqMeta(req),
               },
               error: err,
             })
@@ -745,8 +733,7 @@ function makeModule(connection) {
               message: 'Presigning post data encountered an error',
               meta: {
                 action: 'makeModule.streamFeedback',
-                ip: getRequestIp(req),
-                trace: getTrace(req),
+                ...createReqMeta(req),
               },
               error: err,
             })
@@ -774,10 +761,7 @@ function makeModule(connection) {
           message: err.message,
           meta: {
             action: 'makeModule.transferOwner',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...createReqMeta(req),
           },
           err,
         })
