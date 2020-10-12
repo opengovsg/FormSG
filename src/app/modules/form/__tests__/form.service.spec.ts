@@ -1,10 +1,11 @@
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getFormModel from 'src/app/models/form.server.model'
 // eslint-disable-next-line import/first
 import { deactivateForm } from 'src/app/modules/form/form.service'
+
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const MOCK_FORM_ID = new ObjectId()
 const Form = getFormModel(mongoose)

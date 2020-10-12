@@ -1,9 +1,10 @@
 import { errAsync, okAsync } from 'neverthrow'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
 import MailService from 'src/app/services/mail/mail.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
+
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'

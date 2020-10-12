@@ -1,14 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import * as MailErrors from '../../services/mail/mail.errors'
+import * as SmsErrors from '../../services/sms/sms.errors'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
-import * as AuthErrors from './auth.errors'
+import * as UserErrors from './user.errors'
 
 const logger = createLoggerWithLabel(module)
-
 /**
  * Handler to map ApplicationErrors to their correct status code and error
  * messages.
@@ -20,17 +19,17 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
-    case AuthErrors.InvalidDomainError:
+    case UserErrors.InvalidOtpError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: error.message,
       }
-    case AuthErrors.InvalidOtpError:
+    case UserErrors.MissingUserError:
+    case SmsErrors.SmsSendError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
-    case MailErrors.MailSendError:
     case CoreErrors.ApplicationError:
     case CoreErrors.DatabaseError:
       return {
