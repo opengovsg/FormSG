@@ -38,9 +38,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -54,9 +54,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -70,7 +70,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
       )
     })
@@ -112,7 +112,7 @@ describe('auth.routes', () => {
       // Assert
       expect(getAgencySpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(mockErrorString)
+      expect(response.body).toEqual(mockErrorString)
     })
   })
 
@@ -131,9 +131,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -147,9 +147,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -164,7 +164,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
       )
     })
@@ -183,7 +183,7 @@ describe('auth.routes', () => {
       // Assert
       expect(createLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       )
     })
@@ -202,7 +202,7 @@ describe('auth.routes', () => {
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       )
     })
@@ -221,7 +221,7 @@ describe('auth.routes', () => {
       // Assert
       expect(getAgencySpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       )
     })
@@ -240,7 +240,7 @@ describe('auth.routes', () => {
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
-      expect(response.text).toEqual(`OTP sent to ${VALID_EMAIL}!`)
+      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}!`)
     })
   })
 
@@ -267,9 +267,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.otp is not provided as a param', async () => {
@@ -280,9 +280,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -296,9 +296,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.otp is less than 6 digits', async () => {
@@ -310,9 +310,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 400 when body.otp is 6 characters but does not consist purely of digits', async () => {
@@ -324,9 +324,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Some required parameters are missing' }),
-      )
+      expect(response.body).toEqual({
+        message: 'Some required parameters are missing',
+      })
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -341,7 +341,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
       )
     })
@@ -360,7 +360,7 @@ describe('auth.routes', () => {
       // Assert
       expect(getAgencySpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual('Something went wrong. Please try again.')
+      expect(response.body).toEqual('Something went wrong. Please try again.')
     })
 
     it('should return 422 when hash does not exist for body.otp', async () => {
@@ -371,7 +371,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         expect.stringContaining(
           'OTP has expired. Please request for a new OTP.',
         ),
@@ -391,10 +391,10 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual('OTP is invalid. Please try again.')
+      expect(response.body).toEqual('OTP is invalid. Please try again.')
     })
 
-    it('should should return 422 when invalid body.otp has been attempted too many times', async () => {
+    it('should return 422 when invalid body.otp has been attempted too many times', async () => {
       // Arrange
       const invalidOtp = '654321'
       // Request for OTP so the hash exists.
@@ -417,7 +417,7 @@ describe('auth.routes', () => {
       expect(results).toEqual(
         Array(AuthService.MAX_OTP_ATTEMPTS).fill({
           status: 422,
-          text: 'OTP is invalid. Please try again.',
+          text: JSON.stringify('OTP is invalid. Please try again.'),
         }),
       )
 
@@ -429,7 +429,7 @@ describe('auth.routes', () => {
       // Assert
       // Should still reject with max OTP attempts error.
       expect(response.status).toEqual(422)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         'You have hit the max number of attempts. Please request for a new OTP.',
       )
     })
@@ -480,7 +480,7 @@ describe('auth.routes', () => {
       // Should have reached this spy.
       expect(upsertSpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.text).toEqual(
+      expect(response.body).toEqual(
         expect.stringContaining('Failed to process OTP.'),
       )
     })
@@ -508,9 +508,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(200)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Sign out successful' }),
-      )
+      expect(response.body).toEqual({ message: 'Sign out successful' })
       // connect.sid should now be empty.
       expect(response.header['set-cookie'][0]).toEqual(
         expect.stringContaining('connect.sid=;'),
@@ -524,9 +522,7 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(200)
-      expect(response.text).toEqual(
-        JSON.stringify({ message: 'Sign out successful' }),
-      )
+      expect(response.body).toEqual({ message: 'Sign out successful' })
     })
   })
 
@@ -536,7 +532,7 @@ describe('auth.routes', () => {
     jest.spyOn(MailService, 'sendLoginOtp').mockReturnValue(okAsync(true))
 
     const response = await request.post('/auth/sendotp').send({ email })
-    expect(response.text).toEqual(`OTP sent to ${email}!`)
+    expect(response.body).toEqual(`OTP sent to ${email}!`)
   }
 
   const signInUser = async (email: string, otp: string) => {
