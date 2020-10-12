@@ -38,8 +38,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -54,8 +54,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -131,8 +131,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -147,8 +147,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -267,8 +267,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -280,8 +280,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -296,8 +296,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -310,8 +310,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
@@ -324,8 +324,8 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
+      expect(response.body).toMatchObject({
+        message: 'celebrate request validation failed',
       })
     })
 
