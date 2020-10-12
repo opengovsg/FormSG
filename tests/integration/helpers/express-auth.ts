@@ -13,7 +13,7 @@ const MOCK_VALID_OTP = '123456'
  * ! This function mocks MailService#sendLoginOtp and OtpUtils#generateOtp.
  *
  * The mocks are cleared at the end of this function. However, The spies are
- * still mocking the functions, so it is the onus of the calling test to restore
+ * still mocking the functions, so the onus is on the calling test to restore
  * or implement new mocks when needed.
  *
  * @precondition The agency document relating to the domain of the given email must have been created prior to calling this function
@@ -48,8 +48,8 @@ export const createAuthedSession = async (
   expect(sessionCookie).toBeDefined()
 
   // Clear this test's mocked spies so calls do not pollute calling test.
-  // Note that the spies are still mocking the functions, so it is the onus of
-  // the calling test to restore or implement new mocks when needed.
+  // Note that the spies are still mocking the functions, so the onus is on the
+  // calling test to restore or implement new mocks when needed.
   mailSpy.mockClear()
   otpSpy.mockClear()
   return request
