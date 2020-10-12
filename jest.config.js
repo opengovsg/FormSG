@@ -13,7 +13,7 @@ module.exports = {
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],
   coverageThreshold: {
     global: {
-      statements: 12, // Increase this percentage as test coverage improves
+      statements: 25, // Increase this percentage as test coverage improves
     },
   },
 }
