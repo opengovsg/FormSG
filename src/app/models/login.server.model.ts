@@ -1,4 +1,4 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
 import {
   AuthType,
