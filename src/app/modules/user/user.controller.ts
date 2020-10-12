@@ -28,7 +28,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleContactSendOtp: RequestHandler<
   ParamsDictionary,
-  { message: string },
+  string,
   { contact: string; userId: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -38,9 +38,7 @@ export const handleContactSendOtp: RequestHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
+    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 
   const logMeta = {
@@ -61,7 +59,7 @@ export const handleContactSendOtp: RequestHandler<
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(errorMessage)
   }
 
   // Step 2: No error, send verification OTP to contact.
@@ -82,7 +80,7 @@ export const handleContactSendOtp: RequestHandler<
 
     const { statusCode, errorMessage } = mapRouteError(sendOtpResult.error)
 
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(errorMessage)
   }
 
   // No errors, successfully sent SMS, return success to client.
@@ -104,7 +102,7 @@ export const handleContactSendOtp: RequestHandler<
  */
 export const handleContactVerifyOtp: RequestHandler<
   ParamsDictionary,
-  { message: string } | IPopulatedUser,
+  string | IPopulatedUser,
   {
     userId: string
     otp: string
@@ -118,9 +116,7 @@ export const handleContactVerifyOtp: RequestHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
+    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 
   const logMeta = {
@@ -141,7 +137,7 @@ export const handleContactVerifyOtp: RequestHandler<
     })
 
     const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(errorMessage)
   }
 
   // Step 2: Contact and OTP hashes match, update user with new contact.
@@ -155,7 +151,7 @@ export const handleContactVerifyOtp: RequestHandler<
     })
 
     const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(errorMessage)
   }
 
   // No errors, return updated user to client.

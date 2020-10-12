@@ -86,7 +86,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -117,7 +117,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -140,7 +140,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.json).toBeCalledWith(mockErrorString)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -161,7 +161,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
+      expect(mockRes.json).toBeCalledWith(expectedError.message)
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -237,7 +237,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -269,7 +269,7 @@ describe('user.controller', () => {
       // Assert
       // Should trigger unauthorized response.
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
+      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
       // Service functions should not be called.
       expect(MockUserService.verifyContactOtp).not.toHaveBeenCalled()
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
@@ -292,7 +292,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
+      expect(mockRes.json).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).toHaveBeenCalledTimes(1)
     })
@@ -312,7 +312,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
+      expect(mockRes.json).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
@@ -332,7 +332,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
+      expect(mockRes.json).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
@@ -352,7 +352,7 @@ describe('user.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
+      expect(mockRes.json).toBeCalledWith(expectedError.message)
       expect(MockUserService.verifyContactOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
