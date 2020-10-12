@@ -10,7 +10,7 @@ import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
-import { getAuthedSession } from 'tests/integration/helpers/express-auth'
+import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -58,7 +58,7 @@ describe('user.routes', () => {
     it('should return 200 with current logged in user if session user is valid', async () => {
       // Arrange
       // Log in user.
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
 
       // Act
       const response = await session.get('/user')
@@ -89,7 +89,7 @@ describe('user.routes', () => {
     it('should return 500 when retrieving user returns a database error', async () => {
       // Arrange
       // Log in user.
-      const session = await getAuthedSession(VALID_EMAIL, request)
+      const session = await createAuthedSession(VALID_EMAIL, request)
 
       const mockErrorString = 'Database goes boom'
       // Mock database error from service call.
@@ -110,7 +110,7 @@ describe('user.routes', () => {
   describe('POST /user/contact/sendotp', () => {
     it('should return 200 when otp is sent successfully', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       const sendSmsOtpSpy = jest
         .spyOn(SmsService, 'sendAdminContactOtp')
         .mockReturnValueOnce(okAsync(true))
@@ -155,7 +155,7 @@ describe('user.routes', () => {
 
     it('should return 401 when body.userId does not match current session userId', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       const invalidUserId = new ObjectId()
 
       // Act
@@ -188,7 +188,7 @@ describe('user.routes', () => {
 
     it('should return 422 when userId cannot be found in the database', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       // Delete user after login.
       await dbHandler.clearCollection(UserModel.collection.name)
 
@@ -208,7 +208,7 @@ describe('user.routes', () => {
     it('should return 422 when OTP fails to be sent', async () => {
       // Arrange
       const mockErrorString = 'mock sms send error! oh no'
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       const sendSmsOtpSpy = jest
         .spyOn(SmsService, 'sendAdminContactOtp')
         .mockReturnValueOnce(errAsync(new SmsSendError(mockErrorString)))
@@ -229,7 +229,7 @@ describe('user.routes', () => {
 
     it('should return 500 when creating an OTP returns a database error', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       const mockErrorString = 'Big database oof'
       const createOtpSpy = jest
         .spyOn(UserService, 'createContactOtp')
@@ -259,7 +259,7 @@ describe('user.routes', () => {
 
     it('should return 200 with updated user when verification is successful', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
       // Default user should not have any contact number yet.
       expect(defaultUser.contact).not.toBeDefined()
@@ -329,7 +329,7 @@ describe('user.routes', () => {
 
     it('should return 401 when body.userId does not match current session userId', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       const invalidUserId = new ObjectId()
 
       // Act
@@ -364,7 +364,7 @@ describe('user.routes', () => {
 
     it('should return 401 when hashes does not exist for current contact', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
 
       // Act
       const response = await session.post('/user/contact/verifyotp').send({
@@ -382,7 +382,7 @@ describe('user.routes', () => {
 
     it('should return 401 when given otp does not match hashed otp', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
 
       // Act
@@ -401,7 +401,7 @@ describe('user.routes', () => {
 
     it('should return 401 when given contact does not match hashed contact', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
       const invalidContact = '999'
 
@@ -422,7 +422,7 @@ describe('user.routes', () => {
 
     it('should return 401 when otp has been attempted too many times', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
       const invalidOtp = '999999'
 
@@ -467,7 +467,7 @@ describe('user.routes', () => {
 
     it('should return 422 when user cannot be found in the database', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
       // Delete user after login.
       await dbHandler.clearCollection(UserModel.collection.name)
@@ -486,7 +486,7 @@ describe('user.routes', () => {
 
     it('should return 500 when database errors occurs whilst verifying otp', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
       const mockErrorString = 'Database pewpew'
 
@@ -511,7 +511,7 @@ describe('user.routes', () => {
 
     it('should return 500 when database errors occurs whilst updating contact', async () => {
       // Arrange
-      const session = await getAuthedSession(defaultUser.email, request)
+      const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
       const mockErrorString = 'Database pewpew'
 
