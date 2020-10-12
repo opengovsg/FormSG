@@ -1,12 +1,13 @@
 import { errAsync, okAsync } from 'neverthrow'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
-import MailService from 'src/app/services/mail.service'
+import MailService from 'src/app/services/mail/mail.service'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
+
+import { MailSendError } from '../../../services/mail/mail.errors'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
-import { MailSendError } from '../../mail/mail.errors'
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
@@ -17,7 +18,7 @@ const VALID_EMAIL = 'test@example.com'
 // Mock services invoked by AuthController
 jest.mock('../auth.service')
 jest.mock('../../user/user.service')
-jest.mock('src/app/services/mail.service')
+jest.mock('src/app/services/mail/mail.service')
 const MockAuthService = mocked(AuthService)
 const MockMailService = mocked(MailService)
 const MockUserService = mocked(UserService)
@@ -183,7 +184,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith(mockUser.toObject())
+      expect(mockRes.json).toBeCalledWith(mockUser.toObject())
     })
 
     it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
@@ -294,7 +295,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.send).toBeCalledWith('Sign out successful')
+      expect(mockRes.json).toBeCalledWith({ message: 'Sign out successful' })
       expect(mockClearCookie).toBeCalledTimes(1)
       expect(mockDestroy).toBeCalledTimes(1)
     })
@@ -335,7 +336,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.send).toBeCalledWith('Sign out failed')
+      expect(mockRes.json).toBeCalledWith({ message: 'Sign out failed' })
       expect(mockDestroyWithErr).toBeCalledTimes(1)
       expect(mockClearCookie).not.toBeCalled()
     })

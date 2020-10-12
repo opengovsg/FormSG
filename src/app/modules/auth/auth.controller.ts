@@ -5,8 +5,8 @@ import { isEmpty } from 'lodash'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
-import MailService from '../../services/mail.service'
-import { getRequestIp, getTrace } from '../../utils/request'
+import MailService from '../../services/mail/mail.service'
+import { createReqMeta, getRequestIp } from '../../utils/request'
 import * as UserService from '../user/user.service'
 
 import * as AuthService from './auth.service'
@@ -36,8 +36,7 @@ export const handleCheckUser: RequestHandler<
         message: 'Domain validation error',
         meta: {
           action: 'handleCheckUser',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           email,
         },
         error,
@@ -64,8 +63,7 @@ export const handleLoginSendOtp: RequestHandler<
   const logMeta = {
     action: 'handleLoginSendOtp',
     email,
-    ip: requestIp,
-    trace: getTrace(req),
+    ...createReqMeta(req),
   }
 
   return (
@@ -124,8 +122,7 @@ export const handleLoginVerifyOtp: RequestHandler<
   const logMeta = {
     action: 'handleLoginVerifyOtp',
     email,
-    ip: getRequestIp(req),
-    trace: getTrace(req),
+    ...createReqMeta(req),
   }
   const coreErrorMessage = `Failed to process OTP. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`
 
@@ -171,7 +168,7 @@ export const handleLoginVerifyOtp: RequestHandler<
           meta: logMeta,
         })
 
-        return res.status(StatusCodes.OK).send(userObj)
+        return res.status(StatusCodes.OK).json(userObj)
       })
       // Step 3b: Error occured in one of the steps.
       .mapErr((error) => {
@@ -212,11 +209,11 @@ export const handleSignout: RequestHandler = async (req, res) => {
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send('Sign out failed')
+        .json({ message: 'Sign out failed' })
     }
 
     // No error.
     res.clearCookie('connect.sid')
-    return res.status(StatusCodes.OK).send('Sign out successful')
+    return res.status(StatusCodes.OK).json({ message: 'Sign out successful' })
   })
 }

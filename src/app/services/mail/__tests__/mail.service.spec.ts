@@ -3,17 +3,15 @@ import moment from 'moment-timezone'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
 import { ImportMock } from 'ts-mock-imports'
 
-import { MailSendError } from 'src/app/modules/mail/mail.errors'
-import { MailService } from 'src/app/services/mail.service'
-import * as MailUtils from 'src/app/utils/mail'
+import { MailSendError } from 'src/app/services/mail/mail.errors'
+import { MailService } from 'src/app/services/mail/mail.service'
 import {
   AutoreplySummaryRenderData,
-  BounceType,
-  IPopulatedForm,
-  ISubmissionSchema,
   MailOptions,
   SendAutoReplyEmailsArgs,
-} from 'src/types'
+} from 'src/app/services/mail/mail.types'
+import * as MailUtils from 'src/app/services/mail/mail.utils'
+import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -514,7 +512,7 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
     })
 
-    it('should send submission mail to admin successfully if form.emails is an array with a mixture of emails, semi-colon, and comma separated emails strings', async () => {
+    it('should reject with error when if form.emails is an array with a mixture of emails, semi-colon, and comma separated emails strings', async () => {
       // Arrange
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
 
@@ -525,16 +523,11 @@ describe('mail.service', () => {
       const modifiedParams = cloneDeep(MOCK_VALID_SUBMISSION_PARAMS)
       modifiedParams.form.emails = formEmailsMixture
 
-      const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
-
       // Act
       const pendingSend = mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
-      await expect(pendingSend).resolves.toEqual(true)
-      // Check arguments passed to sendNodeMail
-      expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+      await expect(pendingSend).rejects.toThrowError('Invalid email error')
     })
 
     it('should reject with error when form.emails array contains an invalid email string', async () => {

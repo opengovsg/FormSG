@@ -22,6 +22,6 @@ module.exports = function (app) {
   )
 
   app.route('/frontend/features').get((req, res) => {
-    res.send(featureManager.states)
+    res.json(featureManager.states)
   })
 }

@@ -5,7 +5,7 @@
  */
 const { StatusCodes } = require('http-status-codes')
 const PERMISSIONS = require('../utils/permission-levels').default
-const { getRequestIp, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 /**
@@ -20,7 +20,7 @@ exports.authenticateUser = function (req, res, next) {
   } else {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .send({ message: 'User is unauthorized.' })
+      .json({ message: 'User is unauthorized.' })
   }
 }
 
@@ -49,10 +49,7 @@ const logUnauthorizedAccess = (req, action, requiredPermission) => {
     message: msg,
     meta: {
       action: action,
-      ip: getRequestIp(req),
-      trace: getTrace(req),
-      url: req.url,
-      headers: req.headers,
+      ...createReqMeta(req),
     },
     error: Error(msg),
   })
@@ -80,7 +77,7 @@ exports.verifyPermission = (requiredPermission) =>
     // Forbidden if requiredPersmission is admin but user is not
     if (!isFormAdmin && requiredPermission === PERMISSIONS.DELETE) {
       logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
-      return res.status(StatusCodes.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).json({
         message: makeUnauthorizedMessage(
           req.session.user.email,
           req.form.title,
@@ -114,7 +111,7 @@ exports.verifyPermission = (requiredPermission) =>
 
     if (!hasSufficientPermission) {
       logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
-      return res.status(StatusCodes.FORBIDDEN).send({
+      return res.status(StatusCodes.FORBIDDEN).json({
         message: makeUnauthorizedMessage(
           req.session.user.email,
           req.form.title,

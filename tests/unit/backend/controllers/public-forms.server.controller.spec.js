@@ -170,7 +170,7 @@ describe('Public-Forms Controller', () => {
         expect(args).toBe(StatusCodes.OK)
         return res
       })
-      res.send.and.callFake(() => {
+      res.json.and.callFake(() => {
         FormFeedback.findOne(
           {
             formId: req.params.formId,

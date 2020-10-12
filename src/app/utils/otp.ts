@@ -2,9 +2,9 @@ import crypto from 'crypto'
 
 /**
  * Randomly generates and returns a 6 digit OTP.
- * @return 6 digit OTP string
+ * @returns 6 digit OTP string
  */
-export const generateOtp = () => {
+export const generateOtp = (): string => {
   const length = 6
   const chars = '0123456789'
   // Generates cryptographically strong pseudo-random data.

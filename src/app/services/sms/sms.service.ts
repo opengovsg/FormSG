@@ -1,5 +1,6 @@
 import { SecretsManager } from 'aws-sdk'
 import mongoose from 'mongoose'
+import { ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
@@ -233,9 +234,9 @@ const send = async (
 
 /**
  * Gets the correct twilio client for the form and sends an otp to a valid phonenumber
- * @param recipient The phone number to send to.
- * @param otp The OTP to send.
- * @param formId Form id for logging.
+ * @param recipient The phone number to send to
+ * @param otp The OTP to send
+ * @param formId Form id for retrieving otp data.
  *
  */
 export const sendVerificationOtp = async (
@@ -271,12 +272,12 @@ export const sendVerificationOtp = async (
   return send(twilioData, otpData, recipient, message, SmsType.verification)
 }
 
-export const sendAdminContactOtp = async (
+export const sendAdminContactOtp = (
   recipient: string,
   otp: string,
   userId: string,
   defaultConfig: TwilioConfig,
-): Promise<boolean> => {
+): ResultAsync<boolean, SmsSendError> => {
   logger.info({
     message: `Sending admin contact verification OTP for ${userId}`,
     meta: {
@@ -291,5 +292,29 @@ export const sendAdminContactOtp = async (
     admin: userId,
   }
 
-  return send(defaultConfig, otpData, recipient, message, SmsType.adminContact)
+  return ResultAsync.fromPromise(
+    send(defaultConfig, otpData, recipient, message, SmsType.adminContact),
+    (error) => {
+      logger.error({
+        message: 'Failed to send OTP for admin contact verification',
+        meta: {
+          action: 'sendAdminContactOtp',
+          recipient,
+        },
+        error,
+      })
+
+      let processedErrMsg = 'Failed to send emergency contact verification SMS'
+
+      // Return appropriate error message.
+      if (
+        error instanceof Error &&
+        error.message === VfnErrors.InvalidMobileNumber
+      ) {
+        processedErrMsg = 'Please enter a valid phone number'
+      }
+
+      return new SmsSendError(processedErrMsg)
+    },
+  )
 }

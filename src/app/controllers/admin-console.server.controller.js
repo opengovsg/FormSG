@@ -12,7 +12,7 @@ const getSubmissionModel = require('../models/submission.server.model').default
 const getFormStatisticsTotalModel = require('../models/form_statistics_total.server.model')
   .default
 const getFormModel = require('../models/form.server.model').default
-const { getRequestIp, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 
 const Submission = getSubmissionModel(mongoose)
 const FormStatisticsTotal = getFormStatisticsTotalModel(mongoose)
@@ -574,14 +574,11 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           message: 'Failed to retrieve example forms',
           meta: {
             action: 'getExampleFormsUsingAggregateCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...createReqMeta(req),
           },
           error,
         })
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -607,15 +604,12 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           message: 'Failed to retrieve example forms',
           meta: {
             action: 'getExampleFormsUsingSubmissionsCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...createReqMeta(req),
           },
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -698,15 +692,12 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           message: 'Failed to retrieve a single example form',
           meta: {
             action: 'getSingleExampleFormUsingSubmissionCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...createReqMeta(req),
           },
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -727,15 +718,12 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           message: 'Failed to retrieve single example form',
           meta: {
             action: 'getSingleExampleFormUsingAggregateCollection',
-            ip: getRequestIp(req),
-            trace: getTrace(req),
-            url: req.url,
-            headers: req.headers,
+            ...createReqMeta(req),
           },
           error: err,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }

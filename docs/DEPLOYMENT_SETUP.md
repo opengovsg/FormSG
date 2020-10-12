@@ -212,6 +212,14 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `CHROMIUM_BIN`        | Filepath to chromium binary. Required for email autoreply PDF generation with Puppeteer.                                                                                                                             |
 | `BOUNCE_LIFE_SPAN`    | Time in milliseconds that bounces are tracked for each form. Defaults to 86400000ms or 24 hours. Only relevant if you have set up AWS to send bounce and delivery notifications to the /emailnotifications endpoint. |
 
+#### Rate limits at specific endpoints
+
+The app applies per-minute, per-IP rate limits at specific API endpoints as a security measure. The limits can be specified with the following environment variables.
+| Variable | Description |
+| :-------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SUBMISSIONS_RATE_LIMIT` | Per-minute, per-IP request limit for each submissions endpoint. The limit is applied separately for the email mode and encrypt mode endpoints. |
+| `SEND_AUTH_OTP_RATE_LIMIT` | Per-minute, per-IP request limit for the endpoint which requests for new login OTPs for the admin console. |
+
 ### Additional Features
 
 The app supports a number of additional features like Captcha protection, Sentry reporting and Google Analytics. Each of these features requires specific environment variables which are detailed below. To deploy a bare bones application without these additional features, one can safely exclude the respective environment variables without any extra configuration.

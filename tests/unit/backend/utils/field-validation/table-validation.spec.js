@@ -1,4 +1,7 @@
-const validateField = require('../../../../../dist/backend/app/utils/field-validation')
+const {
+  validateField,
+} = require('../../../../../dist/backend/app/utils/field-validation')
+
 describe('Table validation', () => {
   const makeTableField = (fieldId, columns, rowsOptions) => {
     const table = {

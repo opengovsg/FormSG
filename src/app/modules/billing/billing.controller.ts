@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { getRequestIp } from '../../utils/request'
+import { createReqMeta } from '../../utils/request'
 import { isUserInSession } from '../auth/auth.utils'
 
 import { BillingFactory } from './billing.factory'
@@ -50,9 +50,7 @@ export const handleGetBillInfo: RequestHandler<
       message: 'Failed to retrieve billing records',
       meta: {
         action: 'handleGetBillInfo',
-        ip: getRequestIp(req),
-        url: req.url,
-        headers: req.headers,
+        ...createReqMeta(req),
         esrvcId,
       },
       error: loginStatsResult.error,

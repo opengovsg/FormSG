@@ -1,30 +1,33 @@
 import { pick } from 'lodash'
 import { errAsync, okAsync } from 'neverthrow'
-import supertest from 'supertest'
-import { CookieStore, setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import supertest, { Session } from 'supertest-session'
 import validator from 'validator'
 
-import MailService from 'src/app/services/mail.service'
+import MailService from 'src/app/services/mail/mail.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema } from 'src/types'
 
+import { setupApp } from 'tests/integration/helpers/express-setup'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
+import { MailSendError } from '../../../services/mail/mail.errors'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
-import { MailSendError } from '../../mail/mail.errors'
 import * as UserService from '../../user/user.service'
 import { AuthRouter } from '../auth.routes'
 import * as AuthService from '../auth.service'
 
 const app = setupApp('/auth', AuthRouter)
-const cookieStore = new CookieStore()
-const request = supertest(app)
 
 describe('auth.routes', () => {
+  let request: Session
+
   beforeAll(async () => await dbHandler.connect())
+  beforeEach(() => {
+    request = supertest(app)
+  })
   afterEach(async () => {
     await dbHandler.clearDatabase()
     jest.restoreAllMocks()
-    cookieStore.clear()
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -35,7 +38,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -49,7 +54,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -124,7 +131,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -138,7 +147,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -256,7 +267,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 400 when body.otp is not provided as a param', async () => {
@@ -267,7 +280,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -281,7 +296,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 400 when body.otp is less than 6 digits', async () => {
@@ -293,7 +310,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 400 when body.otp is 6 characters but does not consist purely of digits', async () => {
@@ -305,7 +324,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toEqual('Some required parameters are missing')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Some required parameters are missing' }),
+      )
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -422,7 +443,6 @@ describe('auth.routes', () => {
       const response = await request
         .post('/auth/verifyotp')
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
-      cookieStore.handleCookie(response)
 
       // Assert
       expect(response.status).toEqual(200)
@@ -435,7 +455,10 @@ describe('auth.routes', () => {
         email: VALID_EMAIL,
       })
       // Should have session cookie returned.
-      expect(cookieStore.get()).toEqual(expect.stringContaining('connect.sid'))
+      const sessionCookie = request.cookies.find(
+        (cookie) => cookie.name === 'connect.sid',
+      )
+      expect(sessionCookie).toBeDefined()
     })
 
     it('should return 500 when upserting user document fails', async () => {
@@ -481,13 +504,13 @@ describe('auth.routes', () => {
       await signInUser(VALID_EMAIL, MOCK_VALID_OTP)
 
       // Arrange
-      const response = await request
-        .get('/auth/signout')
-        .set('Cookie', cookieStore.get())
+      const response = await request.get('/auth/signout')
 
       // Assert
       expect(response.status).toEqual(200)
-      expect(response.text).toEqual('Sign out successful')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Sign out successful' }),
+      )
       // connect.sid should now be empty.
       expect(response.header['set-cookie'][0]).toEqual(
         expect.stringContaining('connect.sid=;'),
@@ -495,36 +518,37 @@ describe('auth.routes', () => {
     })
 
     it('should return 200 even when user has not signed in before', async () => {
-      // Arrange
-      // Should have no cookies.
-      expect(cookieStore.get()).toEqual('')
-
+      // Note that no log in calls have been made with request yet.
       // Act
       const response = await request.get('/auth/signout')
 
       // Assert
       expect(response.status).toEqual(200)
-      expect(response.text).toEqual('Sign out successful')
+      expect(response.text).toEqual(
+        JSON.stringify({ message: 'Sign out successful' }),
+      )
     })
   })
+
+  // Helper functions
+  const requestForOtp = async (email: string) => {
+    // Set that so no real mail is sent.
+    jest.spyOn(MailService, 'sendLoginOtp').mockReturnValue(okAsync(true))
+
+    const response = await request.post('/auth/sendotp').send({ email })
+    expect(response.text).toEqual(`OTP sent to ${email}!`)
+  }
+
+  const signInUser = async (email: string, otp: string) => {
+    await requestForOtp(email)
+    const response = await request.post('/auth/verifyotp').send({ email, otp })
+
+    // Assert
+    // Should have session cookie returned.
+    const sessionCookie = request.cookies.find(
+      (cookie) => cookie.name === 'connect.sid',
+    )
+    expect(sessionCookie).toBeDefined()
+    return response.body
+  }
 })
-
-// Helper functions
-const requestForOtp = async (email: string) => {
-  // Set that so no real mail is sent.
-  jest.spyOn(MailService, 'sendLoginOtp').mockReturnValue(okAsync(true))
-
-  const response = await request.post('/auth/sendotp').send({ email })
-  expect(response.text).toEqual(`OTP sent to ${email}!`)
-}
-
-const signInUser = async (email: string, otp: string) => {
-  await requestForOtp(email)
-  const response = await request.post('/auth/verifyotp').send({ email, otp })
-  cookieStore.handleCookie(response)
-
-  // Assert
-  // Should have session cookie returned.
-  expect(cookieStore.get()).toEqual(expect.stringContaining('connect.sid'))
-  return response.body
-}

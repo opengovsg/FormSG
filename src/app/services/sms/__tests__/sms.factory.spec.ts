@@ -1,3 +1,4 @@
+import { okAsync } from 'neverthrow'
 import Twilio from 'twilio'
 
 import {
@@ -56,7 +57,9 @@ describe('sms.factory', () => {
   })
 
   describe('sms feature enabled', () => {
-    const MOCK_ENABLED_SMS_FEATURE: RegisteredFeature<FeatureNames.Sms> = {
+    const MOCK_ENABLED_SMS_FEATURE: Required<RegisteredFeature<
+      FeatureNames.Sms
+    >> = {
       isEnabled: true,
       props: {
         twilioAccountSid: 'ACrandomTwilioSid',
@@ -72,7 +75,7 @@ describe('sms.factory', () => {
       // Arrange
       const serviceContactSpy = jest
         .spyOn(SmsService, 'sendAdminContactOtp')
-        .mockResolvedValue(true)
+        .mockReturnValueOnce(okAsync(true))
 
       const mockArguments: Parameters<typeof SmsFactory.sendAdminContactOtp> = [
         'mockRecipient',

@@ -1,10 +1,11 @@
 import mongoose from 'mongoose'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { ImportMock } from 'ts-mock-imports'
 
 import getTokenModel from 'src/app/models/token.server.model'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema } from 'src/types'
+
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
 import * as AuthService from '../auth.service'

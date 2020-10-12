@@ -15,7 +15,7 @@ const encryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
 const { ConflictError } = require('../modules/submission/submission.errors')
-const { getRequestIp, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
@@ -45,15 +45,14 @@ exports.validateEncryptSubmission = function (req, res, next) {
       message: 'Invalid encryption',
       meta: {
         action: 'validateEncryptSubmission',
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         formId: form._id,
       },
       error,
     })
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .send({ message: 'Invalid data was found. Please submit again.' })
+      .json({ message: 'Invalid data was found. Please submit again.' })
   }
 
   if (req.body.responses) {
@@ -65,19 +64,18 @@ exports.validateEncryptSubmission = function (req, res, next) {
         message: 'Error processing responses',
         meta: {
           action: 'validateEncryptSubmission',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           formId: form._id,
         },
         error: err,
       })
       if (err instanceof ConflictError) {
-        return res.status(err.status).send({
+        return res.status(err.status).json({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
       } else {
-        return res.status(StatusCodes.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message:
             'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
         })
@@ -114,14 +112,11 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
     message: 'Encrypt submission error',
     meta: {
       action: 'onEncryptSubmissionFailure',
-      ip: getRequestIp(req),
-      trace: getTrace(req),
-      url: req.url,
-      headers: req.headers,
+      ...createReqMeta(req),
     },
     error: err,
   })
-  return res.status(StatusCodes.BAD_REQUEST).send({
+  return res.status(StatusCodes.BAD_REQUEST).json({
     message:
       'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
     submissionId: submission._id,
@@ -188,7 +183,7 @@ exports.saveResponseToDb = function (req, res, next) {
             message: 'Attachment upload error',
             meta: {
               action: 'saveResponseToDb',
-              trace: getTrace(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -249,19 +244,16 @@ exports.getMetadata = function (req, res) {
               message: 'Failure retrieving metadata from database',
               meta: {
                 action: 'getMetadata',
-                ip: getRequestIp(req),
-                trace: getTrace(req),
-                url: req.url,
-                headers: req.headers,
+                ...createReqMeta(req),
               },
               error: err,
             })
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
               message: errorHandler.getMongoErrorMessage(err),
             })
           }
           if (!result) {
-            return res.status(HttpStatus.OK).send({ metadata: [], count: 0 })
+            return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
           }
           let entry = {
             number: 1,
@@ -270,10 +262,10 @@ exports.getMetadata = function (req, res) {
               .tz('Asia/Singapore')
               .format('Do MMM YYYY, h:mm:ss a'),
           }
-          return res.status(HttpStatus.OK).send({ metadata: [entry], count: 1 })
+          return res.status(HttpStatus.OK).json({ metadata: [entry], count: 1 })
         })
     } else {
-      return res.status(HttpStatus.OK).send({ metadata: [], count: 0 })
+      return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
     }
   } else {
     Submission.aggregate([
@@ -324,14 +316,11 @@ exports.getMetadata = function (req, res) {
             message: 'Failure retrieving metadata from database',
             meta: {
               action: 'getMetadata',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...createReqMeta(req),
             },
             error: err,
           })
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: errorHandler.getMongoErrorMessage(err),
           })
         } else {
@@ -350,7 +339,7 @@ exports.getMetadata = function (req, res) {
             number--
             return entry
           })
-          return res.status(StatusCodes.OK).send({ metadata, count })
+          return res.status(StatusCodes.OK).json({ metadata, count })
         }
       })
   }
@@ -384,14 +373,11 @@ exports.getEncryptedResponse = function (req, res) {
         message: 'Failure retrieving encrypted submission from database',
         meta: {
           action: 'getEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
-          url: req.url,
-          headers: req.headers,
+          ...createReqMeta(req),
         },
         error: err,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: errorHandler.getMongoErrorMessage(err),
       })
     } else {
@@ -427,7 +413,7 @@ exports.streamEncryptedResponses = async function (req, res) {
     isMalformedDate(req.query.startDate) ||
     isMalformedDate(req.query.endDate)
   ) {
-    return res.status(StatusCodes.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'Malformed date parameter',
     })
   }
@@ -461,12 +447,11 @@ exports.streamEncryptedResponses = async function (req, res) {
         message: 'Error streaming submissions from database',
         meta: {
           action: 'streamEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error: err,
       })
-      res.status(500).send({
+      res.status(500).json({
         message: 'Error retrieving from database.',
       })
     })
@@ -478,12 +463,11 @@ exports.streamEncryptedResponses = async function (req, res) {
         message: 'Error converting submissions to JSON',
         meta: {
           action: 'streamEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error: err,
       })
-      res.status(500).send({
+      res.status(500).json({
         message: 'Error converting submissions to JSON',
       })
     })
@@ -493,12 +477,11 @@ exports.streamEncryptedResponses = async function (req, res) {
         message: 'Error writing submissions to HTTP stream',
         meta: {
           action: 'streamEncryptedResponse',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error: err,
       })
-      res.status(500).send({
+      res.status(500).json({
         message: 'Error writing submissions to HTTP stream',
       })
     })

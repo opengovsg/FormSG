@@ -11,7 +11,7 @@ const moment = require('moment')
 const { StatusCodes } = require('http-status-codes')
 
 const { sessionSecret } = require('../../config/config')
-const { getRequestIp, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getMyInfoHashModel = require('../models/myinfo_hash.server.model').default
 const MyInfoHash = getMyInfoHashModel(mongoose)
@@ -57,8 +57,7 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
       message: logMessage,
       meta: {
         action: 'addMyInfo',
-        ip: getRequestIp(req),
-        trace: getTrace(req),
+        ...createReqMeta(req),
         formId,
         esrvcId,
       },
@@ -110,8 +109,7 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
               message: 'Error writing to DB',
               meta: {
                 action: 'addMyInfo',
-                ip: getRequestIp(req),
-                trace: getTrace(req),
+                ...createReqMeta(req),
                 formId,
               },
               error: err,
@@ -126,8 +124,7 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
         message: 'Error hashing MyInfo fields',
         meta: {
           action: 'addMyInfo',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           formId,
         },
         error,
@@ -194,12 +191,11 @@ exports.verifyMyInfoVals = function (req, res, next) {
             message: 'Error retrieving MyInfo hash from database',
             meta: {
               action: 'verifyMyInfoVals',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
+              ...createReqMeta(req),
             },
             error: err,
           })
-          return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
+          return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
             message: 'MyInfo verification unavailable, please try again later.',
             spcpSubmissionFailure: true,
           })
@@ -210,12 +206,11 @@ exports.verifyMyInfoVals = function (req, res, next) {
             message: `Unable to find MyInfo hashes for ${formObjId}`,
             meta: {
               action: 'verifyMyInfoVals',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
+              ...createReqMeta(req),
               formId: formObjId,
             },
           })
-          return res.status(StatusCodes.GONE).send({
+          return res.status(StatusCodes.GONE).json({
             message:
               'MyInfo verification expired, please refresh and try again.',
             spcpSubmissionFailure: true,
@@ -259,12 +254,11 @@ exports.verifyMyInfoVals = function (req, res, next) {
                 message: `Hash did not match for form ${formObjId}`,
                 meta: {
                   action: 'verifyMyInfoVals',
-                  ip: getRequestIp(req),
-                  trace: getTrace(req),
+                  ...createReqMeta(req),
                   failedFields: hashFailedAttrs,
                 },
               })
-              return res.status(StatusCodes.UNAUTHORIZED).send({
+              return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: 'MyInfo verification failed.',
                 spcpSubmissionFailure: true,
               })

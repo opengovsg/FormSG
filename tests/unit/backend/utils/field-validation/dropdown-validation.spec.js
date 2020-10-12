@@ -1,4 +1,6 @@
-const validateField = require('../../../../../dist/backend/app/utils/field-validation')
+const {
+  validateField,
+} = require('../../../../../dist/backend/app/utils/field-validation')
 
 describe('Dropdown validation', () => {
   it('should allow valid option', () => {

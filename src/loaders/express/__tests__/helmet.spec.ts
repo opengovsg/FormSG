@@ -1,9 +1,10 @@
 import helmet from 'helmet'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
 
 import config from 'src/config/config'
 import featureManager from 'src/config/feature-manager'
+
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import helmetMiddlewares from '../helmet'
 

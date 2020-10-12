@@ -9,7 +9,7 @@ const crypto = require('crypto')
 const { StatusCodes } = require('http-status-codes')
 const axios = require('axios')
 
-const { getRequestIp, getTrace } = require('../utils/request')
+const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 const getFormModel = require('../models/form.server.model').default
@@ -112,7 +112,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     const payloads = String(relayState).split(',')
 
     if (payloads.length !== 2) {
-      return res.status(StatusCodes.BAD_REQUEST).send()
+      return res.sendStatus(StatusCodes.BAD_REQUEST)
     }
 
     const destination = payloads[0]
@@ -126,7 +126,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
         authType,
       )
     ) {
-      res.status(StatusCodes.UNAUTHORIZED).send()
+      res.sendStatus(StatusCodes.UNAUTHORIZED)
       return
     }
 
@@ -134,11 +134,11 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
     samlArt = String(samlArt).replace(/ /g, '+')
 
     if (!destinationIsValid(destination))
-      return res.status(StatusCodes.BAD_REQUEST).send()
+      return res.sendStatus(StatusCodes.BAD_REQUEST)
 
     getForm(destination, (err, form) => {
       if (err || !form || form.authType !== authType) {
-        res.status(StatusCodes.NOT_FOUND).send()
+        res.sendStatus(StatusCodes.NOT_FOUND)
         return
       }
       authClient.getAttributes(samlArt, destination, (err, data) => {
@@ -147,10 +147,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
             message: 'Error retrieving attributes from auth client',
             meta: {
               action: 'handleOOBAuthenticationWith',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -219,13 +216,15 @@ exports.createSpcpRedirectURL = (authClients) => {
       req.redirectURL = authClient.createRedirectURL(target, esrvcId)
       return next()
     } else {
-      return res.status(StatusCodes.BAD_REQUEST).send('Redirect URL malformed')
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Redirect URL malformed' })
     }
   }
 }
 
 exports.returnSpcpRedirectURL = function (req, res) {
-  return res.status(StatusCodes.OK).send({ redirectURL: req.redirectURL })
+  return res.status(StatusCodes.OK).json({ redirectURL: req.redirectURL })
 }
 
 const getSubstringBetween = (text, markerStart, markerEnd) => {
@@ -261,17 +260,17 @@ exports.validateESrvcId = (req, res) => {
           message: 'Could not find title',
           meta: {
             action: 'validateESrvcId',
-            trace: getTrace(req),
+            ...createReqMeta(req),
             redirectUrl: redirectURL,
             data,
           },
         })
-        return res.status(StatusCodes.BAD_GATEWAY).send({
+        return res.status(StatusCodes.BAD_GATEWAY).json({
           message: 'Singpass returned incomprehensible content',
         })
       }
       if (title.indexOf('Error') === -1) {
-        return res.status(StatusCodes.OK).send({
+        return res.status(StatusCodes.OK).json({
           isValid: true,
         })
       }
@@ -282,7 +281,7 @@ exports.validateESrvcId = (req, res) => {
         'System Code:&nbsp<b>',
         '</b>',
       )
-      return res.status(StatusCodes.OK).send({
+      return res.status(StatusCodes.OK).json({
         isValid: false,
         errorCode,
       })
@@ -293,13 +292,13 @@ exports.validateESrvcId = (req, res) => {
         message: 'Could not contact singpass to validate eservice id',
         meta: {
           action: 'validateESrvcId',
-          trace: getTrace(req),
+          ...createReqMeta(req),
           redirectUrl: redirectURL,
           statusCode,
         },
         error: err,
       })
-      return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
+      return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
         message: 'Failed to contact Singpass',
       })
     })
@@ -355,10 +354,7 @@ exports.addSpcpSessionInfo = (authClients) => {
             message: 'Failed to verify JWT with auth client',
             meta: {
               action: 'addSpcpSessionInfo',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...createReqMeta(req),
             },
             error: err,
           })
@@ -418,14 +414,13 @@ exports.encryptedVerifiedFields = (signingSecretKey) => {
         meta: {
           action: 'encryptedVerifiedFields',
           formId: req.form._id,
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error,
       })
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .send({ message: 'Invalid data was found. Please submit again.' })
+        .json({ message: 'Invalid data was found. Please submit again.' })
     }
   }
 }
@@ -487,14 +482,11 @@ exports.isSpcpAuthenticated = (authClients) => {
             message: 'Failed to verify JWT with auth client',
             meta: {
               action: 'isSpcpAuthenticated',
-              ip: getRequestIp(req),
-              trace: getTrace(req),
-              url: req.url,
-              headers: req.headers,
+              ...createReqMeta(req),
             },
             error: err,
           })
-          res.status(StatusCodes.UNAUTHORIZED).send({
+          res.status(StatusCodes.UNAUTHORIZED).json({
             message: 'User is not SPCP authenticated',
             spcpSubmissionFailure: true,
           })

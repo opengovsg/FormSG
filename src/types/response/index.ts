@@ -1,4 +1,4 @@
-import { BasicField, IFieldSchema, IMyInfo } from './field'
+import { BasicField, IFieldSchema, IMyInfo } from '../field'
 
 export type AttachmentsMap = Record<IFieldSchema['_id'], File>
 
