@@ -1,5 +1,7 @@
 'use strict'
 
+const get = require('lodash/get')
+
 // Forms controller
 angular
   .module('forms')
@@ -80,7 +82,7 @@ function ListFormsController(
 
   function turnEmailToName() {
     vm.userName = 'how are you?' // Placeholder
-    let name = vm.user.email.split('@')
+    let name = get(vm, 'user.email', '').split('@')
     if (name.length >= 1) {
       let nameParts = name[0].split('_')
       let userName = ''
