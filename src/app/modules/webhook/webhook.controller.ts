@@ -27,7 +27,7 @@ export const post = (
   if (webhookUrl) {
     // Note that we push data to webhook endpoints on a best effort basis
     // As such, we should not await on these post requests
-    pushData(webhookUrl, submissionWebhookView)
+    void pushData(webhookUrl, submissionWebhookView)
   }
   return next()
 }

@@ -1,12 +1,10 @@
 ## Problem
-
-_What problem are you trying to solve? What issue does this close?_
+<!-- What problem are you trying to solve? What issue does this close? -->
 
 Closes [insert issue #]
 
 ## Solution
-
-_How did you solve the problem?_
+<!-- How did you solve the problem? -->
 
 **Features**:
 
@@ -23,19 +21,17 @@ _How did you solve the problem?_
 ## Before & After Screenshots
 
 **BEFORE**:
-[insert screenshot here]
+<!-- [insert screenshot here] -->
 
 **AFTER**:
-[insert screenshot here]
+<!-- [insert screenshot here] -->
 
 ## Tests
-
-_What tests should be run to confirm functionality?_
+<!-- What tests should be run to confirm functionality? -->
 
 ## Deploy Notes
-
-_Notes regarding deployment of the contained body of work. These should note any
-new dependencies, new scripts, etc._
+<!-- Notes regarding deployment of the contained body of work.  -->
+<!-- These should note any new dependencies, new scripts, etc. -->
 
 **New environment variables**:
 

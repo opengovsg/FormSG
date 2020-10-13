@@ -10,7 +10,7 @@ const googleAnalyticsFactory = ({ isEnabled }) => {
   } else {
     return {
       datalayer: (req, res) => {
-        res.type('text/javascript').status(StatusCodes.OK).send()
+        res.type('text/javascript').sendStatus(StatusCodes.OK)
       },
     }
   }

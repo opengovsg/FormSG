@@ -11,7 +11,7 @@ const moment = require('moment')
 const { StatusCodes } = require('http-status-codes')
 
 const { sessionSecret } = require('../../config/config')
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getMyInfoHashModel = require('../models/myinfo_hash.server.model').default
 const MyInfoHash = getMyInfoHashModel(mongoose)
@@ -58,6 +58,7 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
       meta: {
         action: 'addMyInfo',
         ip: getRequestIp(req),
+        trace: getTrace(req),
         formId,
         esrvcId,
       },
@@ -110,6 +111,7 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
               meta: {
                 action: 'addMyInfo',
                 ip: getRequestIp(req),
+                trace: getTrace(req),
                 formId,
               },
               error: err,
@@ -125,6 +127,7 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
         meta: {
           action: 'addMyInfo',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           formId,
         },
         error,
@@ -192,10 +195,11 @@ exports.verifyMyInfoVals = function (req, res, next) {
             meta: {
               action: 'verifyMyInfoVals',
               ip: getRequestIp(req),
+              trace: getTrace(req),
             },
             error: err,
           })
-          return res.status(StatusCodes.SERVICE_UNAVAILABLE).send({
+          return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
             message: 'MyInfo verification unavailable, please try again later.',
             spcpSubmissionFailure: true,
           })
@@ -207,10 +211,11 @@ exports.verifyMyInfoVals = function (req, res, next) {
             meta: {
               action: 'verifyMyInfoVals',
               ip: getRequestIp(req),
+              trace: getTrace(req),
               formId: formObjId,
             },
           })
-          return res.status(StatusCodes.GONE).send({
+          return res.status(StatusCodes.GONE).json({
             message:
               'MyInfo verification expired, please refresh and try again.',
             spcpSubmissionFailure: true,
@@ -255,10 +260,11 @@ exports.verifyMyInfoVals = function (req, res, next) {
                 meta: {
                   action: 'verifyMyInfoVals',
                   ip: getRequestIp(req),
+                  trace: getTrace(req),
                   failedFields: hashFailedAttrs,
                 },
               })
-              return res.status(StatusCodes.UNAUTHORIZED).send({
+              return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: 'MyInfo verification failed.',
                 spcpSubmissionFailure: true,
               })

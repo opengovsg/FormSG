@@ -21,7 +21,8 @@
         "sourceType": "module",
         "ecmaFeatures": {
           "modules": true
-        }
+        },
+        "project": "./tsconfig.json"
       },
       "plugins": ["@typescript-eslint", "import", "simple-import-sort"],
       "extends": ["plugin:@typescript-eslint/recommended"],
@@ -50,7 +51,8 @@
         "import/order": "off",
         "import/first": "error",
         "import/newline-after-import": "error",
-        "import/no-duplicates": "error"
+        "import/no-duplicates": "error",
+        "@typescript-eslint/no-floating-promises": 2,
       }
     },
     { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] }

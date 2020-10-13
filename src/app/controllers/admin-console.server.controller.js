@@ -20,7 +20,7 @@ const Form = getFormModel(mongoose)
 const _ = require('lodash')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 
 // Examples search-specific constants
 const PAGE_SIZE = 16 // maximum number of results to return
@@ -428,7 +428,7 @@ let sortByCreated = [
 let searchSubmissionsForForm = (key, formId) => [
   {
     $match: {
-      key: mongoose.Types.ObjectId(formId),
+      [key]: mongoose.Types.ObjectId(formId),
     },
   },
 ]
@@ -577,12 +577,13 @@ exports.getExampleFormsUsingAggregateCollection = function (req, res) {
           meta: {
             action: 'getExampleFormsUsingAggregateCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
           error,
         })
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -609,13 +610,14 @@ exports.getExampleFormsUsingSubmissionsCollection = function (req, res) {
           meta: {
             action: 'getExampleFormsUsingSubmissionsCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -699,13 +701,14 @@ exports.getSingleExampleFormUsingSubmissionCollection = function (req, res) {
           meta: {
             action: 'getSingleExampleFormUsingSubmissionCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
           error,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -727,13 +730,14 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
           meta: {
             action: 'getSingleExampleFormUsingAggregateCollection',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
           error: err,
         })
       }
-      return res.status(status).send(result)
+      return res.status(status).json(result)
     },
   )
 }
@@ -808,6 +812,7 @@ exports.getLoginStats = function (req, res) {
           meta: {
             action: 'getLoginStats',
             ip: getRequestIp(req),
+            trace: getTrace(req),
             url: req.url,
             headers: req.headers,
           },
@@ -815,11 +820,11 @@ exports.getLoginStats = function (req, res) {
         })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send('Error in retrieving billing records')
+          .json({ message: 'Error in retrieving billing records' })
       } else if (!loginStats) {
         return res
           .status(StatusCodes.NOT_FOUND)
-          .send('No billing records found')
+          .json({ message: 'No billing records found' })
       } else {
         logger.info({
           message: `Billing search for ${esrvcId} by ${
@@ -827,10 +832,11 @@ exports.getLoginStats = function (req, res) {
           }`,
           meta: {
             action: 'getLoginStats',
+            trace: getTrace(req),
           },
         })
 
-        return res.send({
+        return res.json({
           loginStats,
         })
       }

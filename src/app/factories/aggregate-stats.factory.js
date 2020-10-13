@@ -1,5 +1,4 @@
 const featureManager = require('../../config/feature-manager').default
-const core = require('../controllers/core.server.controller')
 const adminConsole = require('../controllers/admin-console.server.controller')
 
 const aggregStatsFactory = ({ isEnabled }) => {
@@ -8,14 +7,12 @@ const aggregStatsFactory = ({ isEnabled }) => {
       getExampleForms: adminConsole.getExampleFormsUsingAggregateCollection,
       getSingleExampleForm:
         adminConsole.getSingleExampleFormUsingAggregateCollection,
-      formCount: core.formCountUsingAggregateCollection,
     }
   } else {
     return {
       getExampleForms: adminConsole.getExampleFormsUsingSubmissionsCollection,
       getSingleExampleForm:
         adminConsole.getSingleExampleFormUsingSubmissionCollection,
-      formCount: core.formCountUsingSubmissionsCollection,
     }
   }
 }

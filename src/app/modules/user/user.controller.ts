@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IPopulatedUser } from '../../../types'
-import SmsFactory from '../../factories/sms.factory'
+import { SmsFactory } from '../../services/sms/sms.factory'
 import { ApplicationError } from '../core/core.errors'
 
 import {
@@ -97,7 +97,7 @@ export const handleContactVerifyOtp: RequestHandler<
   // No error, update user with given contact.
   try {
     const updatedUser = await updateUserContact(contact, userId)
-    return res.status(StatusCodes.OK).send(updatedUser)
+    return res.status(StatusCodes.OK).json(updatedUser)
   } catch (updateErr) {
     // Handle update error.
     logger.warn({
@@ -115,7 +115,9 @@ export const handleContactVerifyOtp: RequestHandler<
 export const handleFetchUser: RequestHandler = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
   if (!sessionUserId) {
-    return res.status(StatusCodes.UNAUTHORIZED).send('User is unauthorized.')
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'User is unauthorized.' })
   }
 
   // Retrieve user with id in session
@@ -132,10 +134,10 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send('Unable to retrieve user')
+      .json({ message: 'Unable to retrieve user' })
   }
 
-  return res.send(retrievedUser)
+  return res.json(retrievedUser)
 }
 
 // TODO(#212): Save userId instead of entire user collection in session.

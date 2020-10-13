@@ -9,7 +9,7 @@ const Submission = getSubmissionModel(mongoose)
 
 const { StatusCodes } = require('http-status-codes')
 
-const { getRequestIp } = require('../utils/request')
+const { getRequestIp, getTrace } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail.service').default
@@ -28,7 +28,7 @@ exports.captchaCheck = (captchaPrivateKey) => {
       return next()
     } else {
       if (!captchaPrivateKey) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
           message: 'Captcha not set-up',
         })
       } else if (!req.query.captchaResponse) {
@@ -38,9 +38,10 @@ exports.captchaCheck = (captchaPrivateKey) => {
             action: 'captchaCheck',
             formId: req.form._id,
             ip: getRequestIp(req),
+            trace: getTrace(req),
           },
         })
-        return res.status(StatusCodes.BAD_REQUEST).send({
+        return res.status(StatusCodes.BAD_REQUEST).json({
           message: 'Captcha was missing. Please refresh and submit again.',
         })
       } else {
@@ -60,9 +61,10 @@ exports.captchaCheck = (captchaPrivateKey) => {
                   action: 'captchaCheck',
                   formId: req.form._id,
                   ip: getRequestIp(req),
+                  trace: getTrace(req),
                 },
               })
-              return res.status(StatusCodes.BAD_REQUEST).send({
+              return res.status(StatusCodes.BAD_REQUEST).json({
                 message: 'Captcha was incorrect. Please submit again.',
               })
             }
@@ -76,10 +78,11 @@ exports.captchaCheck = (captchaPrivateKey) => {
                 action: 'captchaCheck',
                 formId: req.form._id,
                 ip: getRequestIp(req),
+                trace: getTrace(req),
               },
               error: err,
             })
-            return res.status(StatusCodes.BAD_REQUEST).send({
+            return res.status(StatusCodes.BAD_REQUEST).json({
               message:
                 'Could not verify captcha. Please submit again in a few minutes.',
             })
@@ -180,6 +183,7 @@ const sendEmailAutoReplies = async function (req) {
       meta: {
         action: 'sendEmailAutoReplies',
         ip: getRequestIp(req),
+        trace: getTrace(req),
         formId: req.form._id,
         submissionId: submission.id,
       },
@@ -204,7 +208,7 @@ exports.count = function (req, res) {
     isMalformedDate(req.query.startDate) ||
     isMalformedDate(req.query.endDate)
   ) {
-    return res.status(StatusCodes.BAD_REQUEST).send({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'Malformed date parameter',
     })
   }
@@ -223,13 +227,14 @@ exports.count = function (req, res) {
         meta: {
           action: 'count',
           ip: getRequestIp(req),
+          trace: getTrace(req),
           url: req.url,
           headers: req.headers,
         },
         error: err,
       })
 
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: errorHandler.getMongoErrorMessage(err),
       })
     } else {
@@ -241,7 +246,7 @@ exports.count = function (req, res) {
 exports.sendAutoReply = function (req, res) {
   const { form, submission } = req
   // Return the reply early to the submitter
-  res.send({
+  res.json({
     message: 'Form submission successful.',
     submissionId: submission.id,
   })
