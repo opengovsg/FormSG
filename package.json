@@ -155,7 +155,7 @@
     "ui-select": "^0.19.8",
     "uid-generator": "^2.0.0",
     "uuid": "^8.3.0",
-    "validator": "^13.1.1",
+    "validator": "^13.1.17",
     "web-streams-polyfill": "^2.1.1",
     "whatwg-fetch": "^3.4.1",
     "winston": "^3.3.3",
