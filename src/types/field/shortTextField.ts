@@ -1,17 +1,10 @@
-import { IField, IFieldSchema } from './baseField'
-
-export enum ShortTextSelectedValidation {
-  Max = 'Maximum',
-  Min = 'Minimum',
-  Exact = 'Exact',
-  Range = 'Range',
-}
+import { IField, IFieldSchema, TextSelectedValidation } from './baseField'
 
 export type ShortTextValidationOptions = {
-  customMax: number
-  customMin: number
-  customVal: number
-  selectedValidation: ShortTextSelectedValidation | null
+  customMax: number | null
+  customMin: number | null
+  customVal: number | null
+  selectedValidation: TextSelectedValidation | null
 }
 
 export interface IShortTextField extends IField {

@@ -50,3 +50,10 @@ export interface IFieldSchema extends IField, Document {
 export interface IClientFieldSchema extends IFieldSchema {
   fieldValue: string
 }
+
+export enum TextSelectedValidation {
+  Maximum = 'Maximum',
+  Minimum = 'Minimum',
+  Exact = 'Exact',
+  Range = 'Range', // TODO(#408) - questionable value
+}

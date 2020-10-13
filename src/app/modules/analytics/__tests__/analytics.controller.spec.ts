@@ -1,5 +1,6 @@
 import { DatabaseError } from 'dist/backend/app/modules/core/core.errors'
 import { errAsync, okAsync } from 'neverthrow'
+
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as AnalyticsController from '../analytics.controller'

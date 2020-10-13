@@ -2,7 +2,7 @@ import expressWinston from 'express-winston'
 import get from 'lodash/get'
 import winston from 'winston'
 
-import { getTrace } from '../../app/utils/request'
+import { getRequestIp, getTrace } from '../../app/utils/request'
 import config from '../../config/config'
 import { customFormat } from '../../config/logger'
 
@@ -43,18 +43,11 @@ const loggingMiddleware = () => {
     },
     dynamicMeta: (req, res) => {
       const meta: LogMeta = {
-        // Define our own token for client ip
-        // req.headers['cf-connecting-ip'] : Cloudflare
-        // req.ip : Contains the remote IP address of the request.
-        // trace: use cloudflare cf-ray header, with x-request-id header as backup
-        // If trust proxy setting is true, the value of this property is
-        // derived from the left-most entry in the X-Forwarded-For header.
-        // This header can be set by the client or by the proxy.
-        // If trust proxy setting is false, the app is understood as directly
-        // facing the Internet and the client’s IP address is derived from
-        // req.connection.remoteAddress.
-        clientIp: req.get('cf-connecting-ip') || req.ip,
         userId: get(req, 'session.user._id', ''),
+        // Don't use ...createReqMeta(req) here because
+        // headers and url are already in meta;
+        // dynamicMeta is for additional information
+        clientIp: getRequestIp(req),
         trace: getTrace(req),
       }
 

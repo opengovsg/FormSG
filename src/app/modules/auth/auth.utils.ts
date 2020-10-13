@@ -1,17 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
-import { MailSendError } from '../mail/mail.errors'
+import * as MailErrors from '../../services/mail/mail.errors'
+import * as CoreErrors from '../core/core.errors'
+import { ErrorResponseData } from '../core/core.types'
 
-import { InvalidDomainError, InvalidOtpError } from './auth.errors'
+import * as AuthErrors from './auth.errors'
 
 const logger = createLoggerWithLabel(module)
-
-type ErrorResponseData = {
-  statusCode: StatusCodes
-  errorMessage: string
-}
 
 /**
  * Handler to map ApplicationErrors to their correct status code and error
@@ -20,23 +16,23 @@ type ErrorResponseData = {
  * @param coreErrorMessage Any error message to return instead of the default core error message, if any
  */
 export const mapRouteError = (
-  error: ApplicationError,
+  error: CoreErrors.ApplicationError,
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
-    case InvalidDomainError:
+    case AuthErrors.InvalidDomainError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: error.message,
       }
-    case InvalidOtpError:
+    case AuthErrors.InvalidOtpError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
-    case MailSendError:
-    case ApplicationError:
-    case DatabaseError:
+    case MailErrors.MailSendError:
+    case CoreErrors.ApplicationError:
+    case CoreErrors.DatabaseError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,

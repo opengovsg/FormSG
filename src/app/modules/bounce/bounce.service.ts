@@ -14,9 +14,9 @@ import {
   IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
-import { EMAIL_HEADERS, EmailType } from '../../constants/mail'
 import getFormModel from '../../models/form.server.model'
-import MailService from '../../services/mail.service'
+import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
+import MailService from '../../services/mail/mail.service'
 
 import getBounceModel from './bounce.model'
 import { extractHeader, isBounceNotification } from './bounce.util'

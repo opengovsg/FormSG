@@ -1,3 +1,4 @@
+import { okAsync } from 'neverthrow'
 import Twilio from 'twilio'
 
 import {
@@ -74,7 +75,7 @@ describe('sms.factory', () => {
       // Arrange
       const serviceContactSpy = jest
         .spyOn(SmsService, 'sendAdminContactOtp')
-        .mockResolvedValue(true)
+        .mockReturnValueOnce(okAsync(true))
 
       const mockArguments: Parameters<typeof SmsFactory.sendAdminContactOtp> = [
         'mockRecipient',

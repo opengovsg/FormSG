@@ -8,7 +8,7 @@ const mongoose = require('mongoose')
 const dbHandler = require('../helpers/db-handler')
 
 const { ObjectID } = require('bson-ext')
-const MailService = require('../../../../dist/backend/app/services/mail.service')
+const MailService = require('../../../../dist/backend/app/services/mail/mail.service')
   .default
 
 const User = dbHandler.makeModel('user.server.model', 'User')

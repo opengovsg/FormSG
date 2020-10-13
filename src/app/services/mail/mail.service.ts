@@ -5,23 +5,22 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
-import { HASH_EXPIRE_AFTER_SECONDS } from '../../shared/util/verification'
+import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
+import { BounceType, IEmailFormSchema, ISubmissionSchema } from '../../../types'
+
+import { EMAIL_HEADERS, EmailType } from './mail.constants'
+import { MailSendError } from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
-  BounceType,
-  IEmailFormSchema,
-  ISubmissionSchema,
   MailOptions,
   MailServiceParams,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
-} from '../../types'
-import { EMAIL_HEADERS, EmailType } from '../constants/mail'
-import { MailSendError } from '../modules/mail/mail.errors'
+} from './mail.types'
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
@@ -30,7 +29,7 @@ import {
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
   isToFieldValid,
-} from '../utils/mail'
+} from './mail.utils'
 
 const logger = createLoggerWithLabel(module)
 
