@@ -122,7 +122,7 @@
     "has-ansi": "^4.0.0",
     "helmet": "^4.1.1",
     "http-status-codes": "^2.1.4",
-    "intl-tel-input": "~12.1.6",
+    "intl-tel-input": "~17.0.6",
     "json-stringify-deterministic": "^1.0.1",
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.2.2",
