@@ -80,7 +80,7 @@
     "angular-messages": "^1.8.0",
     "angular-moment": "~1.2.0",
     "angular-permission": "~1.1.1",
-    "angular-resource": "^1.8.0",
+    "angular-resource": "^1.8.1",
     "angular-sanitize": "^1.8.0",
     "angular-translate": "^2.18.2",
     "angular-translate-loader-partial": "^2.18.3",
