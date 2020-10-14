@@ -411,13 +411,13 @@ describe('auth.routes', () => {
         )
       }
       const results = (await Promise.all(verifyPromises)).map((resolve) =>
-        pick(resolve, ['status', 'text']),
+        pick(resolve, ['status', 'body']),
       )
       // Should be all invalid OTP responses.
       expect(results).toEqual(
         Array(AuthService.MAX_OTP_ATTEMPTS).fill({
           status: 422,
-          text: JSON.stringify('OTP is invalid. Please try again.'),
+          body: 'OTP is invalid. Please try again.',
         }),
       )
 
