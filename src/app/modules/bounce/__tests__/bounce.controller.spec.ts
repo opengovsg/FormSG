@@ -1,5 +1,4 @@
 import { ObjectId } from 'bson'
-import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
@@ -85,7 +84,7 @@ describe('handleSns', () => {
     expect(MockBounceService.logEmailNotification).not.toHaveBeenCalled()
     expect(MockBounceService.notifyAdminOfBounce).not.toHaveBeenCalled()
     expect(MockBounceService.logCriticalBounce).not.toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(403)
   })
 
   it('should return 400 when errors are thrown in isValidSnsRequest', async () => {
@@ -99,7 +98,7 @@ describe('handleSns', () => {
     expect(MockBounceService.logEmailNotification).not.toHaveBeenCalled()
     expect(MockBounceService.notifyAdminOfBounce).not.toHaveBeenCalled()
     expect(MockBounceService.logCriticalBounce).not.toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
 
   it('should call services correctly for permanent critical bounces', async () => {
@@ -146,7 +145,7 @@ describe('handleSns', () => {
       true,
     )
     expect(mockBounceDoc.save).toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
 
   it('should return 400 when errors are thrown in getUpdatedBounceDoc', async () => {
@@ -170,7 +169,7 @@ describe('handleSns', () => {
     expect(MockBounceService.getUpdatedBounceDoc).toHaveBeenCalledWith(
       MOCK_NOTIFICATION,
     )
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
 
   it('should return 400 when errors are thrown in deactivateForm', async () => {
@@ -202,7 +201,7 @@ describe('handleSns', () => {
     expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
       mockBounceDoc.formId,
     )
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
 
   it('should return 400 when errors are thrown in notifyAdminOfBounce', async () => {
@@ -239,7 +238,7 @@ describe('handleSns', () => {
     expect(MockBounceService.notifyAdminOfBounce).toHaveBeenCalledWith(
       mockBounceDoc,
     )
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
 
   it('should return 200 when VersionErrors are thrown', async () => {
