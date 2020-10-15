@@ -1,6 +1,7 @@
 import { promises as dns } from 'dns'
 import ip from 'ip'
 
+import config from '../../../config/config'
 import { isValidHttpsUrl } from '../../../shared/util/url-validation'
 
 import { WebhookValidationError } from './webhook.errors'
@@ -19,6 +20,13 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<any> => {
       )
     }
     const urlParsed = new URL(webhookUrl)
+    if (urlParsed.origin === config.app.appUrl) {
+      return reject(
+        new WebhookValidationError(
+          `You cannot send responses back to ${config.app.appUrl}.`,
+        ),
+      )
+    }
     dns
       .resolve(urlParsed.hostname)
       .then((addresses) => {
