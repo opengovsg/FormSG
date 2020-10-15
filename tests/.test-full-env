@@ -65,3 +65,5 @@ AWS_ACCESS_KEY_ID=fakeAccessKeyId
 AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
 
 AWS_ENDPOINT=http://localhost:4566
+
+APP_URL=https://example.com

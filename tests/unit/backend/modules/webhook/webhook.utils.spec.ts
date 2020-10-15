@@ -37,4 +37,14 @@ describe('Webhook URL validation', () => {
       ),
     )
   })
+
+  it('should reject URLs which start with the app URL', async () => {
+    await expect(
+      validateWebhookUrl('https://example.com/test'),
+    ).rejects.toStrictEqual(
+      new WebhookValidationError(
+        'You cannot send responses back to https://example.com.',
+      ),
+    )
+  })
 })
