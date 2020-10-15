@@ -38,7 +38,7 @@ describe('Webhook URL validation', () => {
     )
   })
 
-  it('should reject URLs which start with the app URL', async () => {
+  it('should reject URLs in the same domain as the app URL', async () => {
     await expect(
       validateWebhookUrl('https://example.com/test'),
     ).rejects.toStrictEqual(
