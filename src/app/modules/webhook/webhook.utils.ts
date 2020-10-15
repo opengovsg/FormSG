@@ -19,8 +19,9 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<any> => {
         new WebhookValidationError(`${webhookUrl} is not a valid HTTPS URL.`),
       )
     }
-    const urlParsed = new URL(webhookUrl)
-    if (urlParsed.origin === config.app.appUrl) {
+    const webhookUrlParsed = new URL(webhookUrl)
+    const appUrlParsed = new URL(config.app.appUrl)
+    if (webhookUrlParsed.hostname === appUrlParsed.hostname) {
       return reject(
         new WebhookValidationError(
           `You cannot send responses back to ${config.app.appUrl}.`,
@@ -28,7 +29,7 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<any> => {
       )
     }
     dns
-      .resolve(urlParsed.hostname)
+      .resolve(webhookUrlParsed.hostname)
       .then((addresses) => {
         if (!addresses.length) {
           return reject(
