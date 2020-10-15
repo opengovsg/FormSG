@@ -663,7 +663,7 @@ function makeModule(connection) {
       if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
         return res
           .status(StatusCodes.BAD_REQUEST)
-          .send(`Your file type "${req.body.fileType}" is not supported`)
+          .json(`Your file type "${req.body.fileType}" is not supported`)
       }
 
       s3.createPresignedPost(
@@ -710,7 +710,7 @@ function makeModule(connection) {
       if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
         return res
           .status(StatusCodes.BAD_REQUEST)
-          .send(`Your file type "${req.body.fileType}" is not supported`)
+          .json(`Your file type "${req.body.fileType}" is not supported`)
       }
 
       s3.createPresignedPost(

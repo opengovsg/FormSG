@@ -42,7 +42,7 @@ export const handleCheckUser: RequestHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).send(errorMessage)
+      return res.status(statusCode).json(errorMessage)
     })
 }
 
@@ -86,7 +86,7 @@ export const handleLoginSendOtp: RequestHandler<
           meta: logMeta,
         })
 
-        return res.status(StatusCodes.OK).send(`OTP sent to ${email}!`)
+        return res.status(StatusCodes.OK).json(`OTP sent to ${email}!`)
       })
       // Step 4b: Error occurred whilst sending otp.
       .mapErr((error) => {
@@ -99,7 +99,7 @@ export const handleLoginSendOtp: RequestHandler<
           error,
           /* coreErrorMessage=*/ 'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
         )
-        return res.status(statusCode).send(errorMessage)
+        return res.status(statusCode).json(errorMessage)
       })
   )
 }
@@ -135,7 +135,7 @@ export const handleLoginVerifyOtp: RequestHandler<
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).send(errorMessage)
+    return res.status(statusCode).json(errorMessage)
   }
 
   // Since there is no error, agency is retrieved from validation.
@@ -156,7 +156,7 @@ export const handleLoginVerifyOtp: RequestHandler<
 
           return res
             .status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(coreErrorMessage)
+            .json(coreErrorMessage)
         }
 
         // TODO(#212): Should store only userId in session.
@@ -182,7 +182,7 @@ export const handleLoginVerifyOtp: RequestHandler<
           error,
           coreErrorMessage,
         )
-        return res.status(statusCode).send(errorMessage)
+        return res.status(statusCode).json(errorMessage)
       })
   )
 }
