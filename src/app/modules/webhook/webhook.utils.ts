@@ -1,6 +1,7 @@
 import { promises as dns } from 'dns'
 import ip from 'ip'
 
+import config from '../../../config/config'
 import { isValidHttpsUrl } from '../../../shared/util/url-validation'
 
 import { WebhookValidationError } from './webhook.errors'
@@ -18,9 +19,17 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<any> => {
         new WebhookValidationError(`${webhookUrl} is not a valid HTTPS URL.`),
       )
     }
-    const urlParsed = new URL(webhookUrl)
+    const webhookUrlParsed = new URL(webhookUrl)
+    const appUrlParsed = new URL(config.app.appUrl)
+    if (webhookUrlParsed.hostname === appUrlParsed.hostname) {
+      return reject(
+        new WebhookValidationError(
+          `You cannot send responses back to ${config.app.appUrl}.`,
+        ),
+      )
+    }
     dns
-      .resolve(urlParsed.hostname)
+      .resolve(webhookUrlParsed.hostname)
       .then((addresses) => {
         if (!addresses.length) {
           return reject(
