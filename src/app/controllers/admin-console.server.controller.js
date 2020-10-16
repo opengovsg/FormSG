@@ -3,24 +3,22 @@
 /**
  * Module dependencies.
  */
+const _ = require('lodash')
 const mongoose = require('mongoose')
 const moment = require('moment-timezone')
 const { StatusCodes } = require('http-status-codes')
 
-const getLoginModel = require('../models/login.server.model').default
 const getSubmissionModel = require('../models/submission.server.model').default
 const getFormStatisticsTotalModel = require('../models/form_statistics_total.server.model')
   .default
 const getFormModel = require('../models/form.server.model').default
+const { createReqMeta } = require('../utils/request')
 
-const Login = getLoginModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
 const FormStatisticsTotal = getFormStatisticsTotalModel(mongoose)
 const Form = getFormModel(mongoose)
-const _ = require('lodash')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { createReqMeta } = require('../utils/request')
 
 // Examples search-specific constants
 const PAGE_SIZE = 16 // maximum number of results to return
@@ -726,105 +724,6 @@ exports.getSingleExampleFormUsingAggregateCollection = function (req, res) {
         })
       }
       return res.status(status).json(result)
-    },
-  )
-}
-
-exports.getLoginStats = function (req, res) {
-  let { yr, mth, esrvcId } = req.query
-  let year = parseInt(yr)
-  let month = parseInt(mth)
-
-  const startOfMonth = moment
-    .tz([year, month], 'Asia/Singapore')
-    .startOf('month')
-  const endOfMonth = moment(startOfMonth).endOf('month')
-  Login.aggregate(
-    [
-      {
-        $match: {
-          esrvcId,
-          created: {
-            $gte: startOfMonth.toDate(),
-            $lte: endOfMonth.toDate(),
-          },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            form: '$form',
-            admin: '$admin',
-            authType: '$authType',
-          },
-          total: { $sum: 1 },
-        },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id.admin',
-          foreignField: '_id',
-          as: 'userInfo',
-        },
-      },
-      {
-        $unwind: '$userInfo',
-      },
-      {
-        $lookup: {
-          from: 'forms',
-          localField: '_id.form',
-          foreignField: '_id',
-          as: 'formInfo',
-        },
-      },
-      {
-        $unwind: '$formInfo',
-      },
-      {
-        $project: {
-          _id: 0,
-          adminEmail: '$userInfo.email',
-          formName: '$formInfo.title',
-          total: '$total',
-          formId: '$_id.form',
-          authType: '$_id.authType',
-        },
-      },
-    ],
-    function (error, loginStats) {
-      if (error) {
-        logger.error({
-          message: 'Failed to retrieve billing records',
-          meta: {
-            action: 'getLoginStats',
-            ...createReqMeta(req),
-          },
-          error,
-        })
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Error in retrieving billing records' })
-      } else if (!loginStats) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: 'No billing records found' })
-      } else {
-        logger.info({
-          message: `Billing search for ${esrvcId} by ${
-            req.session.user && req.session.user.email
-          }`,
-          meta: {
-            action: 'getLoginStats',
-            ...createReqMeta(req),
-          },
-        })
-
-        return res.json({
-          loginStats,
-        })
-      }
     },
   )
 }

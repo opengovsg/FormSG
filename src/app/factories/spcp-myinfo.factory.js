@@ -1,4 +1,3 @@
-const adminConsole = require('../controllers/admin-console.server.controller')
 const spcp = require('../controllers/spcp.server.controller')
 const myInfo = require('../controllers/myinfo.server.controller')
 const admin = require('../controllers/admin-forms.server.controller')
@@ -111,7 +110,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       appendVerifiedSPCPResponses: spcp.appendVerifiedSPCPResponses,
       encryptedVerifiedFields: spcp.encryptedVerifiedFields,
       passThroughSpcp: admin.passThroughSpcp,
-      getLoginStats: adminConsole.getLoginStats,
       verifyMyInfoVals: myInfo.verifyMyInfoVals,
       returnSpcpRedirectURL: spcp.returnSpcpRedirectURL,
       singPassLogin: spcp.singPassLogin(ndiConfig),
@@ -132,10 +130,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       appendVerifiedSPCPResponses: (req, res, next) => next(),
       encryptedVerifiedFields: (req, res, next) => next(),
       passThroughSpcp: (req, res, next) => next(),
-      getLoginStats: (req, res) =>
-        res.json({
-          loginStats: [],
-        }),
       verifyMyInfoVals: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),

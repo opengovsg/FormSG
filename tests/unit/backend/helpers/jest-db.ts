@@ -4,8 +4,14 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
+import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import {
+  IAgencySchema,
+  IFormSchema,
+  IUserSchema,
+  ResponseMode,
+} from 'src/types'
 
 /**
  * Connect to the in-memory database using MONGO_URL exposed by
@@ -115,6 +121,44 @@ const insertFormCollectionReqs = async ({
   return { agency, user }
 }
 
+const insertEmailForm = async ({
+  formId,
+  userId,
+  mailDomain = 'test.gov.sg',
+  mailName = 'test',
+}: {
+  formId?: ObjectID
+  userId?: ObjectID
+  mailName?: string
+  mailDomain?: string
+} = {}): Promise<{
+  form: IFormSchema
+  user: IUserSchema
+  agency: IAgencySchema
+}> => {
+  const { user, agency } = await insertFormCollectionReqs({
+    userId,
+    mailDomain,
+    mailName,
+  })
+
+  const Form = getFormModel(mongoose)
+
+  const form = await Form.create({
+    title: 'example form title',
+    admin: user._id,
+    responseMode: ResponseMode.Email,
+    emails: [user.email],
+    _id: formId,
+  })
+
+  return {
+    form,
+    user,
+    agency,
+  }
+}
+
 const dbHandler = {
   connect,
   closeDatabase,
@@ -123,6 +167,7 @@ const dbHandler = {
   insertUser,
   insertFormCollectionReqs,
   clearCollection,
+  insertEmailForm,
 }
 
 export default dbHandler
