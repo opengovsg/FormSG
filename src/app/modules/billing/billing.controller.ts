@@ -67,6 +67,8 @@ export const handleGetBillInfo: RequestHandler<
     }`,
     meta: {
       action: 'handleGetBillInfo',
+      ...createReqMeta(req),
+      esrvcId,
     },
   })
 
