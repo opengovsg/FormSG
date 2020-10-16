@@ -202,7 +202,7 @@
     "copy-webpack-plugin": "^6.0.2",
     "core-js": "^3.6.4",
     "coveralls": "^3.1.0",
-    "css-loader": "^2.1.1",
+    "css-loader": "^5.0.0",
     "csv-parse": "^4.12.0",
     "env-cmd": "^10.1.0",
     "eslint": "^7.10.0",
