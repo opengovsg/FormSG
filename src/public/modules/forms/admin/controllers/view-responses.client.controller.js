@@ -412,7 +412,7 @@ function ViewResponsesController(
   // passed and is still downloading after export button click.
   let timeoutPromise
   let progressModal
-  $scope.$watch('csvDownloading', function (csvDownloading) {
+  $scope.$watch('vm.csvDownloading', function (csvDownloading) {
     if (!csvDownloading) {
       if (timeoutPromise) {
         $timeout.cancel(timeoutPromise)
