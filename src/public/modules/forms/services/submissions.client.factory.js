@@ -150,6 +150,10 @@ function SubmissionsFactory(
         params.page
       }`
 
+      if (params.startDate && params.endDate) {
+        resUrl += `&startDate=${params.startDate}&endDate=${params.endDate}`
+      }
+
       if (params.filterBySubmissionRefId) {
         resUrl += `&submissionId=${params.filterBySubmissionRefId}`
       }

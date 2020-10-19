@@ -125,6 +125,7 @@ async function checkDownloadCsv(t, formData, authData, formId) {
   let { formFields, formOptions } = formData
   formFields = formFields.concat(getAuthFields(formOptions.authType, authData))
   await t.click(dataTab.exportBtn)
+  await t.click(dataTab.exportBtnDropdownResponses)
   await t.wait(2000)
   const csvContent = await fs.promises.readFile(
     `${getDownloadsFolder()}/${formOptions.title}-${formId}.csv`,

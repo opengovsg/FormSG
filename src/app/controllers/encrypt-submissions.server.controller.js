@@ -215,103 +215,19 @@ exports.saveResponseToDb = function (req, res, next) {
     })
 }
 
-/**
- * Return metadata for encrypted form responses matching form._id
- * @param {Object} req - Express request object
- * @param {String} req.query.pageNo - page of table to return data for
- * @param {Object} req.form - the form
- * @param {Object} res - Express response object
- */
-exports.getMetadata = function (req, res) {
-  let pageSize = 10
-  let { page, submissionId } = req.query || {}
-  let numToSkip = parseInt(page - 1 || 0) * pageSize
-
+function getMetadataForSingleSubmission(req, res, submissionId) {
   let matchClause = {
     form: req.form._id,
     submissionType: 'encryptSubmission',
   }
 
-  if (submissionId) {
-    if (mongoose.Types.ObjectId.isValid(submissionId)) {
-      matchClause._id = mongoose.Types.ObjectId(submissionId)
-      // Reading from primary to avoid any contention issues with bulk queries on secondary servers
-      Submission.findOne(matchClause, { created: 1 })
-        .read('primary')
-        .exec((err, result) => {
-          if (err) {
-            logger.error({
-              message: 'Failure retrieving metadata from database',
-              meta: {
-                action: 'getMetadata',
-                ...createReqMeta(req),
-              },
-              error: err,
-            })
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-              message: errorHandler.getMongoErrorMessage(err),
-            })
-          }
-          if (!result) {
-            return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
-          }
-          let entry = {
-            number: 1,
-            refNo: result._id,
-            submissionTime: moment(result.created)
-              .tz('Asia/Singapore')
-              .format('Do MMM YYYY, h:mm:ss a'),
-          }
-          return res.status(HttpStatus.OK).json({ metadata: [entry], count: 1 })
-        })
-    } else {
-      return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
-    }
-  } else {
-    Submission.aggregate([
-      {
-        $match: matchClause,
-      },
-      {
-        $sort: { created: -1 },
-      },
-      {
-        $facet: {
-          pageResults: [
-            {
-              $skip: numToSkip,
-            },
-            {
-              $limit: pageSize,
-            },
-            {
-              $project: {
-                _id: 1,
-                created: 1,
-              },
-            },
-          ],
-          allResults: [
-            {
-              $group: {
-                _id: null,
-                count: {
-                  $sum: 1,
-                },
-              },
-            },
-            {
-              $project: {
-                _id: 0,
-              },
-            },
-          ],
-        },
-      },
-    ])
-      .allowDiskUse(true) // prevents out-of-memory for large search results (max 100MB)
+  if (mongoose.Types.ObjectId.isValid(submissionId)) {
+    matchClause._id = mongoose.Types.ObjectId(submissionId)
+    // Reading from primary to avoid any contention issues with bulk queries on secondary servers
+    Submission.findOne(matchClause, { created: 1 })
+      .read('primary')
       .exec((err, result) => {
-        if (err || !result) {
+        if (err) {
           logger.error({
             message: 'Failure retrieving metadata from database',
             meta: {
@@ -320,29 +236,149 @@ exports.getMetadata = function (req, res) {
             },
             error: err,
           })
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
             message: errorHandler.getMongoErrorMessage(err),
           })
-        } else {
-          const [{ pageResults, allResults }] = result
-          let [numResults] = allResults
-          let count = (numResults && numResults.count) || 0
-          let number = count - numToSkip
-          let metadata = pageResults.map((data) => {
-            let entry = {
-              number,
-              refNo: data._id,
-              submissionTime: moment(data.created)
-                .tz('Asia/Singapore')
-                .format('Do MMM YYYY, h:mm:ss a'),
-            }
-            number--
-            return entry
-          })
-          return res.status(StatusCodes.OK).json({ metadata, count })
         }
+        if (!result) {
+          return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
+        }
+        let entry = {
+          number: 1,
+          refNo: result._id,
+          submissionTime: moment(result.created)
+            .tz('Asia/Singapore')
+            .format('Do MMM YYYY, h:mm:ss a'),
+        }
+        return res.status(HttpStatus.OK).json({ metadata: [entry], count: 1 })
       })
+  } else {
+    return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
   }
+}
+
+/**
+ * Return metadata for encrypted form responses matching form._id
+ * @param {Object} req - Express request object
+ * @param {String} req.query.pageNo - page of table to return data for. If -1, return all metadata.
+ * @param {String} req.query.submissionId - (optional) submission Id of the entry we want to return data for
+ * @param {String} req.query.startDate - (optional) start date of the period in which we want to retrieve submissions for
+ * @param {String} req.query.endDate - (optional) end date of the period in which we want to retrieve submissions for
+ * @param {Object} req.form - the form
+ * @param {Object} res - Express response object
+ */
+exports.getMetadata = function (req, res) {
+  let pageSize = 10
+  let { page, submissionId } = req.query || {}
+  let numToSkip = parseInt(page - 1 || 0) * pageSize
+
+  // If we specify a submission ID, we will only return the metadata for that entry.
+  if (submissionId) {
+    return getMetadataForSingleSubmission(req, res, submissionId)
+  }
+
+  if (
+    isMalformedDate(req.query.startDate) ||
+    isMalformedDate(req.query.endDate)
+  ) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: 'Malformed date parameter',
+    })
+  }
+
+  // This is implemented for retrieving all submission metadata for attachment downloads.
+  if (page == -1) {
+    numToSkip = 0
+    page = 0
+    pageSize = 1000000000
+  }
+
+  // If a start and end date is added, we add this to the conditions.
+  const augmentedQuery = createQueryWithDateParam(
+    req.query.startDate,
+    req.query.endDate,
+  )
+
+  let matchClause = {
+    form: req.form._id,
+    submissionType: 'encryptSubmission',
+    ...augmentedQuery,
+  }
+
+  Submission.aggregate([
+    {
+      $match: matchClause,
+    },
+    {
+      $sort: { created: -1 },
+    },
+    {
+      $facet: {
+        pageResults: [
+          {
+            $skip: numToSkip,
+          },
+          {
+            $limit: pageSize,
+          },
+          {
+            $project: {
+              _id: 1,
+              created: 1,
+            },
+          },
+        ],
+        allResults: [
+          {
+            $group: {
+              _id: null,
+              count: {
+                $sum: 1,
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+            },
+          },
+        ],
+      },
+    },
+  ])
+    .allowDiskUse(true) // prevents out-of-memory for large search results (max 100MB)
+    .exec((err, result) => {
+      if (err || !result) {
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: {
+            action: 'getMetadata',
+            ...createReqMeta(req),
+          },
+          error: err,
+        })
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: errorHandler.getMongoErrorMessage(err),
+        })
+      } else {
+        const [{ pageResults, allResults }] = result
+        let [numResults] = allResults
+        let count = (numResults && numResults.count) || 0
+        let number = count - numToSkip
+        let metadata = pageResults.map((data) => {
+          let entry = {
+            number,
+            refNo: data._id,
+            submissionTime: moment(data.created)
+              .tz('Asia/Singapore')
+              .format('Do MMM YYYY, h:mm:ss a'),
+          }
+          number--
+          return entry
+        })
+        return res.status(StatusCodes.OK).json({ metadata, count })
+      }
+    })
 }
 
 /**

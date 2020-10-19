@@ -51,6 +51,8 @@ function ViewResponsesController(
   vm.filterBySubmissionRefIdMatcher = /^[0-9A-Fa-f]{24}$/
   vm.filterBySubmissionShowFilterBox = false
 
+  vm.downloadAttachmentResponsesCount = 0
+
   // Three views:
   // 1 - Unlock view for verifying form password
   // 2 - Unlocked view with responses table
@@ -244,11 +246,104 @@ function ViewResponsesController(
     })
   }
 
-  vm.downloadAllAttachments = function () {
+  vm.confirmSubmissionCountsBeforeDownload = function () {
+    let params = {
+      formId: vm.myform._id,
+      formTitle: vm.myform.title,
+    }
+    if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
+      params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
+        'YYYY-MM-DD',
+      )
+      params.endDate = moment(new Date(vm.datePicker.date.endDate)).format(
+        'YYYY-MM-DD',
+      )
+    }
+    Submissions.count(params).then((responsesCount) => {
+      vm.downloadAttachmentResponsesCount = responsesCount
+      vm.confirmDownloadModal = $uibModal.open({
+        backdrop: 'static',
+        templateUrl:
+          'modules/forms/admin/views/download-all-attachments.client.modal.html',
+        scope: $scope,
+      })
+    })
+  }
+
+  vm.downloadMultipleSubmissionAttachments = function () {
+    vm.confirmDownloadModal.close()
+    vm.csvDownloading = true
+    let params = {
+      formId: vm.myform._id,
+      page: -1,
+    }
+    if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
+      params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
+        'YYYY-MM-DD',
+      )
+      params.endDate = moment(new Date(vm.datePicker.date.endDate)).format(
+        'YYYY-MM-DD',
+      )
+    }
+    Submissions.getMetadata(params)
+      .then((data) => {
+        let refIds = data.metadata.map((d) => d.refNo)
+        let downloadPromises = refIds.map((submissionId) => {
+          Submissions.getEncryptedResponse({
+            formId: vm.myform._id,
+            submissionId,
+          }).then((response) => {
+            let displayedContent
+            const { content, verified, attachmentMetadata } = response
+            const decrypted = FormSgSdk.crypto.decrypt(
+              vm.encryptionKey.secretKey,
+              {
+                encryptedContent: content,
+                verifiedContent: verified,
+              },
+            )
+            displayedContent = processDecryptedContent(decrypted)
+
+            let questionCount = 0
+            let attachmentDownloadUrls = new Map()
+            displayedContent.forEach((field) => {
+              // Populate question number
+              if (field.fieldType !== 'section') {
+                field.questionNumber = ++questionCount
+              }
+              // Populate S3 presigned URL for attachments
+              if (attachmentMetadata[field._id]) {
+                attachmentDownloadUrls.set(questionCount, {
+                  url: attachmentMetadata[field._id],
+                  filename: field.answer,
+                })
+                field.downloadUrl = attachmentMetadata[field._id]
+              }
+            })
+
+            return vm.downloadAllAttachments(
+              attachmentDownloadUrls,
+              submissionId,
+            )
+          })
+        })
+        return Promise.all(downloadPromises)
+      })
+      .then(() => {
+        vm.csvDownloading = false
+      })
+  }
+
+  vm.downloadAllAttachments = function (attachmentDownloadUrls, refNo) {
+    // If there are no files, we don't want to trigger a download of an empty zip file
+    if (attachmentDownloadUrls.size == 0) {
+      return Promise.resolve()
+    }
+
     var zip = new JSZip()
     let downloadPromises = []
 
-    for (const [questionNum, metadata] of vm.attachmentDownloadUrls) {
+    for (const [questionNum, metadata] of attachmentDownloadUrls) {
       downloadPromises.push(
         Submissions.downloadAndDecryptAttachment(
           metadata.url,
@@ -262,22 +357,18 @@ function ViewResponsesController(
       )
     }
 
-    Promise.all(downloadPromises)
+    return Promise.all(downloadPromises)
       .then(() => {
-        zip.generateAsync({ type: 'blob' }).then((blob) => {
-          triggerFileDownload(
-            blob,
-            'RefNo ' +
-              vm.tableParams.data[vm.currentResponse.index].refNo +
-              '.zip',
-          )
+        return zip.generateAsync({ type: 'blob' }).then((blob) => {
+          triggerFileDownload(blob, 'RefNo ' + refNo + '.zip')
         })
       })
       .catch((error) => {
         console.error(error)
         Toastr.error(
-          'An error occurred while downloading the attachments in a ZIP file. Try downloading them separately.',
+          `An error occurred while downloading the attachments from ${refNo} in a ZIP file. Try downloading them separately.`,
         )
+        throw error
       })
   }
 
