@@ -48,7 +48,7 @@
             class="row inputs-container inputs-container--{{myform.responseMode}}"
             ng-init="collab.form.role = ROLES.EDITOR"
           >
-            <!-- The email input takes up the full row if it's email mode/non-beta user, three quarters otherwise -->
+            <!-- The email input takes up the full row if it's read-only user, three quarters otherwise -->
             <div
               id="collab-email"
               class="col-xs-12"
@@ -217,7 +217,7 @@
                 id="existing-collab-role"
                 class="col-xs-5 col-sm-3 role-column"
               >
-                <!-- Text only, for email or view-only collaborators list, as well as own email, since you cannot edit your own rights -->
+                <!-- Text only, for view-only collaborators list, as well as own email, since you cannot edit your own rights -->
                 <div
                   id="role-text-only"
                   ng-if="!userCanEdit || user.email === userObj.email.toLowerCase()"
