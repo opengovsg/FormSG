@@ -546,8 +546,15 @@ const getExampleFormsUsing = (
       })
   }
 
-  mongoQuery.catch((err) => {
-    return cb(err, StatusCodes.INTERNAL_SERVER_ERROR, {
+  mongoQuery.catch((error) => {
+    logger.error({
+      message: 'Error with Examples Search query',
+      meta: {
+        action: 'getExampleFormsUsing',
+      },
+      error,
+    })
+    return cb(error, StatusCodes.INTERNAL_SERVER_ERROR, {
       message: 'Error in retrieving example forms.',
     })
   })
