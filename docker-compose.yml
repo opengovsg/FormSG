@@ -16,6 +16,7 @@ services:
       - '5156:5156' # mockpass ports
       - '9229:9229' # Node debugger port
     environment:
+      - NODE_OPTIONS=--max-old-space-size=2048
       - NODE_ENV=development
       - DB_HOST=mongodb://database:27017/formsg
       - APP_NAME=FormSG
