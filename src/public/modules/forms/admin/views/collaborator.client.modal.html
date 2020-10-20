@@ -48,11 +48,10 @@
             class="row inputs-container inputs-container--{{myform.responseMode}}"
             ng-init="collab.form.role = ROLES.EDITOR"
           >
-            <!-- The email input takes up the full row if it's email mode/non-beta user, three quarters otherwise -->
             <div
               id="collab-email"
-              class="col-xs-12"
-              ng-class="(userCanEdit && myform.responseMode === 'encrypt') ? 'col-sm-9' : ''"
+              ng-if="userCanEdit"
+              class="col-sm-9 col-xs-12"
             >
               <input
                 ng-model="collab.form.email"
@@ -75,7 +74,7 @@
             <!-- Viewer mode only dropdown menu-->
             <div
               id="collab-role"
-              ng-if="userCanEdit && myform.responseMode === 'encrypt'"
+              ng-if="userCanEdit"
               class="col-xs-12 col-sm-3 role-column"
             >
               <div
@@ -217,10 +216,10 @@
                 id="existing-collab-role"
                 class="col-xs-5 col-sm-3 role-column"
               >
-                <!-- Text only, for email or view-only collaborators list, as well as own email, since you cannot edit your own rights -->
+                <!-- Text only, for view-only collaborators list, as well as own email, since you cannot edit your own rights -->
                 <div
                   id="role-text-only"
-                  ng-if="!userCanEdit || myform.responseMode === 'email' || user.email === userObj.email.toLowerCase()"
+                  ng-if="!userCanEdit || user.email === userObj.email.toLowerCase()"
                 >
                   <span class="pull-left current-role-text"
                     >{{ permissionsToRole(userObj) }}</span
@@ -234,7 +233,7 @@
                     on-toggle stops being called, hence we call toggleScrollLock using the is-open's property. -->
                 <div
                   id="role-dropdown"
-                  ng-if="userCanEdit && myform.responseMode === 'encrypt' && user.email !== userObj.email.toLowerCase()"
+                  ng-if="userCanEdit && user.email !== userObj.email.toLowerCase()"
                   uib-dropdown
                   uib-dropdown-toggle
                   dropdown-append-to-body

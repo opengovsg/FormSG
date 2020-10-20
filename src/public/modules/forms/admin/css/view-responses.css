@@ -94,7 +94,7 @@
   border: 1px solid #b8b8b8;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   #responses-tab #date-picker input {
     width: 100%;
   }
@@ -102,7 +102,7 @@
 
 #responses-tab .response-stats {
   white-space: nowrap;
-  min-width: 240px;
+  min-width: 280px;
 }
 
 #responses-tab .datepicker-export-container {
@@ -124,7 +124,7 @@
   justify-content: space-between;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 1200px) {
   #responses-tab .flex-row {
     display: -webkit-box;
     display: -ms-flexbox;

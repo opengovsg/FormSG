@@ -1,4 +1,4 @@
-import { isCelebrateError } from 'celebrate'
+import { errors, isCelebrateError } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
@@ -6,6 +6,7 @@ import get from 'lodash/get'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
+const celebrateErrorHandler = errors()
 
 const errorHandlerMiddlewares = (): (
   | ErrorRequestHandler
@@ -37,12 +38,11 @@ const errorHandlerMiddlewares = (): (
             action: 'genericErrorHandlerMiddleware',
             // formId is only present for Joi validated routes that require it
             formId: get(req, 'form._id', null),
+            details: Object.fromEntries(err.details),
           },
           error: err,
         })
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Some required parameters are missing' })
+        return celebrateErrorHandler(err, req, res, next)
       }
 
       logger.error({

@@ -10,6 +10,7 @@ import url from 'url'
 
 import { AnalyticsRouter } from '../../app/modules/analytics/analytics.routes'
 import { AuthRouter } from '../../app/modules/auth/auth.routes'
+import { BillingRouter } from '../../app/modules/billing/billing.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
@@ -135,6 +136,7 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/user', UserRouter)
   app.use('/emailnotifications', BounceRouter)
   app.use('/transaction', VfnRouter)
+  app.use('/billing', BillingRouter)
   app.use('/analytics', AnalyticsRouter)
 
   app.use(sentryMiddlewares())
