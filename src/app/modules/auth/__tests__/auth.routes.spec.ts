@@ -8,6 +8,7 @@ import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
+import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
@@ -38,9 +39,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'email' } }),
+      )
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -54,9 +55,11 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'email', message: 'Please enter a valid email' },
+        }),
+      )
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -131,9 +134,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'email' } }),
+      )
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -147,9 +150,11 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'email', message: 'Please enter a valid email' },
+        }),
+      )
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
@@ -267,9 +272,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'email' } }),
+      )
     })
 
     it('should return 400 when body.otp is not provided as a param', async () => {
@@ -280,9 +285,9 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'otp' } }),
+      )
     })
 
     it('should return 400 when body.email is invalid', async () => {
@@ -296,9 +301,11 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'email', message: 'Please enter a valid email' },
+        }),
+      )
     })
 
     it('should return 400 when body.otp is less than 6 digits', async () => {
@@ -310,9 +317,11 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'otp', message: 'Please enter a valid otp' },
+        }),
+      )
     })
 
     it('should return 400 when body.otp is 6 characters but does not consist purely of digits', async () => {
@@ -324,9 +333,11 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'otp', message: 'Please enter a valid otp' },
+        }),
+      )
     })
 
     it('should return 401 when domain of body.email does not exist in Agency collection', async () => {
