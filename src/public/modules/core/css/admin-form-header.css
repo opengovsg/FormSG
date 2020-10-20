@@ -365,7 +365,7 @@
   #collaborator-modal-body #collab-list {
     /* Max height should avoid extending the screen, because if the modal + dropdown menu is taller than
       the current screen's height, the bottom of the page will just appear white and not load. */
-    max-height: calc(100vh - 608px);
+    max-height: calc(100vh - 450px);
     overflow-y: auto;
     padding-right: 39px;
   }
