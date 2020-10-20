@@ -195,7 +195,7 @@ Please contact FormSG (formsg@tech.gov.sg) for any details.
 
 ## Acknowledgements
 
-FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [Tellform](https://github.com/tellform), on which FormSG is based. 
+FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [TellForm](https://github.com/tellform), on which FormSG is based. 
 
 Contributions have also been made by:  
 [@RyanAngJY](https://github.com/RyanAngJY)  
