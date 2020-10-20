@@ -6,15 +6,13 @@ const logger = require('../../../../config/logger').createLoggerWithLabel(
  * Interface which all field validators must implement
  *
  * @class FieldValidatorInterface
+ * @deprecated
  */
 class FieldValidatorInterface {
   constructor() {
     if (new.target === FieldValidatorInterface) {
       throw new Error('Abstract FieldValidatorInterface cannot be instantiated')
     }
-  }
-  isFieldTypeValid() {
-    throw new Error('isFieldTypeValid is not implemented')
   }
 
   isAnswerValid() {

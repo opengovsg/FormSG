@@ -5,16 +5,17 @@ import { ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
 import validator from 'validator'
 
-import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
+import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { BounceType } from '../../../types'
+
+import { MailSendError } from './mail.errors'
 import {
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
-  BounceType,
   SubmissionToAdminHtmlData,
-} from '../../types'
-import { MailSendError } from '../modules/mail/mail.errors'
+} from './mail.types'
 
 const logger = createLoggerWithLabel(module)
 

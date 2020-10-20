@@ -14,7 +14,7 @@ import {
 } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 import getVerificationModel from '../../models/verification.server.model'
-import MailService from '../../services/mail.service'
+import MailService from '../../services/mail/mail.service'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { generateOtp } from '../../utils/otp'
 

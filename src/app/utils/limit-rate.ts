@@ -6,7 +6,7 @@ import { merge } from 'lodash'
 
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { getRequestIp } from './request'
+import { createReqMeta } from './request'
 
 const logger = createLoggerWithLabel(module)
 
@@ -26,8 +26,7 @@ export const limitRate = (options: RateLimitOptions = {}): RateLimitFn => {
         message: 'Rate limit exceeded',
         meta: {
           action: 'limitRate',
-          url: req.url,
-          ip: getRequestIp(req),
+          ...createReqMeta(req),
           method: req.method,
           rateLimitInfo: req.rateLimit,
         },

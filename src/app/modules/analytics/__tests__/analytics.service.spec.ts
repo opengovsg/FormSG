@@ -1,6 +1,5 @@
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
@@ -11,6 +10,8 @@ import {
   ISubmissionSchema,
   SubmissionType,
 } from 'src/types'
+
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { DatabaseError } from '../../core/core.errors'
 import { MIN_SUB_COUNT } from '../analytics.constants'

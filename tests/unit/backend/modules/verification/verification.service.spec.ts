@@ -12,7 +12,7 @@ import {
   resetFieldInTransaction,
   verifyOtp,
 } from 'src/app/modules/verification/verification.service'
-import MailService from 'src/app/services/mail.service'
+import MailService from 'src/app/services/mail/mail.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { generateOtp } from 'src/app/utils/otp'
 import formsgSdk from 'src/config/formsg-sdk'
@@ -31,7 +31,7 @@ jest.mock('src/config/formsg-sdk')
 const MockFormsgSdk = mocked(formsgSdk, true)
 jest.mock('src/app/services/sms/sms.factory')
 const MockSmsFactory = mocked(SmsFactory, true)
-jest.mock('src/app/services/mail.service')
+jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
 jest.mock('bcrypt')
 const MockBcrypt = mocked(bcrypt, true)

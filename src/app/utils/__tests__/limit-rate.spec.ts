@@ -1,6 +1,7 @@
 import RateLimit from 'express-rate-limit'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { mocked } from 'ts-jest/utils'
+
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 jest.mock('express-rate-limit')
 const MockRateLimit = mocked(RateLimit, true)

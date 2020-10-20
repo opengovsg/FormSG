@@ -5,8 +5,8 @@ import { isEmpty } from 'lodash'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
-import MailService from '../../services/mail.service'
-import { getRequestIp, getTrace } from '../../utils/request'
+import MailService from '../../services/mail/mail.service'
+import { createReqMeta, getRequestIp } from '../../utils/request'
 import * as UserService from '../user/user.service'
 
 import * as AuthService from './auth.service'
@@ -36,8 +36,7 @@ export const handleCheckUser: RequestHandler<
         message: 'Domain validation error',
         meta: {
           action: 'handleCheckUser',
-          ip: getRequestIp(req),
-          trace: getTrace(req),
+          ...createReqMeta(req),
           email,
         },
         error,
@@ -64,8 +63,7 @@ export const handleLoginSendOtp: RequestHandler<
   const logMeta = {
     action: 'handleLoginSendOtp',
     email,
-    ip: requestIp,
-    trace: getTrace(req),
+    ...createReqMeta(req),
   }
 
   return (
@@ -124,8 +122,7 @@ export const handleLoginVerifyOtp: RequestHandler<
   const logMeta = {
     action: 'handleLoginVerifyOtp',
     email,
-    ip: getRequestIp(req),
-    trace: getTrace(req),
+    ...createReqMeta(req),
   }
   const coreErrorMessage = `Failed to process OTP. Please try again later and if the problem persists, submit our Support Form (${LINKS.supportFormLink}).`
 

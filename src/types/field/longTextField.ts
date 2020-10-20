@@ -1,17 +1,10 @@
-import { IField, IFieldSchema } from './baseField'
-
-export enum LongTextSelectedValidation {
-  Max = 'Maximum',
-  Min = 'Minimum',
-  Exact = 'Exact',
-  Range = 'Range',
-}
+import { IField, IFieldSchema, TextSelectedValidation } from './baseField'
 
 export type LongTextValidationOptions = {
-  customMax: number
-  customMin: number
-  customVal: number
-  selectedValidation: LongTextSelectedValidation | null
+  customMax: number | null
+  customMin: number | null
+  customVal: number | null
+  selectedValidation: TextSelectedValidation | null
 }
 
 export interface ILongTextField extends IField {

@@ -1,9 +1,7 @@
 import { Schema } from 'mongoose'
 
-import {
-  IShortTextFieldSchema,
-  ShortTextSelectedValidation,
-} from '../../../types'
+import { IShortTextFieldSchema } from '../../../types'
+import { TextSelectedValidation } from '../../../types/field/baseField'
 
 import { MyInfoSchema } from './baseField'
 
@@ -25,7 +23,7 @@ const createShortTextFieldSchema = () => {
       },
       selectedValidation: {
         type: String,
-        enum: [...Object.values(ShortTextSelectedValidation), null],
+        enum: [...Object.values(TextSelectedValidation), null],
         default: null,
       },
     },

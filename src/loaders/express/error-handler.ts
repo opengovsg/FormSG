@@ -1,4 +1,4 @@
-import { isCelebrateError, Segments } from 'celebrate'
+import { isCelebrateError } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
