@@ -188,47 +188,45 @@ function ViewResponsesController(
     }
 
     vm.csvDownloading = true
-    vm.awaitDownload = false
     csvDownloadCircuitBreaker
       .fire(params, vm.encryptionKey.secretKey)
       .then(function (result) {
         handleDownloadResult(result)
       })
       .catch(function (error) {
-        const isCircuitTripped = CircuitBreaker.isOurError(error)
-        if (!isCircuitTripped) {
-          handleDownloadError(error)
-        } else {
-          // TODO: During soft launch, downloads will proceed even in breaker open state
-          // When circuit breaker is hard launched, replace this code chunk with toastr informing user to try again in XX minutes
-          // Use else here instead of fallback because fallback will trigger once circuit trips, even on the first failed call
-          vm.awaitDownload = true
+        return new Promise((resolve) => {
+          // Wait for promise to resolve with outcome of download before going to finally
+          const isCircuitTripped = CircuitBreaker.isOurError(error)
+          if (!isCircuitTripped) {
+            handleDownloadError(error)
+            resolve('Failed')
+          } else {
+            // TODO: During soft launch, downloads will proceed even in breaker open state
+            // When circuit breaker is hard launched, replace this code chunk with toastr informing user to try again in XX minutes
+            // Use else here instead of fallback because fallback will trigger once circuit trips, even on the first failed call
 
-          GTag.downloadWhenBreakerOpen(params) // Tag GA if download attempt is made when breaker is open
+            GTag.downloadWhenBreakerOpen(params) // Tag GA if download attempt is made when breaker is open
 
-          vm.csvDownloading = true
-          Submissions.downloadEncryptedResponses(
-            params,
-            vm.encryptionKey.secretKey,
-          )
-            .then(function (result) {
-              handleDownloadResult(result)
-            })
-            .catch(function (error) {
-              handleDownloadError(error)
-            })
-            .finally(function () {
-              $timeout(function () {
-                vm.awaitDownload = false
-                vm.csvDownloading = false
+            vm.csvDownloading = true
+            Submissions.downloadEncryptedResponses(
+              params,
+              vm.encryptionKey.secretKey,
+            )
+              .then(function (result) {
+                handleDownloadResult(result)
+                csvDownloadCircuitBreaker.close() // Close circuit breaker if download is successful
+                resolve('Success')
               })
-            })
-        }
+              .catch(function (error) {
+                handleDownloadError(error)
+                resolve('Failed')
+              })
+          }
+        })
       })
       .finally(function () {
         $timeout(function () {
-          if (!vm.awaitDownload) vm.csvDownloading = false
-          vm.awaitDownload = false
+          vm.csvDownloading = false
         })
       })
   }
