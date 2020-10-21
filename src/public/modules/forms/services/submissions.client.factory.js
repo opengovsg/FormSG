@@ -134,7 +134,14 @@ function SubmissionsFactory(
         resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
       }
 
-      $http.get(resUrl).then(
+      // config object for $http service; see https://docs.angularjs.org/api/ng/service/$http
+      const httpConfig = {
+        method: 'GET',
+        url: resUrl,
+        timeout: 15000, // timeout if count is not resolved within 15 secs; see https://xhr.spec.whatwg.org/#event-xhr-timeout
+      }
+
+      $http(httpConfig).then(
         function (response) {
           deferred.resolve(response.data)
         },
@@ -208,195 +215,206 @@ function SubmissionsFactory(
         workerPool.forEach((worker) => worker.terminate())
       }
 
-      return this.count(params).then((expectedNumResponses) => {
-        return new Promise(function (resolve, reject) {
-          // No responses expected
-          if (expectedNumResponses === 0) {
-            return resolve({
-              expectedCount: 0,
-              successCount: 0,
-              errorCount: 0,
-            })
-          }
+      return this.count(params)
+        .then((expectedNumResponses) => {
+          return new Promise(function (resolve, reject) {
+            // No responses expected
+            if (expectedNumResponses === 0) {
+              return resolve({
+                expectedCount: 0,
+                successCount: 0,
+                errorCount: 0,
+              })
+            }
 
-          let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download`
-          if (params.startDate && params.endDate) {
-            resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
-          }
+            let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download`
+            if (params.startDate && params.endDate) {
+              resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
+            }
 
-          let experimentalCsvGenerator = new CsvMHGenerator(
-            expectedNumResponses,
-            NUM_OF_METADATA_ROWS,
-          )
-          let errorCount = 0
-          let unverifiedCount = 0
-          let receivedRecordCount = 0
+            let experimentalCsvGenerator = new CsvMHGenerator(
+              expectedNumResponses,
+              NUM_OF_METADATA_ROWS,
+            )
+            let errorCount = 0
+            let unverifiedCount = 0
+            let receivedRecordCount = 0
 
-          // Create a pool of decryption workers
-          const numWorkers = $window.navigator.hardwareConcurrency || 4
+            // Create a pool of decryption workers
+            const numWorkers = $window.navigator.hardwareConcurrency || 4
 
-          // Trigger analytics here before starting decryption worker.
-          GTag.downloadResponseStart(params, expectedNumResponses, numWorkers)
+            // Trigger analytics here before starting decryption worker.
+            GTag.downloadResponseStart(params, expectedNumResponses, numWorkers)
 
-          const workerPool = []
-          for (let i = 0; i < numWorkers; i++) {
-            workerPool.push(new DecryptionWorker())
-          }
+            const workerPool = []
+            for (let i = 0; i < numWorkers; i++) {
+              workerPool.push(new DecryptionWorker())
+            }
 
-          // Configure each worker
-          workerPool.forEach((worker) => {
-            // When worker returns a decrypted message
-            worker.onmessage = (event) => {
-              const { data } = event
-              const { csvRecord } = data
+            // Configure each worker
+            workerPool.forEach((worker) => {
+              // When worker returns a decrypted message
+              worker.onmessage = (event) => {
+                const { data } = event
+                const { csvRecord } = data
 
-              if (csvRecord.status === 'ERROR') {
-                errorCount++
-              } else if (csvRecord.status === 'UNVERIFIED') {
-                unverifiedCount++
-              } else {
-                // accumulate dataset
-                experimentalCsvGenerator.addRecord(csvRecord.submissionData)
+                if (csvRecord.status === 'ERROR') {
+                  errorCount++
+                } else if (csvRecord.status === 'UNVERIFIED') {
+                  unverifiedCount++
+                } else {
+                  // accumulate dataset
+                  experimentalCsvGenerator.addRecord(csvRecord.submissionData)
+                }
               }
-            }
-            // When worker fails to decrypt a message
-            worker.onerror = (error) => {
-              errorCount++
-              console.error('EncryptionWorker Error', error)
-            }
+              // When worker fails to decrypt a message
+              worker.onerror = (error) => {
+                errorCount++
+                console.error('EncryptionWorker Error', error)
+              }
 
-            // Initiate all workers with formsgSdkMode so they can spin up
-            // formsg sdk with the correct keys.
-            worker.postMessage({
-              init: true,
-              formsgSdkMode: $window.formsgSdkMode,
+              // Initiate all workers with formsgSdkMode so they can spin up
+              // formsg sdk with the correct keys.
+              worker.postMessage({
+                init: true,
+                formsgSdkMode: $window.formsgSdkMode,
+              })
             })
-          })
 
-          let downloadStartTime
+            let downloadStartTime
 
-          fetchStream(resUrl)
-            .then((response) => ndjsonStream(response.body))
-            .then((stream) => {
-              downloadStartTime = performance.now()
-              const reader = stream.getReader()
-              let read
-              reader
-                .read()
-                .then(
-                  (read = (result) => {
-                    if (result.done) return
-                    try {
-                      // round-robin scheduling
-                      workerPool[receivedRecordCount % numWorkers].postMessage({
-                        line: result.value,
-                        secretKey,
-                      })
-                      receivedRecordCount++
-                    } catch (error) {
-                      console.error('Error parsing JSON', error)
+            fetchStream(resUrl)
+              .then((response) => ndjsonStream(response.body))
+              .then((stream) => {
+                downloadStartTime = performance.now()
+                const reader = stream.getReader()
+                let read
+                reader
+                  .read()
+                  .then(
+                    (read = (result) => {
+                      if (result.done) return
+                      try {
+                        // round-robin scheduling
+                        workerPool[
+                          receivedRecordCount % numWorkers
+                        ].postMessage({
+                          line: result.value,
+                          secretKey,
+                        })
+                        receivedRecordCount++
+                      } catch (error) {
+                        console.error('Error parsing JSON', error)
+                      }
+
+                      reader.read().then(read) // recurse through the stream
+                    }),
+                  )
+                  .catch((err) => {
+                    if (!downloadStartTime) {
+                      // No start time, means did not even start http request.
+                      GTag.downloadNetworkFailure(params, err)
+                    } else {
+                      const downloadFailedTime = performance.now()
+                      const timeDifference =
+                        downloadFailedTime - downloadStartTime
+                      // Google analytics tracking for failure.
+                      GTag.downloadResponseFailure(
+                        params,
+                        numWorkers,
+                        expectedNumResponses,
+                        timeDifference,
+                        err,
+                      )
                     }
 
-                    reader.read().then(read) // recurse through the stream
-                  }),
-                )
-                .catch((err) => {
-                  if (!downloadStartTime) {
-                    // No start time, means did not even start http request.
-                    GTag.downloadNetworkFailure(params, err)
-                  } else {
-                    const downloadFailedTime = performance.now()
-                    const timeDifference =
-                      downloadFailedTime - downloadStartTime
-                    // Google analytics tracking for failure.
-                    GTag.downloadResponseFailure(
-                      params,
-                      numWorkers,
-                      expectedNumResponses,
-                      timeDifference,
+                    console.error(
+                      'Failed to download CSV, is there a network issue?',
                       err,
                     )
-                  }
+                    workerPool.forEach((worker) => worker.terminate())
+                    reject(err)
+                  })
+                  .finally(() => {
+                    function checkComplete() {
+                      // If all the records could not be decrypted
+                      if (
+                        errorCount + unverifiedCount ===
+                        expectedNumResponses
+                      ) {
+                        const failureEndTime = performance.now()
+                        const timeDifference =
+                          failureEndTime - downloadStartTime
+                        // Google analytics tracking for partial decrypt
+                        // failure.
+                        GTag.partialDecryptionFailure(
+                          params,
+                          numWorkers,
+                          experimentalCsvGenerator.length(),
+                          errorCount,
+                          timeDifference,
+                        )
+                        killWorkers(workerPool)
+                        reject(
+                          new Error(
+                            JSON.stringify({
+                              expectedCount: expectedNumResponses,
+                              successCount: experimentalCsvGenerator.length(),
+                              errorCount,
+                              unverifiedCount,
+                            }),
+                          ),
+                        )
+                      } else if (
+                        // All results have been decrypted
+                        experimentalCsvGenerator.length() +
+                          errorCount +
+                          unverifiedCount >=
+                        expectedNumResponses
+                      ) {
+                        killWorkers(workerPool)
+                        // Generate first three rows of meta-data before download
+                        experimentalCsvGenerator.addMetaDataFromSubmission(
+                          errorCount,
+                          unverifiedCount,
+                        )
+                        experimentalCsvGenerator.downloadCsv(
+                          `${params.formTitle}-${params.formId}.csv`,
+                        )
 
-                  console.error(
-                    'Failed to download CSV, is there a network issue?',
-                    err,
-                  )
-                  workerPool.forEach((worker) => worker.terminate())
-                  reject(err)
-                })
-                .finally(() => {
-                  function checkComplete() {
-                    // If all the records could not be decrypted
-                    if (errorCount + unverifiedCount === expectedNumResponses) {
-                      const failureEndTime = performance.now()
-                      const timeDifference = failureEndTime - downloadStartTime
-                      // Google analytics tracking for partial decrypt
-                      // failure.
-                      GTag.partialDecryptionFailure(
-                        params,
-                        numWorkers,
-                        experimentalCsvGenerator.length(),
-                        errorCount,
-                        timeDifference,
-                      )
-                      killWorkers(workerPool)
-                      reject(
-                        new Error(
-                          JSON.stringify({
-                            expectedCount: expectedNumResponses,
-                            successCount: experimentalCsvGenerator.length(),
-                            errorCount,
-                            unverifiedCount,
-                          }),
-                        ),
-                      )
-                    } else if (
-                      // All results have been decrypted
-                      experimentalCsvGenerator.length() +
-                        errorCount +
-                        unverifiedCount >=
-                      expectedNumResponses
-                    ) {
-                      killWorkers(workerPool)
-                      // Generate first three rows of meta-data before download
-                      experimentalCsvGenerator.addMetaDataFromSubmission(
-                        errorCount,
-                        unverifiedCount,
-                      )
-                      experimentalCsvGenerator.downloadCsv(
-                        `${params.formTitle}-${params.formId}.csv`,
-                      )
+                        const downloadEndTime = performance.now()
+                        const timeDifference =
+                          downloadEndTime - downloadStartTime
 
-                      const downloadEndTime = performance.now()
-                      const timeDifference = downloadEndTime - downloadStartTime
+                        // Google analytics tracking for success.
+                        GTag.downloadResponseSuccess(
+                          params,
+                          numWorkers,
+                          experimentalCsvGenerator.length(),
+                          timeDifference,
+                        )
 
-                      // Google analytics tracking for success.
-                      GTag.downloadResponseSuccess(
-                        params,
-                        numWorkers,
-                        experimentalCsvGenerator.length(),
-                        timeDifference,
-                      )
-
-                      resolve({
-                        expectedCount: expectedNumResponses,
-                        successCount: experimentalCsvGenerator.length(),
-                        errorCount,
-                        unverifiedCount,
-                      })
-                      // Kill class instance and reclaim the memory.
-                      experimentalCsvGenerator = null
-                    } else {
-                      $timeout(checkComplete, 100)
+                        resolve({
+                          expectedCount: expectedNumResponses,
+                          successCount: experimentalCsvGenerator.length(),
+                          errorCount,
+                          unverifiedCount,
+                        })
+                        // Kill class instance and reclaim the memory.
+                        experimentalCsvGenerator = null
+                      } else {
+                        $timeout(checkComplete, 100)
+                      }
                     }
-                  }
 
-                  checkComplete()
-                })
-            })
+                    checkComplete()
+                  })
+              })
+          })
         })
-      })
+        .catch(() => {
+          throw new Error('countFailed')
+        })
     },
   }
   return submissionService

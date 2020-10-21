@@ -157,19 +157,29 @@ function ViewResponsesController(
   // Helper function for handling download error
 
   const handleDownloadError = (error) => {
-    try {
-      const { errorCount, errorMessage } = JSON.parse(error.message)
+    if (error.toString() === 'Error: countFailed') {
       Toastr.error(
-        errorMessage ||
-          `Error downloading. ${errorCount} response(s) could not be decrypted. Please try again later.`,
-        { timeOut: 3000 },
+        `Error downloading, failed to receive a response. Please try again later.`,
+        {
+          timeOut: 5000,
+        },
       )
-    } catch (error) {
-      Toastr.error(`Error downloading. Please try again later.`, {
-        // Should still show error message to let user know download has failed
-        timeOut: 3000,
-      })
-      console.error('Unknown download encrypted responses error:\t', error)
+      console.error('Failed to retrieve count')
+    } else {
+      try {
+        const { errorCount, errorMessage } = JSON.parse(error.message)
+        Toastr.error(
+          errorMessage ||
+            `Error downloading. ${errorCount} response(s) could not be decrypted. Please try again later.`,
+          { timeOut: 3000 },
+        )
+      } catch (error) {
+        Toastr.error(`Error downloading. Please try again later.`, {
+          // Should still show error message to let user know download has failed
+          timeOut: 3000,
+        })
+        console.error('Unknown download encrypted responses error:\t', error)
+      }
     }
   }
 
