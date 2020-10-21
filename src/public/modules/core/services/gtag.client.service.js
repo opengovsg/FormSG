@@ -444,6 +444,22 @@ function GTag(Auth, $rootScope, $window) {
   }
 
   /**
+   * Logs an attempt to start storage mode responses download when circuit breaker is in open state.
+   * @param {Object} params The response params object
+   * @param {String} params.formId ID of the form
+   * @param {String} params.formTitle The title of the form
+   * @return {Void}
+   */
+  gtagService.downloadWhenBreakerOpen = (params) => {
+    _gtagEvents('storage', {
+      event_category: 'Storage Mode Form',
+      event_action: 'Attempt Download In Breaker Open State',
+      event_label: `${params.formTitle} (${params.formId}), ${getUserEmail()}`,
+      form_id: params.formId,
+    })
+  }
+
+  /**
    * Logs partial (or full) decryption failure when downloading responses.
    * @param {Object} params The response params object
    * @param {String} params.formId ID of the form
