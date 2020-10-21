@@ -137,6 +137,42 @@ function ViewResponsesController(
     },
   )
 
+  // Helper function for handling download result
+
+  const handleDownloadResult = (result) => {
+    $timeout(function () {
+      const { expectedCount, successCount, errorCount } = result
+      if (expectedCount === 0) {
+        Toastr.success('No responses found for decryption.')
+      } else {
+        Toastr.success(
+          `Success. ${successCount}/${expectedCount} response(s) were decrypted. ${
+            errorCount > 0 ? `${errorCount} failed.` : ''
+          }`,
+        )
+      }
+    })
+  }
+
+  // Helper function for handling download error
+
+  const handleDownloadError = (error) => {
+    try {
+      const { errorCount, errorMessage } = JSON.parse(error.message)
+      Toastr.error(
+        errorMessage ||
+          `Error downloading. ${errorCount} response(s) could not be decrypted. Please try again later.`,
+        { timeOut: 3000 },
+      )
+    } catch (error) {
+      Toastr.error(`Error downloading. Please try again later.`, {
+        // Should still show error message to let user know download has failed
+        timeOut: 3000,
+      })
+      console.error('Unknown download encrypted responses error:\t', error)
+    }
+  }
+
   vm.exportCsv = function () {
     let params = {
       formId: vm.myform._id,
@@ -156,59 +192,19 @@ function ViewResponsesController(
     csvDownloadCircuitBreaker
       .fire(params, vm.encryptionKey.secretKey)
       .then(function (result) {
-        $timeout(function () {
-          const { expectedCount, successCount, errorCount } = result
-          if (expectedCount === 0) {
-            Toastr.success('No responses found for decryption.')
-          } else {
-            Toastr.success(
-              `Success. ${successCount}/${expectedCount} response(s) were decrypted. ${
-                errorCount > 0 ? `${errorCount} failed.` : ''
-              }`,
-            )
-          }
-        })
+        handleDownloadResult(result)
       })
       .catch(function (error) {
         const isCircuitTripped = CircuitBreaker.isOurError(error)
         if (!isCircuitTripped) {
-          try {
-            const { errorCount, errorMessage } = JSON.parse(error.message)
-            Toastr.error(
-              errorMessage ||
-                `Error downloading. ${errorCount} response(s) could not be decrypted. Please try again later.`,
-              { timeOut: 3000 },
-            )
-          } catch (error) {
-            Toastr.error(`Error downloading. Please try again later.`, {
-              // Should still show error message to let user know download has failed
-              timeOut: 3000,
-            })
-            console.error(
-              'Unknown download encrypted responses error:\t',
-              error,
-            )
-          }
+          handleDownloadError(error)
         } else {
           // TODO: During soft launch, downloads will proceed even in breaker open state
           // When circuit breaker is hard launched, replace this code chunk with toastr informing user to try again in XX minutes
           // Use else here instead of fallback because fallback will trigger once circuit trips, even on the first failed call
           vm.awaitDownload = true
-          let params = {
-            formId: vm.myform._id,
-            formTitle: vm.myform.title,
-          }
 
           GTag.downloadWhenBreakerOpen(params) // Tag GA if download attempt is made when breaker is open
-
-          if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
-            params.startDate = moment(
-              new Date(vm.datePicker.date.startDate),
-            ).format('YYYY-MM-DD')
-            params.endDate = moment(
-              new Date(vm.datePicker.date.endDate),
-            ).format('YYYY-MM-DD')
-          }
 
           vm.csvDownloading = true
           Submissions.downloadEncryptedResponses(
@@ -216,38 +212,10 @@ function ViewResponsesController(
             vm.encryptionKey.secretKey,
           )
             .then(function (result) {
-              $timeout(function () {
-                const { expectedCount, successCount, errorCount } = result
-                if (expectedCount === 0) {
-                  Toastr.success('No responses found for decryption.')
-                } else {
-                  Toastr.success(
-                    `Success. ${successCount}/${expectedCount} response(s) were decrypted. ${
-                      errorCount > 0 ? `${errorCount} failed.` : ''
-                    }`,
-                  )
-                }
-                csvDownloadCircuitBreaker.close() //close circuit breaker if download is successful
-              })
+              handleDownloadResult(result)
             })
             .catch(function (error) {
-              try {
-                const { errorCount, errorMessage } = JSON.parse(error.message)
-                Toastr.error(
-                  errorMessage ||
-                    `Error downloading. ${errorCount} response(s) could not be decrypted. Please try again later.`,
-                  { timeOut: 3000 },
-                )
-              } catch (error) {
-                Toastr.error(`Error downloading. Please try again later.`, {
-                  // Should still show error message to let user know download has failed
-                  timeOut: 3000,
-                })
-                console.error(
-                  'Unknown download encrypted responses error:\t',
-                  error,
-                )
-              }
+              handleDownloadError(error)
             })
             .finally(function () {
               $timeout(function () {
