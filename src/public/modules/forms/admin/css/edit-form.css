@@ -961,6 +961,10 @@
   resize: vertical;
 }
 
+.edit-modal-window .edit-panel textarea.ng-invalid {
+  border: 2px solid #a94442 !important;
+}
+
 #admin-form .ui-sortable-placeholder {
   visibility: visible !important;
   border: none;
