@@ -51,7 +51,7 @@ describe('billing.routes', () => {
       // Log in user.
       const session = await createAuthedSession(defaultUser.email, request)
       // Generate login statistics.
-      // Create 2 random forms.
+      // Create 3 random forms.
       const formPromises = times(3, (idx) =>
         FormModel.create({
           title: `example form title ${idx}`,
