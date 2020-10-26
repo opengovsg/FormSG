@@ -1,7 +1,6 @@
 import { ObjectId } from 'bson-ext'
 import { flatten, times } from 'lodash'
 import mongoose from 'mongoose'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
@@ -16,6 +15,8 @@ import {
   Status,
   SubmissionType,
 } from 'src/types'
+
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { PAGE_SIZE } from '../examples.constants'
 import { ResultsNotFoundError } from '../examples.errors'
