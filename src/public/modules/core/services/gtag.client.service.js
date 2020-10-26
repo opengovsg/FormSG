@@ -110,6 +110,19 @@ function GTag(Auth, $rootScope, $window) {
   }
 
   /**
+   * Logs an admin user's failure to create form
+   * @param  {Object} form The form object
+   * @return {Void}
+   */
+  gtagService.createFormFailed = () => {
+    _gtagEvents('create_form', {
+      event_category: 'Create Form',
+      event_action: 'Create Form failed',
+      event_label: getUserEmail(),
+    })
+  }
+
+  /**
    * Logs an admin user landing on the Examples tab.
    * @return {Void}
    */
