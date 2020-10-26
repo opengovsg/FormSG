@@ -1,40 +1,18 @@
 <div class="modal-body">
-  <div class="modal-header">
-    <button
-      type="button"
-      class="close"
-      ng-click="vm.confirmDownloadModal.close()"
-      aria-label="Close"
-    >
-      <span aria-hidden="true">&times;</span>
-    </button>
-    <h4 class="modal-title" id="downloadModalLabel">
-      Download Attachments from Multiple Submissions
-    </h4>
-  </div>
   <div class="modal-body">
+    <h3 id="download-attachment-modal-header">
+      Download attachments for {{ responsesCount }} responses
+    </h3>
     <p>
-      You are going to download attachments from
-      <strong>{{ vm.downloadAttachmentResponsesCount }}</strong>
-      submissions. This may take a long time, during which you should not close
-      this browser tab.
+      Downloading many attachments may take a long time. The attachments from
+      each response will be downloaded as a separate ZIP file. Start now, or
+      adjust your date range before proceeding.
     </p>
-    <p>Do you wish to continue?</p>
   </div>
   <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-primary"
-      ng-click="vm.downloadMultipleSubmissionAttachments()"
-    >
-      Yes, download attachments
+    <button type="button" class="btn-custom btn-medium" ng-click="ok()">
+      Download
     </button>
-    <button
-      type="button"
-      class="btn btn-default"
-      ng-click="vm.confirmDownloadModal.close()"
-    >
-      Close
-    </button>
+    <a class="modal-cancel-btn" ng-click="cancel()"> Cancel </a>
   </div>
 </div>

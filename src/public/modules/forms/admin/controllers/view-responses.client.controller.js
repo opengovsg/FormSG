@@ -261,17 +261,32 @@ function ViewResponsesController(
     }
     Submissions.count(params).then((responsesCount) => {
       vm.downloadAttachmentResponsesCount = responsesCount
-      vm.confirmDownloadModal = $uibModal.open({
-        backdrop: 'static',
-        templateUrl:
-          'modules/forms/admin/views/download-all-attachments.client.modal.html',
-        scope: $scope,
-      })
+      $uibModal
+        .open({
+          backdrop: 'static',
+          resolve: { responsesCount },
+          controller: [
+            '$scope',
+            '$uibModalInstance',
+            'responsesCount',
+            function ($scope, $uibModalInstance, responsesCount) {
+              $scope.ok = function () {
+                $uibModalInstance.close()
+              }
+              $scope.cancel = function () {
+                $uibModalInstance.dismiss()
+              }
+              $scope.responsesCount = responsesCount
+            },
+          ],
+          templateUrl:
+            'modules/forms/admin/views/download-all-attachments.client.modal.html',
+        })
+        .result.then(() => vm.downloadMultipleSubmissionAttachments())
     })
   }
 
   vm.downloadMultipleSubmissionAttachments = function () {
-    vm.confirmDownloadModal.close()
     vm.csvDownloading = true
     let params = {
       formId: vm.myform._id,

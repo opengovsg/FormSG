@@ -215,33 +215,21 @@ exports.saveResponseToDb = function (req, res, next) {
     })
 }
 
-function getMetadataForSingleSubmission(req, res, submissionId) {
+function getMetadataForSingleSubmission(formId, submissionId) {
   let matchClause = {
-    form: req.form._id,
+    form: formId,
     submissionType: 'encryptSubmission',
   }
 
   if (mongoose.Types.ObjectId.isValid(submissionId)) {
     matchClause._id = mongoose.Types.ObjectId(submissionId)
     // Reading from primary to avoid any contention issues with bulk queries on secondary servers
-    Submission.findOne(matchClause, { created: 1 })
+    return Submission.findOne(matchClause, { created: 1 })
       .read('primary')
-      .exec((err, result) => {
-        if (err) {
-          logger.error({
-            message: 'Failure retrieving metadata from database',
-            meta: {
-              action: 'getMetadata',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-            message: errorHandler.getMongoErrorMessage(err),
-          })
-        }
+      .exec()
+      .then((result) => {
         if (!result) {
-          return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
+          return { metadata: [], count: 0 }
         }
         let entry = {
           number: 1,
@@ -250,10 +238,22 @@ function getMetadataForSingleSubmission(req, res, submissionId) {
             .tz('Asia/Singapore')
             .format('Do MMM YYYY, h:mm:ss a'),
         }
-        return res.status(HttpStatus.OK).json({ metadata: [entry], count: 1 })
+        return { metadata: [entry], count: 1 }
+      })
+      .catch((err) => {
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: {
+            action: 'getMetadata',
+          },
+          error: err,
+        })
+        return {
+          message: errorHandler.getMongoErrorMessage(err),
+        }
       })
   } else {
-    return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
+    return Promise.resolve({ metadata: [], count: 0 })
   }
 }
 
@@ -274,7 +274,17 @@ exports.getMetadata = function (req, res) {
 
   // If we specify a submission ID, we will only return the metadata for that entry.
   if (submissionId) {
-    return getMetadataForSingleSubmission(req, res, submissionId)
+    let singleSubmissionPromise = getMetadataForSingleSubmission(
+      req.form._id,
+      submissionId,
+    )
+    return singleSubmissionPromise.then((data) => {
+      if (!('message' in data)) {
+        return res.status(HttpStatus.OK).json(data)
+      } else {
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(data)
+      }
+    })
   }
 
   if (
