@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 const mockRequest = <
   P extends Record<string, string>,
   B,
-  Q extends Record<string, string>
+  Q extends Record<string, string | undefined>
 >({
   params,
   body,
