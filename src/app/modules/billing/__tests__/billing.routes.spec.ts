@@ -1,7 +1,11 @@
+import { flatten, sortBy, times } from 'lodash'
+import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
-import { IUserSchema } from 'src/types'
+import getFormModel from 'src/app/models/form.server.model'
+import getLoginModel from 'src/app/models/login.server.model'
+import { AuthType, IUserSchema, ResponseMode } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -15,6 +19,9 @@ import { BillingRouter } from '../billing.routes'
 const app = setupApp('/billing', BillingRouter, {
   setupWithAuth: true,
 })
+
+const FormModel = getFormModel(mongoose)
+const LoginModel = getLoginModel(mongoose)
 
 describe('billing.routes', () => {
   let request: Session
@@ -33,9 +40,112 @@ describe('billing.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /billing', () => {
-    const VALID_ESRVCID = 'mockEsrvcId'
-    const VALID_QUERY_YR = 2020
-    const VALID_QUERY_MTH = 10
+    const VALID_ESRVCID_1 = 'mockEsrvcId1'
+    const VALID_ESRVCID_2 = 'mockEsrvcId2'
+    const INVALID_ESRVCID = 'invalidEsrvcId'
+    const VALID_QUERY_YR = new Date().getFullYear()
+    const VALID_QUERY_MTH = new Date().getMonth()
+
+    it('should return 200 with array of results of form SPCP logins of the given esrvcId', async () => {
+      // Arrange
+      // Log in user.
+      const session = await createAuthedSession(defaultUser.email, request)
+      // Generate login statistics.
+      // Create 2 random forms.
+      const formPromises = times(3, (idx) =>
+        FormModel.create({
+          title: `example form title ${idx}`,
+          admin: defaultUser._id,
+          responseMode: ResponseMode.Email,
+          emails: [defaultUser.email],
+        }),
+      )
+      const forms = await Promise.all(formPromises)
+
+      // Login to first two forms a set number of times with the same esrvcId.
+      const esrvc1LoginTimes = [4, 2]
+      const loginPromises = flatten(
+        forms.map((form, idx) =>
+          times(esrvc1LoginTimes[idx], () =>
+            LoginModel.create({
+              form: form._id,
+              admin: defaultUser._id,
+              agency: defaultUser.agency,
+              authType: AuthType.SP,
+              esrvcId: VALID_ESRVCID_1,
+            }),
+          ),
+        ),
+      )
+      // Login to third form with a different esrvcId.
+      loginPromises.push(
+        ...times(5, () =>
+          LoginModel.create({
+            form: forms[2]._id,
+            admin: defaultUser._id,
+            agency: defaultUser.agency,
+            authType: AuthType.SP,
+            esrvcId: VALID_ESRVCID_2,
+          }),
+        ),
+      )
+
+      await Promise.all(loginPromises)
+
+      // Act
+      const response = await session.get('/billing').query({
+        esrvcId: VALID_ESRVCID_1,
+        yr: VALID_QUERY_YR,
+        mth: VALID_QUERY_MTH,
+      })
+
+      // Assert
+      // Only first two forms returned, as those have logins with
+      // VALID_ESRVCID_1.
+      // Should not contain third form with VALID_ESRVCID_2.
+      const expectedStats = [
+        {
+          adminEmail: defaultUser.email,
+          formName: forms[0].title,
+          total: esrvc1LoginTimes[0],
+          formId: String(forms[0]._id),
+          authType: AuthType.SP,
+        },
+        {
+          adminEmail: defaultUser.email,
+          formName: forms[1].title,
+          total: esrvc1LoginTimes[1],
+          formId: String(forms[1]._id),
+          authType: AuthType.SP,
+        },
+      ]
+      expect(response.status).toEqual(200)
+      // Check shape.
+      expect(response.body).toEqual({
+        loginStats: expect.any(Array),
+      })
+      // Sort by total and compare.
+      expect(sortBy(response.body.loginStats, ['total'])).toEqual(
+        sortBy(expectedStats, ['total']),
+      )
+    })
+
+    it('should return 200 with empty array when no esrvcId matches logins', async () => {
+      // Arrange
+      // Log in user.
+      const session = await createAuthedSession(defaultUser.email, request)
+
+      // Act
+      const response = await session.get('/billing').query({
+        esrvcId: INVALID_ESRVCID,
+        yr: VALID_QUERY_YR,
+        mth: VALID_QUERY_MTH,
+      })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({ loginStats: [] })
+    })
 
     it('should return 400 when query.esrvcId is not provided', async () => {
       // Arrange
@@ -63,7 +173,7 @@ describe('billing.routes', () => {
 
       // Act
       const response = await session.get('/billing').query({
-        esrvcId: VALID_ESRVCID,
+        esrvcId: VALID_ESRVCID_1,
         // No yr provided.
         mth: VALID_QUERY_MTH,
       })
@@ -82,7 +192,7 @@ describe('billing.routes', () => {
 
       // Act
       const response = await session.get('/billing').query({
-        esrvcId: VALID_ESRVCID,
+        esrvcId: VALID_ESRVCID_1,
         yr: VALID_QUERY_YR,
         // No mth provided.
       })
@@ -98,7 +208,7 @@ describe('billing.routes', () => {
       // Act
       // Call endpoint directly without first logging in.
       const response = await request.get('/billing').query({
-        esrvcId: VALID_ESRVCID,
+        esrvcId: VALID_ESRVCID_1,
         yr: VALID_QUERY_YR,
         mth: VALID_QUERY_MTH,
       })
@@ -120,7 +230,7 @@ describe('billing.routes', () => {
 
       // Act
       const response = await session.get('/billing').query({
-        esrvcId: VALID_ESRVCID,
+        esrvcId: VALID_ESRVCID_1,
         yr: VALID_QUERY_YR,
         mth: VALID_QUERY_MTH,
       })
