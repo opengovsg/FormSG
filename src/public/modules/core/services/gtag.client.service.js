@@ -118,6 +118,7 @@ function GTag(Auth, $rootScope, $window) {
     _gtagEvents('create_form', {
       event_category: 'Create Form',
       event_action: 'Create Form failed',
+      event_label: getUserEmail(),
     })
   }
 
