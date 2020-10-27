@@ -20,7 +20,8 @@ ExamplesRouter.get(
   '/',
   celebrate({
     [Segments.QUERY]: Joi.object().keys({
-      pageNo: Joi.number().min(0).required(),
+      // Cast back into string as query checks downstream are strings.
+      pageNo: Joi.number().min(0).required().cast('string'),
       agency: Joi.string().allow(''),
       searchTerm: Joi.string().allow(''),
       // Cast back into string as query checks downstream are strings.
