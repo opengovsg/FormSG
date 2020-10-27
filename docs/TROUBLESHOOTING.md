@@ -5,13 +5,14 @@ A list of common issues that developers face and how to resolve them.
 ## `Error: Module did not self-register.`
 
 This could happen if node modules were compiled with a different version of node, or if node modules fail to compile due to other configuration errors.
+Running tests locally requires `node` to specifically be of version `12.18.4`. You can use `nvm` to manually set the node version.
 
 ### [Node Versioning Error](https://stackoverflow.com/questions/28486891/uncaught-error-module-did-not-self-register)
 
 Run the following commands to set the node version and then re-install the node modules:
 
 ```
-nvm use 12.18.0
+nvm use 12.18.4
 rm -r node_modules
 npm install
 ```
