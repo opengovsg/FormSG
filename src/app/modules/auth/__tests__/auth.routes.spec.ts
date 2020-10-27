@@ -83,7 +83,7 @@ describe('auth.routes', () => {
       // Insert agency
       const validDomain = 'example.com'
       const validEmail = `test@${validDomain}`
-      await dbHandler.insertDefaultAgency({ mailDomain: validDomain })
+      await dbHandler.insertAgency({ mailDomain: validDomain })
 
       // Act
       const response = await request
@@ -101,7 +101,7 @@ describe('auth.routes', () => {
       const validDomain = 'example.com'
       const validEmail = `test@${validDomain}`
       const mockErrorString = 'Unable to validate email domain.'
-      await dbHandler.insertDefaultAgency({ mailDomain: validDomain })
+      await dbHandler.insertAgency({ mailDomain: validDomain })
 
       const getAgencySpy = jest
         .spyOn(AuthService, 'validateEmailDomain')
@@ -124,9 +124,7 @@ describe('auth.routes', () => {
     const VALID_EMAIL = `test@${VALID_DOMAIN}`
     const INVALID_DOMAIN = 'example.org'
 
-    beforeEach(async () =>
-      dbHandler.insertDefaultAgency({ mailDomain: VALID_DOMAIN }),
-    )
+    beforeEach(async () => dbHandler.insertAgency({ mailDomain: VALID_DOMAIN }))
 
     it('should return 400 when body.email is not provided as a param', async () => {
       // Act
@@ -258,7 +256,7 @@ describe('auth.routes', () => {
     let defaultAgency: IAgencySchema
 
     beforeEach(async () => {
-      defaultAgency = await dbHandler.insertDefaultAgency({
+      defaultAgency = await dbHandler.insertAgency({
         mailDomain: VALID_DOMAIN,
       })
       jest.spyOn(OtpUtils, 'generateOtp').mockReturnValue(MOCK_VALID_OTP)
@@ -503,7 +501,7 @@ describe('auth.routes', () => {
     const VALID_EMAIL = `test@${VALID_DOMAIN}`
 
     beforeEach(async () => {
-      await dbHandler.insertDefaultAgency({
+      await dbHandler.insertAgency({
         mailDomain: VALID_DOMAIN,
       })
       jest.spyOn(OtpUtils, 'generateOtp').mockReturnValue(MOCK_VALID_OTP)

@@ -22,7 +22,7 @@ describe('User Model', () => {
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
-    agency = await dbHandler.insertDefaultAgency({ mailDomain: AGENCY_DOMAIN })
+    agency = await dbHandler.insertAgency({ mailDomain: AGENCY_DOMAIN })
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
