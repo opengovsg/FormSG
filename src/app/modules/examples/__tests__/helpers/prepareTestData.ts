@@ -22,6 +22,11 @@ const SubmissionModel = getSubmissionModel(mongoose)
 const FormModel = getFormModel(mongoose)
 const FeedbackModel = getFormFeedbackModel(mongoose)
 
+export enum SearchTerm {
+  First = 'first',
+  Second = 'second',
+}
+
 export type TestData = {
   [section: string]: {
     searchTerm: string
@@ -50,7 +55,7 @@ const prepareTestData = async (
 ): Promise<TestData> => {
   const testData: TestData = {
     first: {
-      searchTerm: 'first',
+      searchTerm: SearchTerm.First,
       formCount: 2,
       submissionCount: 3,
       forms: [],
@@ -58,7 +63,7 @@ const prepareTestData = async (
       feedbacks: [],
     },
     second: {
-      searchTerm: 'second',
+      searchTerm: SearchTerm.Second,
       formCount: 3,
       submissionCount: 5,
       forms: [],

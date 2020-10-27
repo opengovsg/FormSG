@@ -1,7 +1,10 @@
+import { ObjectId } from 'bson-ext'
+import { keyBy } from 'lodash'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
+import { mocked } from 'ts-jest/utils'
 
-import { IUserSchema } from 'src/types'
+import { IAgencySchema, IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -11,6 +14,22 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { DatabaseError } from '../../core/core.errors'
 import { ExamplesFactory } from '../examples.factory'
 import { ExamplesRouter } from '../examples.routes'
+import { getExampleForms } from '../examples.service'
+import { RetrievalType } from '../examples.types'
+
+import prepareTestData, {
+  SearchTerm,
+  TestData,
+} from './helpers/prepareTestData'
+
+// Mock min sub count so anything above 0 submissions will be counted.
+jest.mock('../examples.constants', () => ({
+  PAGE_SIZE: 16,
+  MIN_SUB_COUNT: 0,
+}))
+
+jest.mock('../examples.factory')
+const MockExamplesFactory = mocked(ExamplesFactory)
 
 const app = setupApp('/examples', ExamplesRouter, {
   setupWithAuth: true,
@@ -18,30 +37,215 @@ const app = setupApp('/examples', ExamplesRouter, {
 
 describe('examples.routes', () => {
   let request: Session
+  let orgTestData: TestData
+  let comTestData: TestData
   let defaultUser: IUserSchema
+  let comAgency: IAgencySchema
+  let orgAgency: IAgencySchema
 
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    const orgData = await dbHandler.insertFormCollectionReqs({
+      mailDomain: 'example.org',
+      shortName: 'orgTest',
+    })
+    orgAgency = orgData.agency
+    defaultUser = orgData.user
+
+    const comData = await dbHandler.insertFormCollectionReqs({
+      mailDomain: 'example.com',
+      shortName: 'comTest',
+    })
+    comAgency = comData.agency
+
+    // Populate database with both users' forms.
+    orgTestData = await prepareTestData(orgData.user, orgData.agency)
+    comTestData = await prepareTestData(comData.user, comData.agency)
+  })
   beforeEach(async () => {
     request = supertest(app)
-    const { user } = await dbHandler.insertFormCollectionReqs()
-    defaultUser = user
   })
   afterEach(async () => {
-    await dbHandler.clearDatabase()
-    jest.restoreAllMocks()
+    jest.clearAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /examples', () => {
-    it('should return 200 with array of example forms for a particular agency when query.agencyId is provided', async () => {})
+    describe('AggregateStats feature enabled', () => {
+      beforeAll(() => {
+        MockExamplesFactory.getExampleForms.mockImplementation(
+          getExampleForms(RetrievalType.Stats),
+        )
+      })
 
-    it('should return 200 with empty array when no forms match the criterias', async () => {})
+      it('should return 200 with array of example forms for all agencies when query.agency is missing', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
 
-    it('should return 200 with array of example forms that match given query.searchTerm when that is provided', async () => {})
+        // Act
+        const response = await session.get('/examples').query({
+          pageNo: '0',
+        })
 
-    it('should return 200 with correctly offset example forms according to query.pageNo when that is provided', async () => {})
+        // Assert
+        // Should have both comTestData and orgTestData since searching by all
+        // agencies.
+        const expectedBody = keyBy(
+          [
+            ...comTestData.total.expectedFormInfo.map((data) => ({
+              ...data,
+              _id: data._id.toString(),
+            })),
+            ...orgTestData.total.expectedFormInfo.map((data) => ({
+              ...data,
+              _id: data._id.toString(),
+            })),
+          ],
+          '_id',
+        )
+        const actualBody = keyBy(response.body.forms, '_id')
+        expect(response.status).toEqual(200)
+        // Check shape.
+        expect(response.body).toEqual({
+          forms: expect.any(Array),
+        })
+        expect(actualBody).toEqual(expectedBody)
+      })
 
-    it('should return 200 with array of example forms and total count when query.shouldGetTotalNumResults is true', async () => {})
+      it('should return 200 with array of example forms for a particular agency when query.agency is provided', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+
+        // Act
+        const response = await session.get('/examples').query({
+          pageNo: '0',
+          agency: orgAgency._id.toString(),
+        })
+
+        // Assert
+        // Should only have orgTestData since its agency id is provided.
+        const expectedBody = keyBy(
+          orgTestData.total.expectedFormInfo.map((data) => ({
+            ...data,
+            _id: data._id.toString(),
+          })),
+          '_id',
+        )
+        const actualBody = keyBy(response.body.forms, '_id')
+        // Check shape.
+        expect(response.status).toEqual(200)
+        expect(response.body).toEqual({
+          forms: expect.any(Array),
+        })
+        expect(actualBody).toEqual(expectedBody)
+      })
+
+      it('should return 200 with empty array when no forms match the criterias', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+
+        // Act
+        const response = await session.get('/examples').query({
+          pageNo: '0',
+          agency: new ObjectId().toHexString(),
+        })
+
+        // Assert
+        expect(response.status).toEqual(200)
+        // Check shape.
+        expect(response.body).toEqual({
+          forms: [],
+        })
+      })
+
+      it('should return 200 with array of example forms that match given query.searchTerm when that is provided', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+
+        // Act
+        const response = await session.get('/examples').query({
+          pageNo: '0',
+          agency: comAgency._id.toString(),
+          shouldGetTotalNumResults: 'true',
+          searchTerm: SearchTerm.First,
+        })
+
+        // Assert
+        // Should only have comTestData since its agency id is provided.
+        const expectedBody = keyBy(
+          comTestData.first.expectedFormInfo.map((data) => ({
+            ...data,
+            _id: data._id.toString(),
+          })),
+          '_id',
+        )
+        const actualBody = keyBy(response.body.forms, '_id')
+        // Check shape.
+        expect(response.status).toEqual(200)
+        expect(response.body).toEqual({
+          forms: expect.any(Array),
+          // Should have total num results key value.
+          totalNumResults: comTestData.first.formCount,
+        })
+        expect(actualBody).toEqual(expectedBody)
+      })
+
+      it('should return 200 with correctly offset example forms according to query.pageNo when that is provided', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+
+        // Act
+        const response = await session.get('/examples').query({
+          pageNo: '1',
+          shouldGetTotalNumResults: 'true',
+        })
+
+        // Assert
+        const actualBody = keyBy(response.body.forms, '_id')
+        // Check shape.
+        expect(response.status).toEqual(200)
+        expect(response.body).toEqual({
+          forms: expect.any(Array),
+          // Should have total num results key value.
+          totalNumResults:
+            comTestData.total.formCount + orgTestData.total.formCount,
+        })
+        // Should have nothing since the number of results is less than the
+        // offset.
+        expect(actualBody).toEqual({})
+      })
+
+      it('should return 200 with array of example forms and total count when query.shouldGetTotalNumResults is true', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+
+        // Act
+        const response = await session.get('/examples').query({
+          pageNo: '0',
+          agency: comAgency._id.toString(),
+          shouldGetTotalNumResults: 'true',
+        })
+
+        // Assert
+        // Should only have comTestData since its agency id is provided.
+        const expectedBody = keyBy(
+          comTestData.total.expectedFormInfo.map((data) => ({
+            ...data,
+            _id: data._id.toString(),
+          })),
+          '_id',
+        )
+        const actualBody = keyBy(response.body.forms, '_id')
+        // Check shape.
+        expect(response.status).toEqual(200)
+        expect(response.body).toEqual({
+          forms: expect.any(Array),
+          // Should have total num results key value.
+          totalNumResults: comTestData.total.formCount,
+        })
+        expect(actualBody).toEqual(expectedBody)
+      })
+    })
 
     it('should return 400 when query.pageNo is not provided', async () => {
       // Arrange
