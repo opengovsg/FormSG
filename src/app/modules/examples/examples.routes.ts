@@ -22,7 +22,9 @@ ExamplesRouter.get(
     [Segments.QUERY]: Joi.object().keys({
       // Cast back into string as query checks downstream are strings.
       pageNo: Joi.number().min(0).required().cast('string'),
-      agency: Joi.string().allow(''),
+      agency: Joi.string()
+        .regex(/^[0-9a-fA-F]{24}$/)
+        .allow(''),
       searchTerm: Joi.string().allow(''),
       // Cast back into string as query checks downstream are strings.
       shouldGetTotalNumResults: Joi.boolean().allow('').cast('string'),

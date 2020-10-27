@@ -84,6 +84,29 @@ describe('examples.routes', () => {
       )
     })
 
+    it('should return 400 when query.agency is not an ObjectId-like string', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+      const invalidAgencyId = 'some-random-string'
+
+      // Act
+      const response = await session.get('/examples').query({
+        pageNo: '0',
+        agency: invalidAgencyId,
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          query: {
+            key: 'agency',
+            message: `"agency" with value "${invalidAgencyId}" fails to match the required pattern: /^[0-9a-fA-F]{24}$/`,
+          },
+        }),
+      )
+    })
+
     it('should return 400 when query.shouldGetTotalNumResults is not a boolean string', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
