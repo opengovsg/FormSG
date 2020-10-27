@@ -3,7 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { getRequestIp, getTrace } from '../../utils/request'
+import { createReqMeta } from '../../utils/request'
 import { isUserInSession } from '../auth/auth.utils'
 
 import { ExamplesFactory } from './examples.factory'
@@ -35,10 +35,7 @@ export const handleGetExamples: RequestHandler<
         message: 'Failed to retrieve example forms',
         meta: {
           action: 'handleGetExamples',
-          ip: getRequestIp(req),
-          url: req.url,
-          headers: req.headers,
-          trace: getTrace(req),
+          ...createReqMeta(req),
         },
         error,
       })
@@ -71,10 +68,7 @@ export const handleGetExampleByFormId: RequestHandler<{
         message: 'Failed to retrieve single example form',
         meta: {
           action: 'handleGetExampleByFormId',
-          ip: getRequestIp(req),
-          url: req.url,
-          headers: req.headers,
-          trace: getTrace(req),
+          ...createReqMeta(req),
           formId,
         },
         error,
