@@ -617,6 +617,7 @@
                 <input
                   type="checkbox"
                   ng-model="vm.field.hasAllowedEmailDomains"
+                  ng-disabled="!vm.field.isVerifiable"
                 />
                 <div class="toggle-selector-switch">
                   <i
@@ -635,13 +636,14 @@
         >
           <br />
           <div class="row label-custom label-medium">
-            <div class="col-md-12">Domains allowed</div>
+            <div class="col-md-12 label-bottom">Domains allowed</div>
           </div>
           <div class="row">
             <div class="col-md-12">
               <textarea
                 class="input-custom input-medium"
                 ng-disabled="!vm.field.isVerifiable || !vm.field.hasAllowedEmailDomains"
+                ng-required="vm.field.hasAllowedEmailDomains"
                 ng-model="vm.field.allowedEmailDomainsFromText"
                 name="allowedEmailDomainsFromText"
                 validate-email-domain-from-text
@@ -663,6 +665,12 @@
                   <span class="alert-msg">
                     You may have duplicate or invalid email domains. Please
                     check that all the domains start with @.
+                  </span>
+                </div>
+                <div class="alert-custom alert-error" ng-message="required">
+                  <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                  <span class="alert-msg">
+                    Allowed domains cannot be empty.
                   </span>
                 </div>
               </div>
