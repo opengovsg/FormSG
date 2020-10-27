@@ -12,6 +12,7 @@ import { IAgencySchema, IUserSchema } from 'src/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
+import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { DatabaseError } from '../../core/core.errors'
@@ -135,9 +136,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'contact' } }),
+      )
     })
 
     it('should return 400 when body.userId is not provided as a param', async () => {
@@ -148,9 +149,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'userId' } }),
+      )
     })
 
     it('should return 401 when body.userId does not match current session userId', async () => {
@@ -284,9 +285,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'contact' } }),
+      )
     })
 
     it('should return 400 when body.userId is not provided as a param', async () => {
@@ -298,9 +299,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'userId' } }),
+      )
     })
 
     it('should return 400 when body.otp is not provided as a param', async () => {
@@ -312,9 +313,9 @@ describe('user.routes', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Some required parameters are missing',
-      })
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'otp' } }),
+      )
     })
 
     it('should return 401 when body.userId does not match current session userId', async () => {

@@ -1,10 +1,7 @@
 import { ObjectId } from 'bson'
-import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-// eslint-disable-next-line import/first
-import { handleSns } from 'src/app/modules/bounce/bounce.controller'
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
 import * as FormService from 'src/app/modules/form/form.service'
@@ -20,6 +17,20 @@ jest.mock('src/app/modules/bounce/bounce.service')
 jest.mock('src/app/modules/form/form.service')
 const MockBounceService = mocked(BounceService, true)
 const MockFormService = mocked(FormService, true)
+
+class MockVersionError extends Error {
+  constructor(msg?: string) {
+    super(msg)
+    this.name = 'MockVersionError'
+  }
+}
+jest.doMock('mongoose', () => ({
+  Error: {
+    VersionError: MockVersionError,
+  },
+}))
+// eslint-disable-next-line import/first
+import { handleSns } from 'src/app/modules/bounce/bounce.controller'
 
 const MOCK_NOTIFICATION = { someKey: 'someValue' }
 const MOCK_REQ = expressHandler.mockRequest({
@@ -73,7 +84,7 @@ describe('handleSns', () => {
     expect(MockBounceService.logEmailNotification).not.toHaveBeenCalled()
     expect(MockBounceService.notifyAdminOfBounce).not.toHaveBeenCalled()
     expect(MockBounceService.logCriticalBounce).not.toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(403)
   })
 
   it('should return 400 when errors are thrown in isValidSnsRequest', async () => {
@@ -87,7 +98,7 @@ describe('handleSns', () => {
     expect(MockBounceService.logEmailNotification).not.toHaveBeenCalled()
     expect(MockBounceService.notifyAdminOfBounce).not.toHaveBeenCalled()
     expect(MockBounceService.logCriticalBounce).not.toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
 
   it('should call services correctly for permanent critical bounces', async () => {
@@ -134,7 +145,7 @@ describe('handleSns', () => {
       true,
     )
     expect(mockBounceDoc.save).toHaveBeenCalled()
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
 
   it('should return 400 when errors are thrown in getUpdatedBounceDoc', async () => {
@@ -158,7 +169,7 @@ describe('handleSns', () => {
     expect(MockBounceService.getUpdatedBounceDoc).toHaveBeenCalledWith(
       MOCK_NOTIFICATION,
     )
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
 
   it('should return 400 when errors are thrown in deactivateForm', async () => {
@@ -190,7 +201,7 @@ describe('handleSns', () => {
     expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
       mockBounceDoc.formId,
     )
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
 
   it('should return 400 when errors are thrown in notifyAdminOfBounce', async () => {
@@ -227,6 +238,55 @@ describe('handleSns', () => {
     expect(MockBounceService.notifyAdminOfBounce).toHaveBeenCalledWith(
       mockBounceDoc,
     )
-    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
+  })
+
+  it('should return 200 when VersionErrors are thrown', async () => {
+    MockBounceService.isValidSnsRequest.mockResolvedValueOnce(true)
+    MockBounceService.extractEmailType.mockReturnValueOnce(
+      EmailType.AdminResponse,
+    )
+    MockBounceService.getUpdatedBounceDoc.mockResolvedValueOnce(mockBounceDoc)
+    mockBounceDoc.areAllPermanentBounces.mockReturnValueOnce(true)
+    mockBounceDoc.isCriticalBounce.mockReturnValueOnce(true)
+    mockBounceDoc.hasNotified.mockReturnValueOnce(false)
+    MockBounceService.notifyAdminOfBounce.mockResolvedValue(
+      MOCK_EMAIL_RECIPIENTS,
+    )
+    mockBounceDoc.save.mockImplementationOnce(() => {
+      throw new MockVersionError()
+    })
+
+    await handleSns(MOCK_REQ, MOCK_RES, jest.fn())
+
+    expect(MockBounceService.isValidSnsRequest).toHaveBeenCalledWith(
+      MOCK_REQ.body,
+    )
+    expect(MockBounceService.logEmailNotification).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockBounceService.extractEmailType).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockBounceService.getUpdatedBounceDoc).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(mockBounceDoc.areAllPermanentBounces).toHaveBeenCalled()
+    expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
+      mockBounceDoc.formId,
+    )
+    expect(MockBounceService.notifyAdminOfBounce).toHaveBeenCalledWith(
+      mockBounceDoc,
+    )
+    expect(mockBounceDoc.setNotificationState).toHaveBeenCalledWith(
+      MOCK_EMAIL_RECIPIENTS,
+    )
+    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith(
+      mockBounceDoc,
+      MOCK_NOTIFICATION,
+      MOCK_EMAIL_RECIPIENTS,
+      true,
+    )
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
 })

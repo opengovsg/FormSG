@@ -17,3 +17,4 @@ AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
 SESSION_SECRET=sandcrawler-138577
 
 AWS_ENDPOINT=http://localhost:4566
+APP_URL=https://example.com

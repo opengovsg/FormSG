@@ -66,7 +66,7 @@
     </div>
     <div ng-if="vm.currentView === 2">
       <div class="flex-row">
-        <div class="col-md-3 response-stats">
+        <div class="col-xl-3 response-stats">
           <span class="stats-text">
             <span
               ><span class="stats">{{vm.responsesCount}}</span> response(s) to
@@ -82,7 +82,7 @@
           </span>
         </div>
         <div
-          class="col-md-6"
+          class="col-xl-6"
           ng-show="vm.filterBySubmissionShowFilterBox"
           id="filter-by-submission-filter-textbox-container"
         >
@@ -100,7 +100,7 @@
             <a ng-click="vm.filterBySubmissionReset()">View&nbsp;All</a>
           </span>
         </div>
-        <div class="datepicker-export-container col-md-3">
+        <div class="datepicker-export-container col-xl-3">
           <date-range-picker-directive
             class="datepicker-container"
             ng-model="vm.datePicker.date"
@@ -113,7 +113,7 @@
         </div>
       </div>
       <div class="flex-row" ng-show="vm.filterBySubmissionShowFilterBox">
-        <div class="col-md-5"></div>
+        <div class="col-xl-5"></div>
       </div>
       <div class="row">
         <div ng-if="vm.responsesCount > 0" class="col-md-12">

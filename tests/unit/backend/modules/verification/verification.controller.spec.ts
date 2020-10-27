@@ -1,5 +1,4 @@
 import { ObjectId } from 'bson'
-import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
@@ -17,6 +16,7 @@ import expressHandler from '../../helpers/jest-express'
 
 jest.mock('src/app/modules/verification/verification.service')
 const MockVfnService = mocked(VfnService, true)
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 const MOCK_FORM_ID = 'formId'
 const MOCK_TRANSACTION_ID = 'transactionId'
@@ -50,7 +50,7 @@ describe('Verification controller', () => {
       expect(MockVfnService.createTransaction).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(201)
       expect(MOCK_RES.json).toHaveBeenCalledWith(returnValue)
     })
 
@@ -60,7 +60,7 @@ describe('Verification controller', () => {
       expect(MockVfnService.createTransaction).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
     })
   })
 
@@ -83,7 +83,7 @@ describe('Verification controller', () => {
       expect(MockVfnService.getTransactionMetadata).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(200)
       expect(MOCK_RES.json).toHaveBeenCalledWith(transaction)
     })
 
@@ -97,7 +97,7 @@ describe('Verification controller', () => {
       expect(MockVfnService.getTransactionMetadata).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(404)
       expect(MOCK_RES.json).toHaveBeenCalledWith(notFoundError)
     })
   })
@@ -122,7 +122,7 @@ describe('Verification controller', () => {
         transaction,
         MOCK_FIELD_ID,
       )
-      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
     })
 
     it('should return 404 when service throws error', async () => {
@@ -135,7 +135,7 @@ describe('Verification controller', () => {
       expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(404)
       expect(MOCK_RES.json).toHaveBeenCalledWith(notFoundError)
     })
   })
@@ -163,7 +163,7 @@ describe('Verification controller', () => {
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
-      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(201)
     })
 
     it('should return 404 when service throws not found error', async () => {
@@ -181,7 +181,7 @@ describe('Verification controller', () => {
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(404)
       expect(MOCK_RES.json).toHaveBeenCalledWith(notFoundError)
     })
 
@@ -200,7 +200,7 @@ describe('Verification controller', () => {
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.ACCEPTED)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(202)
       expect(MOCK_RES.json).toHaveBeenCalledWith(waitOtpError)
     })
 
@@ -219,7 +219,7 @@ describe('Verification controller', () => {
         MOCK_FIELD_ID,
         MOCK_ANSWER,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(400)
       expect(MOCK_RES.json).toHaveBeenCalledWith(sendOtpError)
     })
   })
@@ -250,7 +250,7 @@ describe('Verification controller', () => {
         MOCK_FIELD_ID,
         MOCK_OTP,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(200)
       expect(MOCK_RES.json).toHaveBeenCalledWith(MOCK_DATA)
     })
 
@@ -269,9 +269,7 @@ describe('Verification controller', () => {
         MOCK_FIELD_ID,
         MOCK_OTP,
       )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(
-        StatusCodes.UNPROCESSABLE_ENTITY,
-      )
+      expect(MOCK_RES.status).toHaveBeenCalledWith(422)
       expect(MOCK_RES.json).toHaveBeenCalledWith(invalidOtpError)
     })
   })

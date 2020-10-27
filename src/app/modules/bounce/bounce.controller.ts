@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
+import mongoose from 'mongoose'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IEmailNotification, ISnsNotification } from '../../../types'
@@ -65,6 +66,13 @@ export const handleSns: RequestHandler<
       },
       error: err,
     })
+    // Accept the risk that there might be concurrency problems
+    // when multiple server instances try to access the same
+    // document, due to notifications arriving asynchronously.
+    if (err instanceof mongoose.Error.VersionError) {
+      return res.sendStatus(StatusCodes.OK)
+    }
+    // Malformed request, could not be parsed
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 }

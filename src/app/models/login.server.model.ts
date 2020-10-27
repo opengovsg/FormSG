@@ -1,6 +1,11 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
-import { AuthType, ILoginSchema } from '../../types'
+import {
+  AuthType,
+  ILoginModel,
+  ILoginSchema,
+  LoginStatistic,
+} from '../../types'
 
 import { AGENCY_SCHEMA_ID } from './agency.server.model'
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -47,8 +52,69 @@ const LoginSchema = new Schema<ILoginSchema>(
   },
 )
 
+LoginSchema.statics.aggregateLoginStats = function (
+  this: ILoginModel,
+  esrvcId: string,
+  gte: Date,
+  lte: Date,
+): Promise<LoginStatistic[]> {
+  return this.aggregate<LoginStatistic>([
+    {
+      $match: {
+        esrvcId,
+        created: {
+          $gte: gte,
+          $lte: lte,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          form: '$form',
+          admin: '$admin',
+          authType: '$authType',
+        },
+        total: { $sum: 1 },
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id.admin',
+        foreignField: '_id',
+        as: 'userInfo',
+      },
+    },
+    {
+      $unwind: '$userInfo',
+    },
+    {
+      $lookup: {
+        from: 'forms',
+        localField: '_id.form',
+        foreignField: '_id',
+        as: 'formInfo',
+      },
+    },
+    {
+      $unwind: '$formInfo',
+    },
+    {
+      $project: {
+        _id: 0,
+        adminEmail: '$userInfo.email',
+        formName: '$formInfo.title',
+        total: '$total',
+        formId: '$_id.form',
+        authType: '$_id.authType',
+      },
+    },
+  ]).exec()
+}
+
 const compileLoginModel = (db: Mongoose) =>
-  db.model<ILoginSchema>(LOGIN_SCHEMA_ID, LoginSchema)
+  db.model<ILoginSchema>(LOGIN_SCHEMA_ID, LoginSchema) as ILoginModel
 
 /**
  * Retrieves the Login model on the given Mongoose instance. If the model is
@@ -56,9 +122,9 @@ const compileLoginModel = (db: Mongoose) =>
  * @param db The mongoose instance to retrieve the Login model from
  * @returns The login model
  */
-const getLoginModel = (db: Mongoose) => {
+const getLoginModel = (db: Mongoose): ILoginModel => {
   try {
-    return db.model(LOGIN_SCHEMA_ID) as Model<ILoginSchema>
+    return db.model(LOGIN_SCHEMA_ID) as ILoginModel
   } catch {
     return compileLoginModel(db)
   }
