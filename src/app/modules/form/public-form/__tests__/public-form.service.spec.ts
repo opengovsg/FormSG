@@ -1,0 +1,58 @@
+import { ObjectId } from 'bson-ext'
+import mongoose from 'mongoose'
+
+import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
+import { IFormFeedbackSchema } from 'src/types'
+
+import * as PublicFormService from '../public-form.service'
+
+const FormFeedbackModel = getFormFeedbackModel(mongoose)
+
+describe('public-form.service', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  describe('insertFormFeedback', () => {
+    const MOCK_FORM_FEEDBACK = {
+      formId: new ObjectId().toHexString(),
+      rating: 5,
+      comment: 'Great test',
+    }
+
+    it('should return DatabaseError when error occurs whilst inserting feedback', async () => {
+      // Arrange
+      // Mock failure
+      const insertSpy = jest
+        .spyOn(FormFeedbackModel, 'create')
+        .mockRejectedValueOnce(new Error('some error'))
+
+      // Act
+      const actualResult = await PublicFormService.insertFormFeedback(
+        MOCK_FORM_FEEDBACK,
+      )
+
+      // Assert
+      expect(insertSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+
+    it('should return true when feedback is inserted successfully', async () => {
+      // Arrange
+      // Mock success.
+      const insertSpy = jest
+        .spyOn(FormFeedbackModel, 'create')
+        .mockResolvedValueOnce({} as IFormFeedbackSchema)
+
+      // Act
+      const actualResult = await PublicFormService.insertFormFeedback(
+        MOCK_FORM_FEEDBACK,
+      )
+
+      // Assert
+      expect(insertSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+    })
+  })
+})

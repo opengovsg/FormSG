@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
 import { IFormSchema } from './form'
 
@@ -12,3 +12,4 @@ export interface IFormFeedback {
 }
 
 export type IFormFeedbackSchema = Document
+export type IFormFeedbackModel = Model<IFormFeedbackSchema>
