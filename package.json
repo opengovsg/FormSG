@@ -206,7 +206,7 @@
     "csv-parse": "^4.12.0",
     "env-cmd": "^10.1.0",
     "eslint": "^7.10.0",
-    "eslint-config-prettier": "^6.12.0",
+    "eslint-config-prettier": "^6.14.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^24.0.2",
