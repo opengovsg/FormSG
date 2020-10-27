@@ -14,7 +14,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { DatabaseError } from '../../core/core.errors'
 import { ExamplesFactory } from '../examples.factory'
 import { ExamplesRouter } from '../examples.routes'
-import { getExampleForms } from '../examples.service'
+import { getExampleForms, getSingleExampleForm } from '../examples.service'
 import { RetrievalType } from '../examples.types'
 
 import prepareTestData, {
@@ -536,6 +536,120 @@ describe('examples.routes', () => {
       expect(getExamplesSpy).toHaveBeenCalledTimes(1)
       expect(response.status).toEqual(500)
       expect(response.body).toEqual('Error retrieving example forms')
+    })
+  })
+
+  describe('GET /examples/:formId', () => {
+    describe('AggregateStats feature enabled', () => {
+      beforeAll(() => {
+        MockExamplesFactory.getSingleExampleForm.mockImplementation(
+          getSingleExampleForm(RetrievalType.Stats),
+        )
+      })
+
+      it('should return 200 with the example information of the retrieved form', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+        const validFormId = comTestData.second.forms[0]._id
+
+        // Act
+        const response = await session.get(`/examples/${validFormId}`)
+
+        // Assert
+        const expectedFormInfo = {
+          ...comTestData.second.expectedFormInfo[0],
+          _id: comTestData.second.expectedFormInfo[0]._id.toString(),
+        }
+        expect(response.status).toEqual(200)
+        expect(response.body).toEqual({
+          form: expectedFormInfo,
+        })
+      })
+
+      it('should return 404 when the form with the given formId does not exist in the database', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+        const randomFormId = new ObjectId().toHexString()
+
+        // Act
+        const response = await session.get(`/examples/${randomFormId}`)
+
+        // Assert
+        expect(response.status).toEqual(404)
+        expect(response.body).toEqual(
+          'Error in retrieving template form - form not found.',
+        )
+      })
+    })
+
+    describe('AggregateStats feature disabled', () => {
+      beforeAll(() => {
+        MockExamplesFactory.getSingleExampleForm.mockImplementation(
+          getSingleExampleForm(RetrievalType.Submissions),
+        )
+      })
+      it('should return 200 with the example information of the retrieved form', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+        const validFormId = comTestData.first.forms[1]._id
+
+        // Act
+        const response = await session.get(`/examples/${validFormId}`)
+
+        // Assert
+        const expectedFormInfo = {
+          ...comTestData.first.expectedFormInfo[1],
+          _id: comTestData.first.expectedFormInfo[1]._id.toString(),
+        }
+        expect(response.status).toEqual(200)
+        expect(response.body).toEqual({
+          form: expectedFormInfo,
+        })
+      })
+
+      it('should return 404 when the form with the given formId does not exist in the database', async () => {
+        // Arrange
+        const session = await createAuthedSession(defaultUser.email, request)
+        const randomFormId = new ObjectId().toHexString()
+
+        // Act
+        const response = await session.get(`/examples/${randomFormId}`)
+
+        // Assert
+        expect(response.status).toEqual(404)
+        expect(response.body).toEqual(
+          'Error in retrieving template form - form not found.',
+        )
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      const validFormId = comTestData.first.forms[0]._id
+
+      // Act
+      const response = await request.get(`/examples/${validFormId}`)
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual('User is unauthorized.')
+    })
+
+    it('should return 500 when error occurs whilst querying the database', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+      const validFormId = comTestData.first.forms[0]._id
+      const mockErrorString = 'database error'
+      MockExamplesFactory.getSingleExampleForm.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      const response = await session.get(`/examples/${validFormId}`)
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual(mockErrorString)
     })
   })
 })
