@@ -47,7 +47,7 @@ export const insertFormFeedback = ({
         error,
       })
 
-      return new DatabaseError()
+      return new DatabaseError('Form feedback could not be created')
     },
   ).map(() => true)
 }
