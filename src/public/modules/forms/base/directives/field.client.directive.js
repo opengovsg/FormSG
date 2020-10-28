@@ -6,14 +6,9 @@ const querystring = require('querystring')
 
 angular
   .module('forms')
-  .directive('fieldDirective', [
-    'FormFields',
-    '$location',
-    '$sanitize',
-    fieldDirective,
-  ])
+  .directive('fieldDirective', ['FormFields', '$location', fieldDirective])
 
-function fieldDirective(FormFields, $location, $sanitize) {
+function fieldDirective(FormFields, $location) {
   return {
     restrict: 'E',
     templateUrl:
@@ -47,7 +42,7 @@ function fieldDirective(FormFields, $location, $sanitize) {
         if (typeof prefillValue === 'string') {
           // Only support unique query params. If query params are duplicated,
           // none of the duplicated keys will be prefilled
-          scope.field.fieldValue = $sanitize(prefillValue) // sanitize prefillValue as a precaution, but this means "<>& cannot be used
+          scope.field.fieldValue = prefillValue // do not use $sanitize as it removes non-english characters, tested that script and html tags do not work
           scope.field.disabled = true
         }
       }
