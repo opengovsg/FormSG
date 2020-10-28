@@ -91,18 +91,32 @@ describe('Public-Forms Controller', () => {
       Controller.redirect(req, res)
     })
 
-    it('should redirect to form with query params retained', (done) => {
+    it('should redirect to form with correct query params retained', (done) => {
       req.params = {
         Id: '321564654f65we4f65e4f5',
       }
-      req.url = '/321564654f65we4f65e4f5?abc=def&zzz=yyy'
-      const uriString = encodeURIComponent('abc=def&zzz=yyy')
+      req.query = {
+        p1: 'v1',
+        p2: 'v2',
+        p3: ['v3', 'v4'],
+      }
+
       res.redirect = jasmine.createSpy().and.callFake(() => {
         expect(res.redirect).toHaveBeenCalledWith(
-          `/#!/321564654f65we4f65e4f5?${uriString}`,
+          jasmine.stringMatching(/\?.*p1%3Dv1/),
+        )
+        expect(res.redirect).toHaveBeenCalledWith(
+          jasmine.stringMatching(/\?.*p2%3Dv2/),
+        )
+        expect(res.redirect).toHaveBeenCalledWith(
+          jasmine.stringMatching(/\?.*p3%3Dv3/),
+        )
+        expect(res.redirect).toHaveBeenCalledWith(
+          jasmine.stringMatching(/\?.*p3%3Dv4/),
         )
         done()
       })
+
       Controller.redirect(req, res)
     })
 
