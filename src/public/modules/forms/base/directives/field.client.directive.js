@@ -1,12 +1,13 @@
 'use strict'
 
 const { get } = require('lodash')
+// const queryString = require('query-string')
 
 angular
   .module('forms')
-  .directive('fieldDirective', ['FormFields', fieldDirective])
+  .directive('fieldDirective', ['FormFields', '$location', fieldDirective])
 
-function fieldDirective(FormFields) {
+function fieldDirective(FormFields, $location) {
   return {
     restrict: 'E',
     templateUrl:
@@ -23,6 +24,21 @@ function fieldDirective(FormFields) {
       isValidateDate: '<',
     },
     link: function (scope) {
+      // Stealth prefill feature
+      // If a query parameter is provided to a form URL in the form ?<fieldId1>=<value1>&<fieldId2>=<value2>...
+      // And if the fieldIds are valid mongoose object IDs and refer to a short text field,
+      // Then prefill and disable editing the corresponding form field on the frontend
+
+      const queryParams = $location.search()
+
+      if (
+        scope.field._id in queryParams &&
+        scope.field.fieldType === 'textfield'
+      ) {
+        scope.field.fieldValue = queryParams[scope.field._id]
+        scope.field.disabled = true
+      }
+
       if ((scope.isadminpreview || scope.isTemplate) && scope.field.myInfo) {
         // Determine whether to disable field in preview
         if (
