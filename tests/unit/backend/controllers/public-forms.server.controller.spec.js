@@ -96,14 +96,14 @@ describe('Public-Forms Controller', () => {
         Id: '321564654f65we4f65e4f5',
       }
       req.query = {
-        p1: 'v1',
+        p1: 'v1-_',
         p2: 'v2',
         p3: ['v3', 'v4'],
       }
 
       res.redirect = jasmine.createSpy().and.callFake(() => {
         expect(res.redirect).toHaveBeenCalledWith(
-          jasmine.stringMatching(/\?.*p1%3Dv1/),
+          jasmine.stringMatching(/\?.*p1%3Dv1-_/),
         )
         expect(res.redirect).toHaveBeenCalledWith(
           jasmine.stringMatching(/\?.*p2%3Dv2/),
