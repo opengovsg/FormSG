@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const { StatusCodes } = require('http-status-codes')
+const querystring = require('querystring')
 
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -44,12 +45,12 @@ exports.isFormPublic = function (req, res, next) {
  * @param  {Object} res - Express response object
  */
 exports.redirect = async function (req, res) {
-  const queryPortion = req.url ? req.url.split('?', 2)[1] : undefined
   let redirectPath = req.params.state
     ? req.params.Id + '/' + req.params.state
     : req.params.Id
-  if (queryPortion && queryPortion.length > 0) {
-    redirectPath = redirectPath + '?' + encodeURIComponent(queryPortion)
+  const reqQuery = querystring.stringify(req.query)
+  if (reqQuery.length > 0) {
+    redirectPath = redirectPath + '?' + encodeURIComponent(reqQuery)
   }
   try {
     const metaTags = await fetchMetatags(req)
