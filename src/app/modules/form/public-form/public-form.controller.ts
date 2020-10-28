@@ -13,6 +13,9 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Handler for POST /:formId/feedback endpoint
+ * @precondition formId should be present in req.params.
+ * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
+ *
  * @returns 200 if feedback was successfully saved
  * @returns 404 if form with formId does not exist or is private
  * @returns 410 if form has been archived
