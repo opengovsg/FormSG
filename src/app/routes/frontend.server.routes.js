@@ -14,9 +14,7 @@ module.exports = function (app) {
     celebrate({
       [Segments.QUERY]: {
         redirectPath: Joi.string()
-          .regex(
-            /^[a-fA-F0-9]{24}(\/(preview|template|use-template))?(\?([0-9A-Za-z]+=[0-9A-Za-z]+)(&[0-9A-Za-z]+=[0-9A-Za-z]+)*)?$/,
-          )
+          .regex(/^[a-fA-F0-9]{24}(\/(preview|template|use-template))?/)
           .required(),
       },
     }),

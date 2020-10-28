@@ -48,13 +48,7 @@ exports.redirect = async function (req, res) {
   let redirectPath = req.params.state
     ? req.params.Id + '/' + req.params.state
     : req.params.Id
-  if (
-    queryPortion &&
-    queryPortion.length > 0 &&
-    queryPortion.match(
-      /^(([0-9A-Za-z]+=[0-9A-Za-z]+)(&[0-9A-Za-z]+=[0-9A-Za-z]+)*)?$/,
-    ) // Append only if queryPortion is formatted correctly
-  ) {
+  if (queryPortion && queryPortion.length > 0) {
     redirectPath = redirectPath + '?' + encodeURIComponent(queryPortion)
   }
   try {
