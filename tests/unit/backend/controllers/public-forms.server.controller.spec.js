@@ -30,6 +30,7 @@ describe('Public-Forms Controller', () => {
       params: {},
       body: {},
       headers: {},
+      url: '',
       ip: '127.0.0.1',
       get: () => '',
     }
@@ -85,6 +86,33 @@ describe('Public-Forms Controller', () => {
         expect(res.redirect).toHaveBeenCalledWith(
           '/#!/321564654f65we4f65e4f5/preview',
         )
+        done()
+      })
+      Controller.redirect(req, res)
+    })
+
+    it('should redirect to form with query params retained if they are valid format', (done) => {
+      req.params = {
+        Id: '321564654f65we4f65e4f5',
+      }
+      req.url = '/321564654f65we4f65e4f5?abc=def&zzz=yyy'
+      const uriString = encodeURIComponent('abc=def&zzz=yyy')
+      res.redirect = jasmine.createSpy().and.callFake(() => {
+        expect(res.redirect).toHaveBeenCalledWith(
+          `/#!/321564654f65we4f65e4f5?${uriString}`,
+        )
+        done()
+      })
+      Controller.redirect(req, res)
+    })
+
+    it('should redirect to form without query params if they are invalid format', (done) => {
+      req.params = {
+        Id: '321564654f65we4f65e4f5',
+      }
+      req.url = '/321564654f65we4f65e4f5?abc'
+      res.redirect = jasmine.createSpy().and.callFake(() => {
+        expect(res.redirect).toHaveBeenCalledWith('/#!/321564654f65we4f65e4f5')
         done()
       })
       Controller.redirect(req, res)
