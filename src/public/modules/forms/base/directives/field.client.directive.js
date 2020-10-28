@@ -41,6 +41,7 @@ function fieldDirective(FormFields, $location, $sanitize) {
         query.length > 1 ? querystring.parse(query[1]) : undefined
 
       if (
+        queryParams &&
         scope.field._id in queryParams &&
         scope.field.fieldType === 'textfield'
       ) {
