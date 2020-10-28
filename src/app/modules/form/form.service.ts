@@ -1,12 +1,16 @@
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IFormSchema, IPopulatedForm } from '../../../types'
+import { IFormSchema, IPopulatedForm, Status } from '../../../types'
 import getFormModel from '../../models/form.server.model'
-import { DatabaseError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 
-import { FormNotFoundError } from './form.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from './form.errors'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -43,4 +47,38 @@ export const retrieveFullFormById = (
 
     return okAsync(result)
   })
+}
+
+/**
+ * Method to ensure given form is available to the public.
+ * @param form the form to check
+ * @returns ok(true) if form is public
+ * @returns err(FormDeletedError) if form has been deleted
+ * @returns err(PrivateFormError) if form is private
+ * @returns err(ApplicationError) if form has an invalid state
+ */
+export const isFormPublic = (
+  form: IPopulatedForm,
+): Result<
+  true,
+  FormNotFoundError | FormDeletedError | PrivateFormError | ApplicationError
+> => {
+  switch (form.status) {
+    case Status.Public:
+      return ok(true)
+    case Status.Archived:
+      return err(new FormDeletedError())
+    case Status.Private:
+      return err(new PrivateFormError(form.inactiveMessage))
+    default:
+      logger.error({
+        message: 'Encountered invalid form status',
+        meta: {
+          action: 'isFormPublic',
+          formStatus: form.status,
+          form,
+        },
+      })
+      return err(new ApplicationError())
+  }
 }
