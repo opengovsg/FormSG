@@ -1,6 +1,8 @@
 'use strict'
 
 const { get } = require('lodash')
+const he = require('he')
+const querystring = require('querystring')
 
 angular
   .module('forms')
@@ -33,20 +35,21 @@ function fieldDirective(FormFields, $location, $sanitize) {
       // And if the fieldIds are valid mongoose object IDs and refer to a short text field,
       // Then prefill and disable editing the corresponding form field on the frontend
 
-      const queryParams = $location.search()
-      console.log(queryParams)
+      const decodedUrl = he.decode($location.url()) // tech debt; after redirect, & is encoded as &amp; in the query string
+      const query = decodedUrl.split('?')[1]
+      const queryParams = querystring.parse(query)
 
       if (
         scope.field._id in queryParams &&
         scope.field.fieldType === 'textfield'
       ) {
-        let prefillValue = queryParams[scope.field._id]
-        prefillValue = Array.isArray(prefillValue)
-          ? prefillValue[prefillValue.length - 1] // use last value in array if param key repeated
-          : // but note that there is no specification that the last value will definitely be last in order in the url string
-            prefillValue
-        scope.field.fieldValue = $sanitize(prefillValue) // sanitize prefillValue as a precaution, but this means "<>& cannot be used
-        scope.field.disabled = true
+        const prefillValue = queryParams[scope.field._id]
+        if (typeof prefillValue === 'string') {
+          // Only support unique query params. If query params are duplicated,
+          // none of the duplicated keys will be prefilled
+          scope.field.fieldValue = $sanitize(prefillValue) // sanitize prefillValue as a precaution, but this means "<>& cannot be used
+          scope.field.disabled = true
+        }
       }
 
       if ((scope.isadminpreview || scope.isTemplate) && scope.field.myInfo) {
