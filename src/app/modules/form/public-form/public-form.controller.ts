@@ -7,6 +7,7 @@ import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
+import { RedirectParams } from './public-form.types'
 import { mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -102,4 +103,54 @@ export const handleSubmitFeedback: RequestHandler<
   return res
     .status(StatusCodes.OK)
     .json({ message: 'Successfully submitted feedback' })
+}
+
+/**
+ * Handler for various endpoints to redirect to their hashbanged versions.
+ * This allows form links to be free of hashbangs and can thus be shared
+ * via QR codes or url shorteners. Also handles requests from web crawlers
+ * for the generation of rich link previews, renders index with the relevant
+ * metatags if a crawler's user agent string is detected.
+ * @precondition Id should be present in req.params.
+ *
+ * @returns 302 redirect
+ */
+export const handleRedirect: RequestHandler<RedirectParams> = async (
+  req,
+  res,
+) => {
+  const { state, Id } = req.params
+
+  const redirectPath = state ? `${Id}/${state}` : Id
+
+  const baseUrl = `${req.protocol}://${req.hostname}`
+  const appUrl = baseUrl + req.originalUrl
+
+  const createMetatagsResult = await PublicFormService.createMetatags({
+    formId: Id,
+    appUrl,
+    imageBaseUrl: baseUrl,
+  })
+
+  // Failed to create metatags.
+  if (createMetatagsResult.isErr()) {
+    logger.error({
+      message: 'Error fetching metatags',
+      meta: {
+        action: 'handleRedirect',
+        ...createReqMeta(req),
+      },
+      error: createMetatagsResult.error,
+    })
+
+    // Fallback to redirect to hashbanged version instead of attaching metatags
+    // before redirecting.
+    return res.redirect('/#!/' + redirectPath)
+  }
+
+  // Metatags creation successful.
+  return res.render('index', {
+    ...createMetatagsResult.value,
+    redirectPath,
+  })
 }
