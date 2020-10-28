@@ -44,9 +44,19 @@ exports.isFormPublic = function (req, res, next) {
  * @param  {Object} res - Express response object
  */
 exports.redirect = async function (req, res) {
+  const queryPortion = req.url ? req.url.split('?', 2)[1] : undefined
   let redirectPath = req.params.state
     ? req.params.Id + '/' + req.params.state
     : req.params.Id
+  if (
+    queryPortion &&
+    queryPortion.length > 0 &&
+    queryPortion.match(
+      /^(([0-9A-Za-z]+=[0-9A-Za-z]+)(&[0-9A-Za-z]+=[0-9A-Za-z]+)*)?$/,
+    ) // Append only if queryPortion is formatted correctly
+  ) {
+    redirectPath = redirectPath + '?' + encodeURIComponent(queryPortion)
+  }
   try {
     const metaTags = await fetchMetatags(req)
     return res.render('index', {
