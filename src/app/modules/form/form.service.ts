@@ -66,10 +66,7 @@ export const retrieveFullFormById = (
  */
 export const isFormPublic = (
   form: IPopulatedForm,
-): Result<
-  true,
-  FormNotFoundError | FormDeletedError | PrivateFormError | ApplicationError
-> => {
+): Result<true, FormDeletedError | PrivateFormError | ApplicationError> => {
   switch (form.status) {
     case Status.Public:
       return ok(true)
