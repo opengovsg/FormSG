@@ -2,10 +2,6 @@ const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
-const FormFeedback = dbHandler.makeModel(
-  'form_feedback.server.model',
-  'FormFeedback',
-)
 
 const Controller = spec(
   'dist/backend/app/controllers/public-forms.server.controller',
@@ -116,75 +112,6 @@ describe('Public-Forms Controller', () => {
         done()
       })
       Controller.redirect(req, res)
-    })
-  })
-
-  describe('submitFeedback', () => {
-    it('should return a 400 error if there are missing params', () => {
-      _.forEach(['params.formId', 'body.rating', 'body.comment'], (path) => {
-        req.body = {
-          rating: 4,
-          comment: 'good',
-        }
-        req.params = {
-          formId: mongoose.Types.ObjectId(),
-        }
-        // Removes a param
-        _.unset(req, path)
-        res.status = jasmine.createSpy().and.callFake(() => {
-          return res
-        })
-        Controller.submitFeedback(req, res)
-        expect(res.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      })
-    })
-
-    it('should return a 500 error if form feedback could not be created', (done) => {
-      // Malformed parameters
-      req.body = {
-        rating: 7,
-        comment: 'good',
-      }
-      req.params = {
-        formId: mongoose.Types.ObjectId(),
-      }
-      res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(
-          StatusCodes.INTERNAL_SERVER_ERROR,
-        )
-        done()
-        return res
-      })
-      Controller.submitFeedback(req, res)
-    })
-
-    it('should successfully save form feedback', (done) => {
-      req.body = {
-        rating: 4,
-        comment: 'good',
-      }
-      req.params = {
-        formId: mongoose.Types.ObjectId(),
-      }
-      res.status.and.callFake((args) => {
-        expect(args).toBe(StatusCodes.OK)
-        return res
-      })
-      res.json.and.callFake(() => {
-        FormFeedback.findOne(
-          {
-            formId: req.params.formId,
-            rating: req.body.rating,
-            comment: req.body.comment,
-          },
-          (err, feedback) => {
-            expect(err).toBeNull()
-            expect(feedback).toBeDefined()
-            done()
-          },
-        )
-      })
-      Controller.submitFeedback(req, res)
     })
   })
 })
