@@ -67,8 +67,9 @@ exports.redirect = async function (req, res) {
       },
       error: err,
     })
+    res.redirect('/#!/' + redirectPath)
+    return
   }
-  res.redirect('/#!/' + redirectPath)
 }
 
 /**
