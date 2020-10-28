@@ -1,8 +1,7 @@
 import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from 'src/config/logger'
-
+import { createLoggerWithLabel } from '../../../../config/logger'
 import getFormFeedbackModel from '../../../models/form_feedback.server.model'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../form.errors'
