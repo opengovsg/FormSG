@@ -38,7 +38,7 @@ module.exports = function (app) {
 
   // TODO: Remove this embed endpoint
   app
-    .route('/:formId([a-fA-F0-9]{24})/embed')
+    .route('/:Id([a-fA-F0-9]{24})/embed')
     .get(PublicFormController.handleRedirect)
 
   /**
