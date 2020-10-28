@@ -36,8 +36,9 @@ function fieldDirective(FormFields, $location, $sanitize) {
       // Then prefill and disable editing the corresponding form field on the frontend
 
       const decodedUrl = he.decode($location.url()) // tech debt; after redirect, & is encoded as &amp; in the query string
-      const query = decodedUrl.split('?')[1]
-      const queryParams = querystring.parse(query)
+      const query = decodedUrl.split('?')
+      const queryParams =
+        query.length > 1 ? querystring.parse(query[1]) : undefined
 
       if (
         scope.field._id in queryParams &&
