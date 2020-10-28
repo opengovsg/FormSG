@@ -4,13 +4,20 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { PrivateFormError } from '../form.errors'
-import { isFormPublic, retrieveFullFormById } from '../form.service'
+import * as FormService from '../form.service'
 
-import { insertFormFeedback } from './public-form.service'
+import * as PublicFormService from './public-form.service'
 import { mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Handler for POST /:formId/feedback endpoint
+ * @returns 200 if feedback was successfully saved
+ * @returns 404 if form with formId does not exist or is private
+ * @returns 410 if form has been archived
+ * @returns 500 if database error occurs
+ */
 export const handleSubmitFeedback: RequestHandler<
   { formId: string },
   unknown,
@@ -19,7 +26,7 @@ export const handleSubmitFeedback: RequestHandler<
   const { formId } = req.params
   const { rating, comment } = req.body
 
-  const formResult = await retrieveFullFormById(formId)
+  const formResult = await FormService.retrieveFullFormById(formId)
 
   if (formResult.isErr()) {
     const { error } = formResult
@@ -39,7 +46,7 @@ export const handleSubmitFeedback: RequestHandler<
   const form = formResult.value
 
   // Handle form status states.
-  const isPublicResult = isFormPublic(form)
+  const isPublicResult = FormService.isFormPublic(form)
   if (isPublicResult.isErr()) {
     const { error } = isPublicResult
     logger.warn({
@@ -67,7 +74,7 @@ export const handleSubmitFeedback: RequestHandler<
   }
 
   // Form is valid, proceed to next step.
-  const submitFeedbackResult = await insertFormFeedback({
+  const submitFeedbackResult = await PublicFormService.insertFormFeedback({
     formId: form._id,
     rating,
     comment,

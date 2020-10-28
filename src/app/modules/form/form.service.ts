@@ -21,6 +21,13 @@ export const deactivateForm = async (
   return FormModel.deactivateById(formId)
 }
 
+/**
+ * Retrieves the fully populated form of the given formId.
+ * @param formId the id of the form to retrieve
+ * @returns ok(fully populated form) if form exists
+ * @returns err(FormNotFoundError) if the form or form admin does not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
 export const retrieveFullFormById = (
   formId: string,
 ): ResultAsync<IPopulatedForm, FormNotFoundError | DatabaseError> => {
