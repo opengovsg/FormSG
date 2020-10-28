@@ -1,13 +1,17 @@
 'use strict'
 
 const { get } = require('lodash')
-// const queryString = require('query-string')
 
 angular
   .module('forms')
-  .directive('fieldDirective', ['FormFields', '$location', fieldDirective])
+  .directive('fieldDirective', [
+    'FormFields',
+    '$location',
+    '$sanitize',
+    fieldDirective,
+  ])
 
-function fieldDirective(FormFields, $location) {
+function fieldDirective(FormFields, $location, $sanitize) {
   return {
     restrict: 'E',
     templateUrl:
@@ -30,12 +34,18 @@ function fieldDirective(FormFields, $location) {
       // Then prefill and disable editing the corresponding form field on the frontend
 
       const queryParams = $location.search()
+      console.log(queryParams)
 
       if (
         scope.field._id in queryParams &&
         scope.field.fieldType === 'textfield'
       ) {
-        scope.field.fieldValue = queryParams[scope.field._id]
+        let prefillValue = queryParams[scope.field._id]
+        prefillValue = Array.isArray(prefillValue)
+          ? prefillValue[prefillValue.length - 1] // use last value in array if param key repeated
+          : // but note that there is no specification that the last value will definitely be last in order in the url string
+            prefillValue
+        scope.field.fieldValue = $sanitize(prefillValue) // sanitize prefillValue as a precaution, but this means "<>& cannot be used
         scope.field.disabled = true
       }
 
