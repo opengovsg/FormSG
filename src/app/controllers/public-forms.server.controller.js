@@ -5,10 +5,7 @@ const { StatusCodes } = require('http-status-codes')
 
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const getFormFeedbackModel = require('../models/form_feedback.server.model')
-  .default
 const getFormModel = require('../models/form.server.model').default
-const FormFeedback = getFormFeedbackModel(mongoose)
 const Form = getFormModel(mongoose)
 
 /**
@@ -64,53 +61,6 @@ exports.redirect = async function (req, res) {
     })
   }
   res.redirect('/#!/' + redirectPath)
-}
-
-/**
- * Submit feedback from form to our DB,
- * to be analysed in analytics in the future.
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- */
-exports.submitFeedback = function (req, res) {
-  if (
-    !req.params ||
-    !('formId' in req.params) ||
-    !req.body ||
-    !('rating' in req.body) ||
-    !('comment' in req.body)
-  ) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: 'Form feedback data not passed in' })
-  }
-
-  FormFeedback.create(
-    {
-      formId: req.params.formId,
-      rating: req.body.rating,
-      comment: req.body.comment,
-    },
-    function (err) {
-      if (err) {
-        logger.error({
-          message: 'Error creating form feedback',
-          meta: {
-            action: 'submitFeedback',
-            ...createReqMeta(req),
-          },
-          error: err,
-        })
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Form feedback could not be created' })
-      } else {
-        return res
-          .status(StatusCodes.OK)
-          .json({ message: 'Successfully submitted feedback' })
-      }
-    },
-  )
 }
 
 /**

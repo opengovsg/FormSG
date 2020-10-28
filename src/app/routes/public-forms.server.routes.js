@@ -8,12 +8,13 @@ const publicForms = require('../../app/controllers/public-forms.server.controlle
 const submissions = require('../../app/controllers/submissions.server.controller')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
-const { celebrate, Joi } = require('celebrate')
+const { celebrate, Joi, Segments } = require('celebrate')
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../factories/captcha.factory')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
+const PublicFormController = require('../modules/form/public-form/public-form.controller')
 
 module.exports = function (app) {
   /**
@@ -68,23 +69,36 @@ module.exports = function (app) {
   /**
    * @typedef Feedback
    * @property {number} rating.required - the user's rating of the form
-   * @property {string} comment.required - any comments the user might have
+   * @property {string} comment - any comments the user might have
    */
 
   /**
    * Send feedback for a public form
-   * @route POST /{formId}/feedback
+   * @route POST /:formId/feedback
    * @group forms - endpoints to serve forms
    * @param {string} formId.path.required - the form id
    * @param {Feedback.model} feedback.body.required - the user's feedback
    * @consumes application/json
    * @produces application/json
-   * @returns {string} 400 - form feedback was malformed and hence cannot be saved
-   * @returns {string} 200 - form feedback was saved
+   * @returns 200 if feedback was successfully saved
+   * @returns 400 if form feedback was malformed and hence cannot be saved
+   * @returns 404 if form with formId does not exist or is private
+   * @returns 410 if form has been archived
+   * @returns 500 if database error occurs
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/feedback')
-    .post(forms.formById, publicForms.isFormPublic, publicForms.submitFeedback)
+  app.route('/:formId([a-fA-F0-9]{24})/feedback').post(
+    celebrate({
+      [Segments.BODY]: Joi.object()
+        .keys({
+          rating: Joi.number().min(1).max(5).cast('string').required(),
+          comment: Joi.string().allow('').required(),
+        })
+        // Allow other keys for backwards compability as frontend might put
+        // extra keys in the body.
+        .unknown(true),
+    }),
+    PublicFormController.handleSubmitFeedback,
+  )
 
   /**
    * @typedef PublicForm
