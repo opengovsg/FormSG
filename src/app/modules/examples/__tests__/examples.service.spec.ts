@@ -45,8 +45,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingStats({
               searchTerm: testData.second.searchTerm,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'true',
+              pageNo: 0,
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -61,8 +61,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingStats({
               searchTerm: INVALID_SEARCH_TERM,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'true',
+              pageNo: 0,
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -79,8 +79,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingStats({
               searchTerm: testData.first.searchTerm,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'false',
+              pageNo: 0,
+              shouldGetTotalNumResults: false,
             })
 
             // Assert
@@ -94,8 +94,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingStats({
               searchTerm: INVALID_SEARCH_TERM,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'false',
+              pageNo: 0,
+              shouldGetTotalNumResults: false,
             })
 
             // Assert
@@ -112,8 +112,8 @@ describe('examples.service', () => {
           it('should return list of form info with results count', async () => {
             // Act
             const actualResults = await getExampleFormsUsingStats({
-              pageNo: '0',
-              shouldGetTotalNumResults: 'true',
+              pageNo: 0,
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -126,13 +126,12 @@ describe('examples.service', () => {
 
           it('should return empty list with number of forms with submissions when offset is more than number of documents in collection', async () => {
             // Arrange
-            const overOffset = String(
-              (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1,
-            )
+            const overOffset =
+              (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1
             // Act
             const actualResults = await getExampleFormsUsingStats({
               pageNo: overOffset,
-              shouldGetTotalNumResults: 'true',
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -148,8 +147,8 @@ describe('examples.service', () => {
           it('should return list of form info', async () => {
             // Act
             const actualResults = await getExampleFormsUsingStats({
-              pageNo: '0',
-              shouldGetTotalNumResults: 'false',
+              pageNo: 0,
+              shouldGetTotalNumResults: false,
             })
 
             // Assert
@@ -161,13 +160,12 @@ describe('examples.service', () => {
 
           it('should return empty list when offset is more than number of documents', async () => {
             // Arrange
-            const overOffset = String(
-              (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1,
-            )
+            const overOffset =
+              (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1
             // Act
             const actualResults = await getExampleFormsUsingStats({
               pageNo: overOffset,
-              shouldGetTotalNumResults: 'false',
+              shouldGetTotalNumResults: false,
             })
 
             // Assert
@@ -191,8 +189,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingSubs({
               searchTerm: testData.second.searchTerm,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'true',
+              pageNo: 0,
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -207,8 +205,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingSubs({
               searchTerm: INVALID_SEARCH_TERM,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'true',
+              pageNo: 0,
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -225,8 +223,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingSubs({
               searchTerm: testData.first.searchTerm,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'false',
+              pageNo: 0,
+              shouldGetTotalNumResults: false,
             })
 
             // Assert
@@ -240,8 +238,8 @@ describe('examples.service', () => {
             // Act
             const actualResults = await getExampleFormsUsingSubs({
               searchTerm: INVALID_SEARCH_TERM,
-              pageNo: '0',
-              shouldGetTotalNumResults: 'false',
+              pageNo: 0,
+              shouldGetTotalNumResults: false,
             })
 
             // Assert
@@ -258,8 +256,8 @@ describe('examples.service', () => {
           it('should return list of form info with results count', async () => {
             // Act
             const actualResults = await getExampleFormsUsingSubs({
-              pageNo: '0',
-              shouldGetTotalNumResults: 'true',
+              pageNo: 0,
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -272,13 +270,12 @@ describe('examples.service', () => {
 
           it('should return empty list with total number of submissions when offset is more than number of documents in collection', async () => {
             // Arrange
-            const overOffset = String(
-              (await SubmissionModel.estimatedDocumentCount()) / PAGE_SIZE + 1,
-            )
+            const overOffset =
+              (await SubmissionModel.estimatedDocumentCount()) / PAGE_SIZE + 1
             // Act
             const actualResults = await getExampleFormsUsingSubs({
               pageNo: overOffset,
-              shouldGetTotalNumResults: 'true',
+              shouldGetTotalNumResults: true,
             })
 
             // Assert
@@ -294,8 +291,8 @@ describe('examples.service', () => {
           it('should return only list of form info', async () => {
             // Act
             const actualResults = await getExampleFormsUsingSubs({
-              pageNo: '0',
-              shouldGetTotalNumResults: 'false',
+              pageNo: 0,
+              shouldGetTotalNumResults: false,
             })
 
             // Assert
@@ -308,13 +305,12 @@ describe('examples.service', () => {
 
           it('should return empty list when offset is more than number of documents', async () => {
             // Arrange
-            const overOffset = String(
-              (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1,
-            )
+            const overOffset =
+              (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1
             // Act
             const actualResults = await getExampleFormsUsingSubs({
               pageNo: overOffset,
-              shouldGetTotalNumResults: 'false',
+              shouldGetTotalNumResults: false,
             })
 
             // Assert

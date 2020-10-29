@@ -9,7 +9,7 @@ import { DatabaseError } from '../../core/core.errors'
 import * as ExamplesController from '../examples.controller'
 import { ResultsNotFoundError } from '../examples.errors'
 import { ExamplesFactory } from '../examples.factory'
-import { SingleFormResult } from '../examples.types'
+import { ExamplesQueryParams, SingleFormResult } from '../examples.types'
 
 jest.mock('../examples.factory')
 const MockExamplesFactory = mocked(ExamplesFactory)
@@ -18,8 +18,8 @@ describe('examples.controller', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('handleGetExamples', () => {
-    const MOCK_REQ_QUERY = {
-      pageNo: '1',
+    const MOCK_REQ_QUERY: ExamplesQueryParams = {
+      pageNo: 1,
     }
     const MOCK_REQ = expressHandler.mockRequest({
       query: MOCK_REQ_QUERY,

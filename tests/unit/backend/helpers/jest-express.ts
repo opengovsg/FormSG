@@ -1,10 +1,7 @@
 import { Request, Response } from 'express'
+import { Query } from 'express-serve-static-core'
 
-const mockRequest = <
-  P extends Record<string, string>,
-  B,
-  Q extends Record<string, string | undefined>
->({
+const mockRequest = <P extends Record<string, string>, B, Q>({
   params,
   body,
   session,
@@ -16,7 +13,7 @@ const mockRequest = <
   session?: Record<string, unknown>
   query?: Q
   secure?: boolean
-} = {}): Request<P, unknown, B, Q> => {
+} = {}): Request<P, unknown, B, Q & Query> => {
   return {
     body: body ?? {},
     params: params ?? {},
@@ -27,7 +24,7 @@ const mockRequest = <
       if (name === 'cf-connecting-ip') return 'MOCK_IP'
       return undefined
     },
-  } as Request<P, unknown, B, Q>
+  } as Request<P, unknown, B, Q & Query>
 }
 
 const mockResponse = (

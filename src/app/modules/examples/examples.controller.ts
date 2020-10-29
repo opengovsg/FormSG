@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
+import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -22,7 +22,7 @@ export const handleGetExamples: RequestHandler<
   ParamsDictionary,
   unknown,
   unknown,
-  ExamplesQueryParams
+  Query & ExamplesQueryParams
 > = (req, res) => {
   if (!isUserInSession(req)) {
     return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
