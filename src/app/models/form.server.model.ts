@@ -8,6 +8,7 @@ import {
   AuthType,
   BasicField,
   Colors,
+  DashboardFormView,
   FormLogoState,
   FormOtpData,
   IEmailFormModel,
@@ -492,6 +493,31 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       form.status = Status.Private
     }
     return form.save()
+  }
+
+  FormSchema.statics.getDashboardForms = async function (
+    this: IFormModel,
+    userId: IUserSchema['_id'],
+    userEmail: IUserSchema['email'],
+  ): Promise<DashboardFormView[]> {
+    return (
+      this.find()
+        // List forms when either the user is an admin or collaborator.
+        .or([{ 'permissionList.email': userEmail }, { admin: userId }])
+        // Filter out archived forms.
+        .where('status')
+        .ne(Status.Archived)
+        // Project selected fields.
+        .select('_id title admin lastModified status form_fields')
+        .sort('-lastModified')
+        .populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+        .exec()
+    )
   }
 
   // Hooks

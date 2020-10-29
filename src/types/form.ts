@@ -131,7 +131,19 @@ export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
   deactivateById(formId: string): Promise<IFormSchema | null>
+  getDashboardForms(
+    userId: IUserSchema['_id'],
+    userEmail: IUserSchema['email'],
+  ): Promise<DashboardFormView[]>
 }
 
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 export type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
+// Typing for the shape of the form document subset that is returned to the
+// frontend when admin lists their available forms in their dashboard.
+export type DashboardFormView = Pick<
+  IFormSchema,
+  'title' | 'admin' | 'lastModified' | 'status' | 'form_fields'
+> & {
+  admin: IPopulatedUser
+}
