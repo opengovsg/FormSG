@@ -428,33 +428,10 @@ function makeModule(connection) {
      * @param  {Object} res - Express response object
      */
     list: function (req, res) {
-      let Form = getFormModel(connection)
-      // List forms when either the user is an admin or collaborator
-      let searchFields = [
-        { 'permissionList.email': req.session.user.email },
-        { admin: req.session.user },
-      ]
-      let returnedFields = '_id title admin lastModified status form_fields'
-
-      Form.find({ $or: searchFields }, returnedFields)
-        .sort('-lastModified')
-        .populate({
-          path: 'admin',
-          populate: {
-            path: 'agency',
-          },
-        })
-        .exec(function (err, forms) {
-          if (err) {
-            return respondOnMongoError(req, res, err)
-          } else if (!forms) {
-            return res.status(StatusCodes.NOT_FOUND).json({
-              message: 'No user-created and collaborated-on forms found',
-            })
-          }
-          let activeForms = forms.filter((form) => form.status !== 'ARCHIVED')
-          return res.json(activeForms)
-        })
+      const Form = getFormModel(connection)
+      Form.getDashboardForms(req.session.user._id, req.session.user.email)
+        .then((forms) => res.json(forms))
+        .catch((err) => respondOnMongoError(req, res, err))
     },
     /**
      * Return form feedback matching query
