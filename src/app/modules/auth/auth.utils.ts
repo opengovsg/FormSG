@@ -55,5 +55,5 @@ export const mapRouteError = (
 }
 
 export const isUserInSession = (req: Request): boolean => {
-  return !!req.session?.user
+  return !!req.session?.user?._id
 }
