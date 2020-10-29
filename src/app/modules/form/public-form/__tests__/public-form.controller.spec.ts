@@ -225,6 +225,13 @@ describe('public-form.controller', () => {
         originalUrl: '/some-url',
       },
     })
+    const MOCK_METATAGS: Metatags = {
+      title: 'mock tag title',
+      appUrl: 'some://mock-app.url',
+      images: ['some-image-link-1', 'some-image-link-2'],
+      twitterImage: 'some-twitter-link',
+      description: 'mock tag description',
+    }
     const EXPECTED_METATAG_ARGS = {
       formId: MOCK_FORM_ID,
       appUrl: `${MOCK_REQ.protocol}://${MOCK_REQ.hostname}${MOCK_REQ.originalUrl}`,
@@ -233,16 +240,9 @@ describe('public-form.controller', () => {
 
     it('should return index render with redirectPath when metatags are created successfully', async () => {
       // Arrange
-      const mockMetatags: Metatags = {
-        title: 'mock tag title',
-        appUrl: 'some://mock-app.url',
-        images: ['some-image-link-1', 'some-image-link-2'],
-        twitterImage: 'some-twitter-link',
-        description: 'mock tag description',
-      }
       const mockRes = expressHandler.mockResponse()
       MockPublicFormService.createMetatags.mockReturnValueOnce(
-        okAsync(mockMetatags),
+        okAsync(MOCK_METATAGS),
       )
 
       // Act
@@ -254,7 +254,7 @@ describe('public-form.controller', () => {
         EXPECTED_METATAG_ARGS,
       )
       expect(mockRes.render).toHaveBeenCalledWith('index', {
-        ...mockMetatags,
+        ...MOCK_METATAGS,
         redirectPath: expectedRedirectPath,
       })
     })
@@ -265,16 +265,9 @@ describe('public-form.controller', () => {
       const mockReqWithState = merge({}, MOCK_REQ, {
         params: { state: stateParam },
       })
-      const mockMetatags: Metatags = {
-        title: 'mock tag title',
-        appUrl: 'some://mock-app.url',
-        images: ['some-image-link-1', 'some-image-link-2'],
-        twitterImage: 'some-twitter-link',
-        description: 'mock tag description',
-      }
       const mockRes = expressHandler.mockResponse()
       MockPublicFormService.createMetatags.mockReturnValueOnce(
-        okAsync(mockMetatags),
+        okAsync(MOCK_METATAGS),
       )
 
       // Act
@@ -291,7 +284,7 @@ describe('public-form.controller', () => {
         EXPECTED_METATAG_ARGS,
       )
       expect(mockRes.render).toHaveBeenCalledWith('index', {
-        ...mockMetatags,
+        ...MOCK_METATAGS,
         redirectPath: expectedRedirectPath,
       })
     })
