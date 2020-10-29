@@ -1,3 +1,5 @@
+import { Query } from 'express-serve-static-core'
+
 import {
   IAgency,
   IForm,
@@ -66,11 +68,11 @@ export type QueryPageResultWithTotal = {
   totalNumResults: number
 }
 
-export type ExamplesQueryParams = {
-  pageNo: string
+export type ExamplesQueryParams = Query & {
+  pageNo: number
   agency?: string
   searchTerm?: string
-  shouldGetTotalNumResults?: 'true' | 'false'
+  shouldGetTotalNumResults?: boolean
 }
 
 export type FormInfo = QueryExecResult & {

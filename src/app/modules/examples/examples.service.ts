@@ -248,9 +248,9 @@ export const getExampleForms = (type: RetrievalType) => (
   const queryBuilder = getExamplesQueryBuilder({ type, query })
 
   const { pageNo, shouldGetTotalNumResults } = query
-  const offset = parseInt(pageNo) * PAGE_SIZE || 0
+  const offset = pageNo * PAGE_SIZE || 0
 
-  return shouldGetTotalNumResults === 'true'
+  return shouldGetTotalNumResults
     ? execExamplesQueryWithTotal(queryBuilder, offset)
     : execExamplesQuery(queryBuilder, offset)
 }
