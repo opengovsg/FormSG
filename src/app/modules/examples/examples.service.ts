@@ -6,7 +6,6 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
 import getFormModel from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
-import { formatToRelativeString } from '../../utils/date'
 import { DatabaseError } from '../core/core.errors'
 
 import { MIN_SUB_COUNT, PAGE_SIZE } from './examples.constants'
@@ -37,6 +36,7 @@ import {
   createSearchQueryPipeline,
   createSingleSearchStatsPipeline,
   createSingleSearchSubmissionPipeline,
+  formatToRelativeString,
 } from './examples.utils'
 
 const FormModel = getFormModel(mongoose)

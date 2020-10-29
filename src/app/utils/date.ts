@@ -19,23 +19,3 @@ export const createQueryWithDateParam = (
     return {}
   }
 }
-
-/**
- * Function to format given date to a relative string representation.
- * @param date the date to format to its relative string representation
- * @returns the relative string representation of the given date
- */
-export const formatToRelativeString = (date: Date | null): string => {
-  if (!date) {
-    return '-'
-  }
-  const timeDiffDays = moment().diff(date, 'days')
-
-  if (timeDiffDays <= 1) {
-    return 'less than 1 day ago'
-  } else if (timeDiffDays < 30) {
-    return `${timeDiffDays} days ago`
-  } else {
-    return moment(date).format('D MMM, YYYY')
-  }
-}
