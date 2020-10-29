@@ -50,7 +50,6 @@ function fieldDirective(FormFields, $location, $sanitize) {
           // Only support unique query params. If query params are duplicated,
           // none of the duplicated keys will be prefilled
           scope.field.fieldValue = $sanitize(prefillValue) // $sanitize as a precaution to prevent xss
-          scope.field.disabled = true
         }
       }
 
