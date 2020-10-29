@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
@@ -126,3 +126,12 @@ export interface IEmailForm extends IForm {
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
+
+export interface IFormModel extends Model<IFormSchema> {
+  getOtpData(formId: string): Promise<FormOtpData | null>
+  getFullFormById(formId: string): Promise<IPopulatedForm | null>
+  deactivateById(formId: string): Promise<IFormSchema | null>
+}
+
+export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
+export type IEmailFormModel = Model<IEmailFormSchema> & IFormModel

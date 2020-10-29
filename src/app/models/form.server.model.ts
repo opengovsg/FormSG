@@ -1,6 +1,6 @@
 import BSON from 'bson-ext'
 import { compact, filter, pick, uniq } from 'lodash'
-import { Model, Mongoose, Schema, SchemaOptions } from 'mongoose'
+import { Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
 import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
@@ -10,9 +10,12 @@ import {
   Colors,
   FormLogoState,
   FormOtpData,
+  IEmailFormModel,
   IEmailFormSchema,
+  IEncryptedFormModel,
   IEncryptedFormSchema,
   IForm,
+  IFormModel,
   IFormSchema,
   IPopulatedForm,
   LogicType,
@@ -86,22 +89,12 @@ const formSchemaOptions: SchemaOptions = {
   },
 }
 
-export interface IFormModel extends Model<IFormSchema> {
-  getOtpData(formId: string): Promise<FormOtpData | null>
-  getFullFormById(formId: string): Promise<IPopulatedForm | null>
-  deactivateById(formId: string): Promise<IFormSchema | null>
-}
-
-type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
-
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
     type: String,
     required: true,
   },
 })
-
-type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 
 // Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
 function transformEmailString(v: string): string[] {
