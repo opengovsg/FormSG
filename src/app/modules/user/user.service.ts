@@ -239,7 +239,6 @@ export const retrieveUser = (
   )
 }
 
-// Private helper functions
 /**
  * Retrieves the user with the given id.
  * @param userId the id of the user to retrieve
@@ -247,7 +246,7 @@ export const retrieveUser = (
  * @returns err(DatabaseError) if database errors occurs whilst retrieving user
  * @returns err(MissingUserError) if user does not exist in the database
  */
-const findAdminById = (
+export const findAdminById = (
   userId: string,
 ): ResultAsync<IUserSchema, MissingUserError | DatabaseError> => {
   return ResultAsync.fromPromise(UserModel.findById(userId).exec(), (error) => {
@@ -268,6 +267,7 @@ const findAdminById = (
   })
 }
 
+// Private helper functions
 /**
  * Hashes both the given otp and contact data.
  * @param otp the otp to hash
