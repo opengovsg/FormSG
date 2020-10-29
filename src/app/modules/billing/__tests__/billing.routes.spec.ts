@@ -51,46 +51,14 @@ describe('billing.routes', () => {
       // Log in user.
       const session = await createAuthedSession(defaultUser.email, request)
       // Generate login statistics.
-      // Create 3 random forms.
-      const formPromises = times(3, (idx) =>
-        FormModel.create({
-          title: `example form title ${idx}`,
-          admin: defaultUser._id,
-          responseMode: ResponseMode.Email,
-          emails: [defaultUser.email],
-        }),
-      )
-      const forms = await Promise.all(formPromises)
-
-      // Login to first two forms a set number of times with the same esrvcId.
-      const esrvc1LoginTimes = [4, 2]
-      const loginPromises = flatten(
-        forms.map((form, idx) =>
-          times(esrvc1LoginTimes[idx], () =>
-            LoginModel.create({
-              form: form._id,
-              admin: defaultUser._id,
-              agency: defaultUser.agency,
-              authType: AuthType.SP,
-              esrvcId: VALID_ESRVCID_1,
-            }),
-          ),
-        ),
-      )
-      // Login to third form with a different esrvcId.
-      loginPromises.push(
-        ...times(5, () =>
-          LoginModel.create({
-            form: forms[2]._id,
-            admin: defaultUser._id,
-            agency: defaultUser.agency,
-            authType: AuthType.SP,
-            esrvcId: VALID_ESRVCID_2,
-          }),
-        ),
-      )
-
-      await Promise.all(loginPromises)
+      const {
+        generatedLoginTimes,
+        generatedForms,
+      } = await generateLoginStatistics({
+        user: defaultUser,
+        esrvcIdToCheck: VALID_ESRVCID_1,
+        altEsrvcId: VALID_ESRVCID_2,
+      })
 
       // Act
       const response = await session.get('/billing').query({
@@ -106,16 +74,16 @@ describe('billing.routes', () => {
       const expectedStats = [
         {
           adminEmail: defaultUser.email,
-          formName: forms[0].title,
-          total: esrvc1LoginTimes[0],
-          formId: String(forms[0]._id),
+          formName: generatedForms[0].title,
+          total: generatedLoginTimes[0],
+          formId: String(generatedForms[0]._id),
           authType: AuthType.SP,
         },
         {
           adminEmail: defaultUser.email,
-          formName: forms[1].title,
-          total: esrvc1LoginTimes[1],
-          formId: String(forms[1]._id),
+          formName: generatedForms[1].title,
+          total: generatedLoginTimes[1],
+          formId: String(generatedForms[1]._id),
           authType: AuthType.SP,
         },
       ]
@@ -242,3 +210,63 @@ describe('billing.routes', () => {
     })
   })
 })
+
+/**
+ * Helper method to generate login statistics for testing.
+ */
+const generateLoginStatistics = async ({
+  user,
+  esrvcIdToCheck,
+  altEsrvcId,
+}: {
+  user: IUserSchema
+  esrvcIdToCheck: string
+  altEsrvcId: string
+}) => {
+  // Generate login statistics.
+  // Create 3 random forms.
+  const formPromises = times(3, (idx) =>
+    FormModel.create({
+      title: `example form title ${idx}`,
+      admin: user._id,
+      responseMode: ResponseMode.Email,
+      emails: [user.email],
+    }),
+  )
+  const forms = await Promise.all(formPromises)
+
+  // Login to first two forms a set number of times with the same esrvcId.
+  const esrvc1LoginTimes = [4, 2]
+  const loginPromises = flatten(
+    forms.map((form, idx) =>
+      times(esrvc1LoginTimes[idx], () =>
+        LoginModel.create({
+          form: form._id,
+          admin: user._id,
+          agency: user.agency,
+          authType: AuthType.SP,
+          esrvcId: esrvcIdToCheck,
+        }),
+      ),
+    ),
+  )
+  // Login to third form with a different esrvcId.
+  loginPromises.push(
+    ...times(5, () =>
+      LoginModel.create({
+        form: forms[2]._id,
+        admin: user._id,
+        agency: user.agency,
+        authType: AuthType.SP,
+        esrvcId: altEsrvcId,
+      }),
+    ),
+  )
+
+  await Promise.all(loginPromises)
+
+  return {
+    generatedLoginTimes: esrvc1LoginTimes,
+    generatedForms: forms,
+  }
+}
