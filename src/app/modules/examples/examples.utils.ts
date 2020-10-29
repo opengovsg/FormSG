@@ -117,7 +117,7 @@ export const createSearchQueryPipeline = ({
  * This query will return forms sorted by last submitted date, filtered by
  * number of submissions (greater than given minSubmissionCount), public forms,
  * and selected agency.
- * @param groupSubmissionMiddleware The inisital The id of the agency to filter forms listed by. If no id is given, all matched forms will be returned
+ * @param groupByMiddleware The inisital The id of the agency to filter forms listed by. If no id is given, all matched forms will be returned
  * @param agencyId Optional. The id of the agency to filter forms listed by. If no id is given, all matched forms will be returned
  * @param minSubmissionCount The minimum submission count returned forms must have to be returned by the aggregation pipeline
  */
