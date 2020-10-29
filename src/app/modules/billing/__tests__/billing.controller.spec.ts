@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson-ext'
 import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -26,7 +27,9 @@ describe('billing.controller', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       query: MOCK_REQ_QUERY,
       session: {
-        user: 'exists',
+        user: {
+          _id: new ObjectId().toHexString(),
+        },
       },
     })
 

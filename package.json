@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "4.43.0",
+  "version": "4.43.1",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -23,7 +23,7 @@
     "build-frontend-dev:watch": "webpack --config webpack.dev.js --watch",
     "start": "node dist/backend/server.js",
     "dev": "docker-compose up --build",
-    "docker-dev": "npm run build-frontend-dev:watch & ts-node-dev --respawn --transpileOnly --inspect=0.0.0.0 --exit-child -- src/server.ts",
+    "docker-dev": "npm run build-frontend-dev:watch & ts-node-dev --respawn --transpile-only --inspect=0.0.0.0 --exit-child -- src/server.ts",
     "test-backend": "npm run test-backend-jasmine && npm run test-backend-jest",
     "test-backend-jest": "env-cmd -f tests/.test-full-env jest --coverage --maxWorkers=2",
     "test-backend-jest:watch": "env-cmd -f tests/.test-full-env jest --watch",
@@ -82,7 +82,7 @@
     "angular-permission": "~1.1.1",
     "angular-resource": "^1.8.1",
     "angular-sanitize": "^1.8.1",
-    "angular-translate": "^2.18.2",
+    "angular-translate": "^2.18.3",
     "angular-translate-loader-partial": "^2.18.3",
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.22",
@@ -206,7 +206,7 @@
     "css-loader": "^2.1.1",
     "csv-parse": "^4.12.0",
     "env-cmd": "^10.1.0",
-    "eslint": "^7.10.0",
+    "eslint": "^7.12.1",
     "eslint-config-prettier": "^6.12.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-import": "^2.22.0",

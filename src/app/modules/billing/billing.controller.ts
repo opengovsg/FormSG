@@ -28,7 +28,7 @@ export const handleGetBillInfo: RequestHandler<
   }
 > = async (req, res) => {
   // Restricted route.
-  if (!isUserInSession(req)) {
+  if (!isUserInSession(req.session)) {
     return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 
@@ -62,9 +62,7 @@ export const handleGetBillInfo: RequestHandler<
 
   // Retrieved login stats successfully.
   logger.info({
-    message: `Billing search for ${esrvcId} by ${
-      req.session?.user && req.session.user.email
-    }`,
+    message: `Billing search for ${esrvcId} by ${req.session.user.email}`,
     meta: {
       action: 'handleGetBillInfo',
       ...createReqMeta(req),
