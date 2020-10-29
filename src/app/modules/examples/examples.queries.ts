@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 
+import { Status } from '../../../types'
+
 /**
  * Precondition: Must be called as the **first** step in the aggregation
  * pipeline (requirement for MongoDB match text).
@@ -51,7 +53,7 @@ export const searchFormsById = (formId: string): Record<string, unknown>[] => [
 export const filterInactiveAndUnlistedForms: Record<string, unknown>[] = [
   {
     $match: {
-      'formInfo.status': 'PUBLIC',
+      'formInfo.status': Status.Public,
       'formInfo.isListed': true,
     },
   },
