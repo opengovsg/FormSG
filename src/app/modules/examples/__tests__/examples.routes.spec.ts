@@ -15,7 +15,7 @@ import { DatabaseError } from '../../core/core.errors'
 import { ExamplesFactory } from '../examples.factory'
 import { ExamplesRouter } from '../examples.routes'
 import { getExampleForms, getSingleExampleForm } from '../examples.service'
-import { RetrievalType } from '../examples.types'
+import { FormInfo, RetrievalType } from '../examples.types'
 
 import prepareTestData, {
   SearchTerm,
@@ -92,14 +92,8 @@ describe('examples.routes', () => {
         // agencies.
         const expectedBody = keyBy(
           [
-            ...comTestData.total.expectedFormInfo.map((data) => ({
-              ...data,
-              _id: data._id.toString(),
-            })),
-            ...orgTestData.total.expectedFormInfo.map((data) => ({
-              ...data,
-              _id: data._id.toString(),
-            })),
+            ...stringifyFormInfoArray(comTestData.total.expectedFormInfo),
+            ...stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
           ],
           '_id',
         )
@@ -125,10 +119,7 @@ describe('examples.routes', () => {
         // Assert
         // Should only have orgTestData since its agency id is provided.
         const expectedBody = keyBy(
-          orgTestData.total.expectedFormInfo.map((data) => ({
-            ...data,
-            _id: data._id.toString(),
-          })),
+          stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
           '_id',
         )
         const actualBody = keyBy(response.body.forms, '_id')
@@ -173,10 +164,7 @@ describe('examples.routes', () => {
         // Assert
         // Should only have comTestData since its agency id is provided.
         const expectedBody = keyBy(
-          comTestData.first.expectedFormInfo.map((data) => ({
-            ...data,
-            _id: data._id.toString(),
-          })),
+          stringifyFormInfoArray(comTestData.first.expectedFormInfo),
           '_id',
         )
         const actualBody = keyBy(response.body.forms, '_id')
@@ -229,10 +217,7 @@ describe('examples.routes', () => {
         // Assert
         // Should only have comTestData since its agency id is provided.
         const expectedBody = keyBy(
-          comTestData.total.expectedFormInfo.map((data) => ({
-            ...data,
-            _id: data._id.toString(),
-          })),
+          stringifyFormInfoArray(comTestData.total.expectedFormInfo),
           '_id',
         )
         const actualBody = keyBy(response.body.forms, '_id')
@@ -268,14 +253,8 @@ describe('examples.routes', () => {
         // agencies.
         const expectedBody = keyBy(
           [
-            ...comTestData.total.expectedFormInfo.map((data) => ({
-              ...data,
-              _id: data._id.toString(),
-            })),
-            ...orgTestData.total.expectedFormInfo.map((data) => ({
-              ...data,
-              _id: data._id.toString(),
-            })),
+            ...stringifyFormInfoArray(comTestData.total.expectedFormInfo),
+            ...stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
           ],
           '_id',
         )
@@ -301,10 +280,7 @@ describe('examples.routes', () => {
         // Assert
         // Should only have orgTestData since its agency id is provided.
         const expectedBody = keyBy(
-          orgTestData.total.expectedFormInfo.map((data) => ({
-            ...data,
-            _id: data._id.toString(),
-          })),
+          stringifyFormInfoArray(orgTestData.total.expectedFormInfo),
           '_id',
         )
         const actualBody = keyBy(response.body.forms, '_id')
@@ -349,10 +325,7 @@ describe('examples.routes', () => {
         // Assert
         // Should only have comTestData since its agency id is provided.
         const expectedBody = keyBy(
-          comTestData.first.expectedFormInfo.map((data) => ({
-            ...data,
-            _id: data._id.toString(),
-          })),
+          stringifyFormInfoArray(comTestData.first.expectedFormInfo),
           '_id',
         )
         const actualBody = keyBy(response.body.forms, '_id')
@@ -405,10 +378,7 @@ describe('examples.routes', () => {
         // Assert
         // Should only have comTestData since its agency id is provided.
         const expectedBody = keyBy(
-          comTestData.total.expectedFormInfo.map((data) => ({
-            ...data,
-            _id: data._id.toString(),
-          })),
+          stringifyFormInfoArray(comTestData.total.expectedFormInfo),
           '_id',
         )
         const actualBody = keyBy(response.body.forms, '_id')
@@ -556,10 +526,10 @@ describe('examples.routes', () => {
         const response = await session.get(`/examples/${validFormId}`)
 
         // Assert
-        const expectedFormInfo = {
-          ...comTestData.second.expectedFormInfo[0],
-          _id: comTestData.second.expectedFormInfo[0]._id.toString(),
-        }
+        const expectedFormInfo = stringifyFormInfo(
+          comTestData.second.expectedFormInfo[0],
+        )
+
         expect(response.status).toEqual(200)
         expect(response.body).toEqual({
           form: expectedFormInfo,
@@ -597,10 +567,9 @@ describe('examples.routes', () => {
         const response = await session.get(`/examples/${validFormId}`)
 
         // Assert
-        const expectedFormInfo = {
-          ...comTestData.first.expectedFormInfo[1],
-          _id: comTestData.first.expectedFormInfo[1]._id.toString(),
-        }
+        const expectedFormInfo = stringifyFormInfo(
+          comTestData.first.expectedFormInfo[1],
+        )
         expect(response.status).toEqual(200)
         expect(response.body).toEqual({
           form: expectedFormInfo,
@@ -653,3 +622,20 @@ describe('examples.routes', () => {
     })
   })
 })
+
+// Helper functions
+/**
+ * Stringifies expected form info arrays. Unable to do the usual JSON.stringify
+ * -> parse combination due to mongoose dates being converted to an empty
+ * object.
+ */
+const stringifyFormInfoArray = (array: FormInfo[]) => {
+  return array.map(stringifyFormInfo)
+}
+
+const stringifyFormInfo = (formInfo: FormInfo) => {
+  return {
+    ...formInfo,
+    _id: formInfo._id.toString(),
+  }
+}
