@@ -423,17 +423,6 @@ function makeModule(connection) {
       })
     },
     /**
-     * List of all of user-created (and collaborated-on) forms
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    list: function (req, res) {
-      const Form = getFormModel(connection)
-      Form.getDashboardForms(req.session.user._id, req.session.user.email)
-        .then((forms) => res.json(forms))
-        .catch((err) => respondOnMongoError(req, res, err))
-    },
-    /**
      * Return form feedback matching query
      * @param  {Object} req - Express request object
      * @param  {Object} res - Express response object

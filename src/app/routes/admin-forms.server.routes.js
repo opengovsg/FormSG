@@ -15,6 +15,7 @@ let encryptSubmissions = require('../../app/controllers/encrypt-submissions.serv
 let PERMISSIONS = require('../utils/permission-levels').default
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
+const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 
 const emailValOpts = {
   minDomainSegments: 2, // Number of segments required for the domain
@@ -85,7 +86,7 @@ module.exports = function (app) {
    */
   app
     .route('/adminform')
-    .get(auth.authenticateUser, adminForms.list)
+    .get(AdminFormController.handleListDashboardForms)
     .post(auth.authenticateUser, adminForms.create)
 
   /**
