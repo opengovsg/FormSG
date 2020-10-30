@@ -62,6 +62,11 @@ export const BaseFieldSchema = new Schema<IFieldSchema>(
       enum: Object.values(BasicField),
       required: true,
     },
+    allowPrefill: {
+      // flag to restrict prefill only to pre-approved form fields
+      type: Boolean,
+      default: false,
+    },
   },
   {
     discriminatorKey: 'fieldType',
