@@ -27,6 +27,11 @@ const createShortTextFieldSchema = () => {
         default: null,
       },
     },
+    allowPrefill: {
+      // flag to restrict prefill only to pre-approved form fields
+      type: Boolean,
+      default: false,
+    },
   })
 }
 

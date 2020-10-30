@@ -11,4 +11,7 @@ export interface IShortTextField extends IField {
   ValidationOptions: ShortTextValidationOptions
 }
 
-export interface IShortTextFieldSchema extends IShortTextField, IFieldSchema {}
+export interface IShortTextFieldSchema extends IShortTextField, IFieldSchema {
+  // Prefill flag
+  allowPrefill?: boolean
+}
