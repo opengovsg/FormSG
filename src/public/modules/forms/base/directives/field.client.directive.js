@@ -41,6 +41,8 @@ function fieldDirective(FormFields, $location, $sanitize) {
         query.length > 1 ? querystring.parse(query[1]) : undefined
 
       if (
+        !scope.field.myInfo && // disallow prefill for myinfo
+        scope.field.allowPrefill && // allow prefill only if flag enabled
         queryParams &&
         scope.field._id in queryParams &&
         scope.field.fieldType === 'textfield'
@@ -50,6 +52,7 @@ function fieldDirective(FormFields, $location, $sanitize) {
           // Only support unique query params. If query params are duplicated,
           // none of the duplicated keys will be prefilled
           scope.field.fieldValue = $sanitize(prefillValue) // $sanitize as a precaution to prevent xss
+          // note that there are currently no unit tests to ensure that value is sanitized correctly; manual testing required
         }
       }
 
