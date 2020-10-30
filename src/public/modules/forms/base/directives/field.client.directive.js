@@ -41,6 +41,7 @@ function fieldDirective(FormFields, $location, $sanitize) {
         query.length > 1 ? querystring.parse(query[1]) : undefined
 
       if (
+        !scope.field.myInfo && // disallow prefill for myinfo
         scope.field.allowPrefill &&
         scope.field.allowPrefill === true &&
         queryParams &&
