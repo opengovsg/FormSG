@@ -42,8 +42,7 @@ function fieldDirective(FormFields, $location, $sanitize) {
 
       if (
         !scope.field.myInfo && // disallow prefill for myinfo
-        scope.field.allowPrefill &&
-        scope.field.allowPrefill === true &&
+        scope.field.allowPrefill && // allow prefill only if flag enabled
         queryParams &&
         scope.field._id in queryParams &&
         scope.field.fieldType === 'textfield'
