@@ -42,6 +42,9 @@ export interface IFieldSchema extends IField, Document {
    * responses.
    */
   getQuestion(): string
+
+  // Prefill flag
+  allowPrefill?: boolean
 }
 
 // We don't store a fieldValue in the database, but the client
