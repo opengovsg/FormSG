@@ -22,10 +22,6 @@ export enum BasicField {
 
 export enum MyInfoAttribute {
   Name = 'name',
-  MarriedName = 'marriedname',
-  HanyuPinyinName = 'hanyupinyinname',
-  AliasName = 'aliasname',
-  HanyuPinyinAliasName = 'hanyupinyinaliasname',
   PassportNumber = 'passportnumber',
   RegisteredAddress = 'regadd',
   MailingAddress = 'mailadd',
@@ -38,7 +34,6 @@ export enum MyInfoAttribute {
   Dialect = 'dialect',
   Nationality = 'nationality',
   BirthCountry = 'birthcountry',
-  SecondaryRace = 'secondaryrace',
   ResidentialStatus = 'residentialstatus',
   HousingType = 'housingtype',
   HdbType = 'hdbtype',
@@ -46,7 +41,6 @@ export enum MyInfoAttribute {
   EducationLevel = 'edulevel',
   CountryOfMarriage = 'countryofmarriage',
   WorkpassStatus = 'workpassstatus',
-  HouseholdIncome = 'householdincome',
   SchoolName = 'schoolname',
   Occupation = 'occupation',
   MobileNo = 'mobileno',
