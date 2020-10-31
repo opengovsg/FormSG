@@ -1,3 +1,4 @@
+import { Mode as MyInfoClientMode } from '@opengovsg/myinfo-gov-client'
 import { Schema } from 'convict'
 
 export enum FeatureNames {
@@ -36,7 +37,7 @@ export interface ISms {
   twilioMsgSrvcSid: string
 }
 
-export interface ISpcpMyInfo {
+export interface ISpcpConfig {
   isSPMaintenance: string
   isCPMaintenance: string
   spCookieMaxAge: number
@@ -60,6 +61,13 @@ export interface ISpcpMyInfo {
   spIdpCertPath: string
   cpIdpCertPath: string
 }
+
+export interface IMyInfoConfig {
+  myInfoClientMode: MyInfoClientMode
+  myInfoKeyPath: string
+}
+
+export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
 
 export interface IVerifiedFields {
   verificationSecretKey: string
