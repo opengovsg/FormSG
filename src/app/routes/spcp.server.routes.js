@@ -1,6 +1,6 @@
 'use strict'
 
-const spcpFactory = require('../factories/spcp-myinfo.factory')
+const spcpFactory = require('../factories/spcp.factory')
 
 /**
  * Module dependencies.
