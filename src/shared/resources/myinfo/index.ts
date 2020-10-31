@@ -1,4 +1,4 @@
-import { BasicField } from '../../../types'
+import { BasicField, MyInfoAttribute } from '../../../types'
 
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
@@ -7,41 +7,9 @@ import OCCUPATIONS from './myinfo-occupations'
 import RACES from './myinfo-races'
 import SCHOOLS from './myinfo-schools'
 
-export type MyInfoFieldName =
-  | 'name'
-  | 'sex'
-  | 'dob'
-  | 'race'
-  | 'nationality'
-  | 'birthcountry'
-  | 'residentialstatus'
-  | 'dialect'
-  | 'housingtype'
-  | 'hdbtype'
-  | 'passportnumber'
-  | 'passportexpirydate'
-  | 'marital'
-  | 'edulevel'
-  | 'countryofmarriage'
-  | 'regadd'
-  | 'mailadd'
-  | 'billadd'
-  | 'schoolname'
-  | 'occupation'
-  | 'employment'
-  | 'vehno'
-  | 'marriagecertno'
-  | 'marriagedate'
-  | 'divorcedate'
-  | 'workpassstatus'
-  | 'workpassexpirydate'
-  | 'mobileno'
-  | 'homeno'
-  | 'gradyear'
-
 type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
 interface IMyInfoFieldType {
-  name: MyInfoFieldName
+  name: MyInfoAttribute
   value: string
   category: string
   verified: MyInfoVerifiedType[]
@@ -61,7 +29,7 @@ export const types: IMyInfoFieldType[] = [
   //   fieldType: 'email'
   // },
   {
-    name: 'name',
+    name: MyInfoAttribute.Name,
     value: 'Name',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
@@ -71,7 +39,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'sex',
+    name: MyInfoAttribute.Sex,
     value: 'Gender',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
@@ -82,7 +50,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
   },
   {
-    name: 'dob',
+    name: MyInfoAttribute.DateOfBirth,
     value: 'Date of birth',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
@@ -92,7 +60,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Date,
   },
   {
-    name: 'race',
+    name: MyInfoAttribute.Race,
     value: 'Race',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
@@ -103,7 +71,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: RACES,
   },
   {
-    name: 'nationality',
+    name: MyInfoAttribute.Nationality,
     value: 'Nationality',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
@@ -114,7 +82,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: NATIONALITIES,
   },
   {
-    name: 'birthcountry',
+    name: MyInfoAttribute.BirthCountry,
     value: 'Birth country',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
@@ -131,7 +99,7 @@ export const types: IMyInfoFieldType[] = [
   //   fieldType: BasicField.Dropdown
   // },
   {
-    name: 'residentialstatus',
+    name: MyInfoAttribute.ResidentialStatus,
     value: 'Residential Status',
     category: 'personal',
     verified: ['SG', 'PR'],
@@ -141,7 +109,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: ['Alien', 'Citizen', 'NOT APPLICABLE', 'PR', 'Unknown'],
   },
   {
-    name: 'dialect',
+    name: MyInfoAttribute.Dialect,
     value: 'Dialect',
     category: 'personal',
     verified: ['SG', 'PR'],
@@ -151,7 +119,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: DIALECTS,
   },
   {
-    name: 'housingtype',
+    name: MyInfoAttribute.HousingType,
     value: 'Housing type',
     category: 'personal',
     verified: ['SG', 'PR'],
@@ -169,7 +137,7 @@ export const types: IMyInfoFieldType[] = [
     ],
   },
   {
-    name: 'hdbtype',
+    name: MyInfoAttribute.HdbType,
     value: 'HDB type',
     category: 'personal',
     verified: ['SG', 'PR'],
@@ -187,7 +155,7 @@ export const types: IMyInfoFieldType[] = [
     ],
   },
   {
-    name: 'passportnumber',
+    name: MyInfoAttribute.PassportNumber,
     value: 'Passport number',
     category: 'personal',
     verified: ['SG'],
@@ -196,7 +164,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'passportexpirydate',
+    name: MyInfoAttribute.PassportExpiryDate,
     value: 'Passport expiry date',
     category: 'personal',
     verified: ['SG'],
@@ -205,7 +173,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Date,
   },
   {
-    name: 'marital',
+    name: MyInfoAttribute.Marital,
     value: 'Marital status',
     category: 'family',
     verified: [],
@@ -216,7 +184,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: ['SINGLE', 'MARRIED', 'WIDOWED', 'DIVORCED'],
   },
   {
-    name: 'edulevel',
+    name: MyInfoAttribute.EducationLevel,
     value: 'Highest education',
     category: 'employment_education',
     verified: [],
@@ -238,7 +206,7 @@ export const types: IMyInfoFieldType[] = [
     ],
   },
   {
-    name: 'countryofmarriage',
+    name: MyInfoAttribute.CountryOfMarriage,
     value: 'Country of marriage',
     category: 'family',
     verified: [],
@@ -282,7 +250,7 @@ export const types: IMyInfoFieldType[] = [
   //   fieldType: 'textfield'
   // },
   {
-    name: 'regadd',
+    name: MyInfoAttribute.RegisteredAddress,
     value: 'Registered address',
     category: 'contact',
     verified: ['SG', 'PR'],
@@ -291,7 +259,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'mailadd',
+    name: MyInfoAttribute.MailingAddress,
     value: 'Mailing address',
     category: 'contact',
     verified: [],
@@ -300,7 +268,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'billadd',
+    name: MyInfoAttribute.BillingAddress,
     value: 'Billing address',
     category: 'contact',
     verified: [],
@@ -309,7 +277,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'schoolname',
+    name: MyInfoAttribute.SchoolName,
     value: 'School name',
     category: 'employment_education',
     verified: [],
@@ -320,7 +288,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: SCHOOLS,
   },
   {
-    name: 'occupation',
+    name: MyInfoAttribute.Occupation,
     value: 'Occupation',
     category: 'employment_education',
     verified: ['F'],
@@ -331,7 +299,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: OCCUPATIONS,
   },
   {
-    name: 'employment',
+    name: MyInfoAttribute.Employment,
     value: 'Name of employer',
     category: 'employment_education',
     verified: ['F'],
@@ -341,7 +309,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'vehno',
+    name: MyInfoAttribute.VehicleNo,
     value: 'Vehicle number',
     category: 'personal',
     verified: [],
@@ -350,7 +318,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'marriagecertno',
+    name: MyInfoAttribute.MarriageCertNo,
     value: 'Marriage cert. no.',
     category: 'family',
     verified: [],
@@ -360,7 +328,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.ShortText,
   },
   {
-    name: 'marriagedate',
+    name: MyInfoAttribute.MarriageDate,
     value: 'Marriage date',
     category: 'family',
     verified: [],
@@ -370,7 +338,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Date,
   },
   {
-    name: 'divorcedate',
+    name: MyInfoAttribute.DivorceDate,
     value: 'Divorce date',
     category: 'family',
     verified: [],
@@ -380,7 +348,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Date,
   },
   {
-    name: 'workpassstatus',
+    name: MyInfoAttribute.WorkpassStatus,
     value: 'Workpass status',
     category: 'employment_education',
     verified: ['F'],
@@ -390,7 +358,7 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: ['Live', 'Approved'],
   },
   {
-    name: 'workpassexpirydate',
+    name: MyInfoAttribute.WorkpassExpiryDate,
     value: 'Workpass expiry date',
     category: 'employment_education',
     verified: ['F'],
@@ -399,7 +367,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Date,
   },
   {
-    name: 'mobileno',
+    name: MyInfoAttribute.MobileNo,
     value: 'Mobile number',
     category: 'contact',
     verified: [],
@@ -408,7 +376,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Mobile,
   },
   {
-    name: 'homeno',
+    name: MyInfoAttribute.HomeNo,
     value: 'Home number',
     category: 'contact',
     verified: [],
@@ -417,7 +385,7 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.HomeNo,
   },
   {
-    name: 'gradyear',
+    name: MyInfoAttribute.GraduationYear,
     value: 'Year of graduation',
     category: 'employment_education',
     verified: [],
