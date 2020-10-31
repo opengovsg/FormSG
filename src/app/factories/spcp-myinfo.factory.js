@@ -66,11 +66,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       myInfoConfig.appId = myInfoPrefix + myInfoConfig.singpassEserviceId
       myInfoConfig.mode = process.env.MYINFO_CLIENT_CONFIG
       myInfoGovClient = new MyInfoGovClient(myInfoConfig)
-    } else if (config.isDev && process.env.MYINFO_APP_KEY) {
-      myInfoConfig.appId = 'STG2-' + myInfoConfig.singpassEserviceId
-      myInfoConfig.privateKey = process.env.MYINFO_APP_KEY
-      myInfoConfig.mode = 'stg'
-      myInfoGovClient = new MyInfoGovClient(myInfoConfig)
     } else {
       logger.warn({
         message: `\n!!! WARNING !!!\nNo MyInfo keys detected.\nRequests to MyInfo will not work.\nThis should NEVER be seen in production.\nFalling back on MockPass.`,
