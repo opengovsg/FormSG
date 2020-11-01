@@ -67,11 +67,13 @@ function decryptIntoCsv(data) {
     )
   }
 
-  const { line, secretKey } = data
+  const { line, secretKey, downloadAttachments } = data
 
   let submission
   /** @type {CsvRecord} */
   let csvRecord
+  let attachmentDownloadUrls = new Map()
+
   try {
     submission = JSON.parse(line)
 
@@ -97,6 +99,23 @@ function decryptIntoCsv(data) {
       } else {
         csvRecord.status = 'UNVERIFIED'
       }
+      if (downloadAttachments) {
+        let questionCount = 0
+
+        decryptedSubmission.forEach((field) => {
+          // Populate question number
+          if (field.fieldType !== 'section') {
+            field.questionNumber = ++questionCount
+          }
+          // Populate S3 presigned URL for attachments
+          if (submission.attachmentMetadata[field._id]) {
+            attachmentDownloadUrls.set(questionCount, {
+              url: submission.attachmentMetadata[field._id],
+              filename: field.answer,
+            })
+          }
+        })
+      }
     } catch (error) {
       csvRecord.status = 'ERROR'
     }
@@ -107,7 +126,7 @@ function decryptIntoCsv(data) {
       status: 'ERROR',
     }
   }
-  self.postMessage({ csvRecord })
+  self.postMessage({ csvRecord, attachmentDownloadUrls })
 }
 
 self.addEventListener('message', ({ data }) => {
