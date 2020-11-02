@@ -3,9 +3,11 @@ import { Document, Model } from 'mongoose'
 import { MyInfoAttribute } from './field'
 import { IFormSchema } from './form'
 
-export type IHashes = {
-  [key in MyInfoAttribute]: string
-}
+export type IHashes = Partial<
+  {
+    [key in MyInfoAttribute]: string
+  }
+>
 
 interface IMyInfoHash {
   uinFin: string
