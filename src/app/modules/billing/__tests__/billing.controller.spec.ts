@@ -76,26 +76,6 @@ describe('billing.controller', () => {
       expect(mockRes.json).toBeCalledWith({ loginStats: mockLoginStats })
     })
 
-    it('should return 401 when user is not logged in', async () => {
-      // Arrange
-      const mockReqWithoutSession = expressHandler.mockRequest({
-        query: MOCK_REQ_QUERY,
-      })
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await BillingController.handleGetBillInfo(
-        mockReqWithoutSession,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockBillingService.getSpLoginStats).not.toHaveBeenCalled()
-      expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
-    })
-
     it('should return 500 when database error occurs', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
