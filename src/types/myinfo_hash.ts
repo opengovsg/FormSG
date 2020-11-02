@@ -1,9 +1,9 @@
-import { Document } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
 import { MyInfoAttribute } from './field'
 import { IFormSchema } from './form'
 
-type IHashes = {
+export type IHashes = {
   [key in MyInfoAttribute]: string
 }
 
@@ -17,3 +17,12 @@ interface IMyInfoHash {
 }
 
 export interface IMyInfoHashSchema extends IMyInfoHash, Document {}
+
+export interface IMyInfoHashModel extends Model<IMyInfoHashSchema> {
+  updateHashes: (
+    hashedUinFin: string,
+    formId: string,
+    readOnlyHashes: IHashes,
+    spCookieMaxAge: number,
+  ) => Promise<IMyInfoHashSchema | null>
+}

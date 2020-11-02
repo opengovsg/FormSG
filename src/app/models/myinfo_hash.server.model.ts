@@ -1,6 +1,6 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
-import { IMyInfoHashSchema } from '../../types'
+import { IHashes, IMyInfoHashModel, IMyInfoHashSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 
@@ -43,6 +43,28 @@ MyInfoHashSchema.index({
 })
 MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
+MyInfoHashSchema.statics.updateHashes = async function (
+  this: IMyInfoHashModel,
+  hashedUinFin: string,
+  formId: string,
+  readOnlyHashes: IHashes,
+  spCookieMaxAge: number,
+): Promise<IMyInfoHashSchema | null> {
+  return this.findOneAndUpdate(
+    {
+      uinFin: hashedUinFin,
+      form: formId,
+    },
+    {
+      $set: {
+        fields: readOnlyHashes,
+        expireAt: new Date(Date.now() + spCookieMaxAge),
+      },
+    },
+    { upsert: true, new: true },
+  )
+}
+
 const compileMyInfoHashModel = (db: Mongoose) =>
   db.model<IMyInfoHashSchema>(MYINFO_HASH_SCHEMA_ID, MyInfoHashSchema)
 
@@ -54,7 +76,7 @@ const compileMyInfoHashModel = (db: Mongoose) =>
  */
 const getMyInfoHashModel = (db: Mongoose) => {
   try {
-    return db.model(MYINFO_HASH_SCHEMA_ID) as Model<IMyInfoHashSchema>
+    return db.model(MYINFO_HASH_SCHEMA_ID) as IMyInfoHashModel
   } catch {
     return compileMyInfoHashModel(db)
   }
