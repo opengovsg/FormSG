@@ -1,8 +1,10 @@
 import { ObjectId } from 'bson-ext'
 import { merge } from 'lodash'
+import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { IPopulatedForm } from 'src/types'
 
@@ -22,6 +24,8 @@ jest.mock('../../form.service')
 jest.mock('../public-form.service')
 const MockFormService = mocked(FormService)
 const MockPublicFormService = mocked(PublicFormService)
+
+const FormFeedbackModel = getFormFeedbackModel(mongoose)
 
 describe('public-form.controller', () => {
   afterEach(() => jest.clearAllMocks())
@@ -48,12 +52,17 @@ describe('public-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Mock services to return success.
+      const mockFormFeedback = new FormFeedbackModel({
+        formId: new ObjectId().toHexString(),
+        rating: 5,
+        comment: 'Great test',
+      })
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM as IPopulatedForm),
       )
       MockFormService.isFormPublic.mockReturnValueOnce(ok(true))
       MockPublicFormService.insertFormFeedback.mockReturnValueOnce(
-        okAsync(true),
+        okAsync(mockFormFeedback),
       )
 
       // Act

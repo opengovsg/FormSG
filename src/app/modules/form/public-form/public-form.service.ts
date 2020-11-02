@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { IFormFeedbackSchema } from '../../../../types'
 import getFormFeedbackModel from '../../../models/form_feedback.server.model'
 import getFormModel from '../../../models/form.server.model'
 import { DatabaseError } from '../../core/core.errors'
@@ -29,7 +30,7 @@ export const insertFormFeedback = ({
   formId: string
   rating: number
   comment: string
-}): ResultAsync<true, FormNotFoundError | DatabaseError> => {
+}): ResultAsync<IFormFeedbackSchema, FormNotFoundError | DatabaseError> => {
   if (!mongoose.Types.ObjectId.isValid(formId)) {
     return errAsync(new FormNotFoundError())
   }
@@ -52,7 +53,7 @@ export const insertFormFeedback = ({
 
       return new DatabaseError('Form feedback could not be created')
     },
-  ).map(() => true)
+  )
 }
 
 /**

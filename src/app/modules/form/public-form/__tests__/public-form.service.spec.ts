@@ -6,7 +6,7 @@ import { PartialDeep } from 'type-fest'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getFormModel from 'src/app/models/form.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { IFormFeedbackSchema, IFormSchema } from 'src/types'
+import { IFormSchema } from 'src/types'
 
 import { FormNotFoundError } from '../../form.errors'
 import * as PublicFormService from '../public-form.service'
@@ -19,11 +19,11 @@ describe('public-form.service', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('insertFormFeedback', () => {
-    const MOCK_FORM_FEEDBACK = {
+    const MOCK_FORM_FEEDBACK = new FormFeedbackModel({
       formId: new ObjectId().toHexString(),
       rating: 5,
       comment: 'Great test',
-    }
+    })
 
     it('should return DatabaseError when error occurs whilst inserting feedback', async () => {
       // Arrange
@@ -59,12 +59,12 @@ describe('public-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
     })
 
-    it('should return true when feedback is inserted successfully', async () => {
+    it('should return FormFeedback document when feedback is inserted successfully', async () => {
       // Arrange
       // Mock success.
       const insertSpy = jest
         .spyOn(FormFeedbackModel, 'create')
-        .mockResolvedValueOnce({} as IFormFeedbackSchema)
+        .mockResolvedValueOnce(MOCK_FORM_FEEDBACK)
 
       // Act
       const actualResult = await PublicFormService.insertFormFeedback(
@@ -74,7 +74,7 @@ describe('public-form.service', () => {
       // Assert
       expect(insertSpy).toHaveBeenCalledTimes(1)
       expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_FORM_FEEDBACK)
     })
   })
 
