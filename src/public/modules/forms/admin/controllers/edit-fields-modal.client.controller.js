@@ -584,7 +584,4 @@ function EditFieldsModalController(
     // On error, we explicitly clear the files stored in the model, as the library does not always automatically do this
     field.uploadedFile = ''
   }
-
-  vm.userHasAccessToVerifiedMobileOrAutoreply = () =>
-    Betas.userHasAccessToVerifiedMobileOrAutoreply(Auth.getUser())
 }

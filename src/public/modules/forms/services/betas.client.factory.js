@@ -42,14 +42,9 @@ function Betas() {
     )
   }
 
-  const userHasAccessToVerifiedMobileOrAutoreply = (user) => {
-    return get(user, ['betaFlags', BETA_FEATURES_FIELD.sms.flag])
-  }
-
   return {
     getMissingFieldPermissions,
     isBetaField,
     userHasAccessToFieldType,
-    userHasAccessToVerifiedMobileOrAutoreply,
   }
 }
