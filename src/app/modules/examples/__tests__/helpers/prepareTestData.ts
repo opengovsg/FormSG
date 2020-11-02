@@ -171,6 +171,7 @@ const prepareTestData = async (
     return FeedbackModel.create({
       rating: score,
       formId: testData.total.forms[i]._id,
+      comment: 'very good test',
     })
   })
 
