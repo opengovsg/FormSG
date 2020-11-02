@@ -1,10 +1,7 @@
 import { Request, Response } from 'express'
+import { Query } from 'express-serve-static-core'
 
-const mockRequest = <
-  P extends Record<string, string>,
-  B,
-  Q extends Record<string, string>
->({
+const mockRequest = <P extends Record<string, string>, B, Q = any>({
   params,
   body,
   session,
@@ -17,8 +14,8 @@ const mockRequest = <
   session?: Record<string, unknown>
   query?: Q
   secure?: boolean
-  others?: Partial<Record<keyof Request, unknown>>
-} = {}): Request<P, unknown, B, Q> => {
+  others?: Partial<Omit<Record<keyof Request, unknown>, 'query'>>
+} = {}): Request<P, unknown, B, Q & Query> => {
   return {
     body: body ?? {},
     params: params ?? {},
@@ -30,7 +27,7 @@ const mockRequest = <
       return undefined
     },
     ...others,
-  } as Request<P, unknown, B, Q>
+  } as Request<P, unknown, B, Q & Query>
 }
 
 const mockResponse = (

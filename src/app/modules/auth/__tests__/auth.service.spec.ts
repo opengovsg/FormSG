@@ -24,7 +24,7 @@ describe('auth.service', () => {
 
   beforeAll(async () => {
     await dbHandler.connect()
-    defaultAgency = await dbHandler.insertDefaultAgency({
+    defaultAgency = await dbHandler.insertAgency({
       mailDomain: VALID_EMAIL_DOMAIN,
     })
   })

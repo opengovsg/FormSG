@@ -17,4 +17,11 @@ export interface IFormFeedbackDocument extends IFormFeedbackSchema {
   lastModified: Date
 }
 
+export interface IFormFeedbackSchema extends Document, IFormFeedback {}
+
+export interface IFormFeedbackDoc extends IFormFeedbackSchema {
+  lastModified: Date
+  created: Date
+}
+
 export type IFormFeedbackModel = Model<IFormFeedbackSchema>
