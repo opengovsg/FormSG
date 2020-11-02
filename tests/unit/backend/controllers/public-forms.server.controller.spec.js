@@ -1,24 +1,13 @@
 const { StatusCodes } = require('http-status-codes')
-const mongoose = require('mongoose')
-
-const dbHandler = require('../helpers/db-handler')
 
 const Controller = spec(
   'dist/backend/app/controllers/public-forms.server.controller',
-  {
-    mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-  },
 )
 
 describe('Public-Forms Controller', () => {
   // Declare global variables
   let req
   let res
-  let testForm
-
-  beforeAll(async () => await dbHandler.connect())
-  afterEach(async () => await dbHandler.clearDatabase())
-  afterAll(async () => await dbHandler.closeDatabase())
 
   beforeEach(async () => {
     req = {
@@ -31,10 +20,6 @@ describe('Public-Forms Controller', () => {
     }
 
     res = jasmine.createSpyObj('res', ['status', 'send', 'json'])
-
-    // Insert test form before each test
-    const collection = await dbHandler.preloadCollections()
-    testForm = collection.form
   })
 
   describe('isFormPublic', () => {
@@ -57,61 +42,6 @@ describe('Public-Forms Controller', () => {
         return res
       })
       Controller.isFormPublic(req, res, () => {})
-    })
-  })
-
-  describe('redirect', () => {
-    it('should redirect to form with hashbang prepended', (done) => {
-      req.params = {
-        Id: '321564654f65we4f65e4f5',
-      }
-      res.redirect = jasmine.createSpy().and.callFake(() => {
-        expect(res.redirect).toHaveBeenCalledWith('/#!/321564654f65we4f65e4f5')
-        done()
-      })
-      Controller.redirect(req, res)
-    })
-
-    it('should redirect to form with hashbang prepended and state retained', (done) => {
-      req.params = {
-        Id: '321564654f65we4f65e4f5',
-        state: 'preview',
-      }
-      res.redirect = jasmine.createSpy().and.callFake(() => {
-        expect(res.redirect).toHaveBeenCalledWith(
-          '/#!/321564654f65we4f65e4f5/preview',
-        )
-        done()
-      })
-      Controller.redirect(req, res)
-    })
-
-    it('should render index if getting fetchMetatags succeeds', (done) => {
-      req.params = {
-        Id: testForm._id,
-      }
-      req.get = function (property) {
-        return req[property]
-      }
-      res.render = jasmine.createSpy().and.callFake(() => {
-        expect(res.render).toHaveBeenCalled()
-        done()
-      })
-      Controller.redirect(req, res)
-    })
-
-    it('should redirect if getting fetchMetatags fails', (done) => {
-      req.params = {
-        Id: '321564654f65we4f65e4f5',
-      }
-      req.get = function (property) {
-        return req[property]
-      }
-      res.redirect = jasmine.createSpy().and.callFake(() => {
-        expect(res.redirect).toHaveBeenCalledWith('/#!/321564654f65we4f65e4f5')
-        done()
-      })
-      Controller.redirect(req, res)
     })
   })
 })

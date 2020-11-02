@@ -34,10 +34,12 @@ module.exports = function (app) {
    */
   app
     .route('/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?')
-    .get(publicForms.redirect)
+    .get(PublicFormController.handleRedirect)
 
   // TODO: Remove this embed endpoint
-  app.route('/:Id([a-fA-F0-9]{24})/embed').get(publicForms.redirect)
+  app
+    .route('/:Id([a-fA-F0-9]{24})/embed')
+    .get(PublicFormController.handleRedirect)
 
   /**
    * Redirect a form to the main index, with the specified path
@@ -59,12 +61,12 @@ module.exports = function (app) {
     .route(
       '/forms/:agency/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
     )
-    .get(publicForms.redirect)
+    .get(PublicFormController.handleRedirect)
 
   // TODO: Remove this embed endpoint
   app
     .route('/forms/:agency/:Id([a-fA-F0-9]{24})/embed')
-    .get(publicForms.redirect)
+    .get(PublicFormController.handleRedirect)
 
   /**
    * @typedef Feedback
