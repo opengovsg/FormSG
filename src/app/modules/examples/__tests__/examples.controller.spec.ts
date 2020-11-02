@@ -69,7 +69,7 @@ describe('examples.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
     })
 
     it('should return 500 when error occurs whilst retrieving example forms', async () => {
@@ -88,7 +88,9 @@ describe('examples.controller', () => {
         MOCK_REQ_QUERY,
       )
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith('Error retrieving example forms')
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Error retrieving example forms',
+      })
     })
   })
 
@@ -158,7 +160,7 @@ describe('examples.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith('User is unauthorized.')
+      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
     })
 
     it('should return 404 when the form with given formId does not exist in the database', async () => {
@@ -182,14 +184,14 @@ describe('examples.controller', () => {
         MOCK_REQ_PARAMS.formId,
       )
       expect(mockRes.status).toBeCalledWith(404)
-      expect(mockRes.json).toBeCalledWith(mockErrorString)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when error occurs whilst retrieving the example', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock getSingleExampleForm to return database error.
-      const mockErrorString = 'databsae error!'
+      const mockErrorString = 'database error!'
       MockExamplesFactory.getSingleExampleForm.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
       )
@@ -206,7 +208,7 @@ describe('examples.controller', () => {
         MOCK_REQ_PARAMS.formId,
       )
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(mockErrorString)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
     })
   })
 })

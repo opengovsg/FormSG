@@ -487,7 +487,7 @@ describe('examples.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
     })
 
     it('should return 500 when an error occurs whilst querying the database', async () => {
@@ -505,7 +505,9 @@ describe('examples.routes', () => {
       // Assert
       expect(getExamplesSpy).toHaveBeenCalledTimes(1)
       expect(response.status).toEqual(500)
-      expect(response.body).toEqual('Error retrieving example forms')
+      expect(response.body).toEqual({
+        message: 'Error retrieving example forms',
+      })
     })
   })
 
@@ -546,9 +548,9 @@ describe('examples.routes', () => {
 
         // Assert
         expect(response.status).toEqual(404)
-        expect(response.body).toEqual(
-          'Error in retrieving template form - form not found.',
-        )
+        expect(response.body).toEqual({
+          message: 'Error in retrieving template form - form not found.',
+        })
       })
     })
 
@@ -586,9 +588,9 @@ describe('examples.routes', () => {
 
         // Assert
         expect(response.status).toEqual(404)
-        expect(response.body).toEqual(
-          'Error in retrieving template form - form not found.',
-        )
+        expect(response.body).toEqual({
+          message: 'Error in retrieving template form - form not found.',
+        })
       })
     })
 
@@ -601,7 +603,7 @@ describe('examples.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
     })
 
     it('should return 500 when error occurs whilst querying the database', async () => {
@@ -618,7 +620,7 @@ describe('examples.routes', () => {
 
       // Assert
       expect(response.status).toEqual(500)
-      expect(response.body).toEqual(mockErrorString)
+      expect(response.body).toEqual({ message: mockErrorString })
     })
   })
 })

@@ -25,7 +25,9 @@ export const handleGetExamples: RequestHandler<
   Query & ExamplesQueryParams
 > = (req, res) => {
   if (!isUserInSession(req.session)) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'User is unauthorized.' })
   }
 
   return ExamplesFactory.getExampleForms(req.query)
@@ -41,7 +43,7 @@ export const handleGetExamples: RequestHandler<
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json('Error retrieving example forms')
+        .json({ message: 'Error retrieving example forms' })
     })
 }
 
@@ -56,7 +58,9 @@ export const handleGetExampleByFormId: RequestHandler<{
   formId: string
 }> = (req, res) => {
   if (!isUserInSession(req.session)) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'User is unauthorized.' })
   }
 
   const { formId } = req.params
@@ -75,6 +79,6 @@ export const handleGetExampleByFormId: RequestHandler<{
       })
 
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json(errorMessage)
+      return res.status(statusCode).json({ message: errorMessage })
     })
 }
