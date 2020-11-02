@@ -192,3 +192,19 @@ We welcome all contributions, bug reports, bug fixes, documentation improvements
 ## Support
 
 Please contact FormSG (formsg@tech.gov.sg) for any details.
+
+## Acknowledgements
+
+FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [TellForm](https://github.com/tellform), on which FormSG is based. 
+
+Contributions have also been made by:  
+[@RyanAngJY](https://github.com/RyanAngJY)  
+[@jeantanzy](https://github.com/jeantanzy)  
+[@yong-jie](https://github.com/yong-jie)  
+[@pregnantboy](https://github.com/pregnantboy)  
+[@namnguyen08](https://github.com/namnguyen08)  
+[@zioul123](https://github.com/zioul123)  
+[@JoelWee](https://github.com/JoelWee)  
+[@limli](https://github.com/limli)  
+[@tankevan](https://github.com/tankevan)  
+[@LoneRifle](https://github.com/LoneRifle)
