@@ -17,7 +17,7 @@ const FormModel = getFormModel(mongoose)
  * @param userId the id of the user to retrieve accessible forms for.
  * @returns ok(DashboardFormViewList)
  * @returns err(MissingUserError) if user with userId does not exist in the database
- * @returns err(DatabaseError) if error occurs whilst quering the database
+ * @returns err(DatabaseError) if error occurs whilst querying the database
  */
 export const getDashboardForms = (
   userId: string,
