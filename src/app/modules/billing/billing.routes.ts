@@ -1,9 +1,14 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import { withUserAuthentication } from '../auth/auth.middlewares'
+
 import * as BillingController from './billing.controller'
 
 export const BillingRouter = Router()
+
+// All routes in this router are protected.
+BillingRouter.use(withUserAuthentication)
 
 /**
  * Lists the SingPass/CorpPass (SPCP) logins made to forms

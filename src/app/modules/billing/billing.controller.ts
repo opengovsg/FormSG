@@ -5,7 +5,6 @@ import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../utils/request'
-import { isUserInSession } from '../auth/auth.utils'
 
 import { BillingFactory } from './billing.factory'
 
@@ -13,6 +12,8 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Handler for GET /billing endpoint.
+ * @security session
+ *
  * @return 200 with login statistics when query is valid
  * @return 401 when request does not contain a user session
  * @return 500 when error occurs whilst querying database
@@ -27,12 +28,8 @@ export const handleGetBillInfo: RequestHandler<
     mth: string
   }
 > = async (req, res) => {
-  // Restricted route.
-  if (!isUserInSession(req.session)) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
-  }
-
   const { esrvcId, mth, yr } = req.query
+  const authedUser = (req.session as Express.AuthedSession).user
 
   const startOfMonth = moment
     .tz([parseInt(yr), parseInt(mth)], 'Asia/Singapore')
@@ -62,7 +59,7 @@ export const handleGetBillInfo: RequestHandler<
 
   // Retrieved login stats successfully.
   logger.info({
-    message: `Billing search for ${esrvcId} by ${req.session.user.email}`,
+    message: `Billing search for ${esrvcId} by ${authedUser.email}`,
     meta: {
       action: 'handleGetBillInfo',
       ...createReqMeta(req),
