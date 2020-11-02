@@ -15,6 +15,7 @@ describe('Public-Forms Controller', () => {
       params: {},
       body: {},
       headers: {},
+      url: '',
       ip: '127.0.0.1',
       get: () => '',
     }

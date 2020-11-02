@@ -2,6 +2,7 @@ import { ObjectId } from 'bson-ext'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
+import querystring from 'querystring'
 import { mocked } from 'ts-jest/utils'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
@@ -298,11 +299,52 @@ describe('public-form.controller', () => {
       })
     })
 
+    it('should return index render with redirectPath with retained query when metatags are created successfully', async () => {
+      // Arrange
+      const mockReqWithQuery = merge({}, MOCK_REQ, {
+        query: {
+          p1: 'v1-_',
+          p2: 'v2',
+          p3: ['v3', 'v4'],
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockPublicFormService.createMetatags.mockReturnValueOnce(
+        okAsync(MOCK_METATAGS),
+      )
+
+      // Act
+      await PublicFormController.handleRedirect(
+        mockReqWithQuery,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Should have encoded query string affixed.
+      const expectedQueryString = encodeURIComponent(
+        querystring.stringify(mockReqWithQuery.query),
+      )
+      const expectedRedirectPath = `${MOCK_FORM_ID}?${expectedQueryString}`
+      expect(MockPublicFormService.createMetatags).toHaveBeenCalledWith(
+        EXPECTED_METATAG_ARGS,
+      )
+      expect(mockRes.render).toHaveBeenCalledWith('index', {
+        ...MOCK_METATAGS,
+        redirectPath: expectedRedirectPath,
+      })
+    })
+
     it('should return 302 redirect to hashbang fallback when metatag creation fails due to invalid formId', async () => {
       // Arrange
       const stateParam = 'preview' as const
-      const mockReqWithState = merge({}, MOCK_REQ, {
+      const mockReqWithStateAndQuery = merge({}, MOCK_REQ, {
         params: { state: stateParam },
+        query: {
+          p1: 'v1-_',
+          p2: 'v2',
+          p3: ['v3', 'v4'],
+        },
       })
       const mockRes = expressHandler.mockResponse()
       // Mock form not found error.
@@ -312,13 +354,16 @@ describe('public-form.controller', () => {
 
       // Act
       await PublicFormController.handleRedirect(
-        mockReqWithState,
+        mockReqWithStateAndQuery,
         mockRes,
         jest.fn(),
       )
 
       // Assert
-      const expectedRedirectPath = `/#!/${MOCK_FORM_ID}/${stateParam}`
+      const expectedQueryString = encodeURIComponent(
+        querystring.stringify(mockReqWithStateAndQuery.query),
+      )
+      const expectedRedirectPath = `/#!/${MOCK_FORM_ID}/${stateParam}?${expectedQueryString}`
       expect(MockPublicFormService.createMetatags).toHaveBeenCalledWith(
         EXPECTED_METATAG_ARGS,
       )

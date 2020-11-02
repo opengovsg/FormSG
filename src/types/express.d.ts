@@ -9,5 +9,9 @@ declare global {
     export interface Session {
       user?: IUserSchema
     }
+
+    export interface AuthedSession extends Session {
+      user: IUserSchema
+    }
   }
 }

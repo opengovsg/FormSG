@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import querystring from 'querystring'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
@@ -115,13 +116,19 @@ export const handleSubmitFeedback: RequestHandler<
  *
  * @returns 302 redirect
  */
-export const handleRedirect: RequestHandler<RedirectParams> = async (
-  req,
-  res,
-) => {
+export const handleRedirect: RequestHandler<
+  RedirectParams,
+  unknown,
+  unknown,
+  Record<string, string>
+> = async (req, res) => {
   const { state, Id } = req.params
 
-  const redirectPath = state ? `${Id}/${state}` : Id
+  let redirectPath = state ? `${Id}/${state}` : Id
+  const queryString = querystring.stringify(req.query)
+  if (queryString.length > 0) {
+    redirectPath = redirectPath + '?' + encodeURIComponent(queryString)
+  }
 
   const baseUrl = `${req.protocol}://${req.hostname}`
   const appUrl = baseUrl + req.originalUrl
