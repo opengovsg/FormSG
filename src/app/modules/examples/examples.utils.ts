@@ -158,9 +158,13 @@ export const createGeneralQueryPipeline = ({
 export const createFormIdInfoPipeline = (
   formId: string,
 ): Record<string, unknown>[] => {
+  // Retrieve all forms with the specified formId.
   return searchFormsById(formId).concat(
+    // Filter out all inactive/unlisted forms.
     filterInactiveAndUnlistedForms,
+    // Retrieve agency infos of forms in this stage.
     lookupAgencyInfo,
+    // Project form information without submission/feedback information.
     projectFormDetails,
   )
 }
@@ -176,11 +180,18 @@ export const createFormIdInfoPipeline = (
 export const createSingleSearchSubmissionPipeline = (
   formId: string,
 ): Record<string, unknown>[] => {
+  // Retrieve all submissions with the specified formId.
   return searchSubmissionsForForm('form', formId).concat(
+    // Sort forms by the creation date.
     sortByCreated,
+    // Group submissions by form id, count the number of submissions, and get
+    // the last submission date.
     groupSubmissionsByFormId,
+    // Sort all submissions by their last submission date.
     sortByLastSubmitted,
+    // Retrieve form feedbacks for the submissions.
     lookupFormFeedback,
+    // Calculate and add the average feedback.
     addAvgFeedback,
   )
 }
@@ -196,9 +207,15 @@ export const createSingleSearchSubmissionPipeline = (
 export const createSingleSearchStatsPipeline = (
   formId: string,
 ): Record<string, unknown>[] => {
+  // Retrieve all submissions with the specified formId.
   return searchSubmissionsForForm('formId', formId).concat(
+    // Project submissions by form id, get submission count, and get the last
+    // submission date.
     projectSubmissionInfo,
+    // Retrieve form feedbacks for the submissions.
     lookupFormFeedback,
+    // Project submissions by form id, get submission count, get the last
+    // submission date, along with the average feedback of the submissions.
     projectAvgFeedback,
   )
 }
