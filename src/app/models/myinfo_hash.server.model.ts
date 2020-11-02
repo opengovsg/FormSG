@@ -66,7 +66,10 @@ MyInfoHashSchema.statics.updateHashes = async function (
 }
 
 const compileMyInfoHashModel = (db: Mongoose) =>
-  db.model<IMyInfoHashSchema>(MYINFO_HASH_SCHEMA_ID, MyInfoHashSchema)
+  db.model<IMyInfoHashSchema, IMyInfoHashModel>(
+    MYINFO_HASH_SCHEMA_ID,
+    MyInfoHashSchema,
+  )
 
 /**
  * Retrieves the MyInfoHash model on the given Mongoose instance. If the model is
@@ -74,7 +77,7 @@ const compileMyInfoHashModel = (db: Mongoose) =>
  * @param db The mongoose instance to retrieve the MyInfoHash model from
  * @returns The MyInfoHash model
  */
-const getMyInfoHashModel = (db: Mongoose) => {
+const getMyInfoHashModel = (db: Mongoose): IMyInfoHashModel => {
   try {
     return db.model(MYINFO_HASH_SCHEMA_ID) as IMyInfoHashModel
   } catch {
