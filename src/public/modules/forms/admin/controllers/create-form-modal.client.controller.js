@@ -211,6 +211,7 @@ function CreateFormModalController(
     if (errorResponse && errorResponse.data) {
       Toastr.error(errorResponse.data.message)
     }
+    GTag.createFormFailed()
   }
 
   vm.createNewForm = function () {
@@ -301,6 +302,7 @@ function CreateFormModalController(
       }
     } else {
       Toastr.error('An error occurred creating the form, please try again')
+      GTag.createFormFailed()
     }
   }
 

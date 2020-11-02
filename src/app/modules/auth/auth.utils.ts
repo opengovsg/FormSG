@@ -1,4 +1,3 @@
-import { Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -51,6 +50,8 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
   }
 }
 
-export const isUserInSession = (req: Request): boolean => {
-  return !!req.session?.user
+export const isUserInSession = (
+  session?: Express.Session,
+): session is Express.AuthedSession => {
+  return !!session?.user?._id
 }

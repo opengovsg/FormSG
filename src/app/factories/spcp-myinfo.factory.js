@@ -108,7 +108,6 @@ const spcpFactory = ({ isEnabled, props }) => {
     return {
       getRequestedAttributes: spcp.getRequestedAttributes,
       appendVerifiedSPCPResponses: spcp.appendVerifiedSPCPResponses,
-      encryptedVerifiedFields: spcp.encryptedVerifiedFields,
       passThroughSpcp: admin.passThroughSpcp,
       verifyMyInfoVals: myInfo.verifyMyInfoVals,
       returnSpcpRedirectURL: spcp.returnSpcpRedirectURL,
@@ -128,7 +127,6 @@ const spcpFactory = ({ isEnabled, props }) => {
         return next()
       },
       appendVerifiedSPCPResponses: (req, res, next) => next(),
-      encryptedVerifiedFields: (req, res, next) => next(),
       passThroughSpcp: (req, res, next) => next(),
       verifyMyInfoVals: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>

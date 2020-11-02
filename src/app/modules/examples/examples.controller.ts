@@ -24,7 +24,7 @@ export const handleGetExamples: RequestHandler<
   unknown,
   Query & ExamplesQueryParams
 > = (req, res) => {
-  if (!isUserInSession(req)) {
+  if (!isUserInSession(req.session)) {
     return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 
@@ -55,7 +55,7 @@ export const handleGetExamples: RequestHandler<
 export const handleGetExampleByFormId: RequestHandler<{
   formId: string
 }> = (req, res) => {
-  if (!isUserInSession(req)) {
+  if (!isUserInSession(req.session)) {
     return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
   }
 

@@ -24,7 +24,9 @@ describe('examples.controller', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       query: MOCK_REQ_QUERY,
       session: {
-        user: 'exists',
+        user: {
+          _id: 'some mock id',
+        },
       },
     })
 
@@ -97,7 +99,9 @@ describe('examples.controller', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       params: MOCK_REQ_PARAMS,
       session: {
-        user: 'exists',
+        user: {
+          _id: 'some mock id',
+        },
       },
     })
 
