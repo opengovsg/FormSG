@@ -1,6 +1,7 @@
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { Except, Merge } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
@@ -21,6 +22,7 @@ import {
   ExamplesQueryParams,
   FormInfo,
   QueryData,
+  QueryDataMap,
   QueryExecResult,
   QueryExecResultWithTotal,
   QueryPageResult,
@@ -68,20 +70,15 @@ const RETRIEVAL_TO_QUERY_DATA_MAP: QueryData = {
  * Creates and returns the query builder to execute some example fetch query.
  */
 const getExamplesQueryBuilder = ({
-  type,
+  lookUpMiddleware,
+  groupByMiddleware,
+  generalQueryModel,
   query,
-}: {
-  type: RetrievalType
-  query: ExamplesQueryParams
-}): mongoose.Aggregate<unknown[]> => {
+}: Merge<
+  Except<QueryDataMap, 'singleSearchPipeline'>,
+  { query: ExamplesQueryParams }
+>): mongoose.Aggregate<unknown[]> => {
   const { agency, searchTerm } = query
-
-  // Retrieve the appropriate middlewares.
-  const {
-    lookUpMiddleware,
-    groupByMiddleware,
-    generalQueryModel,
-  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
 
   const modelToUse = searchTerm ? FormModel : generalQueryModel
   const pipeline = searchTerm
@@ -245,7 +242,18 @@ const getFormInfo = (
 export const getExampleForms = (type: RetrievalType) => (
   query: ExamplesQueryParams,
 ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
-  const queryBuilder = getExamplesQueryBuilder({ type, query })
+  const {
+    lookUpMiddleware,
+    groupByMiddleware,
+    generalQueryModel,
+  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
+
+  const queryBuilder = getExamplesQueryBuilder({
+    query,
+    lookUpMiddleware,
+    groupByMiddleware,
+    generalQueryModel,
+  })
 
   const { pageNo, shouldGetTotalNumResults } = query
   const offset = pageNo * PAGE_SIZE || 0

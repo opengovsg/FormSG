@@ -12,13 +12,15 @@ export enum RetrievalType {
   Submissions = 'submissions',
 }
 
+export type QueryDataMap = {
+  generalQueryModel: IFormStatisticsTotalModel | ISubmissionModel
+  lookUpMiddleware: Record<string, unknown>[]
+  groupByMiddleware: Record<string, unknown>[]
+  singleSearchPipeline: (formId: string) => Record<string, unknown>[]
+}
+
 export type QueryData = {
-  [k in RetrievalType]: {
-    generalQueryModel: IFormStatisticsTotalModel | ISubmissionModel
-    lookUpMiddleware: Record<string, unknown>[]
-    groupByMiddleware: Record<string, unknown>[]
-    singleSearchPipeline: (formId: string) => Record<string, unknown>[]
-  }
+  [k in RetrievalType]: QueryDataMap
 }
 
 export type QueryExecResult = {
