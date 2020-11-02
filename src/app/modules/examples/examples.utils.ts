@@ -181,6 +181,8 @@ export const createSingleSearchSubmissionPipeline = (
   formId: string,
 ): Record<string, unknown>[] => {
   // Retrieve all submissions with the specified formId.
+  // This pipeline using the submission collection, and `form` is the foreign
+  // key of the form collection in that collection.
   return searchSubmissionsForForm('form', formId).concat(
     // Sort forms by the creation date.
     sortByCreated,
@@ -208,6 +210,8 @@ export const createSingleSearchStatsPipeline = (
   formId: string,
 ): Record<string, unknown>[] => {
   // Retrieve all submissions with the specified formId.
+  // This pipeline using the FormStatisticsTotal collection, and `formId` is the
+  // foreign key of the form collection in that collection.
   return searchSubmissionsForForm('formId', formId).concat(
     // Project submissions by form id, get submission count, and get the last
     // submission date.
