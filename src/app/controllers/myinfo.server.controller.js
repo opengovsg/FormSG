@@ -83,45 +83,17 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
 
   Promise.props(readOnlyHashPromises)
     .then((readOnlyHashes) => {
-      // Add to DB only if uinFin-form combo not already present
-      let filter = {
-        uinFin: hashedUinFin,
-        form: formId,
-      }
-      MyInfoHash.findOneAndUpdate(
-        filter,
-        {
-          $set: _.extend(
-            {
-              fields: readOnlyHashes,
-              expireAt: Date.now() + myInfoService.spCookieMaxAge,
-            },
-            filter,
-          ),
-        },
-        {
-          upsert: true,
-        },
-        (err) => {
-          if (err) {
-            res.locals.myInfoError = true
-            logger.error({
-              message: 'Error writing to DB',
-              meta: {
-                action: 'addMyInfo',
-                ...createReqMeta(req),
-                formId,
-              },
-              error: err,
-            })
-          }
-          return next()
-        },
+      return MyInfoHash.updateHashes(
+        hashedUinFin,
+        formId,
+        readOnlyHashes,
+        myInfoService.spCookieMaxAge,
       )
     })
+    .then(() => next())
     .catch((error) => {
       logger.error({
-        message: 'Error hashing MyInfo fields',
+        message: 'Error saving MyInfo hashes',
         meta: {
           action: 'addMyInfo',
           ...createReqMeta(req),
