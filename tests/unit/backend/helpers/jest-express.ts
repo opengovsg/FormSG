@@ -10,12 +10,14 @@ const mockRequest = <
   session,
   query,
   secure,
+  others = {},
 }: {
   params?: P
   body?: B
   session?: Record<string, unknown>
   query?: Q
   secure?: boolean
+  others?: Partial<Record<keyof Request, unknown>>
 } = {}): Request<P, unknown, B, Q> => {
   return {
     body: body ?? {},
@@ -27,6 +29,7 @@ const mockRequest = <
       if (name === 'cf-connecting-ip') return 'MOCK_IP'
       return undefined
     },
+    ...others,
   } as Request<P, unknown, B, Q>
 }
 
@@ -39,6 +42,8 @@ const mockResponse = (
     send: jest.fn().mockReturnThis(),
     sendStatus: jest.fn().mockReturnThis(),
     json: jest.fn(),
+    render: jest.fn(),
+    redirect: jest.fn(),
     ...extraArgs,
   }
   return mockRes as Response
