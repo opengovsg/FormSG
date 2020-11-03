@@ -154,6 +154,10 @@ footer-component .footer__socials--link {
   margin-right: 8px;
   font-size: 32px;
   color: #000;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
 }
 
 footer-component .footer__socials--link--first {

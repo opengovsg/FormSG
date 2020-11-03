@@ -132,6 +132,11 @@
         "LINE_2": "Government Technology Agency of Singapore"
       },
       "HREF": "https://open.gov.sg"
+    },
+    "SOCIALS": {
+      "LINKEDIN": "https://linkedin.com/company/open-government-products",
+      "FACEBOOK": "https://www.facebook.com/opengovsg/",
+      "OGP": "https://open.gov.sg"
     }
   }
 }
