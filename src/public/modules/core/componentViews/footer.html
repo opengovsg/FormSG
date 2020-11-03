@@ -1,20 +1,42 @@
 <footer class="landing__footer">
   <div class="footer__section">
     <div class="footer__tagline">
-      <h1 class="tagline--name">Form</h1>
-      <span class="tagline--caption">Build government forms in minutes</span>
+      <h1 class="tagline--name" translate="FOOTER.APP_NAME"></h1>
+      <span class="tagline--caption" translate="FOOTER.APP_TEXT"></span>
     </div>
     <div class="footer__links">
-      <a class="footer__links--link" href="">User Guide</a>
-      <a class="footer__links--link" href="">Privacy</a>
-      <a class="footer__links--link" href="">Terms of Use</a>
-      <a class="footer__links--link footer__links--link--last" href="">
-        Report Vulnerability
-      </a>
+      <a
+        class="footer__links--link"
+        translate-attr="{ href: 'FOOTER.USER_GUIDE.HREF' }"
+        translate="FOOTER.USER_GUIDE.TEXT"
+        target="_blank"
+      ></a>
+      <a
+        class="footer__links--link"
+        ui-sref="privacy"
+        target="_blank"
+        translate="FOOTER.PRIVACY.TEXT"
+      ></a>
+      <a
+        class="footer__links--link"
+        ui-sref="terms"
+        target="_blank"
+        translate="FOOTER.TOS.TEXT"
+      ></a>
+      <a
+        class="footer__links--link footer__links--link--last"
+        translate-attr="{ href: 'FOOTER.REPORT_VULNS.HREF' }"
+        translate="FOOTER.REPORT_VULNS.TEXT"
+        target="_blank"
+      ></a>
     </div>
   </div>
   <div class="footer__section">
-    <div class="footer__logo">
+    <a
+      class="footer__logo"
+      translate-attr="{ href: 'FOOTER.COPYRIGHT.HREF' }"
+      target="_blank"
+    >
       <span class="footer__logo--builtby"> Built by </span>
       <svg
         class="footer__logo--logo"
@@ -86,7 +108,7 @@
           </clipPath>
         </defs>
       </svg>
-    </div>
+    </a>
     <div class="footer__socials">
       <div class="footer__socials--links">
         <i
@@ -127,10 +149,17 @@
           />
         </svg>
       </div>
-      <div class="footer__copyright">
-        <span>©2020 Open Government Products,&nbsp;</span>
-        <span>Government Technology Agency of Singapore</span>
-      </div>
+      <a
+        class="footer__copyright"
+        translate-attr="{ href: 'FOOTER.COPYRIGHT.HREF' }"
+        target="_blank"
+      >
+        <span
+          translate="FOOTER.COPYRIGHT.TEXT.LINE_1"
+          translate-value-year="{{vm.currentYear}}"
+        ></span>
+        <span translate="FOOTER.COPYRIGHT.TEXT.LINE_2"></span>
+      </a>
     </div>
   </div>
 </footer>

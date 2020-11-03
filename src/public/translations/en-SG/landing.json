@@ -127,7 +127,10 @@
       "HREF": "https://go.gov.sg/report-vulnerability"
     },
     "COPYRIGHT": {
-      "TEXT": "&copy; {{year}} Open Government Products, GovTech",
+      "TEXT": {
+        "LINE_1": "&copy;{{year}} Open Government Products,&nbsp;",
+        "LINE_2": "Government Technology Agency of Singapore"
+      },
       "HREF": "https://open.gov.sg"
     }
   }
