@@ -391,7 +391,7 @@ function makeModule(connection) {
 
           // Prevent buttonLink from being copied over if same as formHash (for old forms)
           if (form.endPage && form.endPage.buttonLink) {
-            let oldFormHash = '#!/' + id
+            let oldFormHash = '/' + id
             if (form.endPage.buttonLink === oldFormHash) {
               overrideProps.endPage = form.endPage
               delete overrideProps.endPage.buttonLink

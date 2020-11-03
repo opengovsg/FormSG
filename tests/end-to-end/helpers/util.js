@@ -173,7 +173,7 @@ async function enterOTPAndExpect({ t, otp, isValid, email }) {
   if (isValid) {
     await t
       .expect(getPageUrl())
-      .eql(appUrl + '/#!/forms')
+      .eql(appUrl + '/forms')
       .expect(formList.welcomeMessage.textContent)
       .contains('Welcome ' + userName + '!')
   } else {
@@ -254,7 +254,7 @@ function makeModel(db, modelFilename, modelName) {
  * @param {string} email
  */
 const logInWithEmail = async (t, email) => {
-  await t.navigateTo(`${appUrl}/#!/signin`)
+  await t.navigateTo(`${appUrl}/signin`)
   await enterEmail(t, email)
   await expectOtpSent(t, email)
   const otp = await extractOTP(email)
@@ -700,7 +700,7 @@ async function expectStartPage(t, testForm, testFormData, appUrl) {
   await t
     .navigateTo(`${appUrl}/${_id}`)
     .expect(getPageUrl())
-    .eql(`${appUrl}/#!/${_id}`)
+    .eql(`${appUrl}/${_id}`)
     .expect(formPage.startTitle.textContent)
     .contains(formOptions.title)
 }

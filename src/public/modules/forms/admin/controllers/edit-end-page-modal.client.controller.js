@@ -17,7 +17,7 @@ function EditEndPageController($uibModalInstance, myform, updateField) {
   vm.logoUrl = getFormLogo(myform)
   // Make a copy so nothing is changed in the original.
   vm.myform = angular.copy(myform)
-  const formHash = '#!/' + vm.myform._id
+  const formHash = '/' + vm.myform._id
 
   // If buttonLink is empty or formHash (default for old forms), set to empty string
   if (

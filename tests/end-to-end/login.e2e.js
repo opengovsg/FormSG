@@ -19,7 +19,7 @@ let govTech
 let createUser
 let deleteToken
 fixture('login')
-  .page(appUrl + '/#!/signin')
+  .page(appUrl + '/signin')
   .before(async () => {
     db = await makeMongooseFixtures()
     Agency = makeModel(db, 'agency.server.model', 'Agency')
@@ -197,7 +197,7 @@ test
   await t.click(formList.logOutBtn)
   await t
     .expect(getPageUrl())
-    .eql(appUrl + '/#!/')
+    .eql(appUrl + '/')
     // Due to text spanning multiple spans, remove all whitespace
     .expect((await landingPage.tagline.textContent).replace(/  +/g, ' '))
     .contains('Build government forms in minutes')

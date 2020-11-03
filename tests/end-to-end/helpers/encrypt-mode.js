@@ -168,7 +168,7 @@ async function clickResponseRow(t, index) {
 
 // Navigate to the results tab
 async function navigateToResults(t, id) {
-  await t.navigateTo(`${appUrl}/#!/${id}/admin`).click(adminTabs.data)
+  await t.navigateTo(`${appUrl}/${id}/admin`).click(adminTabs.data)
 }
 
 // Type in the secretKey

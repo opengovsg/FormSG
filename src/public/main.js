@@ -100,7 +100,7 @@ app.constant('moment', require('moment-timezone'))
 angular.module(appName).config([
   '$locationProvider',
   function ($locationProvider) {
-    $locationProvider.hashPrefix('!')
+    $locationProvider.html5Mode(true)
   },
 ])
 
@@ -716,7 +716,7 @@ app.run([
   function ($rootScope, $uibModalStack) {
     $rootScope.$on('$locationChangeStart', (event, newUrl, oldUrl) => {
       const splitPath = oldUrl.split(location.host)
-      if (splitPath.length > 1 && splitPath[1] === '/#!/signin') {
+      if (splitPath.length > 1 && splitPath[1] === '/signin') {
         return
       }
 

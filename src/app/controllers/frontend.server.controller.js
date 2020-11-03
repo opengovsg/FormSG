@@ -70,9 +70,9 @@ module.exports.environment = function (req, res) {
 module.exports.redirectLayer = function (req, res) {
   const js = `
     // Update hash to match form id
-    window.location.hash = "#!/<%= redirectPath%>"
-    // Change url from form.gov.sg/123#!123 to form.gov.sg/#!/123
-    window.history.replaceState("","", "/#!/<%= redirectPath%>")
+    window.location.hash = "/<%= redirectPath%>"
+    // Change url from form.gov.sg/123#!123 to form.gov.sg/123
+    window.history.replaceState("","", "/<%= redirectPath%>")
   `
   // If there are multiple query params, '&' is html-encoded as '&amp;', which is not valid URI
   // Prefer to replace just '&' instead of using <%- to output unescaped values into the template
