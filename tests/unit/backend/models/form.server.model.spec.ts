@@ -1,5 +1,5 @@
-import { ObjectID } from 'bson'
-import { merge, omit } from 'lodash'
+import { ObjectId } from 'bson-ext'
+import { merge, omit, orderBy, pick } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel, {
@@ -7,9 +7,8 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
-  IAgencySchema,
   IEncryptedForm,
-  IUserSchema,
+  IPopulatedUser,
   Permission,
   ResponseMode,
   Status,
@@ -21,7 +20,7 @@ const Form = getFormModel(mongoose)
 const EncryptedForm = getEncryptedFormModel(mongoose)
 const EmailForm = getEmailFormModel(mongoose)
 
-const MOCK_ADMIN_OBJ_ID = new ObjectID()
+const MOCK_ADMIN_OBJ_ID = new ObjectId()
 const MOCK_ADMIN_DOMAIN = 'example.com'
 const MOCK_ADMIN_EMAIL = `test@${MOCK_ADMIN_DOMAIN}`
 
@@ -63,7 +62,7 @@ const FORM_DEFAULTS = {
 }
 
 describe('Form Model', () => {
-  let preloadedAdmin: IUserSchema, preloadedAgency: IAgencySchema
+  let populatedAdmin: IPopulatedUser
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
@@ -72,8 +71,7 @@ describe('Form Model', () => {
       mailDomain: MOCK_ADMIN_DOMAIN,
     })
 
-    preloadedAdmin = preloaded.user
-    preloadedAgency = preloaded.agency
+    populatedAdmin = merge(preloaded.user, { agency: preloaded.agency })
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
@@ -169,7 +167,7 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList!.map((permission: Permission[]) =>
+          .permissionList.map((permission: Permission[]) =>
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)
@@ -177,7 +175,7 @@ describe('Form Model', () => {
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectID()
+        const invalidAdminId = new ObjectId()
         const paramsWithInvalidAdmin = merge({}, MOCK_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -355,7 +353,7 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Remove indeterministic id from actual permission list
-        const actualPermissionList = (saved.toObject() as IEncryptedForm).permissionList!.map(
+        const actualPermissionList = (saved.toObject() as IEncryptedForm).permissionList?.map(
           (permission) => omit(permission, '_id'),
         )
         expect(actualPermissionList).toEqual(permissionList)
@@ -379,7 +377,7 @@ describe('Form Model', () => {
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectID()
+        const invalidAdminId = new ObjectId()
         const paramsWithInvalidAdmin = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -596,7 +594,7 @@ describe('Form Model', () => {
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
           .toObject()
-          .permissionList!.map((permission: Permission[]) =>
+          .permissionList.map((permission: Permission[]) =>
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)
@@ -633,7 +631,7 @@ describe('Form Model', () => {
 
       it('should reject when admin id is invalid', async () => {
         // Arrange
-        const invalidAdminId = new ObjectID()
+        const invalidAdminId = new ObjectId()
         const paramsWithInvalidAdmin = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: invalidAdminId,
         })
@@ -715,7 +713,7 @@ describe('Form Model', () => {
     describe('deactivateById', () => {
       it('should correctly deactivate form for valid ID', async () => {
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
-          admin: preloadedAdmin,
+          admin: populatedAdmin,
           status: Status.Public,
         })
         const form = await Form.create(formParams)
@@ -726,7 +724,7 @@ describe('Form Model', () => {
 
       it('should not deactivate archived form', async () => {
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
-          admin: preloadedAdmin,
+          admin: populatedAdmin,
           status: Status.Archived,
         })
         const form = await Form.create(formParams)
@@ -736,7 +734,7 @@ describe('Form Model', () => {
       })
 
       it('should return null for invalid form ID', async () => {
-        const returned = await Form.deactivateById(String(new ObjectID()))
+        const returned = await Form.deactivateById(String(new ObjectId()))
         expect(returned).toBeNull()
       })
     })
@@ -744,7 +742,7 @@ describe('Form Model', () => {
     describe('getFullFormById', () => {
       it('should return null when the formId is invalid', async () => {
         // Arrange
-        const invalidFormId = new ObjectID()
+        const invalidFormId = new ObjectId()
 
         // Act
         const form = await Form.getFullFormById(String(invalidFormId))
@@ -756,13 +754,13 @@ describe('Form Model', () => {
       it('should return the populated email form when formId is valid', async () => {
         // Arrange
         const emailFormParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
-          admin: preloadedAdmin,
+          admin: populatedAdmin,
         })
         // Create a form
         const form = (await Form.create(emailFormParams)).toObject()
 
         // Act
-        const actualForm = (await Form.getFullFormById(form._id))!.toObject()
+        const actualForm = (await Form.getFullFormById(form._id))?.toObject()
 
         // Assert
         // Form should be returned
@@ -771,9 +769,9 @@ describe('Form Model', () => {
         expect(omit(actualForm, 'admin')).toEqual(omit(form, 'admin'))
         // Verify populated admin shape
         expect(actualForm.admin).not.toBeNull()
-        expect(actualForm.admin.email).toEqual(preloadedAdmin.email)
+        expect(actualForm.admin.email).toEqual(populatedAdmin.email)
         // Remove indeterministic keys
-        const expectedAgency = omit(preloadedAgency.toObject(), [
+        const expectedAgency = omit(populatedAdmin.agency.toObject(), [
           '_id',
           'created',
           'lastModified',
@@ -787,13 +785,13 @@ describe('Form Model', () => {
       it('should return the populated encrypt form when formId is valid', async () => {
         // Arrange
         const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          admin: preloadedAdmin,
+          admin: populatedAdmin,
         })
         // Create a form
         const form = (await Form.create(encryptFormParams)).toObject()
 
         // Act
-        const actualForm = (await Form.getFullFormById(form._id))!.toObject()
+        const actualForm = (await Form.getFullFormById(form._id))?.toObject()
 
         // Assert
         // Form should be returned
@@ -802,9 +800,9 @@ describe('Form Model', () => {
         expect(omit(actualForm, 'admin')).toEqual(omit(form, 'admin'))
         // Verify populated admin shape
         expect(actualForm.admin).not.toBeNull()
-        expect(actualForm.admin.email).toEqual(preloadedAdmin.email)
+        expect(actualForm.admin.email).toEqual(populatedAdmin.email)
         // Remove indeterministic keys
-        const expectedAgency = omit(preloadedAgency.toObject(), [
+        const expectedAgency = omit(populatedAdmin.agency.toObject(), [
           '_id',
           'created',
           'lastModified',
@@ -819,7 +817,7 @@ describe('Form Model', () => {
     describe('getOtpData', () => {
       it('should return null when formId does not exist', async () => {
         // Arrange
-        const invalidFormId = new ObjectID()
+        const invalidFormId = new ObjectId()
 
         // Act
         const form = await Form.getOtpData(String(invalidFormId))
@@ -846,8 +844,8 @@ describe('Form Model', () => {
         const expectedOtpData = {
           form: form._id,
           formAdmin: {
-            email: preloadedAdmin.email,
-            userId: preloadedAdmin._id,
+            email: populatedAdmin.email,
+            userId: populatedAdmin._id,
           },
           msgSrvcName: emailFormParams.msgSrvcName,
         }
@@ -872,13 +870,105 @@ describe('Form Model', () => {
         const expectedOtpData = {
           form: form._id,
           formAdmin: {
-            email: preloadedAdmin.email,
-            userId: preloadedAdmin._id,
+            email: populatedAdmin.email,
+            userId: populatedAdmin._id,
           },
           msgSrvcName: encryptFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
+    })
+  })
+
+  describe('getDashboardForms', () => {
+    it('should return empty array when user has no forms to view', async () => {
+      // Arrange
+      const randomUserId = new ObjectId()
+      const invalidEmail = 'not-valid@example.com'
+
+      // Act
+      const actual = await Form.getDashboardForms(randomUserId, invalidEmail)
+
+      // Assert
+      expect(actual).toEqual([])
+    })
+
+    it('should return array of forms user is permitted to view', async () => {
+      // Arrange
+      // Add additional user.
+      const differentUserId = new ObjectId()
+      const diffPreload = await dbHandler.insertFormCollectionReqs({
+        userId: differentUserId,
+        mailName: 'something-else',
+        mailDomain: MOCK_ADMIN_DOMAIN,
+      })
+      const diffPopulatedAdmin = merge(diffPreload.user, {
+        agency: diffPreload.agency,
+      })
+      // Populate multiple forms with different permissions.
+      // Is admin.
+      const userOwnedForm = await Form.create(MOCK_EMAIL_FORM_PARAMS)
+      // Has permissions.
+      const userPermissionForm = await Form.create({
+        ...MOCK_ENCRYPTED_FORM_PARAMS,
+        admin: diffPopulatedAdmin._id,
+        permissionList: [{ email: populatedAdmin.email, write: true }],
+      })
+      // Should not be fetched since form is archived.
+      await Form.create({
+        ...MOCK_ENCRYPTED_FORM_PARAMS,
+        status: Status.Archived,
+      })
+      // Should not be fetched (not collab or admin).
+      await Form.create({
+        ...MOCK_ENCRYPTED_FORM_PARAMS,
+        admin: differentUserId,
+        // currentUser does not have permissions.
+      })
+
+      // Act
+      const actual = await Form.getDashboardForms(
+        populatedAdmin._id,
+        populatedAdmin.email,
+      )
+
+      // Assert
+      // Coerce into expected shape.
+      const expected = orderBy(
+        [
+          // Should return form with admin themselves.
+          merge(
+            pick(userOwnedForm.toObject(), [
+              '_id',
+              'title',
+              'lastModified',
+              'status',
+              'form_fields',
+              'responseMode',
+            ]),
+            { admin: populatedAdmin.toObject() },
+          ),
+          // Should return form where admin has permission.
+          merge(
+            pick(userPermissionForm.toObject(), [
+              '_id',
+              'title',
+              'lastModified',
+              'status',
+              'form_fields',
+              'responseMode',
+            ]),
+            { admin: diffPopulatedAdmin.toObject() },
+          ),
+        ],
+        'lastModified',
+        'desc',
+      )
+      // Should return list containing only two forms, even though there are 4
+      // forms in the collection.
+      await expect(Form.countDocuments()).resolves.toEqual(4)
+      expect(actual.length).toEqual(2)
+      expect(actual).toEqual(expected)
     })
   })
 })
