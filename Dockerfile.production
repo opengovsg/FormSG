@@ -26,7 +26,7 @@ COPY --from=node-modules-builder /opt/formsg /opt/formsg
 # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
 
 RUN apk add --no-cache \
-    chromium=83.0.4103.116-r0 \
+    chromium=86.0.4240.111-r0 \
     nss \
     freetype \
     freetype-dev \
