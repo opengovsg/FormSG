@@ -15,6 +15,17 @@
   margin: 0;
 }
 
+#settings-form #enable-webhooks .field-optional {
+  font-size: 15px;
+  font-weight: normal;
+  color: #b8b8b8;
+  margin-left: 10px;
+}
+
+#settings-form .webhook-divider {
+  margin-top: 40px;
+}
+
 #settings-form #enable-webhooks .glyphicon {
   margin-left: 40px !important;
 }
