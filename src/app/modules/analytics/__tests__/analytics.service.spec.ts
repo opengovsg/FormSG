@@ -181,7 +181,7 @@ describe('analytics.service', () => {
     let testAgency: IAgencySchema
 
     beforeEach(async () => {
-      testAgency = await dbHandler.insertDefaultAgency({
+      testAgency = await dbHandler.insertAgency({
         mailDomain: VALID_DOMAIN,
       })
     })

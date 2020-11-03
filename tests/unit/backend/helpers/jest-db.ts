@@ -54,17 +54,19 @@ const clearCollection = async (collection: string): Promise<void> => {
   await mongoose.connection.collections[collection].deleteMany({})
 }
 
-const insertDefaultAgency = async ({
+const insertAgency = async ({
   mailDomain = 'test.gov.sg',
+  shortName = 'govtest',
 }: {
   mailDomain?: string
+  shortName?: string
 } = {}): Promise<IAgencySchema> => {
   const Agency = getAgencyModel(mongoose)
   const agency = await Agency.create({
-    shortName: 'govtest',
-    fullName: 'Government Testing Agency',
+    shortName,
+    fullName: `Government Testing Agency (${shortName})`,
     emailDomain: [mailDomain],
-    logo: '/invalid-path/test.jpg',
+    logo: `/invalid-path/test-${shortName}.jpg`,
   })
 
   return agency
@@ -100,17 +102,19 @@ const insertFormCollectionReqs = async ({
   userId,
   mailDomain = 'test.gov.sg',
   mailName = 'test',
+  shortName = 'govtest',
 }: {
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
+  shortName?: string
 } = {}): Promise<{
   agency: IAgencySchema
   user: IUserSchema
 }> => {
   const User = getUserModel(mongoose)
 
-  const agency = await insertDefaultAgency({ mailDomain })
+  const agency = await insertAgency({ mailDomain, shortName })
 
   const user = await User.create({
     email: `${mailName}@${mailDomain}`,
@@ -126,11 +130,13 @@ const insertEmailForm = async ({
   userId,
   mailDomain = 'test.gov.sg',
   mailName = 'test',
+  shortName = 'govtest',
 }: {
   formId?: ObjectID
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
+  shortName?: string
 } = {}): Promise<{
   form: IFormSchema
   user: IUserSchema
@@ -140,6 +146,7 @@ const insertEmailForm = async ({
     userId,
     mailDomain,
     mailName,
+    shortName,
   })
 
   const Form = getFormModel(mongoose)
@@ -163,7 +170,7 @@ const dbHandler = {
   connect,
   closeDatabase,
   clearDatabase,
-  insertDefaultAgency,
+  insertAgency,
   insertUser,
   insertFormCollectionReqs,
   clearCollection,
