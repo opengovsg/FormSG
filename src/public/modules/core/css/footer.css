@@ -19,8 +19,6 @@ footer-component .landing__footer .footer__section {
   -webkit-box-align: normal;
   -ms-flex-align: normal;
   align-items: normal;
-  border-bottom: 2px solid;
-  border-color: #dcdcdc;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -39,6 +37,11 @@ footer-component .landing__footer .footer__section {
   margin-right: 32px;
   padding-bottom: 44px;
   padding-top: 44px;
+}
+
+footer-component .landing__footer .footer__section--bottom-border {
+  border-bottom: 2px solid;
+  border-color: #dcdcdc;
 }
 
 footer-component .footer__tagline {
