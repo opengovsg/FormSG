@@ -516,6 +516,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             path: 'agency',
           },
         })
+        .lean()
         .exec()
     )
   }
