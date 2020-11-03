@@ -30,6 +30,7 @@ describe('Public-Forms Controller', () => {
       params: {},
       body: {},
       headers: {},
+      url: '',
       ip: '127.0.0.1',
       get: () => '',
     }
@@ -87,6 +88,35 @@ describe('Public-Forms Controller', () => {
         )
         done()
       })
+      Controller.redirect(req, res)
+    })
+
+    it('should redirect to form with correct query params retained', (done) => {
+      req.params = {
+        Id: '321564654f65we4f65e4f5',
+      }
+      req.query = {
+        p1: 'v1-_',
+        p2: 'v2',
+        p3: ['v3', 'v4'],
+      }
+
+      res.redirect = jasmine.createSpy().and.callFake(() => {
+        expect(res.redirect).toHaveBeenCalledWith(
+          jasmine.stringMatching(/\?.*p1%3Dv1-_/),
+        )
+        expect(res.redirect).toHaveBeenCalledWith(
+          jasmine.stringMatching(/\?.*p2%3Dv2/),
+        )
+        expect(res.redirect).toHaveBeenCalledWith(
+          jasmine.stringMatching(/\?.*p3%3Dv3/),
+        )
+        expect(res.redirect).toHaveBeenCalledWith(
+          jasmine.stringMatching(/\?.*p3%3Dv4/),
+        )
+        done()
+      })
+
       Controller.redirect(req, res)
     })
 

@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const { StatusCodes } = require('http-status-codes')
+const querystring = require('querystring')
 
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -47,6 +48,10 @@ exports.redirect = async function (req, res) {
   let redirectPath = req.params.state
     ? req.params.Id + '/' + req.params.state
     : req.params.Id
+  const reqQuery = querystring.stringify(req.query)
+  if (reqQuery.length > 0) {
+    redirectPath = redirectPath + '?' + encodeURIComponent(reqQuery)
+  }
   try {
     const metaTags = await fetchMetatags(req)
     return res.render('index', {
@@ -62,8 +67,9 @@ exports.redirect = async function (req, res) {
       },
       error: err,
     })
+    res.redirect('/#!/' + redirectPath)
+    return
   }
-  res.redirect('/#!/' + redirectPath)
 }
 
 /**
