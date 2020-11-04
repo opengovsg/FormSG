@@ -470,6 +470,12 @@
   }
 }
 
+@media print {
+  * {
+    overflow: visible !important;
+  }
+}
+
 #responses-tab #detailed-responses #question-answer-grp .qa-block:first-child {
   padding-top: 0 !important;
 }
