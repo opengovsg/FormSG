@@ -717,3 +717,9 @@ i.glyphicon-question-sign {
   font-size: 60px;
   color: #3263cb;
 }
+
+@media print {
+  * {
+    overflow: visible !important;
+  }
+}
