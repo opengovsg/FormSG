@@ -57,7 +57,7 @@ const getFilteredResponses = (
 export const getProcessedResponses = (
   form: IFormSchema,
   originalResponses: FieldResponse[],
-) => {
+): ProcessedFieldResponse[] => {
   const filteredResponses = getFilteredResponses(form, originalResponses)
 
   // Set of all visible fields
@@ -70,6 +70,7 @@ export const getProcessedResponses = (
   }
 
   // Create a map keyed by field._id for easier access
+  // TODO (#317): remove usage of non-null assertion
   const fieldMap = form.form_fields!.reduce<{
     [fieldId: string]: IFieldSchema
   }>((acc, field) => {

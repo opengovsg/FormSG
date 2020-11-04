@@ -21,7 +21,7 @@ import {
   ResponseMode,
 } from 'src/types'
 
-import dbHandler from '../../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Form = getFormModel(mongoose)
 
@@ -213,7 +213,7 @@ describe('submission.service', () => {
       ).toThrowError('Some form fields are missing')
     })
 
-    it('should throw error when any responses are not valid for encrypted form submission ', async () => {
+    it('should throw error when any responses are not valid for encrypted form submission', async () => {
       // Arrange
       // Only mobile and email fields are parsed, since the other fields are
       // e2e encrypted from the browser.
@@ -231,7 +231,7 @@ describe('submission.service', () => {
       ).toThrowError('Invalid answer submitted')
     })
 
-    it('should throw error when any responses are not valid for email form submission ', async () => {
+    it('should throw error when any responses are not valid for email form submission', async () => {
       // Arrange
       // Set NRIC field in form as required.
       const nricFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Nric]
