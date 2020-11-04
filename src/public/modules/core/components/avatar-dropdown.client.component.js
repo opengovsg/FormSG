@@ -98,6 +98,7 @@ function avatarDropdownController(
         if (returnVal) {
           vm.user = returnVal
           Auth.setUser(returnVal)
+          vm.showExclamation = !returnVal.contact
         }
       })
       .finally(angular.noop)
