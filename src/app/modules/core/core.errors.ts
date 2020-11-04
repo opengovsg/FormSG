@@ -32,3 +32,8 @@ export class DatabaseError extends ApplicationError {
     super(message)
   }
 }
+export class MalformedParametersError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

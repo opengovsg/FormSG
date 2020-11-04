@@ -1,15 +1,24 @@
 import _ from 'lodash'
+import mongoose from 'mongoose'
+import { errAsync, ResultAsync } from 'neverthrow'
 
+import { createLoggerWithLabel } from '../../../config/logger'
 import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
 import { FieldResponse, IFieldSchema, IFormSchema } from '../../../types'
+import getSubmissionModel from '../../models/submission.server.model'
+import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
+import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 
 import { ConflictError } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
 import { getModeFilter } from './submission.utils'
+
+const logger = createLoggerWithLabel(module)
+const SubmissionModel = getSubmissionModel(mongoose)
 
 /**
  * Filter allowed form field responses from given responses and return the
@@ -102,4 +111,53 @@ export const getProcessedResponses = (
   })
 
   return processedResponses
+}
+
+/**
+ * Returns number of form submissions of given form id in the given date range.
+ *
+ * @param formId the form id to retrieve submission counts for
+ * @param dateRange optional date range to narrow down submission count
+ * @param dateRange.startDate the start date of the date range
+ * @param dateRange.endDate the end date of the date range
+ *
+ * @returns ok(form submission count)
+ * @returns err(MalformedParametersError) if date range provided is malformed
+ * @returns err(DatabaseError) if database query errors
+ * @
+ */
+export const getFormSubmissionsCount = (
+  formId: string,
+  dateRange?: {
+    startDate: string
+    endDate: string
+  },
+): ResultAsync<number, MalformedParametersError | DatabaseError> => {
+  if (
+    dateRange &&
+    (isMalformedDate(dateRange.startDate) || isMalformedDate(dateRange.endDate))
+  ) {
+    return errAsync(new MalformedParametersError('Malformed date parameter'))
+  }
+
+  const countQuery = {
+    form: formId,
+    ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
+  }
+
+  return ResultAsync.fromPromise(
+    SubmissionModel.countDocuments(countQuery).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error counting submission documents from database',
+        meta: {
+          action: 'getFormSubmissionsCount',
+          formId,
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  )
 }
