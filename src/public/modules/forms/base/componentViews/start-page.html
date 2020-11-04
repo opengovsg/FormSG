@@ -96,11 +96,11 @@
             </span>
           </button>
           <div ng-if="!vm.userName && !vm.isTemplate">
-            <div ng-if="vm.authType==='SP'" class="form-locked-msg">
+            <div ng-if="vm.authType==='SP'" class="form-locked-msg padded-view">
               Login with SingPass to access this form. Your SingPass ID will be
               included with your form submission.
             </div>
-            <div ng-if="vm.authType==='CP'" class="form-locked-msg">
+            <div ng-if="vm.authType==='CP'" class="form-locked-msg padded-view">
               Login with CorpPass to access this form. Your Entity ID and
               CorpPass ID will be included with your form submission.
             </div>
@@ -129,7 +129,10 @@
         </div>
       </div>
     </div>
-    <div ng-if="vm.myInfoError" class="form-locked-msg myinfo-error">
+    <div
+      ng-if="vm.myInfoError"
+      class="form-locked-msg myinfo-error padded-view"
+    >
       <i class="bx bx-exclamation"></i>
       <span>
         An error occurred while retrieving your MyInfo details. Kindly refresh
