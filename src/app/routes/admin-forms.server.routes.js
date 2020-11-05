@@ -404,9 +404,23 @@ module.exports = function (app) {
    * @returns {number} 200 - the submission count
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count')
-    .get(AdminFormController.handleCountFormSubmissions)
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count').get(
+    celebrate({
+      [Segments.QUERY]: Joi.object()
+        .keys({
+          // Ensure YYYY-MM-DD format.
+          startDate: Joi.string().regex(
+            /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/,
+          ),
+          // Ensure YYYY-MM-DD format.
+          endDate: Joi.string().regex(
+            /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/,
+          ),
+        })
+        .with('startDate', 'endDate'),
+    }),
+    AdminFormController.handleCountFormSubmissions,
+  )
 
   /**
    * @typedef metadataResponse
