@@ -1,10 +1,16 @@
 import { ObjectID } from 'bson'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, times } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
+import getSubmissionModel from 'src/app/models/submission.server.model'
+import {
+  DatabaseError,
+  MalformedParametersError,
+} from 'src/app/modules/core/core.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+import { createQueryWithDateParam } from 'src/app/utils/date'
 import { FIELDS_TO_REJECT } from 'src/app/utils/field-validation/config'
 import * as LogicUtil from 'src/shared/util/logic'
 import {
@@ -12,18 +18,22 @@ import {
   BasicField,
   FieldResponse,
   IEmailFormSchema,
+  IEmailSubmissionSchema,
   IEncryptedFormSchema,
+  IEncryptedSubmissionSchema,
   IFieldSchema,
   IPreventSubmitLogicSchema,
   ISingleAnswerResponse,
   LogicType,
   PossibleField,
   ResponseMode,
+  SubmissionType,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Form = getFormModel(mongoose)
+const Submission = getSubmissionModel(mongoose)
 
 const MOCK_ADMIN_ID = new ObjectID()
 const MOCK_FORM_PARAMS = {
@@ -289,6 +299,165 @@ describe('submission.service', () => {
           defaultEmailResponses,
         ),
       ).toThrowError('Submission prevented by form logic')
+    })
+  })
+
+  describe('getFormSubmissionsCount', () => {
+    const countSpy = jest.spyOn(Submission, 'countDocuments')
+    beforeEach(async () => {
+      await dbHandler.clearCollection(Submission.collection.name)
+    })
+    afterEach(() => jest.clearAllMocks())
+
+    it('should return correct all form counts when not providing date range', async () => {
+      // Arrange
+      // Insert 4 submissions
+      const expectedSubmissionCount = 4
+      const subPromises = times(expectedSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: defaultEncryptForm._id,
+          encryptedContent: 'some random encrypted content',
+          version: 1,
+          responseHash: 'hash',
+          responseSalt: 'salt',
+        }),
+      )
+      await Promise.all(subPromises)
+
+      // Act
+      const actualResult = await SubmissionService.getFormSubmissionsCount(
+        defaultEncryptForm._id,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
+    })
+
+    it('should return correct form counts in range when date range is provided', async () => {
+      // Arrange
+      const expectedSubmissionCount = 4
+      // Insert submissions created now.
+      const subPromisesNow = times(2, () =>
+        Submission.create<IEncryptedSubmissionSchema>({
+          submissionType: SubmissionType.Encrypt,
+          form: defaultEncryptForm._id,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      // Insert submissions created in 1 Jan 2019.
+      const subPromises2019 = times(expectedSubmissionCount, () =>
+        Submission.create<IEmailSubmissionSchema>({
+          form: defaultEmailForm._id,
+          submissionType: SubmissionType.Email,
+          responseHash: 'hash',
+          responseSalt: 'salt',
+          created: new Date('2019-01-01'),
+          recipientEmails: [],
+        }),
+      )
+
+      // Insert one more submission for defaultEmailForm in 2 January 2019.
+      const subPromiseDayAfter = Submission.create<IEmailSubmissionSchema>({
+        form: defaultEmailForm._id,
+        submissionType: SubmissionType.Email,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+        created: new Date('2019-01-02'),
+        recipientEmails: [],
+      })
+
+      // Execute creation in DB.
+      await Promise.all([
+        ...subPromises2019,
+        ...subPromisesNow,
+        subPromiseDayAfter,
+      ])
+
+      // Act
+      const actualResult = await SubmissionService.getFormSubmissionsCount(
+        defaultEmailForm._id,
+        { startDate: '2019-01-01', endDate: '2019-01-01' },
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      // Should only return submissions on given day.
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
+    })
+
+    it('should return 0 form count when no forms are in range', async () => {
+      // Arrange
+      // Insert submissions created 2019-12-12
+      const subPromises = times(2, () =>
+        Submission.create<IEncryptedSubmissionSchema>({
+          submissionType: SubmissionType.Encrypt,
+          form: defaultEncryptForm._id,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+          created: new Date('2019-12-12'),
+        }),
+      )
+
+      await Promise.all(subPromises)
+
+      // Act
+      const queryDateRange = { startDate: '2020-01-01', endDate: '2020-01-01' }
+      const actualResult = await SubmissionService.getFormSubmissionsCount(
+        defaultEncryptForm._id,
+        queryDateRange,
+      )
+
+      // Assert
+      expect(countSpy).toHaveBeenCalledWith({
+        form: defaultEncryptForm._id,
+        ...createQueryWithDateParam(
+          queryDateRange.startDate,
+          queryDateRange.endDate,
+        ),
+      })
+      expect(actualResult.isOk()).toEqual(true)
+      // No submissions expected to be returned..
+      expect(actualResult._unsafeUnwrap()).toEqual(0)
+    })
+
+    it('should return MalformedParametersError when date range provided is malformed', async () => {
+      // Act
+      const actualResult = await SubmissionService.getFormSubmissionsCount(
+        defaultEncryptForm._id,
+        { startDate: 'some malformed start date', endDate: '2020-01-01' },
+      )
+
+      // Assert
+      expect(countSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MalformedParametersError,
+      )
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      // Arrange
+      countSpy.mockImplementationOnce(
+        () =>
+          (({
+            exec: () => Promise.reject(new Error('boom')),
+          } as unknown) as mongoose.Query<any>),
+      )
+
+      // Act
+      const actualResult = await SubmissionService.getFormSubmissionsCount(
+        defaultEmailForm._id,
+      )
+
+      // Assert
+      expect(countSpy).toHaveBeenCalledWith({
+        form: defaultEmailForm._id,
+      })
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
 })
