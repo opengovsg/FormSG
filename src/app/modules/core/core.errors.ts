@@ -1,3 +1,5 @@
+import { FeatureNames } from 'src/config/feature-manager'
+
 /**
  * A custom base error class that encapsulates the name, message, status code,
  * and logging meta string (if any) for the error.
@@ -36,5 +38,17 @@ export class DatabaseError extends ApplicationError {
 export class ExternalError extends ApplicationError {
   constructor(message: string) {
     super(message)
+  }
+}
+
+/**
+ * Error thrown when feature-specific functions are called
+ * despite those features not being activated.
+ */
+export class MissingFeatureError extends Error {
+  constructor(missingFeature: FeatureNames) {
+    super(
+      `${missingFeature} is not activated, but a feature-specific function was called.`,
+    )
   }
 }
