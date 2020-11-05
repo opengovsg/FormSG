@@ -11,7 +11,12 @@ import { get } from 'lodash'
 import mongoose from 'mongoose'
 
 import { sessionSecret } from '../../../config/config'
-import { IHashes, IMyInfoHashSchema, MyInfoAttribute } from '../../../types'
+import {
+  IFieldSchema,
+  IHashes,
+  IMyInfoHashSchema,
+  MyInfoAttribute,
+} from '../../../types'
 import getMyInfoHashModel from '../../models/myinfo_hash.server.model'
 
 import { IPossiblyPrefilledField, MyInfoHashPromises } from './myinfo.types'
@@ -196,4 +201,16 @@ export const saveHashesToDatabase = (
     readOnlyHashes,
     cookieAge,
   )
+}
+
+export const extractRequestedAttributes = (
+  formFields: IFieldSchema[],
+): MyInfoAttribute[] => {
+  const attrs: MyInfoAttribute[] = []
+  formFields.forEach((field) => {
+    if (field.myInfo?.attr) {
+      attrs.push(field.myInfo.attr)
+    }
+  })
+  return attrs
 }
