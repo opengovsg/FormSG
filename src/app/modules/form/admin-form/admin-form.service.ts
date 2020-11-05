@@ -115,7 +115,7 @@ const createPresignedPost = (
     logger.error({
       message: 'Error encountered when creating presigned POST URL',
       meta: {
-        action: 'createPresignedPostForImages',
+        action: 'createPresignedPost',
         fileId,
         fileMd5Hash,
         fileType,
