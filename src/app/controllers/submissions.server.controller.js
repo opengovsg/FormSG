@@ -1,16 +1,9 @@
 'use strict'
 
 const axios = require('axios')
-
-const mongoose = require('mongoose')
-const errorHandler = require('../utils/handle-mongo-error')
-const getSubmissionModel = require('../models/submission.server.model').default
-const Submission = getSubmissionModel(mongoose)
-
 const { StatusCodes } = require('http-status-codes')
 
 const { createReqMeta } = require('../utils/request')
-const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail/mail.service').default
 
@@ -188,52 +181,6 @@ const sendEmailAutoReplies = async function (req) {
     // We do not deal with failed autoreplies
     return Promise.resolve()
   }
-}
-
-/**
- * Count number of form submissions for Results tab
- * @param  {Object} req - Express request object
- * @param  {String} [req.query.startDate] Optional date query parameter in YYYY-MM-DD format. Assumes GMT+8.
- * @param  {String} [req.query.endDate] Optional date query parameter in YYYY-MM-DD format. Assumes GMT+8.
- * @param  {Object} res - Express response object
- */
-exports.count = function (req, res) {
-  let query = { form: req.form._id }
-
-  if (
-    isMalformedDate(req.query.startDate) ||
-    isMalformedDate(req.query.endDate)
-  ) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: 'Malformed date parameter',
-    })
-  }
-
-  const augmentedQuery = createQueryWithDateParam(
-    req.query.startDate,
-    req.query.endDate,
-  )
-
-  query = { ...query, ...augmentedQuery }
-
-  Submission.countDocuments(query, function (err, count) {
-    if (err) {
-      logger.error({
-        message: 'Error counting submission documents from database',
-        meta: {
-          action: 'count',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: errorHandler.getMongoErrorMessage(err),
-      })
-    } else {
-      return res.json(count)
-    }
-  })
 }
 
 exports.sendAutoReply = function (req, res) {

@@ -7,7 +7,6 @@ const request = require('supertest')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
-const Submission = dbHandler.makeModel('submission.server.model', 'Submission')
 
 describe('Submissions Controller', () => {
   // Declare global variables
@@ -263,69 +262,6 @@ describe('Submissions Controller', () => {
         .end(() => {
           expect(mockSendNodeMail).not.toHaveBeenCalled()
           done()
-        })
-    })
-  })
-
-  describe('Count', () => {
-    let testForm
-    const app = express()
-    const endpointPath = '/count'
-
-    const originalConsoleError = console.error
-
-    beforeAll(() => {
-      // Stubbing console error to prevent appearing in stdout
-      console.error = jasmine.createSpy()
-
-      app.route(endpointPath).get((req, res, next) => {
-        req.form = testForm
-        return next()
-      }, Controller.count)
-    })
-
-    beforeEach(async () => {
-      // Insert test form before each test
-      const collections = await dbHandler.preloadCollections()
-      testForm = collections.form
-    })
-
-    afterAll(() => {
-      console.error = originalConsoleError
-    })
-
-    it('returns 0 if 0 submissions', (done) => {
-      request(app).get(endpointPath).expect(200, '0').end(done)
-    })
-
-    it('returns count if > 0 submissions', (done) => {
-      new Submission({
-        form: testForm._id,
-        submissionType: 'emailSubmission',
-        responseHash: 'any hash',
-        responseSalt: 'any salt',
-      })
-        .save()
-        .then(() => {
-          request(app).get(endpointPath).expect(200, '1').end(done)
-        })
-    })
-
-    it('errors with 500 if count retrieve fail', (done) => {
-      const originalSubmissionCountDoc = Submission.countDocuments
-
-      const spyCountDoc = jasmine.createSpy('Submission.countDocuments')
-      spyCountDoc.and.callFake((callback) => callback(new Error('Boom')))
-
-      Submission.countDocuments = spyCountDoc
-
-      request(app)
-        .get(endpointPath)
-        .expect(StatusCodes.INTERNAL_SERVER_ERROR)
-        .end((err) => {
-          // Restore Submission.countDocuments before passing on any errors
-          Submission.countDocuments = originalSubmissionCountDoc
-          done(err)
         })
     })
   })
