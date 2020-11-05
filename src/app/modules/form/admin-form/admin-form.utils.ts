@@ -45,18 +45,16 @@ export const mapRouteError = (
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
       }
-    case FormDeletedError: {
+    case FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
         errorMessage: error.message,
       }
-    }
-    case ForbiddenFormError: {
+    case ForbiddenFormError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
-    }
     case MissingUserError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,

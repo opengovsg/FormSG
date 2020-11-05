@@ -204,7 +204,7 @@ export const handleCountFormSubmissions: RequestHandler<
 
   // Step 5: has permissions, continue to retrieve submission counts.
   const countResult = await SubmissionService.getFormSubmissionsCount(
-    form._id,
+    String(form._id),
     { startDate, endDate },
   )
   // Step 5a: Error retrieving form submissions counts.
