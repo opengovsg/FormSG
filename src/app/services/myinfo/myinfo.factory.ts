@@ -42,10 +42,11 @@ interface IMyInfoFactory {
   >
 }
 
-export const createMyInfoFactory = (
-  myInfoFeature: RegisteredFeature<FeatureNames.SpcpMyInfo>,
-): IMyInfoFactory => {
-  if (!myInfoFeature.isEnabled || !myInfoFeature.props) {
+export const createMyInfoFactory = ({
+  isEnabled,
+  props,
+}: RegisteredFeature<FeatureNames.SpcpMyInfo>): IMyInfoFactory => {
+  if (!isEnabled || !props) {
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     return {
       fetchMyInfoPersonData: () => errAsync(error),
@@ -53,16 +54,13 @@ export const createMyInfoFactory = (
       saveMyInfoHashes: () => errAsync(error),
     }
   }
-  const myInfoConfig = pick(myInfoFeature.props, [
-    'myInfoClientMode',
-    'myInfoKeyPath',
-  ])
+  const myInfoConfig = pick(props, ['myInfoClientMode', 'myInfoKeyPath'])
   const myInfoService = new MyInfoService({
     myInfoConfig,
     nodeEnv: config.nodeEnv,
     realm: config.app.title,
-    singpassEserviceId: myInfoFeature.props.spEsrvcId,
-    spCookieMaxAge: myInfoFeature.props.spCookieMaxAge,
+    singpassEserviceId: props.spEsrvcId,
+    spCookieMaxAge: props.spCookieMaxAge,
   })
   return {
     fetchMyInfoPersonData: myInfoService.fetchMyInfoPersonData,
