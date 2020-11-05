@@ -128,14 +128,14 @@ export const getProcessedResponses = (
  */
 export const getFormSubmissionsCount = (
   formId: string,
-  dateRange?: {
-    startDate: string
-    endDate: string
-  },
+  dateRange: {
+    startDate?: string
+    endDate?: string
+  } = {},
 ): ResultAsync<number, MalformedParametersError | DatabaseError> => {
   if (
-    dateRange &&
-    (isMalformedDate(dateRange.startDate) || isMalformedDate(dateRange.endDate))
+    isMalformedDate(dateRange.startDate) ||
+    isMalformedDate(dateRange.endDate)
   ) {
     return errAsync(new MalformedParametersError('Malformed date parameter'))
   }
