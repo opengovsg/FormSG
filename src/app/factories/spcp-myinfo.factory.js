@@ -6,10 +6,12 @@ const featureManager = require('../../config/feature-manager').default
 const config = require('../../config/config')
 const fs = require('fs')
 const SPCPAuthClient = require('@opengovsg/spcp-auth-client')
-const { MyInfoGovClient } = require('@opengovsg/myinfo-gov-client')
+const {
+  MyInfoGovClient,
+  Mode: MyInfoClientMode,
+} = require('@opengovsg/myinfo-gov-client')
 const MyInfoService = require('../services/myinfo.service')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { Mode: MyInfoClientMode } = require('@opengovsg/myinfo-gov-client')
 
 const spcpFactory = ({ isEnabled, props }) => {
   if (isEnabled && props) {
