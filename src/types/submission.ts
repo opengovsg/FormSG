@@ -67,7 +67,7 @@ export interface IEmailSubmission extends ISubmission {
   recipientEmails: string[]
   responseHash: string
   responseSalt: string
-  hasBounced: boolean
+  hasBounced?: boolean
   encryptedContent: never
   verifiedContent: never
   version: never
@@ -87,7 +87,7 @@ export interface IEncryptedSubmission extends ISubmission {
   verifiedContent?: string
   version: number
   attachmentMetadata?: Map<string, string>
-  webhookResponses: IWebhookResponse[]
+  webhookResponses?: IWebhookResponse[]
   getWebhookView(): WebhookView | null
 }
 

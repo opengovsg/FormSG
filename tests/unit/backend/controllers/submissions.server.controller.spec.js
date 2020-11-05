@@ -299,9 +299,16 @@ describe('Submissions Controller', () => {
     })
 
     it('returns count if > 0 submissions', (done) => {
-      new Submission({ form: testForm._id }).save().then(() => {
-        request(app).get(endpointPath).expect(200, '1').end(done)
+      new Submission({
+        form: testForm._id,
+        submissionType: 'emailSubmission',
+        responseHash: 'any hash',
+        responseSalt: 'any salt',
       })
+        .save()
+        .then(() => {
+          request(app).get(endpointPath).expect(200, '1').end(done)
+        })
     })
 
     it('errors with 500 if count retrieve fail', (done) => {

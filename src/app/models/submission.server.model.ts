@@ -44,6 +44,11 @@ const SubmissionSchema = new Schema<ISubmissionSchema>(
         },
       ],
     },
+    submissionType: {
+      type: String,
+      enum: Object.values(SubmissionType),
+      required: true,
+    },
   },
   {
     timestamps: {
