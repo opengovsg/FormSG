@@ -406,7 +406,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count')
-    .get(authActiveForm(PERMISSIONS.READ), submissions.count)
+    .get(AdminFormController.handleCountFormSubmissions)
 
   /**
    * @typedef metadataResponse
