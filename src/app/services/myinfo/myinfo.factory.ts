@@ -7,11 +7,7 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import {
-  IFieldSchema,
-  IMyInfoHashSchema,
-  MyInfoAttribute,
-} from '../../../types'
+import { IFieldSchema, IMyInfoHashSchema } from '../../../types'
 import {
   DatabaseError,
   MissingFeatureError,
@@ -24,7 +20,6 @@ import {
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
 import { IPossiblyPrefilledField } from './myinfo.types'
-import { extractRequestedAttributes } from './myinfo.util'
 
 interface IMyInfoFactory {
   fetchMyInfoPersonData: (
@@ -45,7 +40,6 @@ interface IMyInfoFactory {
     IMyInfoHashSchema | null,
     MyInfoHashError | DatabaseError | MissingFeatureError
   >
-  extractRequestedAttributes: (formFields: IFieldSchema[]) => MyInfoAttribute[]
 }
 
 export const createMyInfoFactory = ({
@@ -58,7 +52,6 @@ export const createMyInfoFactory = ({
       fetchMyInfoPersonData: () => errAsync(error),
       prefillMyInfoFields: () => err(error),
       saveMyInfoHashes: () => errAsync(error),
-      extractRequestedAttributes,
     }
   }
   const myInfoConfig = pick(props, ['myInfoClientMode', 'myInfoKeyPath'])
@@ -73,7 +66,6 @@ export const createMyInfoFactory = ({
     fetchMyInfoPersonData: myInfoService.fetchMyInfoPersonData,
     prefillMyInfoFields: myInfoService.prefillMyInfoFields,
     saveMyInfoHashes: myInfoService.saveMyInfoHashes,
-    extractRequestedAttributes,
   }
 }
 
