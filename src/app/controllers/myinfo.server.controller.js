@@ -1,7 +1,6 @@
 'use strict'
 
 const bcrypt = require('bcrypt')
-const crypto = require('crypto')
 const CircuitBreaker = require('opossum')
 const to = require('await-to-js').default
 const Promise = require('bluebird')
@@ -10,7 +9,6 @@ const mongoose = require('mongoose')
 const moment = require('moment')
 const { StatusCodes } = require('http-status-codes')
 
-const { sessionSecret } = require('../../config/config')
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getMyInfoHashModel = require('../models/myinfo_hash.server.model').default
@@ -137,7 +135,7 @@ function _preHashCheckConversion(field) {
  * @param  {Object} res.locals.uinFin - UIN/FIN of form submitter
  * @param  {Object} next - Express next middleware function
  */
-exports.verifyMyInfoVals = function (req, res, next) {
+exports.verifyMyInfoVals = async function (req, res, next) {
   const { authType } = req.form
   const actualMyInfoFields = req.form.form_fields.filter(
     (field) => field.myInfo && field.myInfo.attr,
@@ -145,101 +143,87 @@ exports.verifyMyInfoVals = function (req, res, next) {
   if (authType === 'SP' && actualMyInfoFields.length > 0) {
     const uinFin = res.locals.uinFin
     const formObjId = req.form._id
+    let hashedObj
+    try {
+      hashedObj = await MyInfoHash.findHashes(uinFin, formObjId)
+    } catch (error) {
+      logger.error({
+        message: 'Error retrieving MyInfo hash from database',
+        meta: {
+          action: 'verifyMyInfoVals',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+      return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
+        message: 'MyInfo verification unavailable, please try again later.',
+        spcpSubmissionFailure: true,
+      })
+    }
+    if (!hashedObj) {
+      logger.error({
+        message: `Unable to find MyInfo hashes for ${formObjId}`,
+        meta: {
+          action: 'verifyMyInfoVals',
+          ...createReqMeta(req),
+          formId: formObjId,
+        },
+      })
+      return res.status(StatusCodes.GONE).json({
+        message: 'MyInfo verification expired, please refresh and try again.',
+        spcpSubmissionFailure: true,
+      })
+    }
+    // Fields from client submission
+    let clientFormFields = req.body.parsedResponses // responses were transformed in submissions.server.controller.js
+    let clientMyInfoFields = clientFormFields
+      .filter((field) => field.isVisible && field.myInfo && field.myInfo.attr)
+      .map(_preHashCheckConversion)
 
-    let hashedUinFin = crypto
-      .createHmac('sha256', sessionSecret)
-      .update(uinFin)
-      .digest('hex')
-    MyInfoHash.findOne(
-      { uinFin: hashedUinFin, form: formObjId },
-      (err, hashedObj) => {
-        if (err) {
+    // Fields from saved hash
+    let hashedFields = hashedObj.fields
+    // compare hashed values to submission values
+    const bcryptCompares = clientMyInfoFields.map((clientField) => {
+      const expected = hashedFields[clientField.attr]
+      return expected
+        ? bcrypt.compare(clientField.val, expected)
+        : Promise.resolve(true)
+    })
+    Promise.all(bcryptCompares)
+      .then((compare) => {
+        return {
+          compare, // Array<Boolean> indicating hash pass/fail
+          fail: compare.some((v) => !v), // Whether any hashes failed
+        }
+      })
+      .then((hashResults) => {
+        if (hashResults.fail) {
+          // Array of MyInfo attributes that failed verification
+          let hashFailedAttrs = _.zip(clientMyInfoFields, hashResults.compare)
+            .filter(([_, compare]) => compare === false)
+            .map(([clientField, _]) => clientField.attr)
+
           logger.error({
-            message: 'Error retrieving MyInfo hash from database',
+            message: `Hash did not match for form ${formObjId}`,
             meta: {
               action: 'verifyMyInfoVals',
               ...createReqMeta(req),
-            },
-            error: err,
-          })
-          return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
-            message: 'MyInfo verification unavailable, please try again later.',
-            spcpSubmissionFailure: true,
-          })
-        }
-
-        if (!hashedObj) {
-          logger.error({
-            message: `Unable to find MyInfo hashes for ${formObjId}`,
-            meta: {
-              action: 'verifyMyInfoVals',
-              ...createReqMeta(req),
-              formId: formObjId,
+              failedFields: hashFailedAttrs,
             },
           })
-          return res.status(StatusCodes.GONE).json({
-            message:
-              'MyInfo verification expired, please refresh and try again.',
+          return res.status(StatusCodes.UNAUTHORIZED).json({
+            message: 'MyInfo verification failed.',
             spcpSubmissionFailure: true,
           })
-        }
-        // Fields from client submission
-        let clientFormFields = req.body.parsedResponses // responses were transformed in submissions.server.controller.js
-        let clientMyInfoFields = clientFormFields
-          .filter(
-            (field) => field.isVisible && field.myInfo && field.myInfo.attr,
+        } else {
+          let verifiedKeys = _.intersection(
+            _.uniq(clientMyInfoFields.map((field) => field.attr)),
+            _.keys(hashedFields),
           )
-          .map(_preHashCheckConversion)
-
-        // Fields from saved hash
-        let hashedFields = hashedObj.fields
-        // compare hashed values to submission values
-        const bcryptCompares = clientMyInfoFields.map((clientField) => {
-          const expected = hashedFields[clientField.attr]
-          return expected
-            ? bcrypt.compare(clientField.val, expected)
-            : Promise.resolve(true)
-        })
-        Promise.all(bcryptCompares)
-          .then((compare) => {
-            return {
-              compare, // Array<Boolean> indicating hash pass/fail
-              fail: compare.some((v) => !v), // Whether any hashes failed
-            }
-          })
-          .then((hashResults) => {
-            if (hashResults.fail) {
-              // Array of MyInfo attributes that failed verification
-              let hashFailedAttrs = _.zip(
-                clientMyInfoFields,
-                hashResults.compare,
-              )
-                .filter(([_, compare]) => compare === false)
-                .map(([clientField, _]) => clientField.attr)
-
-              logger.error({
-                message: `Hash did not match for form ${formObjId}`,
-                meta: {
-                  action: 'verifyMyInfoVals',
-                  ...createReqMeta(req),
-                  failedFields: hashFailedAttrs,
-                },
-              })
-              return res.status(StatusCodes.UNAUTHORIZED).json({
-                message: 'MyInfo verification failed.',
-                spcpSubmissionFailure: true,
-              })
-            } else {
-              let verifiedKeys = _.intersection(
-                _.uniq(clientMyInfoFields.map((field) => field.attr)),
-                _.keys(hashedFields),
-              )
-              req.hashedFields = _.pick(hashedFields, verifiedKeys)
-              return next()
-            }
-          })
-      },
-    )
+          req.hashedFields = _.pick(hashedFields, verifiedKeys)
+          return next()
+        }
+      })
   } else {
     return next()
   }
