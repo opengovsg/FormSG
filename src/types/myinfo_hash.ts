@@ -27,4 +27,8 @@ export interface IMyInfoHashModel extends Model<IMyInfoHashSchema> {
     readOnlyHashes: IHashes,
     spCookieMaxAge: number,
   ) => Promise<IMyInfoHashSchema | null>
+  findHashes: (
+    uinFin: string,
+    formId: string,
+  ) => Promise<IMyInfoHashSchema | null>
 }

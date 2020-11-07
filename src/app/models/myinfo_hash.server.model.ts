@@ -71,6 +71,21 @@ MyInfoHashSchema.statics.updateHashes = async function (
   )
 }
 
+MyInfoHashSchema.statics.findHashes = async function (
+  this: IMyInfoHashModel,
+  uinFin: string,
+  formId: string,
+): Promise<IMyInfoHashSchema | null> {
+  const hashedUinFin = crypto
+    .createHmac('sha256', sessionSecret)
+    .update(uinFin)
+    .digest('hex')
+  return this.findOne({
+    uinFin: hashedUinFin,
+    form: formId,
+  })
+}
+
 const compileMyInfoHashModel = (db: Mongoose) =>
   db.model<IMyInfoHashSchema, IMyInfoHashModel>(
     MYINFO_HASH_SCHEMA_ID,
