@@ -76,15 +76,10 @@ exports.addMyInfo = (myInfoService) => async (req, res, next) => {
   // Set current form fields to the new prefilledFields.
   req.form.form_fields = prefilledFields
 
-  const hashedUinFin = crypto
-    .createHmac('sha256', sessionSecret)
-    .update(uinFin)
-    .digest('hex')
-
   Promise.props(readOnlyHashPromises)
     .then((readOnlyHashes) => {
       return MyInfoHash.updateHashes(
-        hashedUinFin,
+        uinFin,
         formId,
         readOnlyHashes,
         myInfoService.spCookieMaxAge,

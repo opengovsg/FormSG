@@ -22,7 +22,7 @@ export interface IMyInfoHashSchema extends IMyInfoHash, Document {}
 
 export interface IMyInfoHashModel extends Model<IMyInfoHashSchema> {
   updateHashes: (
-    hashedUinFin: string,
+    uinFin: string,
     formId: string,
     readOnlyHashes: IHashes,
     spCookieMaxAge: number,
