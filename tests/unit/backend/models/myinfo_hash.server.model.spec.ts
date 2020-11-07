@@ -171,5 +171,28 @@ describe('MyInfo Hash Model', () => {
         expect(found!.uinFin).toEqual(DEFAULT_HASHED_UINFIN)
       })
     })
+
+    describe('findHashes', () => {
+      it('should find the correct document', async () => {
+        // Arrange
+        // Insert mock document into collection.
+        // Note: we are inserting the HASHED uinFin directly.
+        await MyInfoHash.create(DEFAULT_SAVED_PARAMS)
+        // Should have the added document.
+        await expect(MyInfoHash.countDocuments()).resolves.toEqual(1)
+
+        // Act
+        // Note: we are passing the PLAIN uinFin and checking that it gets hashed
+        const actual = await MyInfoHash.findHashes(
+          DEFAULT_INPUT_PARAMS.uinFin,
+          DEFAULT_INPUT_PARAMS.form.toHexString(),
+        )
+        // Assert
+        // Both the returned document and the found document should match
+        expect(pick(actual, ['uinFin', 'form', 'fields'])).toEqual(
+          pick(DEFAULT_SAVED_PARAMS, ['uinFin', 'form', 'fields']),
+        )
+      })
+    })
   })
 })
