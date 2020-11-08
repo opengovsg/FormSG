@@ -75,7 +75,7 @@
     "angular": "~1.8.0",
     "angular-animate": "^1.8.0",
     "angular-aria": "^1.8.0",
-    "angular-cookies": "~1.8.1",
+    "angular-cookies": "~1.8.2",
     "angular-drag-scroll": "^0.2.1",
     "angular-messages": "^1.8.1",
     "angular-moment": "~1.2.0",
