@@ -4,24 +4,14 @@ import {
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
-import crypto from 'crypto'
 import { get } from 'lodash'
-import mongoose from 'mongoose'
 
-import { sessionSecret } from '../../../config/config'
-import {
-  IFieldSchema,
-  IHashes,
-  IMyInfoHashSchema,
-  MyInfoAttribute,
-} from '../../../types'
-import getMyInfoHashModel from '../../models/myinfo_hash.server.model'
+import { IFieldSchema, MyInfoAttribute } from '../../../types'
 
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
 import { IPossiblyPrefilledField, MyInfoHashPromises } from './myinfo.types'
 
 const HASH_SALT_ROUNDS = 10
-const MyInfoHash = getMyInfoHashModel(mongoose)
 
 /**
  * Retrieves the full MyInfo field value. If field is categorical, the
@@ -120,24 +110,6 @@ export const createHashPromises = (
     )
   })
   return readOnlyHashPromises
-}
-
-export const saveHashesToDatabase = (
-  readOnlyHashes: IHashes,
-  uinFin: string,
-  formId: string,
-  cookieAge: number,
-): Promise<IMyInfoHashSchema | null> => {
-  const hashedUinFin = crypto
-    .createHmac('sha256', sessionSecret)
-    .update(uinFin)
-    .digest('hex')
-  return MyInfoHash.updateHashes(
-    hashedUinFin,
-    formId,
-    readOnlyHashes,
-    cookieAge,
-  )
 }
 
 export const extractRequestedAttributes = (
