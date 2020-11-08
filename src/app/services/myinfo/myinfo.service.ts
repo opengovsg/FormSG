@@ -7,8 +7,11 @@ import {
 import Bluebird from 'bluebird'
 import fs from 'fs'
 import _ from 'lodash'
+import mongoose from 'mongoose'
 import { ok, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
+
+import getMyInfoHashModel from 'src/app/models/myinfo_hash.server.model'
 
 import { IMyInfoConfig } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -30,10 +33,10 @@ import {
   createHashPromises,
   getMyInfoValue,
   isFieldReadOnly,
-  saveHashesToDatabase,
 } from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
+const MyInfoHash = getMyInfoHashModel(mongoose)
 
 export class MyInfoService {
   #myInfoClientBreaker: CircuitBreaker<[IPersonBasicRequest], IPersonBasic>
@@ -182,10 +185,10 @@ export class MyInfoService {
       },
     ).andThen((readOnlyHashes: IHashes) => {
       return ResultAsync.fromPromise(
-        saveHashesToDatabase(
-          readOnlyHashes,
+        MyInfoHash.updateHashes(
           uinFin,
           formId,
+          readOnlyHashes,
           this.#spCookieMaxAge,
         ),
         (error) => {
