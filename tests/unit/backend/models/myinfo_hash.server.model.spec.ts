@@ -189,9 +189,7 @@ describe('MyInfo Hash Model', () => {
         )
         // Assert
         // Both the returned document and the found document should match
-        expect(pick(actual, ['uinFin', 'form', 'fields'])).toEqual(
-          pick(DEFAULT_SAVED_PARAMS, ['uinFin', 'form', 'fields']),
-        )
+        expect(actual).toEqual(DEFAULT_SAVED_PARAMS.fields)
       })
     })
   })

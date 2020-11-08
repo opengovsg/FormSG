@@ -143,9 +143,9 @@ exports.verifyMyInfoVals = async function (req, res, next) {
   if (authType === 'SP' && actualMyInfoFields.length > 0) {
     const uinFin = res.locals.uinFin
     const formObjId = req.form._id
-    let hashedObj
+    let hashedFields
     try {
-      hashedObj = await MyInfoHash.findHashes(uinFin, formObjId)
+      hashedFields = await MyInfoHash.findHashes(uinFin, formObjId)
     } catch (error) {
       logger.error({
         message: 'Error retrieving MyInfo hash from database',
@@ -160,7 +160,7 @@ exports.verifyMyInfoVals = async function (req, res, next) {
         spcpSubmissionFailure: true,
       })
     }
-    if (!hashedObj) {
+    if (!hashedFields) {
       logger.error({
         message: `Unable to find MyInfo hashes for ${formObjId}`,
         meta: {
@@ -180,8 +180,6 @@ exports.verifyMyInfoVals = async function (req, res, next) {
       .filter((field) => field.isVisible && field.myInfo && field.myInfo.attr)
       .map(_preHashCheckConversion)
 
-    // Fields from saved hash
-    let hashedFields = hashedObj.fields
     // compare hashed values to submission values
     const bcryptCompares = clientMyInfoFields.map((clientField) => {
       const expected = hashedFields[clientField.attr]
