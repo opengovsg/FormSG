@@ -1,9 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import {
+  ApplicationError,
+  DatabaseError,
+  ExternalError,
+} from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import { MissingUserError } from '../../user/user.errors'
+
+import { InvalidFileTypeError } from './admin-form.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -18,6 +24,12 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
+    case InvalidFileTypeError:
+    case ExternalError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
     case MissingUserError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,

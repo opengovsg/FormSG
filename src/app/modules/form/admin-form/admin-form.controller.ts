@@ -1,8 +1,13 @@
 import { RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { createReqMeta } from '../../../utils/request'
 
-import { getDashboardForms } from './admin-form.service'
+import {
+  createPresignedPostForImages,
+  getDashboardForms,
+} from './admin-form.service'
 import { mapRouteError } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -35,4 +40,39 @@ export const handleListDashboardForms: RequestHandler = async (req, res) => {
 
   // Success.
   return res.json(dashboardResult.value)
+}
+
+/**
+ * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/images.
+ * @security session
+ *
+ * @returns 200 with presigned POST object
+ * @returns 400 when error occurs whilst creating presigned POST object
+ */
+export const handleCreatePresignedPostForImages: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  {
+    fileId: string
+    fileMd5Hash: string
+    fileType: string
+  }
+> = async (req, res) => {
+  const { fileId, fileMd5Hash, fileType } = req.body
+
+  return createPresignedPostForImages({ fileId, fileMd5Hash, fileType })
+    .map((presignedPost) => res.json(presignedPost))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Presigning post data encountered an error',
+        meta: {
+          action: 'handleCreatePresignedPostForImages',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
