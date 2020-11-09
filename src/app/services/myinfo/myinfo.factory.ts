@@ -17,6 +17,7 @@ import { ProcessedFieldResponse } from '../../modules/submission/submission.type
 import {
   CircuitBreakerError,
   FetchMyInfoError,
+  HashDidNotMatchError,
   HashingError,
   MissingHashError,
 } from './myinfo.errors'
@@ -52,7 +53,10 @@ interface IMyInfoFactory {
   doMyInfoHashesMatch: (
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ) => ResultAsync<boolean, HashingError | MissingFeatureError>
+  ) => ResultAsync<
+    true,
+    HashingError | HashDidNotMatchError | MissingFeatureError
+  >
 }
 
 export const createMyInfoFactory = ({
