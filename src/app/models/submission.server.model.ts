@@ -177,7 +177,7 @@ EncryptSubmissionSchema.methods.getWebhookView = function (
   }
 }
 
-EncryptSubmissionSchema.statics.findMetadataById = function (
+EncryptSubmissionSchema.statics.findSingleMetadata = function (
   this: IEncryptSubmissionModel,
   formId: string,
   submissionId: string,

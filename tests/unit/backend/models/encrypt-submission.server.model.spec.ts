@@ -24,7 +24,7 @@ describe('Encrypt Submission Model', () => {
   const MOCK_ENCRYPTED_CONTENT = 'abcdefg encryptedContent'
 
   describe('Statics', () => {
-    describe('findMetadataById', () => {
+    describe('findSingleMetadata', () => {
       it('should return submission metadata', async () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
@@ -43,7 +43,7 @@ describe('Encrypt Submission Model', () => {
         })
 
         // Act
-        const result = await EncryptSubmission.findMetadataById(
+        const result = await EncryptSubmission.findSingleMetadata(
           validFormId,
           validSubmission._id,
         )
@@ -73,7 +73,7 @@ describe('Encrypt Submission Model', () => {
         })
 
         // Act
-        const result = await EncryptSubmission.findMetadataById(
+        const result = await EncryptSubmission.findSingleMetadata(
           validFormId,
           validSubmission._id,
         )
@@ -87,7 +87,7 @@ describe('Encrypt Submission Model', () => {
         const validFormId = new ObjectId().toHexString()
         const invalidSubmissionId = new ObjectId().toHexString()
         // Act
-        const result = await EncryptSubmission.findMetadataById(
+        const result = await EncryptSubmission.findSingleMetadata(
           validFormId,
           invalidSubmissionId,
         )

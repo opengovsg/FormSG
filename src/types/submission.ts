@@ -108,13 +108,13 @@ export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
   ISubmissionModel & {
     /**
-     * Return metadata for the submissionId of form with formId.
+     * Return submission metadata for a single submissionId of form with formId.
      * @param formId formId to filter submissions for
      * @param submissionId specific submissionId to retrieve metadata for
      *
      * @returns submission metadata if available, `null` otherwise.
      */
-    findMetadataById(
+    findSingleMetadata(
       formId: string,
       submissionId: string,
     ): Promise<SubmissionMetadata | null>
