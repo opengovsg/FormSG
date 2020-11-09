@@ -50,7 +50,7 @@ interface IMyInfoFactory {
     IHashes,
     DatabaseError | MissingHashError | MissingFeatureError
   >
-  doMyInfoHashesMatch: (
+  checkMyInfoHashes: (
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
   ) => ResultAsync<
@@ -70,7 +70,7 @@ export const createMyInfoFactory = ({
       prefillMyInfoFields: () => err(error),
       saveMyInfoHashes: () => errAsync(error),
       fetchMyInfoHashes: () => errAsync(error),
-      doMyInfoHashesMatch: () => errAsync(error),
+      checkMyInfoHashes: () => errAsync(error),
     }
   }
   const myInfoConfig = pick(props, ['myInfoClientMode', 'myInfoKeyPath'])
@@ -86,7 +86,7 @@ export const createMyInfoFactory = ({
     prefillMyInfoFields: myInfoService.prefillMyInfoFields,
     saveMyInfoHashes: myInfoService.saveMyInfoHashes,
     fetchMyInfoHashes: myInfoService.fetchMyInfoHashes,
-    doMyInfoHashesMatch: myInfoService.doMyInfoHashesMatch,
+    checkMyInfoHashes: myInfoService.checkMyInfoHashes,
   }
 }
 

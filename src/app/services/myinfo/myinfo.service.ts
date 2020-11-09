@@ -245,7 +245,7 @@ export class MyInfoService {
     })
   }
 
-  doMyInfoHashesMatch(
+  checkMyInfoHashes(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
   ): ResultAsync<IHashes, HashingError | HashDidNotMatchError> {
@@ -270,7 +270,7 @@ export class MyInfoService {
         logger.error({
           message,
           meta: {
-            action: 'doMyInfoHashesMatch',
+            action: 'checkMyInfoHashes',
           },
           error,
         })
@@ -286,7 +286,7 @@ export class MyInfoService {
         logger.error({
           message,
           meta: {
-            action: 'doMyInfoHashesMatch',
+            action: 'checkMyInfoHashes',
             failedAttrs,
           },
         })
