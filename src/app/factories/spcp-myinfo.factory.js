@@ -6,7 +6,10 @@ const featureManager = require('../../config/feature-manager').default
 const config = require('../../config/config')
 const fs = require('fs')
 const SPCPAuthClient = require('@opengovsg/spcp-auth-client')
-const { MyInfoGovClient } = require('@opengovsg/myinfo-gov-client')
+const {
+  MyInfoGovClient,
+  Mode: MyInfoClientMode,
+} = require('@opengovsg/myinfo-gov-client')
 const MyInfoService = require('../services/myinfo.service')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
@@ -59,12 +62,10 @@ const spcpFactory = ({ isEnabled, props }) => {
     // as part of convict (Issue #255)
     if (config.nodeEnv === 'production') {
       let myInfoPrefix =
-        process.env.MYINFO_CLIENT_CONFIG === 'stg' ? 'STG2-' : 'PROD2-'
-      myInfoConfig.privateKey = fs.readFileSync(
-        process.env.MYINFO_FORMSG_KEY_PATH,
-      )
+        props.myInfoClientMode === MyInfoClientMode.Staging ? 'STG2-' : 'PROD2-'
+      myInfoConfig.privateKey = fs.readFileSync(props.myInfoKeyPath)
       myInfoConfig.appId = myInfoPrefix + myInfoConfig.singpassEserviceId
-      myInfoConfig.mode = process.env.MYINFO_CLIENT_CONFIG
+      myInfoConfig.mode = props.myInfoClientMode
       myInfoGovClient = new MyInfoGovClient(myInfoConfig)
     } else {
       logger.warn({
