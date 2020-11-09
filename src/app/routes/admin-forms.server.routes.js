@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const { celebrate, Joi } = require('celebrate')
+const { celebrate, Joi, Segments } = require('celebrate')
 
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
@@ -456,7 +456,7 @@ module.exports = function (app) {
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/images').post(
     celebrate({
-      body: Joi.object().keys({
+      [Segments.BODY]: {
         fileId: Joi.string()
           .required()
           .error(() => 'Please enter a valid file id'),
@@ -467,10 +467,10 @@ module.exports = function (app) {
         fileType: Joi.string()
           .required()
           .error(() => 'Error - your file could not be verified'),
-      }),
+      },
     }),
     authActiveForm(PERMISSIONS.WRITE),
-    adminForms.createPresignedPostForImages,
+    AdminFormController.handleCreatePresignedPostForImages,
   )
 
   /**
