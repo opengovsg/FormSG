@@ -1,5 +1,4 @@
 const spcp = require('../controllers/spcp.server.controller')
-const myInfo = require('../controllers/myinfo.server.controller')
 const admin = require('../controllers/admin-forms.server.controller')
 const { StatusCodes } = require('http-status-codes')
 const featureManager = require('../../config/feature-manager').default
@@ -10,7 +9,6 @@ const {
   MyInfoGovClient,
   Mode: MyInfoClientMode,
 } = require('@opengovsg/myinfo-gov-client')
-const MyInfoService = require('../services/myinfo.service')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 const spcpFactory = ({ isEnabled, props }) => {
@@ -82,7 +80,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       myInfoGovClient = new MyInfoGovClient(myInfoConfig)
       myInfoGovClient.baseUrl = 'http://localhost:5156/myinfo/v2/'
     }
-    let myInfoService = new MyInfoService(myInfoGovClient, props.spCookieMaxAge)
 
     const authClients = {
       SP: singPassAuthClient,
@@ -105,14 +102,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       getRequestedAttributes: spcp.getRequestedAttributes,
       appendVerifiedSPCPResponses: spcp.appendVerifiedSPCPResponses,
       passThroughSpcp: admin.passThroughSpcp,
-      verifyMyInfoVals: myInfo.verifyMyInfoVals,
       returnSpcpRedirectURL: spcp.returnSpcpRedirectURL,
       singPassLogin: spcp.singPassLogin(ndiConfig),
       corpPassLogin: spcp.corpPassLogin(ndiConfig),
       addSpcpSessionInfo: spcp.addSpcpSessionInfo(authClients),
       isSpcpAuthenticated: spcp.isSpcpAuthenticated(authClients),
       createSpcpRedirectURL: spcp.createSpcpRedirectURL(authClients),
-      addMyInfo: myInfo.addMyInfo(myInfoService),
       validateESrvcId: spcp.validateESrvcId,
     }
   } else {
@@ -124,7 +119,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       },
       appendVerifiedSPCPResponses: (req, res, next) => next(),
       passThroughSpcp: (req, res, next) => next(),
-      verifyMyInfoVals: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       singPassLogin: (req, res) =>
@@ -134,7 +128,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       addSpcpSessionInfo: (req, res, next) => next(),
       isSpcpAuthenticated: (req, res, next) => next(),
       createSpcpRedirectURL: (req, res, next) => next(),
-      addMyInfo: (req, res, next) => next(),
       validateESrvcId: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
     }
