@@ -47,7 +47,7 @@ interface IMyInfoFactory {
     uinFin: string,
     formId: string,
   ) => ResultAsync<
-    IHashes | null,
+    IHashes,
     DatabaseError | MissingHashError | MissingFeatureError
   >
   doMyInfoHashesMatch: (
