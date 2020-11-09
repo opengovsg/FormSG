@@ -9,6 +9,12 @@ export enum SubmissionType {
   Encrypt = 'encryptSubmission',
 }
 
+export type SubmissionMetadata = {
+  number: number
+  refNo: IEncryptedSubmissionSchema['_id']
+  submissionTime: string
+}
+
 export interface ISubmission {
   form: IFormSchema['_id']
   authType?: AuthType
@@ -100,6 +106,18 @@ export interface IWebhookResponse {
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
-  ISubmissionModel
+  ISubmissionModel & {
+    /**
+     * Return metadata for the submissionId of form with formId.
+     * @param formId formId to filter submissions for
+     * @param submissionId specific submissionId to retrieve metadata for
+     *
+     * @returns submission metadata if available, `null` otherwise.
+     */
+    findMetadataById(
+      formId: string,
+      submissionId: string,
+    ): Promise<SubmissionMetadata | null>
+  }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

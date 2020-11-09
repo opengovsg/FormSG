@@ -1,3 +1,4 @@
+import moment from 'moment-timezone'
 import { Mongoose, Schema } from 'mongoose'
 
 import {
@@ -11,6 +12,7 @@ import {
   ISubmissionSchema,
   IWebhookResponseSchema,
   MyInfoAttribute,
+  SubmissionMetadata,
   SubmissionType,
   WebhookData,
   WebhookView,
@@ -173,6 +175,42 @@ EncryptSubmissionSchema.methods.getWebhookView = function (
   return {
     data: webhookData,
   }
+}
+
+EncryptSubmissionSchema.statics.findMetadataById = function (
+  this: IEncryptSubmissionModel,
+  formId: string,
+  submissionId: string,
+): Promise<SubmissionMetadata | null> {
+  return (
+    this.findOne(
+      {
+        form: formId,
+        _id: submissionId,
+        submissionType: SubmissionType.Encrypt,
+      },
+      { created: 1 },
+    )
+      // Reading from primary to avoid any contention issues with bulk queries
+      // on secondary servers.
+      .read('primary')
+      .then((result) => {
+        if (!result) {
+          return null
+        }
+
+        // Build submissionMetadata object.
+        const metadata: SubmissionMetadata = {
+          number: 1,
+          refNo: result._id,
+          submissionTime: moment(result.created)
+            .tz('Asia/Singapore')
+            .format('Do MMM YYYY, h:mm:ss a'),
+        }
+
+        return metadata
+      })
+  )
 }
 
 const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
