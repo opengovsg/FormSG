@@ -4,12 +4,28 @@ import {
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
+import { StatusCodes } from 'http-status-codes'
 import { get } from 'lodash'
 import moment from 'moment'
 
-import { BasicField, IFieldSchema, MyInfoAttribute } from '../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  BasicField,
+  IFieldSchema,
+  MapRouteError,
+  MyInfoAttribute,
+} from '../../../types'
+import {
+  DatabaseError,
+  MissingFeatureError,
+} from '../../modules/core/core.errors'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
+import {
+  HashDidNotMatchError,
+  HashingError,
+  MissingHashError,
+} from './myinfo.errors'
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
 import {
   IPossiblyPrefilledField,
@@ -17,6 +33,7 @@ import {
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
+const logger = createLoggerWithLabel(module)
 const HASH_SALT_ROUNDS = 10
 
 /**
@@ -152,4 +169,39 @@ export const compareMyInfoHash = (
   }
   const transformedAnswer = transformAnswer(field)
   return bcrypt.compare(transformedAnswer, hash)
+}
+
+export const mapVerifyMyInfoError: MapRouteError = (error) => {
+  switch (error.constructor) {
+    case MissingFeatureError:
+    case HashingError:
+    case DatabaseError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage:
+          'MyInfo verification unavailable, please try again later.',
+      }
+    case MissingHashError:
+      return {
+        statusCode: StatusCodes.GONE,
+        message: 'MyInfo verification expired, please refresh and try again.',
+      }
+    case HashDidNotMatchError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: 'MyInfo verification failed.',
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapVerifyMyInfoError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
 }
