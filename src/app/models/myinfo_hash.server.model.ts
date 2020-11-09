@@ -1,5 +1,7 @@
+import crypto from 'crypto'
 import { Mongoose, Schema } from 'mongoose'
 
+import { sessionSecret } from '../../config/config'
 import { IHashes, IMyInfoHashModel, IMyInfoHashSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -45,11 +47,15 @@ MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
 MyInfoHashSchema.statics.updateHashes = async function (
   this: IMyInfoHashModel,
-  hashedUinFin: string,
+  uinFin: string,
   formId: string,
   readOnlyHashes: IHashes,
   spCookieMaxAge: number,
 ): Promise<IMyInfoHashSchema | null> {
+  const hashedUinFin = crypto
+    .createHmac('sha256', sessionSecret)
+    .update(uinFin)
+    .digest('hex')
   return this.findOneAndUpdate(
     {
       uinFin: hashedUinFin,
@@ -63,6 +69,22 @@ MyInfoHashSchema.statics.updateHashes = async function (
     },
     { upsert: true, new: true },
   )
+}
+
+MyInfoHashSchema.statics.findHashes = async function (
+  this: IMyInfoHashModel,
+  uinFin: string,
+  formId: string,
+): Promise<IHashes | null> {
+  const hashedUinFin = crypto
+    .createHmac('sha256', sessionSecret)
+    .update(uinFin)
+    .digest('hex')
+  const hashInfo = await this.findOne({
+    uinFin: hashedUinFin,
+    form: formId,
+  })
+  return hashInfo ? hashInfo.fields : null
 }
 
 const compileMyInfoHashModel = (db: Mongoose) =>
