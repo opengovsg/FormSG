@@ -120,6 +120,8 @@ export const handleCreatePresignedPostForLogos: RequestHandler<
 
 /**
  * Handler for GET /{formId}/adminform/submissions/count.
+ * @security session
+ *
  * @returns 200 with submission counts of given form
  * @returns 400 when query.startDate or query.endDate is malformed
  * @returns 403 when user does not have permissions to access form
@@ -136,19 +138,11 @@ export const handleCountFormSubmissions: RequestHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { startDate, endDate } = req.query
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
-  // Step 1: Check whether user is logged in.
-  const sessionUserId = getUserIdFromSession(req.session)
-
-  if (!sessionUserId) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
-  }
-
-  // Step 2: Retrieve currently logged in user.
+  // Step 1: Retrieve currently logged in user.
   const adminResult = await UserService.getPopulatedUserById(sessionUserId)
-  // Step 2a: Error retrieving logged in user.
+  // Step 1a: Error retrieving logged in user.
   if (adminResult.isErr()) {
     logger.error({
       message: 'Error occurred whilst retrieving user',
@@ -162,12 +156,12 @@ export const handleCountFormSubmissions: RequestHandler<
     const { errorMessage, statusCode } = mapRouteError(adminResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
-  // Step 2b: Successfully retrieved logged in user.
+  // Step 1b: Successfully retrieved logged in user.
   const admin = adminResult.value
 
-  // Step 3: Retrieve full form.
+  // Step 2: Retrieve full form.
   const formResult = await FormService.retrieveFullFormById(formId)
-  // Step 3a: Error retrieving form.
+  // Step 2a: Error retrieving form.
   if (formResult.isErr()) {
     logger.error({
       message: 'Failed to retrieve form',
@@ -181,12 +175,12 @@ export const handleCountFormSubmissions: RequestHandler<
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
-  // Step 3b: Successfully retrieved form.
+  // Step 2b: Successfully retrieved form.
   const form = formResult.value
 
-  // Step 4: Check form permissions.
+  // Step 3: Check form permissions.
   const permissionResult = assertHasReadPermissions(admin, form)
-  // Step 4a: Read permission error.
+  // Step 3a: Read permission error.
   if (permissionResult.isErr()) {
     logger.error({
       message: 'User does not have read permissions',
@@ -202,12 +196,12 @@ export const handleCountFormSubmissions: RequestHandler<
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Step 5: has permissions, continue to retrieve submission counts.
+  // Step 4: has permissions, continue to retrieve submission counts.
   const countResult = await SubmissionService.getFormSubmissionsCount(
     String(form._id),
     { startDate, endDate },
   )
-  // Step 5a: Error retrieving form submissions counts.
+  // Step 4a: Error retrieving form submissions counts.
   if (countResult.isErr()) {
     logger.error({
       message: 'Error retrieving form submission count',

@@ -419,6 +419,7 @@ module.exports = function (app) {
         })
         .with('startDate', 'endDate'),
     }),
+    withUserAuthentication,
     AdminFormController.handleCountFormSubmissions,
   )
 
