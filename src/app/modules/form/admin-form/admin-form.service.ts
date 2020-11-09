@@ -1,12 +1,21 @@
+import { PresignedPost } from 'aws-sdk/clients/s3'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, ResultAsync } from 'neverthrow'
 
+import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
+import {
+  MAX_UPLOAD_FILE_SIZE,
+  VALID_UPLOAD_FILE_TYPES,
+} from '../../../../shared/constants'
 import { DashboardFormView } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
-import { DatabaseError } from '../../core/core.errors'
+import { DatabaseError, ExternalError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { findAdminById } from '../../user/user.service'
+
+import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
+import { InvalidFileTypeError } from './admin-form.errors'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -44,4 +53,60 @@ export const getDashboardForms = (
         )
       })
   )
+}
+
+export const createPresignedPostForImages = ({
+  fileId,
+  fileMd5Hash,
+  fileType,
+}: {
+  fileId: string
+  fileMd5Hash: string
+  fileType: string
+}): ResultAsync<PresignedPost, InvalidFileTypeError | ExternalError> => {
+  if (!VALID_UPLOAD_FILE_TYPES.includes(fileType)) {
+    return errAsync(
+      new InvalidFileTypeError(`"${fileType}" is not a supported file type`),
+    )
+  }
+
+  const presignedPostPromise = new Promise<PresignedPost>((resolve, reject) => {
+    AwsConfig.s3.createPresignedPost(
+      {
+        Bucket: AwsConfig.imageS3Bucket,
+        Expires: PRESIGNED_POST_EXPIRY_SECS,
+        Conditions: [
+          // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
+          ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE],
+        ],
+        Fields: {
+          acl: 'public-read',
+          key: fileId,
+          'Content-MD5': fileMd5Hash,
+          'Content-Type': fileType,
+        },
+      },
+      (err, data) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve(data)
+      },
+    )
+  })
+
+  return ResultAsync.fromPromise(presignedPostPromise, (error) => {
+    logger.error({
+      message: 'Error encountered when creating presigned POST URL',
+      meta: {
+        action: 'createPresignedPostForImages',
+        fileId,
+        fileMd5Hash,
+        fileType,
+      },
+      error,
+    })
+
+    return new ExternalError('Error occurred whilst uploading image')
+  })
 }
