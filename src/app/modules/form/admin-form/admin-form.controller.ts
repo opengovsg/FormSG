@@ -1,10 +1,8 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
-import { getUserIdFromSession } from '../../auth/auth.utils'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import * as FormService from '../form.service'
