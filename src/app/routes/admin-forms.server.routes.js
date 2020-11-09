@@ -87,7 +87,7 @@ module.exports = function (app) {
    */
   app
     .route('/adminform')
-    .get(AdminFormController.handleListDashboardForms)
+    .get(withUserAuthentication, AdminFormController.handleListDashboardForms)
     .post(withUserAuthentication, adminForms.create)
 
   /**
