@@ -161,12 +161,9 @@ const transformAnswer = (field: VisibleMyInfoResponse): string => {
 }
 
 export const compareMyInfoHash = (
-  hash: string | undefined,
+  hash: string,
   field: VisibleMyInfoResponse,
 ): Promise<boolean> => {
-  if (!hash) {
-    return Promise.resolve(true)
-  }
   const transformedAnswer = transformAnswer(field)
   return bcrypt.compare(transformedAnswer, hash)
 }

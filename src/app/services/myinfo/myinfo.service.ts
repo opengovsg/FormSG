@@ -21,6 +21,7 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError } from '../../modules/core/core.errors'
 
@@ -31,7 +32,7 @@ import {
   HashingError,
   MissingHashError,
 } from './myinfo.errors'
-import { IPossiblyPrefilledField } from './myinfo.types'
+import { IPossiblyPrefilledField, VisibleMyInfoResponse } from './myinfo.types'
 import {
   compareMyInfoHash,
   createHashPromises,
@@ -248,18 +249,23 @@ export class MyInfoService {
   doMyInfoHashesMatch(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ): ResultAsync<true, HashingError | HashDidNotMatchError> {
+  ): ResultAsync<MyInfoAttribute[], HashingError | HashDidNotMatchError> {
+    // Filter twice to get the types to cooperate
+    const responsesWithHashes: VisibleMyInfoResponse[] = responses
+      .filter(hasMyInfoAnswer)
+      .filter((response) => !!hashes[response.myInfo.attr])
     // Map attribute to response
-    const myInfoAnswers = keyBy(
-      responses.filter(hasMyInfoAnswer),
+    const myInfoResponsesObj = keyBy(
+      responsesWithHashes,
       (field) => field.myInfo.attr,
     )
     // Map attribute to Promise<boolean>
-    const compareHashPromise = mapValues(myInfoAnswers, (answer) =>
-      compareMyInfoHash(hashes[answer.myInfo.attr], answer),
+    const compareHashPromises = mapValues(myInfoResponsesObj, (answer) =>
+      // Already checked that hashes contains this attr
+      compareMyInfoHash(hashes[answer.myInfo.attr]!, answer),
     )
     return ResultAsync.fromPromise(
-      Bluebird.props(compareHashPromise),
+      Bluebird.props(compareHashPromises),
       (error) => {
         const message = 'Error while comparing MyInfo hashes'
         logger.error({
@@ -271,10 +277,11 @@ export class MyInfoService {
         })
         return new HashingError(message)
       },
-    ).andThen((compareResults) => {
+    ).andThen((comparisonResults) => {
+      const comparedAttrs = Object.keys(comparisonResults) as MyInfoAttribute[]
       // All outcomes should be true
-      const failedAttrs = Object.keys(compareResults).filter(
-        (attr) => !compareResults[attr],
+      const failedAttrs = comparedAttrs.filter(
+        (attr) => !comparisonResults[attr],
       )
       if (failedAttrs.length > 0) {
         const message = 'MyInfo Hash did not match'
@@ -287,7 +294,7 @@ export class MyInfoService {
         })
         return errAsync(new HashDidNotMatchError(message))
       }
-      return okAsync(true)
+      return okAsync(comparedAttrs)
     })
   }
 }
