@@ -908,11 +908,18 @@ describe('Form Model', () => {
       // Populate multiple forms with different permissions.
       // Is admin.
       const userOwnedForm = await Form.create(MOCK_EMAIL_FORM_PARAMS)
-      // Has permissions.
-      const userPermissionForm = await Form.create({
+      // Has write permissions.
+      const userWritePermissionForm = await Form.create({
         ...MOCK_ENCRYPTED_FORM_PARAMS,
         admin: diffPopulatedAdmin._id,
         permissionList: [{ email: populatedAdmin.email, write: true }],
+      })
+      // Has read permissions.
+      const userReadPermissionForm = await Form.create({
+        ...MOCK_ENCRYPTED_FORM_PARAMS,
+        admin: diffPopulatedAdmin._id,
+        // Only read permissions, no write permission.
+        permissionList: [{ email: populatedAdmin.email, write: false }],
       })
       // Should not be fetched since form is archived.
       await Form.create({
@@ -934,40 +941,37 @@ describe('Form Model', () => {
 
       // Assert
       // Coerce into expected shape.
+      const keysToPick = [
+        '_id',
+        'title',
+        'lastModified',
+        'status',
+        'form_fields',
+        'responseMode',
+      ]
       const expected = orderBy(
         [
           // Should return form with admin themselves.
-          merge(
-            pick(userOwnedForm.toObject(), [
-              '_id',
-              'title',
-              'lastModified',
-              'status',
-              'form_fields',
-              'responseMode',
-            ]),
-            { admin: populatedAdmin.toObject() },
-          ),
-          // Should return form where admin has permission.
-          merge(
-            pick(userPermissionForm.toObject(), [
-              '_id',
-              'title',
-              'lastModified',
-              'status',
-              'form_fields',
-              'responseMode',
-            ]),
-            { admin: diffPopulatedAdmin.toObject() },
-          ),
+          merge(pick(userOwnedForm.toObject(), keysToPick), {
+            admin: populatedAdmin.toObject(),
+          }),
+          // Should return form where admin has write permission.
+          merge(pick(userWritePermissionForm.toObject(), keysToPick), {
+            admin: diffPopulatedAdmin.toObject(),
+          }),
+          // Should return form where admin has read permission.
+          merge(pick(userReadPermissionForm.toObject(), keysToPick), {
+            admin: diffPopulatedAdmin.toObject(),
+          }),
         ],
         'lastModified',
         'desc',
       )
-      // Should return list containing only two forms, even though there are 4
-      // forms in the collection.
-      await expect(Form.countDocuments()).resolves.toEqual(4)
-      expect(actual.length).toEqual(2)
+      // Should return list containing only three forms:
+      // (admin, read perms, write perms),
+      // even though there are 5 forms in the collection.
+      await expect(Form.countDocuments()).resolves.toEqual(5)
+      expect(actual.length).toEqual(3)
       expect(actual).toEqual(expected)
     })
   })
