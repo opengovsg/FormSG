@@ -7,6 +7,7 @@
       paragraph="{{ form.startPage.paragraph }}"
       logo-state="{{ form.startPage.logo.state }}"
       form-title="{{ form.title }}"
+      my-info-error="myInfoError"
       auth-type="form.authType"
       is-admin-preview="false"
       has-myinfo-fields="hasMyInfoFields"
@@ -61,29 +62,6 @@
           </button>
         </div>
       </div>
-    </div>
-  </div>
-  <div ng-if="!uiState.formSubmitted">
-    <div
-      ng-if="form.authType==='SP' && !SpcpSession.userName && !form.isTemplate"
-      class="form-locked-msg padded-view"
-    >
-      Login with SingPass to access this form. Your SingPass ID will be included
-      with your form submission.
-    </div>
-    <div
-      ng-if="form.authType==='CP' && !SpcpSession.userName && !form.isTemplate"
-      class="form-locked-msg padded-view"
-    >
-      Login with CorpPass to access this form. Your Entity ID and CorpPass ID
-      will be included with your form submission.
-    </div>
-    <div ng-if="myInfoError" class="form-locked-msg myinfo-error padded-view">
-      <i class="bx bx-exclamation"></i
-      ><span
-        >An error occurred while retrieving your MyInfo details. Kindly refresh
-        your browser, or try again later.</span
-      >
     </div>
   </div>
 </div>
