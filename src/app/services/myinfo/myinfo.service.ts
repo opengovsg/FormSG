@@ -223,16 +223,25 @@ export class MyInfoService {
         logger.error({
           message,
           meta: {
-            action: 'doMyInfoHashesMatch',
+            action: 'fetchMyInfoHashes',
           },
           error,
         })
         return new DatabaseError(message)
       },
     ).andThen((hashes) => {
-      return hashes
-        ? okAsync(hashes)
-        : errAsync(new MissingHashError('MyInfo hashes not found.'))
+      if (hashes) {
+        return okAsync(hashes)
+      } else {
+        logger.info({
+          message: 'MyInfo hashes expired',
+          meta: {
+            action: 'fetchMyInfoHashes',
+            formId,
+          },
+        })
+      }
+      return errAsync(new MissingHashError('MyInfo hashes not found.'))
     })
   }
 
