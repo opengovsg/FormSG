@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const { celebrate, Joi } = require('celebrate')
+const { celebrate, Joi, Segments } = require('celebrate')
 
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
