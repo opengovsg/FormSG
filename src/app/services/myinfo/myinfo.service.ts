@@ -27,6 +27,7 @@ import { DatabaseError } from '../../modules/core/core.errors'
 import {
   CircuitBreakerError,
   FetchMyInfoError,
+  HashDidNotMatchError,
   HashingError,
   MissingHashError,
 } from './myinfo.errors'
@@ -238,7 +239,7 @@ export class MyInfoService {
   doMyInfoHashesMatch(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ): ResultAsync<boolean, HashingError> {
+  ): ResultAsync<true, HashingError | HashDidNotMatchError> {
     // Map attribute to response
     const myInfoAnswers = keyBy(
       responses.filter(hasMyInfoAnswer),
@@ -275,7 +276,7 @@ export class MyInfoService {
             failedAttrs,
           },
         })
-        return okAsync(false)
+        return errAsync(new HashDidNotMatchError(message))
       }
       return okAsync(true)
     })

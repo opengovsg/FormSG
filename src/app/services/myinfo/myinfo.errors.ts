@@ -23,3 +23,9 @@ export class MissingHashError extends ApplicationError {
     super(message)
   }
 }
+
+export class HashDidNotMatchError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
