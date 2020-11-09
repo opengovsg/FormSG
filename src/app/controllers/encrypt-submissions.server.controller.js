@@ -11,7 +11,7 @@ const {
 } = require('../models/submission.server.model')
 const getSubmissionModel = require('../models/submission.server.model').default
 const Submission = getSubmissionModel(mongoose)
-const encryptSubmission = getEncryptSubmissionModel(mongoose)
+const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
 const { ConflictError } = require('../modules/submission/submission.errors')
@@ -192,7 +192,7 @@ exports.saveResponseToDb = function (req, res, next) {
     )
   }
 
-  const submission = new encryptSubmission({
+  const submission = new EncryptSubmission({
     form: form._id,
     authType: form.authType,
     myInfoFields: requestedAttributes,
@@ -223,124 +223,50 @@ exports.saveResponseToDb = function (req, res, next) {
  * @param {Object} res - Express response object
  */
 exports.getMetadata = function (req, res) {
-  let pageSize = 10
   let { page, submissionId } = req.query || {}
-  let numToSkip = parseInt(page - 1 || 0) * pageSize
-
-  let matchClause = {
-    form: req.form._id,
-    submissionType: 'encryptSubmission',
-  }
 
   if (submissionId) {
-    if (mongoose.Types.ObjectId.isValid(submissionId)) {
-      matchClause._id = mongoose.Types.ObjectId(submissionId)
-      // Reading from primary to avoid any contention issues with bulk queries on secondary servers
-      Submission.findOne(matchClause, { created: 1 })
-        .read('primary')
-        .exec((err, result) => {
-          if (err) {
-            logger.error({
-              message: 'Failure retrieving metadata from database',
-              meta: {
-                action: 'getMetadata',
-                ...createReqMeta(req),
-              },
-              error: err,
-            })
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-              message: errorHandler.getMongoErrorMessage(err),
-            })
-          }
-          if (!result) {
-            return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
-          }
-          let entry = {
-            number: 1,
-            refNo: result._id,
-            submissionTime: moment(result.created)
-              .tz('Asia/Singapore')
-              .format('Do MMM YYYY, h:mm:ss a'),
-          }
-          return res.status(HttpStatus.OK).json({ metadata: [entry], count: 1 })
-        })
-    } else {
+    // Early return if submissionId is invalid.
+    if (!mongoose.Types.ObjectId.isValid(submissionId)) {
       return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
     }
-  } else {
-    Submission.aggregate([
-      {
-        $match: matchClause,
-      },
-      {
-        $sort: { created: -1 },
-      },
-      {
-        $facet: {
-          pageResults: [
-            {
-              $skip: numToSkip,
-            },
-            {
-              $limit: pageSize,
-            },
-            {
-              $project: {
-                _id: 1,
-                created: 1,
-              },
-            },
-          ],
-          allResults: [
-            {
-              $group: {
-                _id: null,
-                count: {
-                  $sum: 1,
-                },
-              },
-            },
-            {
-              $project: {
-                _id: 0,
-              },
-            },
-          ],
-        },
-      },
-    ])
-      .allowDiskUse(true) // prevents out-of-memory for large search results (max 100MB)
-      .exec((err, result) => {
-        if (err || !result) {
-          logger.error({
-            message: 'Failure retrieving metadata from database',
-            meta: {
-              action: 'getMetadata',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: errorHandler.getMongoErrorMessage(err),
-          })
-        } else {
-          const [{ pageResults, allResults }] = result
-          let [numResults] = allResults
-          let count = (numResults && numResults.count) || 0
-          let number = count - numToSkip
-          let metadata = pageResults.map((data) => {
-            let entry = {
-              number,
-              refNo: data._id,
-              submissionTime: moment(data.created)
-                .tz('Asia/Singapore')
-                .format('Do MMM YYYY, h:mm:ss a'),
-            }
-            number--
-            return entry
-          })
-          return res.status(StatusCodes.OK).json({ metadata, count })
+
+    return EncryptSubmission.findSingleMetadata(req.form._id, submissionId)
+      .then((result) => {
+        if (!result) {
+          return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
         }
+
+        return res.status(HttpStatus.OK).json({ metadata: [result], count: 1 })
+      })
+      .catch((error) => {
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: {
+            action: 'getMetadata',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: errorHandler.getMongoErrorMessage(error),
+        })
+      })
+  } else {
+    return EncryptSubmission.findAllMetadataByFormId(req.form._id, { page })
+      .then((result) => res.status(StatusCodes.OK).json(result))
+      .catch((error) => {
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: {
+            action: 'getMetadata',
+            ...createReqMeta(req),
+          },
+          error: error,
+        })
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: errorHandler.getMongoErrorMessage(error),
+        })
       })
   }
 }
