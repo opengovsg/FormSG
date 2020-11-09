@@ -12,7 +12,13 @@ export class FetchMyInfoError extends ApplicationError {
   }
 }
 
-export class MyInfoHashError extends ApplicationError {
+export class HashingError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
+export class MissingHashError extends ApplicationError {
   constructor(message: string) {
     super(message)
   }
