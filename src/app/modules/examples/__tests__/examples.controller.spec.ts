@@ -53,25 +53,6 @@ describe('examples.controller', () => {
       expect(mockRes.json).toBeCalledWith(mockResult)
     })
 
-    it('should return 401 when user is not in session', async () => {
-      // Arrange
-      const mockReqNoSession = expressHandler.mockRequest({
-        query: MOCK_REQ_QUERY,
-      })
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await ExamplesController.handleGetExamples(
-        mockReqNoSession,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
-    })
-
     it('should return 500 when error occurs whilst retrieving example forms', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -142,25 +123,6 @@ describe('examples.controller', () => {
       )
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(mockResult)
-    })
-
-    it('should return 401 when user is not in session', async () => {
-      // Arrange
-      const mockReqNoSession = expressHandler.mockRequest({
-        params: MOCK_REQ_PARAMS,
-      })
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await ExamplesController.handleGetExampleByFormId(
-        mockReqNoSession,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: 'User is unauthorized.' })
     })
 
     it('should return 404 when the form with given formId does not exist in the database', async () => {

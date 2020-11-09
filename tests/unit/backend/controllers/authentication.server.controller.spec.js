@@ -60,24 +60,6 @@ describe('Authentication Controller', () => {
     testForm = collections.form
   })
 
-  describe('authenticateUser', () => {
-    it('should pass on to the next middleware if authenticated', () => {
-      let next = jasmine.createSpy()
-      Controller.authenticateUser(req, res, next)
-      expect(next).toHaveBeenCalled()
-    })
-
-    it('should return 401 if not authenticated', (done) => {
-      req.session = null
-      res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
-        done()
-        return res
-      })
-      Controller.authenticateUser(req, res, () => {})
-    })
-  })
-
   describe('hasFormAdminAuthorization', () => {
     it('should authorize if session user is admin', () => {
       let next = jasmine.createSpy()

@@ -4,7 +4,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../utils/request'
-import { isUserInSession } from '../auth/auth.utils'
 
 import { ExamplesFactory } from './examples.factory'
 import { ExamplesQueryParams } from './examples.types'
@@ -14,6 +13,7 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Handler for GET /examples endpoint.
+ * @security session
  * @returns 200 with an array of forms to be listed on the examples page
  * @returns 401 when user does not exist in session
  * @returns 500 when error occurs whilst querying the database
@@ -24,12 +24,6 @@ export const handleGetExamples: RequestHandler<
   unknown,
   Query & ExamplesQueryParams
 > = (req, res) => {
-  if (!isUserInSession(req.session)) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
-  }
-
   return ExamplesFactory.getExampleForms(req.query)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
@@ -49,6 +43,7 @@ export const handleGetExamples: RequestHandler<
 
 /**
  * Handler for GET /examples/:formId endpoint.
+ * @security session
  * @returns 200 with the retrieved form example
  * @returns 401 when user does not exist in session
  * @returns 404 when the form with given formId does not exist in the database
@@ -57,12 +52,6 @@ export const handleGetExamples: RequestHandler<
 export const handleGetExampleByFormId: RequestHandler<{
   formId: string
 }> = (req, res) => {
-  if (!isUserInSession(req.session)) {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
-  }
-
   const { formId } = req.params
 
   return ExamplesFactory.getSingleExampleForm(formId)

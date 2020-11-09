@@ -183,7 +183,7 @@ describe('billing.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual('User is unauthorized.')
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
     })
 
     it('should return 500 when error occurs whilst querying the database', async () => {
