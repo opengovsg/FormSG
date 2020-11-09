@@ -44,7 +44,7 @@ export class MalformedParametersError extends ApplicationError {
  * Error thrown when feature-specific functions are called
  * despite those features not being activated.
  */
-export class MissingFeatureError extends Error {
+export class MissingFeatureError extends ApplicationError {
   constructor(missingFeature: FeatureNames) {
     super(
       `${missingFeature} is not activated, but a feature-specific function was called.`,
