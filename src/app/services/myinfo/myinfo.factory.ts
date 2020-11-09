@@ -7,12 +7,7 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import {
-  IFieldSchema,
-  IHashes,
-  IMyInfoHashSchema,
-  MyInfoAttribute,
-} from '../../../types'
+import { IFieldSchema, IHashes, IMyInfoHashSchema } from '../../../types'
 import {
   DatabaseError,
   MissingFeatureError,
@@ -59,7 +54,7 @@ interface IMyInfoFactory {
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
   ) => ResultAsync<
-    MyInfoAttribute[],
+    IHashes,
     HashingError | HashDidNotMatchError | MissingFeatureError
   >
 }

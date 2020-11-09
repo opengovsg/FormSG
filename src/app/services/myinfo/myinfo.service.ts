@@ -6,7 +6,7 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
 import fs from 'fs'
-import { cloneDeep, keyBy, mapValues } from 'lodash'
+import { cloneDeep, keyBy, mapValues, pickBy } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
@@ -21,7 +21,6 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
-  MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError } from '../../modules/core/core.errors'
 
@@ -249,7 +248,7 @@ export class MyInfoService {
   doMyInfoHashesMatch(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ): ResultAsync<MyInfoAttribute[], HashingError | HashDidNotMatchError> {
+  ): ResultAsync<IHashes, HashingError | HashDidNotMatchError> {
     // Filter twice to get the types to cooperate
     const responsesWithHashes: VisibleMyInfoResponse[] = responses
       .filter(hasMyInfoAnswer)
@@ -278,9 +277,8 @@ export class MyInfoService {
         return new HashingError(message)
       },
     ).andThen((comparisonResults) => {
-      const comparedAttrs = Object.keys(comparisonResults) as MyInfoAttribute[]
       // All outcomes should be true
-      const failedAttrs = comparedAttrs.filter(
+      const failedAttrs = Object.keys(comparisonResults).filter(
         (attr) => !comparisonResults[attr],
       )
       if (failedAttrs.length > 0) {
@@ -294,7 +292,7 @@ export class MyInfoService {
         })
         return errAsync(new HashDidNotMatchError(message))
       }
-      return okAsync(comparedAttrs)
+      return okAsync(pickBy(hashes, (_, attr) => !!comparisonResults[attr]))
     })
   }
 }
