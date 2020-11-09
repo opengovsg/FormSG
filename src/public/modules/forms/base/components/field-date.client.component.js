@@ -57,8 +57,10 @@ function dateFieldComponentController() {
         vm.dateOptions.maxDate = new Date(vm.field.dateValidation.customMaxDate)
       }
 
-      // Set default view upon opening datepicker to be month of minDate
-      vm.dateOptions.initDate = vm.dateOptions.minDate
+      // If minDate is set, default view upon opening datepicker to be month of minDate
+      if (vm.dateOptions.minDate) {
+        vm.dateOptions.initDate = vm.dateOptions.minDate
+      }
     }
   }
 
