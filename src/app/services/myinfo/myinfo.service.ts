@@ -6,12 +6,13 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
 import fs from 'fs'
-import _ from 'lodash'
+import { cloneDeep, keyBy, mapValues } from 'lodash'
 import mongoose from 'mongoose'
-import { ok, Result, ResultAsync } from 'neverthrow'
+import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
 import getMyInfoHashModel from 'src/app/models/myinfo_hash.server.model'
+import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 
 import { IMyInfoConfig } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -26,12 +27,14 @@ import { DatabaseError } from '../../modules/core/core.errors'
 import {
   CircuitBreakerError,
   FetchMyInfoError,
-  MyInfoHashError,
+  HashingError,
 } from './myinfo.errors'
 import { IPossiblyPrefilledField } from './myinfo.types'
 import {
+  compareMyInfoHash,
   createHashPromises,
   getMyInfoValue,
+  hasMyInfoAnswer,
   isFieldReadOnly,
 } from './myinfo.util'
 
@@ -149,7 +152,7 @@ export class MyInfoService {
         const myInfoAttr = field.myInfo.attr
         const myInfoValue = getMyInfoValue(myInfoAttr, myInfoData)
         const isReadOnly = isFieldReadOnly(myInfoAttr, myInfoValue, myInfoData)
-        const prefilledField = _.cloneDeep(field) as IPossiblyPrefilledField
+        const prefilledField = cloneDeep(field) as IPossiblyPrefilledField
         prefilledField.fieldValue = myInfoValue
 
         // Disable field
@@ -167,7 +170,7 @@ export class MyInfoService {
     uinFin: string,
     formId: string,
     prefilledFormFields: IPossiblyPrefilledField[],
-  ): ResultAsync<IMyInfoHashSchema | null, MyInfoHashError | DatabaseError> {
+  ): ResultAsync<IMyInfoHashSchema | null, HashingError | DatabaseError> {
     const readOnlyHashPromises = createHashPromises(prefilledFormFields)
     return ResultAsync.fromPromise(
       Bluebird.props<IHashes>(readOnlyHashPromises),
@@ -181,7 +184,7 @@ export class MyInfoService {
           },
           error,
         })
-        return new MyInfoHashError(message)
+        return new HashingError(message)
       },
     ).andThen((readOnlyHashes: IHashes) => {
       return ResultAsync.fromPromise(
@@ -204,6 +207,72 @@ export class MyInfoService {
           return new DatabaseError(message)
         },
       )
+    })
+  }
+
+  fetchMyInfoHashes(
+    uinFin: string,
+    formId: string,
+  ): ResultAsync<IHashes | null, DatabaseError> {
+    return ResultAsync.fromPromise(
+      MyInfoHash.findHashes(uinFin, formId),
+      (error) => {
+        const message = 'Error while fetching MyInfo hashes from database'
+        logger.error({
+          message,
+          meta: {
+            action: 'doMyInfoHashesMatch',
+          },
+          error,
+        })
+        return new DatabaseError(message)
+      },
+    )
+  }
+
+  doMyInfoHashesMatch(
+    responses: ProcessedFieldResponse[],
+    hashes: IHashes,
+  ): ResultAsync<boolean, HashingError> {
+    // Map attribute to response
+    const myInfoAnswers = keyBy(
+      responses.filter(hasMyInfoAnswer),
+      (field) => field.myInfo.attr,
+    )
+    // Map attribute to Promise<boolean>
+    const compareHashPromise = mapValues(myInfoAnswers, (answer) =>
+      compareMyInfoHash(hashes[answer.myInfo.attr], answer),
+    )
+    return ResultAsync.fromPromise(
+      Bluebird.props(compareHashPromise),
+      (error) => {
+        const message = 'Error while comparing MyInfo hashes'
+        logger.error({
+          message,
+          meta: {
+            action: 'doMyInfoHashesMatch',
+          },
+          error,
+        })
+        return new HashingError(message)
+      },
+    ).andThen((compareResults) => {
+      // All outcomes should be true
+      const failedAttrs = Object.keys(compareResults).filter(
+        (attr) => !compareResults[attr],
+      )
+      if (failedAttrs.length > 0) {
+        const message = 'MyInfo Hash did not match'
+        logger.error({
+          message,
+          meta: {
+            action: 'doMyInfoHashesMatch',
+            failedAttrs,
+          },
+        })
+        return okAsync(false)
+      }
+      return okAsync(true)
     })
   }
 }
