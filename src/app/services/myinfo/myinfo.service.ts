@@ -215,7 +215,7 @@ export class MyInfoService {
   fetchMyInfoHashes(
     uinFin: string,
     formId: string,
-  ): ResultAsync<IHashes | null, DatabaseError | MissingHashError> {
+  ): ResultAsync<IHashes, DatabaseError | MissingHashError> {
     return ResultAsync.fromPromise(
       MyInfoHash.findHashes(uinFin, formId),
       (error) => {
