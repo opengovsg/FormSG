@@ -7,16 +7,17 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import { IFieldSchema, IMyInfoHashSchema } from '../../../types'
+import { IFieldSchema, IHashes, IMyInfoHashSchema } from '../../../types'
 import {
   DatabaseError,
   MissingFeatureError,
 } from '../../modules/core/core.errors'
+import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 import {
   CircuitBreakerError,
   FetchMyInfoError,
-  MyInfoHashError,
+  HashingError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
 import { IPossiblyPrefilledField } from './myinfo.types'
@@ -38,8 +39,16 @@ interface IMyInfoFactory {
     prefilledFormFields: IPossiblyPrefilledField[],
   ) => ResultAsync<
     IMyInfoHashSchema | null,
-    MyInfoHashError | DatabaseError | MissingFeatureError
+    HashingError | DatabaseError | MissingFeatureError
   >
+  fetchMyInfoHashes: (
+    uinFin: string,
+    formId: string,
+  ) => ResultAsync<IHashes | null, DatabaseError | MissingFeatureError>
+  doMyInfoHashesMatch: (
+    responses: ProcessedFieldResponse[],
+    hashes: IHashes,
+  ) => ResultAsync<boolean, HashingError | MissingFeatureError>
 }
 
 export const createMyInfoFactory = ({
@@ -52,6 +61,8 @@ export const createMyInfoFactory = ({
       fetchMyInfoPersonData: () => errAsync(error),
       prefillMyInfoFields: () => err(error),
       saveMyInfoHashes: () => errAsync(error),
+      fetchMyInfoHashes: () => errAsync(error),
+      doMyInfoHashesMatch: () => errAsync(error),
     }
   }
   const myInfoConfig = pick(props, ['myInfoClientMode', 'myInfoKeyPath'])
@@ -66,6 +77,8 @@ export const createMyInfoFactory = ({
     fetchMyInfoPersonData: myInfoService.fetchMyInfoPersonData,
     prefillMyInfoFields: myInfoService.prefillMyInfoFields,
     saveMyInfoHashes: myInfoService.saveMyInfoHashes,
+    fetchMyInfoHashes: myInfoService.fetchMyInfoHashes,
+    doMyInfoHashesMatch: myInfoService.doMyInfoHashesMatch,
   }
 }
 

@@ -1,6 +1,8 @@
 import { MyInfoAttribute } from '@opengovsg/myinfo-gov-client'
 
-import { IFieldSchema } from 'src/types'
+import { IFieldSchema, IMyInfo } from 'src/types'
+
+import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 export interface IPossiblyPrefilledField extends IFieldSchema {
   fieldValue?: string
@@ -9,3 +11,9 @@ export interface IPossiblyPrefilledField extends IFieldSchema {
 export type MyInfoHashPromises = Partial<
   Record<MyInfoAttribute, Promise<string>>
 >
+
+export type VisibleMyInfoResponse = ProcessedFieldResponse & {
+  myInfo: IMyInfo
+  isVisible: true
+  answer: string
+}

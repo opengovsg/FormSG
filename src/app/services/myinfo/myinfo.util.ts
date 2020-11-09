@@ -5,11 +5,17 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { get } from 'lodash'
+import moment from 'moment'
 
-import { IFieldSchema, MyInfoAttribute } from '../../../types'
+import { BasicField, IFieldSchema, MyInfoAttribute } from '../../../types'
+import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
-import { IPossiblyPrefilledField, MyInfoHashPromises } from './myinfo.types'
+import {
+  IPossiblyPrefilledField,
+  MyInfoHashPromises,
+  VisibleMyInfoResponse,
+} from './myinfo.types'
 
 const HASH_SALT_ROUNDS = 10
 
@@ -122,4 +128,28 @@ export const extractRequestedAttributes = (
     }
   })
   return attrs
+}
+
+export const hasMyInfoAnswer = (
+  field: ProcessedFieldResponse,
+): field is VisibleMyInfoResponse => {
+  return !!field.isVisible && !!field.myInfo?.attr
+}
+
+const transformAnswer = (field: VisibleMyInfoResponse): string => {
+  const answer = field.answer
+  return field.fieldType === BasicField.Date
+    ? moment(new Date(answer)).format('YYYY-MM-DD')
+    : answer
+}
+
+export const compareMyInfoHash = (
+  hash: string | undefined,
+  field: VisibleMyInfoResponse,
+): Promise<boolean> => {
+  if (!hash) {
+    return Promise.resolve(true)
+  }
+  const transformedAnswer = transformAnswer(field)
+  return bcrypt.compare(transformedAnswer, hash)
 }
