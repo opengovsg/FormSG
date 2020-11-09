@@ -8,12 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 
 import { createLoggerWithLabel } from '../../config/logger'
-import {
-  AuthType,
-  IPopulatedForm,
-  MyInfoAttribute,
-  SpcpSession,
-} from '../../types'
+import { AuthType, IHashes, IPopulatedForm, SpcpSession } from '../../types'
 import { MyInfoFactory } from '../services/myinfo/myinfo.factory'
 import {
   extractRequestedAttributes,
@@ -25,7 +20,7 @@ const logger = createLoggerWithLabel(module)
 
 type MyInfoReq<T> = T & {
   form: IPopulatedForm
-  hashedFields?: MyInfoAttribute[]
+  hashedFields?: IHashes
 }
 type ResWithSpcpSession<T> = T & {
   locals: { spcpSession?: SpcpSession }
