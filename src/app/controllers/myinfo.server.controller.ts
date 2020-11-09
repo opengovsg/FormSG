@@ -98,7 +98,7 @@ export const verifyMyInfoVals: RequestHandler<
   }
   MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
     .andThen((hashes) =>
-      MyInfoFactory.doMyInfoHashesMatch(req.body.parsedResponses, hashes),
+      MyInfoFactory.checkMyInfoHashes(req.body.parsedResponses, hashes),
     )
     .map((hashedFields) => {
       // eslint-disable-next-line @typescript-eslint/no-extra-semi
