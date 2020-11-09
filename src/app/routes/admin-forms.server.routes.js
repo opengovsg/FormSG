@@ -15,6 +15,7 @@ let encryptSubmissions = require('../../app/controllers/encrypt-submissions.serv
 let PERMISSIONS = require('../utils/permission-levels').default
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
+const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 
 const emailValOpts = {
@@ -86,7 +87,7 @@ module.exports = function (app) {
    */
   app
     .route('/adminform')
-    .get(withUserAuthentication, adminForms.list)
+    .get(withUserAuthentication, AdminFormController.handleListDashboardForms)
     .post(withUserAuthentication, adminForms.create)
 
   /**
