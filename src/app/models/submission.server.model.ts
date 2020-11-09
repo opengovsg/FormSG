@@ -1,5 +1,6 @@
 import moment from 'moment-timezone'
-import { Mongoose, Schema } from 'mongoose'
+import mongoose, { Mongoose, Schema } from 'mongoose'
+import { FixedLengthArray } from 'type-fest'
 
 import {
   AuthType,
@@ -209,6 +210,77 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
         }
 
         return metadata
+      })
+  )
+}
+
+EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
+  this: IEncryptSubmissionModel,
+  formId: string,
+  {
+    page = 1,
+    pageSize = 10,
+  }: {
+    page?: number
+    pageSize?: number
+  } = {},
+): Promise<{
+  metadata: SubmissionMetadata[]
+  count: number
+}> {
+  const numToSkip = (page - 1) * pageSize
+
+  type MetadataAggregateResult = {
+    pageResults: Pick<ISubmissionSchema, '_id' | 'created'>[]
+    allResults: FixedLengthArray<{ count: number }, 1> | []
+  }
+
+  return (
+    this.aggregate()
+      .match({
+        // Casting to ObjectId as Mongoose does not cast pipeline stages.
+        // See https://mongoosejs.com/docs/api.html#aggregate_Aggregate.
+        form: mongoose.Types.ObjectId(formId),
+        submissionType: SubmissionType.Encrypt,
+      })
+      .sort({ created: -1 })
+      .facet({
+        pageResults: [
+          { $skip: numToSkip },
+          { $limit: pageSize },
+          { $project: { _id: 1, created: 1 } },
+        ],
+        allResults: [
+          { $group: { _id: null, count: { $sum: 1 } } },
+          { $project: { _id: 0 } },
+        ],
+      })
+      // prevents out-of-memory for large search results (max 100MB).
+      .allowDiskUse(true)
+      .then((result: MetadataAggregateResult[]) => {
+        const [{ pageResults, allResults }] = result
+        const [numResults] = allResults
+        const count = numResults?.count ?? 0
+
+        let currentNumber = count - numToSkip
+
+        const metadata = pageResults.map((data) => {
+          const metadataEntry: SubmissionMetadata = {
+            number: currentNumber,
+            refNo: data._id,
+            submissionTime: moment(data.created)
+              .tz('Asia/Singapore')
+              .format('Do MMM YYYY, h:mm:ss a'),
+          }
+
+          currentNumber--
+          return metadataEntry
+        })
+
+        return {
+          metadata,
+          count,
+        }
       })
   )
 }

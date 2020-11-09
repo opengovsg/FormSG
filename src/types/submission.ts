@@ -118,6 +118,23 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       formId: string,
       submissionId: string,
     ): Promise<SubmissionMetadata | null>
+
+    /**
+     * Returns all submission metadata of the form for the given formId. The
+     * metadata returned is offset by the page and the pageSize options.
+     * @param formId the form id to return submission metadata for
+     * @param options.page the page of metadata list to return
+     * @param options.pageSize the number of metadata per page
+     *
+     * @returns limited list of metadata, along with the total number of metadata count
+     */
+    findAllMetadataByFormId(
+      formId: string,
+      params?: { page?: number; pageSize?: number },
+    ): Promise<{
+      metadata: SubmissionMetadata[]
+      count: number
+    }>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
