@@ -18,6 +18,7 @@ import {
   CircuitBreakerError,
   FetchMyInfoError,
   HashingError,
+  MissingHashError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
 import { IPossiblyPrefilledField } from './myinfo.types'
@@ -44,7 +45,10 @@ interface IMyInfoFactory {
   fetchMyInfoHashes: (
     uinFin: string,
     formId: string,
-  ) => ResultAsync<IHashes | null, DatabaseError | MissingFeatureError>
+  ) => ResultAsync<
+    IHashes | null,
+    DatabaseError | MissingHashError | MissingFeatureError
+  >
   doMyInfoHashesMatch: (
     responses: ProcessedFieldResponse[],
     hashes: IHashes,

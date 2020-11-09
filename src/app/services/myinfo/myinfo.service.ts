@@ -8,7 +8,7 @@ import Bluebird from 'bluebird'
 import fs from 'fs'
 import { cloneDeep, keyBy, mapValues } from 'lodash'
 import mongoose from 'mongoose'
-import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
 import getMyInfoHashModel from 'src/app/models/myinfo_hash.server.model'
@@ -28,6 +28,7 @@ import {
   CircuitBreakerError,
   FetchMyInfoError,
   HashingError,
+  MissingHashError,
 } from './myinfo.errors'
 import { IPossiblyPrefilledField } from './myinfo.types'
 import {
@@ -213,7 +214,7 @@ export class MyInfoService {
   fetchMyInfoHashes(
     uinFin: string,
     formId: string,
-  ): ResultAsync<IHashes | null, DatabaseError> {
+  ): ResultAsync<IHashes | null, DatabaseError | MissingHashError> {
     return ResultAsync.fromPromise(
       MyInfoHash.findHashes(uinFin, formId),
       (error) => {
@@ -227,7 +228,11 @@ export class MyInfoService {
         })
         return new DatabaseError(message)
       },
-    )
+    ).andThen((hashes) => {
+      return hashes
+        ? okAsync(hashes)
+        : errAsync(new MissingHashError('MyInfo hashes not found.'))
+    })
   }
 
   doMyInfoHashesMatch(
