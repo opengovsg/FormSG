@@ -24,6 +24,7 @@ function dateFieldComponentController() {
     yearColumns: 3,
     minDate: null,
     maxDate: null,
+    initDate: null,
   }
 
   vm.$onChanges = (changesObj) => {
@@ -55,6 +56,9 @@ function dateFieldComponentController() {
       if (get(vm.field, 'dateValidation.customMaxDate')) {
         vm.dateOptions.maxDate = new Date(vm.field.dateValidation.customMaxDate)
       }
+
+      // Set default view upon opening datepicker to be month of minDate
+      vm.dateOptions.initDate = vm.dateOptions.minDate
     }
   }
 
