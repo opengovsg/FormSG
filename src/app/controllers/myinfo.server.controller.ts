@@ -8,7 +8,12 @@ import { StatusCodes } from 'http-status-codes'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 
 import { createLoggerWithLabel } from '../../config/logger'
-import { AuthType, IPopulatedForm, SpcpSession } from '../../types'
+import {
+  AuthType,
+  IPopulatedForm,
+  MyInfoAttribute,
+  SpcpSession,
+} from '../../types'
 import { MyInfoFactory } from '../services/myinfo/myinfo.factory'
 import {
   extractRequestedAttributes,
@@ -18,7 +23,10 @@ import { createReqMeta } from '../utils/request'
 
 const logger = createLoggerWithLabel(module)
 
-type ReqWithForm<T> = T & { form: IPopulatedForm }
+type MyInfoReq<T> = T & {
+  form: IPopulatedForm
+  hashedFields?: MyInfoAttribute[]
+}
 type ResWithSpcpSession<T> = T & {
   locals: { spcpSession?: SpcpSession }
 }
@@ -29,7 +37,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   next,
 ) => {
   // TODO (#42): add proper types here when migrating away from middleware pattern
-  const form = (req as ReqWithForm<typeof req>).form.toJSON()
+  const form = (req as MyInfoReq<typeof req>).form.toJSON()
   const uinFin = (res as ResWithSpcpSession<typeof res>).locals.spcpSession
     ?.userName
   const { esrvcId, authType, form_fields: formFields, _id: formId } = form
@@ -53,7 +61,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
     // Step 3: Hash the values and save them
     .andThen((prefilledFields) => {
       form.formFields = prefilledFields
-      ;(req as ReqWithForm<typeof req>).form = form
+      ;(req as MyInfoReq<typeof req>).form = form
       return MyInfoFactory.saveMyInfoHashes(uinFin, formId, prefilledFields)
     })
     .map(() => next())
@@ -79,11 +87,9 @@ export const verifyMyInfoVals: RequestHandler<
   { parsedResponses: ProcessedFieldResponse[] }
 > = async (req, res, next) => {
   // TODO (#42): add proper types here when migrating away from middleware pattern
-  const {
-    authType,
-    _id: formId,
-    form_fields: formFields,
-  } = (req as ReqWithForm<typeof req>).form.toJSON()
+  const { authType, _id: formId, form_fields: formFields } = (req as MyInfoReq<
+    typeof req
+  >).form.toJSON()
   const uinFin = (res as ResWithSpcpSession<typeof res>).locals.spcpSession
     ?.userName
   const requestedAttributes = extractRequestedAttributes(formFields)
@@ -99,7 +105,11 @@ export const verifyMyInfoVals: RequestHandler<
     .andThen((hashes) =>
       MyInfoFactory.doMyInfoHashesMatch(req.body.parsedResponses, hashes),
     )
-    .map(() => next())
+    .map((hashedFields) => {
+      // eslint-disable-next-line @typescript-eslint/no-extra-semi
+      ;(req as MyInfoReq<typeof req>).hashedFields = hashedFields
+      return next()
+    })
     .mapErr((error) => {
       const { statusCode, errorMessage } = mapVerifyMyInfoError(error)
       return res.status(statusCode).send({
