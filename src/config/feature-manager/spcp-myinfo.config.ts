@@ -157,7 +157,7 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
       doc:
         'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
       format: Object.values(MyInfoClientMode),
-      default: null,
+      default: MyInfoClientMode.Production,
       env: 'MYINFO_CLIENT_CONFIG',
     },
     myInfoKeyPath: {
