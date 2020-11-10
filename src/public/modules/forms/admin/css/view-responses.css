@@ -743,3 +743,7 @@
 #responses-tab .response-search {
   flex-direction: row;
 }
+
+#responses-tab .input-custom {
+  width: inherit;
+}
