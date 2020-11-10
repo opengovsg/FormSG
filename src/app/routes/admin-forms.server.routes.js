@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const { celebrate, Joi } = require('celebrate')
+const { celebrate, Joi, Segments } = require('celebrate')
 
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
@@ -424,9 +424,16 @@ module.exports = function (app) {
    * @returns {metadataResponse.model} 200 - Metadata of responses
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata')
-    .get(authEncryptedResponseAccess, encryptSubmissions.getMetadata)
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata').get(
+    authEncryptedResponseAccess,
+    celebrate({
+      [Segments.QUERY]: {
+        page: Joi.number().min(1).required(),
+        submissionId: Joi.string().optional(),
+      },
+    }),
+    encryptSubmissions.getMetadata,
+  )
 
   /**
    * Stream download all encrypted responses for a form
