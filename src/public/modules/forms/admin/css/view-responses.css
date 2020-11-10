@@ -738,12 +738,19 @@
 #filter-by-submission-filter-textbox-container {
   display: flex;
   min-width: 240px;
+  margin-right: 20px;
 }
 
 #responses-tab .response-search {
   flex-direction: row;
 }
 
-#responses-tab .input-custom {
+#responses-tab #filter-by-submission-filter-textbox {
   width: inherit;
+}
+
+@media (max-width: 1200px) {
+  #responses-tab .response-search {
+    width: 100%;
+  }
 }
