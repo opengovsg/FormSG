@@ -32,16 +32,16 @@ services:
       - AWS_ENDPOINT=http://localhost:4566
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
+      - SES_PORT=25
+      - SES_HOST=maildev
       - GA_TRACKING_ID
       - SENTRY_CONFIG_URL
       - TWILIO_ACCOUNT_SID
       - TWILIO_API_KEY
       - TWILIO_API_SECRET
       - TWILIO_MESSAGING_SERVICE_SID
-      - SES_HOST
       - SES_PASS
       - SES_USER
-      - SES_PORT
       - OTP_LIFE_SPAN
       - AWS_REGION
       - GOOGLE_CAPTCHA
@@ -111,6 +111,11 @@ services:
       # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
       - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
     network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - '1080:80'
 
 volumes:
   mongodata:

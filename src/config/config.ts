@@ -3,7 +3,6 @@ import convict from 'convict'
 import { SessionOptions } from 'express-session'
 import { merge } from 'lodash'
 import nodemailer from 'nodemailer'
-import directTransport from 'nodemailer-direct-transport'
 import Mail from 'nodemailer/lib/mailer'
 import SMTPPool from 'nodemailer/lib/smtp-pool'
 
@@ -149,20 +148,11 @@ const mailConfig: MailConfig = (function () {
     }
     transporter = nodemailer.createTransport(options)
   } else {
-    if (basicVars.core.nodeEnv === Environment.Dev) {
-      // Falls back to direct transport
-      transporter = nodemailer.createTransport(directTransport({}))
-    } else if (
-      basicVars.core.nodeEnv === Environment.Test &&
-      prodOnlyVars.port
-    ) {
-      transporter = nodemailer.createTransport({
-        port: prodOnlyVars.port,
-        ignoreTLS: true,
-      })
-    } else {
-      throw new Error('Nodemailer configuration is missing')
-    }
+    transporter = nodemailer.createTransport({
+      port: prodOnlyVars.port,
+      host: prodOnlyVars.host,
+      ignoreTLS: true,
+    })
   }
 
   return {
