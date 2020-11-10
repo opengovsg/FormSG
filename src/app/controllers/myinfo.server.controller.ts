@@ -55,7 +55,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
     )
     // Step 3: Hash the values and save them
     .andThen((prefilledFields) => {
-      form.formFields = prefilledFields
+      form.form_fields = prefilledFields
       ;(req as MyInfoReq<typeof req>).form = form
       return MyInfoFactory.saveMyInfoHashes(uinFin, formId, prefilledFields)
     })
