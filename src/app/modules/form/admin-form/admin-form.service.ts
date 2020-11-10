@@ -137,3 +137,20 @@ export const createPresignedPostForImages = (
 ): ResultAsync<PresignedPost, InvalidFileTypeError | ExternalError> => {
   return createPresignedPost(AwsConfig.imageS3Bucket, uploadParams)
 }
+
+/**
+ * Creates a S3 presigned POST URL for the client to upload logos directly to.
+ *
+ * @param param.fileId key of the file
+ * @param param.fileMd5Hash the MD5 hash of the file
+ * @param param.fileType the file type of the file
+ *
+ * @returns ok(presigned post url) when creation is successful
+ * @returns err(InvalidFileTypeError) when given file type is not supported
+ * @returns err(ExternalError) when errors occurs on S3 side whilst creating presigned post url.
+ */
+export const createPresignedPostForLogos = (
+  uploadParams: PresignedPostParams,
+): ResultAsync<PresignedPost, InvalidFileTypeError | ExternalError> => {
+  return createPresignedPost(AwsConfig.logoS3Bucket, uploadParams)
+}
