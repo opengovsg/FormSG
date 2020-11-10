@@ -9,6 +9,7 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import {
   handleCreatePresignedPostForImages,
+  handleCreatePresignedPostForLogos,
   handleListDashboardForms,
 } from '../admin-form.controller'
 import { InvalidFileTypeError } from '../admin-form.errors'
@@ -133,6 +134,75 @@ describe('admin-form.controller', () => {
 
       // Act
       await handleCreatePresignedPostForImages(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+    })
+  })
+
+  describe('handleCreatePresignedPostForLogos', () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: {
+        fileId: 'any file id',
+        fileMd5Hash: 'any hash',
+        fileType: 'any type',
+      },
+    })
+
+    it('should return 200 with presigned POST object when successful', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedPresignedPost: PresignedPost = {
+        fields: {
+          'X-Amz-Signature': 'some-amz-signature',
+          Policy: 'some policy',
+        },
+        url: 'some url',
+      }
+      MockAdminFormService.createPresignedPostForLogos.mockReturnValueOnce(
+        okAsync(expectedPresignedPost),
+      )
+
+      // Act
+      await handleCreatePresignedPostForLogos(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(expectedPresignedPost)
+    })
+
+    it('should return 400 when InvalidFileTypeError is returned when creating presigned POST', async () => {
+      // Arrange
+      // Mock error
+      const mockErrorString = 'bad file type, bad!'
+      const mockRes = expressHandler.mockResponse()
+      MockAdminFormService.createPresignedPostForLogos.mockReturnValueOnce(
+        errAsync(new InvalidFileTypeError(mockErrorString)),
+      )
+
+      // Act
+      await handleCreatePresignedPostForLogos(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+    })
+
+    it('should return 400 when ExternalError is returned when creating presigned POST', async () => {
+      // Arrange
+      // Mock error
+      const mockErrorString = 'creating presigned post failed, oh no'
+      const mockRes = expressHandler.mockResponse()
+      MockAdminFormService.createPresignedPostForLogos.mockReturnValueOnce(
+        errAsync(new ExternalError(mockErrorString)),
+      )
+
+      // Act
+      await handleCreatePresignedPostForLogos(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
