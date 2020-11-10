@@ -11,9 +11,6 @@ import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import getMyInfoHashModel from 'src/app/models/myinfo_hash.server.model'
-import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
-
 import { IMyInfoConfig } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -22,7 +19,9 @@ import {
   IHashes,
   IMyInfoHashSchema,
 } from '../../../types'
+import getMyInfoHashModel from '../../models/myinfo_hash.server.model'
 import { DatabaseError } from '../../modules/core/core.errors'
+import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 import {
   CircuitBreakerError,
