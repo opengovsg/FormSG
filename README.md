@@ -61,6 +61,8 @@ Run the following shell command to build the Docker image from scratch. This wil
 npm run dev
 ```
 
+After the Docker image has finished building, the application can be accessed at [localhost:5000](localhost:5000).
+
 If there have been no dependency changes in `package.json` or changes in the
 `src/server.ts` file, you can run
 
@@ -70,6 +72,10 @@ docker-compose up
 
 which does **not** rebuild the Docker image from scratch. This command usually
 only takes ~15 seconds to finish starting up the image.
+
+### Accessing email locally
+
+We use [MailDev](https://github.com/maildev/maildev) to access emails in the development environment. The MailDev UI can be accessed at [localhost:1080](localhost:1080) when the Docker container is running.
 
 ### Environment variables
 
@@ -195,7 +201,7 @@ Please contact FormSG (formsg@tech.gov.sg) for any details.
 
 ## Acknowledgements
 
-FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [TellForm](https://github.com/tellform), on which FormSG is based. 
+FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [TellForm](https://github.com/tellform), on which FormSG is based.
 
 Contributions have also been made by:  
 [@RyanAngJY](https://github.com/RyanAngJY)  
