@@ -1,4 +1,6 @@
-export const MOCK_MYINFO_SUCCESS_RESPONSE = {
+import { merge, zipWith } from 'lodash'
+
+export const MOCK_MYINFO_DATA = {
   name: {
     lastupdated: '2015-06-01',
     source: '1',
@@ -33,7 +35,7 @@ export const MOCK_MYINFO_SUCCESS_RESPONSE = {
   },
 }
 
-export const MOCK_MYINFO_DATA = {
+export const MOCK_MYINFO_FORMAT_DATA = {
   homeno: {
     code: '65',
     prefix: '+',
@@ -105,8 +107,27 @@ export const MOCK_FORM_FIELDS = [
   { fieldType: 'textfield' },
 ]
 
+const populatedValues = [
+  { fieldValue: 'TAN XIAO HUI', disabled: true },
+  { fieldValue: '+65 97324992', disabled: false },
+  { fieldValue: '', disabled: false },
+  {
+    fieldValue: 'TRUMP TOWER, 725 5TH AVENUE, UNITED STATES NY 10022',
+    disabled: false,
+  },
+  {},
+  {},
+]
+
+export const MOCK_POPULATED_FORM_FIELDS = zipWith(
+  MOCK_FORM_FIELDS,
+  populatedValues,
+  (v1, v2) => merge(v1, v2),
+)
+
 export const MOCK_COOKIE_AGE = 2000
-export const MOCK_KEY_PATH = 'mockPath'
+export const MOCK_KEY_PATH =
+  './node_modules/@opengovsg/mockpass/static/certs/key.pem'
 export const MOCK_REALM = 'mockRealm'
 export const MOCK_ESRVC_ID = 'mockEsrvcId'
 export const MOCK_FETCH_PARAMS = {
@@ -114,3 +135,4 @@ export const MOCK_FETCH_PARAMS = {
   requestedAttributes: ['mockAttr'],
   singpassEserviceId: 'mockEsrvcId',
 }
+export const MOCK_PRIVATE_KEY = 'privateKey'
