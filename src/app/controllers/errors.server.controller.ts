@@ -7,7 +7,7 @@ import { IMongoError } from 'src/types/error'
  */
 const defaultErrorMessage = 'An unexpected error happened. Please try again.'
 
-export function getMongoErrorMessage(err?: IMongoError | string): string {
+export const getMongoErrorMessage = (err?: IMongoError | string): string => {
   let message = ''
   if (!err) {
     return ''
