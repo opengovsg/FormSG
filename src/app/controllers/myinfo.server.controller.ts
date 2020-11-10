@@ -25,6 +25,9 @@ type MyInfoReq<T> = T & {
 type ResWithSpcpSession<T> = T & {
   locals: { spcpSession?: SpcpSession }
 }
+type ResWithUinFin<T> = T & {
+  uinFin?: string
+}
 
 export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   req,
@@ -85,8 +88,7 @@ export const verifyMyInfoVals: RequestHandler<
   const { authType, _id: formId, form_fields: formFields } = (req as MyInfoReq<
     typeof req
   >).form.toJSON()
-  const uinFin = (res as ResWithSpcpSession<typeof res>).locals.spcpSession
-    ?.userName
+  const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin
   const requestedAttributes = extractRequestedAttributes(formFields)
   if (authType !== AuthType.SP || requestedAttributes.length === 0) {
     return next()
