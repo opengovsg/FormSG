@@ -117,7 +117,7 @@ const createPresignedPost = (
       error,
     })
 
-    return new ExternalError('Error occurred whilst uploading image')
+    return new ExternalError('Error occurred whilst uploading file')
   })
 }
 

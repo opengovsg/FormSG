@@ -172,7 +172,7 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ExternalError('Error occurred whilst uploading image'),
+        new ExternalError('Error occurred whilst uploading file'),
       )
     })
   })
