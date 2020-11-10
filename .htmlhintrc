@@ -1,6 +1,6 @@
 {
-  "tagname-lowercase": true,
-  "attr-lowercase": ["viewBox"],
+  "tagname-lowercase": ["clipPath"],
+  "attr-lowercase": ["viewBox", "maskUnits"],
   "attr-value-double-quotes": true,
   "doctype-first": false,
   "tag-pair": true,
