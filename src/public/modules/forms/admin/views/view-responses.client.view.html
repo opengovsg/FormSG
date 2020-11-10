@@ -66,42 +66,45 @@
     </div>
     <div ng-if="vm.currentView === 2">
       <div class="flex-row">
-        <!-- Response stats -->
-        <div class="response-stats">
-          <span class="stats-text">
-            <span
-              ><span class="stats">{{vm.responsesCount}}</span> response(s) to
-              date</span
+        <!-- Response and Search -->
+        <div class="flex-row response-search">
+          <div class="response-stats">
+            <span class="stats-text">
+              <span
+                ><span class="stats">{{vm.responsesCount}}</span> response(s) to
+                date</span
+              >
+            </span>
+          </div>
+
+          <div>
+            <a
+              id="filter-by-submission-filter-link"
+              ng-show="!vm.filterBySubmissionShowFilterBox"
+              ng-click="vm.filterBySubmissionShowFilterBox = true"
             >
-          </span>
-        </div>
+              <i class="bx bx-search search-icon"></i>
+            </a>
+          </div>
 
-        <a
-          id="filter-by-submission-filter-link"
-          ng-show="!vm.filterBySubmissionShowFilterBox"
-          ng-click="vm.filterBySubmissionShowFilterBox = true"
-        >
-          <i class="bx bx-search search-icon"></i>
-        </a>
-
-        <div
-          class="col-xl-6"
-          ng-show="vm.filterBySubmissionShowFilterBox"
-          id="filter-by-submission-filter-textbox-container"
-        >
-          <input
-            class="input-custom input-medium"
-            ng-model="vm.filterBySubmissionRefIdTextbox"
-            ng-change="vm.filterBySubmissionChanged()"
-            ng-model-options="{ debounce: 150 }"
-            placeholder="Search by reference no."
-          />
-          <span
-            id="filter-by-submission-reset-link"
-            ng-show="vm.filterBySubmissionRefId !== ''"
+          <div
+            ng-show="vm.filterBySubmissionShowFilterBox"
+            id="filter-by-submission-filter-textbox-container"
           >
-            <a ng-click="vm.filterBySubmissionReset()">View&nbsp;All</a>
-          </span>
+            <input
+              class="input-custom input-medium"
+              ng-model="vm.filterBySubmissionRefIdTextbox"
+              ng-change="vm.filterBySubmissionChanged()"
+              ng-model-options="{ debounce: 150 }"
+              placeholder="Search by reference no."
+            />
+            <span
+              id="filter-by-submission-reset-link"
+              ng-show="vm.filterBySubmissionRefId !== ''"
+            >
+              <a ng-click="vm.filterBySubmissionReset()">View&nbsp;All</a>
+            </span>
+          </div>
         </div>
         <div class="datepicker-export-container col-xl-3">
           <date-range-picker-directive

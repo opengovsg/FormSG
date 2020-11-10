@@ -102,11 +102,11 @@
 
 #responses-tab .response-stats {
   white-space: nowrap;
-  width: 300px;
+  width: 240px;
 }
 
 #responses-tab .search-icon {
-  font-size: 20px;
+  font-size: 30px;
 }
 
 #responses-tab .datepicker-export-container {
