@@ -459,12 +459,24 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download')
-    .get(
-      authEncryptedResponseAccess,
-      EncryptSubmissionController.handleStreamEncryptedResponses,
-    )
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download').get(
+    celebrate({
+      [Segments.QUERY]: Joi.object()
+        .keys({
+          // Ensure YYYY-MM-DD format.
+          startDate: Joi.string().regex(
+            /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/,
+          ),
+          // Ensure YYYY-MM-DD format.
+          endDate: Joi.string().regex(
+            /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/,
+          ),
+        })
+        .with('startDate', 'endDate'),
+    }),
+    authEncryptedResponseAccess,
+    EncryptSubmissionController.handleStreamEncryptedResponses,
+  )
 
   /**
    * Upload images
