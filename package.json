@@ -115,7 +115,7 @@
     "express-session": "^1.15.6",
     "express-winston": "^4.0.5",
     "fetch-readablestream": "^0.2.0",
-    "file-loader": "^4.0.0",
+    "file-loader": "^6.2.0",
     "file-saver": "^2.0.2",
     "font-awesome": "4.7.0",
     "fp-ts": "^2.8.5",
