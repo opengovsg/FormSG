@@ -1,7 +1,6 @@
-import {
-  defaultErrorMessage,
-  getMongoErrorMessage,
-} from 'src/app/controllers/errors.server.controller'
+import { getMongoErrorMessage } from 'src/app/controllers/errors.server.controller'
+
+const defaultErrorMessage = 'An unexpected error happened. Please try again.'
 
 describe('Errors Controller', () => {
   describe('getMongoErrorMessage', () => {

@@ -4,10 +4,8 @@ import { IMongoError } from 'src/types/error'
 
 /**
  * Default error message if no more specific error
- * @type {String}
  */
-export const defaultErrorMessage =
-  'An unexpected error happened. Please try again.'
+const defaultErrorMessage = 'An unexpected error happened. Please try again.'
 
 const mongoDuplicateKeyError = function (err: IMongoError): string {
   let errorString = ''
