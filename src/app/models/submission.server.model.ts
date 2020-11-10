@@ -219,6 +219,15 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
   )
 }
 
+/**
+ * Unexported as the type is only used in {@see findAllMetadataByFormId} for
+ * now.
+ */
+type MetadataAggregateResult = {
+  pageResults: Pick<ISubmissionSchema, '_id' | 'created'>[]
+  allResults: FixedLengthArray<{ count: number }, 1> | []
+}
+
 EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   this: IEncryptSubmissionModel,
   formId: string,
@@ -234,11 +243,6 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   count: number
 }> {
   const numToSkip = (page - 1) * pageSize
-
-  type MetadataAggregateResult = {
-    pageResults: Pick<ISubmissionSchema, '_id' | 'created'>[]
-    allResults: FixedLengthArray<{ count: number }, 1> | []
-  }
 
   return (
     this.aggregate()
