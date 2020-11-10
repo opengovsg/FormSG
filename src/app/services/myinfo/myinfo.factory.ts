@@ -74,20 +74,13 @@ export const createMyInfoFactory = ({
     }
   }
   const myInfoConfig = pick(props, ['myInfoClientMode', 'myInfoKeyPath'])
-  const myInfoService = new MyInfoService({
+  return new MyInfoService({
     myInfoConfig,
     nodeEnv: config.nodeEnv,
     realm: config.app.title,
     singpassEserviceId: props.spEsrvcId,
     spCookieMaxAge: props.spCookieMaxAge,
   })
-  return {
-    fetchMyInfoPersonData: myInfoService.fetchMyInfoPersonData,
-    prefillMyInfoFields: myInfoService.prefillMyInfoFields,
-    saveMyInfoHashes: myInfoService.saveMyInfoHashes,
-    fetchMyInfoHashes: myInfoService.fetchMyInfoHashes,
-    checkMyInfoHashes: myInfoService.checkMyInfoHashes,
-  }
 }
 
 const myInfoFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
