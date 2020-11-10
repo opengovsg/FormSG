@@ -1,6 +1,6 @@
 'use strict'
 
-const _ = require('lodash')
+import _ from 'lodash'
 
 /**
  * Default error message if no more specific error
@@ -16,7 +16,7 @@ exports.defaultErrorMessage = 'An unexpected error happened. Please try again.'
 const mongoDuplicateKeyError = function (err) {
   let errorString = ''
   try {
-    let fieldName = err.err.substring(
+    const fieldName = err.err.substring(
       err.err.lastIndexOf('.$') + 2,
       err.err.lastIndexOf('_1'),
     )
@@ -54,8 +54,8 @@ exports.getMongoErrorMessage = function (err) {
     }
   } else if (!_.isEmpty(err.errors)) {
     // Prefer specific error messages to a generic one
-    let errMsgs = []
-    for (let subError in err.errors) {
+    const errMsgs = []
+    for (const subError in err.errors) {
       errMsgs.push(err.errors[subError].message)
     }
     message = errMsgs.join(', ')
