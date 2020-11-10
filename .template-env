@@ -83,6 +83,7 @@ FORMSG_SDK_MODE=
 # Default environment variables have been included for local development
 # purposes. 
 # MYINFO_CLIENT_CONFIG=stg
+# MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 # SPCP_COOKIE_MAX_AGE=7200000
 
 # SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
