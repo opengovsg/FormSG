@@ -10,7 +10,7 @@ const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const errorHandler = require('./errors.server.controller')
+const errorHandler = require('../utils/handle-mongo-error')
 const { createReqMeta } = require('../utils/request')
 const { FormLogoState } = require('../../types')
 

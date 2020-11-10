@@ -1,4 +1,4 @@
-import { getMongoErrorMessage } from 'src/app/controllers/errors.server.controller'
+import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
 
 const defaultErrorMessage = 'An unexpected error happened. Please try again.'
 
