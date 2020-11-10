@@ -1,38 +1,39 @@
-import { isEmpty } from 'lodash'
+import { MongoError } from 'mongodb'
+import { Error as MongooseError } from 'mongoose'
 
-import { IMongoError } from 'src/types/error'
-
-/**
- * Default error message if no more specific error
- */
+// Default error message if no more specific error
 const defaultErrorMessage = 'An unexpected error happened. Please try again.'
 
-export const getMongoErrorMessage = (err?: IMongoError | string): string => {
-  let message = ''
+export const getMongoErrorMessage = (
+  err?: MongoError | MongooseError | string,
+): string => {
   if (!err) {
     return ''
-  } else if (typeof err === 'string') {
-    message = err
-  } else if (err.code) {
-    // Mongo error codes
+  }
+
+  // Handle base Mongo engine errors
+  if (err instanceof MongoError) {
     switch (err.code) {
       case 10334: // BSONObj size invalid error
-        message = 'Your form is too large to be supported by the system.'
-        break
+        return 'Your form is too large to be supported by the system.'
       default:
-        message = defaultErrorMessage
-    }
-  } else if (!isEmpty(err.errors)) {
-    // Prefer specific error messages to a generic one
-    const errMsgs = []
-    for (const subError in err.errors) {
-      errMsgs.push(err.errors[subError].message)
-    }
-    message = errMsgs.join(', ')
-  } else {
-    if (err.message) {
-      message = err.message
+        return defaultErrorMessage
     }
   }
-  return message
+
+  // Handle mongoose errors
+  if (err instanceof MongooseError.ValidationError) {
+    // Join all error messages into a single message if available.
+    const joinedMessage = Object.values(err.errors)
+      .map((err) => err.message)
+      .join(', ')
+
+    return joinedMessage ?? err.message ?? defaultErrorMessage
+  }
+
+  if (err instanceof MongooseError) {
+    return err.message ?? defaultErrorMessage
+  }
+
+  return err ?? defaultErrorMessage
 }
