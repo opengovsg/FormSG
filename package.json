@@ -184,7 +184,7 @@
     "@types/json-stringify-safe": "^5.0.0",
     "@types/mongodb-uri": "^0.9.0",
     "@types/mongoose": "^5.7.36",
-    "@types/node": "^14.14.6",
+    "@types/node": "^14.14.7",
     "@types/nodemailer": "^6.4.0",
     "@types/nodemailer-direct-transport": "^1.0.31",
     "@types/promise-retry": "^1.1.3",
