@@ -42,6 +42,10 @@ import {
 const logger = createLoggerWithLabel(module)
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
+const MYINFO_STG_PREFIX = 'STG2-'
+const MYINFO_PROD_PREFIX = 'PROD2-'
+const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v2/'
+
 export class MyInfoService {
   #myInfoClientBreaker: CircuitBreaker<[IPersonBasicRequest], IPersonBasic>
   #spCookieMaxAge: number
@@ -63,9 +67,11 @@ export class MyInfoService {
 
     const { myInfoClientMode, myInfoKeyPath } = myInfoConfig
     let myInfoGovClient: MyInfoGovClient
+    const myInfoPrefix =
+      myInfoClientMode === MyInfoClientMode.Staging
+        ? MYINFO_STG_PREFIX
+        : MYINFO_PROD_PREFIX
     if (nodeEnv === Environment.Prod) {
-      const myInfoPrefix =
-        myInfoClientMode === MyInfoClientMode.Staging ? 'STG2-' : 'PROD2-'
       myInfoGovClient = new MyInfoGovClient({
         realm,
         singpassEserviceId,
@@ -77,13 +83,11 @@ export class MyInfoService {
       myInfoGovClient = new MyInfoGovClient({
         realm,
         singpassEserviceId,
-        privateKey: fs.readFileSync(
-          './node_modules/@opengovsg/mockpass/static/certs/key.pem',
-        ),
-        appId: 'STG2-' + singpassEserviceId,
+        privateKey: fs.readFileSync(myInfoKeyPath),
+        appId: myInfoPrefix + singpassEserviceId,
         mode: MyInfoClientMode.Dev,
       })
-      myInfoGovClient.baseUrl = 'http://localhost:5156/myinfo/v2/'
+      myInfoGovClient.baseUrl = MYINFO_DEV_BASE_URL
     }
 
     this.#myInfoClientBreaker = new CircuitBreaker(
