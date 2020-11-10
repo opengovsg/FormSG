@@ -108,6 +108,14 @@ export const verifyMyInfoVals: RequestHandler<
       return next()
     })
     .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying MyInfo hashes',
+        meta: {
+          action: 'verifyMyInfoVals',
+          ...createReqMeta(req),
+          formId,
+        },
+      })
       const { statusCode, errorMessage } = mapVerifyMyInfoError(error)
       return res.status(statusCode).send({
         message: errorMessage,
