@@ -181,12 +181,13 @@ export const mapVerifyMyInfoError: MapRouteError = (error) => {
     case MissingHashError:
       return {
         statusCode: StatusCodes.GONE,
-        message: 'MyInfo verification expired, please refresh and try again.',
+        errorMessage:
+          'MyInfo verification expired, please refresh and try again.',
       }
     case HashDidNotMatchError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'MyInfo verification failed.',
+        errorMessage: 'MyInfo verification failed.',
       }
     default:
       logger.error({
