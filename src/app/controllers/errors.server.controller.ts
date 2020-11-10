@@ -9,12 +9,6 @@ import { IMongoError } from 'src/types/error'
 export const defaultErrorMessage =
   'An unexpected error happened. Please try again.'
 
-/**
- * Private helper for getMongoErrorMessage to return Mongo error in a String
- * @param  {IMongoError} err - MongoDB error object
- * @return {String} errorString - Formatted error string
- */
-
 const mongoDuplicateKeyError = function (err: IMongoError): string {
   let errorString = ''
   if (err.err) {
@@ -30,11 +24,6 @@ const mongoDuplicateKeyError = function (err: IMongoError): string {
   return errorString
 }
 
-/**
- * Gets Mongo error object and returns formatted String for frontend
- * @param  {IMongoError} err? MongoDB error object
- * @return {String} message - Error message returned to frontend
- */
 export function getMongoErrorMessage(err?: IMongoError | string): string {
   let message = ''
   if (!err) {
