@@ -1,28 +1,30 @@
-'use strict'
-
 import _ from 'lodash'
+
+import { IMongoError } from 'src/types/error'
 
 /**
  * Default error message if no more specific error
  * @type {String}
  */
-exports.defaultErrorMessage = 'An unexpected error happened. Please try again.'
+export const defaultErrorMessage =
+  'An unexpected error happened. Please try again.'
 
 /**
  * Private helper for getMongoErrorMessage to return Mongo error in a String
- * @param  {Object} err - MongoDB error object
+ * @param  {IMongoError} err - MongoDB error object
  * @return {String} errorString - Formatted error string
  */
-const mongoDuplicateKeyError = function (err) {
+
+const mongoDuplicateKeyError = function (err: IMongoError): string {
   let errorString = ''
-  try {
+  if (err.err) {
     const fieldName = err.err.substring(
       err.err.lastIndexOf('.$') + 2,
       err.err.lastIndexOf('_1'),
     )
     errorString =
       fieldName.charAt(0).toUpperCase() + fieldName.slice(1) + ' already exists'
-  } catch (ex) {
+  } else {
     errorString = 'Unique field already exists'
   }
   return errorString
@@ -30,10 +32,10 @@ const mongoDuplicateKeyError = function (err) {
 
 /**
  * Gets Mongo error object and returns formatted String for frontend
- * @param  {Objrct} err MongoDB error object
+ * @param  {IMongoError} err? MongoDB error object
  * @return {String} message - Error message returned to frontend
  */
-exports.getMongoErrorMessage = function (err) {
+export function getMongoErrorMessage(err?: IMongoError | string): string {
   let message = ''
   if (!err) {
     return ''
@@ -50,7 +52,7 @@ exports.getMongoErrorMessage = function (err) {
         message = 'Your form is too large to be supported by the system.'
         break
       default:
-        message = exports.defaultErrorMessage
+        message = defaultErrorMessage
     }
   } else if (!_.isEmpty(err.errors)) {
     // Prefer specific error messages to a generic one
@@ -60,7 +62,9 @@ exports.getMongoErrorMessage = function (err) {
     }
     message = errMsgs.join(', ')
   } else {
-    message = err.message
+    if (err.message) {
+      message = err.message
+    }
   }
   return message
 }
