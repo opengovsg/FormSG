@@ -739,3 +739,7 @@
   display: flex;
   min-width: 240px;
 }
+
+#responses-tab .response-search {
+  flex-direction: row;
+}
