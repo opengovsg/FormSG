@@ -1,11 +1,10 @@
 import { MongoError } from 'mongodb'
 import { Error as MongooseError } from 'mongoose'
 
-// Default error message if no more specific error
-const defaultErrorMessage = 'An unexpected error happened. Please try again.'
-
 export const getMongoErrorMessage = (
   err?: MongoError | MongooseError | string,
+  // Default error message if no more specific error
+  defaultErrorMessage = 'An unexpected error happened. Please try again.',
 ): string => {
   if (!err) {
     return ''

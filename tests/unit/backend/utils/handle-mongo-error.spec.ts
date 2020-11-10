@@ -3,8 +3,6 @@ import { Error as MongooseError } from 'mongoose'
 
 import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
 
-const defaultErrorMessage = 'An unexpected error happened. Please try again.'
-
 describe('handleMongoError', () => {
   describe('getMongoErrorMessage', () => {
     it('should return blank string if no error', () => {
@@ -25,9 +23,14 @@ describe('handleMongoError', () => {
       )
     })
 
-    it('should return error message for other MongoError error code', () => {
+    it('should return default error message for other MongoError error code', () => {
       const err = new MongoError('MongoError')
-      expect(getMongoErrorMessage(err)).toEqual(defaultErrorMessage)
+      expect(getMongoErrorMessage(err)).toEqual(
+        'An unexpected error happened. Please try again.',
+      ) // Preset default error message
+      expect(getMongoErrorMessage(err, 'new error message')).toEqual(
+        'new error message',
+      ) // Changed default error message
     })
 
     it('should join all error messages into a single message if available.', () => {
