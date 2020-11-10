@@ -105,6 +105,10 @@
   width: 300px;
 }
 
+#responses-tab .search-icon {
+  font-size: 20px;
+}
+
 #responses-tab .datepicker-export-container {
   display: flex;
   align-items: center;
