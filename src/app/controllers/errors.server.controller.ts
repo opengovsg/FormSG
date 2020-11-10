@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import { isEmpty } from 'lodash'
 
 import { IMongoError } from 'src/types/error'
 
@@ -54,7 +54,7 @@ export function getMongoErrorMessage(err?: IMongoError | string): string {
       default:
         message = defaultErrorMessage
     }
-  } else if (!_.isEmpty(err.errors)) {
+  } else if (!isEmpty(err.errors)) {
     // Prefer specific error messages to a generic one
     const errMsgs = []
     for (const subError in err.errors) {
