@@ -20,6 +20,12 @@ import { InvalidFileTypeError } from './admin-form.errors'
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 
+type PresignedPostParams = {
+  fileId: string
+  fileMd5Hash: string
+  fileType: string
+}
+
 /**
  * Retrieves a list of forms that the user of the given userId can access in
  * their dashboard.
@@ -56,25 +62,18 @@ export const getDashboardForms = (
 }
 
 /**
- * Creates a S3 presigned POST URL for the client to upload images directly to.
+ * Private function to generate a presigned POST URL to upload into the given
+ * bucket.
  *
+ * @param bucketName the name of the bucket to upload into
  * @param param.fileId key of the file
  * @param param.fileMd5Hash the MD5 hash of the file
  * @param param.fileType the file type of the file
- *
- * @returns ok(presigned post url) when creation is successful
- * @returns err(InvalidFileTypeError) when given file type is not supported
- * @returns err(ExternalError) when errors occurs on S3 side whilst creating presigned post url.
  */
-export const createPresignedPostForImages = ({
-  fileId,
-  fileMd5Hash,
-  fileType,
-}: {
-  fileId: string
-  fileMd5Hash: string
-  fileType: string
-}): ResultAsync<PresignedPost, InvalidFileTypeError | ExternalError> => {
+const createPresignedPost = (
+  bucketName: string,
+  { fileId, fileMd5Hash, fileType }: PresignedPostParams,
+): ResultAsync<PresignedPost, InvalidFileTypeError | ExternalError> => {
   if (!VALID_UPLOAD_FILE_TYPES.includes(fileType)) {
     return errAsync(
       new InvalidFileTypeError(`"${fileType}" is not a supported file type`),
@@ -84,7 +83,7 @@ export const createPresignedPostForImages = ({
   const presignedPostPromise = new Promise<PresignedPost>((resolve, reject) => {
     AwsConfig.s3.createPresignedPost(
       {
-        Bucket: AwsConfig.imageS3Bucket,
+        Bucket: bucketName,
         Expires: PRESIGNED_POST_EXPIRY_SECS,
         Conditions: [
           // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
@@ -120,4 +119,21 @@ export const createPresignedPostForImages = ({
 
     return new ExternalError('Error occurred whilst uploading image')
   })
+}
+
+/**
+ * Creates a S3 presigned POST URL for the client to upload images directly to.
+ *
+ * @param param.fileId key of the file
+ * @param param.fileMd5Hash the MD5 hash of the file
+ * @param param.fileType the file type of the file
+ *
+ * @returns ok(presigned post url) when creation is successful
+ * @returns err(InvalidFileTypeError) when given file type is not supported
+ * @returns err(ExternalError) when errors occurs on S3 side whilst creating presigned post url.
+ */
+export const createPresignedPostForImages = (
+  uploadParams: PresignedPostParams,
+): ResultAsync<PresignedPost, InvalidFileTypeError | ExternalError> => {
+  return createPresignedPost(AwsConfig.imageS3Bucket, uploadParams)
 }

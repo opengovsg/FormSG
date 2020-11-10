@@ -109,7 +109,7 @@ describe('admin-form.service', () => {
         url: 'some url',
       }
       // Mock external service success.
-      jest
+      const s3Spy = jest
         .spyOn(aws.s3, 'createPresignedPost')
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -125,6 +125,11 @@ describe('admin-form.service', () => {
       })
 
       // Assert
+      // Check that the correct bucket was used.
+      expect(s3Spy).toHaveBeenCalledWith(
+        expect.objectContaining({ Bucket: aws.imageS3Bucket }),
+        expect.any(Function),
+      )
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPost)
     })
