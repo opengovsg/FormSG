@@ -15,6 +15,8 @@ let encryptSubmissions = require('../../app/controllers/encrypt-submissions.serv
 let PERMISSIONS = require('../utils/permission-levels').default
 const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
+const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
+const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 
 const emailValOpts = {
   minDomainSegments: 2, // Number of segments required for the domain
@@ -28,7 +30,7 @@ const emailValOpts = {
  * @param {enum} requiredPermission
  */
 let authActiveForm = (requiredPermission) => [
-  auth.authenticateUser,
+  withUserAuthentication,
   forms.formById,
   adminForms.isFormActive,
   auth.verifyPermission(requiredPermission),
@@ -38,7 +40,7 @@ let authActiveForm = (requiredPermission) => [
  * Authenticates logged in user, before retrieving non-archived form.
  */
 let authAdminActiveAnyForm = [
-  auth.authenticateUser,
+  withUserAuthentication,
   forms.formById,
   adminForms.isFormActive,
 ]
@@ -85,8 +87,8 @@ module.exports = function (app) {
    */
   app
     .route('/adminform')
-    .get(auth.authenticateUser, adminForms.list)
-    .post(auth.authenticateUser, adminForms.create)
+    .get(withUserAuthentication, AdminFormController.handleListDashboardForms)
+    .post(withUserAuthentication, adminForms.create)
 
   /**
    * @typedef AdminForm

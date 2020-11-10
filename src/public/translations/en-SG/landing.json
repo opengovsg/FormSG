@@ -110,7 +110,7 @@
     }
   },
   "FOOTER": {
-    "APP_NAME": "FormSG",
+    "APP_NAME": "Form",
     "APP_TEXT": "Build government forms in minutes",
     "USER_GUIDE": {
       "TEXT": "@:USER_GUIDE.TEXT",
@@ -127,8 +127,16 @@
       "HREF": "https://go.gov.sg/report-vulnerability"
     },
     "COPYRIGHT": {
-      "TEXT": "&copy; {{year}} Open Government Products, GovTech",
+      "TEXT": {
+        "LINE_1": "&copy;{{year}} Open Government Products,&nbsp;",
+        "LINE_2": "Government Technology Agency of Singapore"
+      },
       "HREF": "https://open.gov.sg"
+    },
+    "SOCIALS": {
+      "LINKEDIN": "https://linkedin.com/company/open-government-products",
+      "FACEBOOK": "https://www.facebook.com/opengovsg/",
+      "OGP": "https://open.gov.sg"
     }
   }
 }

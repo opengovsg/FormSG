@@ -12,6 +12,7 @@ angular.module('forms').component('startPageComponent', {
     logoState: '@',
     formTitle: '@',
     authType: '<',
+    myInfoError: '<',
     isAdminPreview: '<',
     hasMyinfoFields: '<',
     isTemplate: '<',

@@ -9,22 +9,6 @@ const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 /**
- * Middleware that authenticates admin-user
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- * @param  {Object} next - Express next middleware function
- */
-exports.authenticateUser = function (req, res, next) {
-  if (req.session && req.session.user) {
-    return next()
-  } else {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
-  }
-}
-
-/**
  * Returns the error message when a user cannot perform an action on a form
  * @param {String} user -  user email
  * @param {String} title -  form title

@@ -1,3 +1,5 @@
+import { Mode as MyInfoClientMode } from '@opengovsg/myinfo-gov-client'
+
 import { FeatureNames, RegisterableFeature } from './types'
 
 const HOUR_IN_MILLIS = 1000 * 60 * 60
@@ -150,6 +152,20 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
       format: String,
       default: null,
       env: 'CP_IDP_CERT_PATH',
+    },
+    myInfoClientMode: {
+      doc:
+        'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
+      format: Object.values(MyInfoClientMode),
+      default: MyInfoClientMode.Production,
+      env: 'MYINFO_CLIENT_CONFIG',
+    },
+    myInfoKeyPath: {
+      doc:
+        'Filepath to MyInfo private key, which is used to decrypt returned responses.',
+      format: String,
+      default: null,
+      env: 'MYINFO_FORMSG_KEY_PATH',
     },
   },
 }

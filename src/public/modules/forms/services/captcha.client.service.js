@@ -64,6 +64,12 @@ function captchaService($window, vcRecaptchaService, Toastr) {
     cb()
   }
 
+  this.onError = function () {
+    Toastr.error(
+      'Error: Cannot connect to reCAPTCHA. Please check your internet connectivity or try submitting on another device.',
+    )
+  }
+
   /**
    * Expire captcha if captcha enabled
    */

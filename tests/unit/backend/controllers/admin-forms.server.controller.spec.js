@@ -292,65 +292,6 @@ describe('Admin-Forms Controller', () => {
     })
   })
 
-  describe('list', () => {
-    it('should fetch forms with corresponding admin or collaborators and sorted by last modified', async (done) => {
-      const currentAdmin = testUser
-      // Insert additional user into User collection.
-      const collabAdmin = await User.create({
-        email: 'test1@test.gov.sg',
-        _id: mongoose.Types.ObjectId('000000000002'),
-        agency: testAgency._id,
-      })
-      // Is admin
-      let form1 = new Form({
-        title: 'Test Form1',
-        emails: currentAdmin.email,
-        admin: currentAdmin._id,
-      }).save()
-      // Is collab
-      let form2 = new Form({
-        title: 'Test Form2',
-        emails: collabAdmin.email,
-        admin: collabAdmin._id,
-        permissionList: [roles.collaborator(currentAdmin.email)],
-      }).save()
-      // Should not be fetched since archived
-      let form3 = new Form({
-        title: 'Test Form3',
-        emails: currentAdmin.email,
-        admin: currentAdmin._id,
-        status: 'ARCHIVED',
-      }).save()
-      // This form should not be fetched (not collab or admin)
-      let form4 = new Form({
-        title: 'Test Form3',
-        emails: currentAdmin.email,
-        admin: collabAdmin._id,
-        permissionList: [roles.collaborator('nofetch@test.gov.sg')],
-      }).save()
-
-      Promise.all([form1, form2, form3, form4])
-        .then(() => {
-          res.json.and.callFake((args) => {
-            let times = args.map((f) => f.lastModified)
-            // Should be sorted by last modified in descending order
-            expect(times).toEqual(
-              times.sort((a, b) => {
-                return b - a
-              }),
-            )
-            // 3 forms to be fetched
-            expect(args.length).toEqual(3)
-            done()
-          })
-          Controller.list(req, res)
-        })
-        .catch((err) => {
-          done(err)
-        })
-    })
-  })
-
   describe('getFeedback', () => {
     it('should retrieve correct response based on saved FormFeedbacks', (done) => {
       // Define feedback to be added to MongoMemoryServer db
