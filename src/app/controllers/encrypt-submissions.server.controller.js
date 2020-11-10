@@ -5,7 +5,7 @@ const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
 const mongoose = require('mongoose')
-const errorHandler = require('./errors.server.controller')
+const errorHandler = require('../utils/handle-mongo-error')
 const {
   getEncryptSubmissionModel,
 } = require('../models/submission.server.model')

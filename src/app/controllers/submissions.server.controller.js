@@ -3,7 +3,7 @@
 const axios = require('axios')
 
 const mongoose = require('mongoose')
-const errorHandler = require('./errors.server.controller')
+const errorHandler = require('../utils/handle-mongo-error')
 const getSubmissionModel = require('../models/submission.server.model').default
 const Submission = getSubmissionModel(mongoose)
 
