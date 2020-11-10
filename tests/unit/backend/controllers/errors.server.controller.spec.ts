@@ -1,16 +1,17 @@
-describe('Errors Controller', () => {
-  const controller = spec(
-    'dist/backend/app/controllers/errors.server.controller',
-  )
+import {
+  defaultErrorMessage,
+  getMongoErrorMessage,
+} from 'src/app/controllers/errors.server.controller'
 
+describe('Errors Controller', () => {
   describe('getMongoErrorMessage', () => {
     it('should return blank string if no error', () => {
-      expect(controller.getMongoErrorMessage()).toEqual('')
+      expect(getMongoErrorMessage()).toEqual('')
     })
 
     it('should return string if error is string', () => {
       const err = 'something failed'
-      expect(controller.getMongoErrorMessage(err)).toEqual(err)
+      expect(getMongoErrorMessage(err)).toEqual(err)
     })
 
     it('should call mongoDuplicateKeyError helperif error code is 11000 or 11001 (with field name)', () => {
@@ -23,7 +24,7 @@ describe('Errors Controller', () => {
         ok: 1,
       }
       const expected = 'Foo already exists'
-      expect(controller.getMongoErrorMessage(err)).toEqual(expected)
+      expect(getMongoErrorMessage(err)).toEqual(expected)
     })
 
     it('should call mongoDuplicateKeyError helper if error code is 11000 or 11001 (no error msg)', () => {
@@ -34,7 +35,7 @@ describe('Errors Controller', () => {
         ok: 1,
       }
       const expected = 'Unique field already exists'
-      expect(controller.getMongoErrorMessage(err)).toEqual(expected)
+      expect(getMongoErrorMessage(err)).toEqual(expected)
     })
 
     it('should return error message for other error code', () => {
@@ -44,9 +45,7 @@ describe('Errors Controller', () => {
         nPrev: 1,
         ok: 1,
       }
-      expect(controller.getMongoErrorMessage(err)).toEqual(
-        controller.defaultErrorMessage,
-      )
+      expect(getMongoErrorMessage(err)).toEqual(defaultErrorMessage)
     })
 
     it('should return error message if no error code', () => {
@@ -57,9 +56,7 @@ describe('Errors Controller', () => {
           },
         },
       }
-      expect(controller.getMongoErrorMessage(err)).toEqual(
-        err.errors.error1.message,
-      )
+      expect(getMongoErrorMessage(err)).toEqual(err.errors.error1.message)
     })
   })
 })
