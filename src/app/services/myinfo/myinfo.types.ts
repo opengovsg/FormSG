@@ -1,7 +1,6 @@
 import { MyInfoAttribute } from '@opengovsg/myinfo-gov-client'
 
-import { IFieldSchema, IMyInfo } from 'src/types'
-
+import { IFieldSchema, IMyInfo } from '../../../types'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 export interface IPossiblyPrefilledField extends IFieldSchema {
