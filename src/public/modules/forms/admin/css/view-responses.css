@@ -754,3 +754,15 @@
     width: 100%;
   }
 }
+
+@media (max-width: 720px) {
+  #responses-tab .hide-count {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  #responses-tab #filter-by-submission-filter-textbox {
+    width: 600px;
+  }
+}
