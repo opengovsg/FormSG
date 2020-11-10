@@ -19,10 +19,10 @@ import {
   IHashes,
   IMyInfoHashSchema,
 } from '../../../types'
-import getMyInfoHashModel from '../../models/myinfo_hash.server.model'
 import { DatabaseError } from '../../modules/core/core.errors'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
+import getMyInfoHashModel from './myinfo_hash.model'
 import {
   CircuitBreakerError,
   FetchMyInfoError,
