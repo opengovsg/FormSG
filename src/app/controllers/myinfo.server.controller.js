@@ -218,7 +218,7 @@ exports.verifyMyInfoVals = async function (req, res, next) {
             _.uniq(clientMyInfoFields.map((field) => field.attr)),
             _.keys(hashedFields),
           )
-          req.hashedFields = _.pick(hashedFields, verifiedKeys)
+          req.hashedFields = new Set(verifiedKeys)
           return next()
         }
       })

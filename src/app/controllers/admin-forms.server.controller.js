@@ -598,13 +598,13 @@ function makeModule(connection) {
       switch (authType) {
         case 'SP': {
           res.locals.uinFin = 'S1234567A'
-          req.hashedFields = {}
+          req.hashedFields = new Set()
           let actualFormFields = req.form.form_fields
           let actualMyInfoFields = actualFormFields.filter(
             (field) => field.myInfo && field.myInfo.attr,
           )
           for (let field of actualMyInfoFields) {
-            req.hashedFields[field.myInfo.attr] = true
+            req.hashedFields.add(field.myInfo.attr)
           }
           break
         }
