@@ -18,6 +18,7 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError } from '../../modules/core/core.errors'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
@@ -250,7 +251,7 @@ export class MyInfoService {
   checkMyInfoHashes(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ): ResultAsync<IHashes, HashingError | HashDidNotMatchError> {
+  ): ResultAsync<Set<MyInfoAttribute>, HashingError | HashDidNotMatchError> {
     const comparisonPromises = compareHashedValues(responses, hashes)
     return ResultAsync.fromPromise(
       Bluebird.props(comparisonPromises),
@@ -266,9 +267,10 @@ export class MyInfoService {
         return new HashingError(message)
       },
     ).andThen((comparisonResults) => {
+      const comparedAttrs = Array.from(comparisonResults.keys())
       // All outcomes should be true
-      const failedAttrs = Object.keys(comparisonResults).filter(
-        (attr) => !comparisonResults[attr],
+      const failedAttrs = comparedAttrs.filter(
+        (attr) => !comparisonResults.get(attr),
       )
       if (failedAttrs.length > 0) {
         const message = 'MyInfo Hash did not match'
@@ -281,7 +283,7 @@ export class MyInfoService {
         })
         return errAsync(new HashDidNotMatchError(message))
       }
-      return okAsync(comparisonResults as IHashes)
+      return okAsync(new Set(comparedAttrs))
     })
   }
 }
