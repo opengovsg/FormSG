@@ -118,24 +118,26 @@ export class MyInfoService {
     return ResultAsync.fromPromise(
       this.#myInfoClientBreaker.fire(params),
       (error) => {
-        const isCircuitOpen = CircuitBreaker.isOurError(error)
-        const logMessage = isCircuitOpen
-          ? 'Circuit breaker tripped'
-          : 'Error retrieving from MyInfo'
-        logger.error({
-          message: logMessage,
-          meta: {
-            action: 'fetchMyInfoPersonData',
-            meta: {
-              requestedAttributes: params.requestedAttributes,
-              eServiceId: params.singpassEserviceId,
-            },
-          },
-          error,
-        })
-        return isCircuitOpen
-          ? new CircuitBreakerError(logMessage)
-          : new FetchMyInfoError(logMessage)
+        const logMeta = {
+          action: 'fetchMyInfoPersonData',
+          requestedAttributes: params.requestedAttributes,
+          eServiceId: params.singpassEserviceId,
+        }
+        if (CircuitBreaker.isOurError(error)) {
+          logger.error({
+            message: 'Circuit breaker tripped',
+            meta: logMeta,
+            error,
+          })
+          return new CircuitBreakerError()
+        } else {
+          logger.error({
+            message: 'Error retrieving data from MyInfo',
+            meta: logMeta,
+            error,
+          })
+          return new FetchMyInfoError()
+        }
       },
     )
   }
@@ -180,16 +182,15 @@ export class MyInfoService {
     return ResultAsync.fromPromise(
       Bluebird.props<IHashes>(readOnlyHashPromises),
       (error) => {
-        const message = 'Failed to hash MyInfo values'
         logger.error({
-          message,
+          message: 'Failed to hash MyInfo values',
           meta: {
             action: 'saveMyInfoHashes',
             myInfoAttributes: Object.keys(readOnlyHashPromises),
           },
           error,
         })
-        return new HashingError(message)
+        return new HashingError()
       },
     ).andThen((readOnlyHashes: IHashes) => {
       return ResultAsync.fromPromise(
@@ -244,7 +245,7 @@ export class MyInfoService {
           },
         })
       }
-      return errAsync(new MissingHashError('MyInfo hashes not found.'))
+      return errAsync(new MissingHashError())
     })
   }
 
@@ -256,15 +257,14 @@ export class MyInfoService {
     return ResultAsync.fromPromise(
       Bluebird.props(comparisonPromises),
       (error) => {
-        const message = 'Error while comparing MyInfo hashes'
         logger.error({
-          message,
+          message: 'Error while comparing MyInfo hashes',
           meta: {
             action: 'checkMyInfoHashes',
           },
           error,
         })
-        return new HashingError(message)
+        return new HashingError()
       },
     ).andThen((comparisonResults) => {
       const comparedAttrs = Array.from(comparisonResults.keys())
@@ -273,15 +273,14 @@ export class MyInfoService {
         (attr) => !comparisonResults.get(attr),
       )
       if (failedAttrs.length > 0) {
-        const message = 'MyInfo Hash did not match'
         logger.error({
-          message,
+          message: 'MyInfo Hash did not match',
           meta: {
             action: 'checkMyInfoHashes',
             failedAttrs,
           },
         })
-        return errAsync(new HashDidNotMatchError(message))
+        return errAsync(new HashDidNotMatchError())
       }
       return okAsync(new Set(comparedAttrs))
     })
