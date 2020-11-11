@@ -120,7 +120,7 @@ export const isFieldReadOnly = (
   )
 }
 
-export const createHashPromises = (
+export const hashFieldValues = (
   prefilledFormFields: IPossiblyPrefilledField[],
 ): MyInfoHashPromises => {
   const readOnlyHashPromises: MyInfoHashPromises = {}

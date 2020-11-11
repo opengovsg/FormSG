@@ -33,8 +33,8 @@ import {
 import { IPossiblyPrefilledField, VisibleMyInfoResponse } from './myinfo.types'
 import {
   compareMyInfoHash,
-  createHashPromises,
   getMyInfoValue,
+  hashFieldValues,
   hasMyInfoAnswer,
   isFieldReadOnly,
 } from './myinfo.util'
@@ -176,7 +176,7 @@ export class MyInfoService {
     formId: string,
     prefilledFormFields: IPossiblyPrefilledField[],
   ): ResultAsync<IMyInfoHashSchema | null, HashingError | DatabaseError> {
-    const readOnlyHashPromises = createHashPromises(prefilledFormFields)
+    const readOnlyHashPromises = hashFieldValues(prefilledFormFields)
     return ResultAsync.fromPromise(
       Bluebird.props<IHashes>(readOnlyHashPromises),
       (error) => {
