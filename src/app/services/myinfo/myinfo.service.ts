@@ -182,6 +182,8 @@ export class MyInfoService {
    * @param uinFin NRIC
    * @param formId ID of form being populated
    * @param prefilledFormFields Fields with fieldValue prefilled and disabled set to true if read-only
+   * @returns the document saved to the database which contains the hashes, or null if the document was not found
+   * @throws error if an error occurred while hashing the values or updating the database
    */
   saveMyInfoHashes(
     uinFin: string,
@@ -230,6 +232,8 @@ export class MyInfoService {
    * Fetches the saved hashes for a given MyInfo form and user.
    * @param uinFin NRIC
    * @param formId ID of form being checked
+   * @returns an object mapping MyInfo attributes to their respective saved hashes
+   * @throws error if there was an error while querying the database or the requested hashes were not found
    */
   fetchMyInfoHashes(
     uinFin: string,
@@ -268,6 +272,9 @@ export class MyInfoService {
    * Checks that the given responses match the given hashes.
    * @param responses Fields processed with the isVisible attribute
    * @param hashes MyInfo value hashes retrieved from the database
+   * @returns the set of MyInfo attributes which were verified using their hashes
+   * @throws if an error occurred while comparing the responses and their hashes, or if any
+   * hash did not match the submitted value
    */
   checkMyInfoHashes(
     responses: ProcessedFieldResponse[],
