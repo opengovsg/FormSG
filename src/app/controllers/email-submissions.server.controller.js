@@ -281,7 +281,7 @@ exports.validateEmailSubmission = function (req, res, next) {
  * @param  {Function} next - Express next middleware function
  */
 exports.prepareEmailSubmission = (req, res, next) => {
-  const { hashedFields } = req
+  const { hashedFields } = res.locals
 
   const concatArray = (dataValue, srcValue) => {
     if (_.isArray(dataValue)) {
