@@ -50,6 +50,14 @@ export class MyInfoService {
   #myInfoClientBreaker: CircuitBreaker<[IPersonBasicRequest], IPersonBasic>
   #spCookieMaxAge: number
 
+  /**
+   *
+   * @param myInfoConfig Environment variables including myInfoClientMode and myInfoKeyPath
+   * @param nodeEnv The node environment: development, production or test
+   * @param realm The realm to be passed to MyInfoGovClient
+   * @param singpassEserviceId
+   * @param spCookieMaxAge Validity duration of the SingPass cookie
+   */
   constructor({
     myInfoConfig,
     nodeEnv,
@@ -171,6 +179,8 @@ export class MyInfoService {
 
   /**
    * Saves hashed prefilled values of MyInfo fields.
+   * @param uinFin NRIC
+   * @param formId ID of form being populated
    * @param prefilledFormFields Fields with fieldValue prefilled and disabled set to true if read-only
    */
   saveMyInfoHashes(
@@ -216,6 +226,11 @@ export class MyInfoService {
     })
   }
 
+  /**
+   * Fetches the saved hashes for a given MyInfo form and user.
+   * @param uinFin NRIC
+   * @param formId ID of form being checked
+   */
   fetchMyInfoHashes(
     uinFin: string,
     formId: string,
@@ -249,6 +264,11 @@ export class MyInfoService {
     })
   }
 
+  /**
+   * Checks that the given responses match the given hashes.
+   * @param responses Fields processed with the isVisible attribute
+   * @param hashes MyInfo value hashes retrieved from the database
+   */
   checkMyInfoHashes(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
