@@ -23,6 +23,7 @@ import { createReqMeta } from '../utils/request'
 
 const logger = createLoggerWithLabel(module)
 
+// TODO (#42): remove these types when migrating away from middleware pattern
 type MyInfoReq<T> = T & {
   form: IPopulatedForm
 }
@@ -36,6 +37,10 @@ type ResWithHashedFields<T> = T & {
   locals: { hashedFields?: Set<MyInfoAttribute> }
 }
 
+/**
+ * Middleware for prefilling MyInfo values.
+ * @returns next, always. If any error occurs, res.locals.myInfoError is set to true.
+ */
 export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   req,
   res,
@@ -86,6 +91,16 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
     })
 }
 
+/**
+ * Middleware for validating that submitted MyInfo field values match the values
+ * originally retrieved from MyInfo.
+ * @returns next if all the responses match
+ * @returns 401 if res.locals.uinFin is not defined or if the submitted values do not match
+ * @returns 503 if there is an error while hashing values or querying the database, or if
+ * the MyInfo feature is not activated on the app
+ * @returns 410 if the hashes have expired
+ * @returns 500 if an unknown error occurs
+ */
 export const verifyMyInfoVals: RequestHandler<
   ParamsDictionary,
   unknown,
