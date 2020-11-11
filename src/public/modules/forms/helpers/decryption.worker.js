@@ -4,6 +4,9 @@ const processDecryptedContent = require('../helpers/process-decrypted-content')
 const {
   TRANSACTION_EXPIRE_AFTER_SECONDS,
 } = require('../../../../shared/util/verification')
+const JSZip = require('jszip')
+const { decode: decodeBase64 } = require('@stablelib/base64')
+require('regenerator-runtime')
 
 let formsgSdk
 
@@ -16,6 +19,35 @@ function initFormSg(formsgSdkMode) {
     verificationOptions: {
       transactionExpiry: TRANSACTION_EXPIRE_AFTER_SECONDS,
     },
+  })
+}
+
+function downloadAndDecryptAttachment(url, secretKey) {
+  return fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
+      return formsgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
+    })
+}
+
+function downloadAndDecryptAttachmentsAsZip(attachmentDownloadUrls, secretKey) {
+  var zip = new JSZip()
+  let downloadPromises = []
+  for (const [questionNum, metadata] of attachmentDownloadUrls) {
+    downloadPromises.push(
+      downloadAndDecryptAttachment(metadata.url, secretKey).then(
+        (bytesArray) => {
+          zip.file(
+            'Question ' + questionNum + ' - ' + metadata.filename,
+            bytesArray,
+          )
+        },
+      ),
+    )
+  }
+  return Promise.all(downloadPromises).then(() => {
+    return zip.generateAsync({ type: 'blob' })
   })
 }
 
@@ -60,7 +92,7 @@ function verifySignature(decryptedSubmission, created) {
  * main thread.
  * @param {{line: string, secretKey: string}} data The data to decrypt into a csvRecord.
  */
-function decryptIntoCsv(data) {
+async function decryptIntoCsv(data) {
   if (!formsgSdk) {
     throw new Error(
       'An init message containing the node environment must first be passed in before any other action',
@@ -73,6 +105,7 @@ function decryptIntoCsv(data) {
   /** @type {CsvRecord} */
   let csvRecord
   let attachmentDownloadUrls = new Map()
+  let downloadBlob
 
   try {
     submission = JSON.parse(line)
@@ -115,6 +148,11 @@ function decryptIntoCsv(data) {
             })
           }
         })
+
+        downloadBlob = await downloadAndDecryptAttachmentsAsZip(
+          attachmentDownloadUrls,
+          secretKey,
+        )
       }
     } catch (error) {
       csvRecord.status = 'ERROR'
@@ -126,7 +164,7 @@ function decryptIntoCsv(data) {
       status: 'ERROR',
     }
   }
-  self.postMessage({ csvRecord, attachmentDownloadUrls })
+  self.postMessage({ csvRecord, downloadBlob })
 }
 
 self.addEventListener('message', ({ data }) => {

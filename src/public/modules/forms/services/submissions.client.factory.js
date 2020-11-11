@@ -241,7 +241,6 @@ function SubmissionsFactory(
       const killWorkers = (workerPool) => {
         workerPool.forEach((worker) => worker.terminate())
       }
-      let submissionsObject = this
 
       return this.count(params).then((expectedNumResponses) => {
         return new Promise(function (resolve, reject) {
@@ -286,7 +285,7 @@ function SubmissionsFactory(
             // When worker returns a decrypted message
             worker.onmessage = (event) => {
               const { data } = event
-              const { csvRecord, attachmentDownloadUrls } = data
+              const { csvRecord, downloadBlob } = data
 
               if (csvRecord.status === 'ERROR') {
                 errorCount++
@@ -298,16 +297,10 @@ function SubmissionsFactory(
               }
 
               if (downloadAttachments) {
-                // TODO(frankchn): Handle errors better here, or use a helper to download the files instead
-                submissionsObject
-                  .downloadAndDecryptAttachmentsAsZip(
-                    attachmentDownloadUrls,
-                    secretKey,
-                  )
-                  .then((blob) => {
-                    triggerFileDownload(blob, 'RefNo ' + csvRecord.id + '.zip')
-                  })
-                  .catch((error) => console.log(error))
+                triggerFileDownload(
+                  downloadBlob,
+                  'RefNo ' + csvRecord.id + '.zip',
+                )
               }
             }
             // When worker fails to decrypt a message
@@ -325,7 +318,6 @@ function SubmissionsFactory(
           })
 
           let downloadStartTime
-
           fetchStream(resUrl)
             .then((response) => ndjsonStream(response.body))
             .then((stream) => {
