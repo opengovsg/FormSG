@@ -981,9 +981,7 @@ describe('Email Submissions Controller', () => {
       const fieldId = new ObjectID()
 
       const attr = 'passportnumber'
-      reqFixtures.hashedFields = {
-        [attr]: 'foobar',
-      }
+      reqFixtures.hashedFields = new Set([attr])
       const responseField = {
         _id: String(fieldId),
         question: 'myinfo',

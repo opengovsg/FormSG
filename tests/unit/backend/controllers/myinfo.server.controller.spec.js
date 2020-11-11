@@ -677,10 +677,7 @@ describe('MyInfo Controller', () => {
 
             next = jasmine.createSpy().and.callFake(() => {
               expect(
-                _.isEqual(
-                  new Set(_.keys(req.hashedFields)),
-                  new Set(_.keys(ALL_MYINFO_HASHES)),
-                ),
+                _.isEqual(req.hashedFields, new Set(_.keys(ALL_MYINFO_HASHES))),
               ).toBeTruthy()
               expect(res.send).not.toHaveBeenCalled()
               expect(res.json).not.toHaveBeenCalled()
