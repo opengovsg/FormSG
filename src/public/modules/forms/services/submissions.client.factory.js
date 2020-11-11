@@ -3,11 +3,12 @@
 const HttpStatus = require('http-status-codes')
 const CsvMHGenerator = require('../helpers/CsvMergedHeadersGenerator')
 const DecryptionWorker = require('../helpers/decryption.worker.js')
-const { fixParamsToUrl } = require('../helpers/util')
+const { fixParamsToUrl, triggerFileDownload } = require('../helpers/util')
 const ndjsonStream = require('../helpers/ndjsonStream')
 const fetchStream = require('fetch-readablestream')
 const { forOwn } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
+const JSZip = require('jszip')
 
 const NUM_OF_METADATA_ROWS = 4
 
@@ -181,6 +182,34 @@ function SubmissionsFactory(
       return deferred.promise
     },
     /**
+     * Triggers a download of a set of attachments as a zip file when given attachment metadata and a secret key
+     * @param {Map} attachmentDownloadUrls Map of question number to individual attachment metadata (object with url and filename properties)
+     * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
+     * @returns {Promise} A Promise containing the contents of the ZIP file as a blob
+     */
+    downloadAndDecryptAttachmentsAsZip: function (
+      attachmentDownloadUrls,
+      secretKey,
+    ) {
+      var zip = new JSZip()
+      let downloadPromises = []
+      for (const [questionNum, metadata] of attachmentDownloadUrls) {
+        downloadPromises.push(
+          this.downloadAndDecryptAttachment(metadata.url, secretKey).then(
+            (bytesArray) => {
+              zip.file(
+                'Question ' + questionNum + ' - ' + metadata.filename,
+                bytesArray,
+              )
+            },
+          ),
+        )
+      }
+      return Promise.all(downloadPromises).then(() => {
+        return zip.generateAsync({ type: 'blob' })
+      })
+    },
+    /**
      * Triggers a download of a single attachment when given an S3 presigned url and a secretKey
      * @param {String} url URL pointing to the location of the encrypted attachment
      * @param {String} secretKey An instance of EncryptionKey for decrypting the attachment
@@ -199,10 +228,15 @@ function SubmissionsFactory(
      * @param {String} params.formTitle The title of the form
      * @param  {String} params.startDate? The specific start date to filter for file responses in YYYY-MM-DD
      * @param  {String} params.endDate? The specific end date to filter for file responses in YYYY-MM-DD
+     * @param {Boolean} downloadAttachments Whether to download attachments as ZIP files in addition to responses as CSV
      * @param {String} secretKey An instance of EncryptionKey for decrypting the submission
      * @returns {Promise} Empty Promise object for chaining
      */
-    downloadEncryptedResponses: function (params, secretKey) {
+    downloadEncryptedResponses: function (
+      params,
+      downloadAttachments,
+      secretKey,
+    ) {
       // Helper function to kill an array of EncryptionWorkers
       const killWorkers = (workerPool) => {
         workerPool.forEach((worker) => worker.terminate())
@@ -219,9 +253,12 @@ function SubmissionsFactory(
             })
           }
 
-          let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download`
+          let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
           if (params.startDate && params.endDate) {
-            resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
+            resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
+          }
+          if (downloadAttachments) {
+            resUrl += `downloadAttachments=true&`
           }
 
           let experimentalCsvGenerator = new CsvMHGenerator(
@@ -248,7 +285,7 @@ function SubmissionsFactory(
             // When worker returns a decrypted message
             worker.onmessage = (event) => {
               const { data } = event
-              const { csvRecord } = data
+              const { csvRecord, downloadBlob } = data
 
               if (csvRecord.status === 'ERROR') {
                 errorCount++
@@ -257,6 +294,13 @@ function SubmissionsFactory(
               } else {
                 // accumulate dataset
                 experimentalCsvGenerator.addRecord(csvRecord.submissionData)
+              }
+
+              if (downloadAttachments) {
+                triggerFileDownload(
+                  downloadBlob,
+                  'RefNo ' + csvRecord.id + '.zip',
+                )
               }
             }
             // When worker fails to decrypt a message
@@ -274,7 +318,6 @@ function SubmissionsFactory(
           })
 
           let downloadStartTime
-
           fetchStream(resUrl)
             .then((response) => ndjsonStream(response.body))
             .then((stream) => {
@@ -291,6 +334,7 @@ function SubmissionsFactory(
                       workerPool[receivedRecordCount % numWorkers].postMessage({
                         line: result.value,
                         secretKey,
+                        downloadAttachments,
                       })
                       receivedRecordCount++
                     } catch (error) {
@@ -319,7 +363,7 @@ function SubmissionsFactory(
                   }
 
                   console.error(
-                    'Failed to download CSV, is there a network issue?',
+                    'Failed to download data, is there a network issue?',
                     err,
                   )
                   workerPool.forEach((worker) => worker.terminate())

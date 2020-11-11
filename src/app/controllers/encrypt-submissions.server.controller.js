@@ -1,6 +1,7 @@
 'use strict'
 const crypto = require('crypto')
 const moment = require('moment-timezone')
+const { Transform } = require('stream')
 const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
@@ -334,6 +335,47 @@ exports.getEncryptedResponse = function (req, res) {
   })
 }
 
+function getS3UrlForAttachmentsPipeline(enabled, urlValidDuration) {
+  let st = new Transform({
+    objectMode: true,
+    transform(data, encoding, callback) {
+      if (
+        enabled &&
+        data.attachmentMetadata &&
+        Object.keys(data.attachmentMetadata).length > 0
+      ) {
+        const unprocessedMetadata = data.attachmentMetadata
+        const totalCount = Object.keys(data.attachmentMetadata).length
+
+        data.attachmentMetadata = {}
+        let processedCount = 0
+        for (let [key, objectPath] of Object.entries(unprocessedMetadata)) {
+          s3.getSignedUrl(
+            'getObject',
+            {
+              Bucket: attachmentS3Bucket,
+              Key: objectPath,
+              Expires: urlValidDuration,
+            },
+            function (err, url) {
+              if (err) callback(err)
+              data.attachmentMetadata[key] = url
+              processedCount += 1
+              if (processedCount == totalCount) {
+                callback(null, data)
+              }
+            },
+          )
+        }
+      } else {
+        data.attachmentMetadata = {}
+        callback(null, data)
+      }
+    },
+  })
+  return st
+}
+
 exports.streamEncryptedResponses = async function (req, res) {
   if (
     isMalformedDate(req.query.startDate) ||
@@ -342,6 +384,11 @@ exports.streamEncryptedResponses = async function (req, res) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'Malformed date parameter',
     })
+  }
+
+  let downloadAttachments = false
+  if (req.query.downloadAttachments) {
+    downloadAttachments = true
   }
 
   let query = {
@@ -359,6 +406,7 @@ exports.streamEncryptedResponses = async function (req, res) {
   Submission.find(query, {
     encryptedContent: 1,
     verifiedContent: 1,
+    attachmentMetadata: 1,
     created: 1,
     id: 1,
   })
@@ -381,6 +429,12 @@ exports.streamEncryptedResponses = async function (req, res) {
         message: 'Error retrieving from database.',
       })
     })
+    .pipe(
+      getS3UrlForAttachmentsPipeline(
+        downloadAttachments,
+        req.session.cookie.maxAge / 1000,
+      ),
+    )
     // If you call JSONStream.stringify(false) the elements will only be
     // seperated by a newline.
     .pipe(JSONStream.stringify(false))
