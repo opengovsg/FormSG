@@ -8,7 +8,12 @@ import { StatusCodes } from 'http-status-codes'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 
 import { createLoggerWithLabel } from '../../config/logger'
-import { AuthType, IHashes, IPopulatedForm, SpcpSession } from '../../types'
+import {
+  AuthType,
+  IPopulatedForm,
+  MyInfoAttribute,
+  SpcpSession,
+} from '../../types'
 import { MyInfoFactory } from '../services/myinfo/myinfo.factory'
 import {
   extractRequestedAttributes,
@@ -20,13 +25,15 @@ const logger = createLoggerWithLabel(module)
 
 type MyInfoReq<T> = T & {
   form: IPopulatedForm
-  hashedFields?: IHashes
 }
 type ResWithSpcpSession<T> = T & {
   locals: { spcpSession?: SpcpSession }
 }
 type ResWithUinFin<T> = T & {
   uinFin?: string
+}
+type ResWithHashedFields<T> = T & {
+  locals: { hashedFields?: Set<MyInfoAttribute> }
 }
 
 export const addMyInfo: RequestHandler<ParamsDictionary> = async (
@@ -104,7 +111,9 @@ export const verifyMyInfoVals: RequestHandler<
     )
     .map((hashedFields) => {
       // eslint-disable-next-line @typescript-eslint/no-extra-semi
-      ;(req as MyInfoReq<typeof req>).hashedFields = hashedFields
+      ;(res as ResWithHashedFields<
+        typeof res
+      >).locals.hashedFields = hashedFields
       return next()
     })
     .mapErr((error) => {

@@ -5,7 +5,7 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
-import { get, keyBy, mapValues } from 'lodash'
+import { get } from 'lodash'
 import moment from 'moment'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -182,19 +182,17 @@ const compareSingleHash = (
 export const compareHashedValues = (
   responses: ProcessedFieldResponse[],
   hashes: IHashes,
-): Record<string, Promise<boolean>> => {
+): Map<MyInfoAttribute, Promise<boolean>> => {
   // Filter responses to only those fields with a corresponding hash
   const fieldsWithHashes = filterFieldsWithHashes(responses, hashes)
   // Map MyInfoAttribute to response
-  const myInfoResponsesObj = keyBy(
-    fieldsWithHashes,
-    (field) => field.myInfo.attr,
-  )
-  // Map MyInfoAttribute to Promise<boolean>
-  return mapValues(myInfoResponsesObj, (answer) =>
+  const myInfoResponsesMap = new Map<MyInfoAttribute, Promise<boolean>>()
+  fieldsWithHashes.forEach((field) => {
+    const attr = field.myInfo.attr
     // Already checked that hashes contains this attr
-    compareSingleHash(hashes[answer.myInfo.attr]!, answer),
-  )
+    myInfoResponsesMap.set(attr, compareSingleHash(hashes[attr]!, field))
+  })
+  return myInfoResponsesMap
 }
 
 export const mapVerifyMyInfoError: MapRouteError = (error) => {
