@@ -121,6 +121,12 @@ export const isFieldReadOnly = (
   )
 }
 
+/**
+ * Hashes field values which are prefilled and MyInfo-verified.
+ * @param prefilledFormFields Fields with fieldValue prefilled using MyInfo and disabled
+ * set to true if the prefilled value is MyInfo-verified
+ * @returns object mapping MyInfo attributes to Promises of their hashes
+ */
 export const hashFieldValues = (
   prefilledFormFields: IPossiblyPrefilledField[],
 ): MyInfoHashPromises => {
@@ -136,6 +142,11 @@ export const hashFieldValues = (
   return readOnlyHashPromises
 }
 
+/**
+ * Extracts the MyInfo attributes in an array of form fields.
+ * @param formFields Array of form fields
+ * @returns array of the MyInfo attributes present in the form fields
+ */
 export const extractRequestedAttributes = (
   formFields: IFieldSchema[],
 ): MyInfoAttribute[] => {
@@ -148,6 +159,10 @@ export const extractRequestedAttributes = (
   return attrs
 }
 
+/**
+ * Whether a field contains a MyInfo response
+ * @param field a processed response with the isVisible attribute
+ */
 const hasMyInfoAnswer = (
   field: ProcessedFieldResponse,
 ): field is VisibleMyInfoResponse => {
@@ -179,6 +194,11 @@ const compareSingleHash = (
   return bcrypt.compare(transformedAnswer, hash)
 }
 
+/**
+ * Compares the MyInfo responses within the given response array to the given hashes.
+ * @param responses Responses with isVisible true if they are not hidden by logic
+ * @param hashes Hashed values of the MyInfo responses
+ */
 export const compareHashedValues = (
   responses: ProcessedFieldResponse[],
   hashes: IHashes,
@@ -195,6 +215,10 @@ export const compareHashedValues = (
   return myInfoResponsesMap
 }
 
+/**
+ * Maps an error to the status code and message returned for the verifyMyInfoVals middleware
+ * @param error The error thrown
+ */
 export const mapVerifyMyInfoError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
