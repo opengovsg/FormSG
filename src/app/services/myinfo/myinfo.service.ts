@@ -6,7 +6,7 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
 import fs from 'fs'
-import { cloneDeep, keyBy, mapValues, pickBy } from 'lodash'
+import { cloneDeep } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
@@ -30,12 +30,11 @@ import {
   HashingError,
   MissingHashError,
 } from './myinfo.errors'
-import { IPossiblyPrefilledField, VisibleMyInfoResponse } from './myinfo.types'
+import { IPossiblyPrefilledField } from './myinfo.types'
 import {
-  compareMyInfoHash,
+  compareHashedValues,
   getMyInfoValue,
   hashFieldValues,
-  hasMyInfoAnswer,
   isFieldReadOnly,
 } from './myinfo.util'
 
@@ -252,22 +251,9 @@ export class MyInfoService {
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
   ): ResultAsync<IHashes, HashingError | HashDidNotMatchError> {
-    // Filter twice to get the types to cooperate
-    const responsesWithHashes: VisibleMyInfoResponse[] = responses
-      .filter(hasMyInfoAnswer)
-      .filter((response) => !!hashes[response.myInfo.attr])
-    // Map attribute to response
-    const myInfoResponsesObj = keyBy(
-      responsesWithHashes,
-      (field) => field.myInfo.attr,
-    )
-    // Map attribute to Promise<boolean>
-    const compareHashPromises = mapValues(myInfoResponsesObj, (answer) =>
-      // Already checked that hashes contains this attr
-      compareMyInfoHash(hashes[answer.myInfo.attr]!, answer),
-    )
+    const comparisonPromises = compareHashedValues(responses, hashes)
     return ResultAsync.fromPromise(
-      Bluebird.props(compareHashPromises),
+      Bluebird.props(comparisonPromises),
       (error) => {
         const message = 'Error while comparing MyInfo hashes'
         logger.error({
@@ -295,7 +281,7 @@ export class MyInfoService {
         })
         return errAsync(new HashDidNotMatchError(message))
       }
-      return okAsync(pickBy(hashes, (_, attr) => !!comparisonResults[attr]))
+      return okAsync(comparisonResults as IHashes)
     })
   }
 }

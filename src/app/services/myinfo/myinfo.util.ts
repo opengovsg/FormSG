@@ -5,13 +5,14 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
-import { get } from 'lodash'
+import { get, keyBy, mapValues } from 'lodash'
 import moment from 'moment'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   BasicField,
   IFieldSchema,
+  IHashes,
   MapRouteError,
   MyInfoAttribute,
 } from '../../../types'
@@ -147,10 +148,20 @@ export const extractRequestedAttributes = (
   return attrs
 }
 
-export const hasMyInfoAnswer = (
+const hasMyInfoAnswer = (
   field: ProcessedFieldResponse,
 ): field is VisibleMyInfoResponse => {
   return !!field.isVisible && !!field.myInfo?.attr
+}
+
+const filterFieldsWithHashes = (
+  responses: ProcessedFieldResponse[],
+  hashes: IHashes,
+): VisibleMyInfoResponse[] => {
+  // Filter twice to get types to cooperate
+  return responses
+    .filter(hasMyInfoAnswer)
+    .filter((response) => !!hashes[response.myInfo.attr])
 }
 
 const transformAnswer = (field: VisibleMyInfoResponse): string => {
@@ -160,12 +171,30 @@ const transformAnswer = (field: VisibleMyInfoResponse): string => {
     : answer
 }
 
-export const compareMyInfoHash = (
+const compareSingleHash = (
   hash: string,
   field: VisibleMyInfoResponse,
 ): Promise<boolean> => {
   const transformedAnswer = transformAnswer(field)
   return bcrypt.compare(transformedAnswer, hash)
+}
+
+export const compareHashedValues = (
+  responses: ProcessedFieldResponse[],
+  hashes: IHashes,
+): Record<string, Promise<boolean>> => {
+  // Filter responses to only those fields with a corresponding hash
+  const fieldsWithHashes = filterFieldsWithHashes(responses, hashes)
+  // Map MyInfoAttribute to response
+  const myInfoResponsesObj = keyBy(
+    fieldsWithHashes,
+    (field) => field.myInfo.attr,
+  )
+  // Map MyInfoAttribute to Promise<boolean>
+  return mapValues(myInfoResponsesObj, (answer) =>
+    // Already checked that hashes contains this attr
+    compareSingleHash(hashes[answer.myInfo.attr]!, answer),
+  )
 }
 
 export const mapVerifyMyInfoError: MapRouteError = (error) => {
