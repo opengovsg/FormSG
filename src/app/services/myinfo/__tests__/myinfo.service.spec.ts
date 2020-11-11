@@ -1,316 +1,293 @@
-// import {
-//   Mode as MyInfoClientMode,
-//   MyInfoGovClient,
-// } from '@opengovsg/myinfo-gov-client'
-// import CircuitBreaker from 'opossum'
-// import { mocked } from 'ts-jest/utils'
+import {
+  IPersonBasic,
+  Mode as MyInfoClientMode,
+} from '@opengovsg/myinfo-gov-client'
+import bcrypt from 'bcrypt'
+import mongoose from 'mongoose'
+import { mocked } from 'ts-jest/utils'
 
-// import { MyInfoService } from 'src/app/services/myinfo/myinfo.service'
-// import { Environment } from 'src/types'
+import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+import getMyInfoHashModel from 'src/app/services/myinfo/myinfo_hash.model'
+import { MyInfoService } from 'src/app/services/myinfo/myinfo.service'
+import {
+  Environment,
+  IFieldSchema,
+  IHashes,
+  IMyInfoHashSchema,
+} from 'src/types'
 
-// import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-// import {
-//   MOCK_COOKIE_AGE,
-//   MOCK_ESRVC_ID,
-//   MOCK_KEY_PATH,
-//   MOCK_REALM,
-// } from './myinfo.constants.spec'
+import { IPossiblyPrefilledField } from '../myinfo.types'
 
-// jest.mock('@opengovsg/myinfo-gov-client', () => ({
-//   MyInfoGovClient: jest.fn().mockImplementation(() => {}),
-// }))
-// const MockMyInfoClient = mocked(MyInfoGovClient, true)
+import {
+  MOCK_COOKIE_AGE,
+  MOCK_ESRVC_ID,
+  MOCK_FETCH_PARAMS,
+  MOCK_FORM_FIELDS,
+  MOCK_FORM_ID,
+  MOCK_HASHES,
+  MOCK_KEY_PATH,
+  MOCK_MATCHED_ATTRS,
+  MOCK_MYINFO_DATA,
+  MOCK_POPULATED_FORM_FIELDS,
+  MOCK_REALM,
+  MOCK_RESPONSES,
+  MOCK_UINFIN,
+} from './myinfo.test.constants'
 
-// jest.mock('opossum')
-// const MockCircuitBreaker = mocked(CircuitBreaker, true)
+const MyInfoHash = getMyInfoHashModel(mongoose)
 
-// describe('MyInfoService', () => {
-//   const myInfoService = new MyInfoService({
-//     myInfoConfig: {
-//       myInfoClientMode: MyInfoClientMode.Staging,
-//       myInfoKeyPath: MOCK_KEY_PATH,
-//     },
-//     nodeEnv: Environment.Test,
-//     realm: MOCK_REALM,
-//     singpassEserviceId: MOCK_ESRVC_ID,
-//     spCookieMaxAge: MOCK_COOKIE_AGE,
-//   })
+const mockGetPersonBasic = jest.fn()
+jest.mock('@opengovsg/myinfo-gov-client', () => ({
+  MyInfoGovClient: jest.fn().mockImplementation(() => ({
+    getPersonBasic: mockGetPersonBasic,
+  })),
+  Mode: jest.requireActual('@opengovsg/myinfo-gov-client').Mode,
+  CATEGORICAL_DATA_DICT: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .CATEGORICAL_DATA_DICT,
+  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
+}))
 
-//   beforeAll(async () => {
-//     await dbHandler.connect()
-//     MockMyInfoClient.getPersonBasic
-//   })
-//   beforeEach(() => {
-//     jest.clearAllMocks()
-//   })
-//   afterEach(async () => await dbHandler.clearDatabase())
-//   afterAll(async () => await dbHandler.closeDatabase())
+jest.mock('bcrypt')
+const MockBcrypt = mocked(bcrypt, true)
 
-//   it('should be instantiated without errors', () => {
-//     expect(myInfoService).toBeTruthy()
-//   })
+describe('MyInfoService', () => {
+  let myInfoService = new MyInfoService({
+    myInfoConfig: {
+      myInfoClientMode: MyInfoClientMode.Staging,
+      myInfoKeyPath: MOCK_KEY_PATH,
+    },
+    nodeEnv: Environment.Test,
+    realm: MOCK_REALM,
+    singpassEserviceId: MOCK_ESRVC_ID,
+    spCookieMaxAge: MOCK_COOKIE_AGE,
+  })
 
-//   describe('fetchMyInfoPersonData', () => {
-//     it('should fire MyInfoGovClient.getPersonBasic if success', async () => {
-//       // Arrange
-//       // Inject mock response to be retrieved.
-//       MyInfoGovClient.getPersonBasic.mockImplementationOnce(() => {
-//         return Promise.resolve(MOCK_MYINFO_SUCCESS_RESPONSE)
-//       })
+  beforeAll(async () => await dbHandler.connect())
+  beforeEach(() => jest.clearAllMocks())
+  afterEach(async () => await dbHandler.clearDatabase())
+  afterAll(async () => await dbHandler.closeDatabase())
 
-//       // Act
-//       const response = await myInfoService.fetchMyInfoPersonData(
-//         mockFetchPersonDataParams,
-//       )
+  describe('class constructor', () => {
+    it('should instantiate without errors', () => {
+      expect(myInfoService).toBeTruthy()
+    })
+  })
 
-//       // Assert
-//       expect(MyInfoGovClient.getPersonBasic).toBeCalledTimes(1)
-//       expect(response).toEqual(MOCK_MYINFO_SUCCESS_RESPONSE)
-//     })
+  describe('fetchMyInfoPersonData', () => {
+    beforeEach(() => {
+      myInfoService = new MyInfoService({
+        myInfoConfig: {
+          myInfoClientMode: MyInfoClientMode.Staging,
+          myInfoKeyPath: MOCK_KEY_PATH,
+        },
+        nodeEnv: Environment.Test,
+        realm: MOCK_REALM,
+        singpassEserviceId: MOCK_ESRVC_ID,
+        spCookieMaxAge: MOCK_COOKIE_AGE,
+      })
+    })
 
-//     it('should reject promise on first MyInfo fetch failure', async () => {
-//       // Arrange
-//       const mockError = new Error('Mock MyInfo server failure')
-//       MyInfoGovClient.getPersonBasic.mockImplementationOnce(() =>
-//         Promise.reject(mockError),
-//       )
+    it('should call MyInfoGovClient.getPersonBasic with the correct parameters', async () => {
+      mockGetPersonBasic.mockResolvedValueOnce(MOCK_MYINFO_DATA)
+      const result = await myInfoService.fetchMyInfoPersonData(
+        MOCK_FETCH_PARAMS,
+      )
 
-//       // Act + Assert
-//       await expect(
-//         myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
-//       ).rejects.toThrowError(mockError)
-//     })
+      expect(mockGetPersonBasic).toHaveBeenCalledWith(MOCK_FETCH_PARAMS)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_MYINFO_DATA)
+    })
 
-//     it('should throw circuit breaker error after 5 fetch failures', async () => {
-//       // Arrange
-//       const mockError = new Error('Mock MyInfo server failure')
+    it('should throw FetchMyInfoError when getPersonBasic fails once', async () => {
+      mockGetPersonBasic.mockRejectedValueOnce(new Error())
+      const result = await myInfoService.fetchMyInfoPersonData(
+        MOCK_FETCH_PARAMS,
+      )
 
-//       // Act + Assert
-//       // Call fetch 5 times
-//       // All should be correctly rejected
-//       for (let i = 0; i < 5; i++) {
-//         MyInfoGovClient.getPersonBasic.mockImplementationOnce(() =>
-//           Promise.reject(mockError),
-//         )
-//         await expect(
-//           myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
-//         ).rejects.toThrowError(mockError)
-//       }
+      expect(mockGetPersonBasic).toHaveBeenCalledWith(MOCK_FETCH_PARAMS)
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Error while requesting MyInfo data'),
+      )
+    })
 
-//       // 6th fetch should be circuit broken error, without needing to check
-//       // MyInfoGovClient.getPersonBasic.
-//       await expect(
-//         myInfoService.fetchMyInfoPersonData(mockFetchPersonDataParams),
-//       ).rejects.toThrowError(new Error('Breaker is open'))
-//       // Total number of calls to getPersonBasic should be only 5
-//       expect(MyInfoGovClient.getPersonBasic).toBeCalledTimes(5)
-//     })
-//   })
+    it('should throw CircuitBreakerError when getPersonBasic fails 5 times', async () => {
+      mockGetPersonBasic.mockRejectedValue(new Error())
+      for (let i = 0; i < 5; i++) {
+        await myInfoService.fetchMyInfoPersonData(MOCK_FETCH_PARAMS)
+      }
+      const result = await myInfoService.fetchMyInfoPersonData(
+        MOCK_FETCH_PARAMS,
+      )
 
-//   describe('getMyInfoValue', () => {
-//     it('should return empty string if valid myInfoAttr does not exist in invalid myInfoData', () => {
-//       // Arrange
-//       const invalidData = {}
+      // Last function call doesn't count as breaker is open, so expect 5 calls
+      expect(mockGetPersonBasic).toHaveBeenCalledTimes(5)
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Circuit breaker tripped'),
+      )
+    })
+  })
 
-//       // Act
-//       const actual = myInfoService.getMyInfoValue(
-//         'workpassexpirydate',
-//         invalidData,
-//       )
+  describe('prefillMyInfoFields', () => {
+    it('should prefill fields correctly', () => {
+      const result = myInfoService.prefillMyInfoFields(
+        (MOCK_MYINFO_DATA as unknown) as IPersonBasic,
+        MOCK_FORM_FIELDS as IFieldSchema[],
+      )
+      expect(result._unsafeUnwrap()).toEqual(MOCK_POPULATED_FORM_FIELDS)
+    })
+  })
 
-//       // Assert
-//       expect(actual).toEqual('')
-//     })
+  describe('saveMyInfoHashes', () => {
+    it('should call updateHashes with the correct parameters', async () => {
+      const mockReturnValue = { mock: 'value' }
+      const mockUpdateHashes = jest
+        .spyOn(MyInfoHash, 'updateHashes')
+        .mockResolvedValueOnce(
+          (mockReturnValue as unknown) as IMyInfoHashSchema,
+        )
+      MockBcrypt.hash.mockImplementation((v) => Promise.resolve(v))
+      const expectedHashes = {} as Record<string, string>
+      MOCK_POPULATED_FORM_FIELDS.forEach((field) => {
+        if (field.disabled && field.myInfo?.attr) {
+          expectedHashes[field.myInfo.attr] = field.fieldValue
+        }
+      })
 
-//     it('should return empty string if invalid myInfoAttr does not exist in valid myInfoData', () => {
-//       // Act
-//       const actual = myInfoService.getMyInfoValue('invalid', MOCK_MYINFO_DATA)
+      const result = await myInfoService.saveMyInfoHashes(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+      )
 
-//       // Assert
-//       expect(actual).toEqual('')
-//     })
+      expect(mockUpdateHashes).toHaveBeenCalledWith(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+        expectedHashes,
+        MOCK_COOKIE_AGE,
+      )
+      expect(result._unsafeUnwrap()).toEqual(mockReturnValue)
+    })
 
-//     it('should correctly return attr.value', () => {
-//       // Act
-//       const actual = myInfoService.getMyInfoValue(
-//         'workpassexpirydate',
-//         MOCK_MYINFO_DATA,
-//       )
+    it('should throw HashingError when hashing fails', async () => {
+      MockBcrypt.hash.mockRejectedValue('')
 
-//       // Assert
-//       expect(actual).toEqual(MOCK_MYINFO_DATA.workpassexpirydate.value)
-//     })
+      const result = await myInfoService.saveMyInfoHashes(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+      )
 
-//     describe('Phone numbers', () => {
-//       it('should correctly return formatted home phone numbers if valid', () => {
-//         // Arrange
-//         // code: '65',
-//         // prefix: '+',
-//         // nbr: '66132665',
-//         const expected = '+65 66132665'
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Error occurred while hashing data'),
+      )
+    })
 
-//         // Act
-//         const actual = myInfoService.getMyInfoValue('homeno', MOCK_MYINFO_DATA)
+    it('should throw DatabaseError when database update fails', async () => {
+      MockBcrypt.hash.mockImplementation((v) => Promise.resolve(v))
+      jest.spyOn(MyInfoHash, 'updateHashes').mockRejectedValueOnce('')
+      const result = await myInfoService.saveMyInfoHashes(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+        MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Failed to save MyInfo hashes to database'),
+      )
+    })
+  })
 
-//         // Assert
-//         expect(actual).toEqual(expected)
-//       })
+  describe('fetchMyInfoHashes', () => {
+    it('should return the result of MyInfoHash.findHashes when it is non-null', async () => {
+      const mockReturnValue = { name: 'mockReturnValue' }
+      const mockFindHashes = jest
+        .spyOn(MyInfoHash, 'findHashes')
+        .mockResolvedValue(mockReturnValue)
 
-//       it('should correctly return formatted mobile phone numbers if valid', () => {
-//         // Arrange
-//         // code: '65',
-//         // prefix: '+',
-//         // nbr: '97324992',
-//         const expected = '+65 97324992'
+      const result = await myInfoService.fetchMyInfoHashes(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+      )
 
-//         // Act
-//         const actual = myInfoService.getMyInfoValue(
-//           'mobileno',
-//           MOCK_MYINFO_DATA,
-//         )
+      expect(mockFindHashes).toHaveBeenCalledWith(MOCK_UINFIN, MOCK_FORM_ID)
+      expect(result._unsafeUnwrap()).toEqual(mockReturnValue)
+    })
 
-//         // Assert
-//         expect(actual).toEqual(expected)
-//       })
-//     })
+    it('should throw MissingHashError when the result of MyInfoHash.findHashes is null', async () => {
+      const mockFindHashes = jest
+        .spyOn(MyInfoHash, 'findHashes')
+        .mockResolvedValue(null)
 
-//     describe('Addresses', () => {
-//       it('should correctly return formatted registered addresses', () => {
-//         // Arrange
-//         // unit: '128',
-//         // street: 'BEDOK NORTH AVENUE 1',
-//         // block: '548',
-//         // postal: '460548',
-//         // floor: '09',
-//         // building: '',
-//         const expected = '548 BEDOK NORTH AVENUE 1, #09-128, SINGAPORE 460548'
+      const result = await myInfoService.fetchMyInfoHashes(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+      )
 
-//         // Act
-//         const actual = myInfoService.getMyInfoValue('regadd', MOCK_MYINFO_DATA)
+      expect(mockFindHashes).toHaveBeenCalledWith(MOCK_UINFIN, MOCK_FORM_ID)
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Requested hashes not found in database'),
+      )
+    })
 
-//         // Assert
-//         expect(actual).toEqual(expected)
-//       })
+    it('should throw DatabaseError when querying the database fails', async () => {
+      const mockFindHashes = jest
+        .spyOn(MyInfoHash, 'findHashes')
+        .mockRejectedValue('')
 
-//       it('should correctly return formatted mailing addresses', () => {
-//         // Arrange
-//         // country: 'US',
-//         // unit: '',
-//         // street: '5TH AVENUE',
-//         // lastupdated: '2016-03-11',
-//         // block: '725',
-//         // source: '2',
-//         // postal: 'NY 10022',
-//         // classification: 'C',
-//         // floor: '',
-//         // building: 'TRUMP TOWER',
-//         const expected = 'TRUMP TOWER, 725 5TH AVENUE, UNITED STATES NY 10022'
+      const result = await myInfoService.fetchMyInfoHashes(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+      )
 
-//         // Act
-//         const actual = myInfoService.getMyInfoValue('mailadd', MOCK_MYINFO_DATA)
+      expect(mockFindHashes).toHaveBeenCalledWith(MOCK_UINFIN, MOCK_FORM_ID)
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Error while fetching MyInfo hashes from database'),
+      )
+    })
+  })
 
-//         // Assert
-//         expect(actual).toEqual(expected)
-//       })
+  describe('checkMyInfoHashes', () => {
+    it('should return the set of hashed attributes when the hashes match', async () => {
+      MockBcrypt.compare.mockResolvedValue(true)
 
-//       it('should correctly return formatted billing addresses', () => {
-//         // Arrange
-//         // country: 'SG',
-//         // street: 'SERANGOON AVE 3',
-//         // block: '329',
-//         // postal: '550329',
-//         // floor: '09',
-//         // unit: '360',
-//         const expected = '329 SERANGOON AVE 3, #09-360, SINGAPORE 550329'
+      const result = await myInfoService.checkMyInfoHashes(
+        (MOCK_RESPONSES as unknown) as ProcessedFieldResponse[],
+        MOCK_HASHES as IHashes,
+      )
 
-//         // Act
-//         const actual = myInfoService.getMyInfoValue('billadd', MOCK_MYINFO_DATA)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_MATCHED_ATTRS)
+    })
 
-//         // Assert
-//         expect(actual).toEqual(expected)
-//       })
+    it('should return HashingError when hashing fails', async () => {
+      MockBcrypt.compare.mockRejectedValue('')
 
-//       it('should return empty string if address missing one of [block, street, country, postal] keys', () => {
-//         // Arrange
-//         const mockBillAdd = _.cloneDeep(MOCK_MYINFO_DATA.billadd)
-//         mockBillAdd.block = ''
+      const result = await myInfoService.checkMyInfoHashes(
+        (MOCK_RESPONSES as unknown) as ProcessedFieldResponse[],
+        MOCK_HASHES as IHashes,
+      )
 
-//         // Act
-//         const actual = myInfoService.getMyInfoValue('billadd', {
-//           billAdd: mockBillAdd,
-//         })
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Error occurred while hashing data'),
+      )
+    })
 
-//         // Assert
-//         expect(actual).toEqual('')
-//       })
-//     })
-//   })
+    it('should return HashDidNotMatchError when the hashes do not match', async () => {
+      // Return false for the first hash
+      MockBcrypt.compare.mockImplementation((answer) => {
+        if (answer === MOCK_RESPONSES[0].answer) {
+          return Promise.resolve(false)
+        }
+        return Promise.resolve(true)
+      })
 
-//   describe('prefillMyInfoFields', () => {
-//     it('should correctly return prefilledFields and readOnlyHashes', async () => {
-//       // Arrange
-//       // Inject mock response to be retrieved.
-//       MyInfoGovClient.getPersonBasic.mockImplementationOnce(() => {
-//         return Promise.resolve(MOCK_MYINFO_SUCCESS_RESPONSE)
-//       })
-//       const mockMyInfoData = await myInfoService.fetchMyInfoPersonData(
-//         mockFetchPersonDataParams,
-//       )
+      const result = await myInfoService.checkMyInfoHashes(
+        (MOCK_RESPONSES as unknown) as ProcessedFieldResponse[],
+        MOCK_HASHES as IHashes,
+      )
 
-//       // Act
-//       const {
-//         prefilledFields: actualPrefilled,
-//         readOnlyHashPromises: actualReadOnlyHashes,
-//       } = await myInfoService.prefillMyInfoFields(
-//         mockMyInfoData,
-//         MOCK_FORM_FIELDS,
-//       )
-
-//       // Assert
-//       // Requested MOCK_FORM_FIELDS form field order:
-//       // MyInfoName -> MyInfoMobileNo -> MyInfoHomeNo -> MyInfoMailAddr ->
-//       // normalDropdown -> normalTextField
-//       // MockMyInfoData should only contain `name`, `mobileno`, `mailadd`, and
-//       // `employment` attributes
-
-//       // Should have same length as before filled fields
-//       expect(actualPrefilled.length).toBe(MOCK_FORM_FIELDS.length)
-//       expect(actualPrefilled[0]).toEqual(
-//         expect.objectContaining({
-//           fieldValue: MOCK_MYINFO_SUCCESS_RESPONSE.name.value,
-//           disabled: true,
-//         }),
-//       )
-//       expect(actualPrefilled[1]).toEqual(
-//         expect.objectContaining({
-//           // Should be formatted mobile phone number
-//           fieldValue: '+65 97324992',
-//           disabled: false,
-//         }),
-//       )
-//       // MyInfoHomeNo is not returned in response, so field value should be
-//       // blank.
-//       expect(actualPrefilled[2]).toEqual(
-//         expect.objectContaining({
-//           fieldValue: '',
-//           disabled: false,
-//         }),
-//       )
-//       // Should be formatted mail address
-//       expect(actualPrefilled[3]).toEqual(
-//         expect.objectContaining({
-//           fieldValue: 'TRUMP TOWER, 725 5TH AVENUE, UNITED STATES NY 10022',
-//           disabled: false,
-//         }),
-//       )
-
-//       // Last two are non myinfo fields, should be same as original fields
-//       expect(actualPrefilled[4]).toEqual(MOCK_FORM_FIELDS[4])
-//       expect(actualPrefilled[5]).toEqual(MOCK_FORM_FIELDS[5])
-
-//       // Should only contain name since that is the only readonly field
-//       expect(Object.keys(actualReadOnlyHashes)).toEqual(['name'])
-//     })
-//   })
-// })
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new Error('Responses did not match hashed values'),
+      )
+    })
+  })
+})
