@@ -14,7 +14,7 @@ import { get } from 'lodash'
 export const formatPhoneNumber = (phone: IMyInfoPhoneNo): string => {
   if (!phone || !phone.nbr) return ''
 
-  return phone.prefix && phone.code && phone.nbr
+  return phone.prefix && phone.code
     ? `${phone.prefix}${phone.code} ${phone.nbr}`
     : phone.nbr
 }
