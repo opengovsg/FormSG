@@ -146,7 +146,7 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
      */
     getSubmissionCursorByFormId(
       formId: string,
-      dateRange: {
+      dateRange?: {
         startDate?: string
         endDate?: string
       },

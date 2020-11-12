@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson-ext'
-import { times } from 'lodash'
+import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
@@ -281,6 +281,60 @@ describe('Encrypt Submission Model', () => {
           metadata: [],
         }
         expect(actual).toEqual(expected)
+      })
+    })
+
+    describe('getSubmissionCursorByFormId', () => {
+      it('should return cursor that contains all the submissions', async () => {
+        // Arrange
+        const validFormId = new ObjectId().toHexString()
+        const validSubmission = await Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'mock encrypted content abc',
+          version: 1,
+        })
+        const expectedSubmission = pick(
+          validSubmission,
+          '_id',
+          'created',
+          'verifiedContent',
+          'encryptedContent',
+          'submissionType',
+        )
+
+        // Act
+        const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
+          validFormId,
+        )
+
+        // Assert
+        // Store all retrieved objects in the cursor.
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+        // Cursor stream should contain only that single submission.
+        expect(retrievedSubmissions).toEqual([expectedSubmission])
+      })
+
+      it('should return cursor even if no submissions are found', async () => {
+        // Arrange
+        const invalidFormId = new ObjectId().toHexString()
+
+        // Act
+        const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
+          invalidFormId,
+        )
+
+        // Assert
+        // Store all retrieved objects in the cursor.
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+        // Cursor stream should return nothing.
+        expect(retrievedSubmissions).toEqual([])
       })
     })
   })

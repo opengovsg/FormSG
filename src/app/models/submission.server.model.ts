@@ -298,7 +298,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorByFormId'] = function (
   this: IEncryptSubmissionModel,
   formId,
-  dateRange,
+  dateRange = {},
 ) {
   const streamQuery = {
     form: formId,
