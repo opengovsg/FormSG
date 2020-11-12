@@ -464,13 +464,9 @@ module.exports = function (app) {
       [Segments.QUERY]: Joi.object()
         .keys({
           // Ensure YYYY-MM-DD format.
-          startDate: Joi.string().regex(
-            /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/,
-          ),
+          startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
           // Ensure YYYY-MM-DD format.
-          endDate: Joi.string().regex(
-            /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/,
-          ),
+          endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
         })
         .with('startDate', 'endDate'),
     }),
