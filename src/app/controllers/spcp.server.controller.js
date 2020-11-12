@@ -380,7 +380,7 @@ exports.addSpcpSessionInfo = (authClients) => {
  */
 exports.getRequestedAttributes = function (req, res, next) {
   const { form } = req
-  res.locals.requestedAttributes = form.getUniqMyinfoAttrs() || []
+  res.locals.requestedAttributes = form.getUniqueMyInfoAttrs() || []
   return next()
 }
 
