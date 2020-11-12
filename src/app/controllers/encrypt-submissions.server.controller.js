@@ -14,7 +14,10 @@ const getSubmissionModel = require('../models/submission.server.model').default
 const Submission = getSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
-const { checkIsEncryptedEncoding } = require('../utils/encryption')
+const {
+  isValidEncryptSubmission,
+  processResponses,
+} = require('../utils/encrypt-submission')
 const { ConflictError } = require('../modules/submission/submission.errors')
 const { createReqMeta } = require('../utils/request')
 const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
@@ -22,9 +25,6 @@ const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
   aws: { attachmentS3Bucket, s3 },
 } = require('../../config/config')
-const {
-  getProcessedResponses,
-} = require('../modules/submission/submission.service')
 
 const HttpStatus = require('http-status-codes')
 
@@ -37,20 +37,8 @@ const HttpStatus = require('http-status-codes')
  * @param  {Function} next - Express next middleware function
  */
 exports.validateEncryptSubmission = function (req, res, next) {
-  const { form } = req
-  try {
-    // Check if the encrypted content is base64
-    checkIsEncryptedEncoding(req.body.encryptedContent)
-  } catch (error) {
-    logger.error({
-      message: 'Invalid encryption',
-      meta: {
-        action: 'validateEncryptSubmission',
-        ...createReqMeta(req),
-        formId: form._id,
-      },
-      error,
-    })
+  const isValid = isValidEncryptSubmission(req)
+  if (!isValid) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid data was found. Please submit again.' })
@@ -58,34 +46,21 @@ exports.validateEncryptSubmission = function (req, res, next) {
 
   if (req.body.responses) {
     try {
-      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
-      delete req.body.responses // Prevent downstream functions from using responses by deleting it
+      processResponses(req)
+      return next()
     } catch (err) {
-      logger.error({
-        message: 'Error processing responses',
-        meta: {
-          action: 'validateEncryptSubmission',
-          ...createReqMeta(req),
-          formId: form._id,
-        },
-        error: err,
-      })
       if (err instanceof ConflictError) {
-        return res.status(err.status).json({
+        return res.status(StatusCodes.CONFLICT).json({
           message:
             'The form has been updated. Please refresh and submit again.',
         })
-      } else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
-        })
       }
     }
-    return next()
-  } else {
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
+  return res.status(StatusCodes.BAD_REQUEST).json({
+    message:
+      'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+  })
 }
 
 /**
