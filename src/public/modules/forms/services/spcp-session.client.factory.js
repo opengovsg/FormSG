@@ -1,6 +1,6 @@
 'use strict'
 
-const jwtDecode = require('jwt-decode')
+const jwtDecode = require('jwt-decode').default
 
 angular
   .module('forms')
