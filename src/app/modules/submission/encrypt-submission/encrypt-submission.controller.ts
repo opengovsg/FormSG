@@ -87,14 +87,6 @@ export const handleStreamEncryptedResponses: RequestHandler<
         message: 'Error writing submissions to HTTP stream',
       })
     })
-    .on('end', () => {
-      logger.info({
-        message: 'Stream encrypted responses ended',
-        meta: logMeta,
-      })
-
-      return res.end()
-    })
     .on('close', () => {
       logger.info({
         message: 'Stream encrypted responses closed',
