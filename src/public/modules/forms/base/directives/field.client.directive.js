@@ -1,18 +1,12 @@
 'use strict'
 
 const { get } = require('lodash')
-const querystring = require('querystring')
 
 angular
   .module('forms')
-  .directive('fieldDirective', [
-    'FormFields',
-    '$location',
-    '$sanitize',
-    fieldDirective,
-  ])
+  .directive('fieldDirective', ['FormFields', fieldDirective])
 
-function fieldDirective(FormFields, $location, $sanitize) {
+function fieldDirective(FormFields) {
   return {
     restrict: 'E',
     templateUrl:
@@ -29,31 +23,6 @@ function fieldDirective(FormFields, $location, $sanitize) {
       isValidateDate: '<',
     },
     link: function (scope) {
-      // Stealth prefill feature
-      // If a query parameter is provided to a form URL in the form ?<fieldId1>=<value1>&<fieldId2>=<value2>...
-      // And if the fieldIds are valid mongoose object IDs and refer to a short text field,
-      // Then prefill and disable editing the corresponding form field on the frontend
-
-      const query = $location.url().split('?')
-      const queryParams =
-        query.length > 1 ? querystring.parse(query[1]) : undefined
-
-      if (
-        !scope.field.myInfo && // disallow prefill for myinfo
-        scope.field.allowPrefill && // allow prefill only if flag enabled
-        queryParams &&
-        scope.field._id in queryParams &&
-        scope.field.fieldType === 'textfield'
-      ) {
-        const prefillValue = queryParams[scope.field._id]
-        if (typeof prefillValue === 'string') {
-          // Only support unique query params. If query params are duplicated,
-          // none of the duplicated keys will be prefilled
-          scope.field.fieldValue = $sanitize(prefillValue) // $sanitize as a precaution to prevent xss
-          // note that there are currently no unit tests to ensure that value is sanitized correctly; manual testing required
-        }
-      }
-
       if ((scope.isadminpreview || scope.isTemplate) && scope.field.myInfo) {
         // Determine whether to disable field in preview
         if (
