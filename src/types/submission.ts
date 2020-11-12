@@ -158,6 +158,11 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
         endDate?: string
       },
     ): QueryCursor<SubmissionCursorData>
+
+    findEncryptedSubmissionById(
+      formId: string,
+      submissionId: string,
+    ): Promise<IEncryptedSubmissionSchema | null>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
