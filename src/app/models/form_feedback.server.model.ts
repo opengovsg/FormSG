@@ -1,6 +1,6 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
-import { IFormFeedbackSchema } from '../../types'
+import { IFormFeedbackModel, IFormFeedbackSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 
@@ -39,15 +39,15 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema>(
  * @param db Active DB Connection
  * @return Mongoose Model
  */
-const getFormFeedbackModel = (db: Mongoose) => {
+const getFormFeedbackModel = (db: Mongoose): IFormFeedbackModel => {
   try {
-    return db.model(FORM_FEEDBACK_SCHEMA_ID) as Model<IFormFeedbackSchema>
+    return db.model(FORM_FEEDBACK_SCHEMA_ID) as IFormFeedbackModel
   } catch {
     return db.model<IFormFeedbackSchema>(
       FORM_FEEDBACK_SCHEMA_ID,
       FormFeedbackSchema,
       FORM_FEEDBACK_COLLECTION_NAME,
-    )
+    ) as IFormFeedbackModel
   }
 }
 

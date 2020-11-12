@@ -51,6 +51,8 @@
 .submit-progress-modal-window .modal-content,
 .delete-field-modal-window .modal-content,
 .pop-up-modal-window .modal-content {
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 0;
   border-width: 0;
 }
