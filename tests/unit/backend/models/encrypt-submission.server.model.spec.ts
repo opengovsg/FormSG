@@ -7,6 +7,7 @@ import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import {
+  IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
   SubmissionMetadata,
@@ -337,6 +338,78 @@ describe('Encrypt Submission Model', () => {
         }
         // Cursor stream should return nothing.
         expect(retrievedSubmissions).toEqual([])
+      })
+    })
+
+    describe('findEncryptedSubmissionById', () => {
+      it('should return correct submission by its id', async () => {
+        // Arrange
+        const validFormId = new ObjectId().toHexString()
+        const validSubmission = await Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'mock encrypted content abc',
+          version: 1,
+          attachmentMetadata: { someFileName: 'some url of attachment' },
+        })
+
+        // Act
+        const actual = await EncryptSubmission.findEncryptedSubmissionById(
+          validFormId,
+          validSubmission._id,
+        )
+
+        // Assert
+        const expected = pick(
+          validSubmission.toObject(),
+          '_id',
+          'attachmentMetadata',
+          'created',
+          'encryptedContent',
+          'submissionType',
+        )
+        expect(actual).not.toBeNull()
+        expect(actual?.toObject()).toEqual(expected)
+      })
+
+      it('should return null when submission id does not exist', async () => {
+        // Arrange
+        // Form ID does not matter.
+        const formId = new ObjectId().toHexString()
+        const invalidSubmissionId = new ObjectId().toHexString()
+
+        // Act
+        const actual = await EncryptSubmission.findEncryptedSubmissionById(
+          formId,
+          invalidSubmissionId,
+        )
+
+        // Assert
+        expect(actual).toBeNull()
+      })
+
+      it('should return null when type of submission with given id is not SubmissionType.Encrypt', async () => {
+        // Arrange
+        const validFormId = new ObjectId().toHexString()
+        const validEmailSubmission = await Submission.create<
+          IEmailSubmissionSchema
+        >({
+          submissionType: SubmissionType.Email,
+          form: validFormId,
+          recipientEmails: ['any@example.com'],
+          responseHash: 'any hash',
+          responseSalt: 'any salt',
+        })
+
+        // Act
+        const actual = await EncryptSubmission.findEncryptedSubmissionById(
+          validFormId,
+          validEmailSubmission._id,
+        )
+
+        // Assert
+        // Should still be null even when formId and submissionIds are valid
+        expect(actual).toBeNull()
       })
     })
   })
