@@ -468,7 +468,7 @@ module.exports = function (app) {
           // Ensure YYYY-MM-DD format.
           endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
         })
-        .with('startDate', 'endDate'),
+        .and('startDate', 'endDate'),
     }),
     authEncryptedResponseAccess,
     EncryptSubmissionController.handleStreamEncryptedResponses,
