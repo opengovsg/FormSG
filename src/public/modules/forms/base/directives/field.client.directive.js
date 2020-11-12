@@ -1,7 +1,6 @@
 'use strict'
 
 const { get } = require('lodash')
-const he = require('he')
 const querystring = require('querystring')
 
 angular
@@ -35,8 +34,7 @@ function fieldDirective(FormFields, $location, $sanitize) {
       // And if the fieldIds are valid mongoose object IDs and refer to a short text field,
       // Then prefill and disable editing the corresponding form field on the frontend
 
-      const decodedUrl = he.decode($location.url()) // tech debt; after redirect, & is encoded as &amp; in the query string
-      const query = decodedUrl.split('?')
+      const query = $location.url().split('?')
       const queryParams =
         query.length > 1 ? querystring.parse(query[1]) : undefined
 
