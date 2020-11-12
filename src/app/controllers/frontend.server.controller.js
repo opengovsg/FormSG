@@ -18,10 +18,12 @@ module.exports.datalayer = function (req, res) {
         'app_name': '<%= appName%>'
       });
     `
-  res
-    .type('text/javascript')
-    .status(StatusCodes.OK)
-    .send(ejs.render(js, req.app.locals))
+  try {
+    const ejsRendered = ejs.render(js, req.app.locals)
+    res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
+  } catch (err) {
+    res.status(StatusCodes.BAD_REQUEST).json({ message: err })
+  }
 }
 
 /**
@@ -29,10 +31,14 @@ module.exports.datalayer = function (req, res) {
  * @returns {String} Templated Javascript code for the frontend
  */
 module.exports.environment = function (req, res) {
-  res
-    .type('text/javascript')
-    .status(StatusCodes.OK)
-    .send(req.app.locals.environment)
+  try {
+    res
+      .type('text/javascript')
+      .status(StatusCodes.OK)
+      .send(req.app.locals.environment)
+  } catch (err) {
+    res.status(StatusCodes.BAD_REQUEST).json({ message: err })
+  }
 }
 
 /**
@@ -50,6 +56,11 @@ module.exports.redirectLayer = function (req, res) {
   // Prefer to replace just '&' instead of using <%- to output unescaped values into the template
   // As this could potentially introduce security vulnerability
   // See https://ejs.co/#docs for tags
-  const ejsRendered = ejs.render(js, req.query).replace(/&amp;/g, '&')
-  res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
+
+  try {
+    const ejsRendered = ejs.render(js, req.query).replace(/&amp;/g, '&')
+    res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
+  } catch (err) {
+    res.status(StatusCodes.BAD_REQUEST).json({ message: err })
+  }
 }
