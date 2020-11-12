@@ -59,7 +59,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
         meta: logMeta,
         error,
       })
-      return res.status(500).json({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: 'Error retrieving from database.',
       })
     })
@@ -72,7 +72,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
         meta: logMeta,
         error,
       })
-      return res.status(500).json({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: 'Error converting submissions to JSON',
       })
     })
@@ -83,7 +83,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
         meta: logMeta,
         error,
       })
-      return res.status(500).json({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: 'Error writing submissions to HTTP stream',
       })
     })
