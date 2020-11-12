@@ -2,6 +2,8 @@
 
 const ejs = require('ejs')
 const { StatusCodes } = require('http-status-codes')
+const logger = require('src/config/logger').createLoggerWithLabel(module)
+const { createReqMeta } = require('src/app/utils/request')
 
 /**
  * Google Tag Manager initialisation Javascript code templated
@@ -22,7 +24,17 @@ module.exports.datalayer = function (req, res) {
     const ejsRendered = ejs.render(js, req.app.locals)
     res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
   } catch (err) {
-    res.status(StatusCodes.BAD_REQUEST).json({ message: err })
+    logger.error({
+      message: 'Error returning datalayer',
+      meta: {
+        action: 'ejs.render(js, req.app.locals)',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: 'There was an unexpected error. Please refresh and try again.',
+    })
   }
 }
 
@@ -37,7 +49,17 @@ module.exports.environment = function (req, res) {
       .status(StatusCodes.OK)
       .send(req.app.locals.environment)
   } catch (err) {
-    res.status(StatusCodes.BAD_REQUEST).json({ message: err })
+    logger.error({
+      message: 'Error returning environment',
+      meta: {
+        action: 'res.send(req.app.locals.environment',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: 'There was an unexpected error. Please refresh and try again.',
+    })
   }
 }
 
@@ -61,6 +83,16 @@ module.exports.redirectLayer = function (req, res) {
     const ejsRendered = ejs.render(js, req.query).replace(/&amp;/g, '&')
     res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
   } catch (err) {
-    res.status(StatusCodes.BAD_REQUEST).json({ message: err })
+    logger.error({
+      message: 'Error returning redirectLayer',
+      meta: {
+        action: 'ejs.render(js, req.query)',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: 'There was an unexpected error. Please refresh and try again.',
+    })
   }
 }
