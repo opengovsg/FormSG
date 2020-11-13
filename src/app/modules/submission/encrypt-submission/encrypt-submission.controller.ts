@@ -72,6 +72,16 @@ export const handleStreamEncryptedResponses: RequestHandler<
         urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
       }),
     )
+    .on('error', (error) => {
+      logger.error({
+        message: 'Error retrieving URL for attachments',
+        meta: logMeta,
+        error,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Error retrieving URL for attachments',
+      })
+    })
     // If you call JSONStream.stringify(false) the elements will only be
     // seperated by a newline.
     .pipe(JSONStream.stringify(false))

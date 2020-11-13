@@ -306,6 +306,7 @@ describe('Encrypt Submission Model', () => {
         // Act
         const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
           validFormId,
+          {},
         )
 
         // Assert
@@ -325,6 +326,7 @@ describe('Encrypt Submission Model', () => {
         // Act
         const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
           invalidFormId,
+          {},
         )
 
         // Assert
