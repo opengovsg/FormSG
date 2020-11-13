@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
+import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 
@@ -7,7 +7,10 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import { IPopulatedForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 
-import { getSubmissionCursor } from './encrypt-submission.service'
+import {
+  getSubmissionCursor,
+  transformAttachmentMetaStream,
+} from './encrypt-submission.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -26,7 +29,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
   ParamsDictionary,
   unknown,
   unknown,
-  { startDate?: string; endDate?: string }
+  Query & { startDate?: string; endDate?: string; downloadAttachments: boolean }
 > = async function (req, res) {
   const { startDate, endDate } = req.query
 
@@ -63,6 +66,12 @@ export const handleStreamEncryptedResponses: RequestHandler<
         message: 'Error retrieving from database.',
       })
     })
+    .pipe(
+      transformAttachmentMetaStream({
+        enabled: req.query.downloadAttachments,
+        urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
+      }),
+    )
     // If you call JSONStream.stringify(false) the elements will only be
     // seperated by a newline.
     .pipe(JSONStream.stringify(false))

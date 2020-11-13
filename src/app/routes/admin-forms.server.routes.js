@@ -467,6 +467,7 @@ module.exports = function (app) {
           startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
           // Ensure YYYY-MM-DD format.
           endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+          downloadAttachments: Joi.boolean().default(false),
         })
         .and('startDate', 'endDate'),
     }),
