@@ -2,8 +2,8 @@
 
 const ejs = require('ejs')
 const { StatusCodes } = require('http-status-codes')
-const logger = require('src/config/logger').createLoggerWithLabel(module)
-const { createReqMeta } = require('src/app/utils/request')
+const logger = require('../../config/logger').createLoggerWithLabel(module)
+const { createReqMeta } = require('../utils/request')
 
 /**
  * Google Tag Manager initialisation Javascript code templated
