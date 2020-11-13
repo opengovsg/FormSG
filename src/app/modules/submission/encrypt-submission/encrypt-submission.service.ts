@@ -3,11 +3,13 @@ import { err, ok, Result } from 'neverthrow'
 import { Transform } from 'stream'
 
 import { aws as AwsConfig } from '../../../../config/config'
+import { createLoggerWithLabel } from '../../../../config/logger'
 import { SubmissionCursorData } from '../../../../types'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
 import { MalformedParametersError } from '../../core/core.errors'
 
+const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
 /**
@@ -70,7 +72,7 @@ export const transformAttachmentMetaStream = ({
       data.attachmentMetadata = {}
       let processedCount = 0
 
-      Object.entries(unprocessedMetadata).forEach(([key, objectPath]) => {
+      for (const [key, objectPath] of Object.entries(unprocessedMetadata)) {
         AwsConfig.s3.getSignedUrl(
           'getObject',
           {
@@ -78,9 +80,18 @@ export const transformAttachmentMetaStream = ({
             Key: objectPath,
             Expires: urlValidDuration,
           },
-          (err, url) => {
-            if (err) {
-              return callback(err)
+          (error, url) => {
+            if (error) {
+              logger.error({
+                message: 'Error occured whilst retrieving signed URL from S3',
+                meta: {
+                  action: 'transformAttachmentMetaStream',
+                  key,
+                  objectPath,
+                },
+                error,
+              })
+              return callback(error)
             }
 
             data.attachmentMetadata[key] = url
@@ -92,7 +103,7 @@ export const transformAttachmentMetaStream = ({
             }
           },
         )
-      })
+      }
     },
   })
 }
