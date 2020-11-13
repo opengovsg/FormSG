@@ -5,3 +5,9 @@ export class InvalidFileTypeError extends ApplicationError {
     super(message)
   }
 }
+
+export class CreatePresignedUrlError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

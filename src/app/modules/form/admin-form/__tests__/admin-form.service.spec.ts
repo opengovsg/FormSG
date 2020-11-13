@@ -4,14 +4,17 @@ import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { DatabaseError, ExternalError } from 'src/app/modules/core/core.errors'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { aws } from 'src/config/config'
 import { VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import { DashboardFormView, IPopulatedUser, IUserSchema } from 'src/types'
 
-import { InvalidFileTypeError } from '../admin-form.errors'
+import {
+  CreatePresignedUrlError,
+  InvalidFileTypeError,
+} from '../admin-form.errors'
 import {
   createPresignedPostForImages,
   createPresignedPostForLogos,
@@ -156,7 +159,7 @@ describe('admin-form.service', () => {
       )
     })
 
-    it('should return ExternalError when error occurs whilst creating presigned POST URL', async () => {
+    it('should return CreatePresignedUrlError when error occurs whilst creating presigned POST URL', async () => {
       // Arrange
       // Mock external service failure.
       const s3Spy = jest
@@ -180,7 +183,7 @@ describe('admin-form.service', () => {
       )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ExternalError('Error occurred whilst uploading file'),
+        new CreatePresignedUrlError('Error occurred whilst uploading file'),
       )
     })
   })
@@ -242,7 +245,7 @@ describe('admin-form.service', () => {
       )
     })
 
-    it('should return ExternalError when error occurs whilst creating presigned POST URL', async () => {
+    it('should return CreatePresignedUrlError when error occurs whilst creating presigned POST URL', async () => {
       // Arrange
       // Mock external service failure.
       const s3Spy = jest
@@ -266,7 +269,7 @@ describe('admin-form.service', () => {
       )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ExternalError('Error occurred whilst uploading file'),
+        new CreatePresignedUrlError('Error occurred whilst uploading file'),
       )
     })
   })

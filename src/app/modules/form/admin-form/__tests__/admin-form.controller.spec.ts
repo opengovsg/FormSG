@@ -2,7 +2,7 @@ import { PresignedPost } from 'aws-sdk/clients/s3'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { DatabaseError, ExternalError } from 'src/app/modules/core/core.errors'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
@@ -12,7 +12,10 @@ import {
   handleCreatePresignedPostForLogos,
   handleListDashboardForms,
 } from '../admin-form.controller'
-import { InvalidFileTypeError } from '../admin-form.errors'
+import {
+  CreatePresignedUrlError,
+  InvalidFileTypeError,
+} from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
 
 jest.mock('../admin-form.service')
@@ -123,13 +126,13 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it('should return 400 when ExternalError is returned when creating presigned POST', async () => {
+    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST', async () => {
       // Arrange
       // Mock error
       const mockErrorString = 'creating presigned post failed, oh no'
       const mockRes = expressHandler.mockResponse()
       MockAdminFormService.createPresignedPostForImages.mockReturnValueOnce(
-        errAsync(new ExternalError(mockErrorString)),
+        errAsync(new CreatePresignedUrlError(mockErrorString)),
       )
 
       // Act
@@ -192,13 +195,13 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it('should return 400 when ExternalError is returned when creating presigned POST', async () => {
+    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST', async () => {
       // Arrange
       // Mock error
       const mockErrorString = 'creating presigned post failed, oh no'
       const mockRes = expressHandler.mockResponse()
       MockAdminFormService.createPresignedPostForLogos.mockReturnValueOnce(
-        errAsync(new ExternalError(mockErrorString)),
+        errAsync(new CreatePresignedUrlError(mockErrorString)),
       )
 
       // Act

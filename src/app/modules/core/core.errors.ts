@@ -32,9 +32,3 @@ export class DatabaseError extends ApplicationError {
     super(message)
   }
 }
-
-export class ExternalError extends ApplicationError {
-  constructor(message: string) {
-    super(message)
-  }
-}
