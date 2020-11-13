@@ -1,8 +1,6 @@
 'use strict'
 const crypto = require('crypto')
 const moment = require('moment-timezone')
-const { Transform } = require('stream')
-const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
 const mongoose = require('mongoose')
@@ -17,7 +15,6 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
 const { ConflictError } = require('../modules/submission/submission.errors')
 const { createReqMeta } = require('../utils/request')
-const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
   aws: { attachmentS3Bucket, s3 },
@@ -333,139 +330,4 @@ exports.getEncryptedResponse = function (req, res) {
       return res.json(entry)
     }
   })
-}
-
-function getS3UrlForAttachmentsPipeline(enabled, urlValidDuration) {
-  let st = new Transform({
-    objectMode: true,
-    transform(data, encoding, callback) {
-      if (
-        enabled &&
-        data.attachmentMetadata &&
-        Object.keys(data.attachmentMetadata).length > 0
-      ) {
-        const unprocessedMetadata = data.attachmentMetadata
-        const totalCount = Object.keys(data.attachmentMetadata).length
-
-        data.attachmentMetadata = {}
-        let processedCount = 0
-        for (let [key, objectPath] of Object.entries(unprocessedMetadata)) {
-          s3.getSignedUrl(
-            'getObject',
-            {
-              Bucket: attachmentS3Bucket,
-              Key: objectPath,
-              Expires: urlValidDuration,
-            },
-            function (err, url) {
-              if (err) callback(err)
-              data.attachmentMetadata[key] = url
-              processedCount += 1
-              if (processedCount == totalCount) {
-                callback(null, data)
-              }
-            },
-          )
-        }
-      } else {
-        data.attachmentMetadata = {}
-        callback(null, data)
-      }
-    },
-  })
-  return st
-}
-
-exports.streamEncryptedResponses = async function (req, res) {
-  if (
-    isMalformedDate(req.query.startDate) ||
-    isMalformedDate(req.query.endDate)
-  ) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: 'Malformed date parameter',
-    })
-  }
-
-  let downloadAttachments = false
-  if (req.query.downloadAttachments) {
-    downloadAttachments = true
-  }
-
-  let query = {
-    form: req.form._id,
-    submissionType: 'encryptSubmission',
-  }
-
-  const augmentedQuery = createQueryWithDateParam(
-    req.query.startDate,
-    req.query.endDate,
-  )
-
-  query = { ...query, ...augmentedQuery }
-
-  Submission.find(query, {
-    encryptedContent: 1,
-    verifiedContent: 1,
-    attachmentMetadata: 1,
-    created: 1,
-    id: 1,
-  })
-    .setOptions({
-      batchSize: 2000,
-      readPreference: 'secondary',
-    })
-    .lean()
-    .cursor()
-    .on('error', function (err) {
-      logger.error({
-        message: 'Error streaming submissions from database',
-        meta: {
-          action: 'streamEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      res.status(500).json({
-        message: 'Error retrieving from database.',
-      })
-    })
-    .pipe(
-      getS3UrlForAttachmentsPipeline(
-        downloadAttachments,
-        req.session.cookie.maxAge / 1000,
-      ),
-    )
-    // If you call JSONStream.stringify(false) the elements will only be
-    // seperated by a newline.
-    .pipe(JSONStream.stringify(false))
-    .on('error', function (err) {
-      logger.error({
-        message: 'Error converting submissions to JSON',
-        meta: {
-          action: 'streamEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      res.status(500).json({
-        message: 'Error converting submissions to JSON',
-      })
-    })
-    .pipe(res.type('application/x-ndjson'))
-    .on('error', function (err) {
-      logger.error({
-        message: 'Error writing submissions to HTTP stream',
-        meta: {
-          action: 'streamEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      res.status(500).json({
-        message: 'Error writing submissions to HTTP stream',
-      })
-    })
-    .on('end', function () {
-      res.end()
-    })
 }
