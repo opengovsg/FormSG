@@ -103,6 +103,13 @@ export interface IWebhookResponse {
   }
 }
 
+// When retrieving from database, the attachmentMetadata type becomes an object
+// instead of a Map.
+export type SubmissionCursorData = Pick<
+  IEncryptedSubmissionSchema,
+  'encryptedContent' | 'verifiedContent' | 'created' | 'id'
+> & { attachmentMetadata: Record<string, string> } & Document
+
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
@@ -146,17 +153,11 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
      */
     getSubmissionCursorByFormId(
       formId: string,
-      dateRange?: {
+      dateRange: {
         startDate?: string
         endDate?: string
       },
-    ): QueryCursor<
-      Pick<
-        IEncryptedSubmissionSchema,
-        'encryptedContent' | 'verifiedContent' | 'created' | 'id'
-      > &
-        Document
-    >
+    ): QueryCursor<SubmissionCursorData>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
