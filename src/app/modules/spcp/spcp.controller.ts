@@ -9,6 +9,11 @@ import { mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Generates redirect URL to Official SingPass/CorpPass log in page
+ * @param req - Express request object
+ * @param res - Express response object
+ */
 export const handleRedirect: RequestHandler<
   unknown,
   unknown,
