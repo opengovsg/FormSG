@@ -3,6 +3,7 @@ import fs from 'fs'
 import { err, ok, Result } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
+import { AuthType } from '../../../types'
 
 import { CreateRedirectUrlError } from './spcp.errors'
 
@@ -33,23 +34,17 @@ export class SpcpService {
     })
   }
 
-  createSingpassRedirectUrl(
+  createRedirectUrl(
+    authType: AuthType.SP | AuthType.CP,
     target: string,
     eSrvcId: string,
   ): Result<string, CreateRedirectUrlError> {
-    const result = this.#singpassAuthClient.createRedirectURL(target, eSrvcId)
-    if (typeof result === 'string') {
-      return ok(result)
+    let result: string | Error
+    if (authType === AuthType.SP) {
+      result = this.#singpassAuthClient.createRedirectURL(target, eSrvcId)
     } else {
-      return err(new CreateRedirectUrlError())
+      result = this.#corppassAuthClient.createRedirectURL(target, eSrvcId)
     }
-  }
-
-  createCorppassRedirectUrl(
-    target: string,
-    eSrvcId: string,
-  ): Result<string, CreateRedirectUrlError> {
-    const result = this.#corppassAuthClient.createRedirectURL(target, eSrvcId)
     if (typeof result === 'string') {
       return ok(result)
     } else {
