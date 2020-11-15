@@ -3,10 +3,12 @@ import fs from 'fs'
 import { err, ok, Result } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
 
 import { CreateRedirectUrlError } from './spcp.errors'
 
+const logger = createLoggerWithLabel(module)
 export class SpcpService {
   #singpassAuthClient: SPCPAuthClient
   #corppassAuthClient: SPCPAuthClient
@@ -37,17 +39,27 @@ export class SpcpService {
   createRedirectUrl(
     authType: AuthType.SP | AuthType.CP,
     target: string,
-    eSrvcId: string,
+    esrvcId: string,
   ): Result<string, CreateRedirectUrlError> {
     let result: string | Error
     if (authType === AuthType.SP) {
-      result = this.#singpassAuthClient.createRedirectURL(target, eSrvcId)
+      result = this.#singpassAuthClient.createRedirectURL(target, esrvcId)
     } else {
-      result = this.#corppassAuthClient.createRedirectURL(target, eSrvcId)
+      result = this.#corppassAuthClient.createRedirectURL(target, esrvcId)
     }
     if (typeof result === 'string') {
       return ok(result)
     } else {
+      logger.error({
+        message: 'Error while creating redirect URL',
+        meta: {
+          action: 'createRedirectUrl',
+          authType,
+          target,
+          esrvcId,
+        },
+        error: result,
+      })
       return err(new CreateRedirectUrlError())
     }
   }
