@@ -1,8 +1,9 @@
 import { mocked } from 'ts-jest/utils'
 
-import { ISpcpMyInfo } from 'src/config/feature-manager'
+import { FeatureNames, ISpcpMyInfo } from 'src/config/feature-manager'
 import { AuthType } from 'src/types'
 
+import { MissingFeatureError } from '../../core/core.errors'
 import { createSpcpFactory } from '../spcp.factory'
 import { SpcpService } from '../spcp.service'
 
@@ -17,9 +18,7 @@ describe('spcp.factory', () => {
       isEnabled: false,
       props: {} as ISpcpMyInfo,
     })
-    const error = new Error(
-      'spcp-myinfo is not activated, but a feature-specific function was called.',
-    )
+    const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     const createRedirectUrlResult = MyInfoFactory.createRedirectUrl(
       AuthType.SP,
       '',

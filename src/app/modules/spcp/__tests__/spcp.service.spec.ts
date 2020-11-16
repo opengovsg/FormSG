@@ -3,6 +3,7 @@ import { mocked } from 'ts-jest/utils'
 
 import { AuthType } from 'src/types'
 
+import { CreateRedirectUrlError } from '../spcp.errors'
 import { SpcpService } from '../spcp.service'
 
 import {
@@ -101,7 +102,7 @@ describe('spcp.service', () => {
         MOCK_ESRVCID,
       )
       expect(redirectUrl._unsafeUnwrapErr()).toEqual(
-        new Error('Error while creating redirect URL'),
+        new CreateRedirectUrlError(),
       )
     })
   })
