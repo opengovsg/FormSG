@@ -223,10 +223,6 @@ exports.createSpcpRedirectURL = (authClients) => {
   }
 }
 
-exports.returnSpcpRedirectURL = function (req, res) {
-  return res.status(StatusCodes.OK).json({ redirectURL: req.redirectURL })
-}
-
 const getSubstringBetween = (text, markerStart, markerEnd) => {
   const start = text.indexOf(markerStart)
   if (start === -1) {
