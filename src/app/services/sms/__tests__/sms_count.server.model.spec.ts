@@ -5,8 +5,8 @@ import mongoose from 'mongoose'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import getSmsCountModel from '../sms_count.server.model'
 import { IVerificationSmsCount, LogType, SmsType } from '../sms.types'
+import getSmsCountModel from '../sms_count.server.model'
 
 const SmsCount = getSmsCountModel(mongoose)
 

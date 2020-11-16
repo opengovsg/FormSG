@@ -6,9 +6,9 @@ import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import getSmsCountModel from '../sms_count.server.model'
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'
+import getSmsCountModel from '../sms_count.server.model'
 
 const FormModel = getFormModel(mongoose)
 const SmsCountModel = getSmsCountModel(mongoose)
