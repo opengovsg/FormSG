@@ -27,7 +27,7 @@ module.exports.datalayer = function (req, res) {
     logger.error({
       message: 'Error returning datalayer',
       meta: {
-        action: 'ejs.render(js, req.app.locals)',
+        action: 'datalayer',
         ...createReqMeta(req),
       },
       error: err,
@@ -52,7 +52,7 @@ module.exports.environment = function (req, res) {
     logger.error({
       message: 'Error returning environment',
       meta: {
-        action: 'res.send(req.app.locals.environment',
+        action: 'environment',
         ...createReqMeta(req),
       },
       error: err,
@@ -86,7 +86,7 @@ module.exports.redirectLayer = function (req, res) {
     logger.error({
       message: 'Error returning redirectLayer',
       meta: {
-        action: 'ejs.render(js, req.query)',
+        action: 'redirectlayer',
         ...createReqMeta(req),
       },
       error: err,
