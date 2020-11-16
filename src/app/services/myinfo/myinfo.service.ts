@@ -47,7 +47,14 @@ const MYINFO_PROD_PREFIX = 'PROD2-'
 const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v2/'
 
 export class MyInfoService {
+  /**
+   * Circuit breaker which fires requests to the MyInfo PersonBasic endpoint
+   * and limits the rate of requests in case the receiving server returns errors.
+   */
   #myInfoClientBreaker: CircuitBreaker<[IPersonBasicRequest], IPersonBasic>
+  /**
+   * TTL of SingPass cookie in milliseconds.
+   */
   #spCookieMaxAge: number
 
   /**
