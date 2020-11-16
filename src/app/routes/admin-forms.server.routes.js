@@ -18,6 +18,8 @@ const webhookVerifiedContentFactory = require('../factories/webhook-verified-con
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 
+const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
+
 const emailValOpts = {
   minDomainSegments: 2, // Number of segments required for the domain
   tlds: true, // TLD (top level domain) validation
@@ -404,9 +406,20 @@ module.exports = function (app) {
    * @returns {number} 200 - the submission count
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count')
-    .get(authActiveForm(PERMISSIONS.READ), submissions.count)
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count').get(
+    celebrate({
+      [Segments.QUERY]: Joi.object()
+        .keys({
+          // Ensure YYYY-MM-DD format.
+          startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+          // Ensure YYYY-MM-DD format.
+          endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+        })
+        .and('startDate', 'endDate'),
+    }),
+    withUserAuthentication,
+    AdminFormController.handleCountFormSubmissions,
+  )
 
   /**
    * @typedef metadataResponse

@@ -6,6 +6,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { IPopulatedUser } from '../../../types'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { getRequestIp } from '../../utils/request'
+import { getUserIdFromSession } from '../auth/auth.utils'
 
 import {
   createContactOtp,
@@ -188,9 +189,4 @@ export const handleFetchUser: RequestHandler = async (req, res) => {
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
-}
-
-// TODO(#212): Save userId instead of entire user collection in session.
-const getUserIdFromSession = (session?: Express.Session) => {
-  return session?.user?._id as string | undefined
 }
