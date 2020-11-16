@@ -221,8 +221,6 @@ describe('SPCP Controller', () => {
       })
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(next).toHaveBeenCalled()
-      Controller.returnSpcpRedirectURL(req, res)
-      expectResponse(StatusCodes.OK, expectedUrl)
     })
     it('should return 200 and redirectUrl if authType is CP', () => {
       req.query.authType = 'CP'
@@ -236,8 +234,6 @@ describe('SPCP Controller', () => {
       })
       Controller.createSpcpRedirectURL(authClients)(req, res, next)
       expect(next).toHaveBeenCalled()
-      Controller.returnSpcpRedirectURL(req, res)
-      expectResponse(StatusCodes.OK, expectedUrl)
     })
   })
 
