@@ -22,7 +22,7 @@ module.exports.datalayer = function (req, res) {
     `
   try {
     const ejsRendered = ejs.render(js, req.app.locals)
-    res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
+    return res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
   } catch (err) {
     logger.error({
       message: 'Error returning datalayer',
@@ -32,7 +32,7 @@ module.exports.datalayer = function (req, res) {
       },
       error: err,
     })
-    res.status(StatusCodes.BAD_REQUEST).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'There was an unexpected error. Please refresh and try again.',
     })
   }
@@ -44,7 +44,7 @@ module.exports.datalayer = function (req, res) {
  */
 module.exports.environment = function (req, res) {
   try {
-    res
+    return res
       .type('text/javascript')
       .status(StatusCodes.OK)
       .send(req.app.locals.environment)
@@ -57,7 +57,7 @@ module.exports.environment = function (req, res) {
       },
       error: err,
     })
-    res.status(StatusCodes.BAD_REQUEST).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'There was an unexpected error. Please refresh and try again.',
     })
   }
@@ -81,7 +81,7 @@ module.exports.redirectLayer = function (req, res) {
 
   try {
     const ejsRendered = ejs.render(js, req.query).replace(/&amp;/g, '&')
-    res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
+    return res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
   } catch (err) {
     logger.error({
       message: 'Error returning redirectLayer',
@@ -91,7 +91,7 @@ module.exports.redirectLayer = function (req, res) {
       },
       error: err,
     })
-    res.status(StatusCodes.BAD_REQUEST).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'There was an unexpected error. Please refresh and try again.',
     })
   }
