@@ -121,7 +121,6 @@
     "font-awesome": "4.7.0",
     "fp-ts": "^2.8.5",
     "has-ansi": "^4.0.0",
-    "he": "^1.2.0",
     "helmet": "^4.2.0",
     "http-status-codes": "^2.1.4",
     "intl-tel-input": "~12.1.6",
