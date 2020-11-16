@@ -11,3 +11,9 @@ export class ConflictError extends ApplicationError {
     super(message, StatusCodes.CONFLICT, meta)
   }
 }
+
+export class SubmissionNotFoundError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

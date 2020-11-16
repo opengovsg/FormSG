@@ -1,13 +1,15 @@
 import mongoose from 'mongoose'
-import { err, ok, Result } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { SubmissionCursorData } from '../../../../types'
+import { SubmissionCursorData, SubmissionData } from '../../../../types'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
-import { MalformedParametersError } from '../../core/core.errors'
+import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
+import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
+import { SubmissionNotFoundError } from '../submission.errors'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -105,5 +107,53 @@ export const transformAttachmentMetaStream = ({
         )
       }
     },
+  })
+}
+
+/**
+ * Retrieves required subset of encrypted submission data from the database
+ * @param formId the id of the form to filter submissions for
+ * @param submissionId the submission itself to retrieve
+ * @returns ok(SubmissionData)
+ * @returns err(SubmissionNotFoundError) if given submissionId does not exist in the database
+ * @returns err(DatabaseError) when error occurs during query
+ */
+export const getEncryptedSubmissionData = (
+  formId: string,
+  submissionId: string,
+): ResultAsync<SubmissionData, SubmissionNotFoundError | DatabaseError> => {
+  return ResultAsync.fromPromise(
+    EncryptSubmissionModel.findEncryptedSubmissionById(formId, submissionId),
+    (error) => {
+      logger.error({
+        message: 'Failure retrieving encrypted submission from database',
+        meta: {
+          action: 'getEncryptedSubmissionData',
+          formId,
+          submissionId,
+        },
+        error,
+      })
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((submission) => {
+    if (!submission) {
+      logger.error({
+        message: 'Unable to find encrypted submission from database',
+        meta: {
+          action: 'getEncryptedResponse',
+          formId,
+          submissionId,
+        },
+      })
+      return errAsync(
+        new SubmissionNotFoundError(
+          'Unable to find encrypted submission from database',
+        ),
+      )
+    }
+
+    return okAsync(submission)
   })
 }

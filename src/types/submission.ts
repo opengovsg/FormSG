@@ -110,6 +110,11 @@ export type SubmissionCursorData = Pick<
   'encryptedContent' | 'verifiedContent' | 'created' | 'id'
 > & { attachmentMetadata: Record<string, string> } & Document
 
+export type SubmissionData = Omit<
+  IEncryptedSubmissionSchema,
+  'version' | 'webhookResponses'
+>
+
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
@@ -162,7 +167,7 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
     findEncryptedSubmissionById(
       formId: string,
       submissionId: string,
-    ): Promise<IEncryptedSubmissionSchema | null>
+    ): Promise<SubmissionData | null>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}
