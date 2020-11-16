@@ -6,7 +6,7 @@ import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
 
-import { CreateRedirectUrlError } from './spcp.errors'
+import { CreateRedirectUrlError, InvalidAuthTypeError } from './spcp.errors'
 
 const logger = createLoggerWithLabel(module)
 export class SpcpService {
@@ -40,12 +40,26 @@ export class SpcpService {
     authType: AuthType.SP | AuthType.CP,
     target: string,
     esrvcId: string,
-  ): Result<string, CreateRedirectUrlError> {
+  ): Result<string, CreateRedirectUrlError | InvalidAuthTypeError> {
     let result: string | Error
-    if (authType === AuthType.SP) {
-      result = this.#singpassAuthClient.createRedirectURL(target, esrvcId)
-    } else {
-      result = this.#corppassAuthClient.createRedirectURL(target, esrvcId)
+    switch (authType) {
+      case AuthType.SP:
+        result = this.#singpassAuthClient.createRedirectURL(target, esrvcId)
+        break
+      case AuthType.CP:
+        result = this.#corppassAuthClient.createRedirectURL(target, esrvcId)
+        break
+      default:
+        logger.error({
+          message: 'Invalid authType',
+          meta: {
+            action: 'createRedirectUrl',
+            authType,
+            target,
+            esrvcId,
+          },
+        })
+        return err(new InvalidAuthTypeError(authType))
     }
     if (typeof result === 'string') {
       return ok(result)

@@ -7,7 +7,7 @@ import FeatureManager, {
 import { AuthType } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
-import { CreateRedirectUrlError } from './spcp.errors'
+import { CreateRedirectUrlError, InvalidAuthTypeError } from './spcp.errors'
 import { SpcpService } from './spcp.service'
 
 interface ISpcpFactory {
@@ -15,7 +15,10 @@ interface ISpcpFactory {
     authType: AuthType,
     target: string,
     eSrvcId: string,
-  ): Result<string, CreateRedirectUrlError | MissingFeatureError>
+  ): Result<
+    string,
+    CreateRedirectUrlError | InvalidAuthTypeError | MissingFeatureError
+  >
 }
 
 export const createSpcpFactory = ({

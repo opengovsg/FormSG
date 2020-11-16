@@ -7,3 +7,12 @@ export class CreateRedirectUrlError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Invalid authType given.
+ */
+export class InvalidAuthTypeError extends ApplicationError {
+  constructor(authType: unknown) {
+    super(`Invalid authType: ${authType}`)
+  }
+}
