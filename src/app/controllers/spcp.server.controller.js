@@ -374,17 +374,6 @@ exports.addSpcpSessionInfo = (authClients) => {
 }
 
 /**
- * Get MyInfo attributes that are requested in this particular submission
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- */
-exports.getRequestedAttributes = function (req, res, next) {
-  const { form } = req
-  res.locals.requestedAttributes = form.getUniqMyinfoAttrs() || []
-  return next()
-}
-
-/**
  * Encrypt and sign verified fields if exist
  * @param  {Object} req - Express request object
  * @param  {Object} res - Express response object
