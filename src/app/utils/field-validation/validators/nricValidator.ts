@@ -1,9 +1,10 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/function'
 
-import { isNricValid } from 'src/shared/util/nric-validation'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { ISingleAnswerResponse } from 'src/types/response'
+
+import { isNricValid } from '../../../../shared/util/nric-validation'
 
 import { notEmptySingleAnswerResponse } from './common'
 
