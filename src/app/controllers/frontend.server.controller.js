@@ -46,8 +46,10 @@ module.exports.redirectLayer = function (req, res) {
     // Change url from form.gov.sg/123#!123 to form.gov.sg/#!/123
     window.history.replaceState("","", "/#!/<%= redirectPath%>")
   `
-  res
-    .type('text/javascript')
-    .status(StatusCodes.OK)
-    .send(ejs.render(js, req.query))
+  // If there are multiple query params, '&' is html-encoded as '&amp;', which is not valid URI
+  // Prefer to replace just '&' instead of using <%- to output unescaped values into the template
+  // As this could potentially introduce security vulnerability
+  // See https://ejs.co/#docs for tags
+  const ejsRendered = ejs.render(js, req.query).replace(/&amp;/g, '&')
+  res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
 }
