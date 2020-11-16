@@ -572,12 +572,11 @@ function concatResponse(formData, attachments) {
  */
 exports.saveMetadataToDb = function (req, res, next) {
   const { form, attachments, formData } = req
-  const { requestedAttributes } = res.locals
 
   let submission = new emailSubmission({
     form: form._id,
     authType: form.authType,
-    myInfoFields: requestedAttributes,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
     recipientEmails: form.emails,
   })
 
