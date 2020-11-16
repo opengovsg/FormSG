@@ -11,6 +11,7 @@ import {
   getSubmissionCursor,
   transformAttachmentMetaStream,
 } from './encrypt-submission.service'
+import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -30,7 +31,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
   unknown,
   unknown,
   Query & { startDate?: string; endDate?: string; downloadAttachments: boolean }
-> = async function (req, res) {
+> = async (req, res) => {
   const { startDate, endDate } = req.query
 
   // TODO (#42): Remove typecast once app has migrated away from middlewares.
@@ -41,19 +42,26 @@ export const handleStreamEncryptedResponses: RequestHandler<
     endDate,
   })
 
-  if (cursorResult.isErr()) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: 'Malformed date parameter',
-    })
-  }
-
-  const cursor = cursorResult.value
-
   const logMeta = {
     action: 'handleStreamEncryptedResponses',
     ...createReqMeta(req),
     formId,
   }
+
+  if (cursorResult.isErr()) {
+    logger.error({
+      message: 'Given date query params are malformed',
+      meta: logMeta,
+      error: cursorResult.error,
+    })
+
+    const { statusCode, errorMessage } = mapRouteError(cursorResult.error)
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  const cursor = cursorResult.value
 
   cursor
     .on('error', (error) => {
