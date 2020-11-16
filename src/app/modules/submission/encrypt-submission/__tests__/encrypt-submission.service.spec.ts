@@ -9,6 +9,7 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
+import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { aws } from 'src/config/config'
 import { SubmissionCursorData, SubmissionData } from 'src/types'
 
@@ -16,6 +17,7 @@ import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   getEncryptedSubmissionData,
   getSubmissionCursor,
+  transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from '../encrypt-submission.service'
 
@@ -400,6 +402,60 @@ describe('encrypt-submission.service', () => {
       expect(getSubmissionSpy).toHaveBeenCalledWith(
         mockFormId,
         mockSubmissionId,
+      )
+    })
+  })
+
+  describe('transformAttachmentMetasToSignedUrls', () => {
+    const MOCK_METADATA = new Map([
+      ['key1', 'objectPath1'],
+      ['key2', 'objectPath2'],
+    ])
+
+    it('should return map with transformed signed urls', async () => {
+      // Arrange
+      // Mock promise implementation.
+      jest
+        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .mockImplementation((_operation, params) => {
+          return Promise.resolve(
+            `https://some-fake-url/${params.Key}/${params.Expires}`,
+          )
+        })
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        MOCK_METADATA,
+        200,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      // Should return signed urls mapped to original key.
+      expect(actualResult._unsafeUnwrap()).toEqual({
+        key1: 'https://some-fake-url/objectPath1/200',
+        key2: 'https://some-fake-url/objectPath2/200',
+      })
+    })
+
+    it('should return CreatePresignedUrlError when error occurs during the signed url creation process', async () => {
+      // Arrange
+      jest
+        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .mockResolvedValueOnce('this passed')
+        .mockRejectedValueOnce(new Error('now this fails'))
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        MOCK_METADATA,
+        1000,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      // Should reject even if there are some passing promises.
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new CreatePresignedUrlError('Failed to create attachment URL'),
       )
     })
   })
