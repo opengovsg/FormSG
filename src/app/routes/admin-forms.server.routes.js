@@ -491,7 +491,7 @@ module.exports = function (app) {
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/logos').post(
     celebrate({
-      body: Joi.object().keys({
+      [Segments.BODY]: {
         fileId: Joi.string()
           .required()
           .error(() => 'Please enter a valid file id'),
@@ -502,9 +502,9 @@ module.exports = function (app) {
         fileType: Joi.string()
           .required()
           .error(() => 'Error - your file could not be verified'),
-      }),
+      },
     }),
     authActiveForm(PERMISSIONS.WRITE),
-    adminForms.createPresignedPostForLogos,
+    AdminFormController.handleCreatePresignedPostForLogos,
   )
 }

@@ -6,6 +6,7 @@ import { createReqMeta } from '../../../utils/request'
 
 import {
   createPresignedPostForImages,
+  createPresignedPostForLogos,
   getDashboardForms,
 } from './admin-form.service'
 import { mapRouteError } from './admin-form.utils'
@@ -67,6 +68,41 @@ export const handleCreatePresignedPostForImages: RequestHandler<
         message: 'Presigning post data encountered an error',
         meta: {
           action: 'handleCreatePresignedPostForImages',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/logos.
+ * @security session
+ *
+ * @returns 200 with presigned POST object
+ * @returns 400 when error occurs whilst creating presigned POST object
+ */
+export const handleCreatePresignedPostForLogos: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  {
+    fileId: string
+    fileMd5Hash: string
+    fileType: string
+  }
+> = async (req, res) => {
+  const { fileId, fileMd5Hash, fileType } = req.body
+
+  return createPresignedPostForLogos({ fileId, fileMd5Hash, fileType })
+    .map((presignedPost) => res.json(presignedPost))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Presigning post data encountered an error',
+        meta: {
+          action: 'handleCreatePresignedPostForLogos',
           ...createReqMeta(req),
         },
         error,

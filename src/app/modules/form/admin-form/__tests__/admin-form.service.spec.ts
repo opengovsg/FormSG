@@ -4,16 +4,20 @@ import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { DatabaseError, ExternalError } from 'src/app/modules/core/core.errors'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { aws } from 'src/config/config'
 import { VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import { DashboardFormView, IPopulatedUser, IUserSchema } from 'src/types'
 
-import { InvalidFileTypeError } from '../admin-form.errors'
+import {
+  CreatePresignedUrlError,
+  InvalidFileTypeError,
+} from '../admin-form.errors'
 import {
   createPresignedPostForImages,
+  createPresignedPostForLogos,
   getDashboardForms,
 } from '../admin-form.service'
 
@@ -155,12 +159,14 @@ describe('admin-form.service', () => {
       )
     })
 
-    it('should return ExternalError when error occurs whilst creating presigned POST URL', async () => {
+    it('should return CreatePresignedUrlError when error occurs whilst creating presigned POST URL', async () => {
       // Arrange
       // Mock external service failure.
-      jest.spyOn(aws.s3, 'createPresignedPost').mockImplementationOnce(() => {
-        throw new Error('boom')
-      })
+      const s3Spy = jest
+        .spyOn(aws.s3, 'createPresignedPost')
+        .mockImplementationOnce(() => {
+          throw new Error('boom')
+        })
 
       // Act
       const actualResult = await createPresignedPostForImages({
@@ -170,9 +176,100 @@ describe('admin-form.service', () => {
       })
 
       // Assert
+      // Check that the correct bucket was used.
+      expect(s3Spy).toHaveBeenCalledWith(
+        expect.objectContaining({ Bucket: aws.imageS3Bucket }),
+        expect.any(Function),
+      )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new ExternalError('Error occurred whilst uploading file'),
+        new CreatePresignedUrlError('Error occurred whilst uploading file'),
+      )
+    })
+  })
+
+  describe('createPresignedPostForLogos', () => {
+    it('should successfully create presigned POST URL', async () => {
+      // Arrange
+      const expectedPresignedPost: PresignedPost = {
+        fields: {
+          'X-Amz-Signature': 'some-amz-signature',
+          Policy: 'some policy',
+        },
+        url: 'some url',
+      }
+      // Mock external service success.
+      const s3Spy = jest
+        .spyOn(aws.s3, 'createPresignedPost')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockImplementationOnce((_obj, cb) => {
+          cb(null, expectedPresignedPost)
+        })
+
+      // Act
+      const actualResult = await createPresignedPostForLogos({
+        fileId: 'any id',
+        fileMd5Hash: 'any hash',
+        fileType: VALID_UPLOAD_FILE_TYPES[0],
+      })
+
+      // Assert
+      // Check that the correct bucket was used.
+      expect(s3Spy).toHaveBeenCalledWith(
+        expect.objectContaining({ Bucket: aws.logoS3Bucket }),
+        expect.any(Function),
+      )
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPost)
+    })
+
+    it('should return InvalidFileTypeError when given file type is not supported', async () => {
+      // Arrange
+      const invalidFileType = 'something'
+      expect(VALID_UPLOAD_FILE_TYPES.includes(invalidFileType)).toEqual(false)
+
+      // Act
+      const actualResult = await createPresignedPostForLogos({
+        fileId: 'any id',
+        fileMd5Hash: 'any hash',
+        fileType: invalidFileType,
+      })
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new InvalidFileTypeError(
+          `"${invalidFileType}" is not a supported file type`,
+        ),
+      )
+    })
+
+    it('should return CreatePresignedUrlError when error occurs whilst creating presigned POST URL', async () => {
+      // Arrange
+      // Mock external service failure.
+      const s3Spy = jest
+        .spyOn(aws.s3, 'createPresignedPost')
+        .mockImplementationOnce(() => {
+          throw new Error('boom')
+        })
+
+      // Act
+      const actualResult = await createPresignedPostForLogos({
+        fileId: 'any id',
+        fileMd5Hash: 'any hash',
+        fileType: VALID_UPLOAD_FILE_TYPES[0],
+      })
+
+      // Assert
+      // Check that the correct bucket was used.
+      expect(s3Spy).toHaveBeenCalledWith(
+        expect.objectContaining({ Bucket: aws.logoS3Bucket }),
+        expect.any(Function),
+      )
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new CreatePresignedUrlError('Error occurred whilst uploading file'),
       )
     })
   })
