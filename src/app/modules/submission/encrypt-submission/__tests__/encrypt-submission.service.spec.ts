@@ -5,11 +5,16 @@ import mongoose from 'mongoose'
 import { PassThrough, Transform } from 'stream'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
-import { MalformedParametersError } from 'src/app/modules/core/core.errors'
-import { aws } from 'src/config/config'
-import { SubmissionCursorData } from 'src/types'
-
 import {
+  DatabaseError,
+  MalformedParametersError,
+} from 'src/app/modules/core/core.errors'
+import { aws } from 'src/config/config'
+import { SubmissionCursorData, SubmissionData } from 'src/types'
+
+import { SubmissionNotFoundError } from '../../submission.errors'
+import {
+  getEncryptedSubmissionData,
   getSubmissionCursor,
   transformAttachmentMetaStream,
 } from '../encrypt-submission.service'
@@ -304,6 +309,98 @@ describe('encrypt-submission.service', () => {
         expect.any(Function),
       )
       expect(actualErrors).toEqual([expectedError])
+    })
+  })
+
+  describe('getEncryptedSubmissionData', () => {
+    it('should return submission data successfully', async () => {
+      // Arrange
+      const expected = {
+        encryptedContent: 'mock encrypted content',
+        verifiedContent: 'mock verified content',
+        attachmentMetadata: new Map([
+          ['key1', 'objectPath1'],
+          ['key2', 'objectPath2'],
+        ]),
+        created: new Date(),
+      } as SubmissionData
+
+      const getSubmissionSpy = jest
+        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .mockResolvedValueOnce(expected)
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await getEncryptedSubmissionData(
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expected)
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockSubmissionId,
+      )
+    })
+
+    it('should return SubmissionNotFoundError when submissionId does not exist in the database', async () => {
+      // Arrange
+      // Return null submission.
+      const getSubmissionSpy = jest
+        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .mockResolvedValueOnce(null)
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await getEncryptedSubmissionData(
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      // Should be error.
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new SubmissionNotFoundError(
+          'Unable to find encrypted submission from database',
+        ),
+      )
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockSubmissionId,
+      )
+    })
+
+    it('should return DatabaseError when error occurs during query', async () => {
+      // Arrange
+      // Return error when querying for submission.
+      const mockErrorString = 'some error'
+      const getSubmissionSpy = jest
+        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .mockRejectedValueOnce(new Error(mockErrorString))
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await getEncryptedSubmissionData(
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      // Should be error.
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
+      )
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockSubmissionId,
+      )
     })
   })
 })

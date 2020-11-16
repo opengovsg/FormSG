@@ -30,7 +30,7 @@ export const getMongoErrorMessage = (
     return joinedMessage ?? err.message ?? defaultErrorMessage
   }
 
-  if (err instanceof MongooseError) {
+  if (err instanceof MongooseError || err instanceof Error) {
     return err.message ?? defaultErrorMessage
   }
 
