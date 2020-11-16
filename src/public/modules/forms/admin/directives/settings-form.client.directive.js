@@ -74,7 +74,7 @@ function settingsFormDirective(
           const emailsFieldIncorrectlyAdded =
             updatedSettings.emails &&
             !Array.isArray(tempForm.emails) &&
-            myform.emails[0] === tempForm.emails
+            myform.emails.join(',') === tempForm.emails
           if (emailsFieldIncorrectlyAdded) delete updatedSettings.emails
 
           return updatedSettings
