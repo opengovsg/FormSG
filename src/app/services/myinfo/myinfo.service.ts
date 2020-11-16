@@ -167,21 +167,20 @@ export class MyInfoService {
     myInfoData: IPersonBasic,
     currFormFields: IFieldSchema[],
   ): Result<IPossiblyPrefilledField[], never> {
-    return ok(
-      currFormFields.map((field) => {
-        if (!field?.myInfo?.attr) return field
+    const prefilledFields = currFormFields.map((field) => {
+      if (!field?.myInfo?.attr) return field
 
-        const myInfoAttr = field.myInfo.attr
-        const myInfoValue = getMyInfoValue(myInfoAttr, myInfoData)
-        const isReadOnly = isFieldReadOnly(myInfoAttr, myInfoValue, myInfoData)
-        const prefilledField = cloneDeep(field) as IPossiblyPrefilledField
-        prefilledField.fieldValue = myInfoValue
+      const myInfoAttr = field.myInfo.attr
+      const myInfoValue = getMyInfoValue(myInfoAttr, myInfoData)
+      const isReadOnly = isFieldReadOnly(myInfoAttr, myInfoValue, myInfoData)
+      const prefilledField = cloneDeep(field) as IPossiblyPrefilledField
+      prefilledField.fieldValue = myInfoValue
 
-        // Disable field
-        prefilledField.disabled = isReadOnly
-        return prefilledField
-      }),
-    )
+      // Disable field
+      prefilledField.disabled = isReadOnly
+      return prefilledField
+    })
+    return ok(prefilledFields)
   }
 
   /**
