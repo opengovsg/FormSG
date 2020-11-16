@@ -1,3 +1,4 @@
+import Bluebird from 'bluebird'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
@@ -9,6 +10,7 @@ import { getEncryptSubmissionModel } from '../../../models/submission.server.mod
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
+import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import { SubmissionNotFoundError } from '../submission.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -156,4 +158,45 @@ export const getEncryptedSubmissionData = (
 
     return okAsync(submission)
   })
+}
+
+/**
+ * Transforms given attachment metadata to their S3 signed url counterparts.
+ * @param attachmentMetadata the metadata to transform
+ * @param urlValidDuration the duration the S3 signed url will be valid for
+ * @returns ok(map with object path replaced with their signed url counterparts)
+ * @returns err(CreatePresignedUrlError) if any of the signed url creation processes results in an error
+ */
+export const transformAttachmentMetasToSignedUrls = (
+  attachmentMetadata: Map<string, string>,
+  urlValidDuration: number,
+): ResultAsync<Record<string, string>, CreatePresignedUrlError> => {
+  const keyToSignedUrlPromises: Record<string, Promise<string>> = {}
+
+  for (const [key, objectPath] of attachmentMetadata) {
+    keyToSignedUrlPromises[key] = AwsConfig.s3.getSignedUrlPromise(
+      'getObject',
+      {
+        Bucket: AwsConfig.attachmentS3Bucket,
+        Key: objectPath,
+        Expires: urlValidDuration,
+      },
+    )
+  }
+
+  return ResultAsync.fromPromise(
+    Bluebird.props(keyToSignedUrlPromises),
+    (error) => {
+      logger.error({
+        message: 'Failed to retrieve signed URLs for attachments',
+        meta: {
+          action: 'transformAttachmentMetasToSignedUrls',
+          attachmentMetadata,
+        },
+        error,
+      })
+
+      return new CreatePresignedUrlError('Failed to create attachment URL')
+    },
+  )
 }
