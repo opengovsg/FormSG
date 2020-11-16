@@ -23,7 +23,6 @@ import {
 import { DatabaseError } from '../../modules/core/core.errors'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
-import getMyInfoHashModel from './myinfo_hash.model'
 import {
   CircuitBreakerError,
   FetchMyInfoError,
@@ -38,6 +37,7 @@ import {
   hashFieldValues,
   isFieldReadOnly,
 } from './myinfo.util'
+import getMyInfoHashModel from './myinfo_hash.model'
 
 const logger = createLoggerWithLabel(module)
 const MyInfoHash = getMyInfoHashModel(mongoose)

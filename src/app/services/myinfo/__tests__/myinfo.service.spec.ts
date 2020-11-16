@@ -7,8 +7,8 @@ import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
-import getMyInfoHashModel from 'src/app/services/myinfo/myinfo_hash.model'
 import { MyInfoService } from 'src/app/services/myinfo/myinfo.service'
+import getMyInfoHashModel from 'src/app/services/myinfo/myinfo_hash.model'
 import {
   Environment,
   IFieldSchema,
