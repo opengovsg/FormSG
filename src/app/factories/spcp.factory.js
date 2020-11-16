@@ -65,7 +65,6 @@ const spcpFactory = ({ isEnabled, props }) => {
     }
 
     return {
-      getRequestedAttributes: spcp.getRequestedAttributes,
       appendVerifiedSPCPResponses: spcp.appendVerifiedSPCPResponses,
       passThroughSpcp: admin.passThroughSpcp,
       returnSpcpRedirectURL: spcp.returnSpcpRedirectURL,
@@ -79,10 +78,6 @@ const spcpFactory = ({ isEnabled, props }) => {
   } else {
     const errMsg = 'SPCP/MyInfo feature is not enabled'
     return {
-      getRequestedAttributes: (req, res, next) => {
-        res.locals.requestedAttributes = []
-        return next()
-      },
       appendVerifiedSPCPResponses: (req, res, next) => next(),
       passThroughSpcp: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>

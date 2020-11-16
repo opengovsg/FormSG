@@ -16,10 +16,7 @@ import {
   WithForm,
 } from '../../types'
 import { MyInfoFactory } from '../services/myinfo/myinfo.factory'
-import {
-  extractRequestedAttributes,
-  mapVerifyMyInfoError,
-} from '../services/myinfo/myinfo.util'
+import { mapVerifyMyInfoError } from '../services/myinfo/myinfo.util'
 import { createReqMeta } from '../utils/request'
 
 const logger = createLoggerWithLabel(module)
@@ -40,7 +37,9 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   const { esrvcId, authType, form_fields: formFields, _id: formId } = form
 
   // Early return if nothing needs to be done.
-  const requestedAttributes = extractRequestedAttributes(formFields)
+  const requestedAttributes = (req as WithForm<
+    typeof req
+  >).form.getUniqueMyInfoAttrs()
   if (!uinFin || authType !== AuthType.SP || requestedAttributes.length === 0) {
     return next()
   }
@@ -94,11 +93,11 @@ export const verifyMyInfoVals: RequestHandler<
   { parsedResponses: ProcessedFieldResponse[] }
 > = async (req, res, next) => {
   // TODO (#42): add proper types here when migrating away from middleware pattern
-  const { authType, _id: formId, form_fields: formFields } = (req as WithForm<
-    typeof req
-  >).form.toJSON()
+  const { authType, _id: formId } = (req as WithForm<typeof req>).form.toJSON()
   const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin
-  const requestedAttributes = extractRequestedAttributes(formFields)
+  const requestedAttributes = (req as WithForm<
+    typeof req
+  >).form.getUniqueMyInfoAttrs()
   if (authType !== AuthType.SP || requestedAttributes.length === 0) {
     return next()
   } else if (!uinFin) {
