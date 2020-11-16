@@ -104,7 +104,8 @@ export const validateField = (
         // Migrated validators
         case BasicField.Section:
         case BasicField.ShortText:
-        case BasicField.LongText: {
+        case BasicField.LongText:
+        case BasicField.Nric: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
           if (isLeft(validEither)) {

@@ -3,12 +3,14 @@ import { left } from 'fp-ts/lib/Either'
 import { IField } from '../../../types/field/baseField'
 import {
   isLongTextField,
+  isNricField,
   isSectionField,
   isShortTextField,
 } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../modules/submission/submission.types'
 
+import { constructNricValidator } from './validators/nricValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
 
@@ -23,6 +25,8 @@ export const constructSingleAnswerValidator = (
     return constructSectionValidator()
   } else if (isShortTextField(formField) || isLongTextField(formField)) {
     return constructTextValidator(formField)
+  } else if (isNricField(formField)) {
+    return constructNricValidator()
   }
   return () => left('Unsupported field type')
 }
