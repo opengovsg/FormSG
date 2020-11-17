@@ -6,7 +6,7 @@ import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, SpcpSession } from '../../../types'
+import { AuthType } from '../../../types'
 
 import {
   CreateRedirectUrlError,
@@ -15,7 +15,7 @@ import {
   LoginPageValidationError,
   VerifyJwtError,
 } from './spcp.errors'
-import { LoginPageValidationResult } from './spcp.types'
+import { JwtPayload, LoginPageValidationResult } from './spcp.types'
 import { getSubstringBetween } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
@@ -157,7 +157,7 @@ export class SpcpService {
   extractJwtPayload(
     jwt: string,
     authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<SpcpSession, VerifyJwtError | InvalidAuthTypeError> {
+  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidAuthTypeError> {
     let authClient: SPCPAuthClient
     switch (authType) {
       case AuthType.SP:
@@ -169,10 +169,10 @@ export class SpcpService {
       default:
         return errAsync(new InvalidAuthTypeError(authType))
     }
-    const payloadPromise = new Promise<SpcpSession>((resolve, reject) => {
-      authClient.verifyJWT<SpcpSession>(
+    const payloadPromise = new Promise<JwtPayload>((resolve, reject) => {
+      authClient.verifyJWT<JwtPayload>(
         jwt,
-        (error: Error, data: SpcpSession) => {
+        (error: Error, data: JwtPayload) => {
           if (error) {
             return reject(error)
           }

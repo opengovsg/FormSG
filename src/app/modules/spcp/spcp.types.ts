@@ -8,3 +8,9 @@ export type LoginPageValidationResult =
   | { isValid: false; errorCode: string | null }
 
 export type SpcpCookies = Partial<Record<JwtName, string>>
+
+export type JwtPayload = {
+  userName: string
+  userInfo?: string
+  rememberMe: boolean
+}
