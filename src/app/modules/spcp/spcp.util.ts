@@ -4,7 +4,11 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { MapRouteError } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
-import { CreateRedirectUrlError } from './spcp.errors'
+import {
+  CreateRedirectUrlError,
+  FetchLoginPageError,
+  LoginPageValidationError,
+} from './spcp.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -29,6 +33,16 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Sorry, something went wrong. Please try again.',
+      }
+    case FetchLoginPageError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage: 'Failed to contact SingPass. Please try again.',
+      }
+    case LoginPageValidationError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
+        errorMessage: 'Error while contacting SingPass. Please try again.',
       }
     default:
       logger.error({
