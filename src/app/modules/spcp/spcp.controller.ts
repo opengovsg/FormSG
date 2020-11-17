@@ -7,6 +7,7 @@ import { AuthType } from '../../../types'
 import { createReqMeta } from '../../utils/request'
 
 import { SpcpFactory } from './spcp.factory'
+import { LoginPageValidationResult } from './spcp.types'
 import { mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
@@ -51,9 +52,7 @@ export const handleRedirect: RequestHandler<
  */
 export const handleValidate: RequestHandler<
   ParamsDictionary,
-  | { isValid: true }
-  | { isValid: false; errorCode: string }
-  | { message: string },
+  LoginPageValidationResult | { message: string },
   unknown,
   { authType: AuthType; target: string; esrvcId: string }
 > = (req, res) => {
@@ -61,13 +60,7 @@ export const handleValidate: RequestHandler<
   return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
     .asyncAndThen(SpcpFactory.fetchLoginPage)
     .andThen(SpcpFactory.validateLoginPage)
-    .map((errorCode) => {
-      if (!errorCode) {
-        return res.status(StatusCodes.OK).json({ isValid: true })
-      } else {
-        return res.status(StatusCodes.OK).json({ isValid: false, errorCode })
-      }
-    })
+    .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
         message: 'Error while validating e-service ID',

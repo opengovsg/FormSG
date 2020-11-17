@@ -14,6 +14,7 @@ import {
   InvalidAuthTypeError,
   LoginPageValidationError,
 } from './spcp.errors'
+import { LoginPageValidationResult } from './spcp.types'
 import { getSubstringBetween } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
@@ -119,7 +120,7 @@ export class SpcpService {
 
   validateLoginPage(
     loginHtml: string,
-  ): Result<string | null, LoginPageValidationError> {
+  ): Result<LoginPageValidationResult, LoginPageValidationError> {
     // The successful login page should have the title 'SingPass Login'
     // The error page should have the title 'SingPass - System Error Page'
     const title = getSubstringBetween(loginHtml, '<title>', '</title>')
@@ -133,7 +134,7 @@ export class SpcpService {
       return err(new LoginPageValidationError())
     }
     if (title.indexOf('Error') === -1) {
-      return ok(null)
+      return ok({ isValid: true })
     } else {
       // The error page should have text like 'System Code:&nbsp<b>138</b>'
       const errorCode = getSubstringBetween(
@@ -148,7 +149,7 @@ export class SpcpService {
           errorCode,
         },
       })
-      return ok(errorCode)
+      return ok({ isValid: false, errorCode })
     }
   }
 }

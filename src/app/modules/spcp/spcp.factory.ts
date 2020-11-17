@@ -14,6 +14,7 @@ import {
   LoginPageValidationError,
 } from './spcp.errors'
 import { SpcpService } from './spcp.service'
+import { LoginPageValidationResult } from './spcp.types'
 
 interface ISpcpFactory {
   createRedirectUrl(
@@ -29,7 +30,10 @@ interface ISpcpFactory {
   ): ResultAsync<string, FetchLoginPageError | MissingFeatureError>
   validateLoginPage(
     loginHtml: string,
-  ): Result<string | null, LoginPageValidationError | MissingFeatureError>
+  ): Result<
+    LoginPageValidationResult,
+    LoginPageValidationError | MissingFeatureError
+  >
 }
 
 export const createSpcpFactory = ({
