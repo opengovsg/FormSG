@@ -17,6 +17,7 @@ const spcpFactory = require('../factories/spcp-myinfo.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
+const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
 
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
@@ -458,12 +459,21 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download')
-    .get(
-      authEncryptedResponseAccess,
-      encryptSubmissions.streamEncryptedResponses,
-    )
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download').get(
+    celebrate({
+      [Segments.QUERY]: Joi.object()
+        .keys({
+          // Ensure YYYY-MM-DD format.
+          startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+          // Ensure YYYY-MM-DD format.
+          endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+          downloadAttachments: Joi.boolean().default(false),
+        })
+        .and('startDate', 'endDate'),
+    }),
+    authEncryptedResponseAccess,
+    EncryptSubmissionController.handleStreamEncryptedResponses,
+  )
 
   /**
    * Upload images

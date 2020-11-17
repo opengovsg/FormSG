@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios'
-import { Document, Model } from 'mongoose'
+import { Document, Model, QueryCursor } from 'mongoose'
 
 import { MyInfoAttribute } from './field'
 import { AuthType, IFormSchema } from './form'
@@ -103,6 +103,13 @@ export interface IWebhookResponse {
   }
 }
 
+// When retrieving from database, the attachmentMetadata type becomes an object
+// instead of a Map.
+export type SubmissionCursorData = Pick<
+  IEncryptedSubmissionSchema,
+  'encryptedContent' | 'verifiedContent' | 'created' | 'id'
+> & { attachmentMetadata: Record<string, string> } & Document
+
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
@@ -135,6 +142,22 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       metadata: SubmissionMetadata[]
       count: number
     }>
+
+    /**
+     * Returns a cursor for all submissions of the given formId. May further be
+     * limited by a given date range provided both dateRange.startDate and
+     * dateRange.endDate is valid.
+     * @param formId the form id to return the submissions cursor for
+     * @param dateRange optional. If provided, will limit the submissions to the given range
+     * @returns a cursor to the submissions retrieved
+     */
+    getSubmissionCursorByFormId(
+      formId: string,
+      dateRange: {
+        startDate?: string
+        endDate?: string
+      },
+    ): QueryCursor<SubmissionCursorData>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

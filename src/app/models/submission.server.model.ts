@@ -18,6 +18,7 @@ import {
   WebhookData,
   WebhookView,
 } from '../../types'
+import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 
@@ -293,6 +294,31 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
       })
   )
 }
+
+const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorByFormId'] = function (
+  this: IEncryptSubmissionModel,
+  formId,
+  dateRange = {},
+) {
+  const streamQuery = {
+    form: formId,
+    ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
+  }
+  return this.find(streamQuery)
+    .select({
+      encryptedContent: 1,
+      verifiedContent: 1,
+      attachmentMetadata: 1,
+      created: 1,
+      id: 1,
+    })
+    .batchSize(2000)
+    .read('secondary')
+    .lean()
+    .cursor()
+}
+
+EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = getSubmissionCursorByFormId
 
 const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const Submission = db.model('Submission', SubmissionSchema)
