@@ -13,34 +13,42 @@ jest.mock('../spcp.service')
 const MockSpcpService = mocked(SpcpService, true)
 
 describe('spcp.factory', () => {
-  it('should return error functions when isEnabled is false', () => {
-    const MyInfoFactory = createSpcpFactory({
+  it('should return error functions when isEnabled is false', async () => {
+    const SpcpFactory = createSpcpFactory({
       isEnabled: false,
       props: {} as ISpcpMyInfo,
     })
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
-    const createRedirectUrlResult = MyInfoFactory.createRedirectUrl(
+    const createRedirectUrlResult = SpcpFactory.createRedirectUrl(
       AuthType.SP,
       '',
       '',
     )
+    const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
+    const validateLoginPageResult = SpcpFactory.validateLoginPage('')
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
+    expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
+    expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
   })
 
-  it('should return error functions when props is undefined', () => {
-    const MyInfoFactory = createSpcpFactory({
+  it('should return error functions when props is undefined', async () => {
+    const SpcpFactory = createSpcpFactory({
       isEnabled: true,
       props: undefined,
     })
     const error = new Error(
       'spcp-myinfo is not activated, but a feature-specific function was called.',
     )
-    const createRedirectUrlResult = MyInfoFactory.createRedirectUrl(
+    const createRedirectUrlResult = SpcpFactory.createRedirectUrl(
       AuthType.SP,
       '',
       '',
     )
+    const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
+    const validateLoginPageResult = SpcpFactory.validateLoginPage('')
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
+    expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
+    expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
   })
 
   it('should call the SpcpService constructor when isEnabled is true and props is truthy', () => {
