@@ -24,3 +24,23 @@ SpcpRouter.get(
   redirectParamsMiddleware,
   SpcpController.handleRedirect,
 )
+
+/**
+ * Gets the spcp redirect URL and parses the returned page to check for error codes
+ * @route GET /spcp/validate
+ * @group SPCP - SingPass/CorpPass logins for form-fillers
+ * @param {string} target.query.required - the destination URL after login
+ * @param {string} authType.query.required - `SP` for SingPass or `CP` for CorpPass
+ * @param {string} esrvcId.query.required - e-service id
+ * @produces application/json
+ * @returns {Object} 200 - {isValid: boolean, errorCode?: string}
+ * where isValid is true if eservice id was valid, and otherwise false with the errorCode set to
+ * the error code returned by SingPass/CorpPass
+ * @returns {string} 503 - error message if the SP/CP server could not be contacted to retrieve the login page
+ * @returns {string} 502 - error message if the SP/CP server returned content which could not be parsed
+ */
+SpcpRouter.get(
+  '/validate',
+  redirectParamsMiddleware,
+  SpcpController.handleValidate,
+)
