@@ -1,11 +1,24 @@
+/**
+ * Validates whether a provided string value adheres to the UIN/FIN format
+ * as provided on the Singapore Government's National Registration Identity Card.
+ * @param value The value to be validated
+ */
 export const isNricValid = (value: string): boolean => {
   return isFormatValid(value) && isChecksumValid(value)
 }
 
+/**
+ * Tests whether a provided string value obeys a simple format check
+ * @param value The value to be validated
+ */
 const isFormatValid = (value: string): boolean => {
   return /^([STFGstfg]{1})([0-9]{7})([A-Za-z]{1})$/.test(value)
 }
 
+/**
+ * Algorithm to test whether the NRIC checksum is valid
+ * @param value The value to be validated
+ */
 const isChecksumValid = (value: string): boolean => {
   // http://www.ngiam.net/NRIC/NRIC_numbers.pdf
   value = value.toUpperCase()

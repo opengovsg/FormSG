@@ -7,19 +7,12 @@ import {
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IField } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
-import {
-  isLongTextField,
-  isSectionField,
-  isShortTextField,
-} from '../../../types/field/utils/guards'
-import { ResponseValidator } from '../../../types/field/utils/validation'
 import { FieldResponse } from '../../../types/response'
 import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
 
-import { constructSectionValidator } from './validators/sectionValidator'
-import constructTextValidator from './validators/textValidator'
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
-import fieldValidatorFactory from './FieldValidatorFactory.class'
+import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
+import { constructSingleAnswerValidator } from './singleAnswerValidator.factory'
 
 const logger = createLoggerWithLabel(module)
 
@@ -83,22 +76,6 @@ const logInvalidAnswer = (
 }
 
 /**
- * Constructs a validation function from a form field. Only meant to
- * validate single answer responses.
- * @param formField A form field from a form object
- */
-const constructSingleAnswerValidator = (
-  formField: IField,
-): ResponseValidator<ProcessedSingleAnswerResponse> => {
-  if (isSectionField(formField)) {
-    return constructSectionValidator()
-  } else if (isShortTextField(formField) || isLongTextField(formField)) {
-    return constructTextValidator(formField)
-  }
-  return () => left('Unsupported field type')
-}
-
-/**
  * Single exported function that abstracts away the complexities
  * of field validation.
  * @param formId id of form, for logging
@@ -127,7 +104,8 @@ export const validateField = (
         // Migrated validators
         case BasicField.Section:
         case BasicField.ShortText:
-        case BasicField.LongText: {
+        case BasicField.LongText:
+        case BasicField.Nric: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
           if (isLeft(validEither)) {
