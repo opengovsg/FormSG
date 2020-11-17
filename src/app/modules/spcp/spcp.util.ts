@@ -9,6 +9,7 @@ import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   LoginPageValidationError,
+  VerifyJwtError,
 } from './spcp.errors'
 import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
 
@@ -73,6 +74,11 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: 'Error while contacting SingPass. Please try again.',
+      }
+    case VerifyJwtError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'User is not SPCP authenticated',
       }
     default:
       logger.error({
