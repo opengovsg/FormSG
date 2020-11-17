@@ -26,9 +26,14 @@ describe('spcp.factory', () => {
     )
     const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
     const validateLoginPageResult = SpcpFactory.validateLoginPage('')
+    const extractJwtPayloadResult = await SpcpFactory.extractJwtPayload(
+      '',
+      AuthType.SP,
+    )
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
   })
 
   it('should return error functions when props is undefined', async () => {
@@ -46,9 +51,14 @@ describe('spcp.factory', () => {
     )
     const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
     const validateLoginPageResult = SpcpFactory.validateLoginPage('')
+    const extractJwtPayloadResult = await SpcpFactory.extractJwtPayload(
+      '',
+      AuthType.SP,
+    )
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
   })
 
   it('should call the SpcpService constructor when isEnabled is true and props is truthy', () => {
