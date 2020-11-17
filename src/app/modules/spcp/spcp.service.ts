@@ -12,7 +12,9 @@ import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidAuthTypeError,
+  LoginPageValidationError,
 } from './spcp.errors'
+import { getSubstringBetween } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 const LOGIN_PAGE_HEADERS =
@@ -113,5 +115,38 @@ export class SpcpService {
         return new FetchLoginPageError()
       },
     )
+  }
+
+  validateLoginPage(loginHtml: string): Result<true, LoginPageValidationError> {
+    // The successful login page should have the title 'SingPass Login'
+    // The error page should have the title 'SingPass - System Error Page'
+    const title = getSubstringBetween(loginHtml, '<title>', '</title>')
+    if (!title) {
+      logger.error({
+        message: 'Could not find SP/CP login page title',
+        meta: {
+          action: 'validateLoginPage',
+        },
+      })
+      return err(new LoginPageValidationError())
+    }
+    if (title.indexOf('Error') === -1) {
+      return ok(true)
+    } else {
+      // The error page should have text like 'System Code:&nbsp<b>138</b>'
+      const errorCode = getSubstringBetween(
+        loginHtml,
+        'System Code:&nbsp<b>',
+        '</b>',
+      )
+      logger.error({
+        message: 'Received error page from SP/CP',
+        meta: {
+          action: 'validateLoginPage',
+          errorCode,
+        },
+      })
+      return err(new LoginPageValidationError())
+    }
   }
 }

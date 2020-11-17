@@ -25,3 +25,12 @@ export class FetchLoginPageError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Invalid SP/CP login page.
+ */
+export class LoginPageValidationError extends ApplicationError {
+  constructor(message = 'Invalid SP/Cp login page.') {
+    super(message)
+  }
+}

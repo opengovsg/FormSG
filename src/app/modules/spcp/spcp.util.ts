@@ -8,6 +8,20 @@ import { CreateRedirectUrlError } from './spcp.errors'
 
 const logger = createLoggerWithLabel(module)
 
+export const getSubstringBetween = (
+  text: string,
+  markerStart: string,
+  markerEnd: string,
+): string | null => {
+  const start = text.indexOf(markerStart)
+  if (start === -1) {
+    return null
+  } else {
+    const end = text.indexOf(markerEnd, start)
+    return end === -1 ? null : text.substring(start + markerStart.length, end)
+  }
+}
+
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
