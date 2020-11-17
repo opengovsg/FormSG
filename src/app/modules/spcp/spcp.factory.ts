@@ -4,7 +4,7 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import { AuthType, SpcpSession } from '../../../types'
+import { AuthType } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
 import {
@@ -15,7 +15,7 @@ import {
   VerifyJwtError,
 } from './spcp.errors'
 import { SpcpService } from './spcp.service'
-import { LoginPageValidationResult } from './spcp.types'
+import { JwtPayload, LoginPageValidationResult } from './spcp.types'
 
 interface ISpcpFactory {
   createRedirectUrl(
@@ -38,7 +38,7 @@ interface ISpcpFactory {
   extractJwtPayload(
     jwt: string,
     authType: AuthType,
-  ): ResultAsync<SpcpSession, VerifyJwtError | InvalidAuthTypeError>
+  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidAuthTypeError>
 }
 
 export const createSpcpFactory = ({
