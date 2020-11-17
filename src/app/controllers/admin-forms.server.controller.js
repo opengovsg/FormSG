@@ -27,6 +27,7 @@ const getFormFeedbackModel = require('../models/form_feedback.server.model')
   .default
 const getSubmissionModel = require('../models/submission.server.model').default
 const { ResponseMode } = require('../../types')
+const { getMockSpcpLocals } = require('../modules/spcp/spcp.util')
 
 // Export individual functions (i.e. create, delete)
 // and makeModule function that takes in connection object
@@ -591,25 +592,10 @@ function makeModule(connection) {
      */
     passThroughSpcp: function (req, res, next) {
       const { authType } = req.form
-      switch (authType) {
-        case 'SP': {
-          res.locals.uinFin = 'S1234567A'
-          res.locals.hashedFields = new Set()
-          let actualFormFields = req.form.form_fields
-          let actualMyInfoFields = actualFormFields.filter(
-            (field) => field.myInfo && field.myInfo.attr,
-          )
-          for (let field of actualMyInfoFields) {
-            res.locals.hashedFields.add(field.myInfo.attr)
-          }
-          break
-        }
-        case 'CP':
-          res.locals.uinFin = '123456789A'
-          res.locals.userInfo = 'ABC'
-          break
-        default:
-          break
+      const myInfoAttrs = req.form.getUniqueMyInfoAttrs()
+      res.locals = {
+        ...res.locals,
+        ...getMockSpcpLocals(authType, myInfoAttrs),
       }
       return next()
     },
