@@ -35,7 +35,7 @@ interface ISpcpFactory {
     LoginPageValidationResult,
     LoginPageValidationError | MissingFeatureError
   >
-  extractPayload(
+  extractJwtPayload(
     jwt: string,
     authType: AuthType,
   ): ResultAsync<SpcpSession, VerifyJwtError | InvalidAuthTypeError>
@@ -51,7 +51,7 @@ export const createSpcpFactory = ({
       createRedirectUrl: () => err(error),
       fetchLoginPage: () => errAsync(error),
       validateLoginPage: () => err(error),
-      extractPayload: () => errAsync(error),
+      extractJwtPayload: () => errAsync(error),
     }
   }
   return new SpcpService(props)
