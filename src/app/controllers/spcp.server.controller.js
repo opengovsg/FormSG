@@ -229,48 +229,6 @@ exports.corpPassLogin = (ndiConfig) => {
 }
 
 /**
- * Adds session to returned JSON if form-filler is SPCP Authenticated
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- * @param  {Object} next - Express next middleware function
- */
-exports.addSpcpSessionInfo = (authClients) => {
-  return (req, res, next) => {
-    const { authType } = req.form
-    let authClient = authClients[authType] ? authClients[authType] : undefined
-    let jwtName = jwtNames[authType]
-    let jwt = req.cookies[jwtName]
-    if (authType && authClient && jwt) {
-      // add session info if logged in
-      authClient.verifyJWT(jwt, (err, payload) => {
-        if (err) {
-          // Do not specify userName to call MyInfo endpoint with if jwt is
-          // invalid.
-          // Client will inform the form-filler to log in with SingPass again.
-          logger.error({
-            message: 'Failed to verify JWT with auth client',
-            meta: {
-              action: 'addSpcpSessionInfo',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-        } else {
-          const { userName } = payload
-          // For use in addMyInfo middleware
-          res.locals.spcpSession = {
-            userName: userName,
-          }
-        }
-        return next()
-      })
-    } else {
-      return next()
-    }
-  }
-}
-
-/**
  * Encrypt and sign verified fields if exist
  * @param  {Object} req - Express request object
  * @param  {Object} res - Express response object
