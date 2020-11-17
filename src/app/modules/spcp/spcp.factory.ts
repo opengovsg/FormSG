@@ -4,7 +4,7 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import { AuthType } from '../../../types'
+import { AuthType, SpcpSession } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
 import {
@@ -12,6 +12,7 @@ import {
   FetchLoginPageError,
   InvalidAuthTypeError,
   LoginPageValidationError,
+  VerifyJwtError,
 } from './spcp.errors'
 import { SpcpService } from './spcp.service'
 import { LoginPageValidationResult } from './spcp.types'
@@ -34,6 +35,10 @@ interface ISpcpFactory {
     LoginPageValidationResult,
     LoginPageValidationError | MissingFeatureError
   >
+  extractPayload(
+    jwt: string,
+    authType: AuthType,
+  ): ResultAsync<SpcpSession, VerifyJwtError | InvalidAuthTypeError>
 }
 
 export const createSpcpFactory = ({
@@ -46,6 +51,7 @@ export const createSpcpFactory = ({
       createRedirectUrl: () => err(error),
       fetchLoginPage: () => errAsync(error),
       validateLoginPage: () => err(error),
+      extractPayload: () => errAsync(error),
     }
   }
   return new SpcpService(props)
