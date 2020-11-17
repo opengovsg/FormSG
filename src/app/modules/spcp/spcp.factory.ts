@@ -29,7 +29,7 @@ interface ISpcpFactory {
   ): ResultAsync<string, FetchLoginPageError | MissingFeatureError>
   validateLoginPage(
     loginHtml: string,
-  ): Result<true, LoginPageValidationError | MissingFeatureError>
+  ): Result<string | null, LoginPageValidationError | MissingFeatureError>
 }
 
 export const createSpcpFactory = ({

@@ -117,7 +117,9 @@ export class SpcpService {
     )
   }
 
-  validateLoginPage(loginHtml: string): Result<true, LoginPageValidationError> {
+  validateLoginPage(
+    loginHtml: string,
+  ): Result<string | null, LoginPageValidationError> {
     // The successful login page should have the title 'SingPass Login'
     // The error page should have the title 'SingPass - System Error Page'
     const title = getSubstringBetween(loginHtml, '<title>', '</title>')
@@ -131,7 +133,7 @@ export class SpcpService {
       return err(new LoginPageValidationError())
     }
     if (title.indexOf('Error') === -1) {
-      return ok(true)
+      return ok(null)
     } else {
       // The error page should have text like 'System Code:&nbsp<b>138</b>'
       const errorCode = getSubstringBetween(
@@ -139,14 +141,14 @@ export class SpcpService {
         'System Code:&nbsp<b>',
         '</b>',
       )
-      logger.error({
+      logger.warn({
         message: 'Received error page from SP/CP',
         meta: {
           action: 'validateLoginPage',
           errorCode,
         },
       })
-      return err(new LoginPageValidationError())
+      return ok(errorCode)
     }
   }
 }
