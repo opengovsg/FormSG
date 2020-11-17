@@ -8,6 +8,7 @@ import { MissingFeatureError } from '../core/core.errors'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
+  InvalidAuthTypeError,
   LoginPageValidationError,
   VerifyJwtError,
 } from './spcp.errors'
@@ -61,6 +62,7 @@ export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
     case CreateRedirectUrlError:
+    case InvalidAuthTypeError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Sorry, something went wrong. Please try again.',
