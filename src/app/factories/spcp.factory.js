@@ -1,16 +1,9 @@
 const spcp = require('../controllers/spcp.server.controller')
-const myInfo = require('../controllers/myinfo.server.controller')
 const admin = require('../controllers/admin-forms.server.controller')
 const { StatusCodes } = require('http-status-codes')
 const featureManager = require('../../config/feature-manager').default
-const config = require('../../config/config')
 const fs = require('fs')
 const SPCPAuthClient = require('@opengovsg/spcp-auth-client')
-const {
-  MyInfoGovClient,
-  Mode: MyInfoClientMode,
-} = require('@opengovsg/myinfo-gov-client')
-const MyInfoService = require('../services/myinfo.service')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
 const spcpFactory = ({ isEnabled, props }) => {
@@ -53,36 +46,6 @@ const spcpFactory = ({ isEnabled, props }) => {
         action: 'spcpFactory',
       },
     })
-    let myInfoConfig = {
-      realm: config.app.title,
-      singpassEserviceId: props.spEsrvcId,
-    }
-    let myInfoGovClient
-    // TODO: These env vars should move to spcp-myinfo.config and be validated
-    // as part of convict (Issue #255)
-    if (config.nodeEnv === 'production') {
-      let myInfoPrefix =
-        props.myInfoClientMode === MyInfoClientMode.Staging ? 'STG2-' : 'PROD2-'
-      myInfoConfig.privateKey = fs.readFileSync(props.myInfoKeyPath)
-      myInfoConfig.appId = myInfoPrefix + myInfoConfig.singpassEserviceId
-      myInfoConfig.mode = props.myInfoClientMode
-      myInfoGovClient = new MyInfoGovClient(myInfoConfig)
-    } else {
-      logger.warn({
-        message: `\n!!! WARNING !!!\nNo MyInfo keys detected.\nRequests to MyInfo will not work.\nThis should NEVER be seen in production.\nFalling back on MockPass.`,
-        meta: {
-          action: 'spcpFactory',
-        },
-      })
-      myInfoConfig.appId = 'STG2-' + myInfoConfig.singpassEserviceId
-      myInfoConfig.privateKey = fs.readFileSync(
-        './node_modules/@opengovsg/mockpass/static/certs/key.pem',
-      )
-      myInfoConfig.mode = 'dev'
-      myInfoGovClient = new MyInfoGovClient(myInfoConfig)
-      myInfoGovClient.baseUrl = 'http://localhost:5156/myinfo/v2/'
-    }
-    let myInfoService = new MyInfoService(myInfoGovClient, props.spCookieMaxAge)
 
     const authClients = {
       SP: singPassAuthClient,
@@ -105,14 +68,12 @@ const spcpFactory = ({ isEnabled, props }) => {
       getRequestedAttributes: spcp.getRequestedAttributes,
       appendVerifiedSPCPResponses: spcp.appendVerifiedSPCPResponses,
       passThroughSpcp: admin.passThroughSpcp,
-      verifyMyInfoVals: myInfo.verifyMyInfoVals,
       returnSpcpRedirectURL: spcp.returnSpcpRedirectURL,
       singPassLogin: spcp.singPassLogin(ndiConfig),
       corpPassLogin: spcp.corpPassLogin(ndiConfig),
       addSpcpSessionInfo: spcp.addSpcpSessionInfo(authClients),
       isSpcpAuthenticated: spcp.isSpcpAuthenticated(authClients),
       createSpcpRedirectURL: spcp.createSpcpRedirectURL(authClients),
-      addMyInfo: myInfo.addMyInfo(myInfoService),
       validateESrvcId: spcp.validateESrvcId,
     }
   } else {
@@ -124,7 +85,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       },
       appendVerifiedSPCPResponses: (req, res, next) => next(),
       passThroughSpcp: (req, res, next) => next(),
-      verifyMyInfoVals: (req, res, next) => next(),
       returnSpcpRedirectURL: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       singPassLogin: (req, res) =>
@@ -134,7 +94,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       addSpcpSessionInfo: (req, res, next) => next(),
       isSpcpAuthenticated: (req, res, next) => next(),
       createSpcpRedirectURL: (req, res, next) => next(),
-      addMyInfo: (req, res, next) => next(),
       validateESrvcId: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
     }
