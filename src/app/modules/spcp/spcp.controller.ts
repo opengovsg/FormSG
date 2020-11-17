@@ -117,3 +117,44 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
       return next()
     })
 }
+
+/**
+ * Checks if user is SPCP-authenticated before allowing submission
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next middleware function
+ */
+export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
+  req,
+  res,
+  next,
+) => {
+  const { authType } = (req as WithForm<typeof req>).form
+  if (!authType) return next()
+
+  const jwt = extractJwt(req.cookies, authType)
+  if (!jwt) return next()
+
+  return SpcpFactory.extractJwtPayload(jwt, authType)
+    .map(({ userName, userInfo }) => {
+      res.locals.uinFin = userName
+      res.locals.userInfo = userInfo
+      return next()
+    })
+    .mapErr((error) => {
+      const { statusCode, errorMessage } = mapRouteError(error)
+      logger.error({
+        message: 'Failed to verify JWT with auth client',
+        meta: {
+          action: 'isSpcpAuthenticated',
+          ...createReqMeta(req),
+          authType,
+        },
+        error,
+      })
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: true,
+      })
+    })
+}
