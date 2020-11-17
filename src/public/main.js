@@ -163,6 +163,7 @@ require('./modules/core/components/navbar.client.component.js')
 require('./modules/core/components/avatar-dropdown.client.component')
 require('./modules/core/components/banner.client.component.js')
 require('./modules/core/components/sg-govt-banner.client.component.js')
+require('./modules/core/components/footer.client.component.js')
 
 /**
  * Forms module
@@ -344,6 +345,10 @@ app.run([
     $templateCache.put(
       'modules/core/componentViews/sg-govt-banner.html',
       require('./modules/core/componentViews/sg-govt-banner.html'),
+    )
+    $templateCache.put(
+      'modules/core/componentViews/footer.html',
+      require('./modules/core/componentViews/footer.html'),
     )
 
     // Core views

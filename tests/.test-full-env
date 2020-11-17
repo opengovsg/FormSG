@@ -10,6 +10,9 @@ SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/sam
 MOCKPASS_PORT=5156
 SINGPASS_ESRVC_ID=Test-eServiceId-Sp
 
+MYINFO_CLIENT_CONFIG=stg
+MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+
 CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
 CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
@@ -26,7 +29,6 @@ SHOW_LOGIN_PAGE=true
 IS_SP_MAINTENANCE=Date/Time-SP
 IS_CP_MAINTENANCE=Date/Time-CP
 
-MYINFO_CLIENT_CONFIG=stg
 MOCKPASS_NRIC=S6005038D
 MOCKPASS_UEN=123456789A
 

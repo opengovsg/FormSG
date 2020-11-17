@@ -495,7 +495,7 @@ const ALL_MYINFO_HASHES = {
     '$2b$10$eLakOm88NEuUawlGHsiPjeaImpYT5ZBH1JyZUseIRL9kCtDRIKdCe',
 }
 
-const SESSION_SECRET = 'secret'
+const SESSION_SECRET = process.env.SESSION_SECRET
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
@@ -506,9 +506,6 @@ const Controller = spec(
   'dist/backend/app/controllers/myinfo.server.controller',
   {
     mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-    '../../config/config': {
-      sessionSecret: SESSION_SECRET,
-    },
   },
 )
 

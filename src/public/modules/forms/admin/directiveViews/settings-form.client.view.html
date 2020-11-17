@@ -251,6 +251,39 @@
 
       <div class="settings-divider"></div>
 
+      <!-- Form name and emails -->
+      <form-title-input-component
+        form-data="tempForm"
+        form-controller="settingsForm"
+        save-form="saveForm()"
+      >
+      </form-title-input-component>
+      <form-emails-input-component
+        form-data="tempForm"
+        form-controller="settingsForm"
+        save-form="saveForm()"
+        ng-if="!isFormEncrypt()"
+      >
+      </form-emails-input-component>
+
+      <div class="row form-option">
+        <div class="col-xs-9 label-custom label-large">
+          Mode for receiving form data<i
+            class="glyphicon glyphicon-question-sign"
+            uib-tooltip="This setting can't be changed after form creation. To change it, duplicate this form."
+            tooltip-trigger="'click mouseenter'"
+          ></i>
+        </div>
+        <div class="col-xs-3">
+          <span class="pull-right label-custom label-large">
+            <span ng-if="isFormEncrypt()">Storage</span>
+            <span ng-if="!isFormEncrypt()">Email</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="settings-divider webhook-divider"></div>
+
       <!-- Webhooks for encrypted forms -->
       <div
         ng-if="isFormEncrypt()"
@@ -266,9 +299,10 @@
             <span class="beta-icon"> beta </span>
             <i
               class="glyphicon glyphicon-question-sign"
-              uib-tooltip="If specified, we will POST encrypted form submissions to a REST API supplied by you."
+              uib-tooltip="For developers and IT officers. We will POST encrypted form responses in real-time to the HTTPS endpoint specified here."
               tooltip-trigger="'click mouseenter'"
             ></i>
+            <span class="field-optional">(optional)</span>
           </label>
         </div>
         <div
@@ -319,39 +353,6 @@
               </span>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="settings-divider"></div>
-
-      <!-- Form name and emails -->
-      <form-title-input-component
-        form-data="tempForm"
-        form-controller="settingsForm"
-        save-form="saveForm()"
-      >
-      </form-title-input-component>
-      <form-emails-input-component
-        form-data="tempForm"
-        form-controller="settingsForm"
-        save-form="saveForm()"
-        ng-if="!isFormEncrypt()"
-      >
-      </form-emails-input-component>
-
-      <div class="row form-option">
-        <div class="col-xs-9 label-custom label-large">
-          Mode for receiving form data<i
-            class="glyphicon glyphicon-question-sign"
-            uib-tooltip="This setting can't be changed after form creation. To change it, duplicate this form."
-            tooltip-trigger="'click mouseenter'"
-          ></i>
-        </div>
-        <div class="col-xs-3">
-          <span class="pull-right label-custom label-large">
-            <span ng-if="isFormEncrypt()">Storage</span>
-            <span ng-if="!isFormEncrypt()">Email</span>
-          </span>
         </div>
       </div>
     </div>
