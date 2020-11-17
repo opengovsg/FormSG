@@ -1,5 +1,4 @@
 const spcp = require('../controllers/spcp.server.controller')
-const admin = require('../controllers/admin-forms.server.controller')
 const { StatusCodes } = require('http-status-codes')
 const featureManager = require('../../config/feature-manager').default
 const fs = require('fs')
@@ -66,7 +65,6 @@ const spcpFactory = ({ isEnabled, props }) => {
 
     return {
       appendVerifiedSPCPResponses: spcp.appendVerifiedSPCPResponses,
-      passThroughSpcp: admin.passThroughSpcp,
       singPassLogin: spcp.singPassLogin(ndiConfig),
       corpPassLogin: spcp.corpPassLogin(ndiConfig),
     }
@@ -74,7 +72,6 @@ const spcpFactory = ({ isEnabled, props }) => {
     const errMsg = 'SPCP/MyInfo feature is not enabled'
     return {
       appendVerifiedSPCPResponses: (req, res, next) => next(),
-      passThroughSpcp: (req, res, next) => next(),
       singPassLogin: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       corpPassLogin: (req, res) =>

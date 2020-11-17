@@ -340,7 +340,7 @@ module.exports = function (app) {
       authActiveForm(PERMISSIONS.READ),
       emailSubmissions.receiveEmailSubmissionUsingBusBoy,
       emailSubmissions.validateEmailSubmission,
-      spcpFactory.passThroughSpcp,
+      adminForms.passThroughSpcp,
       submissions.injectAutoReplyInfo,
       spcpFactory.appendVerifiedSPCPResponses,
       emailSubmissions.prepareEmailSubmission,
@@ -374,7 +374,7 @@ module.exports = function (app) {
     .post(
       authActiveForm(PERMISSIONS.READ),
       encryptSubmissions.validateEncryptSubmission,
-      spcpFactory.passThroughSpcp,
+      adminForms.passThroughSpcp,
       submissions.injectAutoReplyInfo,
       webhookVerifiedContentFactory.encryptedVerifiedFields,
       encryptSubmissions.prepareEncryptSubmission,
