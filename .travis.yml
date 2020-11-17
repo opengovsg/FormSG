@@ -28,6 +28,7 @@ before_script:
 
 script:
   - set -e
+  - npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
   - npm run lint-ci
   - npm run build
   - npm run test-ci
