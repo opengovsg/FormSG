@@ -11,6 +11,7 @@ import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidAuthTypeError,
+  LoginPageValidationError,
 } from './spcp.errors'
 import { SpcpService } from './spcp.service'
 
@@ -26,6 +27,9 @@ interface ISpcpFactory {
   fetchLoginPage(
     redirectUrl: string,
   ): ResultAsync<string, FetchLoginPageError | MissingFeatureError>
+  validateLoginPage(
+    loginHtml: string,
+  ): Result<true, LoginPageValidationError | MissingFeatureError>
 }
 
 export const createSpcpFactory = ({
@@ -37,6 +41,7 @@ export const createSpcpFactory = ({
     return {
       createRedirectUrl: () => err(error),
       fetchLoginPage: () => errAsync(error),
+      validateLoginPage: () => err(error),
     }
   }
   return new SpcpService(props)
