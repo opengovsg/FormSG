@@ -30,7 +30,7 @@ script:
   - set -e
   - npm run lint-ci
   - npm run build
-  - npm run test-ci
+  - travis_retry npm run test-ci
   - npm run test-e2e-ci
 
 before_deploy:
