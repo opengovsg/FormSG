@@ -35,3 +35,4 @@ export const MOCK_TARGET = new ObjectId().toHexString()
 export const MOCK_REDIRECT_URL = 'redirectUrl'
 export const MOCK_LOGIN_HTML = 'html'
 export const MOCK_ERROR_CODE = 'errorCode'
+export const MOCK_TITLE = 'title'
