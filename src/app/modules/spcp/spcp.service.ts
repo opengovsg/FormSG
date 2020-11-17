@@ -3,7 +3,6 @@ import axios from 'axios'
 import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
-import { promisify } from 'util'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -170,19 +169,27 @@ export class SpcpService {
       default:
         return errAsync(new InvalidAuthTypeError(authType))
     }
-    return ResultAsync.fromPromise(
-      promisify<string, SpcpSession>(authClient.verifyJWT)(jwt),
-      (error) => {
-        logger.error({
-          message: 'Failed to verify JWT with auth client',
-          meta: {
-            action: 'extractPayload',
-            authType,
-          },
-          error,
-        })
-        return new VerifyJwtError()
-      },
-    )
+    const payloadPromise = new Promise<SpcpSession>((resolve, reject) => {
+      authClient.verifyJWT<SpcpSession>(
+        jwt,
+        (error: Error, data: SpcpSession) => {
+          if (error) {
+            return reject(error)
+          }
+          return resolve(data)
+        },
+      )
+    })
+    return ResultAsync.fromPromise(payloadPromise, (error) => {
+      logger.error({
+        message: 'Failed to verify JWT with auth client',
+        meta: {
+          action: 'extractPayload',
+          authType,
+        },
+        error,
+      })
+      return new VerifyJwtError()
+    })
   }
 }
