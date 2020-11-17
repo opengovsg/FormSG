@@ -82,7 +82,9 @@ describe('spcp.controller', () => {
       MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
         okAsync(MOCK_LOGIN_HTML),
       )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(null))
+      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(
+        ok({ isValid: true }),
+      )
 
       await SpcpController.handleValidate(
         MOCK_REDIRECT_REQ,
@@ -114,7 +116,9 @@ describe('spcp.controller', () => {
       MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
         okAsync(MOCK_LOGIN_HTML),
       )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(MOCK_ERROR_CODE))
+      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(
+        ok({ isValid: false, errorCode: MOCK_ERROR_CODE }),
+      )
 
       await SpcpController.handleValidate(
         MOCK_REDIRECT_REQ,
