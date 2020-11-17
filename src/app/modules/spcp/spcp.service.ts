@@ -155,7 +155,7 @@ export class SpcpService {
     }
   }
 
-  extractPayload(
+  extractJwtPayload(
     jwt: string,
     authType: AuthType.SP | AuthType.CP,
   ): ResultAsync<SpcpSession, VerifyJwtError | InvalidAuthTypeError> {

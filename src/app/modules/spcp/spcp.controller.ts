@@ -100,7 +100,7 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
   const jwt = extractJwt(req.cookies, authType)
   if (!jwt) return next()
 
-  return SpcpFactory.extractPayload(jwt, authType)
+  return SpcpFactory.extractJwtPayload(jwt, authType)
     .map(({ userName }) => {
       res.locals.spcpSession = { userName }
       return next()
