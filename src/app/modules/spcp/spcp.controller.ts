@@ -23,7 +23,7 @@ export const handleRedirect: RequestHandler<
   { authType: AuthType; target: string; esrvcId: string }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
-  SpcpFactory.createRedirectUrl(authType, target, esrvcId)
+  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
     .map((redirectURL) => {
       return res.status(StatusCodes.OK).json({ redirectURL })
     })
@@ -58,7 +58,7 @@ export const handleValidate: RequestHandler<
   { authType: AuthType; target: string; esrvcId: string }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
-  SpcpFactory.createRedirectUrl(authType, target, esrvcId)
+  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
     .asyncAndThen(SpcpFactory.fetchLoginPage)
     .andThen(SpcpFactory.validateLoginPage)
     .map((errorCode) => {
