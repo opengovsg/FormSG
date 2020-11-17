@@ -2,17 +2,19 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import axios from 'axios'
 import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
+import { promisify } from 'util'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType } from '../../../types'
+import { AuthType, SpcpSession } from '../../../types'
 
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidAuthTypeError,
   LoginPageValidationError,
+  VerifyJwtError,
 } from './spcp.errors'
 import { LoginPageValidationResult } from './spcp.types'
 import { getSubstringBetween } from './spcp.util'
@@ -151,5 +153,36 @@ export class SpcpService {
       })
       return ok({ isValid: false, errorCode })
     }
+  }
+
+  extractPayload(
+    jwt: string,
+    authType: AuthType.SP | AuthType.CP,
+  ): ResultAsync<SpcpSession, VerifyJwtError | InvalidAuthTypeError> {
+    let authClient: SPCPAuthClient
+    switch (authType) {
+      case AuthType.SP:
+        authClient = this.#singpassAuthClient
+        break
+      case AuthType.CP:
+        authClient = this.#corppassAuthClient
+        break
+      default:
+        return errAsync(new InvalidAuthTypeError(authType))
+    }
+    return ResultAsync.fromPromise(
+      promisify<string, SpcpSession>(authClient.verifyJWT)(jwt),
+      (error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: {
+            action: 'extractPayload',
+            authType,
+          },
+          error,
+        })
+        return new VerifyJwtError()
+      },
+    )
   }
 }
