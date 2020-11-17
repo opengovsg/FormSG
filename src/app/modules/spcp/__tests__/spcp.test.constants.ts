@@ -33,3 +33,5 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
 export const MOCK_ESRVCID = 'eServiceId'
 export const MOCK_TARGET = new ObjectId().toHexString()
 export const MOCK_REDIRECT_URL = 'redirectUrl'
+export const MOCK_LOGIN_HTML = 'html'
+export const MOCK_ERROR_CODE = 'errorCode'
