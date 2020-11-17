@@ -8,12 +8,14 @@ import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   LoginPageValidationError,
+  VerifyJwtError,
 } from '../spcp.errors'
 import { SpcpService } from '../spcp.service'
 
 import {
   MOCK_ERROR_CODE,
   MOCK_ESRVCID,
+  MOCK_JWT,
   MOCK_LOGIN_HTML,
   MOCK_REDIRECT_URL,
   MOCK_SERVICE_PARAMS as MOCK_PARAMS,
@@ -182,6 +184,48 @@ describe('spcp.service', () => {
       const mockHtml = 'mock'
       const result = spcpService.validateLoginPage(mockHtml)
       expect(result._unsafeUnwrapErr()).toEqual(new LoginPageValidationError())
+    })
+  })
+
+  describe('extractJwtPayload', () => {
+    it('should return the correct payload for Singpass when JWT is valid', async () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      // Assumes that SP auth client was instantiated first
+      const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
+      mockSpClient.verifyJWT.mockImplementationOnce((jwt, cb) => cb(null, jwt))
+      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.SP)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_JWT)
+    })
+
+    it('should return VerifyJwtError when SingPass JWT is invalid', async () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      // Assumes that SP auth client was instantiated first
+      const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
+      mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+        cb(new Error(), null),
+      )
+      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.SP)
+      expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
+    })
+
+    it('should return the correct payload for Corppass when JWT is valid', async () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      // Assumes that SP auth client was instantiated first
+      const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
+      mockCpClient.verifyJWT.mockImplementationOnce((jwt, cb) => cb(null, jwt))
+      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.CP)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_JWT)
+    })
+
+    it('should return VerifyJwtError when CorpPass JWT is invalid', async () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      // Assumes that SP auth client was instantiated first
+      const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
+      mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+        cb(new Error(), null),
+      )
+      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.CP)
+      expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
     })
   })
 })
