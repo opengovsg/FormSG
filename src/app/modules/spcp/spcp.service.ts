@@ -105,7 +105,7 @@ export class SpcpService {
         .then((response) => response.data),
       (error) => {
         logger.error({
-          message: 'Error while creating redirect URL',
+          message: 'Error while fetching SP/CP login page',
           meta: {
             action: 'fetchLoginPage',
             redirectUrl,
