@@ -16,7 +16,7 @@ import {
   VerifyJwtError,
 } from './spcp.errors'
 import { JwtPayload, LoginPageValidationResult } from './spcp.types'
-import { getSubstringBetween } from './spcp.util'
+import { getSubstringBetween, verifyJwtPromise } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 const LOGIN_PAGE_HEADERS =
@@ -189,27 +189,19 @@ export class SpcpService {
       default:
         return errAsync(new InvalidAuthTypeError(authType))
     }
-    const payloadPromise = new Promise<JwtPayload>((resolve, reject) => {
-      authClient.verifyJWT<JwtPayload>(
-        jwt,
-        (error: Error, data: JwtPayload) => {
-          if (error) {
-            return reject(error)
-          }
-          return resolve(data)
-        },
-      )
-    })
-    return ResultAsync.fromPromise(payloadPromise, (error) => {
-      logger.error({
-        message: 'Failed to verify JWT with auth client',
-        meta: {
-          action: 'extractPayload',
-          authType,
-        },
-        error,
-      })
-      return new VerifyJwtError()
-    })
+    return ResultAsync.fromPromise(
+      verifyJwtPromise(authClient, jwt),
+      (error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: {
+            action: 'extractPayload',
+            authType,
+          },
+          error,
+        })
+        return new VerifyJwtError()
+      },
+    )
   }
 }
