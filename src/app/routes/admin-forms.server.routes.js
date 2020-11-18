@@ -395,7 +395,10 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/submissions')
-    .get(authEncryptedResponseAccess, encryptSubmissions.getEncryptedResponse)
+    .get(
+      authEncryptedResponseAccess,
+      EncryptSubmissionController.handleGetEncryptedResponse,
+    )
 
   /**
    * Count the number of submissions for a public form
