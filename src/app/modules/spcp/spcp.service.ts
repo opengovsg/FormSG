@@ -278,15 +278,14 @@ export class SpcpService {
   }
 
   createJWT(
-    payload: Record<string, unknown>,
+    payload: JwtPayload,
     authType: AuthType.SP | AuthType.CP,
-    rememberMe: boolean,
   ): Result<string, unknown> {
     let cookieDuration: number
     if (authType === AuthType.CP) {
       cookieDuration = this.#spcpProps.cpCookieMaxAge
     } else {
-      cookieDuration = rememberMe
+      cookieDuration = payload.rememberMe
         ? this.#spcpProps.spCookieMaxAgePreserved
         : this.#spcpProps.spCookieMaxAge
     }
