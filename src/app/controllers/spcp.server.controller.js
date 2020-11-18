@@ -7,7 +7,6 @@ const { isEmpty } = require('lodash')
 const mongoose = require('mongoose')
 const crypto = require('crypto')
 const { StatusCodes } = require('http-status-codes')
-const axios = require('axios')
 
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -200,104 +199,6 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
       })
     })
   }
-}
-
-/**
- * Generates redirect URL to Official SingPass/CorpPass log in page
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- * @param  {function} next - Express next function
- */
-exports.createSpcpRedirectURL = (authClients) => {
-  return (req, res, next) => {
-    const { target, authType, esrvcId } = req.query
-    let authClient = authClients[authType] ? authClients[authType] : undefined
-    if (target && authClient && esrvcId) {
-      req.redirectURL = authClient.createRedirectURL(target, esrvcId)
-      return next()
-    } else {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Redirect URL malformed' })
-    }
-  }
-}
-
-const getSubstringBetween = (text, markerStart, markerEnd) => {
-  const start = text.indexOf(markerStart)
-  if (start === -1) {
-    return null
-  } else {
-    const end = text.indexOf(markerEnd, start)
-    return end === -1 ? null : text.substring(start + markerStart.length, end)
-  }
-}
-
-exports.validateESrvcId = (req, res) => {
-  let { redirectURL } = req
-  let validateUrl = redirectURL
-
-  axios
-    .get(validateUrl, {
-      headers: {
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
-      },
-      timeout: 10000, // 10 seconds
-      // Throw error if not status 200.
-      validateStatus: (status) => status === StatusCodes.OK,
-    })
-    .then(({ data }) => {
-      // The successful login page should have the title 'SingPass Login'
-      // The error page should have the title 'SingPass - System Error Page'
-      const title = getSubstringBetween(data, '<title>', '</title>')
-      if (title === null) {
-        logger.error({
-          message: 'Could not find title',
-          meta: {
-            action: 'validateESrvcId',
-            ...createReqMeta(req),
-            redirectUrl: redirectURL,
-            data,
-          },
-        })
-        return res.status(StatusCodes.BAD_GATEWAY).json({
-          message: 'Singpass returned incomprehensible content',
-        })
-      }
-      if (title.indexOf('Error') === -1) {
-        return res.status(StatusCodes.OK).json({
-          isValid: true,
-        })
-      }
-
-      // The error page should have text like 'System Code:&nbsp<b>138</b>'
-      const errorCode = getSubstringBetween(
-        data,
-        'System Code:&nbsp<b>',
-        '</b>',
-      )
-      return res.status(StatusCodes.OK).json({
-        isValid: false,
-        errorCode,
-      })
-    })
-    .catch((err) => {
-      const { statusCode } = err.response || {}
-      logger.error({
-        message: 'Could not contact singpass to validate eservice id',
-        meta: {
-          action: 'validateESrvcId',
-          ...createReqMeta(req),
-          redirectUrl: redirectURL,
-          statusCode,
-        },
-        error: err,
-      })
-      return res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
-        message: 'Failed to contact Singpass',
-      })
-    })
 }
 
 /**
