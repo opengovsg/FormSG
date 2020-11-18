@@ -28,7 +28,7 @@
       "extends": ["plugin:@typescript-eslint/recommended"],
       "rules": {
         // Rules for auto sort of imports
-        "simple-import-sort/sort": [
+        "simple-import-sort/imports": [
           "error",
           {
             "groups": [

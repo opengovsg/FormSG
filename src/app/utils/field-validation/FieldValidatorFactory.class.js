@@ -2,7 +2,6 @@ const {
   DropdownValidator,
   RadiobuttonValidator,
   CheckboxValidator,
-  NricValidator,
   EmailValidator,
   TableValidator,
   NumberValidator,
@@ -42,6 +41,7 @@ class FieldValidatorFactory {
       case 'section':
       case 'textfield': // short text
       case 'textarea': // long text
+      case 'nric':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'radiobutton':
         return new RadiobuttonValidator(...arguments)
@@ -49,8 +49,6 @@ class FieldValidatorFactory {
         return new DropdownValidator(...arguments)
       case 'checkbox':
         return new CheckboxValidator(...arguments)
-      case 'nric':
-        return new NricValidator(...arguments)
       case 'email':
         return new EmailValidator(...arguments)
       case 'table':

@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios'
-import { Document, Model } from 'mongoose'
+import { Document, Model, QueryCursor } from 'mongoose'
 
 import { MyInfoAttribute } from './field'
 import { AuthType, IFormSchema } from './form'
@@ -7,6 +7,12 @@ import { AuthType, IFormSchema } from './form'
 export enum SubmissionType {
   Email = 'emailSubmission',
   Encrypt = 'encryptSubmission',
+}
+
+export type SubmissionMetadata = {
+  number: number
+  refNo: IEncryptedSubmissionSchema['_id']
+  submissionTime: string
 }
 
 export interface ISubmission {
@@ -61,7 +67,7 @@ export interface IEmailSubmission extends ISubmission {
   recipientEmails: string[]
   responseHash: string
   responseSalt: string
-  hasBounced: boolean
+  hasBounced?: boolean
   encryptedContent: never
   verifiedContent: never
   version: never
@@ -81,7 +87,7 @@ export interface IEncryptedSubmission extends ISubmission {
   verifiedContent?: string
   version: number
   attachmentMetadata?: Map<string, string>
-  webhookResponses: IWebhookResponse[]
+  webhookResponses?: IWebhookResponse[]
   getWebhookView(): WebhookView | null
 }
 
@@ -97,9 +103,61 @@ export interface IWebhookResponse {
   }
 }
 
+// When retrieving from database, the attachmentMetadata type becomes an object
+// instead of a Map.
+export type SubmissionCursorData = Pick<
+  IEncryptedSubmissionSchema,
+  'encryptedContent' | 'verifiedContent' | 'created' | 'id'
+> & { attachmentMetadata: Record<string, string> } & Document
+
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
-  ISubmissionModel
+  ISubmissionModel & {
+    /**
+     * Return submission metadata for a single submissionId of form with formId.
+     * @param formId formId to filter submissions for
+     * @param submissionId specific submissionId to retrieve metadata for
+     *
+     * @returns submission metadata if available, `null` otherwise.
+     */
+    findSingleMetadata(
+      formId: string,
+      submissionId: string,
+    ): Promise<SubmissionMetadata | null>
+
+    /**
+     * Returns all submission metadata of the form for the given formId. The
+     * metadata returned is offset by the page and the pageSize options.
+     * @param formId the form id to return submission metadata for
+     * @param options.page the page of metadata list to return
+     * @param options.pageSize the number of metadata per page
+     *
+     * @returns limited list of metadata, along with the total number of metadata count
+     */
+    findAllMetadataByFormId(
+      formId: string,
+      params?: { page?: number; pageSize?: number },
+    ): Promise<{
+      metadata: SubmissionMetadata[]
+      count: number
+    }>
+
+    /**
+     * Returns a cursor for all submissions of the given formId. May further be
+     * limited by a given date range provided both dateRange.startDate and
+     * dateRange.endDate is valid.
+     * @param formId the form id to return the submissions cursor for
+     * @param dateRange optional. If provided, will limit the submissions to the given range
+     * @returns a cursor to the submissions retrieved
+     */
+    getSubmissionCursorByFormId(
+      formId: string,
+      dateRange: {
+        startDate?: string
+        endDate?: string
+      },
+    ): QueryCursor<SubmissionCursorData>
+  }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

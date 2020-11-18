@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-const { celebrate, Joi } = require('celebrate')
+const { celebrate, Joi, Segments } = require('celebrate')
 
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
@@ -13,10 +13,13 @@ let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 let PERMISSIONS = require('../utils/permission-levels').default
-const spcpFactory = require('../factories/spcp-myinfo.factory')
+const spcpFactory = require('../factories/spcp.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
+const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
+
+const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
 const emailValOpts = {
   minDomainSegments: 2, // Number of segments required for the domain
@@ -404,9 +407,20 @@ module.exports = function (app) {
    * @returns {number} 200 - the submission count
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count')
-    .get(authActiveForm(PERMISSIONS.READ), submissions.count)
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count').get(
+    celebrate({
+      [Segments.QUERY]: Joi.object()
+        .keys({
+          // Ensure YYYY-MM-DD format.
+          startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+          // Ensure YYYY-MM-DD format.
+          endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+        })
+        .and('startDate', 'endDate'),
+    }),
+    withUserAuthentication,
+    AdminFormController.handleCountFormSubmissions,
+  )
 
   /**
    * @typedef metadataResponse
@@ -424,9 +438,16 @@ module.exports = function (app) {
    * @returns {metadataResponse.model} 200 - Metadata of responses
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata')
-    .get(authEncryptedResponseAccess, encryptSubmissions.getMetadata)
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata').get(
+    authEncryptedResponseAccess,
+    celebrate({
+      [Segments.QUERY]: {
+        page: Joi.number().min(1).required(),
+        submissionId: Joi.string().optional(),
+      },
+    }),
+    encryptSubmissions.getMetadata,
+  )
 
   /**
    * Stream download all encrypted responses for a form
@@ -438,12 +459,21 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download')
-    .get(
-      authEncryptedResponseAccess,
-      encryptSubmissions.streamEncryptedResponses,
-    )
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download').get(
+    celebrate({
+      [Segments.QUERY]: Joi.object()
+        .keys({
+          // Ensure YYYY-MM-DD format.
+          startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+          // Ensure YYYY-MM-DD format.
+          endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+          downloadAttachments: Joi.boolean().default(false),
+        })
+        .and('startDate', 'endDate'),
+    }),
+    authEncryptedResponseAccess,
+    EncryptSubmissionController.handleStreamEncryptedResponses,
+  )
 
   /**
    * Upload images
@@ -456,7 +486,7 @@ module.exports = function (app) {
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/images').post(
     celebrate({
-      body: Joi.object().keys({
+      [Segments.BODY]: {
         fileId: Joi.string()
           .required()
           .error(() => 'Please enter a valid file id'),
@@ -467,10 +497,10 @@ module.exports = function (app) {
         fileType: Joi.string()
           .required()
           .error(() => 'Error - your file could not be verified'),
-      }),
+      },
     }),
     authActiveForm(PERMISSIONS.WRITE),
-    adminForms.createPresignedPostForImages,
+    AdminFormController.handleCreatePresignedPostForImages,
   )
 
   /**
@@ -484,7 +514,7 @@ module.exports = function (app) {
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/logos').post(
     celebrate({
-      body: Joi.object().keys({
+      [Segments.BODY]: {
         fileId: Joi.string()
           .required()
           .error(() => 'Please enter a valid file id'),
@@ -495,9 +525,9 @@ module.exports = function (app) {
         fileType: Joi.string()
           .required()
           .error(() => 'Error - your file could not be verified'),
-      }),
+      },
     }),
     authActiveForm(PERMISSIONS.WRITE),
-    adminForms.createPresignedPostForLogos,
+    AdminFormController.handleCreatePresignedPostForLogos,
   )
 }

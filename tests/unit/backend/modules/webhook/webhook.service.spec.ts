@@ -1,7 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -17,13 +16,15 @@ import {
   WebhookView,
 } from 'src/types'
 
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
 const Form = getFormModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 // Define constants
 const MOCK_ADMIN_OBJ_ID = new ObjectID()
-const MOCK_WEBHOOK_URL: string = 'https://form.gov.sg/endpoint'
-const ERROR_MSG: string = 'test-message'
+const MOCK_WEBHOOK_URL = 'https://form.gov.sg/endpoint'
+const ERROR_MSG = 'test-message'
 const MOCK_SUCCESS_RESPONSE: AxiosResponse = {
   data: {
     result: 'test-result',
@@ -58,7 +59,7 @@ const MOCK_STRINGIFIED_FAILURE_RESPONSE: Pick<IWebhookResponse, 'response'> = {
     headers: '{}',
   },
 }
-const MOCK_EPOCH: number = 1487076708000
+const MOCK_EPOCH = 1487076708000
 
 // Set up mocks
 jest.mock('axios')
@@ -83,7 +84,7 @@ describe('WebhooksService', () => {
     const preloaded = await dbHandler.insertFormCollectionReqs({
       userId: MOCK_ADMIN_OBJ_ID,
     })
-    let testEncryptForm = new Form({
+    const testEncryptForm = new Form({
       title: 'Test Form',
       admin: preloaded.user._id,
       responseMode: ResponseMode.Encrypt,
@@ -144,10 +145,10 @@ describe('WebhooksService', () => {
       await pushData(MOCK_WEBHOOK_URL, testSubmissionWebhookView)
 
       // Assert
-      let submission = await EncryptSubmission.findById(
+      const submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
       )
-      expect(submission!.webhookResponses[0]).toEqual(
+      expect(submission?.webhookResponses![0]).toEqual(
         expect.objectContaining({
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,
@@ -169,10 +170,10 @@ describe('WebhooksService', () => {
       await pushData(MOCK_WEBHOOK_URL, testSubmissionWebhookView)
 
       // Assert
-      let submission = await EncryptSubmission.findById(
+      const submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
       )
-      expect(submission!.webhookResponses[0]).toEqual(
+      expect(submission?.webhookResponses![0]).toEqual(
         expect.objectContaining({
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,
@@ -186,7 +187,7 @@ describe('WebhooksService', () => {
       class MockAxiosError extends Error {
         isAxiosError: boolean
         toJSON: () => {}
-        config: object
+        config: Record<string, unknown>
         response: AxiosResponse
         constructor(msg: string, response: AxiosResponse) {
           super(msg)
@@ -198,7 +199,7 @@ describe('WebhooksService', () => {
           this.config = {}
         }
       }
-      let mockAxiosError: AxiosError = new MockAxiosError(
+      const mockAxiosError: AxiosError = new MockAxiosError(
         ERROR_MSG,
         MOCK_FAILURE_RESPONSE,
       )
@@ -217,10 +218,10 @@ describe('WebhooksService', () => {
       await pushData(MOCK_WEBHOOK_URL, testSubmissionWebhookView)
 
       // Assert
-      let submission = await EncryptSubmission.findById(
+      const submission = await EncryptSubmission.findById(
         testEncryptSubmission._id,
       )
-      expect(submission!.webhookResponses[0]).toEqual(
+      expect(submission?.webhookResponses![0]).toEqual(
         expect.objectContaining({
           webhookUrl: MOCK_WEBHOOK_URL,
           signature: testSignature,

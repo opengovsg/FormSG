@@ -13,6 +13,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'S9912345A',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).not.toThrow()
@@ -28,6 +29,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'T1394524H',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).not.toThrow()
@@ -43,6 +45,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'F0477844T',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).not.toThrow()
@@ -58,6 +61,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'G9592927W',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).not.toThrow()
@@ -73,6 +77,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'S9912345B',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).toThrow()
@@ -88,6 +93,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'T1394524I',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).toThrow()
@@ -103,6 +109,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'F0477844U',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).toThrow()
@@ -118,6 +125,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: 'G9592927X',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).toThrow()
@@ -133,6 +141,7 @@ describe('NRIC field validation', () => {
       _id: 'abc123',
       fieldType: 'nric',
       answer: '',
+      isVisible: true,
     }
     const testFunc = () => validateField('formId', formField, response)
     expect(testFunc).not.toThrow()
