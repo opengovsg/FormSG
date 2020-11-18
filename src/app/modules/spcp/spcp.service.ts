@@ -279,6 +279,8 @@ export class SpcpService {
       })
       return errAsync(new InvalidAuthTypeError(authType))
     }
+    // Resolve known express req.query issue where pluses become spaces
+    samlArt = String(samlArt).replace(/ /g, '+')
     const authClient = this.getAuthClient(authType)
     return ResultAsync.fromPromise(
       getAttributesPromise(authClient, samlArt, relayState),
