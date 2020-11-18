@@ -52,3 +52,12 @@ export class InvalidOOBParamsError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Error while attempting to retrieve SPCP attributes from SPCP server
+ */
+export class RetrieveAttributesError extends ApplicationError {
+  constructor(message = 'Failed to retrieve attributes from SPCP') {
+    super(message)
+  }
+}

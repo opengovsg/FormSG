@@ -14,11 +14,13 @@ import {
   InvalidAuthTypeError,
   InvalidOOBParamsError,
   LoginPageValidationError,
+  RetrieveAttributesError,
   VerifyJwtError,
 } from './spcp.errors'
 import { JwtPayload, LoginPageValidationResult } from './spcp.types'
 import {
   extractDestination,
+  getAttributesPromise,
   getSubstringBetween,
   isValidAuthenticationQuery,
   verifyJwtPromise,
@@ -254,5 +256,40 @@ export class SpcpService {
       })
       return err(new InvalidOOBParamsError())
     }
+  }
+
+  getSpcpAttributes(
+    samlArt: string,
+    relayState: string,
+    authType: AuthType.SP | AuthType.CP,
+  ): ResultAsync<
+    Record<string, unknown>,
+    RetrieveAttributesError | InvalidAuthTypeError
+  > {
+    const logMeta = {
+      action: 'getSpcpAttributes',
+      authType,
+      relayState,
+      samlArt,
+    }
+    if (authType !== AuthType.SP && authType !== AuthType.CP) {
+      logger.error({
+        message: 'Invalid authType',
+        meta: logMeta,
+      })
+      return errAsync(new InvalidAuthTypeError(authType))
+    }
+    const authClient = this.getAuthClient(authType)
+    return ResultAsync.fromPromise(
+      getAttributesPromise(authClient, samlArt, relayState),
+      (error) => {
+        logger.error({
+          message: 'Failed to retrieve attributes from SP/CP',
+          meta: logMeta,
+          error,
+        })
+        return new RetrieveAttributesError()
+      },
+    )
   }
 }
