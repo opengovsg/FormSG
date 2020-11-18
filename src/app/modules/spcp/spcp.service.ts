@@ -28,6 +28,7 @@ import {
   JwtPayload,
   LoginPageValidationResult,
   SingpassAttributes,
+  SpcpDomainSettings,
 } from './spcp.types'
 import {
   extractDestination,
@@ -370,5 +371,10 @@ export class SpcpService {
         ? ok({ userName, userInfo, rememberMe })
         : err(new MissingAttributesError())
     }
+  }
+
+  getCookieSettings(): SpcpDomainSettings {
+    const spcpCookieDomain = this.#spcpProps.spcpCookieDomain
+    return spcpCookieDomain ? { domain: spcpCookieDomain, path: '/' } : {}
   }
 }

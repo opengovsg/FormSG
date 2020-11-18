@@ -25,3 +25,7 @@ export interface CorppassAttributes {
     CPUID?: string
   }
 }
+
+export type SpcpDomainSettings =
+  | { domain: string; path: string }
+  | { [k: string]: never }
