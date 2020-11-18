@@ -1,4 +1,4 @@
-import { err, Result } from 'neverthrow'
+import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 
 import FeatureManager, {
   FeatureNames,
@@ -7,8 +7,14 @@ import FeatureManager, {
 import { AuthType } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
-import { CreateRedirectUrlError, InvalidAuthTypeError } from './spcp.errors'
+import {
+  CreateRedirectUrlError,
+  FetchLoginPageError,
+  InvalidAuthTypeError,
+  LoginPageValidationError,
+} from './spcp.errors'
 import { SpcpService } from './spcp.service'
+import { LoginPageValidationResult } from './spcp.types'
 
 interface ISpcpFactory {
   createRedirectUrl(
@@ -18,6 +24,15 @@ interface ISpcpFactory {
   ): Result<
     string,
     CreateRedirectUrlError | InvalidAuthTypeError | MissingFeatureError
+  >
+  fetchLoginPage(
+    redirectUrl: string,
+  ): ResultAsync<string, FetchLoginPageError | MissingFeatureError>
+  validateLoginPage(
+    loginHtml: string,
+  ): Result<
+    LoginPageValidationResult,
+    LoginPageValidationError | MissingFeatureError
   >
 }
 
@@ -29,6 +44,8 @@ export const createSpcpFactory = ({
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     return {
       createRedirectUrl: () => err(error),
+      fetchLoginPage: () => errAsync(error),
+      validateLoginPage: () => err(error),
     }
   }
   return new SpcpService(props)

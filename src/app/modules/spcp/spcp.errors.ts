@@ -16,3 +16,21 @@ export class InvalidAuthTypeError extends ApplicationError {
     super(`Invalid authType: ${authType}`)
   }
 }
+
+/**
+ * Error while fetching SP/CP login page.
+ */
+export class FetchLoginPageError extends ApplicationError {
+  constructor(message = 'Error while fetching SP/CP login page') {
+    super(message)
+  }
+}
+
+/**
+ * Invalid SP/CP login page.
+ */
+export class LoginPageValidationError extends ApplicationError {
+  constructor(message = 'Invalid SP/CP login page') {
+    super(message)
+  }
+}

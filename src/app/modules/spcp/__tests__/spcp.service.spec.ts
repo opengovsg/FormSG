@@ -1,16 +1,24 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
+import axios from 'axios'
 import { mocked } from 'ts-jest/utils'
 
 import { AuthType } from 'src/types'
 
-import { CreateRedirectUrlError } from '../spcp.errors'
+import {
+  CreateRedirectUrlError,
+  FetchLoginPageError,
+  LoginPageValidationError,
+} from '../spcp.errors'
 import { SpcpService } from '../spcp.service'
 
 import {
+  MOCK_ERROR_CODE,
   MOCK_ESRVCID,
+  MOCK_LOGIN_HTML,
   MOCK_REDIRECT_URL,
   MOCK_SERVICE_PARAMS as MOCK_PARAMS,
   MOCK_TARGET,
+  MOCK_TITLE,
 } from './spcp.test.constants'
 
 jest.mock('@opengovsg/spcp-auth-client')
@@ -18,6 +26,8 @@ const MockAuthClient = mocked(SPCPAuthClient, true)
 jest.mock('fs', () => ({
   readFileSync: jest.fn().mockImplementation((v) => v),
 }))
+jest.mock('axios')
+const MockAxios = mocked(axios, true)
 
 describe('spcp.service', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -104,6 +114,74 @@ describe('spcp.service', () => {
       expect(redirectUrl._unsafeUnwrapErr()).toEqual(
         new CreateRedirectUrlError(),
       )
+    })
+  })
+
+  describe('fetchLoginPage', () => {
+    it('should GET the correct URL and return the response when request succeeds', async () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      MockAxios.get.mockResolvedValueOnce({
+        data: MOCK_LOGIN_HTML,
+      })
+
+      const result = await spcpService.fetchLoginPage(MOCK_REDIRECT_URL)
+
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        MOCK_REDIRECT_URL,
+        expect.objectContaining({
+          headers: {
+            Accept:
+              'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+          },
+          timeout: 10000,
+        }),
+      )
+      expect(result._unsafeUnwrap()).toBe(MOCK_LOGIN_HTML)
+    })
+
+    it('should return FetchLoginPageError when request fails', async () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      MockAxios.get.mockRejectedValueOnce('')
+
+      const result = await spcpService.fetchLoginPage(MOCK_REDIRECT_URL)
+
+      expect(MockAxios.get).toHaveBeenCalledWith(
+        MOCK_REDIRECT_URL,
+        expect.objectContaining({
+          headers: {
+            Accept:
+              'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+          },
+          timeout: 10000,
+        }),
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new FetchLoginPageError())
+    })
+  })
+
+  describe('validateLoginPage', () => {
+    it('should return null when there is a title and no error', () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      const mockHtml = `<title>${MOCK_TITLE}</title>`
+      const result = spcpService.validateLoginPage(mockHtml)
+      expect(result._unsafeUnwrap()).toEqual({ isValid: true })
+    })
+
+    it('should return error code when there is error in title', () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      const mockHtml = `<title>Error</title>System Code:&nbsp<b>${MOCK_ERROR_CODE}</b>`
+      const result = spcpService.validateLoginPage(mockHtml)
+      expect(result._unsafeUnwrap()).toEqual({
+        isValid: false,
+        errorCode: MOCK_ERROR_CODE,
+      })
+    })
+
+    it('should return LoginPageValidationError when there is no title', () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      const mockHtml = 'mock'
+      const result = spcpService.validateLoginPage(mockHtml)
+      expect(result._unsafeUnwrapErr()).toEqual(new LoginPageValidationError())
     })
   })
 })
