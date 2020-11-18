@@ -27,3 +27,9 @@ export class InvalidEncodingError extends ApplicationError {
     super(message)
   }
 }
+
+export class ProcessingError extends ApplicationError {
+  constructor(message = 'Error processing response.') {
+    super(message)
+  }
+}
