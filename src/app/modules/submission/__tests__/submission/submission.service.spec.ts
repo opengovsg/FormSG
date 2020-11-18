@@ -126,10 +126,14 @@ describe('submission.service', () => {
       updatedResponses[emailFieldIndex] = newEmailResponse
 
       // Act
-      const actual = SubmissionService.getProcessedResponses(
+      const actualResult = SubmissionService.getProcessedResponses(
         defaultEncryptForm,
         updatedResponses,
       )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
 
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
@@ -160,10 +164,14 @@ describe('submission.service', () => {
       updatedResponses[decimalFieldIndex] = newDecimalResponse
 
       // Act
-      const actual = SubmissionService.getProcessedResponses(
+      const actualResult = SubmissionService.getProcessedResponses(
         defaultEmailForm,
         updatedResponses,
       )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
 
       // Assert
       // Expect metadata to be injected to all responses (except fields to
@@ -197,12 +205,17 @@ describe('submission.service', () => {
       extraFieldForm.form_fields!.push(secondMobileField)
 
       // Act + Assert
-      expect(() =>
-        SubmissionService.getProcessedResponses(
-          extraFieldForm,
-          defaultEmailResponses,
-        ),
-      ).toThrowError('Some form fields are missing')
+
+      const actualResult = SubmissionService.getProcessedResponses(
+        extraFieldForm,
+        defaultEmailResponses,
+      )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
+
+      expect(actual).toEqual('Some form fields are missing')
     })
 
     it('should throw error when encrypt form has more fields than responses', async () => {
@@ -215,12 +228,17 @@ describe('submission.service', () => {
       extraFieldForm.form_fields!.push(secondMobileField)
 
       // Act + Assert
-      expect(() =>
-        SubmissionService.getProcessedResponses(
-          extraFieldForm,
-          defaultEncryptResponses,
-        ),
-      ).toThrowError('Some form fields are missing')
+
+      const actualResult = SubmissionService.getProcessedResponses(
+        extraFieldForm,
+        defaultEncryptResponses,
+      )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
+
+      expect(actual).toEqual('Some form fields are missing')
     })
 
     it('should throw error when any responses are not valid for encrypted form submission', async () => {
@@ -233,12 +251,17 @@ describe('submission.service', () => {
       requireMobileEncryptForm.form_fields![mobileFieldIndex].required = true
 
       // Act + Assert
-      expect(() =>
-        SubmissionService.getProcessedResponses(
-          requireMobileEncryptForm,
-          defaultEncryptResponses,
-        ),
-      ).toThrowError('Invalid answer submitted')
+
+      const actualResult = SubmissionService.getProcessedResponses(
+        requireMobileEncryptForm,
+        defaultEncryptResponses,
+      )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
+
+      expect(actual).toEqual('Invalid answer submitted')
     })
 
     it('should throw error when any responses are not valid for email form submission', async () => {
@@ -249,12 +272,17 @@ describe('submission.service', () => {
       requireNricEmailForm.form_fields![nricFieldIndex].required = true
 
       // Act + Assert
-      expect(() =>
-        SubmissionService.getProcessedResponses(
-          requireNricEmailForm,
-          defaultEmailResponses,
-        ),
-      ).toThrowError('Invalid answer submitted')
+
+      const actualResult = SubmissionService.getProcessedResponses(
+        requireNricEmailForm,
+        defaultEmailResponses,
+      )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
+
+      expect(actual).toEqual('Invalid answer submitted')
     })
 
     it('should throw error when encrypted form submission is prevented by logic', async () => {
@@ -270,12 +298,17 @@ describe('submission.service', () => {
         } as unknown) as IPreventSubmitLogicSchema)
 
       // Act + Assert
-      expect(() =>
-        SubmissionService.getProcessedResponses(
-          defaultEncryptForm,
-          defaultEncryptResponses,
-        ),
-      ).toThrowError('Submission prevented by form logic')
+
+      const actualResult = SubmissionService.getProcessedResponses(
+        defaultEncryptForm,
+        defaultEncryptResponses,
+      )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
+
+      expect(actual).toEqual('Submission prevented by form logic')
     })
 
     it('should throw error when email form submission is prevented by logic', async () => {
@@ -293,12 +326,17 @@ describe('submission.service', () => {
         .mockReturnValueOnce(mockReturnLogicUnit)
 
       // Act + Assert
-      expect(() =>
-        SubmissionService.getProcessedResponses(
-          defaultEmailForm,
-          defaultEmailResponses,
-        ),
-      ).toThrowError('Submission prevented by form logic')
+
+      const actualResult = SubmissionService.getProcessedResponses(
+        defaultEmailForm,
+        defaultEmailResponses,
+      )
+
+      const actual = actualResult.isOk()
+        ? actualResult.value
+        : actualResult.error.message
+
+      expect(actual).toEqual('Submission prevented by form logic')
     })
   })
 
