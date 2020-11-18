@@ -21,7 +21,7 @@ export class InvalidAuthTypeError extends ApplicationError {
  * Error while fetching SP/CP login page.
  */
 export class FetchLoginPageError extends ApplicationError {
-  constructor(message = 'Error while fetching SP/CP login page.') {
+  constructor(message = 'Error while fetching SP/CP login page') {
     super(message)
   }
 }
@@ -30,7 +30,7 @@ export class FetchLoginPageError extends ApplicationError {
  * Invalid SP/CP login page.
  */
 export class LoginPageValidationError extends ApplicationError {
-  constructor(message = 'Invalid SP/Cp login page.') {
+  constructor(message = 'Invalid SP/CP login page') {
     super(message)
   }
 }
