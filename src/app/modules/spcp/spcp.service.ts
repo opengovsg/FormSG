@@ -58,6 +58,18 @@ export class SpcpService {
   }
 
   /**
+   * Retrieve the correct auth client.
+   * @param authType 'SP' or 'CP'
+   */
+  getAuthClient(authType: AuthType.SP | AuthType.CP): SPCPAuthClient {
+    if (authType === AuthType.SP) {
+      return this.#singpassAuthClient
+    } else {
+      return this.#corppassAuthClient
+    }
+  }
+
+  /**
    * Create the URL to which the client should be redirected for Singpass/
    * Corppass login.
    * @param authType 'SP' or 'CP'
@@ -69,26 +81,20 @@ export class SpcpService {
     target: string,
     esrvcId: string,
   ): Result<string, CreateRedirectUrlError | InvalidAuthTypeError> {
-    let result: string | Error
-    switch (authType) {
-      case AuthType.SP:
-        result = this.#singpassAuthClient.createRedirectURL(target, esrvcId)
-        break
-      case AuthType.CP:
-        result = this.#corppassAuthClient.createRedirectURL(target, esrvcId)
-        break
-      default:
-        logger.error({
-          message: 'Invalid authType',
-          meta: {
-            action: 'createRedirectUrl',
-            authType,
-            target,
-            esrvcId,
-          },
-        })
-        return err(new InvalidAuthTypeError(authType))
+    if (authType !== AuthType.SP && authType !== AuthType.CP) {
+      logger.error({
+        message: 'Invalid authType',
+        meta: {
+          action: 'createRedirectUrl',
+          authType,
+          target,
+          esrvcId,
+        },
+      })
+      return err(new InvalidAuthTypeError(authType))
     }
+    const authClient = this.getAuthClient(authType)
+    const result = authClient.createRedirectURL(target, esrvcId)
     if (typeof result === 'string') {
       return ok(result)
     } else {
