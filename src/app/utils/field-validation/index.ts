@@ -89,7 +89,7 @@ export const validateField = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-): Result<undefined, ValidateFieldError> => {
+): Result<true, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
     return err(
       new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
@@ -116,7 +116,7 @@ export const validateField = (
             logInvalidAnswer(formId, formField, validEither.left)
             return err(new ValidateFieldError('Invalid answer submitted'))
           }
-          return ok(undefined)
+          return ok(true)
         }
         // Fallback for un-migrated single answer validators
         default: {
@@ -128,7 +128,7 @@ export const validateField = (
     // fallback for processed checkbox/table/attachment responses
     return classBasedValidation(formId, formField, response)
   }
-  return ok(undefined)
+  return ok(true)
 }
 
 /**
@@ -140,7 +140,7 @@ const classBasedValidation = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-): Result<undefined, ValidateFieldError> => {
+): Result<true, ValidateFieldError> => {
   const fieldValidator = fieldValidatorFactory.createFieldValidator(
     formId,
     formField,
@@ -154,5 +154,5 @@ const classBasedValidation = (
       return err(new ValidateFieldError('Invalid answer submitted'))
     }
   }
-  return ok(undefined)
+  return ok(true)
 }
