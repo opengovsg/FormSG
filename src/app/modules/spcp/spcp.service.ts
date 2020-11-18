@@ -292,4 +292,38 @@ export class SpcpService {
       },
     )
   }
+
+  createJWT(
+    payload: Record<string, unknown>,
+    authType: AuthType.SP | AuthType.CP,
+    rememberMe: boolean,
+  ): Result<string, InvalidAuthTypeError> {
+    const logMeta = {
+      action: 'createJWT',
+      authType,
+    }
+    if (authType !== AuthType.SP && authType !== AuthType.CP) {
+      logger.error({
+        message: 'Invalid authType',
+        meta: logMeta,
+      })
+      return err(new InvalidAuthTypeError(authType))
+    }
+    let cookieDuration: number
+    if (authType === AuthType.CP) {
+      cookieDuration = this.#spcpProps.cpCookieMaxAge
+    } else {
+      cookieDuration = rememberMe
+        ? this.#spcpProps.spCookieMaxAgePreserved
+        : this.#spcpProps.spCookieMaxAge
+    }
+    const authClient = this.getAuthClient(authType)
+    return ok(
+      authClient.createJWT(
+        payload,
+        cookieDuration / 1000,
+        // NOTE: cookieDuration is interpreted as a seconds count if numeric.
+      ),
+    )
+  }
 }
