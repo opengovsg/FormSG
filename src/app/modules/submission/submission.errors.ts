@@ -33,3 +33,9 @@ export class ProcessingError extends ApplicationError {
     super(message)
   }
 }
+
+export class ValidateFieldError extends ApplicationError {
+  constructor(message = 'Error validating field.') {
+    super(message)
+  }
+}

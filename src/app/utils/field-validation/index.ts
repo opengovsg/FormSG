@@ -10,6 +10,7 @@ import { IField } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
 import { FieldResponse } from '../../../types/response'
 import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
+import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
@@ -88,15 +89,17 @@ export const validateField = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-): Result<undefined, Error> => {
+): Result<undefined, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
-    return err(new Error(`Rejected field type "${response.fieldType}"`))
+    return err(
+      new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
+    )
   }
 
   const fieldTypeEither = doFieldTypesMatch(formField, response)
 
   if (isLeft(fieldTypeEither)) {
-    return err(new Error(fieldTypeEither.left))
+    return err(new ValidateFieldError(fieldTypeEither.left))
   }
 
   if (isProcessedSingleAnswerResponse(response)) {
@@ -111,7 +114,7 @@ export const validateField = (
           const validEither = validator(response)
           if (isLeft(validEither)) {
             logInvalidAnswer(formId, formField, validEither.left)
-            return err(new Error('Invalid answer submitted'))
+            return err(new ValidateFieldError('Invalid answer submitted'))
           }
           return ok(undefined)
         }
@@ -137,7 +140,7 @@ const classBasedValidation = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-): Result<undefined, Error> => {
+): Result<undefined, ValidateFieldError> => {
   const fieldValidator = fieldValidatorFactory.createFieldValidator(
     formId,
     formField,
@@ -148,7 +151,7 @@ const classBasedValidation = (
     // TODO: Remove after soft launch of validation. Should throw Error for all validators
     // fieldValidator.constructor.name only returns the name of the class if code is not minified!
     if (ALLOWED_VALIDATORS.includes(fieldValidator.constructor.name)) {
-      return err(new Error('Invalid answer submitted'))
+      return err(new ValidateFieldError('Invalid answer submitted'))
     }
   }
   return ok(undefined)

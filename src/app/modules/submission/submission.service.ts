@@ -13,7 +13,11 @@ import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 
-import { ConflictError, ProcessingError } from './submission.errors'
+import {
+  ConflictError,
+  ProcessingError,
+  ValidateFieldError,
+} from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
 import { getModeFilter } from './submission.utils'
 
@@ -70,7 +74,10 @@ const getFilteredResponses = (
 export const getProcessedResponses = (
   form: IFormSchema,
   originalResponses: FieldResponse[],
-): Result<ProcessedFieldResponse[], ProcessingError | ConflictError> => {
+): Result<
+  ProcessedFieldResponse[],
+  ProcessingError | ConflictError | ValidateFieldError
+> => {
   const filteredResponsesResult = getFilteredResponses(form, originalResponses)
   if (filteredResponsesResult.isErr()) {
     return err(filteredResponsesResult.error)
@@ -128,7 +135,7 @@ export const getProcessedResponses = (
       processingResponse,
     )
     if (validateFieldResult.isErr()) {
-      return err(new ProcessingError('Processed response not valid'))
+      return err(validateFieldResult.error)
     }
     processedResponses.push(processingResponse)
   }
