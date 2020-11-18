@@ -49,16 +49,15 @@ exports.validateEncryptSubmission = function (req, res, next) {
       .json({ message: 'Invalid data was found. Please submit again.' })
   }
 
-  if (req.body.responses) {
-    const getProcessedResponsesResult = getProcessedResponses(
-      form,
-      req.body.responses,
-    )
-    if (getProcessedResponsesResult.isOk()) {
-      req.body.parsedResponses = getProcessedResponsesResult.value
-      delete req.body.responses // Prevent downstream functions from using responses by deleting it
-      return next()
-    }
+  if (!req.body.responses) {
+    return res.status(StatusCodes.BAD_REQUEST)
+  }
+
+  const getProcessedResponsesResult = getProcessedResponses(
+    form,
+    req.body.responses,
+  )
+  if (getProcessedResponsesResult.isErr()) {
     const err = getProcessedResponsesResult.error
     logger.error({
       message: 'Error processing responses',
@@ -79,7 +78,9 @@ exports.validateEncryptSubmission = function (req, res, next) {
         'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
     })
   }
-  return res.status(StatusCodes.BAD_REQUEST)
+  req.body.parsedResponses = getProcessedResponsesResult.value
+  delete req.body.responses // Prevent downstream functions from using responses by deleting it
+  return next()
 }
 
 /**

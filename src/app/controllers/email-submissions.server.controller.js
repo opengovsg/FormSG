@@ -233,21 +233,16 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
 exports.validateEmailSubmission = function (req, res, next) {
   const { form } = req
 
-  if (req.body.responses) {
-    const getProcessedResponsesResult = getProcessedResponses(
-      form,
-      req.body.responses,
-    )
-    if (getProcessedResponsesResult.isOk()) {
-      req.body.parsedResponses = getProcessedResponsesResult.value
-      delete req.body.responses // Prevent downstream functions from using responses by deleting it
-      // Creates an array of attachments from the validated responses
-      req.attachments = mapAttachmentsFromParsedResponses(
-        req.body.parsedResponses,
-      )
+  if (!req.body.responses) {
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
 
-      return next()
-    }
+  const getProcessedResponsesResult = getProcessedResponses(
+    form,
+    req.body.responses,
+  )
+
+  if (getProcessedResponsesResult.isErr()) {
     const err = getProcessedResponsesResult.error
     logger.error({
       message:
@@ -271,7 +266,12 @@ exports.validateEmailSubmission = function (req, res, next) {
         'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
     })
   }
-  return res.sendStatus(StatusCodes.BAD_REQUEST)
+
+  req.body.parsedResponses = getProcessedResponsesResult.value
+  delete req.body.responses // Prevent downstream functions from using responses by deleting it
+  // Creates an array of attachments from the validated responses
+  req.attachments = mapAttachmentsFromParsedResponses(req.body.parsedResponses)
+  return next()
 }
 
 /**
