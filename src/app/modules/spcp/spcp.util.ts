@@ -39,15 +39,19 @@ const isArtifactValid = function (
 }
 
 export const isValidAuthenticationQuery = (
+  samlArt: string,
   destination: string,
   idpPartnerEntityId: string,
-  samlArt: string,
 ): boolean => {
   return (
     !!destination &&
     isArtifactValid(idpPartnerEntityId, samlArt) &&
     destinationRegex.test(destination)
   )
+}
+
+export const extractDestination = (relayState: string): string => {
+  return relayState.split(',')[0]
 }
 
 export const getSubstringBetween = (

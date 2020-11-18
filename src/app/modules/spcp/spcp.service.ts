@@ -12,11 +12,17 @@ import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidAuthTypeError,
+  InvalidOOBParamsError,
   LoginPageValidationError,
   VerifyJwtError,
 } from './spcp.errors'
 import { JwtPayload, LoginPageValidationResult } from './spcp.types'
-import { getSubstringBetween, verifyJwtPromise } from './spcp.util'
+import {
+  extractDestination,
+  getSubstringBetween,
+  isValidAuthenticationQuery,
+  verifyJwtPromise,
+} from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 const LOGIN_PAGE_HEADERS =
@@ -25,8 +31,10 @@ const LOGIN_PAGE_TIMEOUT = 10000 // 10 seconds
 export class SpcpService {
   #singpassAuthClient: SPCPAuthClient
   #corppassAuthClient: SPCPAuthClient
+  #spcpProps: ISpcpMyInfo
 
   constructor(props: ISpcpMyInfo) {
+    this.#spcpProps = props
     this.#singpassAuthClient = new SPCPAuthClient({
       partnerEntityId: props.spPartnerEntityId,
       idpLoginURL: props.spIdpLoginUrl,
@@ -203,5 +211,42 @@ export class SpcpService {
         return new VerifyJwtError()
       },
     )
+  }
+
+  validateOOBParams(
+    samlArt: string,
+    relayState: string,
+    authType: AuthType.SP | AuthType.CP,
+  ): Result<true, InvalidOOBParamsError | InvalidAuthTypeError> {
+    if (authType !== AuthType.SP && authType !== AuthType.CP) {
+      return err(new InvalidAuthTypeError(authType))
+    }
+    const logMeta = {
+      action: 'validateOOBParams',
+      relayState,
+      samlArt,
+      authType,
+    }
+    if (relayState.split(',').length !== 2) {
+      logger.error({
+        message: 'RelayState incorrectly formatted',
+        meta: logMeta,
+      })
+      return err(new InvalidOOBParamsError())
+    }
+    const destination = extractDestination(relayState)
+    const idpId =
+      authType === AuthType.SP
+        ? this.#spcpProps.spIdpId
+        : this.#spcpProps.cpIdpId
+    if (isValidAuthenticationQuery(samlArt, destination, idpId)) {
+      return ok(true)
+    } else {
+      logger.error({
+        message: 'Invalid authentication query',
+        meta: logMeta,
+      })
+      return err(new InvalidOOBParamsError())
+    }
   }
 }
