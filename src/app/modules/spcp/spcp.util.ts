@@ -54,6 +54,25 @@ export const extractDestination = (relayState: string): string => {
   return relayState.split(',')[0]
 }
 
+export const getAttributesPromise = (
+  authClient: SPCPAuthClient,
+  samlArt: string,
+  relayState: string,
+): Promise<Record<string, unknown>> => {
+  return new Promise((resolve, reject) => {
+    authClient.getAttributes(
+      samlArt,
+      extractDestination(relayState),
+      (err, data) => {
+        if (err || !data || !data.attributes) {
+          return reject('Auth client could not retrieve attributes')
+        }
+        return resolve(data.attributes)
+      },
+    )
+  })
+}
+
 export const getSubstringBetween = (
   text: string,
   markerStart: string,
