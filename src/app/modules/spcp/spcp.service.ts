@@ -83,15 +83,16 @@ export class SpcpService {
     target: string,
     esrvcId: string,
   ): Result<string, CreateRedirectUrlError | InvalidAuthTypeError> {
+    const logMeta = {
+      action: 'createRedirectUrl',
+      authType,
+      target,
+      esrvcId,
+    }
     if (authType !== AuthType.SP && authType !== AuthType.CP) {
       logger.error({
         message: 'Invalid authType',
-        meta: {
-          action: 'createRedirectUrl',
-          authType,
-          target,
-          esrvcId,
-        },
+        meta: logMeta,
       })
       return err(new InvalidAuthTypeError(authType))
     }
@@ -102,12 +103,7 @@ export class SpcpService {
     } else {
       logger.error({
         message: 'Error while creating redirect URL',
-        meta: {
-          action: 'createRedirectUrl',
-          authType,
-          target,
-          esrvcId,
-        },
+        meta: logMeta,
         error: result,
       })
       return err(new CreateRedirectUrlError())
@@ -226,14 +222,18 @@ export class SpcpService {
     relayState: string,
     authType: AuthType.SP | AuthType.CP,
   ): Result<true, InvalidOOBParamsError | InvalidAuthTypeError> {
-    if (authType !== AuthType.SP && authType !== AuthType.CP) {
-      return err(new InvalidAuthTypeError(authType))
-    }
     const logMeta = {
       action: 'validateOOBParams',
       relayState,
       samlArt,
       authType,
+    }
+    if (authType !== AuthType.SP && authType !== AuthType.CP) {
+      logger.error({
+        message: 'Invalid authType',
+        meta: logMeta,
+      })
+      return err(new InvalidAuthTypeError(authType))
     }
     if (relayState.split(',').length !== 2) {
       logger.error({
