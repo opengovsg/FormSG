@@ -17,7 +17,6 @@ import {
   AuthTypeMismatchError,
   CreateRedirectUrlError,
   FetchLoginPageError,
-  InvalidAuthTypeError,
   InvalidOOBParamsError,
   LoginPageValidationError,
   RetrieveAttributesError,
@@ -92,19 +91,12 @@ export class SpcpService {
     authType: AuthType.SP | AuthType.CP,
     target: string,
     esrvcId: string,
-  ): Result<string, CreateRedirectUrlError | InvalidAuthTypeError> {
+  ): Result<string, CreateRedirectUrlError> {
     const logMeta = {
       action: 'createRedirectUrl',
       authType,
       target,
       esrvcId,
-    }
-    if (authType !== AuthType.SP && authType !== AuthType.CP) {
-      logger.error({
-        message: 'Invalid authType',
-        meta: logMeta,
-      })
-      return err(new InvalidAuthTypeError(authType))
     }
     const authClient = this.getAuthClient(authType)
     const result = authClient.createRedirectURL(target, esrvcId)
@@ -199,18 +191,8 @@ export class SpcpService {
   extractJwtPayload(
     jwt: string,
     authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidAuthTypeError> {
-    let authClient: SPCPAuthClient
-    switch (authType) {
-      case AuthType.SP:
-        authClient = this.#singpassAuthClient
-        break
-      case AuthType.CP:
-        authClient = this.#corppassAuthClient
-        break
-      default:
-        return errAsync(new InvalidAuthTypeError(authType))
-    }
+  ): ResultAsync<JwtPayload, VerifyJwtError> {
+    const authClient = this.getAuthClient(authType)
     return ResultAsync.fromPromise(
       verifyJwtPromise(authClient, jwt),
       (error) => {
@@ -231,19 +213,12 @@ export class SpcpService {
     samlArt: string,
     relayState: string,
     authType: AuthType.SP | AuthType.CP,
-  ): Result<true, InvalidOOBParamsError | InvalidAuthTypeError> {
+  ): Result<true, InvalidOOBParamsError> {
     const logMeta = {
       action: 'validateOOBParams',
       relayState,
       samlArt,
       authType,
-    }
-    if (authType !== AuthType.SP && authType !== AuthType.CP) {
-      logger.error({
-        message: 'Invalid authType',
-        meta: logMeta,
-      })
-      return err(new InvalidAuthTypeError(authType))
     }
     if (relayState.split(',').length !== 2) {
       logger.error({
@@ -272,22 +247,12 @@ export class SpcpService {
     samlArt: string,
     relayState: string,
     authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<
-    Record<string, unknown>,
-    RetrieveAttributesError | InvalidAuthTypeError
-  > {
+  ): ResultAsync<Record<string, unknown>, RetrieveAttributesError> {
     const logMeta = {
       action: 'getSpcpAttributes',
       authType,
       relayState,
       samlArt,
-    }
-    if (authType !== AuthType.SP && authType !== AuthType.CP) {
-      logger.error({
-        message: 'Invalid authType',
-        meta: logMeta,
-      })
-      return errAsync(new InvalidAuthTypeError(authType))
     }
     // Resolve known express req.query issue where pluses become spaces
     samlArt = String(samlArt).replace(/ /g, '+')
@@ -309,18 +274,7 @@ export class SpcpService {
     payload: Record<string, unknown>,
     authType: AuthType.SP | AuthType.CP,
     rememberMe: boolean,
-  ): Result<string, InvalidAuthTypeError> {
-    const logMeta = {
-      action: 'createJWT',
-      authType,
-    }
-    if (authType !== AuthType.SP && authType !== AuthType.CP) {
-      logger.error({
-        message: 'Invalid authType',
-        meta: logMeta,
-      })
-      return err(new InvalidAuthTypeError(authType))
-    }
+  ): Result<string, never> {
     let cookieDuration: number
     if (authType === AuthType.CP) {
       cookieDuration = this.#spcpProps.cpCookieMaxAge
@@ -341,7 +295,7 @@ export class SpcpService {
 
   addLogin(
     relayState: string,
-    authType: AuthType,
+    authType: AuthType.SP | AuthType.CP,
   ): ResultAsync<ILoginSchema, FormNotFoundError | DatabaseError> {
     const formId = extractFormId(relayState)
     const logMeta = {

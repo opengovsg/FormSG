@@ -10,15 +10,6 @@ export class CreateRedirectUrlError extends ApplicationError {
 }
 
 /**
- * Invalid authType given.
- */
-export class InvalidAuthTypeError extends ApplicationError {
-  constructor(authType: unknown) {
-    super(`Invalid authType: ${authType}`)
-  }
-}
-
-/**
  * Error while fetching SP/CP login page.
  */
 export class FetchLoginPageError extends ApplicationError {
