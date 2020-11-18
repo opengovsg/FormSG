@@ -19,8 +19,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '4',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow decimal with valid maximum (inclusive)', () => {
@@ -39,8 +39,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '5',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow decimal with invalid maximum', () => {
@@ -59,8 +59,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '6',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow decimal with valid minimum', () => {
@@ -79,8 +79,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '5',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow decimal with valid minimum (inclusive)', () => {
@@ -99,8 +99,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '2',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow decimal with invalid minimum', () => {
@@ -119,8 +119,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '1',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow decimal with no custom validation', () => {
@@ -139,8 +139,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '55',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow empty answer with optional field', () => {
@@ -159,8 +159,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow answer to be zero', () => {
@@ -179,8 +179,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '0',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow negative answers', () => {
@@ -199,8 +199,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '-5.0',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow leading zeroes', () => {
@@ -220,8 +220,8 @@ describe('Decimal Validation', () => {
       answer: '001.3',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow decimal points with no leading numbers', () => {
@@ -241,8 +241,8 @@ describe('Decimal Validation', () => {
       answer: '.3',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow negative answers with no leading number', () => {
@@ -262,8 +262,8 @@ describe('Decimal Validation', () => {
       answer: '-.3',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow floats (<16 decimal places) that are out of range (min)', () => {
@@ -283,8 +283,8 @@ describe('Decimal Validation', () => {
       answer: '1.999999999999999',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow floats (<16 decimal places) that are out of range (max)', () => {
@@ -304,8 +304,8 @@ describe('Decimal Validation', () => {
       answer: '2.000000000000001',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow validationOption to be undefined', () => {
@@ -320,8 +320,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '1.0',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow floats less than 0 when customMin is 0', () => {
@@ -340,8 +340,8 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '-0.2',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
   it('should disallow floats more than 0 when customMax is 0', () => {
     const formField = {
@@ -359,7 +359,7 @@ describe('Decimal Validation', () => {
       isVisible: true,
       answer: '0.1',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 })

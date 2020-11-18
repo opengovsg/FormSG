@@ -16,8 +16,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow empty answer for optional field', () => {
@@ -33,8 +33,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should not allow empty answer for required field', () => {
@@ -50,8 +50,8 @@ describe('Mobile validation tests', () => {
       isVisible: true,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow valid mobile numbers for mobile fieldType', () => {
@@ -67,8 +67,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6598765432',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow valid home numbers for homeno fieldType', () => {
@@ -83,8 +83,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6565656565',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow mobile numbers without "+" prefix', () => {
@@ -100,8 +100,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '6598765432',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow home numbers on mobile fieldType', () => {
@@ -117,8 +117,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6565656565',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow mobile numbers on homeno fieldType', () => {
@@ -134,8 +134,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6598765432',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow international numbers when field does not allow for it', () => {
@@ -151,8 +151,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+447851315617',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow international numbers when field allows for it', () => {
@@ -168,7 +168,7 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+447851315617',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 })

@@ -14,8 +14,8 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow no', () => {
@@ -29,8 +29,8 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow empty string when not required', () => {
@@ -44,8 +44,8 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: false,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow empty string when required', () => {
@@ -60,8 +60,8 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow invalid input', () => {
@@ -75,7 +75,7 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 })

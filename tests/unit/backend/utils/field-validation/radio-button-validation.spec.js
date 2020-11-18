@@ -14,8 +14,8 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'a',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow invalid option', () => {
@@ -29,8 +29,8 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'invalid',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow empty option when it is required', () => {
@@ -46,8 +46,8 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow empty option when not required', () => {
@@ -61,8 +61,8 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow empty option when required and that logic field is not visible', () => {
@@ -78,8 +78,8 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: false,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow empty option when required and that it is visible', () => {
@@ -95,8 +95,8 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow empty option when not required and that it is visible', () => {
@@ -112,8 +112,8 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it(`should allow answer that starts with 'Others: ' when others option is selected`, () => {
@@ -128,8 +128,8 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'Others: hi i am others',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it(`should disallow answer that starts with 'Others: ' when others option is not selected`, () => {
@@ -144,8 +144,8 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'Others: hi i am others',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it(`should disallow empty answer when others option is selected`, () => {
@@ -161,7 +161,7 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'Others: ',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 })

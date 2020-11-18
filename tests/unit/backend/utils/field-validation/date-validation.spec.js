@@ -15,8 +15,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '09 Jan 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow empty string when not required', () => {
@@ -31,8 +31,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow valid leap year date', () => {
@@ -47,8 +47,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '29 Feb 2016',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow 00 date', () => {
@@ -63,8 +63,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '00 Jan 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow date less than 2 char', () => {
@@ -79,8 +79,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '9 Jan 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow date more than 2 char', () => {
@@ -95,8 +95,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '009 Jan 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow date not in month', () => {
@@ -111,8 +111,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '32 Jan 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow invalid month', () => {
@@ -127,8 +127,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '31 Jon 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow month less then 3 chars', () => {
@@ -143,8 +143,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '16 Jn 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow month more then 3 chars', () => {
@@ -159,8 +159,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '03 June 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow text year', () => {
@@ -175,8 +175,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '31 Jan hello',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow year less than 4 chars', () => {
@@ -191,8 +191,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '31 Jan 201',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow year more than 4 chars', () => {
@@ -207,8 +207,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '31 Jan 02019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow empty string when required', () => {
@@ -223,8 +223,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow invalid leap year date', () => {
@@ -239,8 +239,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '29 Feb 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow past dates for normal date fields', () => {
@@ -259,8 +259,8 @@ describe('Date field validation', () => {
       answer: '09 Jan 2019',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
 
     jasmine.clock().uninstall()
   })
@@ -281,8 +281,8 @@ describe('Date field validation', () => {
       answer: '01 Jan 2019',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
 
     jasmine.clock().uninstall()
   })
@@ -304,8 +304,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '29 Feb 2019',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
 
     jasmine.clock().uninstall()
   })
@@ -326,8 +326,8 @@ describe('Date field validation', () => {
       answer: '01 Jan 2021',
     }
 
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
 
     jasmine.clock().uninstall()
   })
@@ -349,8 +349,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '01 Jan 2021',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
 
     jasmine.clock().uninstall()
   })
@@ -375,8 +375,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '25 Jun 2020',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
 
     jasmine.clock().uninstall()
   })
@@ -401,8 +401,8 @@ describe('Date field validation', () => {
       isVisible: true,
       answer: '22 Jun 2020',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
 
     jasmine.clock().uninstall()
   })

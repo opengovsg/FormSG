@@ -18,8 +18,8 @@ describe('Rating field validation', () => {
       fieldType: 'rating',
       answer: '4',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow number with valid maximum (inclusive)', () => {
@@ -37,8 +37,8 @@ describe('Rating field validation', () => {
       fieldType: 'rating',
       answer: '5',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow number with invalid maximum', () => {
@@ -56,8 +56,8 @@ describe('Rating field validation', () => {
       fieldType: 'rating',
       answer: '6',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow number with valid minimum (inclusive)', () => {
@@ -75,8 +75,8 @@ describe('Rating field validation', () => {
       fieldType: 'rating',
       answer: '1',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow number with optional answer', () => {
@@ -94,8 +94,8 @@ describe('Rating field validation', () => {
       fieldType: 'rating',
       answer: '5',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow negative answers', () => {
@@ -113,8 +113,8 @@ describe('Rating field validation', () => {
       fieldType: 'rating',
       answer: '-1',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow leading zeroes in answer', () => {
@@ -132,8 +132,8 @@ describe('Rating field validation', () => {
       isVisible: true,
       answer: '03',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow empty answer if optional', () => {
@@ -151,8 +151,8 @@ describe('Rating field validation', () => {
       isVisible: true,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow empty answer if required', () => {
@@ -170,7 +170,7 @@ describe('Rating field validation', () => {
       isVisible: true,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 })

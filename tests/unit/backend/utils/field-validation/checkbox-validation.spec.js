@@ -36,8 +36,8 @@ describe('Checkbox validation', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, [])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isErr()).toBe(true)
     })
     it('should allow empty submission if checkbox is optional', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -45,8 +45,8 @@ describe('Checkbox validation', () => {
         required: false,
       })
       const response = makeCheckboxResponse(fieldId, [])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isOk()).toBe(true)
     })
   })
 
@@ -55,29 +55,29 @@ describe('Checkbox validation', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isOk()).toBe(true)
     })
     it('should allow multiple valid options to be selected', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a', 'b'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isOk()).toBe(true)
     })
     it('should disallow answers not in fieldOptions', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a', 'notinoption'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isErr()).toBe(true)
     })
     it('should disallow duplicate answers', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a', 'b', 'a'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isErr()).toBe(true)
     })
     it('should allow self-configured others options in field options', () => {
       // This occurs when admins create their own checkboxes with options like ["Others: <please specify>"]
@@ -86,8 +86,8 @@ describe('Checkbox validation', () => {
       const response = makeCheckboxResponse(fieldId, [
         'Others: <please specify>',
       ])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isOk()).toBe(true)
     })
     it('should allow Others option to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -95,8 +95,8 @@ describe('Checkbox validation', () => {
         othersRadioButton: true,
       })
       const response = makeCheckboxResponse(fieldId, ['a', 'Others: xyz'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isOk()).toBe(true)
     })
     it('should disallow Others option to be submitted if field is not configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -104,8 +104,8 @@ describe('Checkbox validation', () => {
         othersRadioButton: false,
       })
       const response = makeCheckboxResponse(fieldId, ['a', 'Others: xyz'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isErr()).toBe(true)
     })
     it('should disallow Others option to be submitted with blank answer if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -113,8 +113,8 @@ describe('Checkbox validation', () => {
         othersRadioButton: true,
       })
       const response = makeCheckboxResponse(fieldId, ['a', 'Others: '])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isErr()).toBe(true)
     })
   })
 
@@ -126,8 +126,8 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: 2, customMin: null },
       })
       const response = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isErr()).toBe(true)
     })
 
     it('should disallow fewer answers than customMin if selection limits are configured', () => {
@@ -137,8 +137,8 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: null, customMin: 2 },
       })
       const response = makeCheckboxResponse(fieldId, ['c'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isErr()).toBe(true)
     })
 
     it('should allow more answers than customMax if selection limits are not configured', () => {
@@ -148,8 +148,8 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: 2, customMin: null },
       })
       const response = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isOk()).toBe(true)
     })
 
     it('should allow fewer answers than customMin if selection limits are not configured', () => {
@@ -159,8 +159,8 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: null, customMin: 2 },
       })
       const response = makeCheckboxResponse(fieldId, ['c'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const testFunc = validateField(formId, formField, response)
+      expect(testFunc.isOk()).toBe(true)
     })
 
     it('should disallow more answers than customMax, and fewer answers than customMin, if selection limits are configured', () => {
@@ -182,14 +182,16 @@ describe('Checkbox validation', () => {
         'a',
         'b',
       ])
-      const moreAnswersTestFunc = () =>
-        validateField(formId, formField, moreAnswers)
-      expect(moreAnswersTestFunc).toThrow()
+      const moreAnswersTestFunc = validateField(formId, formField, moreAnswers)
+      expect(moreAnswersTestFunc.isErr()).toBe(true)
 
       const fewerAnswers = makeCheckboxResponse(fieldId, ['c'])
-      const fewerAnswersTestFunc = () =>
-        validateField(formId, formField, fewerAnswers)
-      expect(fewerAnswersTestFunc).toThrow()
+      const fewerAnswersTestFunc = validateField(
+        formId,
+        formField,
+        fewerAnswers,
+      )
+      expect(fewerAnswersTestFunc.isErr()).toBe(true)
     })
   })
 })

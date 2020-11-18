@@ -15,8 +15,8 @@ describe('NRIC field validation', () => {
       answer: 'S9912345A',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow valid NRIC with T prefix', () => {
@@ -31,8 +31,8 @@ describe('NRIC field validation', () => {
       answer: 'T1394524H',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow valid NRIC with F prefix', () => {
@@ -47,8 +47,8 @@ describe('NRIC field validation', () => {
       answer: 'F0477844T',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow valid NRIC with G prefix', () => {
@@ -63,8 +63,8 @@ describe('NRIC field validation', () => {
       answer: 'G9592927W',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow invalid NRIC with S prefix', () => {
@@ -79,8 +79,8 @@ describe('NRIC field validation', () => {
       answer: 'S9912345B',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow invalid NRIC with T prefix', () => {
@@ -95,8 +95,8 @@ describe('NRIC field validation', () => {
       answer: 'T1394524I',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow invalid NRIC with F prefix', () => {
@@ -111,8 +111,8 @@ describe('NRIC field validation', () => {
       answer: 'F0477844U',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow invalid NRIC with G prefix', () => {
@@ -127,8 +127,8 @@ describe('NRIC field validation', () => {
       answer: 'G9592927X',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow empty string for optional NRIC', () => {
@@ -143,8 +143,8 @@ describe('NRIC field validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow empty string for required NRIC', () => {
@@ -159,7 +159,7 @@ describe('NRIC field validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 })

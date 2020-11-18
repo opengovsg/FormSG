@@ -14,8 +14,8 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: 'KISS',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow invalid option', () => {
@@ -29,8 +29,8 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: 'invalid',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow empty answer when required', () => {
@@ -46,8 +46,8 @@ describe('Dropdown validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should allow empty answer when not required', () => {
@@ -62,8 +62,8 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should allow empty answer when it is required but not visible', () => {
@@ -79,8 +79,8 @@ describe('Dropdown validation', () => {
       answer: '',
       isVisible: false,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isOk()).toBe(true)
   })
 
   it('should disallow empty answer when it is required and visible', () => {
@@ -96,8 +96,8 @@ describe('Dropdown validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 
   it('should disallow multiple answers', () => {
@@ -111,7 +111,7 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: ['KISS', 'DRY'],
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const testFunc = validateField('formId', formField, response)
+    expect(testFunc.isErr()).toBe(true)
   })
 })
