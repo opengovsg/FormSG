@@ -58,32 +58,28 @@ exports.validateEncryptSubmission = function (req, res, next) {
       req.body.parsedResponses = getProcessedResponsesResult.value
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
       return next()
-    } else {
-      const err = getProcessedResponsesResult.error
-      logger.error({
-        message: 'Error processing responses',
-        meta: {
-          action: 'validateEncryptSubmission',
-          ...createReqMeta(req),
-          formId: form._id,
-        },
-        error: err,
-      })
-      if (err instanceof ConflictError) {
-        return res.status(err.status).json({
-          message:
-            'The form has been updated. Please refresh and submit again.',
-        })
-      } else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
-        })
-      }
     }
-  } else {
-    return res.status(StatusCodes.BAD_REQUEST)
+    const err = getProcessedResponsesResult.error
+    logger.error({
+      message: 'Error processing responses',
+      meta: {
+        action: 'validateEncryptSubmission',
+        ...createReqMeta(req),
+        formId: form._id,
+      },
+      error: err,
+    })
+    if (err instanceof ConflictError) {
+      return res.status(err.status).json({
+        message: 'The form has been updated. Please refresh and submit again.',
+      })
+    }
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+    })
   }
+  return res.status(StatusCodes.BAD_REQUEST)
 }
 
 /**

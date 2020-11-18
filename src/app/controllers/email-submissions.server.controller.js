@@ -247,35 +247,31 @@ exports.validateEmailSubmission = function (req, res, next) {
       )
 
       return next()
-    } else {
-      const err = getProcessedResponsesResult.error
-      logger.error({
-        message:
-          err instanceof ConflictError
-            ? 'Conflict - Form has been updated'
-            : 'Error processing responses',
-        meta: {
-          action: 'validateEmailSubmission',
-          ...createReqMeta(req),
-          formId: req.form._id,
-        },
-        error: err,
-      })
-      if (err instanceof ConflictError) {
-        return res.status(err.status).json({
-          message:
-            'The form has been updated. Please refresh and submit again.',
-        })
-      } else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
-        })
-      }
     }
-  } else {
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
+    const err = getProcessedResponsesResult.error
+    logger.error({
+      message:
+        err instanceof ConflictError
+          ? 'Conflict - Form has been updated'
+          : 'Error processing responses',
+      meta: {
+        action: 'validateEmailSubmission',
+        ...createReqMeta(req),
+        formId: req.form._id,
+      },
+      error: err,
+    })
+    if (err instanceof ConflictError) {
+      return res.status(err.status).json({
+        message: 'The form has been updated. Please refresh and submit again.',
+      })
+    }
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+    })
   }
+  return res.sendStatus(StatusCodes.BAD_REQUEST)
 }
 
 /**
