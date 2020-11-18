@@ -14,3 +14,14 @@ export type JwtPayload = {
   userInfo?: string
   rememberMe: boolean
 }
+
+export interface SingpassAttributes {
+  UserName?: string
+}
+
+export interface CorppassAttributes {
+  UserInfo?: {
+    CPEntID?: string
+    CPUID?: string
+  }
+}
