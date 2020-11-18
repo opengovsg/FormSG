@@ -50,7 +50,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
   }
 
   if (!req.body.responses) {
-    return res.status(StatusCodes.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
   const getProcessedResponsesResult = getProcessedResponses(
