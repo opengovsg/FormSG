@@ -10,7 +10,7 @@
     "APP": {
       "ROOT": "https://form.gov.sg"
     },
-    "FEATURE_REQ": "https://form.gov.sg/5f986c77d241e400119b98b7",
+    "FEATURE_REQ": "https://go.gov.sg/form-featurerequest",
     "COLLATE_TOOL": "https://collate.form.gov.sg",
     "GO_GOV": "https://go.gov.sg",
     "SUPPORT_FORM_LINK": "https://go.gov.sg/formsg-support",
