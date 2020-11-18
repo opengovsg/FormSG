@@ -25,7 +25,6 @@ import {
 } from './spcp.errors'
 import {
   CorppassAttributes,
-  ExtractedAttributes,
   JwtPayload,
   LoginPageValidationResult,
   SingpassAttributes,
@@ -33,6 +32,7 @@ import {
 import {
   extractDestination,
   extractFormId,
+  extractRememberMe,
   getAttributesPromise,
   getSubstringBetween,
   isValidAuthenticationQuery,
@@ -353,20 +353,22 @@ export class SpcpService {
     })
   }
 
-  extractUserInfo(
+  createJWTPayload(
     attributes: Record<string, unknown>,
+    relayState: string,
     authType: AuthType.SP | AuthType.CP,
-  ): Result<ExtractedAttributes, MissingAttributesError> {
+  ): Result<JwtPayload, MissingAttributesError> {
+    const rememberMe = extractRememberMe(relayState)
     if (authType === AuthType.SP) {
       const userName = (attributes as SingpassAttributes).UserName
       return userName && typeof userName === 'string'
-        ? ok({ userName })
+        ? ok({ userName, rememberMe })
         : err(new MissingAttributesError())
     } else {
       const userName = (attributes as CorppassAttributes)?.UserInfo?.CPEntID
       const userInfo = (attributes as CorppassAttributes)?.UserInfo?.CPUID
       return userName && userInfo
-        ? ok({ userName, userInfo })
+        ? ok({ userName, userInfo, rememberMe })
         : err(new MissingAttributesError())
     }
   }

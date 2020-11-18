@@ -17,6 +17,7 @@ interface ISpcpFactory {
   getSpcpAttributes: SpcpService['getSpcpAttributes']
   createJWT: SpcpService['createJWT']
   addLogin: SpcpService['addLogin']
+  createJWTPayload: SpcpService['createJWTPayload']
 }
 
 export const createSpcpFactory = ({
@@ -34,6 +35,7 @@ export const createSpcpFactory = ({
       getSpcpAttributes: () => errAsync(error),
       createJWT: () => err(error),
       addLogin: () => errAsync(error),
+      createJWTPayload: () => err(error),
     }
   }
   return new SpcpService(props)

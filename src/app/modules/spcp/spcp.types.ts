@@ -25,8 +25,3 @@ export interface CorppassAttributes {
     CPUID?: string
   }
 }
-
-export interface ExtractedAttributes {
-  userName: string
-  userInfo?: string
-}
