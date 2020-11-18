@@ -10,7 +10,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType, ILoginSchema } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 import getLoginModel from '../../models/login.server.model'
-import { DatabaseError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 
 import {
@@ -280,7 +280,7 @@ export class SpcpService {
   createJWT(
     payload: JwtPayload,
     authType: AuthType.SP | AuthType.CP,
-  ): Result<string, unknown> {
+  ): Result<string, ApplicationError> {
     let cookieDuration: number
     if (authType === AuthType.CP) {
       cookieDuration = this.#spcpProps.cpCookieMaxAge
