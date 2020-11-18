@@ -14,6 +14,7 @@ import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 
 import {
+  AuthTypeMismatchError,
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidAuthTypeError,
@@ -340,6 +341,7 @@ export class SpcpService {
 
   addLogin(
     relayState: string,
+    authType: AuthType,
   ): ResultAsync<ILoginSchema, FormNotFoundError | DatabaseError> {
     const formId = extractFormId(relayState)
     const logMeta = {
@@ -364,6 +366,17 @@ export class SpcpService {
           meta: logMeta,
         })
         return errAsync(new FormNotFoundError())
+      }
+      if (form.authType !== authType) {
+        logger.error({
+          message: 'Form auth type did not match attempted auth type',
+          meta: {
+            ...logMeta,
+            attemptedAuthType: authType,
+            formAuthType: form.authType,
+          },
+        })
+        return errAsync(new AuthTypeMismatchError(authType, form.authType))
       }
       return ResultAsync.fromPromise(
         LoginModel.addLoginFromForm(form),

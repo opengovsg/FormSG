@@ -1,3 +1,4 @@
+import { AuthType } from '../../../types'
 import { ApplicationError } from '../../modules/core/core.errors'
 /**
  * Error while creating redirect URL
@@ -70,5 +71,16 @@ export class FormNotFoundError extends ApplicationError {
     message = 'Could not find form with ID specified in relay state',
   ) {
     super(message)
+  }
+}
+
+/**
+ * Form auth type did not match attempted auth method.
+ */
+export class AuthTypeMismatchError extends ApplicationError {
+  constructor(attemptedAuthType: AuthType, formAuthType: AuthType) {
+    super(
+      `Attempted authentication type ${attemptedAuthType} did not match form auth type ${formAuthType}`,
+    )
   }
 }
