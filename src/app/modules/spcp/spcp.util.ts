@@ -13,13 +13,7 @@ import {
   LoginPageValidationError,
   VerifyJwtError,
 } from './spcp.errors'
-import {
-  CorppassAttributes,
-  JwtName,
-  JwtPayload,
-  SingpassAttributes,
-  SpcpCookies,
-} from './spcp.types'
+import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const destinationRegex = /^\/([\w]+)\/?/
@@ -57,7 +51,13 @@ export const isValidAuthenticationQuery = (
 }
 
 export const extractDestination = (relayState: string): string => {
+  // Assume destination format has been validated
   return relayState.split(',')[0]
+}
+
+export const extractRememberMe = (relayState: string): boolean => {
+  // Assume destination format has been validated
+  return relayState.split(',')[1] === 'true'
 }
 
 export const extractFormId = (relayState: string): string => {
@@ -65,23 +65,6 @@ export const extractFormId = (relayState: string): string => {
   // Assume that the destination has already been validated
   const regexSplit = destinationRegex.exec(destination)!
   return regexSplit[1]
-}
-
-export const extractUserInfo = (
-  attributes: Record<string, unknown>,
-  authType: AuthType.SP | AuthType.CP,
-): {
-  userName?: string
-  userInfo?: string
-} => {
-  if (authType === AuthType.SP) {
-    const userName = (attributes as SingpassAttributes).UserName
-    return userName && typeof userName === 'string' ? { userName } : {}
-  } else {
-    const userName = (attributes as CorppassAttributes)?.UserInfo?.CPEntID
-    const userInfo = (attributes as CorppassAttributes)?.UserInfo?.CPUID
-    return userName && userInfo ? { userName, userInfo } : {}
-  }
 }
 
 export const getAttributesPromise = (

@@ -19,10 +19,17 @@ import {
   FetchLoginPageError,
   InvalidOOBParamsError,
   LoginPageValidationError,
+  MissingAttributesError,
   RetrieveAttributesError,
   VerifyJwtError,
 } from './spcp.errors'
-import { JwtPayload, LoginPageValidationResult } from './spcp.types'
+import {
+  CorppassAttributes,
+  ExtractedAttributes,
+  JwtPayload,
+  LoginPageValidationResult,
+  SingpassAttributes,
+} from './spcp.types'
 import {
   extractDestination,
   extractFormId,
@@ -274,7 +281,7 @@ export class SpcpService {
     payload: Record<string, unknown>,
     authType: AuthType.SP | AuthType.CP,
     rememberMe: boolean,
-  ): Result<string, never> {
+  ): Result<string, unknown> {
     let cookieDuration: number
     if (authType === AuthType.CP) {
       cookieDuration = this.#spcpProps.cpCookieMaxAge
@@ -344,5 +351,23 @@ export class SpcpService {
         },
       )
     })
+  }
+
+  extractUserInfo(
+    attributes: Record<string, unknown>,
+    authType: AuthType.SP | AuthType.CP,
+  ): Result<ExtractedAttributes, MissingAttributesError> {
+    if (authType === AuthType.SP) {
+      const userName = (attributes as SingpassAttributes).UserName
+      return userName && typeof userName === 'string'
+        ? ok({ userName })
+        : err(new MissingAttributesError())
+    } else {
+      const userName = (attributes as CorppassAttributes)?.UserInfo?.CPEntID
+      const userInfo = (attributes as CorppassAttributes)?.UserInfo?.CPUID
+      return userName && userInfo
+        ? ok({ userName, userInfo })
+        : err(new MissingAttributesError())
+    }
   }
 }

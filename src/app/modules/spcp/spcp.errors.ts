@@ -75,3 +75,14 @@ export class AuthTypeMismatchError extends ApplicationError {
     )
   }
 }
+
+/**
+ * Attributes given by SP/CP did not contain NRIC or entity ID/UID.
+ */
+export class MissingAttributesError extends ApplicationError {
+  constructor(
+    message = 'Attributes given by SP/CP did not contain NRIC or entity ID/UID.',
+  ) {
+    super(message)
+  }
+}
