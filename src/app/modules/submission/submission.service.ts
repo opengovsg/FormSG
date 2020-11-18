@@ -70,10 +70,10 @@ const getFilteredResponses = (
 export const getProcessedResponses = (
   form: IFormSchema,
   originalResponses: FieldResponse[],
-): Result<ProcessedFieldResponse[], ProcessingError> => {
+): Result<ProcessedFieldResponse[], ProcessingError | ConflictError> => {
   const filteredResponsesResult = getFilteredResponses(form, originalResponses)
   if (filteredResponsesResult.isErr()) {
-    return err(new ProcessingError('Unable to get filtered responses'))
+    return err(filteredResponsesResult.error)
   }
 
   const filteredResponses = filteredResponsesResult.value
