@@ -12,9 +12,10 @@ import {
   FetchLoginPageError,
   InvalidAuthTypeError,
   LoginPageValidationError,
+  VerifyJwtError,
 } from './spcp.errors'
 import { SpcpService } from './spcp.service'
-import { LoginPageValidationResult } from './spcp.types'
+import { JwtPayload, LoginPageValidationResult } from './spcp.types'
 
 interface ISpcpFactory {
   createRedirectUrl(
@@ -34,6 +35,10 @@ interface ISpcpFactory {
     LoginPageValidationResult,
     LoginPageValidationError | MissingFeatureError
   >
+  extractJwtPayload(
+    jwt: string,
+    authType: AuthType,
+  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidAuthTypeError>
 }
 
 export const createSpcpFactory = ({
@@ -46,6 +51,7 @@ export const createSpcpFactory = ({
       createRedirectUrl: () => err(error),
       fetchLoginPage: () => errAsync(error),
       validateLoginPage: () => err(error),
+      extractJwtPayload: () => errAsync(error),
     }
   }
   return new SpcpService(props)

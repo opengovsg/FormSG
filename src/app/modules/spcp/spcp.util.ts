@@ -1,7 +1,8 @@
+import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { MapRouteError } from '../../../types'
+import { AuthType, MapRouteError } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
 import {
@@ -9,6 +10,7 @@ import {
   FetchLoginPageError,
   LoginPageValidationError,
 } from './spcp.errors'
+import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -23,6 +25,34 @@ export const getSubstringBetween = (
   } else {
     const end = text.indexOf(markerEnd, start)
     return end === -1 ? null : text.substring(start + markerStart.length, end)
+  }
+}
+
+export const verifyJwtPromise = (
+  authClient: SPCPAuthClient,
+  jwt: string,
+): Promise<JwtPayload> => {
+  return new Promise<JwtPayload>((resolve, reject) => {
+    authClient.verifyJWT<JwtPayload>(jwt, (error: Error, data: JwtPayload) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(data)
+    })
+  })
+}
+
+export const extractJwt = (
+  cookies: SpcpCookies,
+  authType: AuthType,
+): string | undefined => {
+  switch (authType) {
+    case AuthType.SP:
+      return cookies[JwtName.SP]
+    case AuthType.CP:
+      return cookies[JwtName.CP]
+    default:
+      return undefined
   }
 }
 

@@ -16,6 +16,7 @@ const { CaptchaFactory } = require('../factories/captcha.factory')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
+const SpcpController = require('../modules/spcp/spcp.controller')
 
 module.exports = function (app) {
   /**
@@ -127,7 +128,7 @@ module.exports = function (app) {
     .get(
       forms.formById,
       publicForms.isFormPublic,
-      spcpFactory.addSpcpSessionInfo,
+      SpcpController.addSpcpSessionInfo,
       myInfoController.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
     )

@@ -34,3 +34,12 @@ export class LoginPageValidationError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Invalid JWT.
+ */
+export class VerifyJwtError extends ApplicationError {
+  constructor(message = 'Invalid JWT') {
+    super(message)
+  }
+}
