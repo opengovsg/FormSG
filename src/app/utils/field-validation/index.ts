@@ -1,4 +1,5 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
+import { err, ok, Result } from 'neverthrow'
 
 import {
   ProcessedFieldResponse,
@@ -87,15 +88,15 @@ export const validateField = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-): void => {
+): Result<undefined, Error> => {
   if (!isValidResponseFieldType(response)) {
-    throw new Error(`Rejected field type "${response.fieldType}"`)
+    return err(new Error(`Rejected field type "${response.fieldType}"`))
   }
 
   const fieldTypeEither = doFieldTypesMatch(formField, response)
 
   if (isLeft(fieldTypeEither)) {
-    throw new Error(fieldTypeEither.left)
+    return err(new Error(fieldTypeEither.left))
   }
 
   if (isProcessedSingleAnswerResponse(response)) {
@@ -110,20 +111,21 @@ export const validateField = (
           const validEither = validator(response)
           if (isLeft(validEither)) {
             logInvalidAnswer(formId, formField, validEither.left)
-            throw new Error('Invalid answer submitted')
+            return err(new Error('Invalid answer submitted'))
           }
-          return
+          return ok(undefined)
         }
         // Fallback for un-migrated single answer validators
         default: {
-          classBasedValidation(formId, formField, response)
+          return classBasedValidation(formId, formField, response)
         }
       }
     }
   } else {
     // fallback for processed checkbox/table/attachment responses
-    classBasedValidation(formId, formField, response)
+    return classBasedValidation(formId, formField, response)
   }
+  return ok(undefined)
 }
 
 /**
@@ -135,7 +137,7 @@ const classBasedValidation = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-) => {
+): Result<undefined, Error> => {
   const fieldValidator = fieldValidatorFactory.createFieldValidator(
     formId,
     formField,
@@ -146,7 +148,8 @@ const classBasedValidation = (
     // TODO: Remove after soft launch of validation. Should throw Error for all validators
     // fieldValidator.constructor.name only returns the name of the class if code is not minified!
     if (ALLOWED_VALIDATORS.includes(fieldValidator.constructor.name)) {
-      throw new Error('Invalid answer submitted')
+      return err(new Error('Invalid answer submitted'))
     }
   }
+  return ok(undefined)
 }
