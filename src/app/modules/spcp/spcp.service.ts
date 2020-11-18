@@ -49,6 +49,13 @@ export class SpcpService {
     })
   }
 
+  /**
+   * Create the URL to which the client should be redirected for Singpass/
+   * Corppass login.
+   * @param authType 'SP' or 'CP'
+   * @param target The target URL which will become the SPCP RelayState
+   * @param esrvcId SP/CP e-service ID
+   */
   createRedirectUrl(
     authType: AuthType.SP | AuthType.CP,
     target: string,
@@ -91,6 +98,10 @@ export class SpcpService {
     }
   }
 
+  /**
+   * Fetches the HTML of the given URL.
+   * @param redirectUrl URL from which to obtain the HTML
+   */
   fetchLoginPage(
     redirectUrl: string,
   ): ResultAsync<string, FetchLoginPageError> {
@@ -119,6 +130,10 @@ export class SpcpService {
     )
   }
 
+  /**
+   * Validates that the login page does not have an error.
+   * @param loginHtml The HTML of the page to validate
+   */
   validateLoginPage(
     loginHtml: string,
   ): Result<LoginPageValidationResult, LoginPageValidationError> {
@@ -154,6 +169,11 @@ export class SpcpService {
     }
   }
 
+  /**
+   * Verifies a JWT and extracts its payload.
+   * @param jwt The contents of the JWT cookie
+   * @param authType 'SP' or 'CP'
+   */
   extractJwtPayload(
     jwt: string,
     authType: AuthType.SP | AuthType.CP,
