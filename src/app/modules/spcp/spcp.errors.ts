@@ -43,3 +43,12 @@ export class VerifyJwtError extends ApplicationError {
     super(message)
   }
 }
+
+/*
+ * Invalid OOB params passed to login endpoint.
+ */
+export class InvalidOOBParamsError extends ApplicationError {
+  constructor(message = 'Invalid OOB params passed to login endpoint') {
+    super(message)
+  }
+}
