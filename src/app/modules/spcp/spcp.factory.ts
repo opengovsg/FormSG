@@ -13,7 +13,7 @@ interface ISpcpFactory {
   fetchLoginPage: SpcpService['fetchLoginPage']
   validateLoginPage: SpcpService['validateLoginPage']
   extractJwtPayload: SpcpService['extractJwtPayload']
-  validateOOBParams: SpcpService['validateOOBParams']
+  parseOOBParams: SpcpService['parseOOBParams']
   getSpcpAttributes: SpcpService['getSpcpAttributes']
   createJWT: SpcpService['createJWT']
   addLogin: SpcpService['addLogin']
@@ -32,7 +32,7 @@ export const createSpcpFactory = ({
       fetchLoginPage: () => errAsync(error),
       validateLoginPage: () => err(error),
       extractJwtPayload: () => errAsync(error),
-      validateOOBParams: () => err(error),
+      parseOOBParams: () => err(error),
       getSpcpAttributes: () => errAsync(error),
       createJWT: () => err(error),
       addLogin: () => errAsync(error),

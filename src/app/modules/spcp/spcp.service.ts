@@ -27,13 +27,12 @@ import {
   CorppassAttributes,
   JwtPayload,
   LoginPageValidationResult,
+  ParsedSpcpParams,
   SingpassAttributes,
   SpcpDomainSettings,
 } from './spcp.types'
 import {
-  extractDestination,
   extractFormId,
-  extractRememberMe,
   getAttributesPromise,
   getSubstringBetween,
   isValidAuthenticationQuery,
@@ -217,31 +216,48 @@ export class SpcpService {
     )
   }
 
-  validateOOBParams(
+  parseOOBParams(
     samlArt: string,
     relayState: string,
     authType: AuthType.SP | AuthType.CP,
-  ): Result<true, InvalidOOBParamsError> {
+  ): Result<ParsedSpcpParams, InvalidOOBParamsError> {
     const logMeta = {
       action: 'validateOOBParams',
       relayState,
       samlArt,
       authType,
     }
-    if (relayState.split(',').length !== 2) {
+    const payloads = relayState.split(',')
+    if (payloads.length !== 2) {
       logger.error({
         message: 'RelayState incorrectly formatted',
         meta: logMeta,
       })
       return err(new InvalidOOBParamsError())
     }
-    const destination = extractDestination(relayState)
+    const destination = payloads[0]
+    const rememberMe = payloads[1] === 'true'
     const idpId =
       authType === AuthType.SP
         ? this.#spcpProps.spIdpId
         : this.#spcpProps.cpIdpId
+    let cookieDuration: number
+    if (authType === AuthType.CP) {
+      cookieDuration = this.#spcpProps.cpCookieMaxAge
+    } else {
+      cookieDuration = rememberMe
+        ? this.#spcpProps.spCookieMaxAgePreserved
+        : this.#spcpProps.spCookieMaxAge
+    }
     if (isValidAuthenticationQuery(samlArt, destination, idpId)) {
-      return ok(true)
+      return ok({
+        formId: extractFormId(destination),
+        destination,
+        rememberMe,
+        cookieDuration,
+        // Resolve known express req.query issue where pluses become spaces
+        samlArt: String(samlArt).replace(/ /g, '+'),
+      })
     } else {
       logger.error({
         message: 'Invalid authentication query',
@@ -253,20 +269,18 @@ export class SpcpService {
 
   getSpcpAttributes(
     samlArt: string,
-    relayState: string,
+    destination: string,
     authType: AuthType.SP | AuthType.CP,
   ): ResultAsync<Record<string, unknown>, RetrieveAttributesError> {
     const logMeta = {
       action: 'getSpcpAttributes',
       authType,
-      relayState,
+      destination,
       samlArt,
     }
-    // Resolve known express req.query issue where pluses become spaces
-    samlArt = String(samlArt).replace(/ /g, '+')
     const authClient = this.getAuthClient(authType)
     return ResultAsync.fromPromise(
-      getAttributesPromise(authClient, samlArt, relayState),
+      getAttributesPromise(authClient, samlArt, destination),
       (error) => {
         logger.error({
           message: 'Failed to retrieve attributes from SP/CP',
@@ -301,14 +315,12 @@ export class SpcpService {
   }
 
   addLogin(
-    relayState: string,
+    formId: string,
     authType: AuthType.SP | AuthType.CP,
   ): ResultAsync<ILoginSchema, FormNotFoundError | DatabaseError> {
-    const formId = extractFormId(relayState)
     const logMeta = {
       action: 'addLogin',
       formId,
-      relayState,
     }
     return ResultAsync.fromPromise(
       FormModel.getFullFormById(formId),
@@ -355,10 +367,9 @@ export class SpcpService {
 
   createJWTPayload(
     attributes: Record<string, unknown>,
-    relayState: string,
+    rememberMe: boolean,
     authType: AuthType.SP | AuthType.CP,
   ): Result<JwtPayload, MissingAttributesError> {
-    const rememberMe = extractRememberMe(relayState)
     if (authType === AuthType.SP) {
       const userName = (attributes as SingpassAttributes).UserName
       return userName && typeof userName === 'string'

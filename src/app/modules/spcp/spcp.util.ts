@@ -50,18 +50,7 @@ export const isValidAuthenticationQuery = (
   )
 }
 
-export const extractDestination = (relayState: string): string => {
-  // Assume destination format has been validated
-  return relayState.split(',')[0]
-}
-
-export const extractRememberMe = (relayState: string): boolean => {
-  // Assume destination format has been validated
-  return relayState.split(',')[1] === 'true'
-}
-
-export const extractFormId = (relayState: string): string => {
-  const destination = extractDestination(relayState)
+export const extractFormId = (destination: string): string => {
   // Assume that the destination has already been validated
   const regexSplit = destinationRegex.exec(destination)!
   return regexSplit[1]
@@ -70,19 +59,15 @@ export const extractFormId = (relayState: string): string => {
 export const getAttributesPromise = (
   authClient: SPCPAuthClient,
   samlArt: string,
-  relayState: string,
+  destination: string,
 ): Promise<Record<string, unknown>> => {
   return new Promise((resolve, reject) => {
-    authClient.getAttributes(
-      samlArt,
-      extractDestination(relayState),
-      (err, data) => {
-        if (err || !data || !data.attributes) {
-          return reject('Auth client could not retrieve attributes')
-        }
-        return resolve(data.attributes)
-      },
-    )
+    authClient.getAttributes(samlArt, destination, (err, data) => {
+      if (err || !data || !data.attributes) {
+        return reject('Auth client could not retrieve attributes')
+      }
+      return resolve(data.attributes)
+    })
   })
 }
 

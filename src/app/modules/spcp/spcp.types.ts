@@ -29,3 +29,11 @@ export interface CorppassAttributes {
 export type SpcpDomainSettings =
   | { domain: string; path: string }
   | { [k: string]: never }
+
+export interface ParsedSpcpParams {
+  formId: string
+  destination: string
+  rememberMe: boolean
+  cookieDuration: number
+  samlArt: string
+}
