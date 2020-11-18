@@ -234,10 +234,21 @@ exports.validateEmailSubmission = function (req, res, next) {
   const { form } = req
 
   if (req.body.responses) {
-    try {
-      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
+    const getProcessedResponsesResult = getProcessedResponses(
+      form,
+      req.body.responses,
+    )
+    if (getProcessedResponsesResult.isOk()) {
+      req.body.parsedResponses = getProcessedResponsesResult.value
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
-    } catch (err) {
+      // Creates an array of attachments from the validated responses
+      req.attachments = mapAttachmentsFromParsedResponses(
+        req.body.parsedResponses,
+      )
+
+      return next()
+    } else {
+      const err = getProcessedResponsesResult.error
       logger.error({
         message:
           err instanceof ConflictError
@@ -262,12 +273,6 @@ exports.validateEmailSubmission = function (req, res, next) {
         })
       }
     }
-
-    // Creates an array of attachments from the validated responses
-    req.attachments = mapAttachmentsFromParsedResponses(
-      req.body.parsedResponses,
-    )
-    return next()
   } else {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
