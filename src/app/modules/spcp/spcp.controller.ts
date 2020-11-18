@@ -3,14 +3,19 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType } from '../../../types'
+import { AuthType, IPopulatedForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
 
 import { SpcpFactory } from './spcp.factory'
 import { LoginPageValidationResult } from './spcp.types'
-import { mapRouteError } from './spcp.util'
+import { extractJwt, mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
+
+// TODO (#42): remove these types when migrating away from middleware pattern
+type WithForm<T> = T & {
+  form: IPopulatedForm
+}
 
 /**
  * Generates redirect URL to Official SingPass/CorpPass log in page
@@ -75,5 +80,40 @@ export const handleValidate: RequestHandler<
       })
       const { statusCode, errorMessage } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Adds session to returned JSON if form-filler is SPCP Authenticated
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next middleware function
+ */
+export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
+  req,
+  res,
+  next,
+) => {
+  const { authType } = (req as WithForm<typeof req>).form
+  if (!authType) return next()
+
+  const jwt = extractJwt(req.cookies, authType)
+  if (!jwt) return next()
+
+  return SpcpFactory.extractJwtPayload(jwt, authType)
+    .map(({ userName }) => {
+      res.locals.spcpSession = { userName }
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Failed to verify JWT with auth client',
+        meta: {
+          action: 'addSpcpSessionInfo',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+      return next()
     })
 }

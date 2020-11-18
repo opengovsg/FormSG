@@ -2,7 +2,7 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import axios from 'axios'
 import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -13,9 +13,10 @@ import {
   FetchLoginPageError,
   InvalidAuthTypeError,
   LoginPageValidationError,
+  VerifyJwtError,
 } from './spcp.errors'
-import { LoginPageValidationResult } from './spcp.types'
-import { getSubstringBetween } from './spcp.util'
+import { JwtPayload, LoginPageValidationResult } from './spcp.types'
+import { getSubstringBetween, verifyJwtPromise } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 const LOGIN_PAGE_HEADERS =
@@ -48,6 +49,13 @@ export class SpcpService {
     })
   }
 
+  /**
+   * Create the URL to which the client should be redirected for Singpass/
+   * Corppass login.
+   * @param authType 'SP' or 'CP'
+   * @param target The target URL which will become the SPCP RelayState
+   * @param esrvcId SP/CP e-service ID
+   */
   createRedirectUrl(
     authType: AuthType.SP | AuthType.CP,
     target: string,
@@ -90,6 +98,10 @@ export class SpcpService {
     }
   }
 
+  /**
+   * Fetches the HTML of the given URL.
+   * @param redirectUrl URL from which to obtain the HTML
+   */
   fetchLoginPage(
     redirectUrl: string,
   ): ResultAsync<string, FetchLoginPageError> {
@@ -118,6 +130,10 @@ export class SpcpService {
     )
   }
 
+  /**
+   * Validates that the login page does not have an error.
+   * @param loginHtml The HTML of the page to validate
+   */
   validateLoginPage(
     loginHtml: string,
   ): Result<LoginPageValidationResult, LoginPageValidationError> {
@@ -151,5 +167,41 @@ export class SpcpService {
       })
       return ok({ isValid: false, errorCode })
     }
+  }
+
+  /**
+   * Verifies a JWT and extracts its payload.
+   * @param jwt The contents of the JWT cookie
+   * @param authType 'SP' or 'CP'
+   */
+  extractJwtPayload(
+    jwt: string,
+    authType: AuthType.SP | AuthType.CP,
+  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidAuthTypeError> {
+    let authClient: SPCPAuthClient
+    switch (authType) {
+      case AuthType.SP:
+        authClient = this.#singpassAuthClient
+        break
+      case AuthType.CP:
+        authClient = this.#corppassAuthClient
+        break
+      default:
+        return errAsync(new InvalidAuthTypeError(authType))
+    }
+    return ResultAsync.fromPromise(
+      verifyJwtPromise(authClient, jwt),
+      (error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: {
+            action: 'extractPayload',
+            authType,
+          },
+          error,
+        })
+        return new VerifyJwtError()
+      },
+    )
   }
 }
