@@ -32,6 +32,12 @@ import {
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import {
+  ConflictError,
+  ProcessingError,
+  ValidateFieldError,
+} from '../../submission.errors'
+
 const Form = getFormModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
 
@@ -131,17 +137,14 @@ describe('submission.service', () => {
         updatedResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
         { ...newEmailResponse, isVisible: true },
         { ...newMobileResponse, isVisible: true },
       ]
       // Should only have email and mobile fields for encrypted forms.
-      expect(actual).toEqual(expectedParsed)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
     })
 
     it('should return list of parsed responses for email form submission successfully', async () => {
@@ -169,10 +172,6 @@ describe('submission.service', () => {
         updatedResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
       // Assert
       // Expect metadata to be injected to all responses (except fields to
       // reject).
@@ -192,10 +191,11 @@ describe('submission.service', () => {
         expectedParsed.push(expectedProcessed)
       })
 
-      expect(actual).toEqual(expectedParsed)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
     })
 
-    it('should throw error when email form has more fields than responses', async () => {
+    it('should return error when email form has more fields than responses', async () => {
       // Arrange
       const extraFieldForm = cloneDeep(defaultEmailForm)
       const secondMobileField = cloneDeep(
@@ -211,14 +211,13 @@ describe('submission.service', () => {
         defaultEmailResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
-      expect(actual).toEqual('Some form fields are missing')
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new ConflictError('Some form fields are missing'),
+      )
     })
 
-    it('should throw error when encrypt form has more fields than responses', async () => {
+    it('should return error when encrypt form has more fields than responses', async () => {
       // Arrange
       const extraFieldForm = cloneDeep(defaultEncryptForm)
       const secondMobileField = cloneDeep(
@@ -234,14 +233,13 @@ describe('submission.service', () => {
         defaultEncryptResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
-      expect(actual).toEqual('Some form fields are missing')
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new ConflictError('Some form fields are missing'),
+      )
     })
 
-    it('should throw error when any responses are not valid for encrypted form submission', async () => {
+    it('should return error when any responses are not valid for encrypted form submission', async () => {
       // Arrange
       // Only mobile and email fields are parsed, since the other fields are
       // e2e encrypted from the browser.
@@ -257,14 +255,13 @@ describe('submission.service', () => {
         defaultEncryptResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
-      expect(actual).toEqual('Invalid answer submitted')
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
-    it('should throw error when any responses are not valid for email form submission', async () => {
+    it('should return error when any responses are not valid for email form submission', async () => {
       // Arrange
       // Set NRIC field in form as required.
       const nricFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Nric]
@@ -278,14 +275,13 @@ describe('submission.service', () => {
         defaultEmailResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
-      expect(actual).toEqual('Invalid answer submitted')
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
-    it('should throw error when encrypted form submission is prevented by logic', async () => {
+    it('should return error when encrypted form submission is prevented by logic', async () => {
       // Arrange
       // Mock logic util to return non-empty to check if error is thrown
       jest
@@ -304,14 +300,13 @@ describe('submission.service', () => {
         defaultEncryptResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
-      expect(actual).toEqual('Submission prevented by form logic')
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new ProcessingError('Submission prevented by form logic'),
+      )
     })
 
-    it('should throw error when email form submission is prevented by logic', async () => {
+    it('should return error when email form submission is prevented by logic', async () => {
       // Arrange
       // Mock logic util to return non-empty to check if error is thrown.
       const mockReturnLogicUnit = ({
@@ -332,11 +327,10 @@ describe('submission.service', () => {
         defaultEmailResponses,
       )
 
-      const actual = actualResult.isOk()
-        ? actualResult.value
-        : actualResult.error.message
-
-      expect(actual).toEqual('Submission prevented by form logic')
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new ProcessingError('Submission prevented by form logic'),
+      )
     })
   })
 
