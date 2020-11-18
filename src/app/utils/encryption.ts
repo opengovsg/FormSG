@@ -1,23 +1,25 @@
 import { decode as decodeBase64 } from '@stablelib/base64'
 import { err, ok, Result } from 'neverthrow'
 
+import { InvalidEncodingError } from '../modules/submission/submission.errors'
+
 export const checkIsEncryptedEncoding = (
   encryptedStr: string,
 ): Result<boolean, Error> => {
   // TODO (#42): Remove this type check once whole backend is in TypeScript.
   if (typeof encryptedStr !== 'string') {
-    return err(new Error('encryptedStr is not of type `string`'))
+    return err(new InvalidEncodingError('encryptedStr is not of type `string`'))
   }
 
   const [submissionPublicKey, nonceEncrypted] = encryptedStr.split(';')
 
   if (!nonceEncrypted) {
-    return err(new Error('Missing data'))
+    return err(new InvalidEncodingError('Missing data'))
   }
   const [nonce, encrypted] = nonceEncrypted.split(':')
 
   if (!submissionPublicKey || !nonce || !encrypted) {
-    return err(new Error('Missing data'))
+    return err(new InvalidEncodingError('Missing data'))
   }
 
   try {
@@ -28,6 +30,6 @@ export const checkIsEncryptedEncoding = (
     decodeBase64(encrypted)
     return ok(true)
   } catch (e) {
-    return err(new Error('Incorrect characters'))
+    return err(new InvalidEncodingError('Incorrect characters'))
   }
 }

@@ -33,8 +33,8 @@ const HttpStatus = require('http-status-codes')
 exports.validateEncryptSubmission = function (req, res, next) {
   const { form } = req
 
-  const isEncrypted = checkIsEncryptedEncoding(req.body.encryptedContent)
-  if (isEncrypted.isErr()) {
+  const isEncryptedResult = checkIsEncryptedEncoding(req.body.encryptedContent)
+  if (isEncryptedResult.isErr()) {
     logger.error({
       message: 'Invalid encryption',
       meta: {
@@ -42,7 +42,7 @@ exports.validateEncryptSubmission = function (req, res, next) {
         ...createReqMeta(req),
         formId: form._id,
       },
-      error: isEncrypted.error.message,
+      error: isEncryptedResult.error,
     })
     return res
       .status(StatusCodes.BAD_REQUEST)

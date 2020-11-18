@@ -17,3 +17,13 @@ export class SubmissionNotFoundError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * A custom error class thrown by the encrypt submission controller
+ * when encryption is invalid
+ */
+export class InvalidEncodingError extends ApplicationError {
+  constructor(message = 'Error with encoding.') {
+    super(message)
+  }
+}
