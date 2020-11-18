@@ -69,7 +69,7 @@ export class FormNotFoundError extends ApplicationError {
  * Form auth type did not match attempted auth method.
  */
 export class AuthTypeMismatchError extends ApplicationError {
-  constructor(attemptedAuthType: AuthType, formAuthType: AuthType) {
+  constructor(attemptedAuthType: AuthType, formAuthType?: AuthType) {
     super(
       `Attempted authentication type ${attemptedAuthType} did not match form auth type ${formAuthType}`,
     )
