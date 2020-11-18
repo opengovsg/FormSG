@@ -168,9 +168,12 @@ export const getEncryptedSubmissionData = (
  * @returns err(CreatePresignedUrlError) if any of the signed url creation processes results in an error
  */
 export const transformAttachmentMetasToSignedUrls = (
-  attachmentMetadata: Map<string, string>,
+  attachmentMetadata: Map<string, string> | undefined,
   urlValidDuration: number,
 ): ResultAsync<Record<string, string>, CreatePresignedUrlError> => {
+  if (!attachmentMetadata) {
+    return okAsync({})
+  }
   const keyToSignedUrlPromises: Record<string, Promise<string>> = {}
 
   for (const [key, objectPath] of attachmentMetadata) {

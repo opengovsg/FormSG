@@ -438,6 +438,42 @@ describe('encrypt-submission.service', () => {
       })
     })
 
+    it('should return empty object when given attachmentMetadata is undefined', async () => {
+      // Arrange
+      // Mock promise implementation.
+      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        undefined,
+        200,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      // Should return empty object.
+      expect(actualResult._unsafeUnwrap()).toEqual({})
+      expect(awsSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return empty object when given attachmentMetadata is empty map', async () => {
+      // Arrange
+      // Mock promise implementation.
+      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        new Map(),
+        200,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      // Should return empty object.
+      expect(actualResult._unsafeUnwrap()).toEqual({})
+      expect(awsSpy).not.toHaveBeenCalled()
+    })
+
     it('should return CreatePresignedUrlError when error occurs during the signed url creation process', async () => {
       // Arrange
       jest
