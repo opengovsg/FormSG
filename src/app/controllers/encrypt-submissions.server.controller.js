@@ -50,10 +50,16 @@ exports.validateEncryptSubmission = function (req, res, next) {
   }
 
   if (req.body.responses) {
-    try {
-      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
+    const getProcessedResponsesResult = getProcessedResponses(
+      form,
+      req.body.responses,
+    )
+    if (getProcessedResponsesResult.isOk()) {
+      req.body.parsedResponses = getProcessedResponsesResult.value
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
-    } catch (err) {
+      return next()
+    } else {
+      const err = getProcessedResponsesResult.error
       logger.error({
         message: 'Error processing responses',
         meta: {
@@ -75,9 +81,8 @@ exports.validateEncryptSubmission = function (req, res, next) {
         })
       }
     }
-    return next()
   } else {
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
+    return res.status(StatusCodes.BAD_REQUEST)
   }
 }
 
