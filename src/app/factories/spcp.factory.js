@@ -69,7 +69,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       passThroughSpcp: admin.passThroughSpcp,
       singPassLogin: spcp.singPassLogin(ndiConfig),
       corpPassLogin: spcp.corpPassLogin(ndiConfig),
-      addSpcpSessionInfo: spcp.addSpcpSessionInfo(authClients),
       isSpcpAuthenticated: spcp.isSpcpAuthenticated(authClients),
     }
   } else {
@@ -81,7 +80,6 @@ const spcpFactory = ({ isEnabled, props }) => {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       corpPassLogin: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
-      addSpcpSessionInfo: (req, res, next) => next(),
       isSpcpAuthenticated: (req, res, next) => next(),
     }
   }
