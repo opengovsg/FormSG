@@ -19,8 +19,7 @@ export class SubmissionNotFoundError extends ApplicationError {
 }
 
 /**
- * A custom error class thrown by the encrypt submission controller
- * when encryption is invalid
+ * A custom error class returned when given submission has invalid encryption encoding
  */
 export class InvalidEncodingError extends ApplicationError {
   constructor(message = 'Error with encoding.') {
@@ -28,12 +27,18 @@ export class InvalidEncodingError extends ApplicationError {
   }
 }
 
+/**
+ * A custom error class returned when given submission has response that cannot be processed
+ */
 export class ProcessingError extends ApplicationError {
   constructor(message = 'Error processing response.') {
     super(message)
   }
 }
 
+/**
+ * A custom error class returned when given submission has field validation failure
+ */
 export class ValidateFieldError extends ApplicationError {
   constructor(message = 'Error validating field.') {
     super(message)
