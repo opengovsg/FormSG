@@ -1,7 +1,9 @@
 const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
-
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
 describe('Number field validation', () => {
   it('should allow number with valid maximum', () => {
     const formField = {
@@ -21,8 +23,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '5',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with valid maximum (inclusive)', () => {
@@ -43,8 +46,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '55',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow number with invalid maximum', () => {
@@ -65,8 +69,11 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '555',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow number with valid minimum', () => {
@@ -87,8 +94,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '555',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with valid minimum (inclusive)', () => {
@@ -109,8 +117,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '55',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with valid exact', () => {
@@ -131,8 +140,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '55',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow number with invalid exact', () => {
@@ -153,8 +163,11 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '5',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow number with maximum left undefined', () => {
@@ -175,8 +188,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '55',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with minimum left undefined', () => {
@@ -197,8 +211,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '55',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with exact undefined', () => {
@@ -219,8 +234,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '55',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with no custom validation', () => {
@@ -241,8 +257,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '55',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with optional answer', () => {
@@ -263,8 +280,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow answer to be zero', () => {
@@ -285,8 +303,9 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '0',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow negative answers', () => {
@@ -307,8 +326,11 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '-5',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow leading zeroes in answer', () => {
@@ -329,7 +351,8 @@ describe('Number field validation', () => {
       isVisible: false,
       answer: '05',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 })

@@ -1,7 +1,9 @@
 const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
-
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
 describe('Radio button validation', () => {
   it('should allow valid option', () => {
     const formField = {
@@ -14,8 +16,9 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'a',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow invalid option', () => {
@@ -29,8 +32,11 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'invalid',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should disallow empty option when it is required', () => {
@@ -46,8 +52,11 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow empty option when not required', () => {
@@ -61,8 +70,9 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: '',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow empty option when required and that logic field is not visible', () => {
@@ -78,8 +88,9 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: false,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow empty option when required and that it is visible', () => {
@@ -95,8 +106,11 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow empty option when not required and that it is visible', () => {
@@ -112,8 +126,9 @@ describe('Radio button validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it(`should allow answer that starts with 'Others: ' when others option is selected`, () => {
@@ -128,8 +143,9 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'Others: hi i am others',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it(`should disallow answer that starts with 'Others: ' when others option is not selected`, () => {
@@ -144,8 +160,11 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'Others: hi i am others',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it(`should disallow empty answer when others option is selected`, () => {
@@ -161,7 +180,10 @@ describe('Radio button validation', () => {
       fieldType: 'radiobutton',
       answer: 'Others: ',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 })

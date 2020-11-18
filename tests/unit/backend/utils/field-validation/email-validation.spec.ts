@@ -3,6 +3,8 @@ import EmailValidator from 'src/app/utils/field-validation/validators/EmailValid
 import { BasicField } from 'src/types/field/fieldTypes'
 import { ISingleAnswerResponse } from 'src/types/response'
 
+import { ValidateFieldError } from '../../../../../dist/backend/app/modules/submission/submission.errors'
+
 describe('Email field validation', () => {
   beforeEach(() => {
     jest
@@ -26,8 +28,9 @@ describe('Email field validation', () => {
       question: 'random',
       answer: 'valid@email.com',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow invalid emails', () => {
@@ -46,8 +49,11 @@ describe('Email field validation', () => {
       question: 'random',
       answer: 'invalidemail.com',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow empty answer for required logic field that is not visible', () => {
@@ -67,8 +73,9 @@ describe('Email field validation', () => {
       isVisible: false,
       answer: '',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow email addresses whose email domain belongs to allowedEmailDomains when isVerifiable is true, hasAllowedEmailDomains is true and allowedEmailDomains is not empty', () => {
@@ -91,8 +98,9 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should not allow email addresses whose email domain does not belong to allowedEmailDomains when isVerifiable is true, hasAllowedEmailDomains is true and allowedEmailDomains is not empty', () => {
@@ -115,8 +123,11 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow any valid email address when isVerifiable is true, hasAllowedEmailDomains is true but allowedEmailDomains is empty', () => {
@@ -139,8 +150,9 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow any valid email address when isVerifiable is true and hasAllowedEmailDomains is false, regardless of the cardinality of allowedEmailDomains', () => {
@@ -163,8 +175,9 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow any valid email address when isVerifiable is false and hasAllowedEmailDomains is true, regardless of the cardinality of allowedEmailDomains', () => {
@@ -187,7 +200,8 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 })

@@ -1,7 +1,9 @@
 const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
-
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
 describe('Yes/No field validation', () => {
   it('should allow yes', () => {
     const response = {
@@ -14,8 +16,9 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow no', () => {
@@ -29,8 +32,9 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow empty string when not required', () => {
@@ -44,8 +48,9 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: false,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow empty string when required', () => {
@@ -60,8 +65,11 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should disallow invalid input', () => {
@@ -75,7 +83,10 @@ describe('Yes/No field validation', () => {
       fieldType: 'yes_no',
       required: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 })

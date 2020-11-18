@@ -2,6 +2,10 @@ const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
 
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+
 describe('Dropdown validation', () => {
   it('should allow valid option', () => {
     const formField = {
@@ -14,8 +18,9 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: 'KISS',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow invalid option', () => {
@@ -29,8 +34,11 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: 'invalid',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should disallow empty answer when required', () => {
@@ -46,8 +54,11 @@ describe('Dropdown validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow empty answer when not required', () => {
@@ -62,8 +73,9 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: '',
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow empty answer when it is required but not visible', () => {
@@ -79,8 +91,9 @@ describe('Dropdown validation', () => {
       answer: '',
       isVisible: false,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isOk()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow empty answer when it is required and visible', () => {
@@ -96,8 +109,11 @@ describe('Dropdown validation', () => {
       answer: '',
       isVisible: true,
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should disallow multiple answers', () => {
@@ -111,7 +127,10 @@ describe('Dropdown validation', () => {
       fieldType: 'dropdown',
       answer: ['KISS', 'DRY'],
     }
-    const testFunc = validateField('formId', formField, response)
-    expect(testFunc.isErr()).toBe(true)
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 })
