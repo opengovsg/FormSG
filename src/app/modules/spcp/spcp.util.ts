@@ -54,6 +54,13 @@ export const extractDestination = (relayState: string): string => {
   return relayState.split(',')[0]
 }
 
+export const extractFormId = (relayState: string): string => {
+  const destination = extractDestination(relayState)
+  // Assume that the destination has already been validated
+  const regexSplit = destinationRegex.exec(destination)!
+  return regexSplit[1]
+}
+
 export const getAttributesPromise = (
   authClient: SPCPAuthClient,
   samlArt: string,

@@ -2,11 +2,16 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import axios from 'axios'
 import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
+import mongoose from 'mongoose'
 import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType } from '../../../types'
+import { AuthType, ILoginSchema } from '../../../types'
+import getFormModel from '../../models/form.server.model'
+import getLoginModel from '../../models/login.server.model'
+import { DatabaseError } from '../core/core.errors'
+import { FormNotFoundError } from '../form/form.errors'
 
 import {
   CreateRedirectUrlError,
@@ -20,6 +25,7 @@ import {
 import { JwtPayload, LoginPageValidationResult } from './spcp.types'
 import {
   extractDestination,
+  extractFormId,
   getAttributesPromise,
   getSubstringBetween,
   isValidAuthenticationQuery,
@@ -27,6 +33,9 @@ import {
 } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
+const FormModel = getFormModel(mongoose)
+const LoginModel = getLoginModel(mongoose)
+
 const LOGIN_PAGE_HEADERS =
   'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3'
 const LOGIN_PAGE_TIMEOUT = 10000 // 10 seconds
@@ -327,5 +336,46 @@ export class SpcpService {
         // NOTE: cookieDuration is interpreted as a seconds count if numeric.
       ),
     )
+  }
+
+  addLogin(
+    relayState: string,
+  ): ResultAsync<ILoginSchema, FormNotFoundError | DatabaseError> {
+    const formId = extractFormId(relayState)
+    const logMeta = {
+      action: 'addLogin',
+      formId,
+      relayState,
+    }
+    return ResultAsync.fromPromise(
+      FormModel.getFullFormById(formId),
+      (error) => {
+        logger.error({
+          message: 'Error getting form from database',
+          meta: logMeta,
+          error,
+        })
+        return new DatabaseError()
+      },
+    ).andThen((form) => {
+      if (!form) {
+        logger.error({
+          message: 'Could not find form specified by relay state',
+          meta: logMeta,
+        })
+        return errAsync(new FormNotFoundError())
+      }
+      return ResultAsync.fromPromise(
+        LoginModel.addLoginFromForm(form),
+        (error) => {
+          logger.error({
+            message: 'Error adding login to database',
+            meta: logMeta,
+            error,
+          })
+          return new DatabaseError()
+        },
+      )
+    })
   }
 }

@@ -61,3 +61,14 @@ export class RetrieveAttributesError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Destination form not found.
+ */
+export class FormNotFoundError extends ApplicationError {
+  constructor(
+    message = 'Could not find form with ID specified in relay state',
+  ) {
+    super(message)
+  }
+}
