@@ -71,8 +71,6 @@ const spcpFactory = ({ isEnabled, props }) => {
       corpPassLogin: spcp.corpPassLogin(ndiConfig),
       addSpcpSessionInfo: spcp.addSpcpSessionInfo(authClients),
       isSpcpAuthenticated: spcp.isSpcpAuthenticated(authClients),
-      createSpcpRedirectURL: spcp.createSpcpRedirectURL(authClients),
-      validateESrvcId: spcp.validateESrvcId,
     }
   } else {
     const errMsg = 'SPCP/MyInfo feature is not enabled'
@@ -85,9 +83,6 @@ const spcpFactory = ({ isEnabled, props }) => {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       addSpcpSessionInfo: (req, res, next) => next(),
       isSpcpAuthenticated: (req, res, next) => next(),
-      createSpcpRedirectURL: (req, res, next) => next(),
-      validateESrvcId: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
     }
   }
 }
