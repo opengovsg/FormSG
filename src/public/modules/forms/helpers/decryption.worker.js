@@ -6,7 +6,8 @@ const {
 } = require('../../../../shared/util/verification')
 const JSZip = require('jszip')
 const { decode: decodeBase64 } = require('@stablelib/base64')
-require('regenerator-runtime')
+require('core-js/stable/promise')
+require('regenerator-runtime/runtime')
 
 let formsgSdk
 
