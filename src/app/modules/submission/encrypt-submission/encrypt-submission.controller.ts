@@ -2,13 +2,16 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
+import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { IPopulatedForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 
 import {
+  getEncryptedSubmissionData,
   getSubmissionCursor,
+  transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from './encrypt-submission.service'
 import { mapRouteError } from './encrypt-submission.utils'
@@ -122,4 +125,84 @@ export const handleStreamEncryptedResponses: RequestHandler<
 
       return res.end()
     })
+}
+
+/**
+ * Handler for GET /:formId/adminform/submissions
+ *
+ * @returns 200 with encrypted submission data response
+ * @returns 404 if submissionId cannot be found in the database
+ * @returns 500 if any errors occurs in database query or generating signed URL
+ */
+export const handleGetEncryptedResponse: RequestHandler<
+  { formId: string },
+  unknown,
+  unknown,
+  { submissionId: string }
+> = async (req, res) => {
+  const { submissionId } = req.query
+  const { formId } = req.params
+
+  const logMeta = {
+    action: 'handleGetEncryptedResponse',
+    submissionId,
+    formId,
+  }
+
+  // Step 1: Retrieve submission.
+  const submissionResult = await getEncryptedSubmissionData(
+    formId,
+    submissionId,
+  )
+
+  if (submissionResult.isErr()) {
+    logger.error({
+      message: 'Failure retrieving encrypted submission from database',
+      meta: logMeta,
+      error: submissionResult.error,
+    })
+
+    const { statusCode, errorMessage } = mapRouteError(submissionResult.error)
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  // Step 2: Retrieve presigned URLs for attachments.
+  const submission = submissionResult.value
+  // Remaining login duration in seconds.
+  const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
+  const presignedUrlsResult = await transformAttachmentMetasToSignedUrls(
+    submission.attachmentMetadata,
+    urlExpiry,
+  )
+
+  if (presignedUrlsResult.isErr()) {
+    logger.error({
+      message: 'Failure transforming attachment metadata into presigned URLs',
+      meta: logMeta,
+      error: presignedUrlsResult.error,
+    })
+
+    const { statusCode, errorMessage } = mapRouteError(
+      presignedUrlsResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  // Successfully retrieved both submission and transforming presigned URLs,
+  // return to client.
+  const responseData = {
+    refNo: submission._id,
+    submissionTime: moment(submission.created)
+      .tz('Asia/Singapore')
+      .format('ddd, D MMM YYYY, hh:mm:ss A'),
+    content: submission.encryptedContent,
+    verified: submission.verifiedContent,
+    attachmentMetadata: presignedUrlsResult.value,
+  }
+
+  return res.json(responseData)
 }

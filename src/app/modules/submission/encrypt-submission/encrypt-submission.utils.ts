@@ -2,7 +2,9 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { MapRouteError } from '../../../../types/routing'
-import { MalformedParametersError } from '../../core/core.errors'
+import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
+import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
+import { SubmissionNotFoundError } from '../submission.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -16,6 +18,17 @@ export const mapRouteError: MapRouteError = (error) => {
     case MalformedParametersError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case SubmissionNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case CreatePresignedUrlError:
+    case DatabaseError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
       }
     default:
