@@ -32,14 +32,14 @@ const SubmissionModel = getSubmissionModel(mongoose)
 const getFilteredResponses = (
   form: IFormSchema,
   responses: FieldResponse[],
-): Result<FieldResponse[], Error> => {
+): Result<FieldResponse[], ConflictError> => {
   const modeFilter = getModeFilter(form.responseMode)
 
   // _id must be transformed to string as form response is jsonified.
   if (!form.form_fields) {
     return err(new ConflictError('Form fields are missing'))
   }
-  const fieldIds = modeFilter(form.form_fields!).map((field) => ({
+  const fieldIds = modeFilter(form.form_fields).map((field) => ({
     _id: String(field._id),
   }))
   const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
@@ -70,7 +70,7 @@ const getFilteredResponses = (
 export const getProcessedResponses = (
   form: IFormSchema,
   originalResponses: FieldResponse[],
-): Result<ProcessedFieldResponse[], Error> => {
+): Result<ProcessedFieldResponse[], ProcessingError> => {
   const filteredResponsesResult = getFilteredResponses(form, originalResponses)
   if (filteredResponsesResult.isErr()) {
     return err(new ProcessingError('Unable to get filtered responses'))
