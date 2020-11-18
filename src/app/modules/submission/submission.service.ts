@@ -39,10 +39,10 @@ const getFilteredResponses = (
 ): Result<FieldResponse[], ConflictError> => {
   const modeFilter = getModeFilter(form.responseMode)
 
-  // _id must be transformed to string as form response is jsonified.
   if (!form.form_fields) {
     return err(new ConflictError('Form fields are missing'))
   }
+  // _id must be transformed to string as form response is jsonified.
   const fieldIds = modeFilter(form.form_fields).map((field) => ({
     _id: String(field._id),
   }))
@@ -129,7 +129,7 @@ export const getProcessedResponses = (
       processingResponse.isUserVerified = formField.isVerifiable
     }
 
-    // Error will be thrown if the processed response is not valid.
+    // Error will be returned if the processed response is not valid.
     const validateFieldResult = validateField(
       form._id,
       formField,
