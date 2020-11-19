@@ -1,7 +1,12 @@
 import { Router } from 'express'
 
+import { AuthType } from '../../../types'
+
 import * as SpcpController from './spcp.controller'
-import { redirectParamsMiddleware } from './spcp.middlewares'
+import {
+  loginParamsMiddleware,
+  redirectParamsMiddleware,
+} from './spcp.middlewares'
 // Shared routes for Singpass and Corppass
 export const SpcpRouter = Router()
 
@@ -43,4 +48,22 @@ SpcpRouter.get(
   '/validate',
   redirectParamsMiddleware,
   SpcpController.handleValidate,
+)
+
+// Handles SingPass login requests
+export const SingpassLoginRouter = Router()
+
+SingpassLoginRouter.get(
+  '/',
+  loginParamsMiddleware,
+  SpcpController.handleLogin(AuthType.SP),
+)
+
+// Handles CorpPass login requests
+export const CorppassLoginRouter = Router()
+
+CorppassLoginRouter.get(
+  '/',
+  loginParamsMiddleware,
+  SpcpController.handleLogin(AuthType.CP),
 )

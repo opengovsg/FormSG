@@ -2,12 +2,14 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType, IPopulatedForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
+import * as FormService from '../form/form.service'
 
 import { SpcpFactory } from './spcp.factory'
-import { LoginPageValidationResult } from './spcp.types'
+import { JwtName, LoginPageValidationResult } from './spcp.types'
 import { extractJwt, mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
@@ -26,7 +28,7 @@ export const handleRedirect: RequestHandler<
   ParamsDictionary,
   { redirectURL: string } | { message: string },
   unknown,
-  { authType: AuthType; target: string; esrvcId: string }
+  { authType: AuthType.SP | AuthType.CP; target: string; esrvcId: string }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
   return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
@@ -59,7 +61,7 @@ export const handleValidate: RequestHandler<
   ParamsDictionary,
   LoginPageValidationResult | { message: string },
   unknown,
-  { authType: AuthType; target: string; esrvcId: string }
+  { authType: AuthType.SP | AuthType.CP; target: string; esrvcId: string }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
   return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
@@ -95,7 +97,7 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
   next,
 ) => {
   const { authType } = (req as WithForm<typeof req>).form
-  if (!authType) return next()
+  if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
 
   const jwt = extractJwt(req.cookies, authType)
   if (!jwt) return next()
@@ -130,7 +132,7 @@ export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
   next,
 ) => {
   const { authType } = (req as WithForm<typeof req>).form
-  if (!authType) return next()
+  if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
 
   const jwt = extractJwt(req.cookies, authType)
   if (!jwt) return next()
@@ -156,5 +158,90 @@ export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
         message: errorMessage,
         spcpSubmissionFailure: true,
       })
+    })
+}
+
+export const handleLogin: (
+  authType: AuthType.SP | AuthType.CP,
+) => RequestHandler<
+  ParamsDictionary,
+  unknown,
+  unknown,
+  { SAMLart: string; RelayState: string }
+> = (authType) => async (req, res) => {
+  const { SAMLart: rawSamlArt, RelayState: rawRelayState } = req.query
+  const logMeta = {
+    action: 'handleLogin',
+    samlArt: rawSamlArt,
+    relayState: rawRelayState,
+  }
+  const parseResult = SpcpFactory.parseOOBParams(
+    rawSamlArt,
+    rawRelayState,
+    authType,
+  )
+  if (parseResult.isErr()) {
+    logger.error({
+      message: 'Invalid SPCP login parameters',
+      meta: logMeta,
+      error: parseResult.error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+  const {
+    formId,
+    destination,
+    rememberMe,
+    cookieDuration,
+    samlArt,
+  } = parseResult.value
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.error({
+      message: 'Form not found',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    return res.sendStatus(StatusCodes.NOT_FOUND)
+  }
+  const jwtResult = await SpcpFactory.getSpcpAttributes(
+    samlArt,
+    destination,
+    authType,
+  )
+    .andThen((attributes) =>
+      SpcpFactory.createJWTPayload(attributes, rememberMe, authType),
+    )
+    .andThen((jwtPayload) =>
+      SpcpFactory.createJWT(jwtPayload, cookieDuration, authType),
+    )
+  if (jwtResult.isErr()) {
+    logger.error({
+      message: 'Error creating JWT',
+      meta: logMeta,
+      error: jwtResult.error,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+  return SpcpFactory.addLogin(formResult.value, authType)
+    .map(() => {
+      res.cookie(JwtName[authType], jwtResult.value, {
+        maxAge: cookieDuration,
+        httpOnly: false, // the JWT needs to be read by client-side JS
+        sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+        secure: !config.isDev,
+        ...SpcpFactory.getCookieSettings(),
+      })
+      return res.redirect(destination)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while adding login to database',
+        meta: logMeta,
+        error,
+      })
+      res.cookie('isLoginError', true)
+      return res.redirect(destination)
     })
 }

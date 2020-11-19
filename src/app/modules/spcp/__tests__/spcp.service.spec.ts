@@ -27,6 +27,7 @@ jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 jest.mock('fs', () => ({
   readFileSync: jest.fn().mockImplementation((v) => v),
+  accessSync: jest.requireActual('fs').accessSync,
 }))
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
