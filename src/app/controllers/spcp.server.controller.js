@@ -9,11 +9,6 @@ const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const { mapDataToKey } = require('../../shared/util/verified-content')
 
-const jwtNames = {
-  SP: 'jwtSp',
-  CP: 'jwtCp',
-}
-
 /**
  * Encrypt and sign verified fields if exist
  * @param  {Object} req - Express request object
