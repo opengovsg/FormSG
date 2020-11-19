@@ -22,26 +22,6 @@ const jwtNames = {
 }
 const destinationRegex = /^\/([\w]+)\/?/
 
-const addLoginToDB = function (form) {
-  let login = new Login({
-    form: form._id,
-    admin: form.admin._id,
-    agency: form.admin.agency._id,
-    authType: form.authType,
-    esrvcId: form.esrvcId,
-  })
-  return login.save().catch((err) => {
-    logger.error({
-      message: 'Error adding login to database',
-      meta: {
-        action: 'addLoginToDB',
-        formId: form._id,
-      },
-      error: err,
-    })
-  })
-}
-
 const getForm = function (destination, cb) {
   let formId = destinationRegex.exec(destination)[1]
   Form.findById({ _id: formId })
@@ -176,7 +156,7 @@ const handleOOBAuthenticationWith = (ndiConfig, authType, extractUser) => {
             // NOTE: cookieDuration is interpreted as a seconds count if numeric.
           )
           // Add login to DB
-          addLoginToDB(form).then(() => {
+          Login.addLoginFromForm(form).then(() => {
             const spcpSettings = spcpCookieDomain
               ? { domain: spcpCookieDomain, path: '/' }
               : {}
