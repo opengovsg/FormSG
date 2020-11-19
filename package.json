@@ -245,7 +245,7 @@
     "stylelint-prettier": "^1.1.2",
     "supertest": "^6.0.1",
     "supertest-session": "^4.1.0",
-    "terser-webpack-plugin": "^1.2.3",
+    "terser-webpack-plugin": "^2.3.8",
     "testcafe": "^1.9.4",
     "ts-jest": "^26.4.1",
     "ts-loader": "^7.0.5",
