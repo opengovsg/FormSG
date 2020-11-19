@@ -10,9 +10,10 @@ import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.ty
 import { createLoggerWithLabel } from '../../config/logger'
 import {
   AuthType,
-  IPopulatedForm,
-  MyInfoAttribute,
-  SpcpSession,
+  ResWithHashedFields,
+  ResWithSpcpSession,
+  ResWithUinFin,
+  WithForm,
 } from '../../types'
 import { MyInfoFactory } from '../services/myinfo/myinfo.factory'
 import {
@@ -22,20 +23,6 @@ import {
 import { createReqMeta } from '../utils/request'
 
 const logger = createLoggerWithLabel(module)
-
-// TODO (#42): remove these types when migrating away from middleware pattern
-type MyInfoReq<T> = T & {
-  form: IPopulatedForm
-}
-type ResWithSpcpSession<T> = T & {
-  locals: { spcpSession?: SpcpSession }
-}
-type ResWithUinFin<T> = T & {
-  uinFin?: string
-}
-type ResWithHashedFields<T> = T & {
-  locals: { hashedFields?: Set<MyInfoAttribute> }
-}
 
 /**
  * Middleware for prefilling MyInfo values.
@@ -47,7 +34,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   next,
 ) => {
   // TODO (#42): add proper types here when migrating away from middleware pattern
-  const form = (req as MyInfoReq<typeof req>).form.toJSON()
+  const form = (req as WithForm<typeof req>).form.toJSON()
   const uinFin = (res as ResWithSpcpSession<typeof res>).locals.spcpSession
     ?.userName
   const { esrvcId, authType, form_fields: formFields, _id: formId } = form
@@ -71,7 +58,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
     // Step 3: Hash the values and save them
     .andThen((prefilledFields) => {
       form.form_fields = prefilledFields
-      ;(req as MyInfoReq<typeof req>).form = form
+      ;(req as WithForm<typeof req>).form = form
       return MyInfoFactory.saveMyInfoHashes(uinFin, formId, prefilledFields)
     })
     .map(() => next())
@@ -107,7 +94,7 @@ export const verifyMyInfoVals: RequestHandler<
   { parsedResponses: ProcessedFieldResponse[] }
 > = async (req, res, next) => {
   // TODO (#42): add proper types here when migrating away from middleware pattern
-  const { authType, _id: formId, form_fields: formFields } = (req as MyInfoReq<
+  const { authType, _id: formId, form_fields: formFields } = (req as WithForm<
     typeof req
   >).form.toJSON()
   const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin

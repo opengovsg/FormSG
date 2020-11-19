@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { IPopulatedForm } from '../../../../types'
+import { WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 
 import {
@@ -13,10 +13,6 @@ import {
 } from './encrypt-submission.service'
 
 const logger = createLoggerWithLabel(module)
-
-type WithForm<T> = T & {
-  form: IPopulatedForm
-}
 
 /**
  * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
