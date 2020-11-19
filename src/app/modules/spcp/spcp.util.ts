@@ -15,7 +15,7 @@ import {
 import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
-const destinationRegex = /^\/([\w]+)\/?/
+const DESTINATION_REGEX = /^\/([\w]+)\/?/
 
 const isArtifactValid = function (
   idpPartnerEntityId: string,
@@ -45,13 +45,13 @@ export const isValidAuthenticationQuery = (
   return (
     !!destination &&
     isArtifactValid(idpPartnerEntityId, samlArt) &&
-    destinationRegex.test(destination)
+    DESTINATION_REGEX.test(destination)
   )
 }
 
 export const extractFormId = (destination: string): string => {
   // Assume that the destination has already been validated
-  const regexSplit = destinationRegex.exec(destination)!
+  const regexSplit = DESTINATION_REGEX.exec(destination)!
   return regexSplit[1]
 }
 
