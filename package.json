@@ -127,7 +127,7 @@
     "json-stringify-deterministic": "^1.0.1",
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.2.2",
-    "jwt-decode": "^3.1.1",
+    "jwt-decode": "^3.1.2",
     "libphonenumber-js": "^1.7.55",
     "lodash": "^4.17.20",
     "moment-timezone": "0.5.32",
