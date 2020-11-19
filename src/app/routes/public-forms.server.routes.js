@@ -163,7 +163,7 @@ module.exports = function (app) {
     forms.formById,
     publicForms.isFormPublic,
     CaptchaFactory.captchaCheck,
-    spcpFactory.isSpcpAuthenticated,
+    SpcpController.isSpcpAuthenticated,
     emailSubmissions.receiveEmailSubmissionUsingBusBoy,
     celebrate({
       body: Joi.object({
@@ -267,7 +267,7 @@ module.exports = function (app) {
     publicForms.isFormPublic,
     CaptchaFactory.captchaCheck,
     encryptSubmissions.validateEncryptSubmission,
-    spcpFactory.isSpcpAuthenticated,
+    SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
