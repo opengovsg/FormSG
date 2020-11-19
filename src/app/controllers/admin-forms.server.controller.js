@@ -27,7 +27,6 @@ const getFormFeedbackModel = require('../models/form_feedback.server.model')
   .default
 const getSubmissionModel = require('../models/submission.server.model').default
 const { ResponseMode } = require('../../types')
-const { getMockSpcpLocals } = require('../modules/spcp/spcp.util')
 
 // Export individual functions (i.e. create, delete)
 // and makeModule function that takes in connection object
@@ -582,21 +581,6 @@ function makeModule(connection) {
       let Submission = getSubmissionModel(connection)
       let submission = new Submission({})
       req.submission = submission
-      return next()
-    },
-    /**
-     * Allow submission in preview without Spcp authentication by providing default values
-     * @param {Object} req - Express request object
-     * @param {Object} res - Express response object
-     * @param {Object} next - the next expressjs callback
-     */
-    passThroughSpcp: function (req, res, next) {
-      const { authType } = req.form
-      const myInfoAttrs = req.form.getUniqueMyInfoAttrs()
-      res.locals = {
-        ...res.locals,
-        ...getMockSpcpLocals(authType, myInfoAttrs),
-      }
       return next()
     },
     /**
