@@ -8,7 +8,9 @@ import { MissingFeatureError } from '../core/core.errors'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
+  InvalidAuthTypeError,
   LoginPageValidationError,
+  VerifyJwtError,
 } from './spcp.errors'
 import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
 
@@ -60,6 +62,7 @@ export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
     case CreateRedirectUrlError:
+    case InvalidAuthTypeError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Sorry, something went wrong. Please try again.',
@@ -73,6 +76,11 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: 'Error while contacting SingPass. Please try again.',
+      }
+    case VerifyJwtError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'User is not SPCP authenticated',
       }
     default:
       logger.error({
