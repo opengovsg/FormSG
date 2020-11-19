@@ -331,6 +331,7 @@ export class SpcpService {
           meta: logMeta,
           error,
         })
+        // TODO (#614): Use utility to return better error message
         return new DatabaseError()
       },
     )
