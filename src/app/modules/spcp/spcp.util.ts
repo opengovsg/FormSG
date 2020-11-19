@@ -2,7 +2,7 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, MapRouteError, MyInfoAttribute } from '../../../types'
+import { AuthType, MapRouteError } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
 import {
@@ -55,33 +55,6 @@ export const extractJwt = (
       return cookies[JwtName.CP]
     default:
       return undefined
-  }
-}
-
-type SpcpLocals =
-  | {
-      uinFin: string
-      hashedFields: Set<MyInfoAttribute>
-    }
-  | { uinFin: string; userInfo: string }
-  | { [key: string]: never } // empty object
-export const getMockSpcpLocals = (
-  authType: AuthType,
-  myInfoAttrs: MyInfoAttribute[],
-): SpcpLocals => {
-  switch (authType) {
-    case AuthType.SP:
-      return {
-        uinFin: 'S1234567A',
-        hashedFields: new Set(myInfoAttrs),
-      }
-    case AuthType.CP:
-      return {
-        uinFin: '123456789A',
-        userInfo: 'ABC',
-      }
-    default:
-      return {}
   }
 }
 
