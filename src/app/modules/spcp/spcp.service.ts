@@ -225,7 +225,8 @@ export class SpcpService {
       authType,
     }
     const payloads = relayState.split(',')
-    if (payloads.length !== 2) {
+    const formId = extractFormId(payloads[0])
+    if (payloads.length !== 2 || !formId) {
       logger.error({
         message: 'RelayState incorrectly formatted',
         meta: logMeta,
@@ -248,7 +249,7 @@ export class SpcpService {
     }
     if (isValidAuthenticationQuery(samlArt, destination, idpId)) {
       return ok({
-        formId: extractFormId(destination),
+        formId,
         destination,
         rememberMe,
         cookieDuration,

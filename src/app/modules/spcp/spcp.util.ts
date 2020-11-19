@@ -49,9 +49,11 @@ export const isValidAuthenticationQuery = (
   )
 }
 
-export const extractFormId = (destination: string): string => {
-  // Assume that the destination has already been validated
-  const regexSplit = DESTINATION_REGEX.exec(destination)!
+export const extractFormId = (destination: string): string | null => {
+  const regexSplit = DESTINATION_REGEX.exec(destination)
+  if (!regexSplit || regexSplit.length < 2) {
+    return null
+  }
   return regexSplit[1]
 }
 
