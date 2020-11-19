@@ -8,7 +8,12 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
-import { AuthType, DashboardFormView, MyInfoAttribute } from '../../../../types'
+import {
+  AuthType,
+  DashboardFormView,
+  MyInfoAttribute,
+  SpcpLocals,
+} from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
 import { DatabaseError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
@@ -167,13 +172,6 @@ export const createPresignedPostForLogos = (
   return createPresignedPost(AwsConfig.logoS3Bucket, uploadParams)
 }
 
-type SpcpLocals =
-  | {
-      uinFin: string
-      hashedFields: Set<MyInfoAttribute>
-    }
-  | { uinFin: string; userInfo: string }
-  | { [key: string]: never } // empty object
 export const getMockSpcpLocals = (
   authType: AuthType,
   myInfoAttrs: MyInfoAttribute[],

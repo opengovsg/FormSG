@@ -19,3 +19,11 @@ export type ResWithUinFin<T> = T & {
 export type ResWithHashedFields<T> = T & {
   locals: { hashedFields?: Set<MyInfoAttribute> }
 }
+
+export type SpcpLocals =
+  | {
+      uinFin: string
+      hashedFields: Set<MyInfoAttribute>
+    }
+  | { uinFin: string; userInfo: string }
+  | { [key: string]: never } // empty object
