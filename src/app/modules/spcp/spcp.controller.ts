@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, IPopulatedForm } from '../../../types'
+import { AuthType, WithForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
 import * as FormService from '../form/form.service'
 
@@ -13,11 +13,6 @@ import { JwtName, LoginPageValidationResult } from './spcp.types'
 import { extractJwt, mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
-
-// TODO (#42): remove these types when migrating away from middleware pattern
-type WithForm<T> = T & {
-  form: IPopulatedForm
-}
 
 /**
  * Generates redirect URL to Official SingPass/CorpPass log in page
