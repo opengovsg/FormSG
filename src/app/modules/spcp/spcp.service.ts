@@ -347,13 +347,13 @@ export class SpcpService {
       return userName && typeof userName === 'string'
         ? ok({ userName, rememberMe })
         : err(new MissingAttributesError())
-    } else {
-      const userName = (attributes as CorppassAttributes)?.UserInfo?.CPEntID
-      const userInfo = (attributes as CorppassAttributes)?.UserInfo?.CPUID
-      return userName && userInfo
-        ? ok({ userName, userInfo, rememberMe })
-        : err(new MissingAttributesError())
     }
+    // CorpPass
+    const userName = (attributes as CorppassAttributes)?.UserInfo?.CPEntID
+    const userInfo = (attributes as CorppassAttributes)?.UserInfo?.CPUID
+    return userName && userInfo
+      ? ok({ userName, userInfo, rememberMe })
+      : err(new MissingAttributesError())
   }
 
   getCookieSettings(): SpcpDomainSettings {
