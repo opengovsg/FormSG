@@ -265,6 +265,35 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).not.toHaveBeenCalled()
     })
 
+    it('should return empty data.attachmentMetadata when original metadata is undefined', async () => {
+      // Arrange
+      const mockInput = new PassThrough()
+      const expectedExpiry = 400
+      const actualTransformedData: any[] = []
+      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrl')
+
+      // Act
+      // Build pipeline.
+      mockInput
+        .pipe(
+          transformAttachmentMetaStream({
+            enabled: true,
+            urlValidDuration: expectedExpiry,
+          }),
+        )
+        .pipe(stringify())
+        .on('data', (data) => {
+          actualTransformedData.push(JSON.parse(data.toString()))
+        })
+
+      // Emit event with empty object.
+      mockInput.emit('data', {})
+
+      // Assert
+      expect(actualTransformedData).toEqual([EMPTY_METADATA])
+      expect(awsSpy).not.toHaveBeenCalled()
+    })
+
     it('should return error when stream errors occurs', async () => {
       // Arrange
       const expectedError = new Error('streams are being crossed right now!!!!')

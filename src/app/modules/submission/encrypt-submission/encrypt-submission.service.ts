@@ -61,15 +61,15 @@ export const transformAttachmentMetaStream = ({
   return new Transform({
     objectMode: true,
     transform: (data: SubmissionCursorData, _encoding, callback) => {
-      const totalCount = Object.keys(data.attachmentMetadata).length
+      const unprocessedMetadata = data.attachmentMetadata ?? {}
+      const totalCount = Object.keys(unprocessedMetadata).length
       // Early return if pipe is disabled or nothing to transform.
       if (!enabled || totalCount === 0) {
         data.attachmentMetadata = {}
         return callback(null, data)
       }
 
-      const unprocessedMetadata = data.attachmentMetadata
-      data.attachmentMetadata = {}
+      const transformedMetadata: Record<string, string> = {}
       let processedCount = 0
 
       for (const [key, objectPath] of Object.entries(unprocessedMetadata)) {
@@ -94,11 +94,13 @@ export const transformAttachmentMetaStream = ({
               return callback(error)
             }
 
-            data.attachmentMetadata[key] = url
+            transformedMetadata[key] = url
             processedCount += 1
 
-            // Complete transformation.
+            // Finished processing, replace current attachment metadata with the
+            // signed URLs.
             if (processedCount === totalCount) {
+              data.attachmentMetadata = transformedMetadata
               return callback(null, data)
             }
           },
