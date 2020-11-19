@@ -583,36 +583,7 @@ function makeModule(connection) {
       req.submission = submission
       return next()
     },
-    /**
-     * Allow submission in preview without Spcp authentication by providing default values
-     * @param {Object} req - Express request object
-     * @param {Object} res - Express response object
-     * @param {Object} next - the next expressjs callback
-     */
-    passThroughSpcp: function (req, res, next) {
-      const { authType } = req.form
-      switch (authType) {
-        case 'SP': {
-          res.locals.uinFin = 'S1234567A'
-          res.locals.hashedFields = new Set()
-          let actualFormFields = req.form.form_fields
-          let actualMyInfoFields = actualFormFields.filter(
-            (field) => field.myInfo && field.myInfo.attr,
-          )
-          for (let field of actualMyInfoFields) {
-            res.locals.hashedFields.add(field._id)
-          }
-          break
-        }
-        case 'CP':
-          res.locals.uinFin = '123456789A'
-          res.locals.userInfo = 'ABC'
-          break
-        default:
-          break
-      }
-      return next()
-    },
+
     /**
      * Transfer a form to another user
      * @param  {Object} req - Express request object
