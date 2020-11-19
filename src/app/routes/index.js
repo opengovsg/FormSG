@@ -3,5 +3,4 @@ module.exports = [
   require('./core.server.routes.js'),
   require('./frontend.server.routes.js'),
   require('./public-forms.server.routes.js'),
-  require('./spcp.server.routes.js'),
 ]
