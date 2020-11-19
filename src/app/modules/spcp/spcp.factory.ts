@@ -1,44 +1,24 @@
-import { err, errAsync, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync } from 'neverthrow'
 
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import { AuthType } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 
-import {
-  CreateRedirectUrlError,
-  FetchLoginPageError,
-  InvalidAuthTypeError,
-  LoginPageValidationError,
-  VerifyJwtError,
-} from './spcp.errors'
 import { SpcpService } from './spcp.service'
-import { JwtPayload, LoginPageValidationResult } from './spcp.types'
 
 interface ISpcpFactory {
-  createRedirectUrl(
-    authType: AuthType,
-    target: string,
-    eSrvcId: string,
-  ): Result<
-    string,
-    CreateRedirectUrlError | InvalidAuthTypeError | MissingFeatureError
-  >
-  fetchLoginPage(
-    redirectUrl: string,
-  ): ResultAsync<string, FetchLoginPageError | MissingFeatureError>
-  validateLoginPage(
-    loginHtml: string,
-  ): Result<
-    LoginPageValidationResult,
-    LoginPageValidationError | MissingFeatureError
-  >
-  extractJwtPayload(
-    jwt: string,
-    authType: AuthType,
-  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidAuthTypeError>
+  createRedirectUrl: SpcpService['createRedirectUrl']
+  fetchLoginPage: SpcpService['fetchLoginPage']
+  validateLoginPage: SpcpService['validateLoginPage']
+  extractJwtPayload: SpcpService['extractJwtPayload']
+  parseOOBParams: SpcpService['parseOOBParams']
+  getSpcpAttributes: SpcpService['getSpcpAttributes']
+  createJWT: SpcpService['createJWT']
+  addLogin: SpcpService['addLogin']
+  createJWTPayload: SpcpService['createJWTPayload']
+  getCookieSettings: SpcpService['getCookieSettings']
 }
 
 export const createSpcpFactory = ({
@@ -52,6 +32,12 @@ export const createSpcpFactory = ({
       fetchLoginPage: () => errAsync(error),
       validateLoginPage: () => err(error),
       extractJwtPayload: () => errAsync(error),
+      parseOOBParams: () => err(error),
+      getSpcpAttributes: () => errAsync(error),
+      createJWT: () => err(error),
+      addLogin: () => errAsync(error),
+      createJWTPayload: () => err(error),
+      getCookieSettings: () => ({}),
     }
   }
   return new SpcpService(props)

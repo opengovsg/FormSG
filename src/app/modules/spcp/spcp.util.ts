@@ -1,4 +1,5 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
+import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -8,13 +9,68 @@ import { MissingFeatureError } from '../core/core.errors'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
-  InvalidAuthTypeError,
   LoginPageValidationError,
   VerifyJwtError,
 } from './spcp.errors'
 import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
+const DESTINATION_REGEX = /^\/([\w]+)\/?/
+
+const isArtifactValid = function (
+  idpPartnerEntityId: string,
+  samlArt: string,
+): boolean {
+  // Artifact should be 44 bytes long, of type 0x0004 and
+  // source id should be SHA-1 hash of the issuer's entityID
+  const hexEncodedArtifact = Buffer.from(samlArt, 'base64').toString('hex')
+  const artifactHexLength = hexEncodedArtifact.length
+  const typeCode = parseInt(hexEncodedArtifact.substr(0, 4))
+  const sourceId = hexEncodedArtifact.substr(8, 40)
+  const hashedEntityId = crypto
+    .createHash('sha1')
+    .update(idpPartnerEntityId, 'utf8')
+    .digest('hex')
+
+  return (
+    artifactHexLength === 88 && typeCode === 4 && sourceId === hashedEntityId
+  )
+}
+
+export const isValidAuthenticationQuery = (
+  samlArt: string,
+  destination: string,
+  idpPartnerEntityId: string,
+): boolean => {
+  return (
+    !!destination &&
+    isArtifactValid(idpPartnerEntityId, samlArt) &&
+    DESTINATION_REGEX.test(destination)
+  )
+}
+
+export const extractFormId = (destination: string): string | null => {
+  const regexSplit = DESTINATION_REGEX.exec(destination)
+  if (!regexSplit || regexSplit.length < 2) {
+    return null
+  }
+  return regexSplit[1]
+}
+
+export const getAttributesPromise = (
+  authClient: SPCPAuthClient,
+  samlArt: string,
+  destination: string,
+): Promise<Record<string, unknown>> => {
+  return new Promise((resolve, reject) => {
+    authClient.getAttributes(samlArt, destination, (err, data) => {
+      if (err || !data || !data.attributes) {
+        return reject('Auth client could not retrieve attributes')
+      }
+      return resolve(data.attributes)
+    })
+  })
+}
 
 export const getSubstringBetween = (
   text: string,
@@ -62,7 +118,6 @@ export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
     case CreateRedirectUrlError:
-    case InvalidAuthTypeError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Sorry, something went wrong. Please try again.',

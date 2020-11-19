@@ -9,3 +9,10 @@ export const redirectParamsMiddleware = celebrate({
     esrvcId: Joi.string().required(),
   }),
 })
+
+export const loginParamsMiddleware = celebrate({
+  [Segments.QUERY]: Joi.object({
+    SAMLart: Joi.string().required(),
+    RelayState: Joi.string().required(),
+  }),
+})
