@@ -57,14 +57,18 @@ LoginSchema.statics.addLoginFromForm = function (
   this: ILoginModel,
   form: IPopulatedForm,
 ): Promise<ILoginSchema> {
-  const login = new this({
+  if (!form.authType || !form.esrvcId) {
+    return Promise.reject(
+      new Error('Form does not contain authType or e-service ID'),
+    )
+  }
+  return this.create({
     form: form._id,
     admin: form.admin._id,
     agency: form.admin.agency._id,
     authType: form.authType,
     esrvcId: form.esrvcId,
   })
-  return login.save()
 }
 
 LoginSchema.statics.aggregateLoginStats = function (
