@@ -105,10 +105,11 @@ export interface IWebhookResponse {
 
 // When retrieving from database, the attachmentMetadata type becomes an object
 // instead of a Map.
+// Due to schema changes, some objects may not have attachmentMetadata key.
 export type SubmissionCursorData = Pick<
   IEncryptedSubmissionSchema,
   'encryptedContent' | 'verifiedContent' | 'created' | 'id'
-> & { attachmentMetadata: Record<string, string> } & Document
+> & { attachmentMetadata?: Record<string, string> } & Document
 
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
