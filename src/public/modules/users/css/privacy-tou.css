@@ -4,6 +4,12 @@
   padding-bottom: 8px;
 }
 
+@media screen and (max-width: 425px) {
+  #privacy-tou ol {
+    padding-inline-start: 28px;
+  }
+}
+
 #privacy-tou li {
   display: flex;
   flex-direction: column;
@@ -11,19 +17,30 @@
   padding-bottom: 8px;
 }
 
+#privacy-tou .tou-point-bold {
+  font-size: 20px;
+  color: #323232;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+#privacy-tou .tou-point-header::before {
+  font-size: 20px;
+}
+
 #privacy-tou ol > li::before {
-  content: attr(seq) '.';
+  content: attr(seq) ' ';
   position: relative;
-  left: -36px;
+  left: -44px;
   width: 0;
   height: 0;
   display: inline-block;
 }
 
 #privacy-tou ol > li > ol > li::before {
-  left: -42px;
+  left: -50px;
 }
 
 #privacy-tou ol > li > ol > li > ol > li::before {
-  left: -52px;
+  left: -60px;
 }
