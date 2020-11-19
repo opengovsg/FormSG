@@ -7,10 +7,16 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType, WithForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
 import * as FormService from '../form/form.service'
+import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { SpcpFactory } from './spcp.factory'
 import { JwtName, LoginPageValidationResult } from './spcp.types'
-import { extractJwt, mapRouteError } from './spcp.util'
+import {
+  createCorppassParsedResponses,
+  createSingpassParsedResponses,
+  extractJwt,
+  mapRouteError,
+} from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -239,4 +245,29 @@ export const handleLogin: (
       res.cookie('isLoginError', true)
       return res.redirect(destination)
     })
+}
+
+/**
+ * Append additional verified responses(s) for SP and CP responses so that they show up in email response
+ * @param req - Express request object
+ * @param res - Express response object
+ */
+export const appendVerifiedSPCPResponses: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  { parsedResponses: ProcessedFieldResponse[] }
+> = (req, res, next) => {
+  const { form } = req as WithForm<typeof req>
+  const { uinFin, userInfo } = res.locals
+  switch (form.authType) {
+    case AuthType.SP:
+      req.body.parsedResponses.push(...createSingpassParsedResponses(uinFin))
+      break
+    case AuthType.CP:
+      req.body.parsedResponses.push(
+        ...createCorppassParsedResponses(uinFin, userInfo),
+      )
+      break
+  }
+  return next()
 }
