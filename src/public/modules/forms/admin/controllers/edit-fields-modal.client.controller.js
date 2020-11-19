@@ -14,6 +14,8 @@ const DATE_VALIDATION_OPTIONS = {
   custom: 'Custom date range',
 }
 
+const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '4', '5', '6', '7']
+
 angular
   .module('forms')
   .controller('EditFieldsModalController', [
@@ -304,7 +306,13 @@ function EditFieldsModalController(
     field.ValidationOptions.customMin = null
   }
 
-  vm.attachmentSizes = Attachment.dropdown
+  // For email mode, show only up to 7MB for dropdown
+  vm.attachmentSizes =
+    vm.myform.responseMode === responseModeEnum.EMAIL
+      ? Attachment.dropdown.filter((option) =>
+          EMAIL_MODE_ALLOWED_SIZES.includes(option.value),
+        )
+      : Attachment.dropdown
 
   let previousAttachmentSize = 0
 
