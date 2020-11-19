@@ -55,17 +55,6 @@ export class RetrieveAttributesError extends ApplicationError {
 }
 
 /**
- * Destination form not found.
- */
-export class FormNotFoundError extends ApplicationError {
-  constructor(
-    message = 'Could not find form with ID specified in relay state',
-  ) {
-    super(message)
-  }
-}
-
-/**
  * Form auth type did not match attempted auth method.
  */
 export class AuthTypeMismatchError extends ApplicationError {

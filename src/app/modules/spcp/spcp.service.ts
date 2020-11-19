@@ -7,11 +7,9 @@ import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, ILoginSchema } from '../../../types'
-import getFormModel from '../../models/form.server.model'
+import { AuthType, ILoginSchema, IPopulatedForm } from '../../../types'
 import getLoginModel from '../../models/login.server.model'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
-import { FormNotFoundError } from '../form/form.errors'
 
 import {
   AuthTypeMismatchError,
@@ -40,7 +38,6 @@ import {
 } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
-const FormModel = getFormModel(mongoose)
 const LoginModel = getLoginModel(mongoose)
 
 const LOGIN_PAGE_HEADERS =
@@ -308,54 +305,35 @@ export class SpcpService {
   }
 
   addLogin(
-    formId: string,
+    form: IPopulatedForm,
     authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<ILoginSchema, FormNotFoundError | DatabaseError> {
+  ): ResultAsync<ILoginSchema, AuthTypeMismatchError | DatabaseError> {
     const logMeta = {
       action: 'addLogin',
-      formId,
+      formId: form._id,
+    }
+    if (form.authType !== authType) {
+      logger.error({
+        message: 'Form auth type did not match attempted auth type',
+        meta: {
+          ...logMeta,
+          attemptedAuthType: authType,
+          formAuthType: form.authType,
+        },
+      })
+      return errAsync(new AuthTypeMismatchError(authType, form.authType))
     }
     return ResultAsync.fromPromise(
-      FormModel.getFullFormById(formId),
+      LoginModel.addLoginFromForm(form),
       (error) => {
         logger.error({
-          message: 'Error getting form from database',
+          message: 'Error adding login to database',
           meta: logMeta,
           error,
         })
         return new DatabaseError()
       },
-    ).andThen((form) => {
-      if (!form) {
-        logger.error({
-          message: 'Could not find form specified by relay state',
-          meta: logMeta,
-        })
-        return errAsync(new FormNotFoundError())
-      }
-      if (form.authType !== authType) {
-        logger.error({
-          message: 'Form auth type did not match attempted auth type',
-          meta: {
-            ...logMeta,
-            attemptedAuthType: authType,
-            formAuthType: form.authType,
-          },
-        })
-        return errAsync(new AuthTypeMismatchError(authType, form.authType))
-      }
-      return ResultAsync.fromPromise(
-        LoginModel.addLoginFromForm(form),
-        (error) => {
-          logger.error({
-            message: 'Error adding login to database',
-            meta: logMeta,
-            error,
-          })
-          return new DatabaseError()
-        },
-      )
-    })
+    )
   }
 
   createJWTPayload(
