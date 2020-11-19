@@ -7,18 +7,13 @@ const { StatusCodes } = require('http-status-codes')
 const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
+const {
+  assertHasReadPermissions,
+  assertHasWritePermissions,
+  assertHasDeletePermissions,
+} = require('../modules/form/admin-form/admin-form.utils')
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-
-/**
- * Returns the error message when a user cannot perform an action on a form
- * @param {String} user -  user email
- * @param {String} title -  form title
- * @returns {String} - the error message
- */
-const makeUnauthorizedMessage = (user, title) => {
-  return `User ${user} is not authorized to perform this operation on Form: ${title}.`
-}
 
 /**
  * Logs an error message when a user cannot perform an action on a form
@@ -57,52 +52,38 @@ exports.verifyPermission = (requiredPermission) =>
    * @param {function} next - Next middleware function
    */
   (req, res, next) => {
-    const isFormAdmin =
-      String(req.form.admin.id) === String(req.session.user._id)
+    let result
+    switch (requiredPermission) {
+      case PermissionLevel.Read:
+        result = assertHasReadPermissions(req.session.user, req.form)
+        break
+      case PermissionLevel.Write:
+        result = assertHasWritePermissions(req.session.user, req.form)
+        break
+      case PermissionLevel.Delete:
+        result = assertHasDeletePermissions(req.session.user, req.form)
+        break
+      default:
+        logger.error({
+          message:
+            'Unknown permission type encountered when verifying permissions',
+          meta: {
+            action: 'verifyPermission',
+            ...createReqMeta(req),
+          },
+        })
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: 'Unknown permission type',
+        })
+    }
 
-    // Forbidden if requiredPersmission is admin but user is not
-    if (!isFormAdmin && requiredPermission === PermissionLevel.Delete) {
+    if (result.isErr()) {
       logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
       return res.status(StatusCodes.FORBIDDEN).json({
-        message: makeUnauthorizedMessage(
-          req.session.user.email,
-          req.form.title,
-        ),
+        message: result.error.message,
       })
     }
 
-    // Admins always have sufficient permission
-    let hasSufficientPermission = isFormAdmin
-
-    // Write users can access forms that require write/read
-    if (
-      requiredPermission === PermissionLevel.Write ||
-      requiredPermission === PermissionLevel.Read
-    ) {
-      hasSufficientPermission =
-        hasSufficientPermission ||
-        req.form.permissionList.find(
-          (userObj) =>
-            userObj.email === req.session.user.email && userObj.write,
-        )
-    }
-    // Read users can access forms that require read permissions
-    if (requiredPermission === PermissionLevel.Read) {
-      hasSufficientPermission =
-        hasSufficientPermission ||
-        req.form.permissionList.find(
-          (userObj) => userObj.email === req.session.user.email,
-        )
-    }
-
-    if (!hasSufficientPermission) {
-      logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
-      return res.status(StatusCodes.FORBIDDEN).json({
-        message: makeUnauthorizedMessage(
-          req.session.user.email,
-          req.form.title,
-        ),
-      })
-    }
+    // No error, pass to next function.
     return next()
   }
