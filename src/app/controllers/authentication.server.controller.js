@@ -4,7 +4,9 @@
  * Module dependencies.
  */
 const { StatusCodes } = require('http-status-codes')
-const PERMISSIONS = require('../utils/permission-levels').default
+const {
+  PermissionLevel,
+} = require('../modules/form/admin-form/admin-form.types')
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 
@@ -59,7 +61,7 @@ exports.verifyPermission = (requiredPermission) =>
       String(req.form.admin.id) === String(req.session.user._id)
 
     // Forbidden if requiredPersmission is admin but user is not
-    if (!isFormAdmin && requiredPermission === PERMISSIONS.DELETE) {
+    if (!isFormAdmin && requiredPermission === PermissionLevel.Delete) {
       logUnauthorizedAccess(req, 'verifyPermission', requiredPermission)
       return res.status(StatusCodes.FORBIDDEN).json({
         message: makeUnauthorizedMessage(
@@ -74,8 +76,8 @@ exports.verifyPermission = (requiredPermission) =>
 
     // Write users can access forms that require write/read
     if (
-      requiredPermission === PERMISSIONS.WRITE ||
-      requiredPermission === PERMISSIONS.READ
+      requiredPermission === PermissionLevel.Write ||
+      requiredPermission === PermissionLevel.Read
     ) {
       hasSufficientPermission =
         hasSufficientPermission ||
@@ -85,7 +87,7 @@ exports.verifyPermission = (requiredPermission) =>
         )
     }
     // Read users can access forms that require read permissions
-    if (requiredPermission === PERMISSIONS.READ) {
+    if (requiredPermission === PermissionLevel.Read) {
       hasSufficientPermission =
         hasSufficientPermission ||
         req.form.permissionList.find(
