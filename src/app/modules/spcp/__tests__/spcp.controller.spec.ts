@@ -28,7 +28,7 @@ const MOCK_RESPONSE = expressHandler.mockResponse()
 const MOCK_REDIRECT_REQ = expressHandler.mockRequest({
   query: {
     target: MOCK_TARGET,
-    authType: AuthType.SP,
+    authType: AuthType.SP as AuthType.SP,
     esrvcId: MOCK_ESRVCID,
   },
 })
