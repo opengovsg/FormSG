@@ -126,20 +126,19 @@ describe('login.server.model', () => {
       const agencyId = new ObjectId()
       const mockEsrvcId = 'esrvcid'
       const mockAuthType = 'SP'
+      const fullForm = ({
+        _id: formId,
+        admin: {
+          _id: adminId,
+          agency: {
+            _id: agencyId,
+          },
+        },
+        authType: mockAuthType,
+        esrvcId: mockEsrvcId,
+      } as unknown) as IPopulatedForm
 
       it('should save the correct form data', async () => {
-        const fullForm = ({
-          _id: formId,
-          admin: {
-            _id: adminId,
-            agency: {
-              _id: agencyId,
-            },
-          },
-          authType: mockAuthType,
-          esrvcId: mockEsrvcId,
-        } as unknown) as IPopulatedForm
-
         const saved = await LoginModel.addLoginFromForm(fullForm)
         const found = await LoginModel.findOne({ form: formId })
         // Returned document should match
@@ -154,6 +153,18 @@ describe('login.server.model', () => {
         expect(found!.agency).toEqual(agencyId)
         expect(found!.authType).toBe(mockAuthType)
         expect(found!.esrvcId).toBe(mockEsrvcId)
+      })
+
+      it('should reject when the form does not contain an e-service ID', async () => {
+        await expect(
+          LoginModel.addLoginFromForm(omit(fullForm, 'esrvcId')),
+        ).rejects.toThrow('Form does not contain authType or e-service ID')
+      })
+
+      it('should reject when the form does not contain an authType', async () => {
+        await expect(
+          LoginModel.addLoginFromForm(omit(fullForm, 'authType')),
+        ).rejects.toThrow('Form does not contain authType or e-service ID')
       })
     })
 
