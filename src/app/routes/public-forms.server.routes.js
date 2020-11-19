@@ -10,7 +10,6 @@ const encryptSubmissions = require('../../app/controllers/encrypt-submissions.se
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
-const spcpFactory = require('../factories/spcp.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../factories/captcha.factory')
 const { limitRate } = require('../utils/limit-rate')
@@ -192,7 +191,7 @@ module.exports = function (app) {
     emailSubmissions.validateEmailSubmission,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
-    spcpFactory.appendVerifiedSPCPResponses,
+    SpcpController.appendVerifiedSPCPResponses,
     emailSubmissions.prepareEmailSubmission,
     emailSubmissions.saveMetadataToDb,
     emailSubmissions.sendAdminEmail,
