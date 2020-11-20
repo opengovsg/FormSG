@@ -18,6 +18,7 @@ import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
 
+// Checks the format of a SAML artifact
 const isArtifactValid = function (
   idpPartnerEntityId: string,
   samlArt: string,
@@ -38,6 +39,13 @@ const isArtifactValid = function (
   )
 }
 
+/**
+ * Returns true if the SAML artifact and destination have the correct format,
+ * false otherwise.
+ * @param samlArt SAML artifact
+ * @param destination Redirect destination
+ * @param idpPartnerEntityId Entity ID of SP/CP server
+ */
 export const isValidAuthenticationQuery = (
   samlArt: string,
   destination: string,
@@ -50,6 +58,10 @@ export const isValidAuthenticationQuery = (
   )
 }
 
+/**
+ * Extracts the form ID from a redirect destination
+ * @param destination Redirect destination
+ */
 export const extractFormId = (destination: string): string | null => {
   const regexSplit = DESTINATION_REGEX.exec(destination)
   if (!regexSplit || regexSplit.length < 2) {
@@ -58,6 +70,12 @@ export const extractFormId = (destination: string): string | null => {
   return regexSplit[1]
 }
 
+/**
+ * Wraps the auth client's getAttributes method in a Promise
+ * @param authClient Auth client whose .getAttributes method should be wrapped
+ * @param samlArt SAML artifact
+ * @param destination Redirect destination
+ */
 export const getAttributesPromise = (
   authClient: SPCPAuthClient,
   samlArt: string,
@@ -73,6 +91,12 @@ export const getAttributesPromise = (
   })
 }
 
+/**
+ * Retrieves a substring in between two markers of the main text
+ * @param text Full text
+ * @param markerStart Starting string
+ * @param markerEnd Ending string
+ */
 export const getSubstringBetween = (
   text: string,
   markerStart: string,
@@ -87,6 +111,11 @@ export const getSubstringBetween = (
   }
 }
 
+/**
+ * Wraps the auth client's .verifyJWT method in a Promise
+ * @param authClient Auth client whose .verifyJWT method should be wrapped
+ * @param jwt
+ */
 export const verifyJwtPromise = (
   authClient: SPCPAuthClient,
   jwt: string,
@@ -101,6 +130,11 @@ export const verifyJwtPromise = (
   })
 }
 
+/**
+ * Extracts the SP or CP JWT from an object containing cookies
+ * @param cookies Object containing cookies
+ * @param authType 'SP' or 'CP'
+ */
 export const extractJwt = (
   cookies: SpcpCookies,
   authType: AuthType,
@@ -115,6 +149,10 @@ export const extractJwt = (
   }
 }
 
+/**
+ * Wraps SingPass data in the form of parsed form fields.
+ * @param uinFin UIN or FIN
+ */
 export const createSingpassParsedResponses = (
   uinFin: string,
 ): ProcessedSingleAnswerResponse[] => {
@@ -129,6 +167,11 @@ export const createSingpassParsedResponses = (
   ]
 }
 
+/**
+ * Wraps CorpPass data in the form of parsed form fields.
+ * @param uinFin CorpPass UEN
+ * @param userInfo CorpPass UID
+ */
 export const createCorppassParsedResponses = (
   uinFin: string,
   userInfo: string,
@@ -151,6 +194,10 @@ export const createCorppassParsedResponses = (
   ]
 }
 
+/**
+ * Maps errors to status codes and error messages to return to frontend.
+ * @param error
+ */
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
