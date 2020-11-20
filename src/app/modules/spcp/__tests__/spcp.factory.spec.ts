@@ -1,11 +1,12 @@
 import { mocked } from 'ts-jest/utils'
 
 import { FeatureNames, ISpcpMyInfo } from 'src/config/feature-manager'
-import { AuthType } from 'src/types'
+import { AuthType, IPopulatedForm } from 'src/types'
 
 import { MissingFeatureError } from '../../core/core.errors'
 import { createSpcpFactory } from '../spcp.factory'
 import { SpcpService } from '../spcp.service'
+import { JwtPayload } from '../spcp.types'
 
 import { MOCK_SERVICE_PARAMS } from './spcp.test.constants'
 
@@ -30,10 +31,37 @@ describe('spcp.factory', () => {
       '',
       AuthType.SP,
     )
+    const parseOOBParamsResult = SpcpFactory.parseOOBParams('', '', AuthType.SP)
+    const getSpcpAttributesResult = await SpcpFactory.getSpcpAttributes(
+      '',
+      '',
+      AuthType.SP,
+    )
+    const createJWTResult = SpcpFactory.createJWT(
+      ({} as unknown) as JwtPayload,
+      0,
+      AuthType.SP,
+    )
+    const addLoginResult = await SpcpFactory.addLogin(
+      ({} as unknown) as IPopulatedForm,
+      AuthType.SP,
+    )
+    const createJWTPayloadResult = SpcpFactory.createJWTPayload(
+      {},
+      true,
+      AuthType.SP,
+    )
+    const cookieSettings = await SpcpFactory.getCookieSettings()
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(extractJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(parseOOBParamsResult._unsafeUnwrapErr()).toEqual(error)
+    expect(getSpcpAttributesResult._unsafeUnwrapErr()).toEqual(error)
+    expect(createJWTResult._unsafeUnwrapErr()).toEqual(error)
+    expect(addLoginResult._unsafeUnwrapErr()).toEqual(error)
+    expect(createJWTPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(cookieSettings).toEqual({})
   })
 
   it('should return error functions when props is undefined', async () => {
@@ -55,10 +83,37 @@ describe('spcp.factory', () => {
       '',
       AuthType.SP,
     )
+    const parseOOBParamsResult = SpcpFactory.parseOOBParams('', '', AuthType.SP)
+    const getSpcpAttributesResult = await SpcpFactory.getSpcpAttributes(
+      '',
+      '',
+      AuthType.SP,
+    )
+    const createJWTResult = SpcpFactory.createJWT(
+      ({} as unknown) as JwtPayload,
+      0,
+      AuthType.SP,
+    )
+    const addLoginResult = await SpcpFactory.addLogin(
+      ({} as unknown) as IPopulatedForm,
+      AuthType.SP,
+    )
+    const createJWTPayloadResult = SpcpFactory.createJWTPayload(
+      {},
+      true,
+      AuthType.SP,
+    )
+    const cookieSettings = await SpcpFactory.getCookieSettings()
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(extractJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(parseOOBParamsResult._unsafeUnwrapErr()).toEqual(error)
+    expect(getSpcpAttributesResult._unsafeUnwrapErr()).toEqual(error)
+    expect(createJWTResult._unsafeUnwrapErr()).toEqual(error)
+    expect(addLoginResult._unsafeUnwrapErr()).toEqual(error)
+    expect(createJWTPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(cookieSettings).toEqual({})
   })
 
   it('should call the SpcpService constructor when isEnabled is true and props is truthy', () => {
