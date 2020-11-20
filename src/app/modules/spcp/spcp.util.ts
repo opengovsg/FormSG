@@ -3,8 +3,9 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, MapRouteError } from '../../../types'
+import { AuthType, BasicField, MapRouteError } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
+import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
 import {
   CreateRedirectUrlError,
@@ -112,6 +113,42 @@ export const extractJwt = (
     default:
       return undefined
   }
+}
+
+export const createSingpassParsedResponses = (
+  uinFin: string,
+): ProcessedSingleAnswerResponse[] => {
+  return [
+    {
+      _id: '',
+      question: 'SingPass Validated NRIC',
+      fieldType: 'authenticationSp' as BasicField,
+      isVisible: true,
+      answer: uinFin,
+    },
+  ]
+}
+
+export const createCorppassParsedResponses = (
+  uinFin: string,
+  userInfo: string,
+): ProcessedSingleAnswerResponse[] => {
+  return [
+    {
+      _id: '',
+      question: 'CorpPass Validated UEN',
+      fieldType: 'authenticationCp' as BasicField,
+      isVisible: true,
+      answer: uinFin,
+    },
+    {
+      _id: '',
+      question: 'CorpPass Validated UID',
+      fieldType: 'authenticationCp' as BasicField,
+      isVisible: true,
+      answer: userInfo,
+    },
+  ]
 }
 
 export const mapRouteError: MapRouteError = (error) => {

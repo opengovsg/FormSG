@@ -48,13 +48,9 @@ describe('Email Submissions Controller', () => {
       },
     },
   )
-  const spcpController = spec(
-    'dist/backend/app/controllers/spcp.server.controller',
-    {
-      mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      '../../config/ndi-config': {},
-    },
-  )
+  const spcpController = spec('dist/backend/app/modules/spcp/spcp.controller', {
+    mongoose: Object.assign(mongoose, { '@noCallThru': true }),
+  })
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
