@@ -2,7 +2,7 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { AuthType, IPopulatedForm } from '../../../../types'
+import { AuthType, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
@@ -18,7 +18,6 @@ import { assertHasReadPermissions, mapRouteError } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
-type WithForm<T> = T & { form: IPopulatedForm }
 /**
  * Handler for GET /adminform endpoint.
  * @security session

@@ -12,7 +12,6 @@ let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
-const spcpFactory = require('../factories/spcp.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
@@ -20,7 +19,7 @@ const EncryptSubmissionController = require('../modules/submission/encrypt-submi
 const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
-
+const SpcpController = require('../modules/spcp/spcp.controller')
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
 const emailValOpts = {
@@ -350,7 +349,7 @@ module.exports = function (app) {
       emailSubmissions.validateEmailSubmission,
       AdminFormController.passThroughSpcp,
       submissions.injectAutoReplyInfo,
-      spcpFactory.appendVerifiedSPCPResponses,
+      SpcpController.appendVerifiedSPCPResponses,
       emailSubmissions.prepareEmailSubmission,
       adminForms.passThroughSaveMetadataToDb,
       emailSubmissions.sendAdminEmail,
