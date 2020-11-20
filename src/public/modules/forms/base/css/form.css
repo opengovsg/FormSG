@@ -201,9 +201,18 @@ div.start-end-page .form-actions .url-btn {
 
 #form-footer-logo {
   margin: 0 auto 19px auto;
-  width: 200px;
+  width: 340px;
+  max-width: 90%;
   border-top: 2px solid #e2e2e2;
   text-align: center;
+}
+
+#form-footer-logo .form-footer-links {
+  margin-top: 40px;
+}
+
+#form-footer-logo .form-footer-links a {
+  padding: 0 12px;
 }
 
 #form-footer-logo > p {
