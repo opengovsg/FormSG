@@ -3,6 +3,7 @@ import { ObjectId } from 'bson'
 import crypto from 'crypto'
 
 import { ISpcpMyInfo } from 'src/config/feature-manager'
+import { ILoginSchema, IPopulatedForm } from 'src/types'
 
 export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   isSPMaintenance: 'isSPMaintenance',
@@ -35,6 +36,8 @@ export const MOCK_ESRVCID = 'eServiceId'
 export const MOCK_TARGET = new ObjectId().toHexString()
 export const MOCK_DESTINATION = `/${MOCK_TARGET}`
 export const MOCK_REDIRECT_URL = 'redirectUrl'
+export const MOCK_REMEMBER_ME = true
+export const MOCK_RELAY_STATE = `${MOCK_DESTINATION},${MOCK_REMEMBER_ME}`
 export const MOCK_LOGIN_HTML = 'html'
 export const MOCK_ERROR_CODE = 'errorCode'
 export const MOCK_TITLE = 'title'
@@ -70,12 +73,50 @@ export const MOCK_CP_SAML_WRONG_HASH = Buffer.from(
   'hex',
 ).toString('base64')
 
+export const MOCK_ATTRIBUTES = {
+  key: 'value',
+}
+
 export const MOCK_GET_ATTRIBUTES_RETURN_VALUE = {
   relayState: 'relayState',
-  attributes: { key: 'value' },
+  attributes: MOCK_ATTRIBUTES,
 }
+
 export const MOCK_JWT_PAYLOAD = {
   userName: 'userName',
   userInfo: 'userInfo',
   rememberMe: true,
+}
+
+export const MOCK_SP_FORM = ({
+  authType: 'SP',
+  title: 'Mock SP form',
+  _id: new ObjectId().toHexString(),
+  admin: {
+    _id: new ObjectId().toHexString(),
+    agency: new ObjectId().toHexString(),
+  },
+} as unknown) as IPopulatedForm
+
+export const MOCK_CP_FORM = ({
+  authType: 'CP',
+  title: 'Mock CP form',
+  _id: new ObjectId().toHexString(),
+  admin: {
+    _id: new ObjectId().toHexString(),
+    agency: new ObjectId().toHexString(),
+  },
+} as unknown) as IPopulatedForm
+
+export const MOCK_LOGIN_DOC = {
+  _id: new ObjectId().toHexString(),
+  admin: new ObjectId().toHexString(),
+  agency: new ObjectId().toHexString(),
+  form: new ObjectId().toHexString(),
+  esrvcId: MOCK_ESRVCID,
+} as ILoginSchema
+
+export const MOCK_COOKIE_SETTINGS = {
+  domain: 'domain',
+  path: 'path',
 }
