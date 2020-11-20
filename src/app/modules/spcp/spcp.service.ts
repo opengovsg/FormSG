@@ -213,6 +213,13 @@ export class SpcpService {
     )
   }
 
+  /**
+   * Parses raw SAML artifact and relay state.
+   * @param samlArt SAML artifact
+   * @param relayState Relay parameters passed back by SP/CP server
+   * @param authType 'SP' or 'CP'
+   * @return Parsed form ID, destination, rememberMe setting, cookie duration and SAML artifact
+   */
   parseOOBParams(
     samlArt: string,
     relayState: string,
@@ -265,6 +272,13 @@ export class SpcpService {
     }
   }
 
+  /**
+   * Retrieves th UIN/FIN (for Singpass) and the Entity ID and UID (for Corppass).
+   * @param samlArt SAML artifact
+   * @param destination Redirect destination
+   * @param authType 'SP' or 'CP'
+   * @return The raw attributes returned by SP or CP
+   */
   getSpcpAttributes(
     samlArt: string,
     destination: string,
@@ -290,6 +304,13 @@ export class SpcpService {
     )
   }
 
+  /**
+   * Creates a JWT with a payload of SP/CP user data.
+   * @param payload Information to add to JWT
+   * @param cookieDuration Cookie validity duration
+   * @param authType 'SP' or 'CP'
+   * @return The JWT in a string
+   */
   createJWT(
     payload: JwtPayload,
     cookieDuration: number,
@@ -305,6 +326,12 @@ export class SpcpService {
     )
   }
 
+  /**
+   * Adds an SP/CP login record to the database.
+   * @param form Form populated with admin and agency data
+   * @param authType 'SP' or 'CP'
+   * @return The Login document saved to the database
+   */
   addLogin(
     form: IPopulatedForm,
     authType: AuthType.SP | AuthType.CP,
@@ -338,6 +365,13 @@ export class SpcpService {
     )
   }
 
+  /**
+   * Creates a payload of SP/CP user data based on attributes
+   * @param attributes Raw attributes returned by SP/CP
+   * @param rememberMe Whether to enable longer duration for SingPass cookies
+   * @param authType 'SP' or 'CP'
+   * @return The payload
+   */
   createJWTPayload(
     attributes: Record<string, unknown>,
     rememberMe: boolean,
@@ -357,6 +391,9 @@ export class SpcpService {
       : err(new MissingAttributesError())
   }
 
+  /**
+   * Gets the cookie domain settings.
+   */
   getCookieSettings(): SpcpDomainSettings {
     const spcpCookieDomain = this.#spcpProps.spcpCookieDomain
     return spcpCookieDomain ? { domain: spcpCookieDomain, path: '/' } : {}

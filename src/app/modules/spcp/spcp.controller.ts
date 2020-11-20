@@ -162,6 +162,11 @@ export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
     })
 }
 
+/**
+ * Higher-order function which returns an Express handler to handle Singpass
+ * and Corppass login requests.
+ * @param authType 'SP' or 'CP'
+ */
 export const handleLogin: (
   authType: AuthType.SP | AuthType.CP,
 ) => RequestHandler<
