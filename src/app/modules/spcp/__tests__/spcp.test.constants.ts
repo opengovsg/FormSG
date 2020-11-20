@@ -12,8 +12,11 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spCookieMaxAgePreserved: 2,
   spcpCookieDomain: 'spcpCookieDomain',
   cpCookieMaxAge: 3,
-  spIdpId: 'spIdpId',
-  cpIdpId: 'cpIdpId',
+  // spIdpId and cpIdpId need to match the injected environment values
+  // in order for query parameter validation on the /singpass/login
+  // and /corppass/login routes to pass
+  spIdpId: String(process.env.SINGPASS_IDP_ID),
+  cpIdpId: String(process.env.CORPPASS_IDP_ID),
   spPartnerEntityId: 'spPartnerEntityId',
   cpPartnerEntityId: 'cpPartnerEntityId',
   spIdpLoginUrl: 'spIdpLoginUrl',
@@ -74,7 +77,11 @@ export const MOCK_CP_SAML_WRONG_HASH = Buffer.from(
 ).toString('base64')
 
 export const MOCK_ATTRIBUTES = {
-  key: 'value',
+  UserName: 'username',
+  UserInfo: {
+    CPEntID: 'CPEntID',
+    CPUID: 'CPUID',
+  },
 }
 
 export const MOCK_GET_ATTRIBUTES_RETURN_VALUE = {
