@@ -400,12 +400,17 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions')
-    .get(
-      authEncryptedResponseAccess,
-      EncryptSubmissionController.handleGetEncryptedResponse,
-    )
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions').get(
+    authEncryptedResponseAccess,
+    celebrate({
+      [Segments.QUERY]: {
+        submissionId: Joi.string()
+          .regex(/^[0-9a-fA-F]{24}$/)
+          .required(),
+      },
+    }),
+    EncryptSubmissionController.handleGetEncryptedResponse,
+  )
 
   /**
    * Count the number of submissions for a public form
