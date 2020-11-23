@@ -382,7 +382,7 @@ const getAnswerForCheckbox = (response) => {
  * @param {String} response.answer
  * @param {String} response.fieldType
  * @param {Boolean} response.isVisible
- * @param {Set} hashedFields Fields hashed to verify answers provided by MyInfo
+ * @param {Set} hashedFields Field IDs hashed to verify answers provided by MyInfo
  * @returns {Object} an object containing three sets of formatted responses
  */
 const getFormattedResponse = (response, hashedFields) => {
