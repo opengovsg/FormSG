@@ -17,6 +17,7 @@ import {
   createPresignedPostForLogos,
   getDashboardForms,
   getMockSpcpLocals,
+  transferFormOwnership,
 } from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
@@ -442,6 +443,63 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /{formId}/adminform/transfer-owner.
+ * @security session
+ *
+ * @returns 200 with updated form with transferred owners
+ * @returns 403 when user is not the current owner of the form
+ * @returns 404 when form cannot be found
+ * @returns 409 when new owner is not in the database yet, or if new owner is current owner
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleTransferFormOwnership: RequestHandler<
+  { formId: string },
+  unknown,
+  { email: string }
+> = (req, res) => {
+  const { formId } = req.params
+  const { email: newOwnerEmail } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with delete permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Delete,
+        }),
+      )
+      // Step 3: User has permissions, transfer form ownership.
+      .andThen((retrievedForm) =>
+        transferFormOwnership(retrievedForm, newOwnerEmail),
+      )
+      // Success, return updated form.
+      .map((updatedPopulatedForm) => res.json({ form: updatedPopulatedForm }))
+      // Some error occurred earlier in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred whilst transferring form ownership',
+          meta: {
+            action: 'handleTransferFormOwnership',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            newOwnerEmail,
           },
           error,
         })
