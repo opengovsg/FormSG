@@ -14,7 +14,7 @@ const DATE_VALIDATION_OPTIONS = {
   custom: 'Custom date range',
 }
 
-const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '4', '5', '6', '7']
+const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
 
 angular
   .module('forms')
