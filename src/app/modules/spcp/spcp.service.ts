@@ -163,6 +163,7 @@ export class SpcpService {
         message: 'Could not find SP/CP login page title',
         meta: {
           action: 'validateLoginPage',
+          loginHtml,
         },
       })
       return err(new LoginPageValidationError())
