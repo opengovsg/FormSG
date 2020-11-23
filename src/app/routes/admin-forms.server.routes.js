@@ -12,12 +12,14 @@ let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
-let PERMISSIONS = require('../utils/permission-levels').default
 const spcpFactory = require('../factories/spcp.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
+const {
+  PermissionLevel,
+} = require('../modules/form/admin-form/admin-form.types')
 
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
@@ -53,7 +55,7 @@ let authAdminActiveAnyForm = [
  * form admin is encrypt beta-enabled.
  */
 const authEncryptedResponseAccess = [
-  authActiveForm(PERMISSIONS.READ),
+  authActiveForm(PermissionLevel.Read),
   adminForms.isFormEncryptMode,
 ]
 
@@ -161,10 +163,13 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform')
-    .get(authActiveForm(PERMISSIONS.READ), forms.read(forms.REQUEST_TYPE.ADMIN))
-    .put(authActiveForm(PERMISSIONS.WRITE), adminForms.update)
-    .delete(authActiveForm(PERMISSIONS.DELETE), adminForms.delete)
-    .post(authActiveForm(PERMISSIONS.READ), adminForms.duplicate)
+    .get(
+      authActiveForm(PermissionLevel.Read),
+      forms.read(forms.REQUEST_TYPE.ADMIN),
+    )
+    .put(authActiveForm(PermissionLevel.Write), adminForms.update)
+    .delete(authActiveForm(PermissionLevel.Delete), adminForms.delete)
+    .post(authActiveForm(PermissionLevel.Read), adminForms.duplicate)
 
   /**
    * Return the template form to the user.
@@ -204,7 +209,10 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/preview')
-    .get(authActiveForm(PERMISSIONS.READ), forms.read(forms.REQUEST_TYPE.ADMIN))
+    .get(
+      authActiveForm(PermissionLevel.Read),
+      forms.read(forms.REQUEST_TYPE.ADMIN),
+    )
 
   /**
    * Duplicate a specified form and return that form to the user.
@@ -262,8 +270,8 @@ module.exports = function (app) {
 
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
-    .get(authActiveForm(PERMISSIONS.READ), adminForms.getFeedback)
-    .post(authActiveForm(PERMISSIONS.READ), adminForms.passThroughFeedback)
+    .get(authActiveForm(PermissionLevel.Read), adminForms.getFeedback)
+    .post(authActiveForm(PermissionLevel.Read), adminForms.passThroughFeedback)
 
   /**
    * Count the number of feedback for a form
@@ -277,7 +285,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback/count')
-    .get(authActiveForm(PERMISSIONS.READ), adminForms.countFeedback)
+    .get(authActiveForm(PermissionLevel.Read), adminForms.countFeedback)
 
   /**
    * Stream download all feedback for a form
@@ -291,7 +299,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback/download')
-    .get(authActiveForm(PERMISSIONS.READ), adminForms.streamFeedback)
+    .get(authActiveForm(PermissionLevel.Read), adminForms.streamFeedback)
 
   /**
    * Transfer form ownership to another user
@@ -304,7 +312,7 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner').post(
-    authActiveForm(PERMISSIONS.DELETE),
+    authActiveForm(PermissionLevel.Delete),
     celebrate({
       body: Joi.object().keys({
         email: Joi.string()
@@ -337,7 +345,7 @@ module.exports = function (app) {
   app
     .route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})')
     .post(
-      authActiveForm(PERMISSIONS.READ),
+      authActiveForm(PermissionLevel.Read),
       emailSubmissions.receiveEmailSubmissionUsingBusBoy,
       emailSubmissions.validateEmailSubmission,
       spcpFactory.passThroughSpcp,
@@ -372,7 +380,7 @@ module.exports = function (app) {
   app
     .route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})')
     .post(
-      authActiveForm(PERMISSIONS.READ),
+      authActiveForm(PermissionLevel.Read),
       encryptSubmissions.validateEncryptSubmission,
       spcpFactory.passThroughSpcp,
       submissions.injectAutoReplyInfo,
@@ -502,7 +510,7 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    authActiveForm(PERMISSIONS.WRITE),
+    authActiveForm(PermissionLevel.Write),
     AdminFormController.handleCreatePresignedPostForImages,
   )
 
@@ -530,7 +538,7 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    authActiveForm(PERMISSIONS.WRITE),
+    authActiveForm(PermissionLevel.Write),
     AdminFormController.handleCreatePresignedPostForLogos,
   )
 }
