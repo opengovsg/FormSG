@@ -11,7 +11,6 @@ const ALLOWED_VALIDATORS = [
   'DecimalValidator',
   'NumberValidator',
   'MobileValidator',
-  'HomeNoValidator',
   'RatingValidator',
   'TextValidator',
   'DateValidator',
