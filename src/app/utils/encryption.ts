@@ -10,7 +10,12 @@ export const checkIsEncryptedEncoding = (
   }
 
   const [submissionPublicKey, nonceEncrypted] = encryptedStr.split(';')
+
+  if (!nonceEncrypted) {
+    return err(new Error('Missing data'))
+  }
   const [nonce, encrypted] = nonceEncrypted.split(':')
+
   if (!submissionPublicKey || !nonce || !encrypted) {
     return err(new Error('Missing data'))
   }
@@ -22,7 +27,7 @@ export const checkIsEncryptedEncoding = (
     decodeBase64(nonce)
     decodeBase64(encrypted)
     return ok(true)
-  } catch (err) {
-    return err(false)
+  } catch (e) {
+    return err(new Error('Incorrect characters'))
   }
 }
