@@ -277,11 +277,14 @@ export const handleCountFormFeedback: RequestHandler<{
       .andThen((user) =>
         // Step 2: Retrieve full form.
         FormService.retrieveFullFormById(formId).andThen((fullForm) =>
-          // Step 3: Check whether current user has read permissions to form.
-          assertHasReadPermissions(user, fullForm),
+          // Step 3: Check whether form is active.
+          assertFormAvailable(fullForm).andThen(() =>
+            // Step 4: Check whether current user has read permissions to form.
+            assertHasReadPermissions(user, fullForm),
+          ),
         ),
       )
-      // Step 4: Retrieve form feedback counts.
+      // Step 5: Retrieve form feedback counts.
       .andThen(() => FeedbackService.getFormFeedbackCount(formId))
       .map((feedbackCount) => res.json(feedbackCount))
       // Some error occurred earlier in the chain.
