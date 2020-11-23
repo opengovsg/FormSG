@@ -456,7 +456,7 @@ module.exports = function (app) {
         submissionId: Joi.string().optional(),
       },
     }),
-    encryptSubmissions.getMetadata,
+    EncryptSubmissionController.handleGetMetadata,
   )
 
   /**
