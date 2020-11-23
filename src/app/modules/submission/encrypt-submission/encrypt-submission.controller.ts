@@ -216,7 +216,7 @@ export const handleGetMetadata: RequestHandler<
   { formId: string },
   unknown,
   unknown,
-  Query & { page: number; submissionId?: string }
+  Query & { page?: number; submissionId?: string }
 > = async (req, res) => {
   const { formId } = req.params
   const { page, submissionId } = req.query

@@ -452,8 +452,11 @@ module.exports = function (app) {
     authEncryptedResponseAccess,
     celebrate({
       [Segments.QUERY]: {
-        page: Joi.number().min(1).required(),
         submissionId: Joi.string().optional(),
+        page: Joi.number().min(1).when('submissionId', {
+          not: Joi.exist(),
+          then: Joi.required(),
+        }),
       },
     }),
     EncryptSubmissionController.handleGetMetadata,
