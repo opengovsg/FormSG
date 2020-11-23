@@ -446,8 +446,17 @@ function makeModule(connection) {
 
       // Transfer owner and save the form.
       return req.form
-        .transferOwner(req.session.user, newOwnerEmail)
-        .then((updatedForm) => updatedForm.populate('admin').execPopulate())
+        .transferOwner(newOwnerEmail)
+        .then((updatedForm) =>
+          updatedForm
+            .populate({
+              path: 'admin',
+              populate: {
+                path: 'agency',
+              },
+            })
+            .execPopulate(),
+        )
         .then((updatedPopulatedForm) => {
           return res.json({ form: updatedPopulatedForm })
         })

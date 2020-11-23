@@ -26,6 +26,7 @@ import {
 } from '../../types'
 import { IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
+import { DatabaseError } from '../modules/core/core.errors'
 import { TransferOwnershipError } from '../modules/form/form.errors'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
@@ -432,10 +433,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Transfer ownership of the form to another user
-  FormSchema.methods.transferOwner = async function (
-    currentOwner: IUserSchema,
-    newOwnerEmail: string,
-  ) {
+  FormSchema.methods.transferOwner = async function (newOwnerEmail: string) {
+    const currentOwner = await User.findById(this.admin)
+    if (!currentOwner) {
+      throw new DatabaseError('Admin of the form cannot be found')
+    }
+    if (newOwnerEmail === currentOwner.email) {
+      throw new TransferOwnershipError('You are already the owner of this form')
+    }
     // Verify that the new owner exists.
     const newOwner = await User.findOne({ email: newOwnerEmail })
     if (!newOwner) {
