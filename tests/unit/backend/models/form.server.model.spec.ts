@@ -879,101 +879,101 @@ describe('Form Model', () => {
         expect(actualOtpData).toEqual(expectedOtpData)
       })
     })
-  })
 
-  describe('getDashboardForms', () => {
-    it('should return empty array when user has no forms to view', async () => {
-      // Arrange
-      const randomUserId = new ObjectId()
-      const invalidEmail = 'not-valid@example.com'
+    describe('getDashboardForms', () => {
+      it('should return empty array when user has no forms to view', async () => {
+        // Arrange
+        const randomUserId = new ObjectId()
+        const invalidEmail = 'not-valid@example.com'
 
-      // Act
-      const actual = await Form.getDashboardForms(randomUserId, invalidEmail)
+        // Act
+        const actual = await Form.getDashboardForms(randomUserId, invalidEmail)
 
-      // Assert
-      expect(actual).toEqual([])
-    })
-
-    it('should return array of forms user is permitted to view', async () => {
-      // Arrange
-      // Add additional user.
-      const differentUserId = new ObjectId()
-      const diffPreload = await dbHandler.insertFormCollectionReqs({
-        userId: differentUserId,
-        mailName: 'something-else',
-        mailDomain: MOCK_ADMIN_DOMAIN,
-      })
-      const diffPopulatedAdmin = merge(diffPreload.user, {
-        agency: diffPreload.agency,
-      })
-      // Populate multiple forms with different permissions.
-      // Is admin.
-      const userOwnedForm = await Form.create(MOCK_EMAIL_FORM_PARAMS)
-      // Has write permissions.
-      const userWritePermissionForm = await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        admin: diffPopulatedAdmin._id,
-        permissionList: [{ email: populatedAdmin.email, write: true }],
-      })
-      // Has read permissions.
-      const userReadPermissionForm = await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        admin: diffPopulatedAdmin._id,
-        // Only read permissions, no write permission.
-        permissionList: [{ email: populatedAdmin.email, write: false }],
-      })
-      // Should not be fetched since form is archived.
-      await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        status: Status.Archived,
-      })
-      // Should not be fetched (not collab or admin).
-      await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        admin: differentUserId,
-        // currentUser does not have permissions.
+        // Assert
+        expect(actual).toEqual([])
       })
 
-      // Act
-      const actual = await Form.getDashboardForms(
-        populatedAdmin._id,
-        populatedAdmin.email,
-      )
+      it('should return array of forms user is permitted to view', async () => {
+        // Arrange
+        // Add additional user.
+        const differentUserId = new ObjectId()
+        const diffPreload = await dbHandler.insertFormCollectionReqs({
+          userId: differentUserId,
+          mailName: 'something-else',
+          mailDomain: MOCK_ADMIN_DOMAIN,
+        })
+        const diffPopulatedAdmin = merge(diffPreload.user, {
+          agency: diffPreload.agency,
+        })
+        // Populate multiple forms with different permissions.
+        // Is admin.
+        const userOwnedForm = await Form.create(MOCK_EMAIL_FORM_PARAMS)
+        // Has write permissions.
+        const userWritePermissionForm = await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          admin: diffPopulatedAdmin._id,
+          permissionList: [{ email: populatedAdmin.email, write: true }],
+        })
+        // Has read permissions.
+        const userReadPermissionForm = await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          admin: diffPopulatedAdmin._id,
+          // Only read permissions, no write permission.
+          permissionList: [{ email: populatedAdmin.email, write: false }],
+        })
+        // Should not be fetched since form is archived.
+        await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          status: Status.Archived,
+        })
+        // Should not be fetched (not collab or admin).
+        await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          admin: differentUserId,
+          // currentUser does not have permissions.
+        })
 
-      // Assert
-      // Coerce into expected shape.
-      const keysToPick = [
-        '_id',
-        'title',
-        'lastModified',
-        'status',
-        'form_fields',
-        'responseMode',
-      ]
-      const expected = orderBy(
-        [
-          // Should return form with admin themselves.
-          merge(pick(userOwnedForm.toObject(), keysToPick), {
-            admin: populatedAdmin.toObject(),
-          }),
-          // Should return form where admin has write permission.
-          merge(pick(userWritePermissionForm.toObject(), keysToPick), {
-            admin: diffPopulatedAdmin.toObject(),
-          }),
-          // Should return form where admin has read permission.
-          merge(pick(userReadPermissionForm.toObject(), keysToPick), {
-            admin: diffPopulatedAdmin.toObject(),
-          }),
-        ],
-        'lastModified',
-        'desc',
-      )
-      // Should return list containing only three forms:
-      // (admin, read perms, write perms),
-      // even though there are 5 forms in the collection.
-      await expect(Form.countDocuments()).resolves.toEqual(5)
-      expect(actual.length).toEqual(3)
-      expect(actual).toEqual(expected)
+        // Act
+        const actual = await Form.getDashboardForms(
+          populatedAdmin._id,
+          populatedAdmin.email,
+        )
+
+        // Assert
+        // Coerce into expected shape.
+        const keysToPick = [
+          '_id',
+          'title',
+          'lastModified',
+          'status',
+          'form_fields',
+          'responseMode',
+        ]
+        const expected = orderBy(
+          [
+            // Should return form with admin themselves.
+            merge(pick(userOwnedForm.toObject(), keysToPick), {
+              admin: populatedAdmin.toObject(),
+            }),
+            // Should return form where admin has write permission.
+            merge(pick(userWritePermissionForm.toObject(), keysToPick), {
+              admin: diffPopulatedAdmin.toObject(),
+            }),
+            // Should return form where admin has read permission.
+            merge(pick(userReadPermissionForm.toObject(), keysToPick), {
+              admin: diffPopulatedAdmin.toObject(),
+            }),
+          ],
+          'lastModified',
+          'desc',
+        )
+        // Should return list containing only three forms:
+        // (admin, read perms, write perms),
+        // even though there are 5 forms in the collection.
+        await expect(Form.countDocuments()).resolves.toEqual(5)
+        expect(actual.length).toEqual(3)
+        expect(actual).toEqual(expected)
+      })
     })
   })
 
