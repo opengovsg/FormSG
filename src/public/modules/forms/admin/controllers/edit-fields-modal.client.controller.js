@@ -304,7 +304,14 @@ function EditFieldsModalController(
     field.ValidationOptions.customMin = null
   }
 
-  vm.attachmentSizes = Attachment.dropdown
+  // For email mode, show only up to 7MB for dropdown
+  const emailModeAllowedSizes = ['1', '2', '3', '4', '5', '6', '7']
+  vm.attachmentSizes =
+    vm.myform.responseMode === responseModeEnum.EMAIL
+      ? Attachment.dropdown.filter((option) =>
+          emailModeAllowedSizes.includes(option.value),
+        )
+      : Attachment.dropdown
 
   let previousAttachmentSize = 0
 
