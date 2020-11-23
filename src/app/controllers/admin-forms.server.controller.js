@@ -464,35 +464,6 @@ function makeModule(connection) {
       })
     },
     /**
-     * Count number of form feedbacks for Feedback tab
-     * @param  {Object} req - Express request object
-     * @param  {Object} req.form - the form to download
-     * @param  {Object} res - Express response object
-     */
-    countFeedback: function (req, res) {
-      let FormFeedback = getFormFeedbackModel(connection)
-      FormFeedback.countDocuments({ formId: req.form._id }, function (
-        err,
-        count,
-      ) {
-        if (err) {
-          logger.error({
-            message: 'Error counting documents in FormFeedback',
-            meta: {
-              action: 'makeModule.countFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: errorHandler.getMongoErrorMessage(err),
-          })
-        } else {
-          return res.json(count)
-        }
-      })
-    },
-    /**
      * Stream download feedback for a form
      * @param  {Object} req - Express request object
      * @param  {Object} req.form - the form to download
