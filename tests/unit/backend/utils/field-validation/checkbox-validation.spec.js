@@ -203,9 +203,9 @@ describe('Checkbox validation', () => {
       })
 
       const validResponse = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
-      const validTestFunc = () =>
-        validateField(formId, formField, validResponse)
-      expect(validTestFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, validResponse)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
 
       const moreAnswers = makeCheckboxResponse(fieldId, [
         'c',
@@ -214,16 +214,28 @@ describe('Checkbox validation', () => {
         'a',
         'b',
       ])
-      const moreAnswersTestFunc = validateField(formId, formField, moreAnswers)
-      expect(moreAnswersTestFunc.isErr()).toBe(true)
+
+      const validateMoreAnswersResult = validateField(
+        formId,
+        formField,
+        moreAnswers,
+      )
+      expect(validateMoreAnswersResult.isErr()).toBe(true)
+      expect(validateMoreAnswersResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
 
       const fewerAnswers = makeCheckboxResponse(fieldId, ['c'])
-      const fewerAnswersTestFunc = validateField(
+
+      const validateFewerAnswersResult = validateField(
         formId,
         formField,
         fewerAnswers,
       )
-      expect(fewerAnswersTestFunc.isErr()).toBe(true)
+      expect(validateFewerAnswersResult.isErr()).toBe(true)
+      expect(validateFewerAnswersResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 })
