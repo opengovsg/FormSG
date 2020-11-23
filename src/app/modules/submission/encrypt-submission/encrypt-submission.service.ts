@@ -235,3 +235,27 @@ export const getSubmissionMetadata = (
     },
   )
 }
+
+export const getSubmissionMetadataList = (
+  formId: string,
+  page?: number,
+): ResultAsync<
+  { metadata: SubmissionMetadata[]; count: number },
+  DatabaseError
+> => {
+  return ResultAsync.fromPromise(
+    EncryptSubmissionModel.findAllMetadataByFormId(formId, { page }),
+    (error) => {
+      logger.error({
+        message: 'Failure retrieving metadata page from database',
+        meta: {
+          action: 'getSubmissionMetadataList',
+          formId,
+          page,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
+}
