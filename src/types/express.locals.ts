@@ -1,6 +1,5 @@
 // TODO (#42): remove these types when migrating away from middleware pattern
 
-import { MyInfoAttribute } from './field/fieldTypes'
 import { IPopulatedForm } from './form'
 import { SpcpSession } from './spcp'
 
@@ -17,5 +16,5 @@ export type ResWithUinFin<T> = T & {
 }
 
 export type ResWithHashedFields<T> = T & {
-  locals: { hashedFields?: Set<MyInfoAttribute> }
+  locals: { hashedFields?: Set<string> }
 }

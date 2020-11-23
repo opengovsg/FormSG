@@ -99,13 +99,33 @@ export const MOCK_MYINFO_FORMAT_DATA = {
 
 export const MOCK_FORM_FIELDS = [
   // Some MyInfo fields
-  { fieldType: 'textfield', isVisible: true, myInfo: { attr: 'name' } },
-  { fieldType: 'textfield', isVisible: false, myInfo: { attr: 'mobileno' } },
-  { fieldType: 'textfield', isVisible: true, myInfo: { attr: 'homeno' } },
-  { fieldType: 'textfield', isVisible: true, myInfo: { attr: 'mailadd' } },
+  {
+    fieldType: 'textfield',
+    isVisible: true,
+    myInfo: { attr: 'name' },
+    _id: new ObjectId().toHexString(),
+  },
+  {
+    fieldType: 'textfield',
+    isVisible: false,
+    myInfo: { attr: 'mobileno' },
+    _id: new ObjectId().toHexString(),
+  },
+  {
+    fieldType: 'textfield',
+    isVisible: true,
+    myInfo: { attr: 'homeno' },
+    _id: new ObjectId().toHexString(),
+  },
+  {
+    fieldType: 'textfield',
+    isVisible: true,
+    myInfo: { attr: 'mailadd' },
+    _id: new ObjectId().toHexString(),
+  },
   // Some non-MyInfo fields
-  { fieldType: 'dropdown' },
-  { fieldType: 'textfield' },
+  { fieldType: 'dropdown', _id: new ObjectId().toHexString() },
+  { fieldType: 'textfield', _id: new ObjectId().toHexString() },
 ]
 
 export const MOCK_HASHES = {
@@ -117,7 +137,11 @@ export const MOCK_HASHES = {
 // Based on MOCK_FORM_FIELDS and MOCK_HASHES, only expect these attributes to
 // be matched based on hashes. mobileno does not match because its isVisible is false,
 // and homeno does not match because it does not have a hash.
-export const MOCK_MATCHED_ATTRS = new Set(['name', 'mailadd'])
+export const MOCK_HASHED_FIELD_IDS = new Set(
+  MOCK_FORM_FIELDS.filter(
+    (field) => field.myInfo && ['name', 'mailadd'].includes(field.myInfo?.attr),
+  ).map((field) => field._id),
+)
 
 const populatedValues = [
   { fieldValue: 'TAN XIAO HUI', disabled: true },

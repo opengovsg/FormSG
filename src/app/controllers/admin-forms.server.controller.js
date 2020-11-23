@@ -600,7 +600,7 @@ function makeModule(connection) {
             (field) => field.myInfo && field.myInfo.attr,
           )
           for (let field of actualMyInfoFields) {
-            res.locals.hashedFields.add(field.myInfo.attr)
+            res.locals.hashedFields.add(field._id)
           }
           break
         }
