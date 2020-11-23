@@ -5,7 +5,11 @@ import { Transform } from 'stream'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { SubmissionCursorData, SubmissionData } from '../../../../types'
+import {
+  SubmissionCursorData,
+  SubmissionData,
+  SubmissionMetadata,
+} from '../../../../types'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
@@ -202,6 +206,32 @@ export const transformAttachmentMetasToSignedUrls = (
       })
 
       return new CreatePresignedUrlError('Failed to create attachment URL')
+    },
+  )
+}
+
+export const getSubmissionMetadata = (
+  formId: string,
+  submissionId: string,
+): ResultAsync<SubmissionMetadata | null, DatabaseError> => {
+  // Early return, do not even retrieve from database.
+  if (!mongoose.Types.ObjectId.isValid(submissionId)) {
+    return okAsync(null)
+  }
+
+  return ResultAsync.fromPromise(
+    EncryptSubmissionModel.findSingleMetadata(formId, submissionId),
+    (error) => {
+      logger.error({
+        message: 'Failure retrieving metadata from database',
+        meta: {
+          action: 'getSubmissionMetadata',
+          formId,
+          submissionId,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
     },
   )
 }
