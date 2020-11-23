@@ -2,7 +2,7 @@ import { ObjectId } from 'bson-ext'
 
 import { IPopulatedForm, IPopulatedUser, Permission, Status } from 'src/types'
 
-import { ForbiddenFormError, FormDeletedError } from '../../form.errors'
+import { ForbiddenFormError } from '../../form.errors'
 import {
   assertHasDeletePermissions,
   assertHasReadPermissions,
@@ -57,26 +57,6 @@ describe('admin-form.utils', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(true)
-    })
-
-    it('should return FormDeletedError when given form is archived', async () => {
-      // Arrange
-      // Form is archived.
-      const mockForm = {
-        title: 'mockForm',
-        status: Status.Archived,
-        _id: new ObjectId(),
-        admin: MOCK_USER,
-      } as IPopulatedForm
-
-      // Act
-      const actualResult = assertHasReadPermissions(MOCK_USER, mockForm)
-
-      // Assert
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new FormDeletedError('Form has been archived'),
-      )
     })
 
     it('should return ForbiddenFormError when user does not have read permissions', async () => {
@@ -147,26 +127,6 @@ describe('admin-form.utils', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(true)
-    })
-
-    it('should return FormDeletedError when given form is archived', async () => {
-      // Arrange
-      // Form is archived.
-      const mockForm = {
-        title: 'mockForm',
-        status: Status.Archived,
-        _id: new ObjectId(),
-        admin: MOCK_USER,
-      } as IPopulatedForm
-
-      // Act
-      const actualResult = assertHasWritePermissions(MOCK_USER, mockForm)
-
-      // Assert
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new FormDeletedError('Form has been archived'),
-      )
     })
 
     it('should return ForbiddenFormError when user has read but not write permissions', async () => {
@@ -242,26 +202,6 @@ describe('admin-form.utils', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(true)
-    })
-
-    it('should return FormDeletedError when given form is archived', async () => {
-      // Arrange
-      // Form is archived.
-      const mockForm = {
-        title: 'mockForm',
-        status: Status.Archived,
-        _id: new ObjectId(),
-        admin: MOCK_USER,
-      } as IPopulatedForm
-
-      // Act
-      const actualResult = assertHasDeletePermissions(MOCK_USER, mockForm)
-
-      // Assert
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new FormDeletedError('Form has been archived'),
-      )
     })
 
     it('should return ForbiddenFormError when user is not admin even with read permissions', async () => {
