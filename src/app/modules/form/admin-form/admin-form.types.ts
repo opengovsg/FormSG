@@ -1,6 +1,6 @@
 import { Result } from 'neverthrow'
 
-import { ForbiddenFormError, FormDeletedError } from '../form.errors'
+import { ForbiddenFormError } from '../form.errors'
 
 export enum PermissionLevel {
   Read = 'read',
@@ -8,7 +8,4 @@ export enum PermissionLevel {
   Delete = 'delete',
 }
 
-export type FormPermissionResult = Result<
-  true,
-  ForbiddenFormError | FormDeletedError
->
+export type FormPermissionResult = Result<true, ForbiddenFormError>
