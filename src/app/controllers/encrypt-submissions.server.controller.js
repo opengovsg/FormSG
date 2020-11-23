@@ -1,6 +1,5 @@
 'use strict'
 const crypto = require('crypto')
-const moment = require('moment-timezone')
 const { StatusCodes } = require('http-status-codes')
 
 const mongoose = require('mongoose')
@@ -8,8 +7,6 @@ const errorHandler = require('../utils/handle-mongo-error')
 const {
   getEncryptSubmissionModel,
 } = require('../models/submission.server.model')
-const getSubmissionModel = require('../models/submission.server.model').default
-const Submission = getSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
@@ -267,67 +264,4 @@ exports.getMetadata = function (req, res) {
         })
       })
   }
-}
-
-/**
- * Return actual encrypted form responses matching submission id
- * @param {Object} req - Express request object
- * @param {String} req.query.submissionId - submission to return data for
- * @param {Object} req.form - the form
- * @param {Object} res - Express response object
- */
-exports.getEncryptedResponse = function (req, res) {
-  let { submissionId } = req.query || {}
-
-  Submission.findOne(
-    {
-      form: req.form._id,
-      _id: submissionId,
-      submissionType: 'encryptSubmission',
-    },
-    {
-      encryptedContent: 1,
-      verifiedContent: 1,
-      attachmentMetadata: 1,
-      created: 1,
-    },
-  ).exec(async (err, response) => {
-    if (err || !response) {
-      logger.error({
-        message: 'Failure retrieving encrypted submission from database',
-        meta: {
-          action: 'getEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: errorHandler.getMongoErrorMessage(err),
-      })
-    } else {
-      const entry = {
-        refNo: response._id,
-        submissionTime: moment(response.created)
-          .tz('Asia/Singapore')
-          .format('ddd, D MMM YYYY, hh:mm:ss A'),
-        content: response.encryptedContent,
-        verified: response.verifiedContent,
-      }
-      // make sure client obtains S3 presigned URLs to download attachments
-      if (response.attachmentMetadata) {
-        const attachmentMetadata = {}
-        for (let [key, objectPath] of response.attachmentMetadata) {
-          attachmentMetadata[key] = await s3.getSignedUrlPromise('getObject', {
-            Bucket: attachmentS3Bucket,
-            Key: objectPath,
-            Expires: req.session.cookie.maxAge / 1000, // Remaining login duration in seconds
-          })
-        }
-        entry.attachmentMetadata = attachmentMetadata
-      } else {
-        entry.attachmentMetadata = {}
-      }
-      return res.json(entry)
-    }
-  })
 }
