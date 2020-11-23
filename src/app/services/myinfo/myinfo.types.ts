@@ -1,6 +1,4 @@
-import { MyInfoAttribute } from '@opengovsg/myinfo-gov-client'
-
-import { IFieldSchema, IMyInfo } from '../../../types'
+import { IFieldSchema, IMyInfo, MyInfoAttribute } from '../../../types'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 export interface IPossiblyPrefilledField extends IFieldSchema {
@@ -16,3 +14,8 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
   isVisible: true
   answer: string
 }
+
+export type MyInfoComparePromises = Map<
+  { fieldId: string; attr: MyInfoAttribute },
+  Promise<boolean>
+>

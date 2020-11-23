@@ -30,6 +30,7 @@ import {
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
 import {
   IPossiblyPrefilledField,
+  MyInfoComparePromises,
   MyInfoHashPromises,
   VisibleMyInfoResponse,
 } from './myinfo.types'
@@ -202,15 +203,18 @@ const compareSingleHash = (
 export const compareHashedValues = (
   responses: ProcessedFieldResponse[],
   hashes: IHashes,
-): Map<MyInfoAttribute, Promise<boolean>> => {
+): MyInfoComparePromises => {
   // Filter responses to only those fields with a corresponding hash
   const fieldsWithHashes = filterFieldsWithHashes(responses, hashes)
   // Map MyInfoAttribute to response
-  const myInfoResponsesMap = new Map<MyInfoAttribute, Promise<boolean>>()
+  const myInfoResponsesMap: MyInfoComparePromises = new Map()
   fieldsWithHashes.forEach((field) => {
     const attr = field.myInfo.attr
     // Already checked that hashes contains this attr
-    myInfoResponsesMap.set(attr, compareSingleHash(hashes[attr]!, field))
+    myInfoResponsesMap.set(
+      { fieldId: field._id, attr },
+      compareSingleHash(hashes[attr]!, field),
+    )
   })
   return myInfoResponsesMap
 }

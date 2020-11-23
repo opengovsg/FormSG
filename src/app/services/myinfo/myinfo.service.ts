@@ -300,21 +300,22 @@ export class MyInfoService {
         return new HashingError()
       },
     ).andThen((comparisonResults) => {
-      const comparedAttrs = Array.from(comparisonResults.keys())
+      const comparedFields = Array.from(comparisonResults.keys())
       // All outcomes should be true
-      const failedAttrs = comparedAttrs.filter(
+      const failedFields = comparedFields.filter(
         (attr) => !comparisonResults.get(attr),
       )
-      if (failedAttrs.length > 0) {
+      if (failedFields.length > 0) {
         logger.error({
           message: 'MyInfo Hash did not match',
           meta: {
             action: 'checkMyInfoHashes',
-            failedAttrs,
+            failedFields,
           },
         })
         return errAsync(new HashDidNotMatchError())
       }
+      const comparedAttrs = comparedFields.map((key) => key.attr)
       return okAsync(new Set(comparedAttrs))
     })
   }
