@@ -15,7 +15,6 @@ const logger = createLoggerWithLabel(module)
  * @param formId the form id to retrieve feedback counts for
  * @returns ok(form feedback count)
  * @returns err(DatabaseError) if database query errors
- * @
  */
 export const getFormFeedbackCount = (
   formId: string,
