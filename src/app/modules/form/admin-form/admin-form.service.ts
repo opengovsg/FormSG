@@ -239,7 +239,6 @@ export const transferFormOwnership = (
 ): ResultAsync<IPopulatedForm, TransferOwnershipError | DatabaseError> => {
   const logMeta = {
     action: 'transferFormOwnership',
-    currentForm,
     newOwnerEmail,
   }
 

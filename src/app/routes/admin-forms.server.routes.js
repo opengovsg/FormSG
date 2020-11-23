@@ -311,16 +311,16 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner').post(
-    authActiveForm(PermissionLevel.Delete),
+    withUserAuthentication,
     celebrate({
-      body: Joi.object().keys({
+      [Segments.BODY]: {
         email: Joi.string()
           .required()
           .email(emailValOpts)
-          .error(() => 'Please enter a valid email'),
-      }),
+          .message('Please enter a valid email'),
+      },
     }),
-    adminForms.transferOwner,
+    AdminFormController.handleTransferFormOwnership,
   )
 
   /**
