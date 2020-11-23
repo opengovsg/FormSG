@@ -186,6 +186,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               type: Boolean,
               default: false,
             },
+            _id: false,
           },
         ],
         validate: {
