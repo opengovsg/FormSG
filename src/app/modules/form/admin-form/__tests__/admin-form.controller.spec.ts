@@ -24,7 +24,7 @@ import {
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
-import * as AuthUtils from '../admin-form.utils'
+import * as AdminFormUtils from '../admin-form.utils'
 
 jest.mock('src/app/modules/submission/submission.service')
 const MockSubmissionService = mocked(SubmissionService)
@@ -301,7 +301,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM as IPopulatedForm),
       )
       const readPermsSpy = jest
-        .spyOn(AuthUtils, 'assertHasReadPermissions')
+        .spyOn(AdminFormUtils, 'assertHasReadPermissions')
         .mockReturnValueOnce(ok(true))
       MockSubmissionService.getFormSubmissionsCount.mockReturnValueOnce(
         okAsync(expectedSubmissionCount),
@@ -352,7 +352,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM as IPopulatedForm),
       )
       const readPermsSpy = jest
-        .spyOn(AuthUtils, 'assertHasReadPermissions')
+        .spyOn(AdminFormUtils, 'assertHasReadPermissions')
         .mockReturnValueOnce(ok(true))
       MockSubmissionService.getFormSubmissionsCount.mockReturnValueOnce(
         okAsync(expectedSubmissionCount),
@@ -394,7 +394,7 @@ describe('admin-form.controller', () => {
       // Mock error here.
       const expectedErrorString = 'no read access'
       const readPermsSpy = jest
-        .spyOn(AuthUtils, 'assertHasReadPermissions')
+        .spyOn(AdminFormUtils, 'assertHasReadPermissions')
         .mockReturnValueOnce(err(new ForbiddenFormError(expectedErrorString)))
 
       // Act
@@ -490,6 +490,47 @@ describe('admin-form.controller', () => {
       expect(
         MockSubmissionService.getFormSubmissionsCount,
       ).not.toHaveBeenCalledWith()
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 410 when FormDeletedError is returned when checking form availability', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER as IPopulatedUser),
+      )
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM as IPopulatedForm),
+      )
+      // Mock error when checking form availability.
+      const expectedErrorString = 'form is archived'
+      const utilSpy = jest
+        .spyOn(AdminFormUtils, 'assertFormAvailable')
+        .mockReturnValueOnce(err(new FormDeletedError(expectedErrorString)))
+
+      // Act
+      await AdminFormController.handleCountFormSubmissions(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID.toHexString(),
+      )
+      expect(utilSpy).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(410)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -606,7 +647,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM as IPopulatedForm),
       )
       const readPermsSpy = jest
-        .spyOn(AuthUtils, 'assertHasReadPermissions')
+        .spyOn(AdminFormUtils, 'assertHasReadPermissions')
         .mockReturnValueOnce(ok(true))
       const expectedErrorString = 'database goes boom'
       MockSubmissionService.getFormSubmissionsCount.mockReturnValueOnce(

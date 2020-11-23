@@ -66,7 +66,7 @@ describe('Authentication Controller', () => {
       let next = jasmine.createSpy()
       // Populate admin with partial user object
       let testFormObj = testForm.toObject()
-      testFormObj.admin = { id: req.session.user._id }
+      testFormObj.admin = { _id: req.session.user._id }
       req.form = testFormObj
       Controller.verifyPermission(PermissionLevel.Delete)(req, res, next)
       expect(next).toHaveBeenCalled()
@@ -75,7 +75,7 @@ describe('Authentication Controller', () => {
       let next = jasmine.createSpy()
       // Populate admin with partial user object
       let testFormObj = testForm.toObject()
-      testFormObj.admin = { id: mongoose.Types.ObjectId('000000000002') }
+      testFormObj.admin = { _id: mongoose.Types.ObjectId('000000000002') }
       testFormObj.permissionList.push(
         roles.collaborator(req.session.user.email),
       )
@@ -90,7 +90,7 @@ describe('Authentication Controller', () => {
       })
       // Populate admin with partial user object
       let testFormObj = testForm.toObject()
-      testFormObj.admin = { id: mongoose.Types.ObjectId('000000000002') }
+      testFormObj.admin = { _id: mongoose.Types.ObjectId('000000000002') }
       req.form = testFormObj
       Controller.verifyPermission(PermissionLevel.Write)(req, res, () => {})
     })
