@@ -6,9 +6,13 @@ import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
+import { TransferOwnershipError } from 'src/app/modules/form/form.errors'
 import {
   IEmailForm,
+  IEmailFormSchema,
   IEncryptedForm,
+  IFormSchema,
   IPopulatedUser,
   Permission,
   ResponseMode,
@@ -978,6 +982,18 @@ describe('Form Model', () => {
   })
 
   describe('Methods', () => {
+    // TODO(#102): Add tests for other form instance methods.
+    let validForm: IFormSchema
+
+    beforeEach(async () => {
+      validForm = await Form.create<IEmailFormSchema>({
+        admin: populatedAdmin._id,
+        responseMode: ResponseMode.Email,
+        title: 'mock email form',
+        emails: [populatedAdmin.email],
+      })
+    })
+
     describe('archive', () => {
       it('should successfully set email form status to archived', async () => {
         // Arrange
@@ -1031,6 +1047,71 @@ describe('Form Model', () => {
 
         // Assert
         expect(actual.status).toEqual(Status.Archived)
+      })
+    })
+
+    describe('transferOwner', () => {
+      it('should successfully transfer form ownership', async () => {
+        // Arrange
+        const newUser = await dbHandler.insertUser({
+          agencyId: populatedAdmin.agency._id,
+          mailName: 'newUser',
+          mailDomain: MOCK_ADMIN_DOMAIN,
+        })
+
+        // Act
+        const actual = await validForm.transferOwner(newUser.email)
+
+        // Assert
+        expect(actual).toBeDefined()
+        // New admin should be new user.
+        expect(actual.admin).toEqual(newUser._id)
+        // Previous user should now be in permissionList with editor
+        // permissions.
+        expect(actual.toObject().permissionList).toEqual([
+          { email: populatedAdmin.email, write: true },
+        ])
+      })
+
+      it('should throw TransferOwnershipError when newOwnerEmail is current form admin email', async () => {
+        // Act
+        const actualPromise = validForm.transferOwner(populatedAdmin.email)
+
+        // Assert
+        await expect(actualPromise).rejects.toThrowError(
+          new TransferOwnershipError('You are already the owner of this form'),
+        )
+      })
+
+      it('should throw TransferOwnershipError when newOwnerEmail user cannot be found in the database', async () => {
+        // Arrange
+        const invalidEmail = 'notInDatabase@email.com'
+
+        // Act
+        const actualPromise = validForm.transferOwner(invalidEmail)
+
+        // Assert
+        await expect(actualPromise).rejects.toThrowError(
+          new TransferOwnershipError(
+            `${invalidEmail} must have logged in once before being added as Owner`,
+          ),
+        )
+      })
+
+      it('should throw DatabaseError when current owner of the form cannot be found in the database', async () => {
+        // Arrange
+        // Replace admin with invalid id.
+        validForm.admin = new ObjectId()
+
+        // Act
+        const actualPromise = validForm.transferOwner(
+          'does-not-matter@example.com',
+        )
+
+        // Assert
+        await expect(actualPromise).rejects.toThrowError(
+          new DatabaseError('Admin of the form cannot be found'),
+        )
       })
     })
   })
