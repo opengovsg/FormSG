@@ -158,7 +158,8 @@ export class SpcpService {
     // The successful login page should have the title 'SingPass Login'
     // The error page should have the title 'SingPass - System Error Page'
     const title = getSubstringBetween(loginHtml, '<title>', '</title>')
-    if (!title) {
+    // Check for non-existence of title. Empty string is ok.
+    if (title === null) {
       logger.error({
         message: 'Could not find SP/CP login page title',
         meta: {
