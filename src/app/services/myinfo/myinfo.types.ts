@@ -15,7 +15,4 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
   answer: string
 }
 
-export type MyInfoComparePromises = Map<
-  { fieldId: string; attr: MyInfoAttribute },
-  Promise<boolean>
->
+export type MyInfoComparePromises = Map<string, Promise<boolean>>

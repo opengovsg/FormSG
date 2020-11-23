@@ -336,7 +336,7 @@ exports.prepareEmailSubmission = (req, res, next) => {
  * @returns {Boolean} true if response is verified
  */
 const isMyInfoVerifiedResponse = (response, hashedFields) => {
-  return !!(hashedFields && hashedFields.has(_.get(response, 'myInfo.attr')))
+  return !!(hashedFields && hashedFields.has(response._id))
 }
 
 /**

@@ -211,10 +211,7 @@ export const compareHashedValues = (
   fieldsWithHashes.forEach((field) => {
     const attr = field.myInfo.attr
     // Already checked that hashes contains this attr
-    myInfoResponsesMap.set(
-      { fieldId: field._id, attr },
-      compareSingleHash(hashes[attr]!, field),
-    )
+    myInfoResponsesMap.set(field._id, compareSingleHash(hashes[attr]!, field))
   })
   return myInfoResponsesMap
 }
