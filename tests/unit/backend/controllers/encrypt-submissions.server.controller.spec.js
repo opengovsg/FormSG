@@ -293,7 +293,7 @@ describe('Encrypt Submissions Controller', () => {
             // Cannot get the exact verified string since it changes everytime.
             // Just be content that a string of the correct encoding was
             // returned
-            expect(checkIsEncryptedEncoding(res.body.verified)).toBe(true)
+            expect(checkIsEncryptedEncoding(res.body.verified).value).toBe(true)
             return done()
           })
       })
@@ -332,7 +332,7 @@ describe('Encrypt Submissions Controller', () => {
             // Cannot get the exact verified string since it changes everytime.
             // Just be content that a string of the correct encoding was
             // returned
-            expect(checkIsEncryptedEncoding(res.body.verified)).toBe(true)
+            expect(checkIsEncryptedEncoding(res.body.verified).value).toBe(true)
             return done()
           })
       })
