@@ -148,7 +148,7 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
  */
 exports.saveResponseToDb = function (req, res, next) {
   const { form, formData, attachmentData } = req
-  const { verified, requestedAttributes } = res.locals
+  const { verified } = res.locals
   let attachmentMetadata = new Map()
   let attachmentUploadPromises = []
 
@@ -191,7 +191,7 @@ exports.saveResponseToDb = function (req, res, next) {
   const submission = new EncryptSubmission({
     form: form._id,
     authType: form.authType,
-    myInfoFields: requestedAttributes,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: formData,
     verifiedContent: verified,
     attachmentMetadata,

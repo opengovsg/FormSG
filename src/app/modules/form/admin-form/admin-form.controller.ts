@@ -2,6 +2,7 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { AuthType, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
@@ -11,6 +12,7 @@ import {
   createPresignedPostForImages,
   createPresignedPostForLogos,
   getDashboardForms,
+  getMockSpcpLocals,
 } from './admin-form.service'
 import { assertHasReadPermissions, mapRouteError } from './admin-form.utils'
 
@@ -217,4 +219,24 @@ export const handleCountFormSubmissions: RequestHandler<
 
   // Successfully retrieved count.
   return res.json(countResult.value)
+}
+
+/**
+ * Allow submission in preview without Spcp authentication by providing default values
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Object} next - the next expressjs callback
+ */
+export const passThroughSpcp: RequestHandler = (req, res, next) => {
+  const { authType } = (req as WithForm<typeof req>).form
+  if (authType === AuthType.SP || authType === AuthType.CP) {
+    res.locals = {
+      ...res.locals,
+      ...getMockSpcpLocals(
+        authType,
+        (req as WithForm<typeof req>).form.form_fields,
+      ),
+    }
+  }
+  return next()
 }

@@ -11,7 +11,6 @@ import moment from 'moment'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   BasicField,
-  IFieldSchema,
   IHashes,
   MapRouteError,
   MyInfoAttribute,
@@ -141,23 +140,6 @@ export const hashFieldValues = (
     )
   })
   return readOnlyHashPromises
-}
-
-/**
- * Extracts the MyInfo attributes in an array of form fields.
- * @param formFields Array of form fields
- * @returns array of the MyInfo attributes present in the form fields
- */
-export const extractRequestedAttributes = (
-  formFields: IFieldSchema[],
-): MyInfoAttribute[] => {
-  const attrs: MyInfoAttribute[] = []
-  formFields.forEach((field) => {
-    if (field.myInfo?.attr) {
-      attrs.push(field.myInfo.attr)
-    }
-  })
-  return attrs
 }
 
 /**

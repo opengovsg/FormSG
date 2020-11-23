@@ -10,12 +10,12 @@ const encryptSubmissions = require('../../app/controllers/encrypt-submissions.se
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
-const spcpFactory = require('../factories/spcp.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../factories/captcha.factory')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
+const SpcpController = require('../modules/spcp/spcp.controller')
 
 module.exports = function (app) {
   /**
@@ -127,7 +127,7 @@ module.exports = function (app) {
     .get(
       forms.formById,
       publicForms.isFormPublic,
-      spcpFactory.addSpcpSessionInfo,
+      SpcpController.addSpcpSessionInfo,
       myInfoController.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
     )
@@ -162,7 +162,7 @@ module.exports = function (app) {
     forms.formById,
     publicForms.isFormPublic,
     CaptchaFactory.captchaCheck,
-    spcpFactory.isSpcpAuthenticated,
+    SpcpController.isSpcpAuthenticated,
     emailSubmissions.receiveEmailSubmissionUsingBusBoy,
     celebrate({
       body: Joi.object({
@@ -191,9 +191,8 @@ module.exports = function (app) {
     emailSubmissions.validateEmailSubmission,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
-    spcpFactory.appendVerifiedSPCPResponses,
+    SpcpController.appendVerifiedSPCPResponses,
     emailSubmissions.prepareEmailSubmission,
-    spcpFactory.getRequestedAttributes,
     emailSubmissions.saveMetadataToDb,
     emailSubmissions.sendAdminEmail,
     submissions.sendAutoReply,
@@ -267,12 +266,11 @@ module.exports = function (app) {
     publicForms.isFormPublic,
     CaptchaFactory.captchaCheck,
     encryptSubmissions.validateEncryptSubmission,
-    spcpFactory.isSpcpAuthenticated,
+    SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
     encryptSubmissions.prepareEncryptSubmission,
-    spcpFactory.getRequestedAttributes,
     encryptSubmissions.saveResponseToDb,
     webhookVerifiedContentFactory.post,
     submissions.sendAutoReply,

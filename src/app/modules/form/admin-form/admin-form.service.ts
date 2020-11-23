@@ -8,7 +8,12 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
-import { DashboardFormView } from '../../../../types'
+import {
+  AuthType,
+  DashboardFormView,
+  IFieldSchema,
+  SpcpLocals,
+} from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
 import { DatabaseError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
@@ -165,4 +170,27 @@ export const createPresignedPostForLogos = (
   InvalidFileTypeError | CreatePresignedUrlError
 > => {
   return createPresignedPost(AwsConfig.logoS3Bucket, uploadParams)
+}
+
+export const getMockSpcpLocals = (
+  authType: AuthType,
+  formFields: IFieldSchema[] | undefined,
+): SpcpLocals => {
+  const myInfoFieldIds: string[] = formFields
+    ? formFields.filter((field) => field.myInfo?.attr).map((field) => field._id)
+    : []
+  switch (authType) {
+    case AuthType.SP:
+      return {
+        uinFin: 'S1234567A',
+        hashedFields: new Set(myInfoFieldIds),
+      }
+    case AuthType.CP:
+      return {
+        uinFin: '123456789A',
+        userInfo: 'ABC',
+      }
+    default:
+      return {}
+  }
 }
