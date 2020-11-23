@@ -2,6 +2,7 @@ import { left } from 'fp-ts/lib/Either'
 
 import { IField } from '../../../types/field/baseField'
 import {
+  isHomeNumberField,
   isLongTextField,
   isNricField,
   isSectionField,
@@ -10,6 +11,7 @@ import {
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../modules/submission/submission.types'
 
+import { constructHomeNoValidator } from './validators/homeNoValidator'
 import { constructNricValidator } from './validators/nricValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
@@ -27,6 +29,8 @@ export const constructSingleAnswerValidator = (
     return constructTextValidator(formField)
   } else if (isNricField(formField)) {
     return constructNricValidator()
+  } else if (isHomeNumberField(formField)) {
+    return constructHomeNoValidator(formField)
   }
   return () => left('Unsupported field type')
 }

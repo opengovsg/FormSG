@@ -1,5 +1,6 @@
 /* Type guards */
 import {
+  IHomenoField,
   ILongTextField,
   INricField,
   ISectionFieldSchema,
@@ -29,4 +30,10 @@ export const isLongTextField = (
 
 export const isNricField = (formField: IField): formField is INricField => {
   return formField.fieldType === BasicField.Nric
+}
+
+export const isHomeNumberField = (
+  formField: IField,
+): formField is IHomenoField => {
+  return formField.fieldType === BasicField.HomeNo
 }
