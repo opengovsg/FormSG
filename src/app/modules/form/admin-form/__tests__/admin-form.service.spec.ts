@@ -14,11 +14,15 @@ import {
   DashboardFormView,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  IFormSchema,
+  IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
+  ResponseMode,
   Status,
 } from 'src/types'
 
+import { TransferOwnershipError } from '../../form.errors'
 import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
@@ -28,6 +32,7 @@ import {
   createPresignedPostForImages,
   createPresignedPostForLogos,
   getDashboardForms,
+  transferFormOwnership,
 } from '../admin-form.service'
 
 const FormModel = getFormModel(mongoose)
@@ -322,6 +327,152 @@ describe('admin-form.service', () => {
       expect(actual._unsafeUnwrapErr()).toEqual(
         new DatabaseError(mockErrorString),
       )
+    })
+  })
+
+  describe('transferFormOwnership', () => {
+    const MOCK_NEW_OWNER_EMAIL = 'random@example.com'
+
+    it('should return updated form with new owner successfully', async () => {
+      // Arrange
+      const expectedPopulateResult = {
+        title: 'mock populated form',
+      } as IPopulatedForm
+      const mockUpdatedForm = ({
+        _id: new ObjectId(),
+        admin: new ObjectId(),
+        emails: ['test@example.com'],
+        responseMode: ResponseMode.Email,
+        title: 'some mock form',
+        populate: jest.fn().mockReturnValue({
+          execPopulate: jest.fn().mockResolvedValue(expectedPopulateResult),
+        }),
+      } as unknown) as IFormSchema
+
+      const validForm = ({
+        title: 'some mock form',
+        transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IFormSchema
+
+      // Act
+      const actualResult = await transferFormOwnership(
+        validForm,
+        MOCK_NEW_OWNER_EMAIL,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedPopulateResult)
+      expect(validForm.transferOwner).toHaveBeenCalledWith(MOCK_NEW_OWNER_EMAIL)
+      expect(mockUpdatedForm.populate).toHaveBeenCalled()
+    })
+
+    it('should return forwarded TransferOwnershipError when model update throws that error', async () => {
+      // Arrange
+      const expectedError = new TransferOwnershipError(
+        'model update threw this error',
+      )
+
+      const validForm = ({
+        title: 'some mock form',
+        // Mock transfer owner returning with error.
+        transferOwner: jest.fn().mockRejectedValue(expectedError),
+      } as unknown) as IFormSchema
+
+      // Act
+      const actualResult = await transferFormOwnership(
+        validForm,
+        MOCK_NEW_OWNER_EMAIL,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+      expect(validForm.transferOwner).toHaveBeenCalledWith(MOCK_NEW_OWNER_EMAIL)
+    })
+
+    it('should return forwarded DatabaseError when model update throws that error', async () => {
+      // Arrange
+      const expectedError = new DatabaseError('model update threw this error')
+
+      const validForm = ({
+        title: 'some mock form',
+        // Mock transfer owner returning with error.
+        transferOwner: jest.fn().mockRejectedValue(expectedError),
+      } as unknown) as IFormSchema
+
+      // Act
+      const actualResult = await transferFormOwnership(
+        validForm,
+        MOCK_NEW_OWNER_EMAIL,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+      expect(validForm.transferOwner).toHaveBeenCalledWith(MOCK_NEW_OWNER_EMAIL)
+    })
+
+    it('should return DatabaseError when error is thrown by model when transferring ownership', async () => {
+      // Arrange
+      const expectedErrorString = 'non application error thrown by model'
+      const validForm = ({
+        title: 'some mock form',
+        transferOwner: jest
+          .fn()
+          // Mock transfer owner returning with error.
+          .mockRejectedValue(new Error(expectedErrorString)),
+      } as unknown) as IFormSchema
+
+      // Act
+      const actualResult = await transferFormOwnership(
+        validForm,
+        MOCK_NEW_OWNER_EMAIL,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(expectedErrorString),
+      )
+      expect(validForm.transferOwner).toHaveBeenCalledWith(MOCK_NEW_OWNER_EMAIL)
+    })
+
+    it('should return DatabaseError when error is thrown by model when populating form', async () => {
+      // Arrange
+      const expectedErrorString = 'some database error occurred'
+      const mockUpdatedForm = ({
+        _id: new ObjectId(),
+        admin: new ObjectId(),
+        emails: ['test@example.com'],
+        responseMode: ResponseMode.Email,
+        title: 'some mock form',
+        populate: jest.fn().mockReturnValue({
+          execPopulate: jest
+            .fn()
+            // Mock populate returning with error.
+            .mockRejectedValue(new Error(expectedErrorString)),
+        }),
+      } as unknown) as IFormSchema
+
+      const validForm = ({
+        title: 'some mock form',
+        transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IFormSchema
+
+      // Act
+      const actualResult = await transferFormOwnership(
+        validForm,
+        MOCK_NEW_OWNER_EMAIL,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(expectedErrorString),
+      )
+      expect(validForm.transferOwner).toHaveBeenCalledWith(MOCK_NEW_OWNER_EMAIL)
+      expect(mockUpdatedForm.populate).toHaveBeenCalled()
     })
   })
 })
