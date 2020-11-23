@@ -2,6 +2,10 @@ const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
 
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+
 describe('Checkbox validation', () => {
   const makeCheckboxField = (fieldId, fieldOptions, options) => {
     const checkbox = {
@@ -36,8 +40,11 @@ describe('Checkbox validation', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, [])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should allow empty submission if checkbox is optional', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -45,8 +52,9 @@ describe('Checkbox validation', () => {
         required: false,
       })
       const response = makeCheckboxResponse(fieldId, [])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
   })
 
@@ -55,29 +63,37 @@ describe('Checkbox validation', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should allow multiple valid options to be selected', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a', 'b'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should disallow answers not in fieldOptions', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a', 'notinoption'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should disallow duplicate answers', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
       const response = makeCheckboxResponse(fieldId, ['a', 'b', 'a'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should allow self-configured others options in field options', () => {
       // This occurs when admins create their own checkboxes with options like ["Others: <please specify>"]
@@ -86,8 +102,9 @@ describe('Checkbox validation', () => {
       const response = makeCheckboxResponse(fieldId, [
         'Others: <please specify>',
       ])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should allow Others option to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -95,8 +112,9 @@ describe('Checkbox validation', () => {
         othersRadioButton: true,
       })
       const response = makeCheckboxResponse(fieldId, ['a', 'Others: xyz'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should disallow Others option to be submitted if field is not configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -104,8 +122,11 @@ describe('Checkbox validation', () => {
         othersRadioButton: false,
       })
       const response = makeCheckboxResponse(fieldId, ['a', 'Others: xyz'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should disallow Others option to be submitted with blank answer if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -113,8 +134,11 @@ describe('Checkbox validation', () => {
         othersRadioButton: true,
       })
       const response = makeCheckboxResponse(fieldId, ['a', 'Others: '])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 
@@ -126,8 +150,11 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: 2, customMin: null },
       })
       const response = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow fewer answers than customMin if selection limits are configured', () => {
@@ -137,8 +164,11 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: null, customMin: 2 },
       })
       const response = makeCheckboxResponse(fieldId, ['c'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should allow more answers than customMax if selection limits are not configured', () => {
@@ -148,8 +178,9 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: 2, customMin: null },
       })
       const response = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should allow fewer answers than customMin if selection limits are not configured', () => {
@@ -159,8 +190,9 @@ describe('Checkbox validation', () => {
         ValidationOptions: { customMax: null, customMin: 2 },
       })
       const response = makeCheckboxResponse(fieldId, ['c'])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should disallow more answers than customMax, and fewer answers than customMin, if selection limits are configured', () => {
@@ -171,9 +203,9 @@ describe('Checkbox validation', () => {
       })
 
       const validResponse = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
-      const validTestFunc = () =>
-        validateField(formId, formField, validResponse)
-      expect(validTestFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, validResponse)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
 
       const moreAnswers = makeCheckboxResponse(fieldId, [
         'c',
@@ -182,14 +214,28 @@ describe('Checkbox validation', () => {
         'a',
         'b',
       ])
-      const moreAnswersTestFunc = () =>
-        validateField(formId, formField, moreAnswers)
-      expect(moreAnswersTestFunc).toThrow()
+
+      const validateMoreAnswersResult = validateField(
+        formId,
+        formField,
+        moreAnswers,
+      )
+      expect(validateMoreAnswersResult.isErr()).toBe(true)
+      expect(validateMoreAnswersResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
 
       const fewerAnswers = makeCheckboxResponse(fieldId, ['c'])
-      const fewerAnswersTestFunc = () =>
-        validateField(formId, formField, fewerAnswers)
-      expect(fewerAnswersTestFunc).toThrow()
+
+      const validateFewerAnswersResult = validateField(
+        formId,
+        formField,
+        fewerAnswers,
+      )
+      expect(validateFewerAnswersResult.isErr()).toBe(true)
+      expect(validateFewerAnswersResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 })

@@ -1,7 +1,9 @@
 const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
-
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
 describe('Text validation', () => {
   const makeTextField = (fieldType) => (
     fieldId,
@@ -42,30 +44,38 @@ describe('Text validation', () => {
     it('should disallow empty submissions if field is required', () => {
       const formField = makeShortTextField(fieldId)
       const response = makeShortTextResponse(fieldId, '')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should allow empty submissions if field is optional', () => {
       const formField = makeShortTextField(fieldId, {}, { required: false })
       const response = makeShortTextResponse(fieldId, '')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should allow any number of characters in submission if selectedValidation is not set', () => {
       const formField = makeShortTextField(fieldId)
       const response = makeShortTextResponse(fieldId, 'hello world')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should disallow whitespace answer if field is required', () => {
       const isLogic = false
       const formField = makeShortTextField(fieldId, {}, { required: true })
       const response = makeShortTextResponse(fieldId, ' ')
-      const testFunc = () => validateField(formId, formField, response, isLogic)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response, isLogic)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow fewer characters than customMin if selectedValidation is Exact', () => {
@@ -74,8 +84,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeShortTextResponse(fieldId, 'fewer')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow more characters than customMin if selectedValidation is Exact', () => {
@@ -84,8 +97,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeShortTextResponse(fieldId, 'many more characters')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow fewer characters than customMax if selectedValidation is Exact', () => {
@@ -94,8 +110,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeShortTextResponse(fieldId, 'fewer')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow more characters than customMax if selectedValidation is Exact', () => {
@@ -104,8 +123,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeShortTextResponse(fieldId, 'many more characters')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow fewer characters than customMin if selectedValidation is Minimum', () => {
@@ -114,8 +136,11 @@ describe('Text validation', () => {
         selectedValidation: 'Minimum',
       })
       const response = makeShortTextResponse(fieldId, 'a')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow more characters than customMax if selectedValidation is Maximum', () => {
@@ -124,8 +149,11 @@ describe('Text validation', () => {
         selectedValidation: 'Maximum',
       })
       const response = makeShortTextResponse(fieldId, 'many more characters')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 
@@ -138,30 +166,38 @@ describe('Text validation', () => {
     it('should disallow empty submissions if field is required', () => {
       const formField = makeLongTextField(fieldId)
       const response = makeLongTextResponse(fieldId, '')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should allow empty submissions if field is optional', () => {
       const formField = makeLongTextField(fieldId, {}, { required: false })
       const response = makeLongTextResponse(fieldId, '')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should allow a valid submission if selectedValidation is not set', () => {
       const formField = makeLongTextField(fieldId)
       const response = makeLongTextResponse(fieldId, 'hello world')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should disallow whitespace answer if field is required', () => {
       const isLogic = false
       const formField = makeLongTextField(fieldId, {}, { required: true })
       const response = makeLongTextResponse(fieldId, '   ')
-      const testFunc = () => validateField(formId, formField, response, isLogic)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response, isLogic)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow fewer characters than customMin if selectedValidation is Exact', () => {
@@ -170,8 +206,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeLongTextResponse(fieldId, 'fewer')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow more characters than customMin if selectedValidation is Exact', () => {
@@ -180,8 +219,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeLongTextResponse(fieldId, 'many more characters')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow fewer characters than customMax if selectedValidation is Exact', () => {
@@ -190,8 +232,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeLongTextResponse(fieldId, 'fewer')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow more characters than customMax if selectedValidation is Exact', () => {
@@ -200,8 +245,11 @@ describe('Text validation', () => {
         selectedValidation: 'Exact',
       })
       const response = makeLongTextResponse(fieldId, 'many more characters')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow fewer characters than customMin if selectedValidation is Minimum', () => {
@@ -210,8 +258,11 @@ describe('Text validation', () => {
         selectedValidation: 'Minimum',
       })
       const response = makeLongTextResponse(fieldId, 'a')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should disallow more characters than customMax if selectedValidation is Maximum', () => {
@@ -220,8 +271,11 @@ describe('Text validation', () => {
         selectedValidation: 'Maximum',
       })
       const response = makeLongTextResponse(fieldId, 'many more characters')
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 })

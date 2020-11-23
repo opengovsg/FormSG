@@ -32,10 +32,9 @@ const HttpStatus = require('http-status-codes')
  */
 exports.validateEncryptSubmission = function (req, res, next) {
   const { form } = req
-  try {
-    // Check if the encrypted content is base64
-    checkIsEncryptedEncoding(req.body.encryptedContent)
-  } catch (error) {
+
+  const isEncryptedResult = checkIsEncryptedEncoding(req.body.encryptedContent)
+  if (isEncryptedResult.isErr()) {
     logger.error({
       message: 'Invalid encryption',
       meta: {
@@ -43,43 +42,45 @@ exports.validateEncryptSubmission = function (req, res, next) {
         ...createReqMeta(req),
         formId: form._id,
       },
-      error,
+      error: isEncryptedResult.error,
     })
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid data was found. Please submit again.' })
   }
 
-  if (req.body.responses) {
-    try {
-      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
-      delete req.body.responses // Prevent downstream functions from using responses by deleting it
-    } catch (err) {
-      logger.error({
-        message: 'Error processing responses',
-        meta: {
-          action: 'validateEncryptSubmission',
-          ...createReqMeta(req),
-          formId: form._id,
-        },
-        error: err,
-      })
-      if (err instanceof ConflictError) {
-        return res.status(err.status).json({
-          message:
-            'The form has been updated. Please refresh and submit again.',
-        })
-      } else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
-        })
-      }
-    }
-    return next()
-  } else {
+  if (!req.body.responses) {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
+
+  const getProcessedResponsesResult = getProcessedResponses(
+    form,
+    req.body.responses,
+  )
+  if (getProcessedResponsesResult.isErr()) {
+    const err = getProcessedResponsesResult.error
+    logger.error({
+      message: 'Error processing responses',
+      meta: {
+        action: 'validateEncryptSubmission',
+        ...createReqMeta(req),
+        formId: form._id,
+      },
+      error: err,
+    })
+    if (err instanceof ConflictError) {
+      return res.status(err.status).json({
+        message: 'The form has been updated. Please refresh and submit again.',
+      })
+    }
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+    })
+  }
+  req.body.parsedResponses = getProcessedResponsesResult.value
+  delete req.body.responses // Prevent downstream functions from using responses by deleting it
+  return next()
 }
 
 /**

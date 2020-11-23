@@ -1,7 +1,9 @@
 const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
-
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
 describe('Mobile validation tests', () => {
   it('should allow empty answer for required logic field that is not visible', () => {
     const formField = {
@@ -16,8 +18,9 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow empty answer for optional field', () => {
@@ -33,8 +36,9 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should not allow empty answer for required field', () => {
@@ -50,8 +54,11 @@ describe('Mobile validation tests', () => {
       isVisible: true,
       answer: '',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow valid mobile numbers for mobile fieldType', () => {
@@ -67,8 +74,9 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6598765432',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow valid home numbers for homeno fieldType', () => {
@@ -83,8 +91,9 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6565656565',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow mobile numbers without "+" prefix', () => {
@@ -100,8 +109,11 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '6598765432',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should disallow home numbers on mobile fieldType', () => {
@@ -117,8 +129,11 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6565656565',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should disallow mobile numbers on homeno fieldType', () => {
@@ -134,8 +149,11 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+6598765432',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should disallow international numbers when field does not allow for it', () => {
@@ -151,8 +169,11 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+447851315617',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should allow international numbers when field allows for it', () => {
@@ -168,7 +189,8 @@ describe('Mobile validation tests', () => {
       isVisible: false,
       answer: '+447851315617',
     }
-    const testFunc = () => validateField('formId', formField, response)
-    expect(testFunc).not.toThrow()
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 })

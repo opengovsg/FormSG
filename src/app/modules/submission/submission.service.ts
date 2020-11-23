@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -13,7 +13,11 @@ import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 
-import { ConflictError } from './submission.errors'
+import {
+  ConflictError,
+  ProcessingError,
+  ValidateFieldError,
+} from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
 import { getModeFilter } from './submission.utils'
 
@@ -26,18 +30,20 @@ const SubmissionModel = getSubmissionModel(mongoose)
  *
  * @param form The form document
  * @param responses the responses that corresponds to the given form
- * @returns filtered list of allowed responses with duplicates (if any) removed
- * @throws ConflictError if the given form's form field ids count do not match given responses'
+ * @returns neverthrow ok() filtered list of allowed responses with duplicates (if any) removed
+ * @returns neverthrow err(ConflictError) if the given form's form field ids count do not match given responses'
  */
 const getFilteredResponses = (
   form: IFormSchema,
   responses: FieldResponse[],
-) => {
+): Result<FieldResponse[], ConflictError> => {
   const modeFilter = getModeFilter(form.responseMode)
 
+  if (!form.form_fields) {
+    return err(new ConflictError('Form fields are missing'))
+  }
   // _id must be transformed to string as form response is jsonified.
-  // TODO (#317): remove usage of non-null assertion
-  const fieldIds = modeFilter(form.form_fields!).map((field) => ({
+  const fieldIds = modeFilter(form.form_fields).map((field) => ({
     _id: String(field._id),
   }))
   const uniqueResponses = _.uniqBy(modeFilter(responses), '_id')
@@ -47,11 +53,14 @@ const getFilteredResponses = (
     const onlyInForm = _.differenceBy(fieldIds, results, '_id').map(
       ({ _id }) => _id,
     )
-    throw new ConflictError(
-      `formId="${form._id}" message="Some form fields are missing" onlyInForm="${onlyInForm}"`,
+    return err(
+      new ConflictError(
+        'Some form fields are missing',
+        `formId="${form._id}" onlyInForm="${onlyInForm}"`,
+      ),
     )
   }
-  return results
+  return ok(results)
 }
 
 /**
@@ -60,14 +69,22 @@ const getFilteredResponses = (
  * verified fields are also performed on the response.
  * @param form The form document corresponding to the responses
  * @param responses The responses to process and validate
- * @returns field responses with additional metadata injected.
- * @throws Error if response validation fails
+ * @returns neverthrow ok() with field responses with additional metadata injected.
+ * @returns neverthrow err() if response validation fails
  */
 export const getProcessedResponses = (
   form: IFormSchema,
   originalResponses: FieldResponse[],
-): ProcessedFieldResponse[] => {
-  const filteredResponses = getFilteredResponses(form, originalResponses)
+): Result<
+  ProcessedFieldResponse[],
+  ProcessingError | ConflictError | ValidateFieldError
+> => {
+  const filteredResponsesResult = getFilteredResponses(form, originalResponses)
+  if (filteredResponsesResult.isErr()) {
+    return err(filteredResponsesResult.error)
+  }
+
+  const filteredResponses = filteredResponsesResult.value
 
   // Set of all visible fields
   const visibleFieldIds = getVisibleFieldIds(filteredResponses, form)
@@ -75,12 +92,16 @@ export const getProcessedResponses = (
   // Guard against invalid form submissions that should have been prevented by
   // logic.
   if (getLogicUnitPreventingSubmit(filteredResponses, form, visibleFieldIds)) {
-    throw new Error('Submission prevented by form logic')
+    return err(new ProcessingError('Submission prevented by form logic'))
   }
 
   // Create a map keyed by field._id for easier access
-  // TODO (#317): remove usage of non-null assertion
-  const fieldMap = form.form_fields!.reduce<{
+
+  if (!form.form_fields) {
+    return err(new ProcessingError('Form fields are undefined'))
+  }
+
+  const fieldMap = form.form_fields.reduce<{
     [fieldId: string]: IFieldSchema
   }>((acc, field) => {
     acc[field._id] = field
@@ -88,11 +109,14 @@ export const getProcessedResponses = (
   }, {})
 
   // Validate each field in the form and inject metadata into the responses.
-  const processedResponses = filteredResponses.map((response) => {
+  const processedResponses = []
+  for (const response of filteredResponses) {
     const responseId = response._id
     const formField = fieldMap[responseId]
     if (!formField) {
-      throw new Error('Response ID does not match form field IDs')
+      return err(
+        new ProcessingError('Response ID does not match form field IDs'),
+      )
     }
 
     const processingResponse: ProcessedFieldResponse = {
@@ -105,12 +129,19 @@ export const getProcessedResponses = (
       processingResponse.isUserVerified = formField.isVerifiable
     }
 
-    // Error will be thrown if the processed response is not valid.
-    validateField(form._id, formField, processingResponse)
-    return processingResponse
-  })
+    // Error will be returned if the processed response is not valid.
+    const validateFieldResult = validateField(
+      form._id,
+      formField,
+      processingResponse,
+    )
+    if (validateFieldResult.isErr()) {
+      return err(validateFieldResult.error)
+    }
+    processedResponses.push(processingResponse)
+  }
 
-  return processedResponses
+  return ok(processedResponses)
 }
 
 /**
