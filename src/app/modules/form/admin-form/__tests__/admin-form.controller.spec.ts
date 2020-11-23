@@ -496,6 +496,47 @@ describe('admin-form.controller', () => {
       })
     })
 
+    it('should return 410 when FormDeletedError is returned when checking form availability', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER as IPopulatedUser),
+      )
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM as IPopulatedForm),
+      )
+      // Mock error when checking form availability.
+      const expectedErrorString = 'form is archived'
+      const utilSpy = jest
+        .spyOn(AdminFormUtils, 'assertFormAvailable')
+        .mockReturnValueOnce(err(new FormDeletedError(expectedErrorString)))
+
+      // Act
+      await AdminFormController.handleCountFormSubmissions(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID.toHexString(),
+      )
+      expect(utilSpy).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
     it('should return 422 when MissingUserError is returned when retrieving logged in user', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
