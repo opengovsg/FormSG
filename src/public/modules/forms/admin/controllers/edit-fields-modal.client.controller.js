@@ -314,6 +314,12 @@ function EditFieldsModalController(
         )
       : Attachment.dropdown
 
+  // Modify tooltip to match email or encrypt mode options
+  vm.attachmentTooltipText =
+    vm.myform.responseMode === responseModeEnum.EMAIL
+      ? '1 to 2 MB - Pictures. 3 to 6 MB - PDF files. 7 MB - Slides.'
+      : '1 to 2 MB - Pictures. 3 to 6 MB - PDF files. 7 to 9 MB - Slides. 10MB to 20MB - Video files.'
+
   let previousAttachmentSize = 0
 
   if (vm.field.fieldType === 'attachment') {
