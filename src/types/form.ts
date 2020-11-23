@@ -111,7 +111,17 @@ export interface IFormSchema extends IForm, Document {
    * @returns form that has been archived
    */
   archive(): Promise<IFormSchema>
-  transferOwner(currentOwner: IUserSchema, newOwnerEmail: string): void
+
+  /**
+   * Transfer ownership of the form to another user.
+   *
+   * @returns updated form if successful
+   * @throws TransferOwnershipError if new owner is not in the database yet.
+   */
+  transferOwner(
+    currentOwner: IUserSchema,
+    newOwnerEmail: string,
+  ): Promise<IFormSchema>
 }
 
 export interface IPopulatedForm extends IFormSchema {

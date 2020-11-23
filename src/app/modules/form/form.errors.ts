@@ -36,3 +36,12 @@ export class ForbiddenFormError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Error to be returned when form ownership transfer fails.
+ */
+export class TransferOwnershipError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

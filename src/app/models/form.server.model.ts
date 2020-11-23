@@ -1,5 +1,5 @@
 import BSON from 'bson-ext'
-import { compact, filter, pick, uniq } from 'lodash'
+import { compact, pick, uniq } from 'lodash'
 import { Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
@@ -26,6 +26,7 @@ import {
 } from '../../types'
 import { IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
+import { TransferOwnershipError } from '../modules/form/form.errors'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
@@ -435,22 +436,23 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     currentOwner: IUserSchema,
     newOwnerEmail: string,
   ) {
-    // Verify that the new owner exists
+    // Verify that the new owner exists.
     const newOwner = await User.findOne({ email: newOwnerEmail })
-    if (newOwner == null) {
-      throw new Error(
+    if (!newOwner) {
+      throw new TransferOwnershipError(
         `${newOwnerEmail} must have logged in once before being added as Owner`,
       )
     }
 
-    // Update form's admin to new owner's id
+    // Update form's admin to new owner's id.
     this.admin = newOwner._id
 
-    // Remove new owner from perm list and include previous owner as an editor
-    this.permissionList = filter(this.permissionList, (item) => {
-      return item.email !== newOwnerEmail
-    })
+    // Remove new owner from perm list and include previous owner as an editor.
+    this.permissionList =
+      this.permissionList?.filter((item) => item.email !== newOwnerEmail) ?? []
     this.permissionList.push({ email: currentOwner.email, write: true })
+
+    return this.save()
   }
 
   // Statics
