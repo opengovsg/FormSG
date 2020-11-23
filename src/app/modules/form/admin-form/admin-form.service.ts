@@ -20,6 +20,7 @@ import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { findAdminById } from '../../user/user.service'
+import { TransferOwnershipError } from '../form.errors'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -221,4 +222,64 @@ export const archiveForm = (
     return new DatabaseError(getMongoErrorMessage(error))
     // On success, return true
   }).map(() => true)
+}
+
+/**
+ * Transfer form ownership from current owner to the new email.
+ * @param currentForm the form to transfer ownership for
+ * @param newOwnerEmail the email of the new owner to transfer to
+ *
+ * @return ok(updated form) if transfer is successful
+ * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
+ * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
+ */
+export const transferFormOwnership = (
+  currentForm: IPopulatedForm,
+  newOwnerEmail: string,
+): ResultAsync<IPopulatedForm, TransferOwnershipError | DatabaseError> => {
+  const logMeta = {
+    action: 'transferFormOwnership',
+    currentForm,
+    newOwnerEmail,
+  }
+
+  // Step 1: Transfer form ownership.
+  return ResultAsync.fromPromise(
+    currentForm.transferOwner(newOwnerEmail),
+    (error) => {
+      logger.error({
+        message: 'Error occurred whilst transferring form ownership',
+        meta: logMeta,
+        error,
+      })
+
+      // Special case, when document instance method already returns
+      // ApplicationError, directly return the error.
+      if (
+        error instanceof TransferOwnershipError ||
+        error instanceof DatabaseError
+      ) {
+        return error
+      }
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+
+    // Step 2: Populate updated form.
+  ).andThen((updatedForm) =>
+    ResultAsync.fromPromise(
+      updatedForm
+        .populate({ path: 'admin', populate: { path: 'agency' } })
+        .execPopulate(),
+      (error) => {
+        logger.error({
+          message: 'Error occurred whilst populating form with admin',
+          meta: logMeta,
+          error,
+        })
+
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    ),
+  )
 }
