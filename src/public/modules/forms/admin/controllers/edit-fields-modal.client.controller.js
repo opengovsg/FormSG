@@ -317,8 +317,8 @@ function EditFieldsModalController(
   // Modify tooltip to match email or encrypt mode options
   vm.attachmentTooltipText =
     vm.myform.responseMode === responseModeEnum.EMAIL
-      ? '1 to 2 MB - Pictures. 3 to 6 MB - PDF files. 7 MB - Slides.'
-      : '1 to 2 MB - Pictures. 3 to 6 MB - PDF files. 7 to 9 MB - Slides. 10MB to 20MB - Video files.'
+      ? 'Guideline: Images & PDFs - 1-3 MB, Slides & Videos - 7 MB. Include up to 7 MB of attachments in a submission (Email mode).'
+      : 'Guideline: Images & PDFs - 1-3 MB, Slides - 7 MB, Videos - 10-20 MB. Include up to 20 MB of attachments in a submission (Storage mode).'
 
   let previousAttachmentSize = 0
 
