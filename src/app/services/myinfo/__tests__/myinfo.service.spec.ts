@@ -26,9 +26,9 @@ import {
   MOCK_FETCH_PARAMS,
   MOCK_FORM_FIELDS,
   MOCK_FORM_ID,
+  MOCK_HASHED_FIELD_IDS,
   MOCK_HASHES,
   MOCK_KEY_PATH,
-  MOCK_MATCHED_ATTRS,
   MOCK_MYINFO_DATA,
   MOCK_POPULATED_FORM_FIELDS,
   MOCK_REALM,
@@ -255,7 +255,7 @@ describe('MyInfoService', () => {
         MOCK_HASHES as IHashes,
       )
 
-      expect(result._unsafeUnwrap()).toEqual(MOCK_MATCHED_ATTRS)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_HASHED_FIELD_IDS)
     })
 
     it('should return HashingError when hashing fails', async () => {
