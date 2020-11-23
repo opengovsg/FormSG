@@ -284,7 +284,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback/count')
-    .get(authActiveForm(PermissionLevel.Read), adminForms.countFeedback)
+    .get(withUserAuthentication, AdminFormController.handleCountFormFeedback)
 
   /**
    * Stream download all feedback for a form
