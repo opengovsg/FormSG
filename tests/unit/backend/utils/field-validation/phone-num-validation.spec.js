@@ -1,10 +1,11 @@
 const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
+
 const {
   ValidateFieldError,
 } = require('../../../../../dist/backend/app/modules/submission/submission.errors')
-describe('Mobile validation tests', () => {
+describe('Phone number validation tests', () => {
   it('should allow empty answer for required logic field that is not visible', () => {
     const formField = {
       _id: 'abc123',
