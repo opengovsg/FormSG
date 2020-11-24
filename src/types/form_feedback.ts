@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose'
+import { Document, Model, QueryCursor } from 'mongoose'
 
 import { IFormSchema } from './form'
 
@@ -24,4 +24,11 @@ export interface IFormFeedbackDoc extends IFormFeedbackSchema {
   created: Date
 }
 
-export type IFormFeedbackModel = Model<IFormFeedbackSchema>
+export interface IFormFeedbackModel extends Model<IFormFeedbackSchema> {
+  /**
+   * Returns a cursor for all feedback for the form with formId.
+   * @param formId the form id to return the submissions cursor for
+   * @returns a cursor to the feedback retrieved
+   */
+  getFeedbackCursorByFormId(formId: string): QueryCursor<IFormFeedbackSchema>
+}
