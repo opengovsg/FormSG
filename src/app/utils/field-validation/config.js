@@ -7,7 +7,6 @@ const ALLOWED_VALIDATORS = [
   'YesNoValidator',
   'EmailValidator',
   'DropdownValidator',
-  'RadiobuttonValidator',
   'DecimalValidator',
   'NumberValidator',
   'MobileValidator',

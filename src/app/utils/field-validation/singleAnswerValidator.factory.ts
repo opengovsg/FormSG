@@ -5,6 +5,7 @@ import {
   isHomeNumberField,
   isLongTextField,
   isNricField,
+  isRadioButtonField,
   isSectionField,
   isShortTextField,
 } from '../../../types/field/utils/guards'
@@ -13,6 +14,7 @@ import { ProcessedSingleAnswerResponse } from '../../modules/submission/submissi
 
 import { constructHomeNoValidator } from './validators/homeNoValidator'
 import { constructNricValidator } from './validators/nricValidator'
+import { constructRadioButtonValidator } from './validators/radioButtonValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
 
@@ -31,6 +33,8 @@ export const constructSingleAnswerValidator = (
     return constructNricValidator()
   } else if (isHomeNumberField(formField)) {
     return constructHomeNoValidator(formField)
+  } else if (isRadioButtonField(formField)) {
+    return constructRadioButtonValidator(formField)
   }
   return () => left('Unsupported field type')
 }

@@ -3,6 +3,7 @@ import {
   IHomenoField,
   ILongTextField,
   INricField,
+  IRadioField,
   ISectionFieldSchema,
   IShortTextField,
 } from 'src/types/field'
@@ -36,4 +37,10 @@ export const isHomeNumberField = (
   formField: IField,
 ): formField is IHomenoField => {
   return formField.fieldType === BasicField.HomeNo
+}
+
+export const isRadioButtonField = (
+  formField: IField,
+): formField is IRadioField => {
+  return formField.fieldType === BasicField.Radio
 }
