@@ -86,6 +86,12 @@ class BaseFieldValidator extends FieldValidatorInterface {
       return true // no validation occurred
     }
     const { signature, answer } = this.response
+
+    if (!signature) {
+      this.logIfInvalid(false, 'No signature')
+      return false
+    }
+
     const isSigned = formsgSdk.verification.authenticate({
       signatureString: signature,
       submissionCreatedAt: Date.now(),

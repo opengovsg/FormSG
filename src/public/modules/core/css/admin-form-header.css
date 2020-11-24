@@ -289,6 +289,10 @@
   z-index: 750;
 }
 
+#collaborator-modal-body .transfer-owner-email {
+  color: #dc2a2a;
+}
+
 @media all and (min-width: 768px) {
   #collaborator-modal-body #bottom-section {
     padding-bottom: 30px;

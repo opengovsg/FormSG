@@ -26,3 +26,13 @@ export class PrivateFormError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Error to be returned when user does not have authorization to access the
+ * form.
+ */
+export class ForbiddenFormError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

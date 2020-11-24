@@ -11,7 +11,6 @@ import { VfnErrors } from '../../../shared/util/verification'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 
-import getSmsCountModel from './sms_count.server.model'
 import { SmsSendError } from './sms.errors'
 import {
   LogSmsParams,
@@ -20,6 +19,7 @@ import {
   TwilioConfig,
   TwilioCredentials,
 } from './sms.types'
+import getSmsCountModel from './sms_count.server.model'
 
 const logger = createLoggerWithLabel(module)
 const SmsCount = getSmsCountModel(mongoose)

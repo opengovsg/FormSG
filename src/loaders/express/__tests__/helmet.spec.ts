@@ -79,7 +79,10 @@ describe('helmetMiddlewares', () => {
     mockHelmet.referrerPolicy = jest.fn().mockReturnValue('referrerPolicy')
     mockHelmet.contentSecurityPolicy = jest
       .fn()
-      .mockReturnValue('contentSecurityPolicy')
+      .mockReturnValue(
+        'contentSecurityPolicy',
+      ) as typeof mockHelmet.contentSecurityPolicy // Type assertion as
+    // getDefaultDirectives() is defined as a property of contentSecurityPolicy namespace
     mockHelmet.hsts = jest.fn().mockReturnValue(jest.fn())
   })
 

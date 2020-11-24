@@ -1,22 +1,20 @@
 'use strict'
 const crypto = require('crypto')
 const moment = require('moment-timezone')
-const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
 const mongoose = require('mongoose')
-const errorHandler = require('./errors.server.controller')
+const errorHandler = require('../utils/handle-mongo-error')
 const {
   getEncryptSubmissionModel,
 } = require('../models/submission.server.model')
 const getSubmissionModel = require('../models/submission.server.model').default
 const Submission = getSubmissionModel(mongoose)
-const encryptSubmission = getEncryptSubmissionModel(mongoose)
+const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
 const { ConflictError } = require('../modules/submission/submission.errors')
 const { createReqMeta } = require('../utils/request')
-const { isMalformedDate, createQueryWithDateParam } = require('../utils/date')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
   aws: { attachmentS3Bucket, s3 },
@@ -192,7 +190,7 @@ exports.saveResponseToDb = function (req, res, next) {
     )
   }
 
-  const submission = new encryptSubmission({
+  const submission = new EncryptSubmission({
     form: form._id,
     authType: form.authType,
     myInfoFields: requestedAttributes,
@@ -223,124 +221,50 @@ exports.saveResponseToDb = function (req, res, next) {
  * @param {Object} res - Express response object
  */
 exports.getMetadata = function (req, res) {
-  let pageSize = 10
   let { page, submissionId } = req.query || {}
-  let numToSkip = parseInt(page - 1 || 0) * pageSize
-
-  let matchClause = {
-    form: req.form._id,
-    submissionType: 'encryptSubmission',
-  }
 
   if (submissionId) {
-    if (mongoose.Types.ObjectId.isValid(submissionId)) {
-      matchClause._id = mongoose.Types.ObjectId(submissionId)
-      // Reading from primary to avoid any contention issues with bulk queries on secondary servers
-      Submission.findOne(matchClause, { created: 1 })
-        .read('primary')
-        .exec((err, result) => {
-          if (err) {
-            logger.error({
-              message: 'Failure retrieving metadata from database',
-              meta: {
-                action: 'getMetadata',
-                ...createReqMeta(req),
-              },
-              error: err,
-            })
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-              message: errorHandler.getMongoErrorMessage(err),
-            })
-          }
-          if (!result) {
-            return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
-          }
-          let entry = {
-            number: 1,
-            refNo: result._id,
-            submissionTime: moment(result.created)
-              .tz('Asia/Singapore')
-              .format('Do MMM YYYY, h:mm:ss a'),
-          }
-          return res.status(HttpStatus.OK).json({ metadata: [entry], count: 1 })
-        })
-    } else {
+    // Early return if submissionId is invalid.
+    if (!mongoose.Types.ObjectId.isValid(submissionId)) {
       return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
     }
-  } else {
-    Submission.aggregate([
-      {
-        $match: matchClause,
-      },
-      {
-        $sort: { created: -1 },
-      },
-      {
-        $facet: {
-          pageResults: [
-            {
-              $skip: numToSkip,
-            },
-            {
-              $limit: pageSize,
-            },
-            {
-              $project: {
-                _id: 1,
-                created: 1,
-              },
-            },
-          ],
-          allResults: [
-            {
-              $group: {
-                _id: null,
-                count: {
-                  $sum: 1,
-                },
-              },
-            },
-            {
-              $project: {
-                _id: 0,
-              },
-            },
-          ],
-        },
-      },
-    ])
-      .allowDiskUse(true) // prevents out-of-memory for large search results (max 100MB)
-      .exec((err, result) => {
-        if (err || !result) {
-          logger.error({
-            message: 'Failure retrieving metadata from database',
-            meta: {
-              action: 'getMetadata',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: errorHandler.getMongoErrorMessage(err),
-          })
-        } else {
-          const [{ pageResults, allResults }] = result
-          let [numResults] = allResults
-          let count = (numResults && numResults.count) || 0
-          let number = count - numToSkip
-          let metadata = pageResults.map((data) => {
-            let entry = {
-              number,
-              refNo: data._id,
-              submissionTime: moment(data.created)
-                .tz('Asia/Singapore')
-                .format('Do MMM YYYY, h:mm:ss a'),
-            }
-            number--
-            return entry
-          })
-          return res.status(StatusCodes.OK).json({ metadata, count })
+
+    return EncryptSubmission.findSingleMetadata(req.form._id, submissionId)
+      .then((result) => {
+        if (!result) {
+          return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
         }
+
+        return res.status(HttpStatus.OK).json({ metadata: [result], count: 1 })
+      })
+      .catch((error) => {
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: {
+            action: 'getMetadata',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: errorHandler.getMongoErrorMessage(error),
+        })
+      })
+  } else {
+    return EncryptSubmission.findAllMetadataByFormId(req.form._id, { page })
+      .then((result) => res.status(StatusCodes.OK).json(result))
+      .catch((error) => {
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: {
+            action: 'getMetadata',
+            ...createReqMeta(req),
+          },
+          error: error,
+        })
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: errorHandler.getMongoErrorMessage(error),
+        })
       })
   }
 }
@@ -406,86 +330,4 @@ exports.getEncryptedResponse = function (req, res) {
       return res.json(entry)
     }
   })
-}
-
-exports.streamEncryptedResponses = async function (req, res) {
-  if (
-    isMalformedDate(req.query.startDate) ||
-    isMalformedDate(req.query.endDate)
-  ) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: 'Malformed date parameter',
-    })
-  }
-
-  let query = {
-    form: req.form._id,
-    submissionType: 'encryptSubmission',
-  }
-
-  const augmentedQuery = createQueryWithDateParam(
-    req.query.startDate,
-    req.query.endDate,
-  )
-
-  query = { ...query, ...augmentedQuery }
-
-  Submission.find(query, {
-    encryptedContent: 1,
-    verifiedContent: 1,
-    created: 1,
-    id: 1,
-  })
-    .setOptions({
-      batchSize: 2000,
-      readPreference: 'secondary',
-    })
-    .lean()
-    .cursor()
-    .on('error', function (err) {
-      logger.error({
-        message: 'Error streaming submissions from database',
-        meta: {
-          action: 'streamEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      res.status(500).json({
-        message: 'Error retrieving from database.',
-      })
-    })
-    // If you call JSONStream.stringify(false) the elements will only be
-    // seperated by a newline.
-    .pipe(JSONStream.stringify(false))
-    .on('error', function (err) {
-      logger.error({
-        message: 'Error converting submissions to JSON',
-        meta: {
-          action: 'streamEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      res.status(500).json({
-        message: 'Error converting submissions to JSON',
-      })
-    })
-    .pipe(res.type('application/x-ndjson'))
-    .on('error', function (err) {
-      logger.error({
-        message: 'Error writing submissions to HTTP stream',
-        meta: {
-          action: 'streamEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      res.status(500).json({
-        message: 'Error writing submissions to HTTP stream',
-      })
-    })
-    .on('end', function () {
-      res.end()
-    })
 }

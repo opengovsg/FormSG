@@ -10,18 +10,14 @@ const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
-const errorHandler = require('./errors.server.controller')
+const errorHandler = require('../utils/handle-mongo-error')
 const { createReqMeta } = require('../utils/request')
 const { FormLogoState } = require('../../types')
 
 const {
-  aws: { imageS3Bucket, logoS3Bucket, logoBucketUrl, s3 },
+  aws: { logoBucketUrl },
 } = require('../../config/config')
-const {
-  VALID_UPLOAD_FILE_TYPES,
-  MAX_UPLOAD_FILE_SIZE,
-  EditFieldActions,
-} = require('../../shared/constants')
+const { EditFieldActions } = require('../../shared/constants')
 const {
   getEncryptedFormModel,
   getEmailFormModel,
@@ -598,13 +594,13 @@ function makeModule(connection) {
       switch (authType) {
         case 'SP': {
           res.locals.uinFin = 'S1234567A'
-          req.hashedFields = {}
+          res.locals.hashedFields = new Set()
           let actualFormFields = req.form.form_fields
           let actualMyInfoFields = actualFormFields.filter(
             (field) => field.myInfo && field.myInfo.attr,
           )
           for (let field of actualMyInfoFields) {
-            req.hashedFields[field.myInfo.attr] = true
+            res.locals.hashedFields.add(field.myInfo.attr)
           }
           break
         }
@@ -617,100 +613,6 @@ function makeModule(connection) {
       }
       return next()
     },
-    /**
-     * Return presigned post data of S3 bucket image
-     * @param {Object} req - Express request object
-     * @param {String} req.body.fileId - Name of the file to save. Is somewhat unique (see frontend code)
-     * @param {String} req.body.fileMd5Hash - MD5 hash of the file to save. To ensure file is not corrupted while uploading
-     * @param {String} req.body.fileType - Mime type of the file to save. To enforce file format
-     * @param {Object} res - Express response object
-     */
-    createPresignedPostForImages: function (req, res) {
-      if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json(`Your file type "${req.body.fileType}" is not supported`)
-      }
-
-      s3.createPresignedPost(
-        {
-          Bucket: imageS3Bucket,
-          Expires: 900, // Expires in 15 mins
-          Conditions: [
-            ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE], // content length restrictions: 0-MAX_UPLOAD_FILE_SIZE
-          ],
-          Fields: {
-            acl: 'public-read',
-            key: req.body.fileId,
-            'Content-MD5': req.body.fileMd5Hash,
-            'Content-Type': req.body.fileType,
-          },
-        },
-        function (err, presignedPostObject) {
-          if (err) {
-            logger.error({
-              message: 'Presigning post data encountered an error',
-              meta: {
-                action: 'makeModule.streamFeedback',
-                ...createReqMeta(req),
-              },
-              error: err,
-            })
-            return res.status(StatusCodes.BAD_REQUEST).json(err)
-          } else {
-            return res.status(StatusCodes.OK).json(presignedPostObject)
-          }
-        },
-      )
-    },
-
-    /**
-     * Return presigned post data of logo S3 bucket
-     * @param {Object} req - Express request object
-     * @param {String} req.body.fileId - Name of the file to save. Is somewhat unique (see frontend code)
-     * @param {String} req.body.fileMd5Hash - MD5 hash of the file to save. To ensure file is not corrupted while uploading
-     * @param {String} req.body.fileType - Mime type of the file to save. To enforce file format
-     * @param {Object} res - Express response object
-     */
-    createPresignedPostForLogos: function (req, res) {
-      if (!VALID_UPLOAD_FILE_TYPES.includes(req.body.fileType)) {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json(`Your file type "${req.body.fileType}" is not supported`)
-      }
-
-      s3.createPresignedPost(
-        {
-          Bucket: logoS3Bucket,
-          Expires: 900, // Expires in 15 mins
-          Conditions: [
-            ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE], // content length restrictions: 0-MAX_UPLOAD_FILE_SIZE
-          ],
-          Fields: {
-            acl: 'public-read',
-            key: req.body.fileId,
-            'Content-MD5': req.body.fileMd5Hash,
-            'Content-Type': req.body.fileType,
-          },
-        },
-        function (err, presignedPostObject) {
-          if (err) {
-            logger.error({
-              message: 'Presigning post data encountered an error',
-              meta: {
-                action: 'makeModule.streamFeedback',
-                ...createReqMeta(req),
-              },
-              error: err,
-            })
-            return res.status(StatusCodes.BAD_REQUEST).json(err)
-          } else {
-            return res.status(StatusCodes.OK).json(presignedPostObject)
-          }
-        },
-      )
-    },
-
     /**
      * Transfer a form to another user
      * @param  {Object} req - Express request object

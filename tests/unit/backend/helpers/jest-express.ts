@@ -38,6 +38,7 @@ const mockResponse = (
     status: jest.fn().mockReturnThis(),
     send: jest.fn().mockReturnThis(),
     sendStatus: jest.fn().mockReturnThis(),
+    type: jest.fn().mockReturnThis(),
     json: jest.fn(),
     render: jest.fn(),
     redirect: jest.fn(),

@@ -281,7 +281,7 @@ exports.validateEmailSubmission = function (req, res, next) {
  * @param  {Function} next - Express next middleware function
  */
 exports.prepareEmailSubmission = (req, res, next) => {
-  const { hashedFields } = req
+  const { hashedFields } = res.locals
 
   const concatArray = (dataValue, srcValue) => {
     if (_.isArray(dataValue)) {
@@ -332,11 +332,11 @@ exports.prepareEmailSubmission = (req, res, next) => {
  * @param {String} response.fieldType
  * @param {Object} response.myInfo
  * @param {String} response.myInfo.attr
- * @param {Object} hashedFields req.hashedFields
+ * @param {Set} hashedFields req.hashedFields
  * @returns {Boolean} true if response is verified
  */
 const isMyInfoVerifiedResponse = (response, hashedFields) => {
-  return !!(hashedFields && hashedFields[_.get(response, 'myInfo.attr')])
+  return !!(hashedFields && hashedFields.has(_.get(response, 'myInfo.attr')))
 }
 
 /**
@@ -382,7 +382,7 @@ const getAnswerForCheckbox = (response) => {
  * @param {String} response.answer
  * @param {String} response.fieldType
  * @param {Boolean} response.isVisible
- * @param {Boolean} hashedFields Fields hashed to verify answers provided by MyInfo
+ * @param {Set} hashedFields Fields hashed to verify answers provided by MyInfo
  * @returns {Object} an object containing three sets of formatted responses
  */
 const getFormattedResponse = (response, hashedFields) => {
@@ -418,7 +418,7 @@ const getFormattedResponse = (response, hashedFields) => {
 /**
  * Transforms a question for inclusion in the admin email table.
  * @param {Object} response
- * @param {Object} hashedFields
+ * @param {Set} hashedFields
  */
 const getFormDataPrefixedQuestion = (response, hashedFields) => {
   const { question, fieldType, isUserVerified } = response
@@ -472,7 +472,7 @@ const getFieldTypePrefix = (fieldType) => {
  * Determines the prefix for a question based on whether it is verified
  * by MyInfo.
  * @param {Object} response
- * @param {Object} hashedFields Hash for verifying MyInfo fields
+ * @param {Set} hashedFields Hash for verifying MyInfo fields
  * @returns {String}
  */
 const getMyInfoPrefix = (response, hashedFields) => {

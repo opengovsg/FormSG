@@ -8,8 +8,9 @@ const publicForms = require('../../app/controllers/public-forms.server.controlle
 const submissions = require('../../app/controllers/submissions.server.controller')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
+const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
-const spcpFactory = require('../factories/spcp-myinfo.factory')
+const spcpFactory = require('../factories/spcp.factory')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../factories/captcha.factory')
 const { limitRate } = require('../utils/limit-rate')
@@ -127,7 +128,7 @@ module.exports = function (app) {
       forms.formById,
       publicForms.isFormPublic,
       spcpFactory.addSpcpSessionInfo,
-      spcpFactory.addMyInfo,
+      myInfoController.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
     )
 
@@ -188,7 +189,7 @@ module.exports = function (app) {
       }),
     }),
     emailSubmissions.validateEmailSubmission,
-    spcpFactory.verifyMyInfoVals,
+    myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     spcpFactory.appendVerifiedSPCPResponses,
     emailSubmissions.prepareEmailSubmission,
@@ -267,7 +268,7 @@ module.exports = function (app) {
     CaptchaFactory.captchaCheck,
     encryptSubmissions.validateEncryptSubmission,
     spcpFactory.isSpcpAuthenticated,
-    spcpFactory.verifyMyInfoVals,
+    myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
     encryptSubmissions.prepareEncryptSubmission,
