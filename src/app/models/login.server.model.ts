@@ -4,6 +4,7 @@ import {
   AuthType,
   ILoginModel,
   ILoginSchema,
+  IPopulatedForm,
   LoginStatistic,
 } from '../../types'
 
@@ -51,6 +52,24 @@ const LoginSchema = new Schema<ILoginSchema>(
     },
   },
 )
+
+LoginSchema.statics.addLoginFromForm = function (
+  this: ILoginModel,
+  form: IPopulatedForm,
+): Promise<ILoginSchema> {
+  if (!form.authType || !form.esrvcId) {
+    return Promise.reject(
+      new Error('Form does not contain authType or e-service ID'),
+    )
+  }
+  return this.create({
+    form: form._id,
+    admin: form.admin._id,
+    agency: form.admin.agency._id,
+    authType: form.authType,
+    esrvcId: form.esrvcId,
+  })
+}
 
 LoginSchema.statics.aggregateLoginStats = function (
   this: ILoginModel,

@@ -42,6 +42,7 @@ const mockResponse = (
     json: jest.fn(),
     render: jest.fn(),
     redirect: jest.fn(),
+    cookie: jest.fn(),
     ...extraArgs,
   }
   return mockRes as Response

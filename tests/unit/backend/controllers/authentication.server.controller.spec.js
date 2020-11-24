@@ -1,10 +1,11 @@
 const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
+const {
+  PermissionLevel,
+} = require('../../../../dist/backend/app/modules/form/admin-form/admin-form.types')
 
 const dbHandler = require('../helpers/db-handler')
 let roles = require('../helpers/roles')
-let permissionLevels = require('../../../../dist/backend/app/utils/permission-levels')
-  .default
 
 describe('Authentication Controller', () => {
   const TEST_OTP = '123456'
@@ -65,21 +66,21 @@ describe('Authentication Controller', () => {
       let next = jasmine.createSpy()
       // Populate admin with partial user object
       let testFormObj = testForm.toObject()
-      testFormObj.admin = { id: req.session.user._id }
+      testFormObj.admin = { _id: req.session.user._id }
       req.form = testFormObj
-      Controller.verifyPermission(permissionLevels.DELETE)(req, res, next)
+      Controller.verifyPermission(PermissionLevel.Delete)(req, res, next)
       expect(next).toHaveBeenCalled()
     })
     it('should authorize if session user is a collaborator', () => {
       let next = jasmine.createSpy()
       // Populate admin with partial user object
       let testFormObj = testForm.toObject()
-      testFormObj.admin = { id: mongoose.Types.ObjectId('000000000002') }
+      testFormObj.admin = { _id: mongoose.Types.ObjectId('000000000002') }
       testFormObj.permissionList.push(
         roles.collaborator(req.session.user.email),
       )
       req.form = testFormObj
-      Controller.verifyPermission(permissionLevels.WRITE)(req, res, next)
+      Controller.verifyPermission(PermissionLevel.Write)(req, res, next)
       expect(next).toHaveBeenCalled()
     })
     it('should not authorize if session user is not a collaborator nor admin', () => {
@@ -89,9 +90,9 @@ describe('Authentication Controller', () => {
       })
       // Populate admin with partial user object
       let testFormObj = testForm.toObject()
-      testFormObj.admin = { id: mongoose.Types.ObjectId('000000000002') }
+      testFormObj.admin = { _id: mongoose.Types.ObjectId('000000000002') }
       req.form = testFormObj
-      Controller.verifyPermission(permissionLevels.WRITE)(req, res, () => {})
+      Controller.verifyPermission(PermissionLevel.Write)(req, res, () => {})
     })
   })
 })

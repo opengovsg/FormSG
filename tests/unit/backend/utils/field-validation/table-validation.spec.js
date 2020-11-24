@@ -1,7 +1,9 @@
 const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
-
+const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
 describe('Table validation', () => {
   const makeTableField = (fieldId, columns, rowsOptions) => {
     const table = {
@@ -50,32 +52,40 @@ describe('Table validation', () => {
       const columns = [makeDropdownColumn(fieldOptions)]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should allow empty submissions for optional columns', () => {
       const fieldOptions = ['a', 'b', 'c']
       const columns = [makeDropdownColumn(fieldOptions, { required: false })]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should allow valid submission for dropdown column', () => {
       const fieldOptions = ['a', 'b', 'c']
       const columns = [makeDropdownColumn(fieldOptions)]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['a']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should disallow values not found in field options for dropdown column', () => {
       const fieldOptions = ['a', 'b', 'c']
       const columns = [makeDropdownColumn(fieldOptions)]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['x']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
   describe('Textfield column', () => {
@@ -83,22 +93,27 @@ describe('Table validation', () => {
       const columns = [makeTextFieldColumn()]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should allow empty submissions for optional columns', () => {
       const columns = [makeTextFieldColumn({ required: false })]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should allow valid submission for textfield column', () => {
       const columns = [makeTextFieldColumn()]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['hello']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
   })
   describe('Multiple columns and rows', () => {
@@ -107,8 +122,9 @@ describe('Table validation', () => {
       const columns = [makeDropdownColumn(fieldOptions), makeTextFieldColumn()]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, [['a', 'hello']])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should disallow input with number of columns that do not match', () => {
       // WRONG
@@ -122,8 +138,11 @@ describe('Table validation', () => {
       const response = makeTableResponse(fieldId, [
         ['a', 'text1', 'text2', 'text3'],
       ])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should allow valid submissions for multiple rows', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -133,8 +152,9 @@ describe('Table validation', () => {
         ['a', 'hello'],
         ['b', 'world'],
       ])
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
     it('should disallow invalid submissions for multiple rows', () => {
       const fieldOptions = ['a', 'b', 'c']
@@ -144,8 +164,11 @@ describe('Table validation', () => {
         ['a', 'hello'],
         ['x', 'world'],
       ]) // Invalid dropdown value for second row
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
   describe('Number of rows', () => {
@@ -153,16 +176,22 @@ describe('Table validation', () => {
       const columns = [makeTextFieldColumn()]
       const formField = makeTableField(fieldId, columns, { minimumRows: 3 })
       const response = makeTableResponse(fieldId, Array(2).fill(['hello']))
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should disallow submissions with more rows than min rows if addMoreRows is not set ', () => {
       const isLogic = false
       const columns = [makeTextFieldColumn()]
       const formField = makeTableField(fieldId, columns, { minimumRows: 3 })
       const response = makeTableResponse(fieldId, Array(4).fill(['hello']))
-      const testFunc = () => validateField(formId, formField, response, isLogic)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response, isLogic)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should disallow submissions with more than max rows if max rows is set and addMoreRows is configured for that field', () => {
       const columns = [makeTextFieldColumn()]
@@ -171,8 +200,11 @@ describe('Table validation', () => {
         addMoreRows: true,
       })
       const response = makeTableResponse(fieldId, Array(100).fill(['hello']))
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
     it('should allow submissions with unlimited rows if max rows is not set and addMoreRows is configured for that field ', () => {
       const columns = [makeTextFieldColumn()]
@@ -181,8 +213,9 @@ describe('Table validation', () => {
         addMoreRows: true,
       })
       const response = makeTableResponse(fieldId, Array(100).fill(['hello']))
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
   })
   describe('Invalid input', () => {
@@ -190,8 +223,11 @@ describe('Table validation', () => {
       const columns = [makeTextFieldColumn()]
       const formField = makeTableField(fieldId, columns)
       const response = makeTableResponse(fieldId, null)
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 })

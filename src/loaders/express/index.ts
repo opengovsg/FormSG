@@ -13,6 +13,11 @@ import { AuthRouter } from '../../app/modules/auth/auth.routes'
 import { BillingRouter } from '../../app/modules/billing/billing.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import { ExamplesRouter } from '../../app/modules/examples/examples.routes'
+import {
+  CorppassLoginRouter,
+  SingpassLoginRouter,
+  SpcpRouter,
+} from '../../app/modules/spcp/spcp.routes'
 import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
@@ -140,6 +145,11 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/billing', BillingRouter)
   app.use('/analytics', AnalyticsRouter)
   app.use('/examples', ExamplesRouter)
+  // Internal routes for Singpass/Corppass
+  app.use('/spcp', SpcpRouter)
+  // Registered routes with the Singpass/Corppass servers
+  app.use('/singpass/login', SingpassLoginRouter)
+  app.use('/corppass/login', CorppassLoginRouter)
 
   app.use(sentryMiddlewares())
 

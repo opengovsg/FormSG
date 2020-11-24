@@ -18,7 +18,6 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
-  MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError } from '../../modules/core/core.errors'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
@@ -278,14 +277,14 @@ export class MyInfoService {
    * Checks that the given responses match the given hashes.
    * @param responses Fields processed with the isVisible attribute
    * @param hashes MyInfo value hashes retrieved from the database
-   * @returns the set of MyInfo attributes which were verified using their hashes
+   * @returns the set of field IDs which were verified using their hashes
    * @throws if an error occurred while comparing the responses and their hashes, or if any
    * hash did not match the submitted value
    */
   checkMyInfoHashes(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ): ResultAsync<Set<MyInfoAttribute>, HashingError | HashDidNotMatchError> {
+  ): ResultAsync<Set<string>, HashingError | HashDidNotMatchError> {
     const comparisonPromises = compareHashedValues(responses, hashes)
     return ResultAsync.fromPromise(
       Bluebird.props(comparisonPromises),
@@ -300,22 +299,22 @@ export class MyInfoService {
         return new HashingError()
       },
     ).andThen((comparisonResults) => {
-      const comparedAttrs = Array.from(comparisonResults.keys())
+      const comparedFieldIds = Array.from(comparisonResults.keys())
       // All outcomes should be true
-      const failedAttrs = comparedAttrs.filter(
+      const failedFieldIds = comparedFieldIds.filter(
         (attr) => !comparisonResults.get(attr),
       )
-      if (failedAttrs.length > 0) {
+      if (failedFieldIds.length > 0) {
         logger.error({
           message: 'MyInfo Hash did not match',
           meta: {
             action: 'checkMyInfoHashes',
-            failedAttrs,
+            failedFields: failedFieldIds,
           },
         })
         return errAsync(new HashDidNotMatchError())
       }
-      return okAsync(new Set(comparedAttrs))
+      return okAsync(new Set(comparedFieldIds))
     })
   }
 }

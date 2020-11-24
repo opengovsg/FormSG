@@ -48,13 +48,9 @@ describe('Email Submissions Controller', () => {
       },
     },
   )
-  const spcpController = spec(
-    'dist/backend/app/controllers/spcp.server.controller',
-    {
-      mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      '../../config/ndi-config': {},
-    },
-  )
+  const spcpController = spec('dist/backend/app/modules/spcp/spcp.controller', {
+    mongoose: Object.assign(mongoose, { '@noCallThru': true }),
+  })
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
@@ -981,7 +977,7 @@ describe('Email Submissions Controller', () => {
       const fieldId = new ObjectID()
 
       const attr = 'passportnumber'
-      resLocalFixtures.hashedFields = new Set([attr])
+      resLocalFixtures.hashedFields = new Set([fieldId.toHexString()])
       const responseField = {
         _id: String(fieldId),
         question: 'myinfo',

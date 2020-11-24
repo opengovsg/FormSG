@@ -1,7 +1,7 @@
 import { Document, Model } from 'mongoose'
 
 import { IAgencySchema } from './agency'
-import { AuthType, IFormSchema } from './form'
+import { AuthType, IFormSchema, IPopulatedForm } from './form'
 import { IUserSchema } from './user'
 
 export interface ILogin {
@@ -32,4 +32,5 @@ export interface ILoginModel extends Model<ILoginSchema> {
     gte: Date,
     lte: Date,
   ) => Promise<LoginStatistic[]>
+  addLoginFromForm: (form: IPopulatedForm) => Promise<ILoginSchema>
 }

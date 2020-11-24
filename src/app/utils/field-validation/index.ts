@@ -1,4 +1,5 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
+import { err, ok, Result } from 'neverthrow'
 
 import {
   ProcessedFieldResponse,
@@ -9,6 +10,7 @@ import { IField } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
 import { FieldResponse } from '../../../types/response'
 import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
+import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
@@ -87,15 +89,17 @@ export const validateField = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-): void => {
+): Result<true, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
-    throw new Error(`Rejected field type "${response.fieldType}"`)
+    return err(
+      new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
+    )
   }
 
   const fieldTypeEither = doFieldTypesMatch(formField, response)
 
   if (isLeft(fieldTypeEither)) {
-    throw new Error(fieldTypeEither.left)
+    return err(new ValidateFieldError(fieldTypeEither.left))
   }
 
   if (isProcessedSingleAnswerResponse(response)) {
@@ -105,25 +109,27 @@ export const validateField = (
         case BasicField.Section:
         case BasicField.ShortText:
         case BasicField.LongText:
-        case BasicField.Nric: {
+        case BasicField.Nric:
+        case BasicField.HomeNo: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
           if (isLeft(validEither)) {
             logInvalidAnswer(formId, formField, validEither.left)
-            throw new Error('Invalid answer submitted')
+            return err(new ValidateFieldError('Invalid answer submitted'))
           }
-          return
+          return ok(true)
         }
         // Fallback for un-migrated single answer validators
         default: {
-          classBasedValidation(formId, formField, response)
+          return classBasedValidation(formId, formField, response)
         }
       }
     }
   } else {
     // fallback for processed checkbox/table/attachment responses
-    classBasedValidation(formId, formField, response)
+    return classBasedValidation(formId, formField, response)
   }
+  return ok(true)
 }
 
 /**
@@ -135,7 +141,7 @@ const classBasedValidation = (
   formId: string,
   formField: IField,
   response: FieldResponse,
-) => {
+): Result<true, ValidateFieldError> => {
   const fieldValidator = fieldValidatorFactory.createFieldValidator(
     formId,
     formField,
@@ -146,7 +152,8 @@ const classBasedValidation = (
     // TODO: Remove after soft launch of validation. Should throw Error for all validators
     // fieldValidator.constructor.name only returns the name of the class if code is not minified!
     if (ALLOWED_VALIDATORS.includes(fieldValidator.constructor.name)) {
-      throw new Error('Invalid answer submitted')
+      return err(new ValidateFieldError('Invalid answer submitted'))
     }
   }
+  return ok(true)
 }

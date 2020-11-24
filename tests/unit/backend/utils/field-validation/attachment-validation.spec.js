@@ -1,4 +1,7 @@
 const {
+  ValidateFieldError,
+} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+const {
   validateField,
 } = require('../../../../../dist/backend/app/utils/field-validation')
 
@@ -34,36 +37,47 @@ describe('Attachment validation', () => {
     it('should disallow submission with no attachment if it is required', () => {
       const formField = makeField(fieldId, '1')
       const response = makeResponse(fieldId, undefined)
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should allow submission with no attachment if it is not required', () => {
       const formField = makeField(fieldId, '1', { required: false })
       const response = makeResponse(fieldId, undefined, { answer: '' })
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should disallow submission with no answer if it is required', () => {
       const formField = makeField(fieldId, '1')
       const response = makeResponse(fieldId, Buffer.alloc(1), { answer: '' })
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should allow submission with no answer if it is not required', () => {
       const formField = makeField(fieldId, '1', { required: false })
       const response = makeResponse(fieldId, Buffer.alloc(1), { answer: '' })
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should disallow when it is not required but with answer and no attachment', () => {
       const formField = makeField(fieldId, '1', { required: false })
       const response = makeResponse(fieldId, undefined)
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 
@@ -71,22 +85,27 @@ describe('Attachment validation', () => {
     it('should allow attachment with valid size', () => {
       const formField = makeField(fieldId, '1')
       const response = makeResponse(fieldId, Buffer.alloc(1))
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should disallow attachment that exceeds size', () => {
       const formField = makeField(fieldId, '1')
       const response = makeResponse(fieldId, Buffer.alloc(2000000))
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should respect the attachmentSize from formField', () => {
       const formField = makeField(fieldId, '3')
       const response = makeResponse(fieldId, Buffer.alloc(2000000))
-      const testFunc = () => validateField(formId, formField, response)
-      expect(testFunc).not.toThrow()
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
   })
 })
