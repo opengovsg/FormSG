@@ -111,7 +111,8 @@ export const validateField = (
         case BasicField.LongText:
         case BasicField.Nric:
         case BasicField.HomeNo:
-        case BasicField.Radio: {
+        case BasicField.Radio:
+        case BasicField.Rating: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
           if (isLeft(validEither)) {

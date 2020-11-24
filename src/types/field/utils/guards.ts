@@ -4,6 +4,7 @@ import {
   ILongTextField,
   INricField,
   IRadioField,
+  IRatingField,
   ISectionFieldSchema,
   IShortTextField,
 } from 'src/types/field'
@@ -43,4 +44,8 @@ export const isRadioButtonField = (
   formField: IField,
 ): formField is IRadioField => {
   return formField.fieldType === BasicField.Radio
+}
+
+export const isRatingField = (formField: IField): formField is IRatingField => {
+  return formField.fieldType === BasicField.Rating
 }
