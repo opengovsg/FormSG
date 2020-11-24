@@ -25,19 +25,20 @@ const createAttachmentFieldSchema = () => {
   })
 
   // Prevent attachments from being saved on a webhooked form.
-  AttachmentFieldSchema.pre<IAttachmentFieldSchema>('validate', function (
-    next,
-  ) {
-    const { webhook, responseMode } = this.parent()
+  AttachmentFieldSchema.pre<IAttachmentFieldSchema>(
+    'validate',
+    function (next) {
+      const { webhook, responseMode } = this.parent()
 
-    if (responseMode === ResponseMode.Encrypt && webhook?.url) {
-      return next(
-        Error('Attachments are not allowed when a form has a webhook url'),
-      )
-    }
+      if (responseMode === ResponseMode.Encrypt && webhook?.url) {
+        return next(
+          Error('Attachments are not allowed when a form has a webhook url'),
+        )
+      }
 
-    return next()
-  })
+      return next()
+    },
+  )
 
   return AttachmentFieldSchema
 }

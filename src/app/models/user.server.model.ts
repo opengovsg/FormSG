@@ -78,17 +78,16 @@ const compileUserModel = (db: Mongoose) => {
    *
    * See: https://masteringjs.io/tutorials/mongoose/e11000-duplicate-key.
    */
-  UserSchema.post<IUserSchema>('save', function (
-    err: any,
-    _doc: IUserSchema,
-    next: any,
-  ) {
-    if (err.name === 'MongoError' && err.code === 11000) {
-      next(new Error('Account already exists with this email'))
-    } else {
-      next()
-    }
-  })
+  UserSchema.post<IUserSchema>(
+    'save',
+    function (err: any, _doc: IUserSchema, next: any) {
+      if (err.name === 'MongoError' && err.code === 11000) {
+        next(new Error('Account already exists with this email'))
+      } else {
+        next()
+      }
+    },
+  )
 
   // Statics
   /**
