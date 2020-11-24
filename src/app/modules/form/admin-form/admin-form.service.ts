@@ -177,7 +177,9 @@ export const getMockSpcpLocals = (
   formFields: IFieldSchema[] | undefined,
 ): SpcpLocals => {
   const myInfoFieldIds: string[] = formFields
-    ? formFields.filter((field) => field.myInfo?.attr).map((field) => field._id)
+    ? formFields
+        .filter((field) => field.myInfo?.attr)
+        .map((field) => field._id.toString())
     : []
   switch (authType) {
     case AuthType.SP:
