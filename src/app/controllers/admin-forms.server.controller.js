@@ -23,7 +23,6 @@ const {
 const getFormModel = require('../models/form.server.model').default
 const getSubmissionModel = require('../models/submission.server.model').default
 const { ResponseMode } = require('../../types')
-const { TransferOwnershipError } = require('../modules/form/form.errors')
 
 // Export individual functions (i.e. create, delete)
 // and makeModule function that takes in connection object
@@ -434,50 +433,6 @@ function makeModule(connection) {
       let submission = new Submission({})
       req.submission = submission
       return next()
-    },
-
-    /**
-     * Transfer a form to another user
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    transferOwner: async function (req, res) {
-      const newOwnerEmail = req.body.email
-
-      // Transfer owner and save the form.
-      return req.form
-        .transferOwner(newOwnerEmail)
-        .then((updatedForm) =>
-          updatedForm
-            .populate({
-              path: 'admin',
-              populate: {
-                path: 'agency',
-              },
-            })
-            .execPopulate(),
-        )
-        .then((updatedPopulatedForm) => {
-          return res.json({ form: updatedPopulatedForm })
-        })
-        .catch((error) => {
-          logger.error({
-            message: error.message,
-            meta: {
-              action: 'makeModule.transferOwner',
-              ...createReqMeta(req),
-            },
-            error,
-          })
-
-          if (error instanceof TransferOwnershipError) {
-            return res
-              .status(StatusCodes.CONFLICT)
-              .json({ message: error.message })
-          }
-
-          return respondOnMongoError(req, res, error)
-        })
     },
   }
 }
