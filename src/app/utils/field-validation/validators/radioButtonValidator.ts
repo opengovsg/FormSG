@@ -1,5 +1,5 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/function'
+import { flow } from 'fp-ts/lib/function'
 
 import { IRadioField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
@@ -13,7 +13,7 @@ type RadioButtonValidatorConstructor = (
   radioButtonField: IRadioField,
 ) => RadioButtonValidator
 
-const radioButtonValidator: RadioButtonValidatorConstructor = (
+const makeRadioOptionsValidator: RadioButtonValidatorConstructor = (
   radioButtonField,
 ) => (response) => {
   const { answer } = response
@@ -29,8 +29,8 @@ const radioButtonValidator: RadioButtonValidatorConstructor = (
 
 export const constructRadioButtonValidator: RadioButtonValidatorConstructor = (
   radioButtonField,
-) => (response) =>
-  pipe(
-    notEmptySingleAnswerResponse(response),
-    chain(radioButtonValidator(radioButtonField)),
+) =>
+  flow(
+    notEmptySingleAnswerResponse,
+    chain(makeRadioOptionsValidator(radioButtonField)),
   )
