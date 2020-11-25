@@ -1,5 +1,5 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/function'
+import { flow } from 'fp-ts/lib/function'
 
 import { ILongTextField, IShortTextField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
@@ -66,13 +66,8 @@ const lengthValidator: TextFieldValidatorConstructor = (textField) => {
   }
 }
 
-const constructTextValidator: TextFieldValidatorConstructor = (textField) => (
-  response,
-) => {
-  return pipe(
-    notEmptySingleAnswerResponse(response),
-    chain(lengthValidator(textField)),
-  )
+const constructTextValidator: TextFieldValidatorConstructor = (textField) => {
+  return flow(notEmptySingleAnswerResponse, chain(lengthValidator(textField)))
 }
 
 export default constructTextValidator
