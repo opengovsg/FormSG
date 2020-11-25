@@ -53,7 +53,7 @@ const exactLengthValidator: TextFieldValidatorConstructor = (textField) => (
       )
 }
 
-const lengthValidator: TextFieldValidatorConstructor = (textField) => {
+const getLengthValidator: TextFieldValidatorConstructor = (textField) => {
   switch (textField.ValidationOptions.selectedValidation) {
     case TextSelectedValidation.Exact:
       return exactLengthValidator(textField)
@@ -67,7 +67,10 @@ const lengthValidator: TextFieldValidatorConstructor = (textField) => {
 }
 
 const constructTextValidator: TextFieldValidatorConstructor = (textField) => {
-  return flow(notEmptySingleAnswerResponse, chain(lengthValidator(textField)))
+  return flow(
+    notEmptySingleAnswerResponse,
+    chain(getLengthValidator(textField)),
+  )
 }
 
 export default constructTextValidator
