@@ -2,16 +2,31 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { IAgencySchema, ITokenSchema } from 'src/types'
-
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
+import {
+  IAgencySchema,
+  IPopulatedForm,
+  ITokenSchema,
+  IUserSchema,
+} from '../../../types'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
 import { compareHash, hashData } from '../../utils/hash'
 import { generateOtp } from '../../utils/otp'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { PermissionLevel } from '../form/admin-form/admin-form.types'
+import {
+  assertFormAvailable,
+  getAssertPermissionFn,
+} from '../form/admin-form/admin-form.utils'
+import {
+  ForbiddenFormError,
+  FormDeletedError,
+  FormNotFoundError,
+} from '../form/form.errors'
+import { retrieveFullFormById } from '../form/form.service'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -247,5 +262,39 @@ const removeTokenOnSuccess = (email: string) => {
 
       return new DatabaseError()
     },
+  )
+}
+
+/**
+ * Retrieves the form of given formId provided that the given user has the
+ * required permissions.
+ *
+ * @returns ok(form) if the user has the required permissions
+ * @returns err(FormNotFoundError) if form does not exist in the database
+ * @returns err(FormDeleteError) if form is already archived
+ * @returns err(ForbiddenFormError if user does not have permission
+ * @returns err(DatabaseError) if any database error occurs
+ */
+export const getFormAfterPermissionChecks = ({
+  user,
+  formId,
+  level,
+}: {
+  user: IUserSchema
+  formId: string
+  level: PermissionLevel
+}): ResultAsync<
+  IPopulatedForm,
+  FormNotFoundError | FormDeletedError | DatabaseError | ForbiddenFormError
+> => {
+  // Step 1: Retrieve full form.
+  return retrieveFullFormById(formId).andThen((fullForm) =>
+    // Step 2: Check whether form is available to be retrieved.
+    assertFormAvailable(fullForm).andThen(() =>
+      // Step 3: Check required permission levels.
+      getAssertPermissionFn(level)(user, fullForm)
+        // Step 4: If success, return retrieved form.
+        .map(() => fullForm),
+    ),
   )
 }
