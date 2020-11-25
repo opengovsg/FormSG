@@ -1,5 +1,5 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/function'
+import { flow } from 'fp-ts/lib/function'
 
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { ISingleAnswerResponse } from 'src/types/response'
@@ -17,6 +17,5 @@ const nricValidator: NricValidator = (response) => {
     : left(`NricValidator:\tanswer is not a valid NRIC`)
 }
 
-export const constructNricValidator: NricValidatorConstructor = () => (
-  response,
-) => pipe(notEmptySingleAnswerResponse(response), chain(nricValidator))
+export const constructNricValidator: NricValidatorConstructor = () =>
+  flow(notEmptySingleAnswerResponse, chain(nricValidator))
