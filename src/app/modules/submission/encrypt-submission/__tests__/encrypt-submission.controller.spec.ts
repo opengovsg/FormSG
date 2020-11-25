@@ -1,20 +1,26 @@
+import { ObjectId } from 'bson-ext'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
-import { SubmissionData } from 'src/types'
+import { SubmissionData, SubmissionMetadata } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { SubmissionNotFoundError } from '../../submission.errors'
-import { handleGetEncryptedResponse } from '../encrypt-submission.controller'
+import {
+  handleGetEncryptedResponse,
+  handleGetMetadata,
+} from '../encrypt-submission.controller'
 import * as EncryptSubmissionService from '../encrypt-submission.service'
 
 jest.mock('../encrypt-submission.service')
 const MockEncryptSubService = mocked(EncryptSubmissionService)
 
 describe('encrypt-submission.controller', () => {
+  beforeEach(() => jest.clearAllMocks())
+
   describe('handleGetEncryptedResponse', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       params: { formId: 'mockFormId' },
@@ -112,6 +118,178 @@ describe('encrypt-submission.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+  })
+
+  describe('handleGetMetadata', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+
+    it('should return 200 with single submission metadata when query.submissionId is provided and can be found', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      // Mock service result.
+      const expectedMetadata: SubmissionMetadata = {
+        number: 2,
+        refNo: mockSubmissionId,
+        submissionTime: 'some submission time',
+      }
+
+      MockEncryptSubService.getSubmissionMetadata.mockReturnValueOnce(
+        okAsync(expectedMetadata),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        metadata: [expectedMetadata],
+        count: 1,
+      })
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+      expect(MockEncryptSubService.getSubmissionMetadata).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+    })
+
+    it('should return 200 with empty submission metadata when query.submissionId is provided but cannot be found', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      // Mock service result.
+      MockEncryptSubService.getSubmissionMetadata.mockReturnValueOnce(
+        okAsync(null),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        metadata: [],
+        count: 0,
+      })
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+      expect(MockEncryptSubService.getSubmissionMetadata).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+    })
+
+    it('should return 200 with list of submission metadata', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          page: 20,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      // Mock service result.
+      const expectedMetadataList = {
+        metadata: [
+          {
+            number: 2,
+            refNo: new ObjectId().toHexString(),
+            submissionTime: 'some submission time',
+          },
+        ] as SubmissionMetadata[],
+        count: 32,
+      }
+
+      MockEncryptSubService.getSubmissionMetadataList.mockReturnValueOnce(
+        okAsync(expectedMetadataList),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(expectedMetadataList)
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).toHaveBeenCalledWith(MOCK_FORM_ID, mockReq.query.page)
+      expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when database errors occurs for single metadata retrieval', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+      })
+      const mockErrorString = 'error retrieving metadata'
+      const mockRes = expressHandler.mockResponse()
+      // Mock service result.
+      MockEncryptSubService.getSubmissionMetadata.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+      expect(MockEncryptSubService.getSubmissionMetadata).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+    })
+
+    it('should return 500 when database errors occurs for metadata list retrieval', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          page: 1,
+        },
+      })
+      const mockErrorString = 'error retrieving metadata list'
+      const mockRes = expressHandler.mockResponse()
+      // Mock service result.
+      MockEncryptSubService.getSubmissionMetadataList.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).toHaveBeenCalledWith(MOCK_FORM_ID, mockReq.query.page)
     })
   })
 })

@@ -11,6 +11,8 @@ import { createReqMeta } from '../../../utils/request'
 import {
   getEncryptedSubmissionData,
   getSubmissionCursor,
+  getSubmissionMetadata,
+  getSubmissionMetadataList,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from './encrypt-submission.service'
@@ -201,4 +203,67 @@ export const handleGetEncryptedResponse: RequestHandler<
   }
 
   return res.json(responseData)
+}
+
+/**
+ * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/metadata
+ *
+ * @returns 200 with single submission metadata if query.submissionId is provided
+ * @returns 200 with list of submission metadata with total count (and optional offset if query.page is provided) if query.submissionId is not provided
+ * @returns 500 if any errors occurs whilst querying database
+ */
+export const handleGetMetadata: RequestHandler<
+  { formId: string },
+  unknown,
+  unknown,
+  Query & { page?: number; submissionId?: string }
+> = async (req, res) => {
+  const { formId } = req.params
+  const { page, submissionId } = req.query
+
+  const logMeta = {
+    action: 'handleGetMetadata',
+    formId,
+    submissionId,
+    page,
+    ...createReqMeta(req),
+  }
+
+  // Specific query.
+  if (submissionId) {
+    return getSubmissionMetadata(formId, submissionId)
+      .map((metadata) => {
+        return metadata
+          ? res.json({ metadata: [metadata], count: 1 })
+          : res.json({ metadata: [], count: 0 })
+      })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving metadata from database',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  }
+
+  // General query
+  return getSubmissionMetadataList(formId, page)
+    .map((result) => res.json(result))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Failure retrieving metadata list from database',
+        meta: logMeta,
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    })
 }
