@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson-ext'
 import { times } from 'lodash'
+import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
@@ -101,6 +102,60 @@ describe('feedback.service', () => {
       // Assert
       expect(actual).toEqual(mockCursor)
       expect(streamSpy).toHaveBeenCalledWith(mockFormId)
+    })
+  })
+
+  describe('getFormFeedbacks', () => {
+    it('should return feedback response successfully', async () => {
+      // Arrange
+      const expectedCount = 3
+      const mockFormId = new ObjectId().toHexString()
+      const feedbackPromises = times(expectedCount, (count) =>
+        FormFeedback.create({
+          formId: mockFormId,
+          comment: `cool form ${count}`,
+          rating: 5 - count,
+        }),
+      )
+      const createdFeedbacks = await Promise.all(feedbackPromises)
+      const expectedFeedbackList = createdFeedbacks.map((fb, idx) => ({
+        index: idx + 1,
+        timestamp: moment(fb.created).valueOf(),
+        rating: fb.rating,
+        comment: fb.comment,
+        date: moment(fb.created).tz('Asia/Singapore').format('D MMM YYYY'),
+        dateShort: moment(fb.created).tz('Asia/Singapore').format('D MMM'),
+      }))
+
+      // Act
+      const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
+
+      // Assert
+      const expectedAverage = (
+        createdFeedbacks.reduce((acc, curr) => acc + curr.rating, 0) /
+        expectedCount
+      ).toFixed(2)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual({
+        average: expectedAverage,
+        count: expectedCount,
+        feedback: expectedFeedbackList,
+      })
+    })
+
+    it('should return feedback response with zero count and empty array when no feedback is available', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual({
+        count: 0,
+        feedback: [],
+      })
     })
   })
 })
