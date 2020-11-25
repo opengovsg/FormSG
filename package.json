@@ -160,7 +160,7 @@
     "web-streams-polyfill": "^2.1.1",
     "whatwg-fetch": "^3.4.1",
     "winston": "^3.3.3",
-    "winston-cloudwatch": "^2.3.2"
+    "winston-cloudwatch": "^2.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
