@@ -11,6 +11,8 @@ export interface IFormFeedback {
 
 export interface IFormFeedbackSchema extends IFormFeedback, Document {
   _id: Document['_id']
+  created?: Date
+  lastModified?: Date
 }
 export interface IFormFeedbackDocument extends IFormFeedbackSchema {
   created: Date
