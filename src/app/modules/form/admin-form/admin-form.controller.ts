@@ -1,5 +1,7 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { StatusCodes } from 'http-status-codes'
+import JSONStream from 'JSONStream'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType, WithForm } from '../../../../types'
@@ -303,4 +305,89 @@ export const handleCountFormFeedback: RequestHandler<{
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
+}
+
+export const handleStreamFormFeedback: RequestHandler<{
+  formId: string
+}> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  const hasReadPermissionResult = await UserService.getPopulatedUserById(
+    sessionUserId,
+  ).andThen((user) =>
+    // Step 2: Retrieve full form.
+    FormService.retrieveFullFormById(formId).andThen((fullForm) =>
+      // Step 3: Check whether form is active.
+      assertFormAvailable(fullForm).andThen(() =>
+        // Step 4: Check whether current user has read permissions to form.
+        assertHasReadPermissions(user, fullForm),
+      ),
+    ),
+  )
+
+  const logMeta = {
+    action: 'handleStreamFormFeedback',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+    formId,
+  }
+
+  if (hasReadPermissionResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst verifying user permissions',
+      meta: logMeta,
+      error: hasReadPermissionResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(
+      hasReadPermissionResult.error,
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  // No errors, start stream.
+  const cursor = FeedbackService.getFormFeedbackStream(formId)
+
+  cursor
+    .on('error', (error) => {
+      logger.error({
+        message: 'Error streaming feedback from MongoDB',
+        meta: logMeta,
+        error,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Error retrieving from database.',
+      })
+    })
+    .pipe(JSONStream.stringify())
+    .on('error', (error) => {
+      logger.error({
+        message: 'Error converting feedback to JSON',
+        meta: logMeta,
+        error,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Error converting feedback to JSON',
+      })
+    })
+    .pipe(res.type('json'))
+    .on('error', (error) => {
+      logger.error({
+        message: 'Error writing feedback to HTTP stream',
+        meta: logMeta,
+        error,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Error writing feedback to HTTP stream',
+      })
+    })
+    .on('close', () => {
+      logger.info({
+        message: 'Stream feedback closed',
+        meta: logMeta,
+      })
+
+      return res.end()
+    })
 }
