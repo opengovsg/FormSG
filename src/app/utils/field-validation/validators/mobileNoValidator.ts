@@ -28,14 +28,12 @@ const mobilePhoneNumberValidator: MobileNoValidatorConstructor = () => (
 const prefixValidator: MobileNoValidatorConstructor = (mobileNumberField) => (
   response,
 ) => {
-  if (
-    !mobileNumberField.allowIntlNumbers &&
-    !startsWithSgPrefix(response.answer)
-  ) {
-    return left(`MobileNoValidator:\t answer is not an SG number 
-        but intl numbers are not allowed`)
-  }
-  return right(response)
+  return mobileNumberField.allowIntlNumbers ||
+    startsWithSgPrefix(response.answer)
+    ? right(response)
+    : left(
+        `MobileNoValidator:\t answer is not an SG number but intl numbers are not allowed`,
+      )
 }
 
 export const constructMobileNoValidator: MobileNoValidatorConstructor = (

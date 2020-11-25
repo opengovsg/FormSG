@@ -28,14 +28,11 @@ const homePhoneNumberValidator: HomeNoValidatorConstructor = () => (
 const prefixValidator: HomeNoValidatorConstructor = (homeNumberField) => (
   response,
 ) => {
-  if (
-    !homeNumberField.allowIntlNumbers &&
-    !startsWithSgPrefix(response.answer)
-  ) {
-    return left(`HomeNoValidator:\t answer is not an SG number 
-        but intl numbers are not allowed`)
-  }
-  return right(response)
+  return homeNumberField.allowIntlNumbers || startsWithSgPrefix(response.answer)
+    ? right(response)
+    : left(
+        `HomeNoValidator:\t answer is not an SG number but intl numbers are not allowed`,
+      )
 }
 
 export const constructHomeNoValidator: HomeNoValidatorConstructor = (
