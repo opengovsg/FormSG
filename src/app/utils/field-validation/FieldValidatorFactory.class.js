@@ -10,7 +10,6 @@ const {
   DecimalValidator,
   AttachmentValidator,
   DateValidator,
-  RatingValidator,
 } = require('./validators')
 
 const myInfoTypes = require('../../../shared/resources/myinfo').types
@@ -41,6 +40,8 @@ class FieldValidatorFactory {
       case 'textarea': // long text
       case 'nric':
       case 'homeno':
+      case 'rating':
+        throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'radiobutton':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'dropdown':
@@ -53,8 +54,6 @@ class FieldValidatorFactory {
         return new TableValidator(...arguments)
       case 'number':
         return new NumberValidator(...arguments)
-      case 'rating':
-        return new RatingValidator(...arguments)
       case 'yes_no':
         return new YesNoValidator(...arguments)
       case 'decimal':
