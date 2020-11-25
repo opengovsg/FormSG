@@ -25,11 +25,11 @@ const mobilePhoneNumberValidator: MobileNoValidatorConstructor = () => (
     : left(`MobileNoValidator:\t answer is not a valid mobile phone number`)
 }
 
-const prefixValidator: MobileNoValidatorConstructor = (homeNumberField) => (
+const prefixValidator: MobileNoValidatorConstructor = (mobileNumberField) => (
   response,
 ) => {
   if (
-    !homeNumberField.allowIntlNumbers &&
+    !mobileNumberField.allowIntlNumbers &&
     !startsWithSgPrefix(response.answer)
   ) {
     return left(`MobileNoValidator:\t answer is not an SG number 
