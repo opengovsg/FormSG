@@ -85,4 +85,22 @@ describe('feedback.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
+
+  describe('getFormFeedbackStream', () => {
+    it('should return stream successfully', async () => {
+      // Arrange
+      const mockFormId = 'some form id'
+      const mockCursor = ('some cursor' as unknown) as mongoose.QueryCursor<any>
+      const streamSpy = jest
+        .spyOn(FormFeedback, 'getFeedbackCursorByFormId')
+        .mockReturnValue(mockCursor)
+
+      // Act
+      const actual = FeedbackService.getFormFeedbackStream(mockFormId)
+
+      // Assert
+      expect(actual).toEqual(mockCursor)
+      expect(streamSpy).toHaveBeenCalledWith(mockFormId)
+    })
+  })
 })
