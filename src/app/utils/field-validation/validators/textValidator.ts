@@ -53,18 +53,16 @@ const exactLengthValidator: TextFieldValidatorConstructor = (textField) => (
       )
 }
 
-const lengthValidator: TextFieldValidatorConstructor = (textField) => (
-  response,
-) => {
+const lengthValidator: TextFieldValidatorConstructor = (textField) => {
   switch (textField.ValidationOptions.selectedValidation) {
     case TextSelectedValidation.Exact:
-      return exactLengthValidator(textField)(response)
+      return exactLengthValidator(textField)
     case TextSelectedValidation.Minimum:
-      return minLengthValidator(textField)(response)
+      return minLengthValidator(textField)
     case TextSelectedValidation.Maximum:
-      return maxLengthValidator(textField)(response)
+      return maxLengthValidator(textField)
     default:
-      return right(response)
+      return right
   }
 }
 
