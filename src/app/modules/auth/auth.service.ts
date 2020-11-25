@@ -26,7 +26,7 @@ import {
   FormDeletedError,
   FormNotFoundError,
 } from '../form/form.errors'
-import { retrieveFullFormById } from '../form/form.service'
+import * as FormService from '../form/form.service'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -288,7 +288,7 @@ export const getFormAfterPermissionChecks = ({
   FormNotFoundError | FormDeletedError | DatabaseError | ForbiddenFormError
 > => {
   // Step 1: Retrieve full form.
-  return retrieveFullFormById(formId).andThen((fullForm) =>
+  return FormService.retrieveFullFormById(formId).andThen((fullForm) =>
     // Step 2: Check whether form is available to be retrieved.
     assertFormAvailable(fullForm).andThen(() =>
       // Step 3: Check required permission levels.
