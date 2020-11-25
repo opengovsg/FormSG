@@ -5,7 +5,7 @@ import { IFormSchema } from './form'
 export interface IFormFeedback {
   formId: IFormSchema['_id']
   rating: number
-  comment: string
+  comment?: string
   _id?: Document['_id']
 }
 
