@@ -5,7 +5,6 @@ const {
   TableValidator,
   NumberValidator,
   YesNoValidator,
-  MobileValidator,
   BaseFieldValidator,
   DecimalValidator,
   AttachmentValidator,
@@ -41,6 +40,7 @@ class FieldValidatorFactory {
       case 'nric':
       case 'homeno':
       case 'rating':
+      case 'mobileno':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'radiobutton':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
@@ -62,8 +62,6 @@ class FieldValidatorFactory {
         return new AttachmentValidator(...arguments)
       case 'date':
         return new DateValidator(...arguments)
-      case 'mobile':
-        return new MobileValidator(...arguments)
       default:
         // Checks if answer is optional or required, but will throw an error when there is an answer
         // since _isFilledAnswerValid is not implemented

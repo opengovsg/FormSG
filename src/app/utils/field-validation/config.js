@@ -10,6 +10,7 @@ const ALLOWED_VALIDATORS = [
   'DecimalValidator',
   'NumberValidator',
   'MobileValidator',
+  'RatingValidator',
   'TextValidator',
   'DateValidator',
   'TableValidator',
