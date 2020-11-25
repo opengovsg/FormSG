@@ -1,18 +1,21 @@
 import { BasicField, ResponseMode } from '../../../types'
+import { assertUnreachable } from '../../utils/assert-unreachable'
 import { FIELDS_TO_REJECT } from '../../utils/field-validation/config'
 
 type ModeFilterParam = {
   fieldType: BasicField
 }
 
-export const getModeFilter = (responseMode: ResponseMode) => {
+export const getModeFilter = (
+  responseMode: ResponseMode,
+): (<T extends ModeFilterParam>(responses: T[]) => T[]) => {
   switch (responseMode) {
     case ResponseMode.Email:
       return emailModeFilter
     case ResponseMode.Encrypt:
       return encryptModeFilter
     default:
-      throw Error('getResponsesForEachField: Invalid response mode parameter')
+      return assertUnreachable(responseMode)
   }
 }
 
