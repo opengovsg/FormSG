@@ -9,10 +9,10 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { IField } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
 import { FieldResponse } from '../../../types/response'
-import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
+import { isProcessedSingleAnswerResponse } from './field-validation.guards'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
 import { constructSingleAnswerValidator } from './singleAnswerValidator.factory'
 

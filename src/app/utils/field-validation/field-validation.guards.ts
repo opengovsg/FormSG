@@ -1,13 +1,12 @@
+import { types as basicTypes } from '../../../shared/resources/basic'
+import { BasicField } from '../../../types/field'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
-} from 'src/app/modules/submission/submission.types'
-
-import { types as basicTypes } from '../../shared/resources/basic'
-import { BasicField } from '../field'
+} from '../../modules/submission/submission.types'
 
 import { ITableRow } from './index'
 
