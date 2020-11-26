@@ -88,7 +88,7 @@ const logInvalidAnswer = (
 export const validateField = (
   formId: string,
   formField: IField,
-  response: FieldResponse,
+  response: ProcessedFieldResponse,
 ): Result<true, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
     return err(
