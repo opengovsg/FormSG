@@ -93,7 +93,7 @@ module.exports = function (app) {
     celebrate({
       [Segments.BODY]: Joi.object()
         .keys({
-          rating: Joi.number().min(1).max(5).cast('string').required(),
+          rating: Joi.number().min(1).max(5).required(),
           comment: Joi.string().allow('').required(),
         })
         // Allow other keys for backwards compability as frontend might put
