@@ -12,6 +12,7 @@ import {
   AuthType,
   DashboardFormView,
   IFieldSchema,
+  IFormSchema,
   IPopulatedForm,
   SpcpLocals,
 } from '../../../../types'
@@ -19,7 +20,7 @@ import getFormModel from '../../../models/form.server.model'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
-import { findAdminById } from '../../user/user.service'
+import { findAdminByEmail, findAdminById } from '../../user/user.service'
 import { TransferOwnershipError } from '../form.errors'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
@@ -230,55 +231,81 @@ export const archiveForm = (
  * @param newOwnerEmail the email of the new owner to transfer to
  *
  * @return ok(updated form) if transfer is successful
+ * @return err(MissingUserError) if either the current user or user to transfer to cannot be found in the database
  * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
  * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
  */
 export const transferFormOwnership = (
   currentForm: IPopulatedForm,
   newOwnerEmail: string,
-): ResultAsync<IPopulatedForm, TransferOwnershipError | DatabaseError> => {
+): ResultAsync<
+  IPopulatedForm,
+  MissingUserError | TransferOwnershipError | DatabaseError
+> => {
   const logMeta = {
     action: 'transferFormOwnership',
     newOwnerEmail,
   }
 
-  // Step 1: Transfer form ownership.
-  return ResultAsync.fromPromise(
-    currentForm.transferOwner(newOwnerEmail),
-    (error) => {
-      logger.error({
-        message: 'Error occurred whilst transferring form ownership',
-        meta: logMeta,
-        error,
-      })
+  return (
+    // Step 1: Retrieve current owner of form to transfer.
+    findAdminById(currentForm.admin._id)
+      .andThen((currentOwner) =>
+        // Step 2: Retrieve user document for new owner.
+        findAdminByEmail(newOwnerEmail)
+          .mapErr((error) => {
+            // Override MissingUserError with more specific message if new owner
+            // cannot be found.
+            if (error instanceof MissingUserError) {
+              error.message = `${newOwnerEmail} must have logged in once before being added as Owner`
+            }
+            return error
+          })
+          // Step 3: Perform form ownership transfer.
+          .andThen((newOwner) => {
+            // No need to transfer form ownership if new and current owners are
+            // the same.
+            if (newOwner.email === currentOwner.email) {
+              return errAsync(
+                new TransferOwnershipError(
+                  'You are already the owner of this form',
+                ),
+              ) as ResultAsync<
+                IFormSchema,
+                TransferOwnershipError | DatabaseError
+              >
+            }
 
-      // Special case, when document instance method already returns
-      // ApplicationError, directly return the error.
-      if (
-        error instanceof TransferOwnershipError ||
-        error instanceof DatabaseError
-      ) {
-        return error
-      }
+            return ResultAsync.fromPromise(
+              currentForm.transferOwner(currentOwner, newOwner),
+              (error) => {
+                logger.error({
+                  message: 'Error occurred whilst transferring form ownership',
+                  meta: logMeta,
+                  error,
+                })
 
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
+                return new DatabaseError(getMongoErrorMessage(error))
+              },
+            )
+          }),
+      )
+      // Step 4: Populate updated form.
+      .andThen((updatedForm) =>
+        ResultAsync.fromPromise(
+          updatedForm
+            .populate({ path: 'admin', populate: { path: 'agency' } })
+            .execPopulate(),
+          (error) => {
+            logger.error({
+              message: 'Error occurred whilst populating form with admin',
+              meta: logMeta,
+              error,
+            })
 
-    // Step 2: Populate updated form.
-  ).andThen((updatedForm) =>
-    ResultAsync.fromPromise(
-      updatedForm
-        .populate({ path: 'admin', populate: { path: 'agency' } })
-        .execPopulate(),
-      (error) => {
-        logger.error({
-          message: 'Error occurred whilst populating form with admin',
-          meta: logMeta,
-          error,
-        })
-
-        return new DatabaseError(getMongoErrorMessage(error))
-      },
-    ),
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
   )
 }
