@@ -1272,4 +1272,173 @@ describe('admin-form.controller', () => {
       })
     })
   })
+
+  describe('handlePreviewFeedbackSubmission', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'yetanothertest@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER as IPopulatedUser,
+      _id: MOCK_FORM_ID,
+      title: 'mock title again',
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    it('should return 200 with success response when user has read permissions to form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock success on all service invocations.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewFeedbackSubmission(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).not.toHaveBeenCalled()
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Successfully received feedback',
+      })
+    })
+
+    it('should return 403 when user does not have permissions to form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      const mockErrorString = 'no access'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewFeedbackSubmission(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+    })
+
+    it('should return 404 when form to preview feedback submission to cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      const mockErrorString = 'not found'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewFeedbackSubmission(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+    })
+
+    it('should return 410 when form to preview feedback submission to is archived', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      const mockErrorString = 'deleted'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewFeedbackSubmission(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'user gone'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewFeedbackSubmission(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving user', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'database gone'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewFeedbackSubmission(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+    })
+  })
 })
