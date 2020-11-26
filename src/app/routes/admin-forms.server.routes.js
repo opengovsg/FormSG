@@ -271,7 +271,7 @@ module.exports = function (app) {
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
     .get(authActiveForm(PermissionLevel.Read), adminForms.getFeedback)
     .post(
-      authActiveForm(PermissionLevel.Read),
+      withUserAuthentication,
       celebrate({
         [Segments.BODY]: Joi.object()
           .keys({
@@ -282,7 +282,7 @@ module.exports = function (app) {
           // extra keys in the body.
           .unknown(true),
       }),
-      adminForms.passThroughFeedback,
+      AdminFormController.handlePreviewFeedbackSubmission,
     )
 
   /**
