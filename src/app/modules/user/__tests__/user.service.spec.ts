@@ -1,6 +1,6 @@
 import { ObjectID } from 'bson'
 import MockDate from 'mockdate'
-import mongoose from 'mongoose'
+import mongoose, { Query } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { ImportMock } from 'ts-mock-imports'
 
@@ -14,7 +14,7 @@ import { IAgencySchema, IPopulatedUser, IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { ApplicationError } from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { InvalidOtpError, MissingUserError } from '../user.errors'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
@@ -370,6 +370,65 @@ describe('user.service', () => {
       expect(actualResult._unsafeUnwrap().toObject()).toEqual(
         expect.objectContaining(expectedUser),
       )
+    })
+  })
+
+  describe('findAdminById', () => {
+    it('should return admin successfully', async () => {
+      // Arrange
+      const mockUserId = new ObjectID().toHexString()
+      const findSpy = jest.spyOn(UserModel, 'findById').mockImplementationOnce(
+        () =>
+          (({
+            exec: jest.fn().mockResolvedValue(defaultUser),
+          } as unknown) as Query<any>),
+      )
+
+      // Act
+      const actualResult = await UserService.findAdminById(mockUserId)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(defaultUser)
+      expect(findSpy).toHaveBeenCalledWith(mockUserId)
+    })
+
+    it('should return DatabaseError when query throws an error', async () => {
+      // Arrange
+      const mockUserId = new ObjectID().toHexString()
+      const findSpy = jest.spyOn(UserModel, 'findById').mockImplementationOnce(
+        () =>
+          (({
+            exec: jest.fn().mockRejectedValue(new Error('database bad!')),
+          } as unknown) as Query<any>),
+      )
+
+      // Act
+      const actualResult = await UserService.findAdminById(mockUserId)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(findSpy).toHaveBeenCalledWith(mockUserId)
+    })
+
+    it('should return MissingUserError when query returns null', async () => {
+      // Arrange
+      const mockUserId = new ObjectID().toHexString()
+      const findSpy = jest.spyOn(UserModel, 'findById').mockImplementationOnce(
+        () =>
+          (({
+            exec: jest.fn().mockResolvedValue(null),
+          } as unknown) as Query<any>),
+      )
+
+      // Act
+      const actualResult = await UserService.findAdminById(mockUserId)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
+      expect(findSpy).toHaveBeenCalledWith(mockUserId)
     })
   })
 })
