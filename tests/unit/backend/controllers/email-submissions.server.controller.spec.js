@@ -902,7 +902,7 @@ describe('Email Submissions Controller', () => {
           question: 'SingPass Validated NRIC',
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
-          fieldType: 'authenticationSp',
+          fieldType: 'textfield',
         },
       ]
       const expectedAutoReplyData = [
@@ -935,13 +935,13 @@ describe('Email Submissions Controller', () => {
           question: 'CorpPass Validated UEN',
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
-          fieldType: 'authenticationCp',
+          fieldType: 'textfield',
         },
         {
           question: 'CorpPass Validated UID',
           answerTemplate: [resLocalFixtures.userInfo],
           answer: resLocalFixtures.userInfo,
-          fieldType: 'authenticationCp',
+          fieldType: 'textfield',
         },
       ]
       const expectedAutoReplyData = [
@@ -1203,7 +1203,7 @@ describe('Email Submissions Controller', () => {
         question: 'a table',
         fieldType: 'table',
         isHeader: false,
-        answer: '',
+        answerArray: [['', '']],
       })
       reqFixtures.form.form_fields.push({
         _id: fieldId,
@@ -1213,25 +1213,26 @@ describe('Email Submissions Controller', () => {
           { title: 'Name', fieldType: 'textfield' },
           { title: 'Age', fieldType: 'textfield' },
         ],
+        minimumRows: 1,
       })
       const expectedJsonData = [
         {
           question: '[table] a table (Name, Age)',
-          answer: '',
+          answer: ',',
         },
       ]
       const expectedFormData = [
         {
           question: '[table] a table (Name, Age)',
-          answerTemplate: [''],
-          answer: '',
+          answerTemplate: [','],
+          answer: ',',
           fieldType: 'table',
         },
       ]
       const expectedAutoReplyData = [
         {
           question: 'a table (Name, Age)',
-          answerTemplate: [''],
+          answerTemplate: [','],
         },
       ]
       const expected = {
