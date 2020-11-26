@@ -1136,7 +1136,7 @@ describe('Form Model', () => {
         // Previous user should now be in permissionList with editor
         // permissions.
         expect(actual.toObject().permissionList).toEqual([
-          { email: populatedAdmin.email, write: true },
+          { email: populatedAdmin.email, write: true, _id: expect.anything() },
         ])
       })
     })
