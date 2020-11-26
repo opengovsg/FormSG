@@ -356,7 +356,7 @@ module.exports = function (app) {
                 question: Joi.string().required(),
                 fieldType: Joi.string()
                   .required()
-                  .valid(Object.values(BasicField)),
+                  .valid(...Object.values(BasicField)),
                 answer: Joi.string().allow(''),
                 answerArray: Joi.array(),
                 filename: Joi.string(),
@@ -414,7 +414,7 @@ module.exports = function (app) {
               answer: Joi.string().allow('').required(),
               fieldType: Joi.string()
                 .required()
-                .valid(Object.values(BasicField)),
+                .valid(...Object.values(BasicField)),
               signature: Joi.string().allow(''),
             }),
           )
