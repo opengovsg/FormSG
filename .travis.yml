@@ -139,6 +139,6 @@ jobs:
 
 stages:
   - Build application
-  - Test
+  - Tests
   - Generate coverage
   - Deploy
