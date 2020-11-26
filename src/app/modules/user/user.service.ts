@@ -2,9 +2,6 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import getAdminVerificationModel from '../../../app/models/admin_verification.server.model'
-import { AGENCY_SCHEMA_ID } from '../../../app/models/agency.server.model'
-import getUserModel from '../../../app/models/user.server.model'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -14,6 +11,10 @@ import {
   IUserSchema,
   UpsertOtpParams,
 } from '../../../types'
+import getAdminVerificationModel from '../../models/admin_verification.server.model'
+import { AGENCY_SCHEMA_ID } from '../../models/agency.server.model'
+import getUserModel from '../../models/user.server.model'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { compareHash, hashData } from '../../utils/hash'
 import { generateOtp } from '../../utils/otp'
 import { InvalidDomainError } from '../auth/auth.errors'
@@ -260,6 +261,37 @@ export const findAdminById = (
     })
     return new DatabaseError()
   }).andThen((admin) => {
+    if (!admin) {
+      return errAsync(new MissingUserError())
+    }
+    return okAsync(admin)
+  })
+}
+
+/**
+ * Retrieves the user with the given email.
+ * @param email the email of the user to retrieve
+ * @returns ok(user document) if retrieval is successful
+ * @returns err(DatabaseError) if database errors occurs whilst retrieving user
+ * @returns err(MissingUserError) if user does not exist in the database
+ */
+export const findAdminByEmail = (
+  email: string,
+): ResultAsync<IUserSchema, MissingUserError | DatabaseError> => {
+  return ResultAsync.fromPromise(
+    UserModel.findOne({ email }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Database find user email error',
+        meta: {
+          action: 'findAdminByEmail',
+          email,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((admin) => {
     if (!admin) {
       return errAsync(new MissingUserError())
     }

@@ -431,4 +431,63 @@ describe('user.service', () => {
       expect(findSpy).toHaveBeenCalledWith(mockUserId)
     })
   })
+
+  describe('findAdminByEmail', () => {
+    it('should return admin successfully', async () => {
+      // Arrange
+      const mockEmail = 'someemail@example.com'
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockImplementationOnce(
+        () =>
+          (({
+            exec: jest.fn().mockResolvedValue(defaultUser),
+          } as unknown) as Query<any>),
+      )
+
+      // Act
+      const actualResult = await UserService.findAdminByEmail(mockEmail)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(defaultUser)
+      expect(findSpy).toHaveBeenCalledWith({ email: mockEmail })
+    })
+
+    it('should return DatabaseError when query throws an error', async () => {
+      // Arrange
+      const mockEmail = 'another@example.com'
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockImplementationOnce(
+        () =>
+          (({
+            exec: jest.fn().mockRejectedValue(new Error('database bad!')),
+          } as unknown) as Query<any>),
+      )
+
+      // Act
+      const actualResult = await UserService.findAdminByEmail(mockEmail)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(findSpy).toHaveBeenCalledWith({ email: mockEmail })
+    })
+
+    it('should return MissingUserError when query returns null', async () => {
+      // Arrange
+      const mockEmail = 'mockEmail@example.com'
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockImplementationOnce(
+        () =>
+          (({
+            exec: jest.fn().mockResolvedValue(null),
+          } as unknown) as Query<any>),
+      )
+
+      // Act
+      const actualResult = await UserService.findAdminByEmail(mockEmail)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
+      expect(findSpy).toHaveBeenCalledWith({ email: mockEmail })
+    })
+  })
 })
