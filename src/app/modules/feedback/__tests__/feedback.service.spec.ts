@@ -9,6 +9,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { DatabaseError } from '../../core/core.errors'
 import * as FeedbackService from '../feedback.service'
+import { FeedbackResponse } from '../feedback.types'
 
 const FormFeedback = getFormFeedbackModel(mongoose)
 
@@ -163,6 +164,66 @@ describe('feedback.service', () => {
         count: 0,
         feedback: [],
       })
+    })
+
+    it('should return feedback response with empty string comment if feedback comment is undefined', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      const createdFb = await FormFeedback.create({
+        formId: mockFormId,
+        // Missing comment key value.
+        rating: 3,
+      })
+
+      // Act
+      const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
+
+      // Assert
+      const expectedResult: FeedbackResponse = {
+        count: 1,
+        average: '3.00',
+        feedback: [
+          {
+            index: 1,
+            timestamp: moment(createdFb.created).valueOf(),
+            rating: createdFb.rating,
+            // Empty comment string
+            comment: '',
+            date: moment(createdFb.created)
+              .tz('Asia/Singapore')
+              .format('D MMM YYYY'),
+            dateShort: moment(createdFb.created)
+              .tz('Asia/Singapore')
+              .format('D MMM'),
+          },
+        ],
+      }
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      const sortSpy = jest.fn().mockReturnThis()
+      const findSpy = jest.spyOn(FormFeedback, 'find').mockImplementationOnce(
+        () =>
+          (({
+            sort: sortSpy,
+            exec: () => Promise.reject(new Error('boom')),
+          } as unknown) as mongoose.Query<any>),
+      )
+
+      // Act
+      const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
+
+      // Assert
+      expect(findSpy).toHaveBeenCalledWith({
+        formId: mockFormId,
+      })
+      expect(sortSpy).toHaveBeenCalledWith({ created: 1 })
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
 })
