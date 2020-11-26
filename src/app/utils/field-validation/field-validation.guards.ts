@@ -15,7 +15,7 @@ const answerArrayFieldTypes = basicTypes
   .map((f) => f.name)
 
 const isProcessedFieldResponse = (
-  response: any,
+  response: ProcessedFieldResponse,
 ): response is ProcessedFieldResponse => {
   return (
     'fieldType' in response &&
@@ -26,7 +26,7 @@ const isProcessedFieldResponse = (
 }
 
 export const isProcessedSingleAnswerResponse = (
-  response: any,
+  response: ProcessedFieldResponse,
 ): response is ProcessedSingleAnswerResponse => {
   return (
     'answer' in response &&
@@ -37,7 +37,7 @@ export const isProcessedSingleAnswerResponse = (
 }
 
 export const isProcessedCheckboxResponse = (
-  response: any,
+  response: ProcessedFieldResponse,
 ): response is ProcessedCheckboxResponse => {
   return (
     !!response &&
@@ -55,7 +55,7 @@ export const isTableRow = (row: unknown): row is ITableRow =>
   isStringArray(row) && row.length > 0
 
 export const isProcessedTableResponse = (
-  response: any,
+  response: ProcessedFieldResponse,
 ): response is ProcessedTableResponse => {
   if (
     !!response &&
