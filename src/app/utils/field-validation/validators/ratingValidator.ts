@@ -1,5 +1,5 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/function'
+import { flow } from 'fp-ts/lib/function'
 import isInt from 'validator/lib/isInt'
 
 import { IRatingField } from 'src/types/field'
@@ -11,7 +11,7 @@ import { notEmptySingleAnswerResponse } from './common'
 type RatingValidator = ResponseValidator<ISingleAnswerResponse>
 type RatingValidatorConstructor = (ratingField: IRatingField) => RatingValidator
 
-const ratingValidator: RatingValidatorConstructor = (ratingField) => (
+const makeRatingLimitsValidator: RatingValidatorConstructor = (ratingField) => (
   response,
 ) => {
   const { answer } = response
@@ -30,8 +30,8 @@ const ratingValidator: RatingValidatorConstructor = (ratingField) => (
 
 export const constructRatingValidator: RatingValidatorConstructor = (
   ratingField,
-) => (response) =>
-  pipe(
-    notEmptySingleAnswerResponse(response),
-    chain(ratingValidator(ratingField)),
+) =>
+  flow(
+    notEmptySingleAnswerResponse,
+    chain(makeRatingLimitsValidator(ratingField)),
   )
