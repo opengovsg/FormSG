@@ -4,7 +4,6 @@
  * Module dependencies.
  */
 const mongoose = require('mongoose')
-const moment = require('moment-timezone')
 const _ = require('lodash')
 const { StatusCodes } = require('http-status-codes')
 
@@ -22,8 +21,6 @@ const {
   getEmailFormModel,
 } = require('../models/form.server.model')
 const getFormModel = require('../models/form.server.model').default
-const getFormFeedbackModel = require('../models/form_feedback.server.model')
-  .default
 const getSubmissionModel = require('../models/submission.server.model').default
 const { ResponseMode } = require('../../types')
 
@@ -413,51 +410,6 @@ function makeModule(connection) {
           )
           discriminatedForm.save(function (sErr, duplicated) {
             return sErr ? onError(sErr) : onSuccess(duplicated)
-          })
-        }
-      })
-    },
-    /**
-     * Return form feedback matching query
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    getFeedback: function (req, res) {
-      let FormFeedback = getFormFeedbackModel(connection)
-      let query = FormFeedback.find({ formId: req.form._id }).sort({
-        created: 1,
-      })
-      query.exec(function (err, feedback) {
-        if (err) {
-          return respondOnMongoError(req, res, err)
-        } else if (!feedback) {
-          return res
-            .status(StatusCodes.NOT_FOUND)
-            .json({ message: 'No feedback found' })
-        } else {
-          let sum = 0
-          let count = 0
-          feedback = feedback.map(function (element) {
-            sum += element.rating
-            count += 1
-            return {
-              index: count,
-              timestamp: moment(element.created).valueOf(),
-              rating: element.rating,
-              comment: element.comment,
-              date: moment(element.created)
-                .tz('Asia/Singapore')
-                .format('D MMM YYYY'),
-              dateShort: moment(element.created)
-                .tz('Asia/Singapore')
-                .format('D MMM'),
-            }
-          })
-          let average = count > 0 ? (sum / count).toFixed(2) : undefined
-          return res.json({
-            average: average,
-            count: count,
-            feedback: feedback,
           })
         }
       })
