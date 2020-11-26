@@ -4,12 +4,6 @@ dist: xenial
 services:
   - xvfb
 
-language: node_js
-node_js: '12'
-cache:
-  - npm
-  - pip
-
 notifications:
   email:
     recipients:
@@ -22,6 +16,11 @@ notifications:
 jobs:
   include:
     - stage: Build application
+      language: node_js
+      node_js: '12'
+      cache:
+        - npm
+        - pip
       before_script:
         - export NODE_OPTIONS=--max-old-space-size=4096
       script:
