@@ -270,7 +270,20 @@ module.exports = function (app) {
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
     .get(authActiveForm(PermissionLevel.Read), adminForms.getFeedback)
-    .post(authActiveForm(PermissionLevel.Read), adminForms.passThroughFeedback)
+    .post(
+      authActiveForm(PermissionLevel.Read),
+      celebrate({
+        [Segments.BODY]: Joi.object()
+          .keys({
+            rating: Joi.number().min(1).max(5).required(),
+            comment: Joi.string().allow('').required(),
+          })
+          // Allow other keys for backwards compability as frontend might put
+          // extra keys in the body.
+          .unknown(true),
+      }),
+      adminForms.passThroughFeedback,
+    )
 
   /**
    * Count the number of feedback for a form
