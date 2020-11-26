@@ -42,9 +42,6 @@ jobs:
         - npm run test-frontend
     - name: Typescript tests
       workspaces:
-        create: 
-          name: coverage
-          paths: .
         use: build
       script:
         - travis_retry npm run test-backend-jest
