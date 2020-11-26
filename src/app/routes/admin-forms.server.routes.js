@@ -20,6 +20,8 @@ const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
 const SpcpController = require('../modules/spcp/spcp.controller')
+const { BasicField } = require('../../types')
+
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
 const emailValOpts = {
@@ -341,20 +343,44 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    * @security OTP
    */
-  app
-    .route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})')
-    .post(
-      authActiveForm(PermissionLevel.Read),
-      emailSubmissions.receiveEmailSubmissionUsingBusBoy,
-      emailSubmissions.validateEmailSubmission,
-      AdminFormController.passThroughSpcp,
-      submissions.injectAutoReplyInfo,
-      SpcpController.appendVerifiedSPCPResponses,
-      emailSubmissions.prepareEmailSubmission,
-      adminForms.passThroughSaveMetadataToDb,
-      emailSubmissions.sendAdminEmail,
-      submissions.sendAutoReply,
-    )
+  app.route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})').post(
+    authActiveForm(PermissionLevel.Read),
+    emailSubmissions.receiveEmailSubmissionUsingBusBoy,
+    celebrate({
+      body: Joi.object({
+        responses: Joi.array()
+          .items(
+            Joi.object()
+              .keys({
+                _id: Joi.string().required(),
+                question: Joi.string().required(),
+                fieldType: Joi.string()
+                  .required()
+                  .valid(Object.values(BasicField)),
+                answer: Joi.string().allow(''),
+                answerArray: Joi.array(),
+                filename: Joi.string(),
+                content: Joi.binary(),
+                isHeader: Joi.boolean(),
+                myInfo: Joi.object(),
+                signature: Joi.string().allow(''),
+              })
+              .xor('answer', 'answerArray') // only answer or answerArray can be present at once
+              .with('filename', 'content'), // if filename is present, content must be present
+          )
+          .required(),
+        isPreview: Joi.boolean().required(),
+      }),
+    }),
+    emailSubmissions.validateEmailSubmission,
+    AdminFormController.passThroughSpcp,
+    submissions.injectAutoReplyInfo,
+    SpcpController.appendVerifiedSPCPResponses,
+    emailSubmissions.prepareEmailSubmission,
+    adminForms.passThroughSaveMetadataToDb,
+    emailSubmissions.sendAdminEmail,
+    submissions.sendAutoReply,
+  )
 
   /**
    * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply
@@ -376,18 +402,60 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    * @security OTP
    */
-  app
-    .route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})')
-    .post(
-      authActiveForm(PermissionLevel.Read),
-      encryptSubmissions.validateEncryptSubmission,
-      AdminFormController.passThroughSpcp,
-      submissions.injectAutoReplyInfo,
-      webhookVerifiedContentFactory.encryptedVerifiedFields,
-      encryptSubmissions.prepareEncryptSubmission,
-      adminForms.passThroughSaveMetadataToDb,
-      submissions.sendAutoReply,
-    )
+  app.route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})').post(
+    authActiveForm(PermissionLevel.Read),
+    encryptSubmissions.validateEncryptSubmission,
+    celebrate({
+      body: Joi.object({
+        responses: Joi.array()
+          .items(
+            Joi.object().keys({
+              _id: Joi.string().required(),
+              answer: Joi.string().allow('').required(),
+              fieldType: Joi.string()
+                .required()
+                .valid(Object.values(BasicField)),
+              signature: Joi.string().allow(''),
+            }),
+          )
+          .required(),
+        encryptedContent: Joi.string()
+          .custom((value, helpers) => {
+            const parts = String(value).split(/;|:/)
+            if (
+              parts.length !== 3 ||
+              parts[0].length !== 44 || // public key
+              parts[1].length !== 32 || // nonce
+              !parts.every((part) => Joi.string().base64().validate(part))
+            ) {
+              return helpers.error('Invalid encryptedContent.')
+            }
+            return value
+          }, 'encryptedContent')
+          .required(),
+        attachments: Joi.object()
+          .pattern(
+            /^[a-fA-F0-9]{24}$/,
+            Joi.object().keys({
+              encryptedFile: Joi.object().keys({
+                binary: Joi.string().required(),
+                nonce: Joi.string().required(),
+                submissionPublicKey: Joi.string().required(),
+              }),
+            }),
+          )
+          .optional(),
+        isPreview: Joi.boolean().required(),
+        version: Joi.number().required(),
+      }),
+    }),
+    AdminFormController.passThroughSpcp,
+    submissions.injectAutoReplyInfo,
+    webhookVerifiedContentFactory.encryptedVerifiedFields,
+    encryptSubmissions.prepareEncryptSubmission,
+    adminForms.passThroughSaveMetadataToDb,
+    submissions.sendAutoReply,
+  )
 
   /**
    * Retrieve actual response for a form with encrypted storage
