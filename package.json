@@ -165,7 +165,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "@babel/plugin-transform-runtime": "^7.12.1",
-    "@babel/preset-env": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
     "@opengovsg/mockpass": "^2.5.6",
     "@shelf/jest-mongodb": "^1.2.3",
     "@types/bcrypt": "^3.0.0",
