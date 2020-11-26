@@ -106,19 +106,25 @@ describe('feedback.service', () => {
   })
 
   describe('getFormFeedbacks', () => {
-    it('should return feedback response successfully', async () => {
+    it('should return correct feedback responses', async () => {
       // Arrange
       const expectedCount = 3
       const mockFormId = new ObjectId().toHexString()
-      const feedbackPromises = times(expectedCount, (count) =>
+      const expectedFbPromises = times(expectedCount, (count) =>
         FormFeedback.create({
           formId: mockFormId,
           comment: `cool form ${count}`,
           rating: 5 - count,
         }),
       )
-      const createdFeedbacks = await Promise.all(feedbackPromises)
-      const expectedFeedbackList = createdFeedbacks.map((fb, idx) => ({
+      // Add another feedback with a different form id.
+      await FormFeedback.create({
+        formId: new ObjectId(),
+        comment: 'boo this form sux',
+        rating: 1,
+      })
+      const expectedCreatedFbs = await Promise.all(expectedFbPromises)
+      const expectedFeedbackList = expectedCreatedFbs.map((fb, idx) => ({
         index: idx + 1,
         timestamp: moment(fb.created).valueOf(),
         rating: fb.rating,
@@ -131,8 +137,9 @@ describe('feedback.service', () => {
       const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
 
       // Assert
+      // Should only average from the feedbacks for given formId.
       const expectedAverage = (
-        createdFeedbacks.reduce((acc, curr) => acc + curr.rating, 0) /
+        expectedCreatedFbs.reduce((acc, curr) => acc + curr.rating, 0) /
         expectedCount
       ).toFixed(2)
       expect(actualResult.isOk()).toEqual(true)
