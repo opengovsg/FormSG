@@ -4,6 +4,9 @@ dist: xenial
 services:
   - xvfb
 
+language: node_js
+install: true # skip installation, perform in build stage.
+
 notifications:
   email:
     recipients:
@@ -17,6 +20,7 @@ jobs:
   include:
     - stage: Build application
       language: node_js
+      install: npm ci
       node_js: '12'
       cache:
         - npm
