@@ -44,12 +44,11 @@ jobs:
         - npm run test-frontend
     - name: Typescript tests
       workspaces:
-        create:
-          name: coverage
-          paths: .
         use: build
       script:
         - travis_retry npm run test-backend-jest
+      after_success:
+        - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - name: End-to-end tests
       workspaces:
         use: build
@@ -57,10 +56,6 @@ jobs:
         chrome: stable
       script:
         - npm run test-e2e-ci
-    - stage: Generate coverage
-      workspaces:
-        use: coverage
-      script: cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - stage: Deploy
       services:
         - docker
@@ -142,5 +137,4 @@ jobs:
 stages:
   - Build application
   - Tests
-  - Generate coverage
   - Deploy
