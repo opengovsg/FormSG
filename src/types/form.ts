@@ -115,12 +115,15 @@ export interface IFormSchema extends IForm, Document {
   /**
    * Transfer ownership of the form to another user.
    *
-   * @returns updated form if successful
-   * @throws TransferOwnershipError if new owner is not in the database yet
-   * @throws TransferOwnershipError if new owner is current owner
-   * @throws DatabaseError if form's current owner is not in the database
+   * @param currentOwner the current owner of the form. The owner is retrieved outside of the method to force validation to be performed correctly.
+   * @param newOwner the new owner of the form. Similarly retrieved outside of method to force correct validation.
+   *
+   * @returns updated form
    */
-  transferOwner(newOwnerEmail: string): Promise<IFormSchema>
+  transferOwner(
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ): Promise<IFormSchema>
 }
 
 export interface IPopulatedForm extends IFormSchema {

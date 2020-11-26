@@ -6,8 +6,6 @@ import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
-import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { TransferOwnershipError } from 'src/app/modules/form/form.errors'
 import {
   IEmailForm,
   IEmailFormSchema,
@@ -1129,7 +1127,7 @@ describe('Form Model', () => {
         })
 
         // Act
-        const actual = await validForm.transferOwner(newUser.email)
+        const actual = await validForm.transferOwner(populatedAdmin, newUser)
 
         // Assert
         expect(actual).toBeDefined()
@@ -1140,47 +1138,6 @@ describe('Form Model', () => {
         expect(actual.toObject().permissionList).toEqual([
           { email: populatedAdmin.email, write: true },
         ])
-      })
-
-      it('should throw TransferOwnershipError when newOwnerEmail is current form admin email', async () => {
-        // Act
-        const actualPromise = validForm.transferOwner(populatedAdmin.email)
-
-        // Assert
-        await expect(actualPromise).rejects.toThrowError(
-          new TransferOwnershipError('You are already the owner of this form'),
-        )
-      })
-
-      it('should throw TransferOwnershipError when newOwnerEmail user cannot be found in the database', async () => {
-        // Arrange
-        const invalidEmail = 'notInDatabase@email.com'
-
-        // Act
-        const actualPromise = validForm.transferOwner(invalidEmail)
-
-        // Assert
-        await expect(actualPromise).rejects.toThrowError(
-          new TransferOwnershipError(
-            `${invalidEmail} must have logged in once before being added as Owner`,
-          ),
-        )
-      })
-
-      it('should throw DatabaseError when current owner of the form cannot be found in the database', async () => {
-        // Arrange
-        // Replace admin with invalid id.
-        validForm.admin = new ObjectId()
-
-        // Act
-        const actualPromise = validForm.transferOwner(
-          'does-not-matter@example.com',
-        )
-
-        // Assert
-        await expect(actualPromise).rejects.toThrowError(
-          new DatabaseError('Admin of the form cannot be found'),
-        )
       })
     })
   })
