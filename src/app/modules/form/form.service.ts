@@ -4,6 +4,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IFormSchema, IPopulatedForm, Status } from '../../../types'
 import getFormModel from '../../models/form.server.model'
+import { assertUnreachable } from '../../utils/assert-unreachable'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 import {
@@ -67,6 +68,10 @@ export const retrieveFullFormById = (
 export const isFormPublic = (
   form: IPopulatedForm,
 ): Result<true, FormDeletedError | PrivateFormError | ApplicationError> => {
+  if (!form.status) {
+    return err(new ApplicationError())
+  }
+
   switch (form.status) {
     case Status.Public:
       return ok(true)
@@ -75,14 +80,6 @@ export const isFormPublic = (
     case Status.Private:
       return err(new PrivateFormError(form.inactiveMessage))
     default:
-      logger.error({
-        message: 'Encountered invalid form status',
-        meta: {
-          action: 'isFormPublic',
-          formStatus: form.status,
-          form,
-        },
-      })
-      return err(new ApplicationError())
+      return assertUnreachable(form.status)
   }
 }
