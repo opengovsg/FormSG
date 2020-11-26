@@ -1,6 +1,6 @@
 import BSON from 'bson-ext'
 import { compact, pick, uniq } from 'lodash'
-import { Mongoose, Schema, SchemaOptions } from 'mongoose'
+import mongoose, { Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
 import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
@@ -541,7 +541,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Hooks
-  FormSchema.pre<IFormSchema>('validate', async function (next) {
+  FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
     if (bson.calculateObjectSize(this) > 10 * MB) {
       const err = new Error('Form size exceeded.')
@@ -550,13 +550,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
     // Validate that admin exists before form is created.
-    await User.findById(this.admin, function (error, admin) {
-      if (error) {
-        return next(Error(`Error validating admin for form.`))
-      }
+    return User.findById(this.admin).then((admin) => {
       if (!admin) {
-        return next(Error(`Admin for this form is not found.`))
+        const validationError = this.invalidate(
+          'admin',
+          'Admin for this form is not found.',
+        ) as mongoose.Error.ValidationError
+        return next(validationError)
       }
+
+      // Remove admin from the permission list if they exist.
+      // This prevents the form owner from being both an admin and another role.
+      this.permissionList = this.permissionList?.filter(
+        (item) => item.email !== admin.email,
+      )
+
       return next()
     })
   })
