@@ -12,7 +12,11 @@ import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
-import { isProcessedSingleAnswerResponse } from './field-validation.guards'
+import {
+  isProcessedCheckboxResponse,
+  isProcessedSingleAnswerResponse,
+  isProcessedTableResponse,
+} from './field-validation.guards'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
 import { constructSingleAnswerValidator } from './singleAnswerValidator.factory'
 

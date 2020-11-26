@@ -12,25 +12,13 @@ const singleAnswerFieldTypes = basicTypes
   .filter((field) => !field.answerArray)
   .map((f) => f.name)
 
-const isProcessedFieldResponse = (
-  response: ProcessedFieldResponse,
-): response is ProcessedFieldResponse => {
-  return (
-    'fieldType' in response &&
-    typeof response.fieldType === 'string' &&
-    'isVisible' in response &&
-    typeof response.isVisible === 'boolean'
-  )
-}
-
 export const isProcessedSingleAnswerResponse = (
   response: ProcessedFieldResponse,
 ): response is ProcessedSingleAnswerResponse => {
   return (
+    singleAnswerFieldTypes.includes(response.fieldType) &&
     'answer' in response &&
-    typeof response.answer === 'string' &&
-    isProcessedFieldResponse(response) &&
-    singleAnswerFieldTypes.includes(response.fieldType)
+    typeof response.answer === 'string'
   )
 }
 
@@ -38,11 +26,9 @@ export const isProcessedCheckboxResponse = (
   response: ProcessedFieldResponse,
 ): response is ProcessedCheckboxResponse => {
   return (
-    !!response &&
+    response.fieldType === BasicField.Checkbox &&
     'answerArray' in response &&
-    isStringArray(response.answerArray) &&
-    isProcessedFieldResponse(response) &&
-    response.fieldType === BasicField.Checkbox
+    isStringArray(response.answerArray)
   )
 }
 
@@ -57,13 +43,11 @@ export const isProcessedTableResponse = (
   response: ProcessedFieldResponse,
 ): response is ProcessedTableResponse => {
   if (
-    !!response &&
     response.fieldType === BasicField.Table &&
     'answerArray' in response &&
     Array.isArray(response.answerArray) &&
     response.answerArray.length > 0 &&
-    response.answerArray.every(isTableRow) &&
-    isProcessedFieldResponse(response)
+    response.answerArray.every(isTableRow)
   ) {
     // Check that all arrays in answerArray have the same length
     const subArrLength: number = response.answerArray[0].length
@@ -76,8 +60,10 @@ export const isProcessedAttachmentResponse = (
   response: ProcessedFieldResponse,
 ): response is ProcessedAttachmentResponse => {
   return (
+    response.fieldType === BasicField.Attachment &&
     'filename' in response &&
     typeof response.filename === 'string' &&
-    isProcessedFieldResponse(response)
+    'answer' in response &&
+    typeof response.answer === 'string'
   )
 }
