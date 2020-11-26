@@ -298,7 +298,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback/download')
-    .get(authActiveForm(PermissionLevel.Read), adminForms.streamFeedback)
+    .get(withUserAuthentication, AdminFormController.handleStreamFormFeedback)
 
   /**
    * Transfer form ownership to another user

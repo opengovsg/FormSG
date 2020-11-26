@@ -1,14 +1,31 @@
+import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
+import { mocked } from 'ts-jest/utils'
 import { ImportMock } from 'ts-mock-imports'
 
 import getTokenModel from 'src/app/models/token.server.model'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IAgencySchema } from 'src/types'
+import { IAgencySchema, IPopulatedForm, IPopulatedUser } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { DatabaseError } from '../../core/core.errors'
+import { PermissionLevel } from '../../form/admin-form/admin-form.types'
+import * as AdminFormUtils from '../../form/admin-form/admin-form.utils'
+import {
+  ForbiddenFormError,
+  FormDeletedError,
+  FormNotFoundError,
+} from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
 import * as AuthService from '../auth.service'
+
+jest.mock('../../form/form.service')
+const MockFormService = mocked(FormService)
+jest.mock('../../form/admin-form/admin-form.utils')
+const MockAdminFormUtils = mocked(AdminFormUtils)
 
 const TokenModel = getTokenModel(mongoose)
 
@@ -30,10 +47,10 @@ describe('auth.service', () => {
   })
 
   // Only need to clear Token collection, and ignore other collections.
-  beforeEach(
-    async () =>
-      await dbHandler.clearCollection(TokenModel.collection.collectionName),
-  )
+  beforeEach(async () => {
+    await dbHandler.clearCollection(TokenModel.collection.collectionName)
+    jest.resetAllMocks()
+  })
 
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -184,6 +201,131 @@ describe('auth.service', () => {
         'OTP is invalid. Please try again.',
       )
       expect(actualResult.isErr()).toBe(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+    })
+  })
+
+  describe('getFormAfterPermissionChecks', () => {
+    const MOCK_USER = {
+      _id: new ObjectId(),
+    } as IPopulatedUser
+    it('should return form when user has permissions', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      const expectedForm = {
+        title: 'mock form',
+        _id: mockFormId,
+      } as IPopulatedForm
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(expectedForm),
+      )
+      MockAdminFormUtils.assertFormAvailable.mockReturnValueOnce(ok(true))
+      MockAdminFormUtils.getAssertPermissionFn.mockReturnValueOnce(() =>
+        ok(true),
+      )
+
+      // Act
+      const actualResult = await AuthService.getFormAfterPermissionChecks({
+        user: MOCK_USER,
+        formId: mockFormId,
+        level: PermissionLevel.Write,
+      })
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(MockAdminFormUtils.getAssertPermissionFn).toHaveBeenCalledWith(
+        PermissionLevel.Write,
+      )
+    })
+
+    it('should return FormNotFoundError when form does not exist in the database', async () => {
+      // Arrange
+      const expectedError = new FormNotFoundError('not found')
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      const actualResult = await AuthService.getFormAfterPermissionChecks({
+        user: MOCK_USER,
+        formId: new ObjectId().toHexString(),
+        level: PermissionLevel.Read,
+      })
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+    })
+
+    it('should return FormDeletedError when form is already archived', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      const expectedError = new FormDeletedError('form deleted')
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync({} as IPopulatedForm),
+      )
+      MockAdminFormUtils.assertFormAvailable.mockReturnValueOnce(
+        err(expectedError),
+      )
+      // Act
+      const actualResult = await AuthService.getFormAfterPermissionChecks({
+        user: MOCK_USER,
+        formId: mockFormId,
+        level: PermissionLevel.Delete,
+      })
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+    })
+
+    it('should return ForbiddenFormError when user does not have permission', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync({} as IPopulatedForm),
+      )
+      const expectedError = new ForbiddenFormError('user not allowed')
+      MockAdminFormUtils.assertFormAvailable.mockReturnValueOnce(ok(true))
+      MockAdminFormUtils.getAssertPermissionFn.mockReturnValueOnce(() =>
+        err(expectedError),
+      )
+
+      // Act
+      const actualResult = await AuthService.getFormAfterPermissionChecks({
+        user: MOCK_USER,
+        formId: mockFormId,
+        level: PermissionLevel.Write,
+      })
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+      expect(MockAdminFormUtils.getAssertPermissionFn).toHaveBeenCalledWith(
+        PermissionLevel.Write,
+      )
+    })
+
+    it('should return DatabaseError when error occurs whilst retrieving form', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      const expectedError = new DatabaseError('db boom')
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync({} as IPopulatedForm),
+      )
+      MockAdminFormUtils.assertFormAvailable.mockReturnValueOnce(
+        err(expectedError),
+      )
+      // Act
+      const actualResult = await AuthService.getFormAfterPermissionChecks({
+        user: MOCK_USER,
+        formId: mockFormId,
+        level: PermissionLevel.Delete,
+      })
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
     })
   })

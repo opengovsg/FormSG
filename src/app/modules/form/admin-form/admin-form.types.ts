@@ -1,5 +1,6 @@
 import { Result } from 'neverthrow'
 
+import { IPopulatedForm, IUserSchema } from '../../../../types'
 import { ForbiddenFormError } from '../form.errors'
 
 export enum PermissionLevel {
@@ -8,4 +9,7 @@ export enum PermissionLevel {
   Delete = 'delete',
 }
 
-export type FormPermissionResult = Result<true, ForbiddenFormError>
+export type AssertFormFn = (
+  user: IUserSchema,
+  form: IPopulatedForm,
+) => Result<true, ForbiddenFormError>

@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { IFormFeedbackSchema } from '../../../types'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
@@ -34,4 +35,15 @@ export const getFormFeedbackCount = (
       return new DatabaseError(getMongoErrorMessage(error))
     },
   )
+}
+
+/**
+ * Retrieves form feedback stream.
+ * @param formId the formId of form to retrieve feedback for
+ * @returns form feedback stream
+ */
+export const getFormFeedbackStream = (
+  formId: string,
+): mongoose.QueryCursor<IFormFeedbackSchema> => {
+  return FormFeedbackModel.getFeedbackCursorByFormId(formId)
 }

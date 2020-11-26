@@ -6,7 +6,6 @@
 const mongoose = require('mongoose')
 const moment = require('moment-timezone')
 const _ = require('lodash')
-const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -462,61 +461,6 @@ function makeModule(connection) {
           })
         }
       })
-    },
-    /**
-     * Stream download feedback for a form
-     * @param  {Object} req - Express request object
-     * @param  {Object} req.form - the form to download
-     * @param  {Object} res - Express response object
-     */
-    streamFeedback: function (req, res) {
-      let FormFeedback = getFormFeedbackModel(connection)
-      FormFeedback.find({ formId: req.form._id })
-        .cursor()
-        .on('error', function (err) {
-          logger.error({
-            message: 'Error streaming feedback from MongoDB',
-            meta: {
-              action: 'makeModule.streamFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Error retrieving from database.',
-          })
-        })
-        .pipe(JSONStream.stringify())
-        .on('error', function (err) {
-          logger.error({
-            message: 'Error converting feedback to JSON',
-            meta: {
-              action: 'makeModule.streamFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Error converting feedback to JSON',
-          })
-        })
-        .pipe(res.type('json'))
-        .on('error', function (err) {
-          logger.error({
-            message: 'Error writing feedback to HTTP stream',
-            meta: {
-              action: 'makeModule.streamFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Error writing feedback to HTTP stream',
-          })
-        })
-        .on('end', function () {
-          res.end()
-        })
     },
     /**
      * Submit feedback when previewing forms
