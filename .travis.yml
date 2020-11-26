@@ -42,10 +42,10 @@ jobs:
         - npm run test-frontend
     - name: Typescript tests
       workspaces:
-        use: build
         create: 
           name: coverage
-          paths: ./coverage
+          paths: .
+        use: build
       script:
         - travis_retry npm run test-backend-jest
     - name: End-to-end tests
