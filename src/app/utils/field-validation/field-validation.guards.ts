@@ -1,5 +1,5 @@
 import { types as basicTypes } from '../../../shared/resources/basic'
-import { BasicField } from '../../../types/field'
+import { BasicField, ITableRow } from '../../../types'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
@@ -8,10 +8,8 @@ import {
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
-import { ITableRow } from './index'
-
-const answerArrayFieldTypes = basicTypes
-  .filter((field) => field.answerArray)
+const singleAnswerFieldTypes = basicTypes
+  .filter((field) => !field.answerArray)
   .map((f) => f.name)
 
 const isProcessedFieldResponse = (
@@ -32,7 +30,7 @@ export const isProcessedSingleAnswerResponse = (
     'answer' in response &&
     typeof response.answer === 'string' &&
     isProcessedFieldResponse(response) &&
-    !answerArrayFieldTypes.includes(response.fieldType)
+    singleAnswerFieldTypes.includes(response.fieldType)
   )
 }
 
@@ -41,6 +39,7 @@ export const isProcessedCheckboxResponse = (
 ): response is ProcessedCheckboxResponse => {
   return (
     !!response &&
+    'answerArray' in response &&
     isStringArray(response.answerArray) &&
     isProcessedFieldResponse(response) &&
     response.fieldType === BasicField.Checkbox
@@ -59,11 +58,12 @@ export const isProcessedTableResponse = (
 ): response is ProcessedTableResponse => {
   if (
     !!response &&
+    response.fieldType === BasicField.Table &&
+    'answerArray' in response &&
     Array.isArray(response.answerArray) &&
     response.answerArray.length > 0 &&
     response.answerArray.every(isTableRow) &&
-    isProcessedFieldResponse(response) &&
-    response.fieldType === BasicField.Table
+    isProcessedFieldResponse(response)
   ) {
     // Check that all arrays in answerArray have the same length
     const subArrLength: number = response.answerArray[0].length
@@ -73,7 +73,7 @@ export const isProcessedTableResponse = (
 }
 
 export const isProcessedAttachmentResponse = (
-  response: any,
+  response: ProcessedFieldResponse,
 ): response is ProcessedAttachmentResponse => {
   return (
     'filename' in response &&

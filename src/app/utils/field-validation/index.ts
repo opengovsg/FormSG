@@ -128,9 +128,15 @@ export const validateField = (
         }
       }
     }
-  } else {
-    // fallback for processed checkbox/table/attachment responses
+  } else if (
+    isProcessedCheckboxResponse(response) ||
+    isProcessedTableResponse(response)
+  ) {
+    // fallback for processed checkbox/table responses
     return classBasedValidation(formId, formField, response)
+  } else {
+    logInvalidAnswer(formId, formField, 'Invalid response shape')
+    return err(new ValidateFieldError('Response has invalid shape'))
   }
   return ok(true)
 }
