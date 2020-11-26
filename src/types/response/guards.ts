@@ -3,6 +3,12 @@ import {
   ProcessedSingleAnswerResponse,
 } from 'src/app/modules/submission/submission.types'
 
+import { types as basicTypes } from '../../shared/resources/basic'
+
+const answerArrayFieldTypes = basicTypes
+  .filter((field) => field.answerArray)
+  .map((f) => f.name)
+
 const isProcessedFieldResponse = (
   response: any,
 ): response is ProcessedFieldResponse => {
@@ -20,6 +26,7 @@ export const isProcessedSingleAnswerResponse = (
   return (
     'answer' in response &&
     typeof response.answer === 'string' &&
-    isProcessedFieldResponse(response)
+    isProcessedFieldResponse(response) &&
+    !answerArrayFieldTypes.includes(response.fieldType)
   )
 }
