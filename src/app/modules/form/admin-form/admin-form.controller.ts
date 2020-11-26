@@ -357,3 +357,51 @@ export const handleStreamFormFeedback: RequestHandler<{
       return res.end()
     })
 }
+
+/**
+ * Handler for POST /{formId}/adminform/feedback.
+ * This endpoint allows admins to preview how feedback submission would look
+ * like on their forms.
+ * @security session
+ *
+ * @returns 200 with success response if user has read permissions
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handlePreviewFeedbackSubmission: RequestHandler = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Ensure user has read permissions to form before allowing previewing of
+    // feedback submission.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // User has permissions, return success message.
+      .map(() => res.json({ message: 'Successfully received feedback' }))
+      // User unauthorized, or errors occurred.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error handling preview submission of feedback',
+          meta: {
+            action: 'handlePreviewFeedbackSubmission',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
