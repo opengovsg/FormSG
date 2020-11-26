@@ -46,7 +46,7 @@ jobs:
       workspaces:
         create:
           name: coverage
-          paths: ./coverage
+          paths: .
         use: build
       script:
         - travis_retry npm run test-backend-jest
