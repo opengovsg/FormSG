@@ -219,9 +219,10 @@ describe('auth.service', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(expectedForm),
       )
-      const assertSpy = jest.fn().mockImplementation(() => () => ok(true))
       MockAdminFormUtils.assertFormAvailable.mockReturnValueOnce(ok(true))
-      MockAdminFormUtils.getAssertPermissionFn.mockImplementationOnce(assertSpy)
+      MockAdminFormUtils.getAssertPermissionFn.mockReturnValueOnce(() =>
+        ok(true),
+      )
 
       // Act
       const actualResult = await AuthService.getFormAfterPermissionChecks({
@@ -233,7 +234,9 @@ describe('auth.service', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
-      expect(assertSpy).toHaveBeenCalledWith(PermissionLevel.Write)
+      expect(MockAdminFormUtils.getAssertPermissionFn).toHaveBeenCalledWith(
+        PermissionLevel.Write,
+      )
     })
 
     it('should return FormNotFoundError when form does not exist in the database', async () => {
@@ -285,10 +288,9 @@ describe('auth.service', () => {
       )
       const expectedError = new ForbiddenFormError('user not allowed')
       MockAdminFormUtils.assertFormAvailable.mockReturnValueOnce(ok(true))
-      const assertSpy = jest
-        .fn()
-        .mockImplementation(() => () => err(expectedError))
-      MockAdminFormUtils.getAssertPermissionFn.mockImplementationOnce(assertSpy)
+      MockAdminFormUtils.getAssertPermissionFn.mockReturnValueOnce(() =>
+        err(expectedError),
+      )
 
       // Act
       const actualResult = await AuthService.getFormAfterPermissionChecks({
@@ -300,7 +302,9 @@ describe('auth.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
-      expect(assertSpy).toHaveBeenCalledWith(PermissionLevel.Write)
+      expect(MockAdminFormUtils.getAssertPermissionFn).toHaveBeenCalledWith(
+        PermissionLevel.Write,
+      )
     })
 
     it('should return DatabaseError when error occurs whilst retrieving form', async () => {
