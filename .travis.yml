@@ -5,6 +5,7 @@ services:
   - xvfb
 
 language: node_js
+node_js: '12'
 install: true # skip installation, perform in build stage.
 
 notifications:
@@ -19,9 +20,7 @@ notifications:
 jobs:
   include:
     - stage: Build application
-      language: node_js
       install: npm ci
-      node_js: '12'
       cache:
         - npm
         - pip
