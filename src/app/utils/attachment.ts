@@ -49,37 +49,6 @@ export const areAttachmentsMoreThan7MB = (
   return totalAttachmentSize > 7000000
 }
 
-/**
- * Looks for duplicated filenames and changes the filename
- * to for example 1-abc.txt, 2-abc.txt.
- * One of the duplicated files will not have its name changed.
- * Two abc.txt will become 1-abc.txt and abc.txt
- * @param attachments - Array of file objects
- */
-export const handleDuplicatesInAttachments = (
-  attachments: IAttachmentInfo[],
-): void => {
-  const names = new Map()
-
-  // fill up the map, the key: filename and value: count
-  attachments.forEach((a) => {
-    if (names.get(a.filename)) {
-      names.set(a.filename, names.get(a.filename) + 1)
-    } else {
-      names.set(a.filename, 1)
-    }
-  })
-
-  // Change names of duplicates
-  attachments.forEach((a) => {
-    if (names.get(a.filename) > 1) {
-      const count = names.get(a.filename) - 1
-      names.set(a.filename, count)
-      a.filename = `${count}-${a.filename}`
-    }
-  })
-}
-
 const isAttachmentResponse = (
   response: FieldResponse,
 ): response is IAttachmentResponse => {

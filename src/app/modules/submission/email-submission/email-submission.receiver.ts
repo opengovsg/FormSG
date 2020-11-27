@@ -12,7 +12,10 @@ import {
   MultipartError,
 } from './email-submission.errors'
 import { IAttachmentInfo, ParsedMultipartForm } from './email-submission.types'
-import { addAttachmentToResponses } from './email-submission.utils'
+import {
+  addAttachmentToResponses,
+  handleDuplicatesInAttachments,
+} from './email-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -110,6 +113,7 @@ export const configureMultipartReceiver = (
           return reject(error)
         })
         .on('finish', () => {
+          handleDuplicatesInAttachments(attachments)
           addAttachmentToResponses(body.responses, attachments)
           return resolve(body)
         })
