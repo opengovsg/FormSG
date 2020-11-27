@@ -7,8 +7,11 @@ import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
+  BasicField,
   IAgencySchema,
+  IField,
   IFormSchema,
+  ITableField,
   IUserSchema,
   ResponseMode,
 } from 'src/types'
@@ -166,6 +169,45 @@ const insertEmailForm = async ({
   }
 }
 
+const generateDefaultField = (
+  fieldType: BasicField,
+  customParams?: Partial<IField>,
+): IField | ITableField => {
+  const defaultParams = {
+    title: `test ${fieldType} field title`,
+    _id: new ObjectID().toHexString(),
+    description: `${fieldType} description`,
+    globalId: new ObjectID().toHexString(),
+    fieldType,
+    required: true,
+    disabled: false,
+  }
+  if (fieldType === BasicField.Table) {
+    return {
+      minimumRows: 1,
+      columns: [
+        {
+          title: 'Test Column Title 1',
+          required: true,
+          columnType: BasicField.ShortText,
+        },
+        {
+          title: 'Test Column Title 2',
+          required: true,
+          columnType: BasicField.Dropdown,
+        },
+      ],
+      ...defaultParams,
+      ...customParams,
+    }
+  }
+
+  return {
+    ...defaultParams,
+    ...customParams,
+  }
+}
+
 const dbHandler = {
   connect,
   closeDatabase,
@@ -175,6 +217,7 @@ const dbHandler = {
   insertFormCollectionReqs,
   clearCollection,
   insertEmailForm,
+  generateDefaultField,
 }
 
 export default dbHandler
