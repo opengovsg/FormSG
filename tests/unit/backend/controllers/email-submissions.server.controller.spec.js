@@ -876,10 +876,12 @@ describe('Email Submissions Controller', () => {
               answerTemplate,
             })
           }
-          expected.jsonData.push({
-            question,
-            answer,
-          })
+          if (fields[i].fieldType !== 'section') {
+            expected.jsonData.push({
+              question,
+              answer,
+            })
+          }
           expected.formData.push({
             question,
             answerTemplate,
@@ -1527,7 +1529,9 @@ describe('Email Submissions Controller', () => {
             question: title,
             answerTemplate: String(answer).split('\n'),
           })
-          expected.jsonData.push({ question: title, answer: String(answer) })
+          if (fieldType !== 'section') {
+            expected.jsonData.push({ question: title, answer: String(answer) })
+          }
           expected.formData.push({
             question: title,
             answerTemplate: String(answer).split('\n'),
