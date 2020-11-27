@@ -1,8 +1,6 @@
 import { BasicField } from '../../../../types'
 import {
   ProcessedCheckboxResponse,
-  ProcessedFieldResponse,
-  ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 
@@ -10,6 +8,7 @@ import {
   EmailAutoReplyField,
   EmailDataForOneField,
   EmailJsonField,
+  ResponseFormattedForEmail,
 } from './email-submission.types'
 
 /**
@@ -20,7 +19,7 @@ import {
  * @returns {String}
  */
 const getMyInfoPrefix = (
-  response: ProcessedFieldResponse,
+  response: ResponseFormattedForEmail,
   hashedFields: Set<string>,
 ): string => {
   return !!response.myInfo?.attr && hashedFields.has(response._id)
@@ -34,7 +33,7 @@ const getMyInfoPrefix = (
  * @param response
  * @returns the prefix
  */
-const getVerifiedPrefix = (response: ProcessedFieldResponse): string => {
+const getVerifiedPrefix = (response: ResponseFormattedForEmail): string => {
   return response.isUserVerified ? `[verified] ` : ''
 }
 
@@ -43,7 +42,7 @@ const getVerifiedPrefix = (response: ProcessedFieldResponse): string => {
  * @param fieldType
  * @returns the prefix
  */
-const getFieldTypePrefix = (response: ProcessedFieldResponse): string => {
+const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
   switch (response.fieldType) {
     case BasicField.Table:
       return `[table] `
@@ -60,7 +59,7 @@ const getFieldTypePrefix = (response: ProcessedFieldResponse): string => {
  * @param response
  */
 export const getJsonPrefixedQuestion = (
-  response: ProcessedFieldResponse,
+  response: ResponseFormattedForEmail,
 ): string => {
   const questionComponents = [getFieldTypePrefix(response), response.question]
   return questionComponents.join('')
@@ -72,7 +71,7 @@ export const getJsonPrefixedQuestion = (
  * @param hashedFields
  */
 export const getFormDataPrefixedQuestion = (
-  response: ProcessedFieldResponse,
+  response: ResponseFormattedForEmail,
   hashedFields: Set<string>,
 ): string => {
   const questionComponents = [
@@ -92,7 +91,7 @@ export const getFormDataPrefixedQuestion = (
  */
 export const getAnswerRowsForTable = (
   response: ProcessedTableResponse,
-): ProcessedSingleAnswerResponse[] => {
+): ResponseFormattedForEmail[] => {
   return response.answerArray.map((answer) => {
     return Object.assign({}, response, { answer: String(answer) })
   })
@@ -106,7 +105,7 @@ export const getAnswerRowsForTable = (
  */
 export const getAnswerForCheckbox = (
   response: ProcessedCheckboxResponse,
-): ProcessedSingleAnswerResponse => {
+): ResponseFormattedForEmail => {
   return Object.assign({}, response, {
     answer: response.answerArray.join(', '),
   })
@@ -122,7 +121,7 @@ export const getAnswerForCheckbox = (
  * @returns an object containing three sets of formatted responses
  */
 export const getFormattedResponse = (
-  response: ProcessedSingleAnswerResponse,
+  response: ResponseFormattedForEmail,
   hashedFields: Set<string>,
 ): EmailDataForOneField => {
   const { question, answer, fieldType, isVisible } = response
