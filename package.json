@@ -169,6 +169,7 @@
     "@shelf/jest-mongodb": "^1.2.3",
     "@types/bcrypt": "^3.0.0",
     "@types/bluebird": "^3.5.33",
+    "@types/busboy": "^0.2.3",
     "@types/compression": "^1.7.0",
     "@types/convict": "^5.2.1",
     "@types/cookie-parser": "^1.4.2",
