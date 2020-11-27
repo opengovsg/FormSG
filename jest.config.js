@@ -16,4 +16,5 @@ module.exports = {
       statements: 25, // Increase this percentage as test coverage improves
     },
   },
+  testEnvironment: 'node',
 }
