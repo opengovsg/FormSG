@@ -1,15 +1,15 @@
 import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
-import { err, ok, Result } from 'neverthrow'
+import { err, ok, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { MB } from '../../../constants/filesize'
 
 import {
-  GenericMultipartError,
   InitialiseMultipartReceiverError,
   MultipartContentLimitError,
   MultipartContentParsingError,
+  MultipartError,
 } from './email-submission.errors'
 import { IAttachmentInfo, ParsedMultipartForm } from './email-submission.types'
 import { addAttachmentToResponses } from './email-submission.utils'
@@ -43,85 +43,84 @@ export const createMultipartReceiver = (
 
 export const configureMultipartReceiver = (
   busboy: busboy.Busboy,
-  callback: (
-    result: Result<
-      ParsedMultipartForm,
-      | MultipartContentLimitError
-      | MultipartContentParsingError
-      | GenericMultipartError
-    >,
-  ) => void,
-): void => {
-  const attachments: IAttachmentInfo[] = []
-  let body: ParsedMultipartForm
+): ResultAsync<ParsedMultipartForm, MultipartError> => {
+  const logMeta = {
+    action: 'configureMultipartReceiver',
+  }
+  const responsePromise = new Promise<ParsedMultipartForm>(
+    (resolve, reject) => {
+      const attachments: IAttachmentInfo[] = []
+      let body: ParsedMultipartForm
 
-  busboy
-    .on('file', (fieldname, file, filename) => {
-      if (filename) {
-        const buffers: Buffer[] = []
-        file.on('data', function (data) {
-          buffers.push(data)
-        })
+      busboy
+        .on('file', (fieldname, file, filename) => {
+          if (filename) {
+            const buffers: Buffer[] = []
+            file.on('data', (data) => {
+              buffers.push(data)
+            })
 
-        file.on('end', function () {
-          const buffer = Buffer.concat(buffers)
-          attachments.push({
-            filename: fieldname,
-            content: buffer,
-            fieldId: filename,
-          })
-          file.resume()
+            file.on('end', () => {
+              const buffer = Buffer.concat(buffers)
+              attachments.push({
+                filename: fieldname,
+                content: buffer,
+                fieldId: filename,
+              })
+              file.resume()
+            })
+            file.on('limit', () => {
+              logger.error({
+                message: 'Limit event triggered by multipart receiver',
+                meta: logMeta,
+              })
+              return reject(new MultipartContentLimitError())
+            })
+          }
         })
-        file.on('limit', function () {
-          logger.error({
-            message: 'Multipart content is too large',
-            meta: {
-              action: 'configureMultipartReceiver',
-            },
-          })
-          return callback(err(new MultipartContentLimitError()))
+        .on('field', (name, val, _fieldnameTruncated, valueTruncated) => {
+          // on receiving body field, convert to JSON
+          if (name === 'body') {
+            if (valueTruncated) {
+              logger.error({
+                message: 'Multipart value truncated',
+                meta: logMeta,
+              })
+              return reject(new MultipartContentLimitError())
+            }
+            try {
+              body = JSON.parse(val)
+            } catch (error) {
+              // Invalid form data
+              logger.error({
+                message: 'Error while attempting to parse form data',
+                meta: logMeta,
+                error,
+              })
+              return reject(new MultipartContentParsingError())
+            }
+          }
         })
-      }
-    })
-    .on('field', (name, val, _fieldnameTruncated, valueTruncated) => {
-      // on receiving body field, convert to JSON
-      if (name === 'body') {
-        if (valueTruncated) {
+        .on('error', (error: Error) => {
           logger.error({
-            message: 'Multipart content is too large',
-            meta: {
-              action: 'configureMultipartReceiver',
-            },
-          })
-          return callback(err(new MultipartContentLimitError()))
-        }
-        try {
-          body = JSON.parse(val)
-        } catch (error) {
-          // Invalid form data
-          logger.error({
-            message: 'Error while attempting to parse form data',
-            meta: {
-              action: 'configureMultipartReceiver',
-            },
+            message: 'Generic multipart error',
+            meta: logMeta,
             error,
           })
-          return callback(err(new MultipartContentParsingError()))
-        }
-      }
+          return reject(error)
+        })
+        .on('finish', () => {
+          addAttachmentToResponses(body.responses, attachments)
+          return resolve(body)
+        })
+    },
+  )
+  return ResultAsync.fromPromise(responsePromise, (error) => {
+    logger.error({
+      message: 'Error while receiving form data',
+      meta: logMeta,
+      error,
     })
-    .on('error', (error: Error) => {
-      logger.error({
-        message: 'Multipart error',
-        meta: {
-          action: 'configureMultipartReceiver',
-        },
-        error,
-      })
-      return callback(err(new GenericMultipartError()))
-    })
-    .on('finish', () => {
-      addAttachmentToResponses(body.responses, attachments)
-      return callback(ok(body))
-    })
+    return new MultipartError()
+  })
 }
