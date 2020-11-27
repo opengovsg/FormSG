@@ -4,7 +4,6 @@ import { err, ok, Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { MB } from '../../../constants/filesize'
-import { IAttachmentInfo } from '../../../utils/attachment'
 
 import {
   GenericMultipartError,
@@ -12,7 +11,8 @@ import {
   MultipartContentLimitError,
   MultipartContentParsingError,
 } from './email-submission.errors'
-import { ParsedMultipartForm } from './email-submission.types'
+import { IAttachmentInfo, ParsedMultipartForm } from './email-submission.types'
+import { addAttachmentToResponses } from './email-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -53,7 +53,7 @@ export const configureMultipartReceiver = (
   ) => void,
 ): void => {
   const attachments: IAttachmentInfo[] = []
-  let body: ParsedMultipartForm['body']
+  let body: ParsedMultipartForm
 
   busboy
     .on('file', (fieldname, file, filename) => {
@@ -120,5 +120,8 @@ export const configureMultipartReceiver = (
       })
       return callback(err(new GenericMultipartError()))
     })
-    .on('finish', () => callback(ok({ attachments, body })))
+    .on('finish', () => {
+      addAttachmentToResponses(body.responses, attachments)
+      return callback(ok(body))
+    })
 }
