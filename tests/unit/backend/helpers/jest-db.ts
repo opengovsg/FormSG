@@ -169,6 +169,46 @@ const insertEmailForm = async ({
   }
 }
 
+const insertEncryptForm = async ({
+  formId,
+  userId,
+  mailDomain = 'test.gov.sg',
+  mailName = 'test',
+  shortName = 'govtest',
+}: {
+  formId?: ObjectID
+  userId?: ObjectID
+  mailName?: string
+  mailDomain?: string
+  shortName?: string
+} = {}): Promise<{
+  form: IFormSchema
+  user: IUserSchema
+  agency: IAgencySchema
+}> => {
+  const { user, agency } = await insertFormCollectionReqs({
+    userId,
+    mailDomain,
+    mailName,
+    shortName,
+  })
+
+  const Form = getFormModel(mongoose)
+
+  const form = await Form.create({
+    title: 'example form title',
+    admin: user._id,
+    responseMode: ResponseMode.Encrypt,
+    _id: formId,
+  })
+
+  return {
+    form,
+    user,
+    agency,
+  }
+}
+
 const generateDefaultField = (
   fieldType: BasicField,
   customParams?: Partial<IField>,
@@ -217,6 +257,7 @@ const dbHandler = {
   insertFormCollectionReqs,
   clearCollection,
   insertEmailForm,
+  insertEncryptForm,
   generateDefaultField,
 }
 
