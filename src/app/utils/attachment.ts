@@ -3,12 +3,7 @@ import { flattenDeep, sumBy } from 'lodash'
 import { FilePlatforms } from '../../shared/constants'
 import * as fileValidation from '../../shared/util/file-validation'
 import { BasicField, FieldResponse, IAttachmentResponse } from '../../types'
-
-export interface IAttachmentInfo {
-  filename: string
-  content: Buffer
-  fieldId: string
-}
+import { IAttachmentInfo } from '../modules/submission/email-submission/email-submission.types'
 
 /**
  * Checks an array of attachments to see ensure that every
@@ -43,47 +38,6 @@ export const attachmentsAreValid = async (
     // Consume error here, all errors should cause attachments to be considered
     // invalid.
     return false
-  }
-}
-
-const isAttachmentResponseFromMap = (
-  attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
-  response: FieldResponse,
-): response is IAttachmentResponse => {
-  return !!attachmentMap[response._id]
-}
-
-/**
- * Adds the attachment's content, filename to each response,
- * based on their fieldId.
- * The response's answer is also changed to the attachment's filename.
- *
- * @param responses - Array of responses received
- * @param attachments - Array of file objects
- */
-export const addAttachmentToResponses = (
-  responses: FieldResponse[],
-  attachments: IAttachmentInfo[],
-): void => {
-  // Create a map of the attachments with fieldId as keys
-  const attachmentMap: Record<
-    IAttachmentInfo['fieldId'],
-    IAttachmentInfo
-  > = attachments.reduce<Record<string, IAttachmentInfo>>((acc, attachment) => {
-    acc[attachment.fieldId] = attachment
-    return acc
-  }, {})
-
-  if (responses) {
-    // matches responses to attachments using id, adding filename and content to response
-    responses.forEach((response) => {
-      if (isAttachmentResponseFromMap(attachmentMap, response)) {
-        const file = attachmentMap[response._id]
-        response.answer = file.filename
-        response.filename = file.filename
-        response.content = file.content
-      }
-    })
   }
 }
 
