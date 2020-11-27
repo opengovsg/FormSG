@@ -1,7 +1,7 @@
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
-} from '../submission.guards'
+} from '../../../utils/field-validation/field-validation.guards'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import { EmailData, EmailDataForOneField } from './email-submission.types'
