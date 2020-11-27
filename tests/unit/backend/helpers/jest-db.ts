@@ -4,14 +4,15 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
-import getFormModel from 'src/app/models/form.server.model'
+import {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
-  BasicField,
   IAgencySchema,
-  IField,
-  IFormSchema,
-  ITableField,
+  IEmailFormSchema,
+  IEncryptedFormSchema,
   IUserSchema,
   ResponseMode,
 } from 'src/types'
@@ -141,7 +142,7 @@ const insertEmailForm = async ({
   mailDomain?: string
   shortName?: string
 } = {}): Promise<{
-  form: IFormSchema
+  form: IEmailFormSchema
   user: IUserSchema
   agency: IAgencySchema
 }> => {
@@ -152,9 +153,9 @@ const insertEmailForm = async ({
     shortName,
   })
 
-  const Form = getFormModel(mongoose)
+  const EmailFormModel = getEmailFormModel(mongoose)
 
-  const form = await Form.create({
+  const form = await EmailFormModel.create({
     title: 'example form title',
     admin: user._id,
     responseMode: ResponseMode.Email,
@@ -182,7 +183,7 @@ const insertEncryptForm = async ({
   mailDomain?: string
   shortName?: string
 } = {}): Promise<{
-  form: IFormSchema
+  form: IEncryptedFormSchema
   user: IUserSchema
   agency: IAgencySchema
 }> => {
@@ -193,58 +194,20 @@ const insertEncryptForm = async ({
     shortName,
   })
 
-  const Form = getFormModel(mongoose)
+  const EncryptFormModel = getEncryptedFormModel(mongoose)
 
-  const form = await Form.create({
+  const form = await EncryptFormModel.create({
     title: 'example form title',
     admin: user._id,
     responseMode: ResponseMode.Encrypt,
     _id: formId,
+    publicKey: 'publicKey',
   })
 
   return {
     form,
     user,
     agency,
-  }
-}
-
-const generateDefaultField = (
-  fieldType: BasicField,
-  customParams?: Partial<IField>,
-): IField | ITableField => {
-  const defaultParams = {
-    title: `test ${fieldType} field title`,
-    _id: new ObjectID().toHexString(),
-    description: `${fieldType} description`,
-    globalId: new ObjectID().toHexString(),
-    fieldType,
-    required: true,
-    disabled: false,
-  }
-  if (fieldType === BasicField.Table) {
-    return {
-      minimumRows: 1,
-      columns: [
-        {
-          title: 'Test Column Title 1',
-          required: true,
-          columnType: BasicField.ShortText,
-        },
-        {
-          title: 'Test Column Title 2',
-          required: true,
-          columnType: BasicField.Dropdown,
-        },
-      ],
-      ...defaultParams,
-      ...customParams,
-    }
-  }
-
-  return {
-    ...defaultParams,
-    ...customParams,
   }
 }
 
@@ -258,7 +221,6 @@ const dbHandler = {
   clearCollection,
   insertEmailForm,
   insertEncryptForm,
-  generateDefaultField,
 }
 
 export default dbHandler
