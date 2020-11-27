@@ -1,4 +1,5 @@
-import { BasicField } from '../../../../types'
+import { BasicField, IBaseResponse } from '../../../../types'
+import { ProcessedResponse } from '../submission.types'
 
 export interface EmailAutoReplyField {
   question: string
@@ -27,3 +28,13 @@ export interface EmailDataForOneField {
   jsonData?: EmailJsonField
   formData: EmailFormField
 }
+
+// When a response has been formatted for email, all answerArray
+// should have been converted to answer
+interface IResponseFormattedForEmail extends IBaseResponse {
+  fieldType: BasicField
+  answer: string
+}
+
+export type ResponseFormattedForEmail = IResponseFormattedForEmail &
+  ProcessedResponse
