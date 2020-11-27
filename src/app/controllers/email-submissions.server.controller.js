@@ -25,7 +25,6 @@ const {
 } = require('../modules/submission/submission.service')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail/mail.service').default
-const EmailSubmissionService = require('../modules/submission/email-submission/email-submission.service')
 
 const { sessionSecret } = config
 
@@ -272,25 +271,6 @@ exports.validateEmailSubmission = function (req, res, next) {
   delete req.body.responses // Prevent downstream functions from using responses by deleting it
   // Creates an array of attachments from the validated responses
   req.attachments = mapAttachmentsFromParsedResponses(req.body.parsedResponses)
-  return next()
-}
-
-/**
- * Construct autoReply data and data to send admin from responses submitted
- *
- * @param  {Express.Request} req - Express request object
- * @param  {Express.Response} res - Express response object
- * @param  {Function} next - Express next middleware function
- */
-exports.prepareEmailSubmission = (req, res, next) => {
-  const hashedFields = res.locals.hashedFields || new Set()
-  const emailData = EmailSubmissionService.createEmailData(
-    req.body.parsedResponses,
-    hashedFields,
-  )
-  req.autoReplyData = emailData.autoReplyData
-  req.jsonData = emailData.jsonData
-  req.formData = emailData.formData
   return next()
 }
 
