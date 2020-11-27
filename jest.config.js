@@ -11,6 +11,7 @@ module.exports = {
   },
   collectCoverageFrom: ['./src/**/*.{ts,js}', '!**/__tests__/**'],
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],
+  coverageReporters: ['lcov', 'text'],
   coverageThreshold: {
     global: {
       statements: 25, // Increase this percentage as test coverage improves
