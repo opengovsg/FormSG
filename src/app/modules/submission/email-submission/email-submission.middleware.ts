@@ -47,27 +47,16 @@ export const prepareEmailSubmission: RequestHandler<
  */
 export const receiveEmailSubmission: RequestHandler = (req, res, next) => {
   EmailSubmissionReceiver.createMultipartReceiver(req.headers)
-    .map((receiver) => {
-      // Configuration is event-based so we have to use a callback
-      EmailSubmissionReceiver.configureMultipartReceiver(receiver, (result) => {
-        result
-          .map((parsed) => {
-            merge(req, parsed)
-            return next()
-          })
-          .mapErr((error) => {
-            logger.error({
-              message: 'Error while receiving multipart data',
-              meta: {
-                action: 'receiveEmailSubmission',
-              },
-              error,
-            })
-            // const { errorMessage, statusCode } = mapRouteError(error)
-            // return res.status(statusCode).json({ message: errorMessage })
-          })
-      })
+    .asyncAndThen((receiver) => {
+      const result = EmailSubmissionReceiver.configureMultipartReceiver(
+        receiver,
+      )
       req.pipe(receiver)
+      return result
+    })
+    .map((parsed) => {
+      merge(req, parsed)
+      return next()
     })
     .mapErr((error) => {
       logger.error({

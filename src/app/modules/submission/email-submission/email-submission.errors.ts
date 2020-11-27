@@ -18,7 +18,7 @@ export class MultipartContentParsingError extends ApplicationError {
   }
 }
 
-export class GenericMultipartError extends ApplicationError {
+export class MultipartError extends ApplicationError {
   constructor(message = 'Error while receiving multipart content') {
     super(message)
   }
