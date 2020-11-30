@@ -55,7 +55,8 @@ export const prepareEmailSubmission: RequestHandler<
  */
 export const receiveEmailSubmission: RequestHandler<
   ParamsDictionary,
-  { message: string }
+  { message: string },
+  { responses: FieldResponse[] }
 > = async (req, res, next) => {
   const logMeta = {
     action: 'receiveEmailSubmission',
@@ -71,7 +72,7 @@ export const receiveEmailSubmission: RequestHandler<
       return result
     })
     .map((parsed) => {
-      merge(req, parsed)
+      req.body = parsed
       const hashes = EmailSubmissionService.hashSubmission(parsed)
       logger.info({
         message: 'Submission successfully hashed',
