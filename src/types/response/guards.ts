@@ -33,6 +33,8 @@ export const isProcessedCheckboxResponse = (
   return (
     'answerArray' in response &&
     Array.isArray(response.answerArray) &&
+    // Check that all elements in answerArray are string (including empty string)
+    response.answerArray.every((elem: any) => typeof elem === 'string') &&
     isProcessedFieldResponse(response)
   )
 }
@@ -43,7 +45,13 @@ export const isProcessedTableResponse = (
   return (
     'answerArray' in response &&
     Array.isArray(response.answerArray) &&
-    Array.isArray(response.answerArray[0]) &&
+    // Check that all elements in answerArray are array (including empty array), and that
+    // all nested arrays contain only string (including empty string)
+    response.answerArray.every(
+      (arr: any) =>
+        Array.isArray(arr) &&
+        arr.every((elem: any) => typeof elem === 'string'),
+    ) &&
     isProcessedFieldResponse(response)
   )
 }
