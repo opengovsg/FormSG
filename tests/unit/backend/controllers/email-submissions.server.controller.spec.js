@@ -343,7 +343,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -730,7 +730,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .get(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           submissionsController.injectAutoReplyInfo,
           spcpController.appendVerifiedSPCPResponses,
           EmailSubmissionsMiddleware.prepareEmailSubmission,
@@ -2801,7 +2801,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           sendSubmissionBack,
         )
       testAgency = new Agency({

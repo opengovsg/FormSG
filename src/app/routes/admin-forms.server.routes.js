@@ -373,7 +373,7 @@ module.exports = function (app) {
         isPreview: Joi.boolean().required(),
       }),
     }),
-    emailSubmissions.validateEmailSubmission,
+    EmailSubmissionsMiddleware.validateEmailSubmission,
     AdminFormController.passThroughSpcp,
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
