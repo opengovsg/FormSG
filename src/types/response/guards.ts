@@ -55,7 +55,9 @@ export const isProcessedTableResponse = (
     'answerArray' in response &&
     Array.isArray(response.answerArray) &&
     // Check that all elements in answerArray are table rows
-    response.answerArray.every((arr: any) => isTableRow(arr))
+    // Necessary to check answerArray[0] separately as every() returns true on empty array
+    response.answerArray.every((arr: any) => isTableRow(arr)) &&
+    isTableRow(response.answerArray[0])
   ) {
     // Check that all arrays in answerArray have the same length
     const subArrLength: number = response.answerArray[0].length
