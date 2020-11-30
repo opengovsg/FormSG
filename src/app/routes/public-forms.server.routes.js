@@ -192,7 +192,7 @@ module.exports = function (app) {
         isPreview: Joi.boolean().required(),
       }),
     }),
-    emailSubmissions.validateEmailSubmission,
+    EmailSubmissionsMiddleware.validateEmailSubmission,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
