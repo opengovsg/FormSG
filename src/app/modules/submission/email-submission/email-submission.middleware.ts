@@ -94,7 +94,8 @@ export const validateEmailSubmission: RequestHandler<
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  getProcessedResponses(form, req.body.responses)
+  EmailSubmissionService.validateAttachments(req.body.responses)
+    .andThen(() => getProcessedResponses(form, req.body.responses!))
     .map((parsedResponses) => {
       req.body.parsedResponses = parsedResponses
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
