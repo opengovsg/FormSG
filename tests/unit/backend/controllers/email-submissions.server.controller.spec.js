@@ -428,7 +428,11 @@ describe('Email Submissions Controller', () => {
               parsedResponses: expectedResponses,
             },
             attachments: [
-              { filename: validAttachmentName, content: Buffer.alloc(1) },
+              {
+                fieldId: String(requiredAttachmentId),
+                filename: validAttachmentName,
+                content: Buffer.alloc(1),
+              },
             ],
           }),
         )
