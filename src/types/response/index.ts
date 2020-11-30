@@ -22,9 +22,7 @@ export interface ICheckboxResponse extends IBaseResponse {
   answerArray: string[]
 }
 
-export interface ITableRow {
-  [index: number]: string
-}
+export type ITableRow = Array<string>
 
 export interface ITableResponse extends IBaseResponse {
   answerArray: ITableRow[]
