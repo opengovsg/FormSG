@@ -188,7 +188,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectForm,
-          controller.receiveEmailSubmissionUsingBusBoy,
+          EmailSubmissionsMiddleware.receiveEmailSubmission,
           sendSubmissionBack,
         )
     })
