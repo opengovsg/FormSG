@@ -18,6 +18,7 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
 
   vm.credentials = {}
   vm.buttonClicked = false
+  vm.showOtpDelayNotification = false
 
   // logic/booleans to show sign in process sequentially. 2 possible values.
   // 'email' - email input
@@ -194,7 +195,11 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
           angular.element('#otp-input').select()
         }, 100)
       },
-    )
+    ).finally(function () {
+      $timeout(function () {
+        vm.showOtpDelayNotification = true
+      }, 45000)
+    })
   }
 
   /**

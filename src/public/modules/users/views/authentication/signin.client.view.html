@@ -82,7 +82,7 @@
           ng-keyup="$event.keyCode == 13 && vm.credentials.otp.length === 6 && vm.verifyOtp()"
         />
         <div
-          ng-if="vm.signInMsg.isMsg"
+          ng-if="!vm.showOtpDelayNotification && vm.signInMsg.isMsg"
           ng-class="vm.signInMsg.isError ? 'alert-error' : 'alert-success'"
           class="alert-custom"
         >
@@ -92,9 +92,18 @@
           ></i>
           <span class="alert-msg">{{vm.signInMsg.msg}}</span>
         </div>
-        <div ng-if="vm.isOtpSending" class="alert-custom alert-info">
+        <div ng-if="!vm.showOtpDelayNotification && vm.isOtpSending" class="alert-custom alert-info">
           <i class="bx bx-loader bx-spin bx-md icon-spacing"></i>
           <span class="alert-msg">Sending OTP...</span>
+        </div>
+        <div
+          ng-if="vm.showOtpDelayNotification"
+          class="alert-custom alert-info"
+        >
+          <i class="bx bx-info-circle bx-md icon-spacing"></i>
+          <span class="alert-msg">
+            OTP might be delayed due to government email traffic. Please try again later, or contact us if issue persists.
+          </span>
         </div>
         <div class="btn-grp">
           <button
