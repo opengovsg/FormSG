@@ -108,6 +108,7 @@ export const generateSingleAnswerResponse = (
       BasicField,
       BasicField.Table | BasicField.Checkbox
     >,
+    isVisible: true,
   }
 }
 
