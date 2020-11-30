@@ -106,6 +106,11 @@ export interface IFormSchema extends IForm, Document {
   getMainFields(): Pick<IFormSchema, '_id' | 'title' | 'status'>
   getUniqueMyInfoAttrs(): MyInfoAttribute[]
   duplicate(overrideProps: Partial<IForm>): Partial<IFormSchema>
+  /**
+   * Archives form.
+   * @returns form that has been archived
+   */
+  archive(): Promise<IFormSchema>
   transferOwner(currentOwner: IUserSchema, newOwnerEmail: string): void
 }
 

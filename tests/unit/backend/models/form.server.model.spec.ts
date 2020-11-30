@@ -7,6 +7,7 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  IEmailForm,
   IEncryptedForm,
   IPopulatedUser,
   Permission,
@@ -973,6 +974,64 @@ describe('Form Model', () => {
       await expect(Form.countDocuments()).resolves.toEqual(5)
       expect(actual.length).toEqual(3)
       expect(actual).toEqual(expected)
+    })
+  })
+
+  describe('Methods', () => {
+    describe('archive', () => {
+      it('should successfully set email form status to archived', async () => {
+        // Arrange
+        const form = await Form.create<IEmailForm>({
+          admin: populatedAdmin._id,
+          emails: [populatedAdmin.email],
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          status: Status.Private,
+        })
+        expect(form).toBeDefined()
+
+        // Act
+        const actual = await form.archive()
+
+        // Assert
+        expect(actual.status).toEqual(Status.Archived)
+      })
+
+      it('should successfully set encrypt form status to archived', async () => {
+        // Arrange
+        const form = await Form.create<IEncryptedForm>({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: ResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: Status.Public,
+        })
+        expect(form).toBeDefined()
+
+        // Act
+        const actual = await form.archive()
+
+        // Assert
+        expect(actual.status).toEqual(Status.Archived)
+      })
+
+      it('should stay archived if original form is already archived', async () => {
+        // Arrange
+        const form = await Form.create<IEncryptedForm>({
+          admin: populatedAdmin._id,
+          publicKey: 'any public key',
+          responseMode: ResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          status: Status.Archived,
+        })
+        expect(form).toBeDefined()
+
+        // Act
+        const actual = await form.archive()
+
+        // Assert
+        expect(actual.status).toEqual(Status.Archived)
+      })
     })
   })
 })
