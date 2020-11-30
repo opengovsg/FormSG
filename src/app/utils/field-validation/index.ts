@@ -1,5 +1,4 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
-import { flattenDeep } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import {
@@ -64,7 +63,7 @@ const isResponsePresentOnHiddenField = (response: FieldResponse): boolean => {
   } else if (isProcessedTableResponse(response)) {
     if (
       !response.isVisible &&
-      flattenDeep(response.answerArray).join('').length > 0
+      !response.answerArray.every((row) => row.every((elem) => elem === ''))
     ) {
       return true
     }
