@@ -64,3 +64,11 @@
   margin-left: 5px !important;
   font-size: 14px !important;
 }
+
+#share-tab .share__tip {
+  padding: 5px 0;
+}
+
+#share-tab .share__tip.share__tip--first {
+  padding-top: 30px;
+}

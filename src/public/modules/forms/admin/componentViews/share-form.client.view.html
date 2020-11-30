@@ -55,13 +55,13 @@
           >
         </div>
       </div>
-      <div ng-if="vm.isGovOfficer">
+      <div ng-if="vm.isGovOfficer" class="share__tip share__tip--first">
         <b><i class="bx bx-bulb"></i></b>
         Use
         <a translate-attr="{ href: 'LINKS.GO_GOV' }" target="blank">Go</a>
         to shorten links, get QR codes and analyse link traffic.
       </div>
-      <div ng-if="vm.isGovOfficer">
+      <div ng-if="vm.isGovOfficer" class="share__tip">
         <b><i class="bx bx-bulb"></i></b>
         Use
         <a translate-attr="{ href: 'LINKS.POSTMAN_GOV' }" target="blank"
@@ -69,7 +69,7 @@
         >
         to send personalised mass messages over email, SMS and Telegram.
       </div>
-      <div ng-if="!vm.isGovOfficer">
+      <div ng-if="!vm.isGovOfficer" class="share__tip share__tip--first">
         <b><i class="bx bx-bulb"></i> Pro Tip!</b>
         To make this URL easy to share, generate a
         <a
@@ -77,7 +77,7 @@
           target="blank"
           >QR code</a
         >
-        from it
+        from it.
       </div>
 
       <!-- Divider -->
