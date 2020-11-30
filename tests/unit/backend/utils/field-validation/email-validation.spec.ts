@@ -1,9 +1,8 @@
+import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField } from 'src/app/utils/field-validation'
 import EmailValidator from 'src/app/utils/field-validation/validators/EmailValidator.class'
 import { BasicField } from 'src/types/field/fieldTypes'
 import { ISingleAnswerResponse } from 'src/types/response'
-
-import { ValidateFieldError } from '../../../../../dist/backend/app/modules/submission/submission.errors'
 
 describe('Email field validation', () => {
   beforeEach(() => {
