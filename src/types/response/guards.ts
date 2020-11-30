@@ -51,13 +51,19 @@ export const isTableRow = (row: any): row is ITableRow => {
 export const isProcessedTableResponse = (
   response: any,
 ): response is ProcessedTableResponse => {
-  return (
+  if (
     'answerArray' in response &&
     Array.isArray(response.answerArray) &&
     // Check that all elements in answerArray are table rows
-    response.answerArray.every((arr: any) => isTableRow(arr)) &&
-    isProcessedFieldResponse(response)
-  )
+    response.answerArray.every((arr: any) => isTableRow(arr))
+  ) {
+    // Check that all arrays in answerArray have the same length
+    const subArrLength: number = response.answerArray[0].length
+    return response.answerArray
+      .map((arr: ITableRow): number => arr.length)
+      .every((length: number): boolean => length === subArrLength)
+  }
+  return false
 }
 
 export const isProcessedAttachmentResponse = (
