@@ -12,9 +12,12 @@ import {
   AuthType,
   DashboardFormView,
   IFieldSchema,
+  IFormSchema,
+  IPopulatedForm,
   SpcpLocals,
 } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
+import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { findAdminById } from '../../user/user.service'
@@ -195,4 +198,27 @@ export const getMockSpcpLocals = (
     default:
       return {}
   }
+}
+
+/**
+ * Archives given form.
+ * @param form the form to archive
+ * @returns ok(archived form) if successful
+ * @returns err(DatabaseError) if any database errors occur
+ */
+export const archiveForm = (
+  form: IPopulatedForm,
+): ResultAsync<IFormSchema, DatabaseError> => {
+  return ResultAsync.fromPromise(form.archive(), (error) => {
+    logger.error({
+      message: 'Database error encountered when archiving form',
+      meta: {
+        action: 'archiveForm',
+        form,
+      },
+      error,
+    })
+
+    return new DatabaseError(getMongoErrorMessage(error))
+  })
 }
