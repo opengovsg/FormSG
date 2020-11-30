@@ -165,7 +165,7 @@ module.exports = function (app) {
     publicForms.isFormPublic,
     CaptchaFactory.captchaCheck,
     SpcpController.isSpcpAuthenticated,
-    emailSubmissions.receiveEmailSubmissionUsingBusBoy,
+    EmailSubmissionsMiddleware.receiveEmailSubmission,
     celebrate({
       body: Joi.object({
         responses: Joi.array()
