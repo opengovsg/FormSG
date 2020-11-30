@@ -406,7 +406,7 @@ export const handleGetFormFeedbacks: RequestHandler<{
  * Handler for DELETE /{formId}/adminform.
  * @security session
  *
- * @returns 200 with archived form
+ * @returns 200 with success message when successfully archived
  * @returns 403 when user does not have permissions to archive form
  * @returns 404 when form cannot be found
  * @returns 410 when form is already archived
@@ -433,7 +433,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
       )
       // Step 3: Currently logged in user has permissions to archive form.
       .andThen((formToArchive) => archiveForm(formToArchive))
-      .map((archivedForm) => res.json(archivedForm))
+      .map(() => res.json({ message: 'Form has been archived' }))
       .mapErr((error) => {
         logger.warn({
           message: 'Error occurred when archiving form',

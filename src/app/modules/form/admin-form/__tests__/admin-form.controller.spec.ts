@@ -11,7 +11,7 @@ import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
-import { IPopulatedForm, IPopulatedUser, Status } from 'src/types'
+import { IPopulatedForm, IPopulatedUser } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -1608,11 +1608,6 @@ describe('admin-form.controller', () => {
     it('should return 200 with archived form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      // Mock return count.
-      const expectedArchivedForm = {
-        _id: new ObjectId(),
-        status: Status.Archived,
-      } as IPopulatedForm
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         okAsync(MOCK_USER as IPopulatedUser),
@@ -1620,9 +1615,7 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM as IPopulatedForm),
       )
-      MockAdminFormService.archiveForm.mockReturnValueOnce(
-        okAsync(expectedArchivedForm),
-      )
+      MockAdminFormService.archiveForm.mockReturnValueOnce(okAsync(true))
 
       // Act
       await AdminFormController.handleArchiveForm(MOCK_REQ, mockRes, jest.fn())
@@ -1641,7 +1634,9 @@ describe('admin-form.controller', () => {
       )
       expect(MockAdminFormService.archiveForm).toHaveBeenCalledWith(MOCK_FORM)
       expect(mockRes.status).not.toHaveBeenCalled()
-      expect(mockRes.json).toHaveBeenCalledWith(expectedArchivedForm)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Form has been archived',
+      })
     })
 
     it('should return 403 when ForbiddenFormError is returned when verifying user permissions', async () => {

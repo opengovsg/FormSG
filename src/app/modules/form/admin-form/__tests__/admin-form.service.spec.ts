@@ -284,7 +284,7 @@ describe('admin-form.service', () => {
   })
 
   describe('archiveForm', () => {
-    it('should successfully archive form', async () => {
+    it('should true when form is successfully archived', async () => {
       // Arrange
       const mockArchivedForm = {
         _id: new ObjectId(),
@@ -301,7 +301,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual.isOk()).toEqual(true)
-      expect(actual._unsafeUnwrap()).toEqual(mockArchivedForm)
+      expect(actual._unsafeUnwrap()).toEqual(true)
     })
 
     it('should return DatabaseError if any database errors occur', async () => {
