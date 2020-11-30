@@ -902,7 +902,7 @@ describe('Email Submissions Controller', () => {
           question: 'SingPass Validated NRIC',
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
-          fieldType: 'textfield',
+          fieldType: 'nric',
         },
       ]
       const expectedAutoReplyData = [
@@ -941,7 +941,7 @@ describe('Email Submissions Controller', () => {
           question: 'CorpPass Validated UID',
           answerTemplate: [resLocalFixtures.userInfo],
           answer: resLocalFixtures.userInfo,
-          fieldType: 'textfield',
+          fieldType: 'nric',
         },
       ]
       const expectedAutoReplyData = [

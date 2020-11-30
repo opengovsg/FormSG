@@ -160,7 +160,7 @@ export const createSingpassParsedResponses = (
     {
       _id: '',
       question: 'SingPass Validated NRIC',
-      fieldType: BasicField.ShortText,
+      fieldType: BasicField.Nric,
       isVisible: true,
       answer: uinFin,
     },
@@ -187,7 +187,7 @@ export const createCorppassParsedResponses = (
     {
       _id: '',
       question: 'CorpPass Validated UID',
-      fieldType: BasicField.ShortText,
+      fieldType: BasicField.Nric,
       isVisible: true,
       answer: userInfo,
     },
