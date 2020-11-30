@@ -15,7 +15,7 @@ import { IAttachmentInfo, ParsedMultipartForm } from './email-submission.types'
 import {
   addAttachmentToResponses,
   handleDuplicatesInAttachments,
-} from './email-submission.utils'
+} from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
 
