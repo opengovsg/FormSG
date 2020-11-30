@@ -13,6 +13,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
 import { WithEmailData } from './email-submission.types'
+import { mapAttachmentsFromResponses } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -50,6 +51,11 @@ export const prepareEmailSubmission: RequestHandler<
  * @param next - Express next middleware function
  */
 export const receiveEmailSubmission: RequestHandler = (req, res, next) => {
+  const logMeta = {
+    action: 'receiveEmailSubmission',
+    formId: (req as WithForm<typeof req>).form._id,
+    ...createReqMeta(req),
+  }
   EmailSubmissionReceiver.createMultipartReceiver(req.headers)
     .asyncAndThen((receiver) => {
       const result = EmailSubmissionReceiver.configureMultipartReceiver(
@@ -60,14 +66,17 @@ export const receiveEmailSubmission: RequestHandler = (req, res, next) => {
     })
     .map((parsed) => {
       merge(req, parsed)
+      const hashes = EmailSubmissionService.hashSubmission(parsed)
+      logger.info({
+        message: 'Submission successfully hashed',
+        meta: { ...logMeta, ...hashes },
+      })
       return next()
     })
     .mapErr((error) => {
       logger.error({
         message: 'Error while receiving multipart data',
-        meta: {
-          action: 'receiveEmailSubmission',
-        },
+        meta: logMeta,
         error,
       })
       // const { errorMessage, statusCode } = mapRouteError(error)
@@ -97,6 +106,10 @@ export const validateEmailSubmission: RequestHandler<
   EmailSubmissionService.validateAttachments(req.body.responses)
     .andThen(() => getProcessedResponses(form, req.body.responses!))
     .map((parsedResponses) => {
+      // Creates an array of attachments from the validated responses
+      merge(req, {
+        attachments: mapAttachmentsFromResponses(req.body.responses!),
+      })
       req.body.parsedResponses = parsedResponses
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
       return next()
