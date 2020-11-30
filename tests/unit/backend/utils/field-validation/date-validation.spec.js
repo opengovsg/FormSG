@@ -462,4 +462,34 @@ describe('Date field validation', () => {
 
     jasmine.clock().uninstall()
   })
+
+  it('should disallow responses submitted for hidden fields', () => {
+    jasmine.clock().install()
+    jasmine.clock().mockDate(new Date('2020-01-01'))
+
+    const formField = {
+      _id: 'abc123',
+      fieldType: 'date',
+      dateValidation: {
+        customMinDate: '2020-06-25',
+        customMaxDate: '2020-06-28',
+      },
+      required: true,
+    }
+
+    const response = {
+      _id: 'abc123',
+      fieldType: 'date',
+      isVisible: false,
+      answer: '22 Jun 2020',
+    }
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+
+    jasmine.clock().uninstall()
+  })
 })
