@@ -12,6 +12,7 @@ import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 
 import {
+  archiveForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
   getDashboardForms,
@@ -399,4 +400,53 @@ export const handleGetFormFeedbacks: RequestHandler<{
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
+}
+
+/**
+ * Handler for DELETE /{formId}/adminform.
+ * @security session
+ *
+ * @returns 200 with archived form
+ * @returns 403 when user does not have permissions to archive form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is already archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has delete permissions for form.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Delete,
+        }),
+      )
+      // Step 3: Currently logged in user has permissions to archive form.
+      .andThen((formToArchive) => archiveForm(formToArchive))
+      .map((archivedForm) => res.json(archivedForm))
+      .mapErr((error) => {
+        logger.warn({
+          message: 'Error occurred when archiving form',
+          meta: {
+            action: 'handleArchiveForm',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }
