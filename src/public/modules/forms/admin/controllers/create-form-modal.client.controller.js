@@ -212,6 +212,8 @@ function CreateFormModalController(
       Toastr.error(errorResponse.data.message)
     }
     GTag.createFormFailed()
+
+    vm.closeCreateModal()
   }
 
   vm.createNewForm = function () {
