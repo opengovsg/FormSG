@@ -56,13 +56,13 @@ export const prepareEmailSubmission: RequestHandler<
 export const receiveEmailSubmission: RequestHandler<
   ParamsDictionary,
   { message: string }
-> = (req, res, next) => {
+> = async (req, res, next) => {
   const logMeta = {
     action: 'receiveEmailSubmission',
     formId: (req as WithForm<typeof req>).form._id,
     ...createReqMeta(req),
   }
-  EmailSubmissionReceiver.createMultipartReceiver(req.headers)
+  return EmailSubmissionReceiver.createMultipartReceiver(req.headers)
     .asyncAndThen((receiver) => {
       const result = EmailSubmissionReceiver.configureMultipartReceiver(
         receiver,
@@ -102,14 +102,14 @@ export const validateEmailSubmission: RequestHandler<
   ParamsDictionary,
   { message: string },
   { responses?: FieldResponse[]; parsedResponses: ProcessedFieldResponse[] }
-> = (req, res, next) => {
+> = async (req, res, next) => {
   const { form } = req as WithForm<typeof req>
 
   if (!req.body.responses) {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  EmailSubmissionService.validateAttachments(req.body.responses)
+  return EmailSubmissionService.validateAttachments(req.body.responses)
     .andThen(() => getProcessedResponses(form, req.body.responses!))
     .map((parsedResponses) => {
       // Creates an array of attachments from the validated responses
