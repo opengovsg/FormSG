@@ -57,10 +57,17 @@
       </div>
       <div ng-if="vm.isGovOfficer">
         <b><i class="bx bx-bulb"></i></b>
-        Make this URL easy to share over the Internet (not Intranet) with an
-        official link and QR code from
-        <a translate-attr="{ href: 'LINKS.GO_GOV' }" target="blank">Go.gov.sg</a
-        >.
+        Use
+        <a translate-attr="{ href: 'LINKS.GO_GOV' }" target="blank">Go</a>
+        to shorten links, get QR codes and analyse link traffic.
+      </div>
+      <div ng-if="vm.isGovOfficer">
+        <b><i class="bx bx-bulb"></i></b>
+        Use
+        <a translate-attr="{ href: 'LINKS.POSTMAN_GOV' }" target="blank"
+          >Postman</a
+        >
+        to send personalised mass messages over email, SMS and Telegram.
       </div>
       <div ng-if="!vm.isGovOfficer">
         <b><i class="bx bx-bulb"></i> Pro Tip!</b>
