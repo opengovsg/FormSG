@@ -23,3 +23,15 @@ export class MultipartError extends ApplicationError {
     super(message)
   }
 }
+
+export class InvalidFileExtensionError extends ApplicationError {
+  constructor(message = 'Invalid file extension found in attachment') {
+    super(message)
+  }
+}
+
+export class AttachmentTooLargeError extends ApplicationError {
+  constructor(message = 'Attachment size limit exceeded') {
+    super(message)
+  }
+}
