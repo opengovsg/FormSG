@@ -236,28 +236,6 @@ describe('Email Submissions Controller', () => {
         .end(done)
     })
 
-    it('returns 400 for attachments with invalid file exts', (done) => {
-      const body = { responses: [] }
-      request(app)
-        .post(endpointPath)
-        .field('body', JSON.stringify(body))
-        .attach('invalid.py', Buffer.alloc(1), 'fieldId')
-        .expect(StatusCodes.BAD_REQUEST)
-        .end(done)
-    })
-
-    it('returns 422 for attachments beyond 7 million bytes', (done) => {
-      const body = { responses: [] }
-      request(app)
-        .post(endpointPath)
-        .field('body', JSON.stringify(body))
-        .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId1')
-        .attach('valid2.jpg', Buffer.alloc(3000000), 'fieldId2')
-        .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId3')
-        .expect(StatusCodes.UNPROCESSABLE_ENTITY)
-        .end(done)
-    })
-
     it('changes duplicated file names', (done) => {
       const body = {
         responses: [
@@ -437,6 +415,50 @@ describe('Email Submissions Controller', () => {
           }),
         )
         .end(done)
+    })
+
+    it('returns 400 for attachments with invalid file exts', (done) => {
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(1),
+        filename: 'invalid.py',
+      })
+      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
+    })
+
+    it('returns 400 for attachments beyond 7 million bytes', (done) => {
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
     })
   })
 
