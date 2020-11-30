@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes'
 import { flattenDeep, sumBy } from 'lodash'
 
 import { FilePlatforms } from '../../../../shared/constants'
@@ -6,6 +7,7 @@ import {
   BasicField,
   FieldResponse,
   IAttachmentResponse,
+  MapRouteError,
 } from '../../../../types'
 import {
   ProcessedCheckboxResponse,
@@ -18,6 +20,10 @@ import {
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from './email-submission.constants'
+import {
+  InitialiseMultipartReceiverError,
+  MultipartError,
+} from './email-submission.errors'
 import {
   EmailAutoReplyField,
   EmailDataForOneField,
@@ -240,4 +246,24 @@ export const mapAttachmentsFromResponses = (
     filename: response.filename,
     content: response.content,
   }))
+}
+
+export const mapRouteError: MapRouteError = (error) => {
+  switch (error.constructor) {
+    case InitialiseMultipartReceiverError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Required headers are missing',
+      }
+    case MultipartError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: 'Submission could not be parsed.',
+      }
+    default:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
 }

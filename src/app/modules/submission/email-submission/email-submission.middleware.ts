@@ -13,7 +13,10 @@ import { ProcessedFieldResponse } from '../submission.types'
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
 import { WithEmailData } from './email-submission.types'
-import { mapAttachmentsFromResponses } from './email-submission.util'
+import {
+  mapAttachmentsFromResponses,
+  mapRouteError,
+} from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -50,7 +53,10 @@ export const prepareEmailSubmission: RequestHandler<
  * @param res - Express response object
  * @param next - Express next middleware function
  */
-export const receiveEmailSubmission: RequestHandler = (req, res, next) => {
+export const receiveEmailSubmission: RequestHandler<
+  ParamsDictionary,
+  { message: string }
+> = (req, res, next) => {
   const logMeta = {
     action: 'receiveEmailSubmission',
     formId: (req as WithForm<typeof req>).form._id,
@@ -79,8 +85,8 @@ export const receiveEmailSubmission: RequestHandler = (req, res, next) => {
         meta: logMeta,
         error,
       })
-      // const { errorMessage, statusCode } = mapRouteError(error)
-      // return res.status(statusCode).json({ message: errorMessage })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     })
 }
 
@@ -94,7 +100,7 @@ export const receiveEmailSubmission: RequestHandler = (req, res, next) => {
  */
 export const validateEmailSubmission: RequestHandler<
   ParamsDictionary,
-  unknown,
+  { message: string },
   { responses?: FieldResponse[]; parsedResponses: ProcessedFieldResponse[] }
 > = (req, res, next) => {
   const { form } = req as WithForm<typeof req>
