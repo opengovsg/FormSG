@@ -8,8 +8,19 @@ import {
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IField } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
-import { FieldResponse } from '../../../types/response'
-import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
+import {
+  FieldResponse,
+  IAttachmentResponse,
+  ICheckboxResponse,
+  ISingleAnswerResponse,
+  ITableResponse,
+} from '../../../types/response'
+import {
+  isProcessedAttachmentResponse,
+  isProcessedCheckboxResponse,
+  isProcessedSingleAnswerResponse,
+  isProcessedTableResponse,
+} from '../../../types/response/guards'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
@@ -39,6 +50,41 @@ const doFieldTypesMatch = (
         `Response fieldType (${response.fieldType}) did not match field ${formField.fieldType}`,
       )
     : right(undefined)
+}
+
+/**
+ * Returns true if response appears on a hidden field.
+ * This may happen if a submission is made programatically to try and bypass form logic.
+ * @param response The submitted response
+ */
+const isResponsePresentOnHiddenField = (
+  response:
+    | ISingleAnswerResponse
+    | ICheckboxResponse
+    | ITableResponse
+    | IAttachmentResponse,
+): boolean => {
+  if (isProcessedSingleAnswerResponse(response)) {
+    if (!response.isVisible && response.answer.trim() !== '') {
+      return true
+    }
+  }
+  if (isProcessedCheckboxResponse(response)) {
+    if (!response.isVisible && response.answerArray.length > 0) {
+      return true
+    }
+  }
+  if (isProcessedTableResponse(response)) {
+    if (!response.isVisible && response.answerArray[0].length > 0) {
+      return true
+    }
+  }
+  if (isProcessedAttachmentResponse(response)) {
+    if (!response.isVisible && response.filename.trim() !== '') {
+      return true
+    }
+  }
+  return false
 }
 
 /**
@@ -100,6 +146,12 @@ export const validateField = (
 
   if (isLeft(fieldTypeEither)) {
     return err(new ValidateFieldError(fieldTypeEither.left))
+  }
+
+  if (isResponsePresentOnHiddenField(response)) {
+    return err(
+      new ValidateFieldError(`Attempted to submit response on a hidden field`),
+    )
   }
 
   if (isProcessedSingleAnswerResponse(response)) {
