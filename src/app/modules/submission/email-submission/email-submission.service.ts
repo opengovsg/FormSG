@@ -1,9 +1,18 @@
+import { sumBy } from 'lodash'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+
+import { createLoggerWithLabel } from '../../../../config/logger'
+import { FieldResponse } from '../../../../types'
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import { ProcessedFieldResponse } from '../submission.types'
 
+import {
+  AttachmentTooLargeError,
+  InvalidFileExtensionError,
+} from './email-submission.errors'
 import {
   EmailAutoReplyField,
   EmailData,
@@ -15,8 +24,11 @@ import {
   getAnswerForCheckbox,
   getAnswerRowsForTable,
   getFormattedResponse,
+  getInvalidFileExtensions,
+  mapAttachmentsFromResponses,
 } from './email-submission.util'
 
+const logger = createLoggerWithLabel(module)
 /**
  * Creates response and autoreply email data for a single response.
  * Helper function for createEmailData.
@@ -74,4 +86,43 @@ export const createEmailData = (
         },
       )
   )
+}
+
+export const validateAttachments = (
+  parsedResponses: FieldResponse[],
+): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
+  const logMeta = { action: 'validateAttachments' }
+  const attachments = mapAttachmentsFromResponses(parsedResponses)
+  // Check if total attachments size is < 7mb
+  const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
+  if (totalAttachmentSize > 7000000) {
+    logger.error({
+      message: 'Attachment size is too large',
+      meta: logMeta,
+    })
+    return errAsync(new AttachmentTooLargeError())
+  }
+  return ResultAsync.fromPromise(
+    getInvalidFileExtensions(attachments),
+    (error) => {
+      logger.error({
+        message: 'Error while validating attachment file extensions',
+        meta: logMeta,
+        error,
+      })
+      return new InvalidFileExtensionError()
+    },
+  ).andThen((invalidExtensions) => {
+    if (invalidExtensions.length > 0) {
+      logger.error({
+        message: 'Invalid file extensions found',
+        meta: {
+          ...logMeta,
+          invalidExtensions,
+        },
+      })
+      return errAsync(new InvalidFileExtensionError())
+    }
+    return okAsync(true)
+  })
 }
