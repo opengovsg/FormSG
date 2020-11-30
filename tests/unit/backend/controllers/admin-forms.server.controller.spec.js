@@ -185,24 +185,6 @@ describe('Admin-Forms Controller', () => {
     })
   })
 
-  describe('delete', () => {
-    it('should delete from by setting status to archived', (done) => {
-      req.form = testForm
-      res.json.and.callFake(() => {
-        Form.findOne({ _id: testForm._id }, (err, foundForm) => {
-          if (err || !foundForm) {
-            done(err || new Error('Form not found'))
-          } else {
-            let foundFormObj = foundForm.toObject()
-            expect(foundFormObj.status).toEqual('ARCHIVED')
-            done()
-          }
-        })
-      })
-      Controller.delete(req, res)
-    })
-  })
-
   describe('duplicate', () => {
     it('should duplicate form with correct title, new admin and no collaborators', async (done) => {
       // Insert collaborator into User collection before duplicating form.
