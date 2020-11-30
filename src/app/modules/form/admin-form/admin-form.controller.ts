@@ -357,3 +357,46 @@ export const handleStreamFormFeedback: RequestHandler<{
       return res.end()
     })
 }
+
+/**
+ * Handler for GET /{formId}/adminform/feedback.
+ * @security session
+ *
+ * @returns 200 with feedback response
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetFormFeedbacks: RequestHandler<{
+  formId: string
+}> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }),
+    )
+    .andThen(() => FeedbackService.getFormFeedbacks(formId))
+    .map((fbResponse) => res.json(fbResponse))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving form feedbacks',
+        meta: {
+          action: 'handleGetFormFeedbacks',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}

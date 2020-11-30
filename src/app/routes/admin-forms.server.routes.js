@@ -269,7 +269,7 @@ module.exports = function (app) {
 
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
-    .get(authActiveForm(PermissionLevel.Read), adminForms.getFeedback)
+    .get(withUserAuthentication, AdminFormController.handleGetFormFeedbacks)
     .post(authActiveForm(PermissionLevel.Read), adminForms.passThroughFeedback)
 
   /**
