@@ -381,11 +381,8 @@ function makeModule(connection) {
           const onError = (error) => respondOnMongoError(req, res, error)
 
           const onSuccess = (successForm) => {
-            let formFields = successForm.getMainFields()
-            // Have to set admin here if not duplicated form will
-            // not be admin before refresh
-            formFields.admin = req.session.user
-            return res.json(formFields)
+            const dupedDashView = successForm.getDashboardView(req.session.user)
+            return res.json(dupedDashView)
           }
 
           const DiscriminatedForm = getDiscriminatedFormModel(responseMode)

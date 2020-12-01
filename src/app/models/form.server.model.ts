@@ -390,13 +390,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getMainFields = function (this: IFormSchema) {
-    const form = {
+  FormSchema.methods.getDashboardView = function (this: IFormSchema, admin) {
+    return {
       _id: this._id,
       title: this.title,
       status: this.status,
+      lastModified: this.lastModified,
+      responseMode: this.responseMode,
+      admin,
     }
-    return form
   }
 
   // Method to return myInfo attributes

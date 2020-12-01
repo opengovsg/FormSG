@@ -116,7 +116,12 @@ export interface IForm {
 }
 
 export interface IFormSchema extends IForm, Document {
-  getMainFields(): Pick<IFormSchema, '_id' | 'title' | 'status'>
+  /**
+   * Returns the dashboard form view of the form.
+   * @param admin the admin to inject into the returned object
+   * @returns dashboard form view object
+   */
+  getDashboardView(admin: IPopulatedUser): DashboardFormView
   getUniqueMyInfoAttrs(): MyInfoAttribute[]
   /**
    * Archives form.
