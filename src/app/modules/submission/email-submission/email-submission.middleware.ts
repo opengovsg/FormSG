@@ -1,7 +1,6 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
-import { merge } from 'lodash'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
@@ -12,7 +11,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
-import { WithEmailData } from './email-submission.types'
+import { WithAttachments, WithEmailData } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
@@ -114,9 +113,10 @@ export const validateEmailSubmission: RequestHandler<
     .andThen(() => getProcessedResponses(form, req.body.responses!))
     .map((parsedResponses) => {
       // Creates an array of attachments from the validated responses
-      merge(req, {
-        attachments: mapAttachmentsFromResponses(req.body.responses!),
-      })
+      // eslint-disable-next-line @typescript-eslint/no-extra-semi
+      ;(req as WithAttachments<
+        typeof req
+      >).attachments = mapAttachmentsFromResponses(req.body.responses!)
       req.body.parsedResponses = parsedResponses
       delete req.body.responses // Prevent downstream functions from using responses by deleting it
       return next()
