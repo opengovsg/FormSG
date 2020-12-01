@@ -11,6 +11,11 @@ import {
   getFormattedResponse,
 } from './email-submission.util'
 
+/**
+ * Creates data to be included in the response and autoreply emails.
+ * @param parsedResponses Processed and validated responses
+ * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
+ */
 export const createEmailData = (
   parsedResponses: ProcessedFieldResponse[],
   hashedFields: Set<string>,
