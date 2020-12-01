@@ -14,7 +14,6 @@ import {
   DashboardFormView,
   IFieldSchema,
   IFormSchema,
-  IPopulatedForm,
   SpcpLocals,
 } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
@@ -236,7 +235,7 @@ export const archiveForm = (
  * @returns the newly created duplicated form
  */
 export const duplicateForm = (
-  originalForm: IPopulatedForm,
+  originalForm: IFormSchema,
   newAdminId: string,
   overrideParams: DuplicateFormBody,
 ): ResultAsync<IFormSchema, FormNotFoundError | DatabaseError> => {
