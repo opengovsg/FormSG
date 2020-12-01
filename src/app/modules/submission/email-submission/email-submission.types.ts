@@ -15,6 +15,7 @@ export interface EmailFormField {
   question: string
   answer: string
   fieldType: BasicField
+  answerTemplate: string[]
 }
 
 export interface EmailData {
