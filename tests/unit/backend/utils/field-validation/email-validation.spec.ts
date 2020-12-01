@@ -203,30 +203,4 @@ describe('Email field validation', () => {
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
-  it('should disallow responses submitted for hidden fields', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: BasicField.Email,
-      globalId: 'random',
-      title: 'random',
-      description: 'random',
-      required: true,
-      disabled: false,
-      isVerifiable: false,
-      hasAllowedEmailDomains: true,
-      allowedEmailDomains: ['@example.com'],
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: BasicField.Email,
-      question: 'random',
-      isVisible: false,
-      answer: 'volunteer-testing@test.gov.sg',
-    }
-    const validateResult = validateField('formId', formField, response)
-    expect(validateResult.isErr()).toBe(true)
-    expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
-    )
-  })
 })
