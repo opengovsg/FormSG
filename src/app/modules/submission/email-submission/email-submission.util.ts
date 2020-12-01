@@ -144,8 +144,8 @@ export const getFormattedResponse = (
   const { question, answer, fieldType, isVisible } = response
   const answerSplitByNewLine = answer.split('\n')
 
-  let autoReplyData: EmailAutoReplyField | undefined = undefined
-  let jsonData: EmailJsonField | undefined = undefined
+  let autoReplyData: EmailAutoReplyField | undefined
+  let jsonData: EmailJsonField | undefined
   // Auto reply email will contain only visible fields
   if (isVisible) {
     autoReplyData = {
