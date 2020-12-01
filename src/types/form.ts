@@ -69,6 +69,19 @@ export type Webhook = {
   url: string
 }
 
+/**
+ * Typing for duplicate form with specific keys.
+ */
+export type PickDuplicateForm = Pick<
+  IFormSchema,
+  | 'form_fields'
+  | 'form_logics'
+  | 'startPage'
+  | 'endPage'
+  | 'authType'
+  | 'inactiveMessage'
+  | 'responseMode'
+>
 export interface IForm {
   title: string
   form_fields?: IFieldSchema[]

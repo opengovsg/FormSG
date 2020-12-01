@@ -3,7 +3,6 @@ import { compact, filter, pick, uniq } from 'lodash'
 import { Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
-import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
 import {
   AuthType,
   BasicField,
@@ -21,6 +20,7 @@ import {
   IPopulatedForm,
   LogicType,
   Permission,
+  PickDuplicateForm,
   ResponseMode,
   Status,
 } from '../../types'
@@ -414,7 +414,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormSchema,
     overrideProps: Partial<IForm>,
   ) {
-    const newForm = pick(this, FORM_DUPLICATE_KEYS)
+    const newForm = pick(this, [
+      'form_fields',
+      'form_logics',
+      'startPage',
+      'endPage',
+      'authType',
+      'inactiveMessage',
+      'responseMode',
+    ]) as PickDuplicateForm
     return { ...newForm, ...overrideProps }
   }
 
