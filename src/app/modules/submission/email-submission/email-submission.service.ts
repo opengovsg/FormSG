@@ -1,15 +1,45 @@
+import { flatten } from 'lodash'
+
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import { ProcessedFieldResponse } from '../submission.types'
 
-import { EmailData, EmailDataForOneField } from './email-submission.types'
+import {
+  EmailAutoReplyField,
+  EmailData,
+  EmailDataForOneField,
+  EmailFormField,
+  EmailJsonField,
+} from './email-submission.types'
 import {
   getAnswerForCheckbox,
   getAnswerRowsForTable,
   getFormattedResponse,
 } from './email-submission.util'
+
+/**
+ * Creates response and autoreply email data for a single response.
+ * Helper function for createEmailData.
+ * @param response Processed and validated response for one field
+ * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
+ */
+const createEmailDataForOneField = (
+  response: ProcessedFieldResponse,
+  hashedFields: Set<string>,
+): EmailDataForOneField[] => {
+  if (isProcessedTableResponse(response)) {
+    return getAnswerRowsForTable(response).map((row) =>
+      getFormattedResponse(row, hashedFields),
+    )
+  } else if (isProcessedCheckboxResponse(response)) {
+    const checkbox = getAnswerForCheckbox(response)
+    return [getFormattedResponse(checkbox, hashedFields)]
+  } else {
+    return [getFormattedResponse(response, hashedFields)]
+  }
+}
 
 /**
  * Creates data to be included in the response and autoreply emails.
@@ -20,32 +50,31 @@ export const createEmailData = (
   parsedResponses: ProcessedFieldResponse[],
   hashedFields: Set<string>,
 ): EmailData => {
-  const emailData: EmailData = {
-    autoReplyData: [],
-    jsonData: [],
-    formData: [],
-  }
-  parsedResponses.forEach((response) => {
-    let formattedResponses: EmailDataForOneField[]
-    if (isProcessedTableResponse(response)) {
-      formattedResponses = getAnswerRowsForTable(response).map((row) =>
-        getFormattedResponse(row, hashedFields),
-      )
-    } else if (isProcessedCheckboxResponse(response)) {
-      const checkbox = getAnswerForCheckbox(response)
-      formattedResponses = [getFormattedResponse(checkbox, hashedFields)]
-    } else {
-      formattedResponses = [getFormattedResponse(response, hashedFields)]
-    }
-    formattedResponses.forEach((formattedResponse) => {
-      if (formattedResponse.autoReplyData) {
-        emailData.autoReplyData.push(formattedResponse.autoReplyData)
-      }
-      if (formattedResponse.jsonData) {
-        emailData.jsonData.push(formattedResponse.jsonData)
-      }
-      emailData.formData.push(formattedResponse.formData)
-    })
+  // First, get an array of email data for each response
+  const emailDataByField = parsedResponses.map((response) => {
+    return createEmailDataForOneField(response, hashedFields)
   })
+  // Each field has an array of email data to accommodate table fields,
+  // which have multiple rows of data per field. Hence flatten and maintain
+  // the order of responses.
+  const emailDataFlattened = flatten(emailDataByField)
+  // Then reshape such that autoReplyData, jsonData and formData are each arrays
+  const emailData = emailDataFlattened.reduce(
+    (acc, dataForOneField) => {
+      if (dataForOneField.autoReplyData) {
+        acc.autoReplyData.push(dataForOneField.autoReplyData)
+      }
+      if (dataForOneField.jsonData) {
+        acc.jsonData.push(dataForOneField.jsonData)
+      }
+      acc.formData.push(dataForOneField.formData)
+      return acc
+    },
+    {
+      autoReplyData: [] as EmailAutoReplyField[],
+      jsonData: [] as EmailJsonField[],
+      formData: [] as EmailFormField[],
+    },
+  )
   return emailData
 }
