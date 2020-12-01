@@ -17,6 +17,7 @@ describe('Dropdown validation', () => {
       _id: 'ddID',
       fieldType: 'dropdown',
       answer: 'KISS',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
@@ -33,6 +34,7 @@ describe('Dropdown validation', () => {
       _id: 'ddID',
       fieldType: 'dropdown',
       answer: 'invalid',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
