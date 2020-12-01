@@ -51,3 +51,5 @@ export interface IAttachmentInfo {
   content: Buffer
   fieldId: string
 }
+
+export type WithAttachments<T> = T & { attachments: IAttachmentInfo[] }
