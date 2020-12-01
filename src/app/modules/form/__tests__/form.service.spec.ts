@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { IPopulatedForm } from 'src/types'
+import { IFormSchema, IPopulatedForm } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -104,6 +104,104 @@ describe('FormService', () => {
 
       // Act
       const actualResult = await FormService.retrieveFullFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('retrieveFormById', () => {
+    it('should return form successfully', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      const expectedForm = {
+        _id: formId,
+        title: 'mock title',
+        admin: new ObjectId(),
+      } as IFormSchema
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockImplementationOnce(
+          () =>
+            (({
+              exec: jest.fn().mockResolvedValue(expectedForm),
+            } as unknown) as mongoose.Query<any>),
+        )
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+    })
+
+    it('should return FormNotFoundError if formId is invalid', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      // Resolve query to null.
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockImplementationOnce(
+          () =>
+            (({
+              exec: jest.fn().mockResolvedValue(null),
+            } as unknown) as mongoose.Query<any>),
+        )
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
+    })
+
+    it('should return FormNotFoundError when retrieved form does not contain admin', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      const expectedForm = {
+        _id: formId,
+        title: 'mock title',
+        // Note no admin key-value.
+      } as IFormSchema
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockImplementationOnce(
+          () =>
+            (({
+              exec: jest.fn().mockResolvedValue(expectedForm),
+            } as unknown) as mongoose.Query<any>),
+        )
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      // Mock rejection.
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockImplementationOnce(
+          () =>
+            (({
+              exec: jest.fn().mockRejectedValue(new Error('some error')),
+            } as unknown) as mongoose.Query<any>),
+        )
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
 
       // Assert
       expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
