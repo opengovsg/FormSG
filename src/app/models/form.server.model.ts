@@ -14,7 +14,6 @@ import {
   IEmailFormSchema,
   IEncryptedFormModel,
   IEncryptedFormSchema,
-  IForm,
   IFormModel,
   IFormSchema,
   IPopulatedForm,
@@ -26,6 +25,7 @@ import {
 } from '../../types'
 import { IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
+import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
@@ -414,7 +414,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Return essential form creation parameters with the given properties
   FormSchema.methods.getDuplicateParams = function (
     this: IFormSchema,
-    overrideProps: Partial<IForm>,
+    overrideProps: OverrideProps,
   ) {
     const newForm = pick(this, [
       'form_fields',

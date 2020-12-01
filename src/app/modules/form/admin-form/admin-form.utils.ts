@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { IPopulatedForm, Status } from '../../../../types'
+import { IPopulatedForm, ResponseMode, Status } from '../../../../types'
 import { assertUnreachable } from '../../../utils/assert-unreachable'
 import {
   ApplicationError,
@@ -21,7 +21,12 @@ import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
 } from './admin-form.errors'
-import { AssertFormFn, PermissionLevel } from './admin-form.types'
+import {
+  AssertFormFn,
+  DuplicateFormBody,
+  OverrideProps,
+  PermissionLevel,
+} from './admin-form.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -181,4 +186,34 @@ export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
     default:
       return assertUnreachable(level)
   }
+}
+
+export const processDuplicateOverrideProps = (
+  params: DuplicateFormBody,
+  newAdminId: string,
+): OverrideProps => {
+  const { isTemplate, emails, publicKey, responseMode, title } = params
+
+  const overrideProps: OverrideProps = {
+    responseMode,
+    title,
+    isNew: true,
+    admin: newAdminId,
+  }
+  if (isTemplate) {
+    overrideProps.customLogo = undefined
+  }
+
+  switch (responseMode) {
+    case ResponseMode.Encrypt:
+      overrideProps.publicKey = publicKey
+      break
+    case ResponseMode.Email:
+      overrideProps.emails = emails
+      break
+    default:
+      return assertUnreachable(responseMode)
+  }
+
+  return overrideProps
 }

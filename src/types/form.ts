@@ -1,5 +1,7 @@
 import { Document, Model } from 'mongoose'
 
+import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
+
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState } from './form_logo'
@@ -54,10 +56,10 @@ export type StartPage = {
 }
 
 export type EndPage = {
-  title: string
-  paragraph: string
-  buttonLink: string
-  buttonText: string
+  title?: string
+  paragraph?: string
+  buttonLink?: string
+  buttonText?: string
 }
 
 export type Permission = {
@@ -112,7 +114,9 @@ export interface IForm {
   lastModified?: Date
 
   publicKey?: string
-  emails?: string[]
+  // string type is allowed due to a setter on the form schema that transforms
+  // strings to string array.
+  emails?: string[] | string
 }
 
 export interface IFormSchema extends IForm, Document {
@@ -133,7 +137,9 @@ export interface IFormSchema extends IForm, Document {
    * @param overrideProps the props to override on the duplicated form
    * @returns params required to create a new duplicated form object
    */
-  getDuplicateParams(overrideProps: Partial<IForm>): Partial<IFormSchema>
+  getDuplicateParams(
+    overrideProps: OverrideProps,
+  ): PickDuplicateForm & OverrideProps
   transferOwner(currentOwner: IUserSchema, newOwnerEmail: string): void
 }
 
@@ -149,7 +155,9 @@ export interface IEncryptedForm extends IForm {
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
 
 export interface IEmailForm extends IForm {
-  emails: string[]
+  // string type is allowed due to a setter on the form schema that transforms
+  // strings to string array.
+  emails: string[] | string
   publicKey: never
 }
 
