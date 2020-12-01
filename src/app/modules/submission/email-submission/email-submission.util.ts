@@ -97,9 +97,15 @@ export const getFormDataPrefixedQuestion = (
 export const getAnswerRowsForTable = (
   response: ProcessedTableResponse,
 ): ResponseFormattedForEmail[] => {
-  return response.answerArray.map((answer) => {
-    return Object.assign({}, response, { answer: String(answer) })
-  })
+  return response.answerArray.map((rowResponse) => ({
+    _id: response._id,
+    fieldType: response.fieldType,
+    question: response.question,
+    myInfo: response.myInfo,
+    isVisible: response.isVisible,
+    isUserVerified: response.isUserVerified,
+    answer: String(rowResponse),
+  }))
 }
 
 /**
@@ -111,9 +117,15 @@ export const getAnswerRowsForTable = (
 export const getAnswerForCheckbox = (
   response: ProcessedCheckboxResponse,
 ): ResponseFormattedForEmail => {
-  return Object.assign({}, response, {
+  return {
+    _id: response._id,
+    fieldType: response.fieldType,
+    question: response.question,
+    myInfo: response.myInfo,
+    isVisible: response.isVisible,
+    isUserVerified: response.isUserVerified,
     answer: response.answerArray.join(', '),
-  })
+  }
 }
 
 /**
