@@ -14,6 +14,8 @@ const DATE_VALIDATION_OPTIONS = {
   custom: 'Custom date range',
 }
 
+const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
+
 angular
   .module('forms')
   .controller('EditFieldsModalController', [
@@ -304,7 +306,19 @@ function EditFieldsModalController(
     field.ValidationOptions.customMin = null
   }
 
-  vm.attachmentSizes = Attachment.dropdown
+  // For email mode, show only up to 7MB for dropdown
+  vm.attachmentSizes =
+    vm.myform.responseMode === responseModeEnum.EMAIL
+      ? Attachment.dropdown.filter((option) =>
+          EMAIL_MODE_ALLOWED_SIZES.includes(option.value),
+        )
+      : Attachment.dropdown
+
+  // Modify tooltip to match email or encrypt mode options
+  vm.attachmentTooltipText =
+    vm.myform.responseMode === responseModeEnum.EMAIL
+      ? 'Guideline: Images & PDFs - 1-3 MB, Slides & Videos - 7 MB. Include up to 7 MB of attachments in a submission (Email mode).'
+      : 'Guideline: Images & PDFs - 1-3 MB, Slides - 7 MB, Videos - 10-20 MB. Include up to 20 MB of attachments in a submission (Storage mode).'
 
   let previousAttachmentSize = 0
 

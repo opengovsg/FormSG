@@ -521,7 +521,6 @@ form .input-group-btn button {
   min-height: 100vh;
   background-color: #fff;
   padding: 5% 5%;
-  display: table;
 }
 
 .static-view-container .static-view-logo {
@@ -541,7 +540,6 @@ form .input-group-btn button {
 }
 
 .static-view-container .static-view-text {
-  text-align: justify;
   margin-top: 25px;
   margin-bottom: 25px;
   color: #484848;

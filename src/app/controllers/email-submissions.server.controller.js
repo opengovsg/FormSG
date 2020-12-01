@@ -233,44 +233,45 @@ exports.receiveEmailSubmissionUsingBusBoy = function (req, res, next) {
 exports.validateEmailSubmission = function (req, res, next) {
   const { form } = req
 
-  if (req.body.responses) {
-    try {
-      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
-      delete req.body.responses // Prevent downstream functions from using responses by deleting it
-    } catch (err) {
-      logger.error({
-        message:
-          err instanceof ConflictError
-            ? 'Conflict - Form has been updated'
-            : 'Error processing responses',
-        meta: {
-          action: 'validateEmailSubmission',
-          ...createReqMeta(req),
-          formId: req.form._id,
-        },
-        error: err,
-      })
-      if (err instanceof ConflictError) {
-        return res.status(err.status).json({
-          message:
-            'The form has been updated. Please refresh and submit again.',
-        })
-      } else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
-        })
-      }
-    }
-
-    // Creates an array of attachments from the validated responses
-    req.attachments = mapAttachmentsFromParsedResponses(
-      req.body.parsedResponses,
-    )
-    return next()
-  } else {
+  if (!req.body.responses) {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
+
+  const getProcessedResponsesResult = getProcessedResponses(
+    form,
+    req.body.responses,
+  )
+
+  if (getProcessedResponsesResult.isErr()) {
+    const err = getProcessedResponsesResult.error
+    logger.error({
+      message:
+        err instanceof ConflictError
+          ? 'Conflict - Form has been updated'
+          : 'Error processing responses',
+      meta: {
+        action: 'validateEmailSubmission',
+        ...createReqMeta(req),
+        formId: req.form._id,
+      },
+      error: err,
+    })
+    if (err instanceof ConflictError) {
+      return res.status(err.status).json({
+        message: 'The form has been updated. Please refresh and submit again.',
+      })
+    }
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+    })
+  }
+
+  req.body.parsedResponses = getProcessedResponsesResult.value
+  delete req.body.responses // Prevent downstream functions from using responses by deleting it
+  // Creates an array of attachments from the validated responses
+  req.attachments = mapAttachmentsFromParsedResponses(req.body.parsedResponses)
+  return next()
 }
 
 /**
@@ -336,7 +337,7 @@ exports.prepareEmailSubmission = (req, res, next) => {
  * @returns {Boolean} true if response is verified
  */
 const isMyInfoVerifiedResponse = (response, hashedFields) => {
-  return !!(hashedFields && hashedFields.has(_.get(response, 'myInfo.attr')))
+  return !!(hashedFields && hashedFields.has(response._id))
 }
 
 /**
@@ -382,7 +383,7 @@ const getAnswerForCheckbox = (response) => {
  * @param {String} response.answer
  * @param {String} response.fieldType
  * @param {Boolean} response.isVisible
- * @param {Set} hashedFields Fields hashed to verify answers provided by MyInfo
+ * @param {Set} hashedFields Field IDs hashed to verify answers provided by MyInfo
  * @returns {Object} an object containing three sets of formatted responses
  */
 const getFormattedResponse = (response, hashedFields) => {
@@ -572,12 +573,11 @@ function concatResponse(formData, attachments) {
  */
 exports.saveMetadataToDb = function (req, res, next) {
   const { form, attachments, formData } = req
-  const { requestedAttributes } = res.locals
 
   let submission = new emailSubmission({
     form: form._id,
     authType: form.authType,
-    myInfoFields: requestedAttributes,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
     recipientEmails: form.emails,
   })
 

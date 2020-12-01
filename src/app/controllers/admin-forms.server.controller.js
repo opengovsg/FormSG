@@ -464,35 +464,6 @@ function makeModule(connection) {
       })
     },
     /**
-     * Count number of form feedbacks for Feedback tab
-     * @param  {Object} req - Express request object
-     * @param  {Object} req.form - the form to download
-     * @param  {Object} res - Express response object
-     */
-    countFeedback: function (req, res) {
-      let FormFeedback = getFormFeedbackModel(connection)
-      FormFeedback.countDocuments({ formId: req.form._id }, function (
-        err,
-        count,
-      ) {
-        if (err) {
-          logger.error({
-            message: 'Error counting documents in FormFeedback',
-            meta: {
-              action: 'makeModule.countFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: errorHandler.getMongoErrorMessage(err),
-          })
-        } else {
-          return res.json(count)
-        }
-      })
-    },
-    /**
      * Stream download feedback for a form
      * @param  {Object} req - Express request object
      * @param  {Object} req.form - the form to download
@@ -583,36 +554,7 @@ function makeModule(connection) {
       req.submission = submission
       return next()
     },
-    /**
-     * Allow submission in preview without Spcp authentication by providing default values
-     * @param {Object} req - Express request object
-     * @param {Object} res - Express response object
-     * @param {Object} next - the next expressjs callback
-     */
-    passThroughSpcp: function (req, res, next) {
-      const { authType } = req.form
-      switch (authType) {
-        case 'SP': {
-          res.locals.uinFin = 'S1234567A'
-          res.locals.hashedFields = new Set()
-          let actualFormFields = req.form.form_fields
-          let actualMyInfoFields = actualFormFields.filter(
-            (field) => field.myInfo && field.myInfo.attr,
-          )
-          for (let field of actualMyInfoFields) {
-            res.locals.hashedFields.add(field.myInfo.attr)
-          }
-          break
-        }
-        case 'CP':
-          res.locals.uinFin = '123456789A'
-          res.locals.userInfo = 'ABC'
-          break
-        default:
-          break
-      }
-      return next()
-    },
+
     /**
      * Transfer a form to another user
      * @param  {Object} req - Express request object

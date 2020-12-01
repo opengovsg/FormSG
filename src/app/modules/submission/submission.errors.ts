@@ -11,3 +11,36 @@ export class ConflictError extends ApplicationError {
     super(message, StatusCodes.CONFLICT, meta)
   }
 }
+
+export class SubmissionNotFoundError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
+/**
+ * A custom error class returned when given submission has invalid encryption encoding
+ */
+export class InvalidEncodingError extends ApplicationError {
+  constructor(message = 'Error with encoding.') {
+    super(message)
+  }
+}
+
+/**
+ * A custom error class returned when given submission has response that cannot be processed
+ */
+export class ProcessingError extends ApplicationError {
+  constructor(message = 'Error processing response.') {
+    super(message)
+  }
+}
+
+/**
+ * A custom error class returned when given submission has field validation failure
+ */
+export class ValidateFieldError extends ApplicationError {
+  constructor(message = 'Error validating field.') {
+    super(message)
+  }
+}

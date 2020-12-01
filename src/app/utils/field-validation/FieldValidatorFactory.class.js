@@ -7,7 +7,6 @@ const {
   NumberValidator,
   YesNoValidator,
   MobileValidator,
-  HomeNoValidator,
   BaseFieldValidator,
   DecimalValidator,
   AttachmentValidator,
@@ -42,6 +41,7 @@ class FieldValidatorFactory {
       case 'textfield': // short text
       case 'textarea': // long text
       case 'nric':
+      case 'homeno':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'radiobutton':
         return new RadiobuttonValidator(...arguments)
@@ -65,8 +65,6 @@ class FieldValidatorFactory {
         return new AttachmentValidator(...arguments)
       case 'date':
         return new DateValidator(...arguments)
-      case 'homeno':
-        return new HomeNoValidator(...arguments)
       case 'mobile':
         return new MobileValidator(...arguments)
       default:

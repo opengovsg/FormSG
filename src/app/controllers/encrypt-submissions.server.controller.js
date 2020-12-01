@@ -1,6 +1,5 @@
 'use strict'
 const crypto = require('crypto')
-const moment = require('moment-timezone')
 const { StatusCodes } = require('http-status-codes')
 
 const mongoose = require('mongoose')
@@ -8,8 +7,6 @@ const errorHandler = require('../utils/handle-mongo-error')
 const {
   getEncryptSubmissionModel,
 } = require('../models/submission.server.model')
-const getSubmissionModel = require('../models/submission.server.model').default
-const Submission = getSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 const { checkIsEncryptedEncoding } = require('../utils/encryption')
@@ -35,10 +32,9 @@ const HttpStatus = require('http-status-codes')
  */
 exports.validateEncryptSubmission = function (req, res, next) {
   const { form } = req
-  try {
-    // Check if the encrypted content is base64
-    checkIsEncryptedEncoding(req.body.encryptedContent)
-  } catch (error) {
+
+  const isEncryptedResult = checkIsEncryptedEncoding(req.body.encryptedContent)
+  if (isEncryptedResult.isErr()) {
     logger.error({
       message: 'Invalid encryption',
       meta: {
@@ -46,43 +42,45 @@ exports.validateEncryptSubmission = function (req, res, next) {
         ...createReqMeta(req),
         formId: form._id,
       },
-      error,
+      error: isEncryptedResult.error,
     })
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid data was found. Please submit again.' })
   }
 
-  if (req.body.responses) {
-    try {
-      req.body.parsedResponses = getProcessedResponses(form, req.body.responses)
-      delete req.body.responses // Prevent downstream functions from using responses by deleting it
-    } catch (err) {
-      logger.error({
-        message: 'Error processing responses',
-        meta: {
-          action: 'validateEncryptSubmission',
-          ...createReqMeta(req),
-          formId: form._id,
-        },
-        error: err,
-      })
-      if (err instanceof ConflictError) {
-        return res.status(err.status).json({
-          message:
-            'The form has been updated. Please refresh and submit again.',
-        })
-      } else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
-        })
-      }
-    }
-    return next()
-  } else {
+  if (!req.body.responses) {
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
+
+  const getProcessedResponsesResult = getProcessedResponses(
+    form,
+    req.body.responses,
+  )
+  if (getProcessedResponsesResult.isErr()) {
+    const err = getProcessedResponsesResult.error
+    logger.error({
+      message: 'Error processing responses',
+      meta: {
+        action: 'validateEncryptSubmission',
+        ...createReqMeta(req),
+        formId: form._id,
+      },
+      error: err,
+    })
+    if (err instanceof ConflictError) {
+      return res.status(err.status).json({
+        message: 'The form has been updated. Please refresh and submit again.',
+      })
+    }
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+    })
+  }
+  req.body.parsedResponses = getProcessedResponsesResult.value
+  delete req.body.responses // Prevent downstream functions from using responses by deleting it
+  return next()
 }
 
 /**
@@ -150,7 +148,7 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
  */
 exports.saveResponseToDb = function (req, res, next) {
   const { form, formData, attachmentData } = req
-  const { verified, requestedAttributes } = res.locals
+  const { verified } = res.locals
   let attachmentMetadata = new Map()
   let attachmentUploadPromises = []
 
@@ -193,7 +191,7 @@ exports.saveResponseToDb = function (req, res, next) {
   const submission = new EncryptSubmission({
     form: form._id,
     authType: form.authType,
-    myInfoFields: requestedAttributes,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: formData,
     verifiedContent: verified,
     attachmentMetadata,
@@ -267,67 +265,4 @@ exports.getMetadata = function (req, res) {
         })
       })
   }
-}
-
-/**
- * Return actual encrypted form responses matching submission id
- * @param {Object} req - Express request object
- * @param {String} req.query.submissionId - submission to return data for
- * @param {Object} req.form - the form
- * @param {Object} res - Express response object
- */
-exports.getEncryptedResponse = function (req, res) {
-  let { submissionId } = req.query || {}
-
-  Submission.findOne(
-    {
-      form: req.form._id,
-      _id: submissionId,
-      submissionType: 'encryptSubmission',
-    },
-    {
-      encryptedContent: 1,
-      verifiedContent: 1,
-      attachmentMetadata: 1,
-      created: 1,
-    },
-  ).exec(async (err, response) => {
-    if (err || !response) {
-      logger.error({
-        message: 'Failure retrieving encrypted submission from database',
-        meta: {
-          action: 'getEncryptedResponse',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: errorHandler.getMongoErrorMessage(err),
-      })
-    } else {
-      const entry = {
-        refNo: response._id,
-        submissionTime: moment(response.created)
-          .tz('Asia/Singapore')
-          .format('ddd, D MMM YYYY, hh:mm:ss A'),
-        content: response.encryptedContent,
-        verified: response.verifiedContent,
-      }
-      // make sure client obtains S3 presigned URLs to download attachments
-      if (response.attachmentMetadata) {
-        const attachmentMetadata = {}
-        for (let [key, objectPath] of response.attachmentMetadata) {
-          attachmentMetadata[key] = await s3.getSignedUrlPromise('getObject', {
-            Bucket: attachmentS3Bucket,
-            Key: objectPath,
-            Expires: req.session.cookie.maxAge / 1000, // Remaining login duration in seconds
-          })
-        }
-        entry.attachmentMetadata = attachmentMetadata
-      } else {
-        entry.attachmentMetadata = {}
-      }
-      return res.json(entry)
-    }
-  })
 }

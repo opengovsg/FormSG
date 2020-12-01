@@ -400,7 +400,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Method to return myInfo attributes
-  FormSchema.methods.getUniqMyinfoAttrs = function (this: IFormSchema) {
+  FormSchema.methods.getUniqueMyInfoAttrs = function (this: IFormSchema) {
     if (this.authType !== AuthType.SP) {
       return []
     }

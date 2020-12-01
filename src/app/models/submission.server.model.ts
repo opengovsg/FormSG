@@ -320,6 +320,25 @@ const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorB
 
 EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = getSubmissionCursorByFormId
 
+EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
+  this: IEncryptSubmissionModel,
+  formId: string,
+  submissionId: string,
+) {
+  return this.findOne({
+    _id: submissionId,
+    form: formId,
+    submissionType: SubmissionType.Encrypt,
+  })
+    .select({
+      encryptedContent: 1,
+      verifiedContent: 1,
+      attachmentMetadata: 1,
+      created: 1,
+    })
+    .exec()
+}
+
 const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const Submission = db.model('Submission', SubmissionSchema)
   Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)

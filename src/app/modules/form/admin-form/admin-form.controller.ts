@@ -2,7 +2,9 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { AuthType, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
+import * as FeedbackService from '../../feedback/feedback.service'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import * as FormService from '../form.service'
@@ -11,8 +13,13 @@ import {
   createPresignedPostForImages,
   createPresignedPostForLogos,
   getDashboardForms,
+  getMockSpcpLocals,
 } from './admin-form.service'
-import { assertHasReadPermissions, mapRouteError } from './admin-form.utils'
+import {
+  assertFormAvailable,
+  assertHasReadPermissions,
+  mapRouteError,
+} from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -138,16 +145,20 @@ export const handleCountFormSubmissions: RequestHandler<
   const { startDate, endDate } = req.query
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
+  const logMeta = {
+    action: 'handleCountFormSubmissions',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+    formId,
+  }
+
   // Step 1: Retrieve currently logged in user.
   const adminResult = await UserService.getPopulatedUserById(sessionUserId)
   // Step 1a: Error retrieving logged in user.
   if (adminResult.isErr()) {
     logger.error({
       message: 'Error occurred whilst retrieving user',
-      meta: {
-        action: 'handleCountFormSubmissions',
-        userId: sessionUserId,
-      },
+      meta: logMeta,
       error: adminResult.error,
     })
 
@@ -163,11 +174,7 @@ export const handleCountFormSubmissions: RequestHandler<
   if (formResult.isErr()) {
     logger.error({
       message: 'Failed to retrieve form',
-      meta: {
-        action: 'handleCountFormSubmissions',
-        ...createReqMeta(req),
-        formId,
-      },
+      meta: logMeta,
       error: formResult.error,
     })
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
@@ -176,30 +183,38 @@ export const handleCountFormSubmissions: RequestHandler<
   // Step 2b: Successfully retrieved form.
   const form = formResult.value
 
-  // Step 3: Check form permissions.
+  // Step 3: Check whether form is already archived.
+  const availableResult = assertFormAvailable(form)
+  // Step 3a: Form is already archived.
+  if (availableResult.isErr()) {
+    logger.warn({
+      message: 'User attempted to retrieve archived form',
+      meta: logMeta,
+      error: availableResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(availableResult.error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  // Step 4: Form is still available for retrieval, check form permissions.
   const permissionResult = assertHasReadPermissions(admin, form)
-  // Step 3a: Read permission error.
+  // Step 4a: Read permission error.
   if (permissionResult.isErr()) {
-    logger.error({
+    logger.warn({
       message: 'User does not have read permissions',
-      meta: {
-        action: 'handleCountFormSubmissions',
-        ...createReqMeta(req),
-        userId: sessionUserId,
-        formId,
-      },
+      meta: logMeta,
       error: permissionResult.error,
     })
     const { errorMessage, statusCode } = mapRouteError(permissionResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Step 4: has permissions, continue to retrieve submission counts.
+  // Step 5: Has permissions, continue to retrieve submission counts.
   const countResult = await SubmissionService.getFormSubmissionsCount(
     String(form._id),
     { startDate, endDate },
   )
-  // Step 4a: Error retrieving form submissions counts.
+  // Step 5a: Error retrieving form submissions counts.
   if (countResult.isErr()) {
     logger.error({
       message: 'Error retrieving form submission count',
@@ -217,4 +232,75 @@ export const handleCountFormSubmissions: RequestHandler<
 
   // Successfully retrieved count.
   return res.json(countResult.value)
+}
+
+/**
+ * Allow submission in preview without Spcp authentication by providing default values
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Object} next - the next expressjs callback
+ */
+export const passThroughSpcp: RequestHandler = (req, res, next) => {
+  const { authType } = (req as WithForm<typeof req>).form
+  if (authType === AuthType.SP || authType === AuthType.CP) {
+    res.locals = {
+      ...res.locals,
+      ...getMockSpcpLocals(
+        authType,
+        (req as WithForm<typeof req>).form.form_fields,
+      ),
+    }
+  }
+  return next()
+}
+
+/**
+ * Handler for GET /{formId}/adminform/feedback/count.
+ * @security session
+ *
+ * @returns 200 with feedback counts of given form
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleCountFormFeedback: RequestHandler<{
+  formId: string
+}> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve full form.
+        FormService.retrieveFullFormById(formId).andThen((fullForm) =>
+          // Step 3: Check whether form is active.
+          assertFormAvailable(fullForm).andThen(() =>
+            // Step 4: Check whether current user has read permissions to form.
+            assertHasReadPermissions(user, fullForm),
+          ),
+        ),
+      )
+      // Step 5: Retrieve form feedback counts.
+      .andThen(() => FeedbackService.getFormFeedbackCount(formId))
+      .map((feedbackCount) => res.json(feedbackCount))
+      // Some error occurred earlier in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error retrieving form feedback count',
+          meta: {
+            action: 'handleCountFormFeedback',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }

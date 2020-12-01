@@ -2,7 +2,7 @@ import { MongoError } from 'mongodb'
 import { Error as MongooseError } from 'mongoose'
 
 export const getMongoErrorMessage = (
-  err?: MongoError | MongooseError | string,
+  err?: unknown,
   // Default error message if no more specific error
   defaultErrorMessage = 'An unexpected error happened. Please try again.',
 ): string => {
@@ -30,9 +30,13 @@ export const getMongoErrorMessage = (
     return joinedMessage ?? err.message ?? defaultErrorMessage
   }
 
-  if (err instanceof MongooseError) {
+  if (err instanceof MongooseError || err instanceof Error) {
     return err.message ?? defaultErrorMessage
   }
 
-  return err ?? defaultErrorMessage
+  if (typeof err === 'string') {
+    return err ?? defaultErrorMessage
+  }
+
+  return defaultErrorMessage
 }

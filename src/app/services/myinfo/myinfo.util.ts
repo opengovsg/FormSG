@@ -11,7 +11,6 @@ import moment from 'moment'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   BasicField,
-  IFieldSchema,
   IHashes,
   MapRouteError,
   MyInfoAttribute,
@@ -30,6 +29,7 @@ import {
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
 import {
   IPossiblyPrefilledField,
+  MyInfoComparePromises,
   MyInfoHashPromises,
   VisibleMyInfoResponse,
 } from './myinfo.types'
@@ -143,23 +143,6 @@ export const hashFieldValues = (
 }
 
 /**
- * Extracts the MyInfo attributes in an array of form fields.
- * @param formFields Array of form fields
- * @returns array of the MyInfo attributes present in the form fields
- */
-export const extractRequestedAttributes = (
-  formFields: IFieldSchema[],
-): MyInfoAttribute[] => {
-  const attrs: MyInfoAttribute[] = []
-  formFields.forEach((field) => {
-    if (field.myInfo?.attr) {
-      attrs.push(field.myInfo.attr)
-    }
-  })
-  return attrs
-}
-
-/**
  * Whether a field contains a MyInfo response
  * @param field a processed response with the isVisible attribute
  */
@@ -202,15 +185,15 @@ const compareSingleHash = (
 export const compareHashedValues = (
   responses: ProcessedFieldResponse[],
   hashes: IHashes,
-): Map<MyInfoAttribute, Promise<boolean>> => {
+): MyInfoComparePromises => {
   // Filter responses to only those fields with a corresponding hash
   const fieldsWithHashes = filterFieldsWithHashes(responses, hashes)
   // Map MyInfoAttribute to response
-  const myInfoResponsesMap = new Map<MyInfoAttribute, Promise<boolean>>()
+  const myInfoResponsesMap: MyInfoComparePromises = new Map()
   fieldsWithHashes.forEach((field) => {
     const attr = field.myInfo.attr
     // Already checked that hashes contains this attr
-    myInfoResponsesMap.set(attr, compareSingleHash(hashes[attr]!, field))
+    myInfoResponsesMap.set(field._id, compareSingleHash(hashes[attr]!, field))
   })
   return myInfoResponsesMap
 }

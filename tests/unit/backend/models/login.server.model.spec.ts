@@ -5,7 +5,13 @@ import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
 import getLoginModel from 'src/app/models/login.server.model'
-import { AuthType, IFormSchema, ILogin, IUserSchema } from 'src/types'
+import {
+  AuthType,
+  IFormSchema,
+  ILogin,
+  IPopulatedForm,
+  IUserSchema,
+} from 'src/types'
 
 import dbHandler from '../helpers/jest-db'
 
@@ -114,6 +120,54 @@ describe('login.server.model', () => {
   })
 
   describe('Statics', () => {
+    describe('addLoginFromForm', () => {
+      const adminId = new ObjectId()
+      const formId = new ObjectId()
+      const agencyId = new ObjectId()
+      const mockEsrvcId = 'esrvcid'
+      const mockAuthType = 'SP'
+      const fullForm = ({
+        _id: formId,
+        admin: {
+          _id: adminId,
+          agency: {
+            _id: agencyId,
+          },
+        },
+        authType: mockAuthType,
+        esrvcId: mockEsrvcId,
+      } as unknown) as IPopulatedForm
+
+      it('should save the correct form data', async () => {
+        const saved = await LoginModel.addLoginFromForm(fullForm)
+        const found = await LoginModel.findOne({ form: formId })
+        // Returned document should match
+        expect(saved.form).toEqual(formId)
+        expect(saved.admin).toEqual(adminId)
+        expect(saved.agency).toEqual(agencyId)
+        expect(saved.authType).toBe(mockAuthType)
+        expect(saved.esrvcId).toBe(mockEsrvcId)
+        // Found document should match
+        expect(found!.form).toEqual(formId)
+        expect(found!.admin).toEqual(adminId)
+        expect(found!.agency).toEqual(agencyId)
+        expect(found!.authType).toBe(mockAuthType)
+        expect(found!.esrvcId).toBe(mockEsrvcId)
+      })
+
+      it('should reject when the form does not contain an e-service ID', async () => {
+        await expect(
+          LoginModel.addLoginFromForm(omit(fullForm, 'esrvcId')),
+        ).rejects.toThrow('Form does not contain authType or e-service ID')
+      })
+
+      it('should reject when the form does not contain an authType', async () => {
+        await expect(
+          LoginModel.addLoginFromForm(omit(fullForm, 'authType')),
+        ).rejects.toThrow('Form does not contain authType or e-service ID')
+      })
+    })
+
     describe('aggregateLoginStats', () => {
       const VALID_ESRVC_ID = 'MOCK-ESRVC-ID'
       const CURR_MOMENT = moment()

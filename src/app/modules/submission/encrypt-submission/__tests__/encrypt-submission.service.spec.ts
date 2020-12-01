@@ -5,12 +5,19 @@ import mongoose from 'mongoose'
 import { PassThrough, Transform } from 'stream'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
-import { MalformedParametersError } from 'src/app/modules/core/core.errors'
-import { aws } from 'src/config/config'
-import { SubmissionCursorData } from 'src/types'
-
 import {
+  DatabaseError,
+  MalformedParametersError,
+} from 'src/app/modules/core/core.errors'
+import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
+import { aws } from 'src/config/config'
+import { SubmissionCursorData, SubmissionData } from 'src/types'
+
+import { SubmissionNotFoundError } from '../../submission.errors'
+import {
+  getEncryptedSubmissionData,
   getSubmissionCursor,
+  transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from '../encrypt-submission.service'
 
@@ -333,6 +340,188 @@ describe('encrypt-submission.service', () => {
         expect.any(Function),
       )
       expect(actualErrors).toEqual([expectedError])
+    })
+  })
+
+  describe('getEncryptedSubmissionData', () => {
+    it('should return submission data successfully', async () => {
+      // Arrange
+      const expected = {
+        encryptedContent: 'mock encrypted content',
+        verifiedContent: 'mock verified content',
+        attachmentMetadata: new Map([
+          ['key1', 'objectPath1'],
+          ['key2', 'objectPath2'],
+        ]),
+        created: new Date(),
+      } as SubmissionData
+
+      const getSubmissionSpy = jest
+        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .mockResolvedValueOnce(expected)
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await getEncryptedSubmissionData(
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expected)
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockSubmissionId,
+      )
+    })
+
+    it('should return SubmissionNotFoundError when submissionId does not exist in the database', async () => {
+      // Arrange
+      // Return null submission.
+      const getSubmissionSpy = jest
+        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .mockResolvedValueOnce(null)
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await getEncryptedSubmissionData(
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      // Should be error.
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new SubmissionNotFoundError(
+          'Unable to find encrypted submission from database',
+        ),
+      )
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockSubmissionId,
+      )
+    })
+
+    it('should return DatabaseError when error occurs during query', async () => {
+      // Arrange
+      // Return error when querying for submission.
+      const mockErrorString = 'some error'
+      const getSubmissionSpy = jest
+        .spyOn(EncryptSubmission, 'findEncryptedSubmissionById')
+        .mockRejectedValueOnce(new Error(mockErrorString))
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await getEncryptedSubmissionData(
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      // Should be error.
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
+      )
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockSubmissionId,
+      )
+    })
+  })
+
+  describe('transformAttachmentMetasToSignedUrls', () => {
+    const MOCK_METADATA = new Map([
+      ['key1', 'objectPath1'],
+      ['key2', 'objectPath2'],
+    ])
+
+    it('should return map with transformed signed urls', async () => {
+      // Arrange
+      // Mock promise implementation.
+      jest
+        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .mockImplementation((_operation, params) => {
+          return Promise.resolve(
+            `https://some-fake-url/${params.Key}/${params.Expires}`,
+          )
+        })
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        MOCK_METADATA,
+        200,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      // Should return signed urls mapped to original key.
+      expect(actualResult._unsafeUnwrap()).toEqual({
+        key1: 'https://some-fake-url/objectPath1/200',
+        key2: 'https://some-fake-url/objectPath2/200',
+      })
+    })
+
+    it('should return empty object when given attachmentMetadata is undefined', async () => {
+      // Arrange
+      // Mock promise implementation.
+      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        undefined,
+        200,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      // Should return empty object.
+      expect(actualResult._unsafeUnwrap()).toEqual({})
+      expect(awsSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return empty object when given attachmentMetadata is empty map', async () => {
+      // Arrange
+      // Mock promise implementation.
+      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        new Map(),
+        200,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      // Should return empty object.
+      expect(actualResult._unsafeUnwrap()).toEqual({})
+      expect(awsSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return CreatePresignedUrlError when error occurs during the signed url creation process', async () => {
+      // Arrange
+      jest
+        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .mockResolvedValueOnce('this passed')
+        .mockRejectedValueOnce(new Error('now this fails'))
+
+      // Act
+      const actualResult = await transformAttachmentMetasToSignedUrls(
+        MOCK_METADATA,
+        1000,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      // Should reject even if there are some passing promises.
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new CreatePresignedUrlError('Failed to create attachment URL'),
+      )
     })
   })
 })

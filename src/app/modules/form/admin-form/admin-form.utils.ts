@@ -20,6 +20,7 @@ import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
 } from './admin-form.errors'
+import { FormPermissionResult } from './admin-form.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -86,43 +87,93 @@ export const mapRouteError = (
   }
 }
 
-const isFormActive = (form: IPopulatedForm): Result<true, FormDeletedError> => {
-  if (form.status === Status.Archived) {
-    return err(new FormDeletedError('Form has been archived'))
-  }
-
-  return ok(true)
+/**
+ * Asserts whether a form is available for retrieval by users.
+ * @param form the form to check
+ * @returns ok(true) if form status is not archived.
+ * @returns err(FormDeletedError) if the form has already been archived
+ */
+export const assertFormAvailable = (
+  form: IPopulatedForm,
+): Result<true, FormDeletedError> => {
+  return form.status === Status.Archived
+    ? err(new FormDeletedError('Form has been archived'))
+    : ok(true)
 }
 
 /**
- * Asserts that the given user has read access to the form.
- * @returns ok(true) if given user has read permissions to form
- * @returns err(FormDeletedError) if form has already been archived
- * @returns err(ForbiddenFormError) if user does not have read permissions to form
+ * Asserts that the given user has read access for the form.
+ * @returns ok(true) if given user has read permissions
+ * @returns err(ForbiddenFormError) if user does not have read permissions
  */
 export const assertHasReadPermissions = (
   user: IUserSchema,
   form: IPopulatedForm,
-): Result<true, ForbiddenFormError | FormDeletedError> => {
-  return isFormActive(form).andThen(() => {
-    // Is form admin. Automatically has permissions.
-    if (String(user._id) === String(form.admin._id)) {
-      return ok(true)
-    }
+): FormPermissionResult => {
+  // Is form admin. Automatically has permissions.
+  if (String(user._id) === String(form.admin._id)) {
+    return ok(true)
+  }
 
-    // Check if user email is currently in form's allowed list.
-    const hasReadPermissions = !!form.permissionList?.find(
-      (allowedUser) => allowedUser.email === user.email,
-    )
+  // Check if user email is currently in form's allowed list.
+  const hasReadPermissions = !!form.permissionList?.find(
+    (allowedUser) => allowedUser.email === user.email,
+  )
 
-    if (!hasReadPermissions) {
-      return err(
+  return hasReadPermissions
+    ? ok(true)
+    : err(
         new ForbiddenFormError(
           `User ${user.email} not authorized to perform read operation on Form ${form._id} with title: ${form.title}.`,
         ),
       )
-    }
+}
 
+/**
+ * Asserts that the given user has delete permissions for the form.
+ * @returns ok(true) if given user has delete permissions
+ * @returns err(ForbiddenFormError) if user does not have delete permissions
+ */
+export const assertHasDeletePermissions = (
+  user: IUserSchema,
+  form: IPopulatedForm,
+): FormPermissionResult => {
+  const isFormAdmin = String(user._id) === String(form.admin._id)
+  // If form admin
+  return isFormAdmin
+    ? ok(true)
+    : err(
+        new ForbiddenFormError(
+          `User ${user.email} not authorized to perform delete operation on Form ${form._id} with title: ${form.title}.`,
+        ),
+      )
+}
+
+/**
+ * Asserts that the given user has write permissions for the form.
+ * @returns ok(true) if given user has write permissions
+ * @returns err(ForbiddenFormError) if user does not have write permissions
+ */
+export const assertHasWritePermissions = (
+  user: IUserSchema,
+  form: IPopulatedForm,
+): FormPermissionResult => {
+  // Is form admin. Automatically has permissions.
+  if (String(user._id) === String(form.admin._id)) {
     return ok(true)
-  })
+  }
+
+  // Check if user email is currently in form's allowed list, and has write
+  // permissions.
+  const hasWritePermissions = !!form.permissionList?.find(
+    (allowedUser) => allowedUser.email === user.email && allowedUser.write,
+  )
+
+  return hasWritePermissions
+    ? ok(true)
+    : err(
+        new ForbiddenFormError(
+          `User ${user.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+        ),
+      )
 }

@@ -1,13 +1,17 @@
+import Bluebird from 'bluebird'
 import mongoose from 'mongoose'
-import { err, ok, Result } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { SubmissionCursorData } from '../../../../types'
+import { SubmissionCursorData, SubmissionData } from '../../../../types'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
-import { MalformedParametersError } from '../../core/core.errors'
+import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
+import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
+import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
+import { SubmissionNotFoundError } from '../submission.errors'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -108,4 +112,96 @@ export const transformAttachmentMetaStream = ({
       }
     },
   })
+}
+
+/**
+ * Retrieves required subset of encrypted submission data from the database
+ * @param formId the id of the form to filter submissions for
+ * @param submissionId the submission itself to retrieve
+ * @returns ok(SubmissionData)
+ * @returns err(SubmissionNotFoundError) if given submissionId does not exist in the database
+ * @returns err(DatabaseError) when error occurs during query
+ */
+export const getEncryptedSubmissionData = (
+  formId: string,
+  submissionId: string,
+): ResultAsync<SubmissionData, SubmissionNotFoundError | DatabaseError> => {
+  return ResultAsync.fromPromise(
+    EncryptSubmissionModel.findEncryptedSubmissionById(formId, submissionId),
+    (error) => {
+      logger.error({
+        message: 'Failure retrieving encrypted submission from database',
+        meta: {
+          action: 'getEncryptedSubmissionData',
+          formId,
+          submissionId,
+        },
+        error,
+      })
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((submission) => {
+    if (!submission) {
+      logger.error({
+        message: 'Unable to find encrypted submission from database',
+        meta: {
+          action: 'getEncryptedResponse',
+          formId,
+          submissionId,
+        },
+      })
+      return errAsync(
+        new SubmissionNotFoundError(
+          'Unable to find encrypted submission from database',
+        ),
+      )
+    }
+
+    return okAsync(submission)
+  })
+}
+
+/**
+ * Transforms given attachment metadata to their S3 signed url counterparts.
+ * @param attachmentMetadata the metadata to transform
+ * @param urlValidDuration the duration the S3 signed url will be valid for
+ * @returns ok(map with object path replaced with their signed url counterparts)
+ * @returns err(CreatePresignedUrlError) if any of the signed url creation processes results in an error
+ */
+export const transformAttachmentMetasToSignedUrls = (
+  attachmentMetadata: Map<string, string> | undefined,
+  urlValidDuration: number,
+): ResultAsync<Record<string, string>, CreatePresignedUrlError> => {
+  if (!attachmentMetadata) {
+    return okAsync({})
+  }
+  const keyToSignedUrlPromises: Record<string, Promise<string>> = {}
+
+  for (const [key, objectPath] of attachmentMetadata) {
+    keyToSignedUrlPromises[key] = AwsConfig.s3.getSignedUrlPromise(
+      'getObject',
+      {
+        Bucket: AwsConfig.attachmentS3Bucket,
+        Key: objectPath,
+        Expires: urlValidDuration,
+      },
+    )
+  }
+
+  return ResultAsync.fromPromise(
+    Bluebird.props(keyToSignedUrlPromises),
+    (error) => {
+      logger.error({
+        message: 'Failed to retrieve signed URLs for attachments',
+        meta: {
+          action: 'transformAttachmentMetasToSignedUrls',
+          attachmentMetadata,
+        },
+        error,
+      })
+
+      return new CreatePresignedUrlError('Failed to create attachment URL')
+    },
+  )
 }
