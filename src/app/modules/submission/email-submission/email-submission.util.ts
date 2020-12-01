@@ -14,9 +14,8 @@ import {
 /**
  * Determines the prefix for a question based on whether it is verified
  * by MyInfo.
- * @param {Object} response
- * @param {Set} hashedFields Hash for verifying MyInfo fields
- * @returns {String}
+ * @param response
+ * @param hashedFields Hash for verifying MyInfo fields
  */
 const getMyInfoPrefix = (
   response: ResponseFormattedForEmail,
