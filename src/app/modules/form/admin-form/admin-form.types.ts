@@ -22,10 +22,16 @@ export type AssertFormFn = (
 export type DuplicateFormBody = {
   title: string
   isTemplate: boolean
-  emails?: string | string[]
-  publicKey?: string
-  responseMode: ResponseMode
-}
+} & (
+  | {
+      responseMode: ResponseMode.Email
+      emails: string | string[]
+    }
+  | {
+      responseMode: ResponseMode.Encrypt
+      publicKey: string
+    }
+)
 
 export type OverrideProps = {
   customLogo?: undefined

@@ -192,7 +192,7 @@ export const processDuplicateOverrideProps = (
   params: DuplicateFormBody,
   newAdminId: string,
 ): OverrideProps => {
-  const { isTemplate, emails, publicKey, responseMode, title } = params
+  const { isTemplate, responseMode, title } = params
 
   const overrideProps: OverrideProps = {
     responseMode,
@@ -204,15 +204,13 @@ export const processDuplicateOverrideProps = (
     overrideProps.customLogo = undefined
   }
 
-  switch (responseMode) {
+  switch (params.responseMode) {
     case ResponseMode.Encrypt:
-      overrideProps.publicKey = publicKey
+      overrideProps.publicKey = params.publicKey
       break
     case ResponseMode.Email:
-      overrideProps.emails = emails
+      overrideProps.emails = params.emails
       break
-    default:
-      return assertUnreachable(responseMode)
   }
 
   return overrideProps
