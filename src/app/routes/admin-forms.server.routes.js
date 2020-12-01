@@ -167,7 +167,7 @@ module.exports = function (app) {
       forms.read(forms.REQUEST_TYPE.ADMIN),
     )
     .put(authActiveForm(PermissionLevel.Write), adminForms.update)
-    .delete(authActiveForm(PermissionLevel.Delete), adminForms.delete)
+    .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
     .post(authActiveForm(PermissionLevel.Read), adminForms.duplicate)
 
   /**

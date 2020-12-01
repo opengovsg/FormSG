@@ -334,22 +334,6 @@ function makeModule(connection) {
       })
     },
     /**
-     * Deletes a form from list forms page (no delete on view form)
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    delete: function (req, res) {
-      let form = req.form
-      // Set form to inactive
-      form.status = 'ARCHIVED'
-      form.save(function (err, savedForm) {
-        if (err) {
-          return respondOnMongoError(req, res, err)
-        }
-        return res.json(savedForm)
-      })
-    },
-    /**
      * Duplicates an entire form from list forms page
      * Duplicating non-admin form, makes you admin of duplicated form
      * @param  {Object} req - Express request object

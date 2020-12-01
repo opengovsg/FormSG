@@ -1,4 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -9,13 +10,21 @@ import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { aws } from 'src/config/config'
 import { VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
-import { DashboardFormView, IPopulatedUser, IUserSchema } from 'src/types'
+import {
+  DashboardFormView,
+  IEmailFormSchema,
+  IEncryptedFormSchema,
+  IPopulatedUser,
+  IUserSchema,
+  Status,
+} from 'src/types'
 
 import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import {
+  archiveForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
   getDashboardForms,
@@ -270,6 +279,48 @@ describe('admin-form.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new CreatePresignedUrlError('Error occurred whilst uploading file'),
+      )
+    })
+  })
+
+  describe('archiveForm', () => {
+    it('should true when form is successfully archived', async () => {
+      // Arrange
+      const mockArchivedForm = {
+        _id: new ObjectId(),
+        admin: new ObjectId(),
+        status: Status.Archived,
+      } as IEmailFormSchema
+      const mockArchiveFn = jest.fn().mockResolvedValue(mockArchivedForm)
+      const mockInitialForm = ({
+        archive: mockArchiveFn,
+      } as unknown) as IEmailFormSchema
+
+      // Act
+      const actual = await archiveForm(mockInitialForm)
+
+      // Assert
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return DatabaseError if any database errors occur', async () => {
+      // Arrange
+      const mockErrorString = 'database went wrong something'
+      const mockArchiveFn = jest
+        .fn()
+        .mockRejectedValue(new Error(mockErrorString))
+      const mockInitialForm = ({
+        archive: mockArchiveFn,
+      } as unknown) as IEncryptedFormSchema
+
+      // Act
+      const actual = await archiveForm(mockInitialForm)
+
+      // Assert
+      expect(actual.isErr()).toEqual(true)
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
       )
     })
   })

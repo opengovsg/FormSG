@@ -419,6 +419,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return newForm
   }
 
+  // Archives form.
+  FormSchema.methods.archive = function (this: IFormSchema) {
+    // Return instantly when form is already archived.
+    if (this.status === Status.Archived) {
+      return Promise.resolve(this)
+    }
+
+    this.status = Status.Archived
+    return this.save()
+  }
+
   // Transfer ownership of the form to another user
   FormSchema.methods.transferOwner = async function (
     currentOwner: IUserSchema,
