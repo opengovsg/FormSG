@@ -1,17 +1,14 @@
 const {
   DropdownValidator,
-  RadiobuttonValidator,
   CheckboxValidator,
   EmailValidator,
   TableValidator,
   NumberValidator,
   YesNoValidator,
-  MobileValidator,
   BaseFieldValidator,
   DecimalValidator,
   AttachmentValidator,
   DateValidator,
-  RatingValidator,
 } = require('./validators')
 
 const myInfoTypes = require('../../../shared/resources/myinfo').types
@@ -42,9 +39,11 @@ class FieldValidatorFactory {
       case 'textarea': // long text
       case 'nric':
       case 'homeno':
+      case 'rating':
+      case 'mobileno':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'radiobutton':
-        return new RadiobuttonValidator(...arguments)
+        throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'dropdown':
         return new DropdownValidator(...arguments)
       case 'checkbox':
@@ -55,8 +54,6 @@ class FieldValidatorFactory {
         return new TableValidator(...arguments)
       case 'number':
         return new NumberValidator(...arguments)
-      case 'rating':
-        return new RatingValidator(...arguments)
       case 'yes_no':
         return new YesNoValidator(...arguments)
       case 'decimal':
@@ -65,8 +62,6 @@ class FieldValidatorFactory {
         return new AttachmentValidator(...arguments)
       case 'date':
         return new DateValidator(...arguments)
-      case 'mobile':
-        return new MobileValidator(...arguments)
       default:
         // Checks if answer is optional or required, but will throw an error when there is an answer
         // since _isFilledAnswerValid is not implemented

@@ -4,9 +4,7 @@
  * Module dependencies.
  */
 const mongoose = require('mongoose')
-const moment = require('moment-timezone')
 const _ = require('lodash')
-const JSONStream = require('JSONStream')
 const { StatusCodes } = require('http-status-codes')
 
 const logger = require('../../config/logger').createLoggerWithLabel(module)
@@ -23,8 +21,6 @@ const {
   getEmailFormModel,
 } = require('../models/form.server.model')
 const getFormModel = require('../models/form.server.model').default
-const getFormFeedbackModel = require('../models/form_feedback.server.model')
-  .default
 const getSubmissionModel = require('../models/submission.server.model').default
 const { ResponseMode } = require('../../types')
 
@@ -417,106 +413,6 @@ function makeModule(connection) {
           })
         }
       })
-    },
-    /**
-     * Return form feedback matching query
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    getFeedback: function (req, res) {
-      let FormFeedback = getFormFeedbackModel(connection)
-      let query = FormFeedback.find({ formId: req.form._id }).sort({
-        created: 1,
-      })
-      query.exec(function (err, feedback) {
-        if (err) {
-          return respondOnMongoError(req, res, err)
-        } else if (!feedback) {
-          return res
-            .status(StatusCodes.NOT_FOUND)
-            .json({ message: 'No feedback found' })
-        } else {
-          let sum = 0
-          let count = 0
-          feedback = feedback.map(function (element) {
-            sum += element.rating
-            count += 1
-            return {
-              index: count,
-              timestamp: moment(element.created).valueOf(),
-              rating: element.rating,
-              comment: element.comment,
-              date: moment(element.created)
-                .tz('Asia/Singapore')
-                .format('D MMM YYYY'),
-              dateShort: moment(element.created)
-                .tz('Asia/Singapore')
-                .format('D MMM'),
-            }
-          })
-          let average = count > 0 ? (sum / count).toFixed(2) : undefined
-          return res.json({
-            average: average,
-            count: count,
-            feedback: feedback,
-          })
-        }
-      })
-    },
-    /**
-     * Stream download feedback for a form
-     * @param  {Object} req - Express request object
-     * @param  {Object} req.form - the form to download
-     * @param  {Object} res - Express response object
-     */
-    streamFeedback: function (req, res) {
-      let FormFeedback = getFormFeedbackModel(connection)
-      FormFeedback.find({ formId: req.form._id })
-        .cursor()
-        .on('error', function (err) {
-          logger.error({
-            message: 'Error streaming feedback from MongoDB',
-            meta: {
-              action: 'makeModule.streamFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Error retrieving from database.',
-          })
-        })
-        .pipe(JSONStream.stringify())
-        .on('error', function (err) {
-          logger.error({
-            message: 'Error converting feedback to JSON',
-            meta: {
-              action: 'makeModule.streamFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Error converting feedback to JSON',
-          })
-        })
-        .pipe(res.type('json'))
-        .on('error', function (err) {
-          logger.error({
-            message: 'Error writing feedback to HTTP stream',
-            meta: {
-              action: 'makeModule.streamFeedback',
-              ...createReqMeta(req),
-            },
-            error: err,
-          })
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Error writing feedback to HTTP stream',
-          })
-        })
-        .on('end', function () {
-          res.end()
-        })
     },
     /**
      * Submit feedback when previewing forms

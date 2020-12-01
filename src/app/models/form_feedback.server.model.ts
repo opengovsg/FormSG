@@ -35,6 +35,20 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema>(
 )
 
 /**
+ * Returns a cursor for all feedback for the form with formId.
+ * @param formId the form id to return the submissions cursor for
+ * @returns a cursor to the feedback retrieved
+ */
+const getFeedbackCursorByFormId: IFormFeedbackModel['getFeedbackCursorByFormId'] = function (
+  this: IFormFeedbackModel,
+  formId,
+) {
+  return this.find({ formId }).batchSize(2000).read('secondary').lean().cursor()
+}
+
+FormFeedbackSchema.statics.getFeedbackCursorByFormId = getFeedbackCursorByFormId
+
+/**
  * Form Feedback Schema
  * @param db Active DB Connection
  * @return Mongoose Model

@@ -133,4 +133,22 @@ describe('Dropdown validation', () => {
       new ValidateFieldError('Invalid answer submitted'),
     )
   })
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = {
+      _id: 'ddID',
+      fieldType: 'dropdown',
+      fieldOptions: ['KISS', 'DRY', 'YAGNI'],
+    }
+    const response = {
+      _id: 'ddID',
+      fieldType: 'dropdown',
+      answer: 'KISS',
+      isVisible: false,
+    }
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
 })

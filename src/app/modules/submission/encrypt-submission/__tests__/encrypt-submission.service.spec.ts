@@ -11,12 +11,18 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { aws } from 'src/config/config'
-import { SubmissionCursorData, SubmissionData } from 'src/types'
+import {
+  SubmissionCursorData,
+  SubmissionData,
+  SubmissionMetadata,
+} from 'src/types'
 
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   getEncryptedSubmissionData,
   getSubmissionCursor,
+  getSubmissionMetadata,
+  getSubmissionMetadataList,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from '../encrypt-submission.service'
@@ -522,6 +528,168 @@ describe('encrypt-submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new CreatePresignedUrlError('Failed to create attachment URL'),
       )
+    })
+  })
+
+  describe('getSubmissionMetadata', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+
+    it('should return metadata successfully', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const expectedMetadata: SubmissionMetadata = {
+        number: 200,
+        refNo: mockSubmissionId,
+        submissionTime: 'some submission time',
+      }
+      const getMetaSpy = jest
+        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .mockResolvedValueOnce(expectedMetadata)
+
+      // Act
+      const actualResult = await getSubmissionMetadata(
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+
+      // Arrange
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
+      expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+    })
+
+    it('should return null when given submissionId is not valid', async () => {
+      // Arrange
+      const invalidSubmissionId = 'not an id at all'
+
+      // Act
+      const actualResult = await getSubmissionMetadata(
+        MOCK_FORM_ID,
+        invalidSubmissionId,
+      )
+
+      // Arrange
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(null)
+    })
+
+    it('should return null when query returns null', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const getMetaSpy = jest
+        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .mockResolvedValueOnce(null)
+
+      // Act
+      const actualResult = await getSubmissionMetadata(
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+
+      // Arrange
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(null)
+      expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+    })
+
+    it('should return DatabaseError when database error occurs', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockErrorString = 'some database error message'
+      const getMetaSpy = jest
+        .spyOn(EncryptSubmission, 'findSingleMetadata')
+        .mockRejectedValueOnce(new Error(mockErrorString))
+
+      // Act
+      const actualResult = await getSubmissionMetadata(
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+
+      // Arrange
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
+      )
+      expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+    })
+  })
+
+  describe('getSubmissionMetadataList', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+
+    it('should return metadata list successfully without page param', async () => {
+      // Arrange
+      const expectedResult = {
+        metadata: [
+          {
+            number: 200,
+            refNo: new ObjectId().toHexString(),
+            submissionTime: 'some submission time',
+          },
+        ],
+        count: 1,
+      }
+      const getMetaSpy = jest
+        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .mockResolvedValueOnce(expectedResult)
+
+      // Act
+      const actualResult = await getSubmissionMetadataList(MOCK_FORM_ID)
+
+      // Arrange
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+      expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, { page: undefined })
+    })
+
+    it('should return metadata list successfully with page param', async () => {
+      // Arrange
+      const mockPageNumber = 200
+      const expectedResult = {
+        metadata: [
+          {
+            number: 9,
+            refNo: new ObjectId().toHexString(),
+            submissionTime: 'another submission time',
+          },
+        ],
+        count: 1,
+      }
+      const getMetaSpy = jest
+        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .mockResolvedValueOnce(expectedResult)
+
+      // Act
+      const actualResult = await getSubmissionMetadataList(
+        MOCK_FORM_ID,
+        mockPageNumber,
+      )
+
+      // Arrange
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+      expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
+        page: mockPageNumber,
+      })
+    })
+
+    it('should return DatabaseError when database error occurs', async () => {
+      // Arrange
+      const mockErrorString = 'some database error message'
+      const getMetaSpy = jest
+        .spyOn(EncryptSubmission, 'findAllMetadataByFormId')
+        .mockRejectedValueOnce(new Error(mockErrorString))
+
+      // Act
+      const actualResult = await getSubmissionMetadataList(MOCK_FORM_ID)
+
+      // Arrange
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
+      )
+      expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, { page: undefined })
     })
   })
 })

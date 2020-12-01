@@ -2,7 +2,8 @@ import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { IPopulatedForm, IUserSchema, Status } from '../../../../types'
+import { IPopulatedForm, Status } from '../../../../types'
+import { assertUnreachable } from '../../../utils/assert-unreachable'
 import {
   ApplicationError,
   DatabaseError,
@@ -20,7 +21,7 @@ import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
 } from './admin-form.errors'
-import { FormPermissionResult } from './admin-form.types'
+import { AssertFormFn, PermissionLevel } from './admin-form.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -106,10 +107,7 @@ export const assertFormAvailable = (
  * @returns ok(true) if given user has read permissions
  * @returns err(ForbiddenFormError) if user does not have read permissions
  */
-export const assertHasReadPermissions = (
-  user: IUserSchema,
-  form: IPopulatedForm,
-): FormPermissionResult => {
+export const assertHasReadPermissions: AssertFormFn = (user, form) => {
   // Is form admin. Automatically has permissions.
   if (String(user._id) === String(form.admin._id)) {
     return ok(true)
@@ -134,10 +132,7 @@ export const assertHasReadPermissions = (
  * @returns ok(true) if given user has delete permissions
  * @returns err(ForbiddenFormError) if user does not have delete permissions
  */
-export const assertHasDeletePermissions = (
-  user: IUserSchema,
-  form: IPopulatedForm,
-): FormPermissionResult => {
+export const assertHasDeletePermissions: AssertFormFn = (user, form) => {
   const isFormAdmin = String(user._id) === String(form.admin._id)
   // If form admin
   return isFormAdmin
@@ -154,10 +149,7 @@ export const assertHasDeletePermissions = (
  * @returns ok(true) if given user has write permissions
  * @returns err(ForbiddenFormError) if user does not have write permissions
  */
-export const assertHasWritePermissions = (
-  user: IUserSchema,
-  form: IPopulatedForm,
-): FormPermissionResult => {
+export const assertHasWritePermissions: AssertFormFn = (user, form) => {
   // Is form admin. Automatically has permissions.
   if (String(user._id) === String(form.admin._id)) {
     return ok(true)
@@ -176,4 +168,17 @@ export const assertHasWritePermissions = (
           `User ${user.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
         ),
       )
+}
+
+export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
+  switch (level) {
+    case PermissionLevel.Read:
+      return assertHasReadPermissions
+    case PermissionLevel.Write:
+      return assertHasWritePermissions
+    case PermissionLevel.Delete:
+      return assertHasDeletePermissions
+    default:
+      return assertUnreachable(level)
+  }
 }

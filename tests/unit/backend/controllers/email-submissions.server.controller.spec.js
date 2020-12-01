@@ -778,7 +778,6 @@ describe('Email Submissions Controller', () => {
      * @param {String} question
      * @param {String} answer
      * @param {Array} [answerArray] array of answers passed in for checkbox and table
-     * @param {Boolean} [isExpectedToBeVisible] this boolean is used for computing expected output, and should match isVisible injected by server to pass the test
      */
     const makeResponse = (
       fieldId,
@@ -786,14 +785,12 @@ describe('Email Submissions Controller', () => {
       question,
       answer,
       answerArray = null,
-      isExpectedToBeVisible = true,
     ) => {
       let response = {
         _id: String(fieldId),
         fieldType,
         question,
         answer,
-        isExpectedToBeVisible,
       }
       if (answerArray) response.answerArray = answerArray
       return response
@@ -807,10 +804,9 @@ describe('Email Submissions Controller', () => {
      * @param {Array} field.columns
      * @param {Object} response
      * @param {Array} response.answerArray
-     * @param {Boolean} response.isExpectedToBeVisible
      */
     const getExpectedForTable = (field, response) => {
-      const { answerArray, isExpectedToBeVisible } = response
+      const { answerArray } = response
       const { columns, title, fieldType } = field
       const columnTitles = columns.map(({ title }) => title)
       const autoReplyQuestion = `${title} (${columnTitles.join(', ')})`
@@ -824,13 +820,10 @@ describe('Email Submissions Controller', () => {
       for (let answer of answerArray) {
         answer = String(answer)
         const answerTemplate = answer.split('\n')
-        if (isExpectedToBeVisible) {
-          // Auto replies only show visible data
-          expected.autoReplyData.push({
-            question: autoReplyQuestion,
-            answerTemplate,
-          })
-        }
+        expected.autoReplyData.push({
+          question: autoReplyQuestion,
+          answerTemplate,
+        })
         expected.jsonData.push({
           question,
           answer,
@@ -869,13 +862,10 @@ describe('Email Submissions Controller', () => {
           expected.replyToEmails.push(...expectedTable.replyToEmails)
         } else {
           let question = fields[i].title
-          if (responses[i].isExpectedToBeVisible) {
-            // Auto replies only show visible data
-            expected.autoReplyData.push({
-              question,
-              answerTemplate,
-            })
-          }
+          expected.autoReplyData.push({
+            question,
+            answerTemplate,
+          })
           expected.jsonData.push({
             question,
             answer,
@@ -1061,89 +1051,6 @@ describe('Email Submissions Controller', () => {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
-        replyToEmails: [],
-      }
-      prepareSubmissionThenCompare(expected, done)
-    })
-
-    it('excludes field if isVisible is false for autoReplyData', (done) => {
-      const nonVisibleField = {
-        _id: new ObjectID(),
-        title: 'not visible to autoReplyData',
-        fieldType: 'textfield',
-      }
-      const yesNoField = {
-        _id: new ObjectID(),
-        title: 'Show textfield if this field is yes',
-        fieldType: 'yes_no',
-      }
-      const nonVisibleResponse = {
-        _id: String(nonVisibleField._id),
-        question: nonVisibleField.title,
-        fieldType: nonVisibleField.fieldType,
-        isHeader: false,
-        answer: 'abc',
-      }
-      const yesNoResponse = {
-        _id: String(yesNoField._id),
-        question: yesNoField.title,
-        fieldType: yesNoField.fieldType,
-        isHeader: false,
-        answer: 'No',
-      }
-
-      reqFixtures.body.responses.push(nonVisibleResponse)
-      reqFixtures.body.responses.push(yesNoResponse)
-      reqFixtures.form.form_fields.push(nonVisibleField)
-      reqFixtures.form.form_fields.push(yesNoField)
-      reqFixtures.form.form_logics.push({
-        show: [nonVisibleField._id],
-        conditions: [
-          {
-            ifValueType: 'single-select',
-            _id: '58169',
-            field: yesNoField._id,
-            state: 'is equals to',
-            value: 'Yes',
-          },
-        ],
-        _id: '5db00a15af2ffb29487d4eb1',
-        logicType: 'showFields',
-      })
-      const expectedJsonData = [
-        {
-          question: nonVisibleField.title,
-          answer: nonVisibleResponse.answer,
-        },
-        {
-          question: yesNoField.title,
-          answer: yesNoResponse.answer,
-        },
-      ]
-      const expectedFormData = [
-        {
-          question: nonVisibleField.title,
-          answerTemplate: [nonVisibleResponse.answer],
-          answer: nonVisibleResponse.answer,
-          fieldType: nonVisibleField.fieldType,
-        },
-        {
-          question: yesNoField.title,
-          answerTemplate: [yesNoResponse.answer],
-          answer: yesNoResponse.answer,
-          fieldType: yesNoField.fieldType,
-        },
-      ]
-      const expectedAutoReplyData = [
-        {
-          question: yesNoField.title,
-          answerTemplate: [yesNoResponse.answer],
-        },
-      ]
-      const expected = {
-        autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
-        formData: expectedFormData,
         replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
@@ -1644,11 +1551,6 @@ describe('Email Submissions Controller', () => {
           prepareSubmissionThenCompare(expected, done)
         }
 
-        it('hides logic fields for single select value', (done) => {
-          // Does not fulfill condition, hence second field hidden
-          singleSelectSuccessTest(showFieldLogics, 'No', false, done)
-        })
-
         it('shows logic fields for single select value', (done) => {
           // Fulfills condition, hence second field shown
           singleSelectSuccessTest(showFieldLogics, 'Yes', true, done)
@@ -1749,10 +1651,6 @@ describe('Email Submissions Controller', () => {
           )
           prepareSubmissionThenCompare(expected, done)
         }
-        it('hides logic fields for number value', (done) => {
-          // Second field hidden
-          numberValueSuccessTest(showFieldLogics, '11', false, done)
-        })
 
         it('shows logic for number value', (done) => {
           // Second field shown
@@ -1856,10 +1754,6 @@ describe('Email Submissions Controller', () => {
           )
           prepareSubmissionThenCompare(expected, done)
         }
-
-        it('hides logic fields for multi-select value', (done) => {
-          multiSelectSuccessTest(showFieldLogics, 'Option 3', false, done)
-        })
 
         it('shows logic for multi-select value', (done) => {
           multiSelectSuccessTest(showFieldLogics, 'Option 1', true, done)
@@ -1975,16 +1869,6 @@ describe('Email Submissions Controller', () => {
           )
           prepareSubmissionThenCompare(expected, done)
         }
-
-        it('hides logic fields if any condition is not fulfilled', (done) => {
-          multiAndSuccessTest(
-            showFieldLogics,
-            'Yes',
-            'Radiobutton',
-            false,
-            done,
-          )
-        })
 
         it('shows logic fields if every condition is fulfilled', (done) => {
           multiAndSuccessTest(showFieldLogics, 'Yes', 'Textfield', true, done)
@@ -2139,10 +2023,6 @@ describe('Email Submissions Controller', () => {
           prepareSubmissionThenCompare(expected, done)
         }
 
-        it('hides logic fields if every condition is not fulfilled', (done) => {
-          orSuccessTest(showFieldLogics, 'No', 'Radiobutton', false, done)
-        })
-
         it('shows logic fields if any condition is fulfilled', (done) => {
           orSuccessTest(showFieldLogics, 'Yes', 'Radiobutton', true, done)
         })
@@ -2186,39 +2066,6 @@ describe('Email Submissions Controller', () => {
             logicType: 'showFields',
           },
         ]
-        it('hides multiple logic fields when condition is not fulfilled', (done) => {
-          reqFixtures.form.form_fields = fields
-          reqFixtures.form.form_logics = formLogics
-          reqFixtures.body.responses = [
-            makeResponse(
-              conditionField._id,
-              conditionField.fieldType,
-              conditionField.title,
-              'No',
-            ), // Does not fulfill condition
-            makeResponse(
-              logicField1._id,
-              logicField1.fieldType,
-              logicField1.title,
-              'lorem',
-              null,
-              false,
-            ), // This field should be hidden
-            makeResponse(
-              logicField2._id,
-              logicField2.fieldType,
-              logicField2.title,
-              'ipsum',
-              null,
-              false,
-            ), // This field should be hidden
-          ]
-          const expected = getExpectedOutput(
-            reqFixtures.form.form_fields,
-            reqFixtures.body.responses,
-          )
-          prepareSubmissionThenCompare(expected, done)
-        })
 
         it('shows multiple logic fields when condition is fulfilled', (done) => {
           reqFixtures.form.form_fields = fields
@@ -2246,32 +2093,6 @@ describe('Email Submissions Controller', () => {
               null,
               true,
             ), // This field should be shown
-          ]
-          const expected = getExpectedOutput(
-            reqFixtures.form.form_fields,
-            reqFixtures.body.responses,
-          )
-          prepareSubmissionThenCompare(expected, done)
-        })
-
-        it('should hide unfulfilled logic field even when some of the logic fields are missing', (done) => {
-          reqFixtures.form.form_fields = [conditionField, logicField1] // Missing logicField2
-          reqFixtures.form.form_logics = formLogics
-          reqFixtures.body.responses = [
-            makeResponse(
-              conditionField._id,
-              conditionField.fieldType,
-              conditionField.title,
-              'No',
-            ), //  Does not fulfill condition
-            makeResponse(
-              logicField1._id,
-              logicField1.fieldType,
-              logicField1.title,
-              'lorem',
-              null,
-              false,
-            ), // This field should be hidden
           ]
           const expected = getExpectedOutput(
             reqFixtures.form.form_fields,
@@ -2456,17 +2277,6 @@ describe('Email Submissions Controller', () => {
           )
         })
 
-        it('hides chained logic', (done) => {
-          chainedSuccessTest(
-            showFieldLogics,
-            '1',
-            'Others: peas',
-            false,
-            false,
-            done,
-          )
-        })
-
         it('accepts submission not prevented by chained logic', (done) => {
           chainedSuccessTest(
             preventSubmitLogics,
@@ -2567,157 +2377,6 @@ describe('Email Submissions Controller', () => {
               conditionField2.title,
               'Others: peas',
             ), // Fulfills condition
-          ]
-          const expected = getExpectedOutput(
-            reqFixtures.form.form_fields,
-            reqFixtures.body.responses,
-          )
-          prepareSubmissionThenCompare(expected, done)
-        })
-      })
-      describe('circular logic', () => {
-        const conditionField1 = makeField(
-          new ObjectID(),
-          'yes_no',
-          'Show field 2 if yes',
-        )
-        const conditionField2 = makeField(
-          new ObjectID(),
-          'yes_no',
-          'Show field 3 if yes',
-        )
-        const conditionField3 = makeField(
-          new ObjectID(),
-          'yes_no',
-          'Show field 1 if yes',
-        )
-        const visibleField = makeField(
-          new ObjectID(),
-          'textfield',
-          'Text field',
-        )
-        const formLogics = [
-          {
-            show: [conditionField2._id],
-            _id: '5df11ee1e6b6e7108a939c8a',
-            conditions: [
-              {
-                ifValueType: 'single-select',
-                _id: '9577',
-                field: conditionField1._id,
-                state: 'is equals to',
-                value: 'Yes',
-              },
-            ],
-            logicType: 'showFields',
-          },
-          {
-            show: [conditionField3._id],
-            _id: '5df11ee1e6b6e7108a939c8b',
-            conditions: [
-              {
-                ifValueType: 'single-select',
-                _id: '9577',
-                field: conditionField2._id,
-                state: 'is equals to',
-                value: 'Yes',
-              },
-            ],
-            logicType: 'showFields',
-          },
-          {
-            show: [conditionField1._id],
-            _id: '5df11ee1e6b6e7108a939c8c',
-            conditions: [
-              {
-                ifValueType: 'single-select',
-                _id: '9578',
-                field: conditionField3._id,
-                state: 'is equals to',
-                value: 'Yes',
-              },
-            ],
-            logicType: 'showFields',
-          },
-        ]
-        it('correctly parses circular logic where all fields are hidden', (done) => {
-          reqFixtures.form.form_fields = [
-            conditionField1,
-            conditionField2,
-            conditionField3,
-          ]
-          reqFixtures.form.form_logics = formLogics
-          reqFixtures.body.responses = [
-            makeResponse(
-              conditionField1._id,
-              conditionField1.fieldType,
-              conditionField1.title,
-              'Yes',
-              null,
-              false,
-            ), // Circular, never shown
-            makeResponse(
-              conditionField2._id,
-              conditionField2.fieldType,
-              conditionField2.title,
-              'Yes',
-              null,
-              false,
-            ), // Circular, never shown
-            makeResponse(
-              conditionField3._id,
-              conditionField3.fieldType,
-              conditionField3.title,
-              'Yes',
-              null,
-              false,
-            ), // Circular, never shown
-          ]
-          const expected = getExpectedOutput(
-            reqFixtures.form.form_fields,
-            reqFixtures.body.responses,
-          )
-          prepareSubmissionThenCompare(expected, done)
-        })
-        it('correctly parses circular logic for a mix of hidden and shown fields', (done) => {
-          reqFixtures.form.form_fields = [
-            conditionField1,
-            conditionField2,
-            conditionField3,
-            visibleField,
-          ]
-          reqFixtures.form.form_logics = formLogics
-          reqFixtures.body.responses = [
-            makeResponse(
-              conditionField1._id,
-              conditionField1.fieldType,
-              conditionField1.title,
-              'Yes',
-              null,
-              false,
-            ), // Circular, never shown
-            makeResponse(
-              conditionField2._id,
-              conditionField2.fieldType,
-              conditionField2.title,
-              'Yes',
-              null,
-              false,
-            ), // Circular, never shown
-            makeResponse(
-              conditionField3._id,
-              conditionField3.fieldType,
-              conditionField3.title,
-              'Yes',
-              null,
-              false,
-            ), // Circular, never shown
-            makeResponse(
-              visibleField._id,
-              visibleField.fieldType,
-              visibleField.title,
-              'lorem',
-            ), // Always shown
           ]
           const expected = getExpectedOutput(
             reqFixtures.form.form_fields,

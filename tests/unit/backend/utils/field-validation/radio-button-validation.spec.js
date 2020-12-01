@@ -15,6 +15,7 @@ describe('Radio button validation', () => {
       _id: 'radioID',
       fieldType: 'radiobutton',
       answer: 'a',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
@@ -31,6 +32,7 @@ describe('Radio button validation', () => {
       _id: 'radioID',
       fieldType: 'radiobutton',
       answer: 'invalid',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
@@ -69,6 +71,7 @@ describe('Radio button validation', () => {
       _id: 'radioID',
       fieldType: 'radiobutton',
       answer: '',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
@@ -142,6 +145,7 @@ describe('Radio button validation', () => {
       _id: 'radioID',
       fieldType: 'radiobutton',
       answer: 'Others: hi i am others',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
@@ -159,6 +163,7 @@ describe('Radio button validation', () => {
       _id: 'radioID',
       fieldType: 'radiobutton',
       answer: 'Others: hi i am others',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
@@ -179,11 +184,32 @@ describe('Radio button validation', () => {
       _id: 'radioID',
       fieldType: 'radiobutton',
       answer: 'Others: ',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = {
+      _id: 'radioID',
+      fieldType: 'radiobutton',
+      fieldOptions: ['a', 'b', 'c'],
+      othersRadioButton: true,
+      required: true,
+    }
+    const response = {
+      _id: 'radioID',
+      fieldType: 'radiobutton',
+      answer: 'Others: ',
+      isVisible: false,
+    }
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
     )
   })
 })

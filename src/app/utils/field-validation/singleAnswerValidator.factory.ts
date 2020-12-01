@@ -4,7 +4,10 @@ import { IField } from '../../../types/field/baseField'
 import {
   isHomeNumberField,
   isLongTextField,
+  isMobileNumberField,
   isNricField,
+  isRadioButtonField,
+  isRatingField,
   isSectionField,
   isShortTextField,
 } from '../../../types/field/utils/guards'
@@ -12,7 +15,10 @@ import { ResponseValidator } from '../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../modules/submission/submission.types'
 
 import { constructHomeNoValidator } from './validators/homeNoValidator'
+import { constructMobileNoValidator } from './validators/mobileNoValidator'
 import { constructNricValidator } from './validators/nricValidator'
+import { constructRadioButtonValidator } from './validators/radioButtonValidator'
+import { constructRatingValidator } from './validators/ratingValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
 
@@ -31,6 +37,12 @@ export const constructSingleAnswerValidator = (
     return constructNricValidator()
   } else if (isHomeNumberField(formField)) {
     return constructHomeNoValidator(formField)
+  } else if (isRadioButtonField(formField)) {
+    return constructRadioButtonValidator(formField)
+  } else if (isRatingField(formField)) {
+    return constructRatingValidator(formField)
+  } else if (isMobileNumberField(formField)) {
+    return constructMobileNoValidator(formField)
   }
   return () => left('Unsupported field type')
 }

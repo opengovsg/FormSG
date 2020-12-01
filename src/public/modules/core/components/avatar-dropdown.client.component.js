@@ -74,11 +74,12 @@ function avatarDropdownController(
 
   vm.isDropdownOpen = false
 
-  $scope.$watchGroup(['vm.isDropdownHover', 'vm.isDropdownFocused'], function (
-    newValues,
-  ) {
-    vm.isDropdownOpen = newValues[0] || newValues[1]
-  })
+  $scope.$watchGroup(
+    ['vm.isDropdownHover', 'vm.isDropdownFocused'],
+    function (newValues) {
+      vm.isDropdownOpen = newValues[0] || newValues[1]
+    },
+  )
 
   vm.signOut = () => Auth.signOut()
 

@@ -34,7 +34,6 @@ const validExtensions = [
   '.mpp',
   '.msg',
   '.mso',
-  '.oa',
   '.odb',
   '.odf',
   '.odg',
