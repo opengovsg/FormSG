@@ -88,7 +88,7 @@
     "angular-ui-router": "~1.0.22",
     "await-to-js": "^2.1.1",
     "aws-info": "^1.1.0",
-    "aws-sdk": "^2.783.0",
+    "aws-sdk": "^2.800.0",
     "axios": "^0.21.0",
     "bcrypt": "^5.0.0",
     "bluebird": "^3.5.2",
