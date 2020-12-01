@@ -105,12 +105,17 @@ export interface IForm {
 export interface IFormSchema extends IForm, Document {
   getMainFields(): Pick<IFormSchema, '_id' | 'title' | 'status'>
   getUniqueMyInfoAttrs(): MyInfoAttribute[]
-  duplicate(overrideProps: Partial<IForm>): Partial<IFormSchema>
   /**
    * Archives form.
    * @returns form that has been archived
    */
   archive(): Promise<IFormSchema>
+  /**
+   * Return essential form creation parameters with the given properties.
+   * @param overrideProps the props to override on the duplicated form
+   * @returns params required to create a new duplicated form object
+   */
+  getDuplicateParams(overrideProps: Partial<IForm>): Partial<IFormSchema>
   transferOwner(currentOwner: IUserSchema, newOwnerEmail: string): void
 }
 

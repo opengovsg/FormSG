@@ -390,7 +390,7 @@ function makeModule(connection) {
 
           const DiscriminatedForm = getDiscriminatedFormModel(responseMode)
           const discriminatedForm = new DiscriminatedForm(
-            form.duplicate(overrideProps),
+            form.getDuplicateParams(overrideProps),
           )
           discriminatedForm.save(function (sErr, duplicated) {
             return sErr ? onError(sErr) : onSuccess(duplicated)

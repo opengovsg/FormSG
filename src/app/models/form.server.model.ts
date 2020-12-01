@@ -409,14 +409,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return compact(uniq(this.form_fields?.map((field) => field.myInfo?.attr)))
   }
 
-  // Return a duplicate form object with the given properties
-  FormSchema.methods.duplicate = function (
+  // Return essential form creation parameters with the given properties
+  FormSchema.methods.getDuplicateParams = function (
     this: IFormSchema,
     overrideProps: Partial<IForm>,
   ) {
     const newForm = pick(this, FORM_DUPLICATE_KEYS)
-    Object.assign(newForm, overrideProps)
-    return newForm
+    return { ...newForm, ...overrideProps }
   }
 
   // Archives form.
