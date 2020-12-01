@@ -5,6 +5,12 @@ import {
 } from '../submission.types'
 
 import {
+  ATTACHMENT_PREFIX,
+  MYINFO_PREFIX,
+  TABLE_PREFIX,
+  VERIFIED_PREFIX,
+} from './email-submission.constants'
+import {
   EmailAutoReplyField,
   EmailDataForOneField,
   EmailJsonField,
@@ -22,7 +28,7 @@ const getMyInfoPrefix = (
   hashedFields: Set<string>,
 ): string => {
   return !!response.myInfo?.attr && hashedFields.has(response._id)
-    ? '[MyInfo] '
+    ? MYINFO_PREFIX
     : ''
 }
 
@@ -33,7 +39,7 @@ const getMyInfoPrefix = (
  * @returns the prefix
  */
 const getVerifiedPrefix = (response: ResponseFormattedForEmail): string => {
-  return response.isUserVerified ? `[verified] ` : ''
+  return response.isUserVerified ? VERIFIED_PREFIX : ''
 }
 
 /**
@@ -44,9 +50,9 @@ const getVerifiedPrefix = (response: ResponseFormattedForEmail): string => {
 const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
   switch (response.fieldType) {
     case BasicField.Table:
-      return `[table] `
+      return TABLE_PREFIX
     case BasicField.Attachment:
-      return `[attachment] `
+      return ATTACHMENT_PREFIX
     default:
       return ''
   }
