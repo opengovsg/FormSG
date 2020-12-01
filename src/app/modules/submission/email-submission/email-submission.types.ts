@@ -38,3 +38,5 @@ interface IResponseFormattedForEmail extends IBaseResponse {
 
 export type ResponseFormattedForEmail = IResponseFormattedForEmail &
   ProcessedResponse
+
+export type WithEmailData<T> = T & EmailData

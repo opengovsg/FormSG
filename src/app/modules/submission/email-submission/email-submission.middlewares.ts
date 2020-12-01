@@ -1,10 +1,10 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { merge } from 'lodash'
 
 import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionService from './email-submission.service'
+import { WithEmailData } from './email-submission.types'
 
 /**
  * Construct autoReply data and data to send admin from responses submitted
@@ -23,6 +23,8 @@ export const prepareEmailSubmission: RequestHandler<
     req.body.parsedResponses,
     hashedFields,
   )
-  merge(req, emailData)
+  ;(req as WithEmailData<typeof req>).autoReplyData = emailData.autoReplyData
+  ;(req as WithEmailData<typeof req>).jsonData = emailData.jsonData
+  ;(req as WithEmailData<typeof req>).formData = emailData.formData
   return next()
 }
