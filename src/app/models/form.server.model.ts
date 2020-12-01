@@ -518,7 +518,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         .where('status')
         .ne(Status.Archived)
         // Project selected fields.
-        .select('_id title admin lastModified status form_fields')
+        // `responseMode` is a discriminator key and is returned regardless,
+        // selection is made for explicitness.
+        // `_id` is also returned regardless and selection is made for
+        // explicitness.
+        .select('_id title admin lastModified status responseMode')
         .sort('-lastModified')
         .populate({
           path: 'admin',

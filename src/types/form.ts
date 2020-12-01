@@ -153,7 +153,7 @@ export type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
 // frontend when admin lists their available forms in their dashboard.
 export type DashboardFormView = Pick<
   IFormSchema,
-  'title' | 'admin' | 'lastModified' | 'status' | 'form_fields'
+  'title' | 'lastModified' | 'status' | '_id' | 'responseMode'
 > & {
   admin: IPopulatedUser
 }

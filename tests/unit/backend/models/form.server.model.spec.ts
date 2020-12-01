@@ -947,7 +947,6 @@ describe('Form Model', () => {
         'title',
         'lastModified',
         'status',
-        'form_fields',
         'responseMode',
       ]
       const expected = orderBy(
