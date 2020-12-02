@@ -9,6 +9,7 @@ import {
   IAttachmentResponse,
   MapRouteError,
 } from '../../../../types'
+import { DatabaseError } from '../../core/core.errors'
 import {
   ConflictError,
   ProcessingError,
@@ -30,6 +31,7 @@ import {
   InitialiseMultipartReceiverError,
   InvalidFileExtensionError,
   MultipartError,
+  SubmissionHashError,
 } from './email-submission.errors'
 import {
   EmailAutoReplyField,
@@ -291,6 +293,13 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+      }
+    case DatabaseError:
+    case SubmissionHashError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage:
+          'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       }
     default:
       return {
