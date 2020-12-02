@@ -25,6 +25,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  PrivateFormError,
 } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 
@@ -295,6 +296,28 @@ export const getFormAfterPermissionChecks = ({
       getAssertPermissionFn(level)(user, fullForm)
         // Step 4: If success, return retrieved form.
         .map(() => fullForm),
+    ),
+  )
+}
+
+/**
+ * Retrieves the form of given formId provided that the form is public.
+ *
+ * @returns ok(form) if the form is public
+ * @returns err(FormNotFoundError) if form (or form admin) does not exist
+ * @returns err(FormDeletedError) if form is already archived
+ * @returns err(PrivateFormError) if form is private
+ * @returns err(DatabaseError) if database error occurs
+ */
+export const getFormIfPublic = (
+  formId: string,
+): ResultAsync<
+  IPopulatedForm,
+  FormNotFoundError | FormDeletedError | PrivateFormError | DatabaseError
+> => {
+  return FormService.retrieveFullFormById(formId).andThen((form) =>
+    FormService.isFormPublic(form, 'Form must be public to be copied').map(
+      () => form,
     ),
   )
 }
