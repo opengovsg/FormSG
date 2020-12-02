@@ -4,24 +4,28 @@ import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { WithForm } from '../../../../types'
+import { FormDeletedError } from '../form.errors'
+import { isFormPublic } from '../form.service'
+
 /**
- * Checks if form is public
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- * @param  {Object} next - Express next middleware function
+ * Express middleware function that checks if a form attached to the Express request handler is public.
+ * before allowing downstream middleware to handle the request. Otherwise, it returns a HTTP 404 if the
+ * form is private, or HTTP 410 if the form has been archived.
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next middleware function
  */
-export const isFormPublic: RequestHandler = (req, res, next) => {
+export const isFormPublicCheck: RequestHandler = (req, res, next) => {
   const { form } = req as WithForm<typeof req>
-  switch (form.status) {
-    case 'PUBLIC':
-      return next()
-    case 'ARCHIVED':
-      return res.sendStatus(StatusCodes.GONE)
-    default:
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: form.inactiveMessage,
-        isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
-        formTitle: form.title,
-      })
-  }
+  return isFormPublic(form)
+    .map(() => next())
+    .mapErr((error) => {
+      return error instanceof FormDeletedError
+        ? res.sendStatus(StatusCodes.GONE)
+        : res.status(StatusCodes.NOT_FOUND).json({
+            message: form.inactiveMessage,
+            isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
+            formTitle: form.title,
+          })
+    })
 }

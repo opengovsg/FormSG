@@ -129,7 +129,7 @@ module.exports = function (app) {
     .route('/:formId([a-fA-F0-9]{24})/publicform')
     .get(
       forms.formById,
-      publicForms.isFormPublic,
+      publicForms.isFormPublicCheck,
       SpcpController.addSpcpSessionInfo,
       myInfoController.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
@@ -163,7 +163,7 @@ module.exports = function (app) {
     limitRate({ max: rateLimitConfig.submissions }),
     CaptchaFactory.validateCaptchaParams,
     forms.formById,
-    publicForms.isFormPublic,
+    publicForms.isFormPublicCheck,
     CaptchaMiddleware.checkCaptchaResponse,
     SpcpController.isSpcpAuthenticated,
     EmailSubmissionsMiddleware.receiveEmailSubmission,
@@ -270,7 +270,7 @@ module.exports = function (app) {
       }),
     }),
     forms.formById,
-    publicForms.isFormPublic,
+    publicForms.isFormPublicCheck,
     CaptchaMiddleware.checkCaptchaResponse,
     encryptSubmissions.validateEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
