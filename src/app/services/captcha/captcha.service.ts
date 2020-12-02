@@ -21,7 +21,7 @@ export class CaptchaService {
 
   verifyCaptchaResponse(
     response: string | null,
-    remoteip: string,
+    remoteip: string | undefined,
   ): ResultAsync<
     true,
     CaptchaConnectionError | VerifyCaptchaError | MissingCaptchaError

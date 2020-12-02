@@ -18,7 +18,7 @@ import { CaptchaService } from './captcha.service'
 interface ICaptchaFactory {
   verifyCaptchaResponse: (
     response: string | null,
-    remoteip: string,
+    remoteip: string | undefined,
   ) => ResultAsync<
     true,
     | CaptchaConnectionError
