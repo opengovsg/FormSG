@@ -254,7 +254,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/copy').post(
-    authAdminActiveAnyForm,
+    withUserAuthentication,
     celebrate({
       [Segments.BODY]: {
         // Require valid responsesMode field.
@@ -282,7 +282,7 @@ module.exports = function (app) {
         isTemplate: Joi.boolean(),
       },
     }),
-    adminForms.duplicate,
+    AdminFormController.handleCopyTemplateForm,
   )
 
   /**
