@@ -498,7 +498,7 @@ export const handleDuplicateAdminForm: RequestHandler<
         logger.error({
           message: 'Error duplicating form',
           meta: {
-            action: 'handleDuplicateForm',
+            action: 'handleDuplicateAdminForm',
             ...createReqMeta(req),
             userId: userId,
             formId,
