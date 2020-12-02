@@ -53,3 +53,8 @@ export interface IAttachmentInfo {
 }
 
 export type WithAttachments<T> = T & { attachments: IAttachmentInfo[] }
+
+export interface SubmissionHash {
+  hash: string
+  salt: string
+}

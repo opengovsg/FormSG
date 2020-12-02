@@ -34,6 +34,7 @@ import {
 import {
   EmailAutoReplyField,
   EmailDataForOneField,
+  EmailFormField,
   EmailJsonField,
   IAttachmentInfo,
   ResponseFormattedForEmail,
@@ -369,4 +370,24 @@ export const handleDuplicatesInAttachments = (
       a.filename = `${count}-${a.filename}`
     }
   })
+}
+
+/**
+ * Concatenate response into a string for hashing
+ * @param formData Field-value tuples for admin email
+ * @param attachments Array of attachments as buffers
+ * @return concatenated response to hash
+ */
+export const concatAttachmentsAndResponses = (
+  formData: EmailFormField[],
+  attachments: IAttachmentInfo[],
+): string => {
+  let response = ''
+  response += formData.reduce((acc, fieldData) => {
+    const question = fieldData.question.toString().trim()
+    const answer = fieldData.answer.toString().trim()
+    return acc + `${question} ${answer}; `
+  }, '')
+  response += attachments.reduce((acc, { content }) => acc + content, '')
+  return response
 }

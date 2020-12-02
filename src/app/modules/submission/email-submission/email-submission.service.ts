@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { sumBy } from 'lodash'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -10,8 +11,15 @@ import {
 import { ProcessedFieldResponse } from '../submission.types'
 
 import {
+  DIGEST_TYPE,
+  HASH_ITERATIONS,
+  KEY_LENGTH,
+  SALT_LENGTH,
+} from './email-submission.constants'
+import {
   AttachmentTooLargeError,
   InvalidFileExtensionError,
+  SubmissionHashError,
 } from './email-submission.errors'
 import {
   EmailAutoReplyField,
@@ -19,8 +27,11 @@ import {
   EmailDataForOneField,
   EmailFormField,
   EmailJsonField,
+  IAttachmentInfo,
+  SubmissionHash,
 } from './email-submission.types'
 import {
+  concatAttachmentsAndResponses,
   getAnswerForCheckbox,
   getAnswerRowsForTable,
   getFormattedResponse,
@@ -130,5 +141,41 @@ export const validateAttachments = (
       return errAsync(new InvalidFileExtensionError())
     }
     return okAsync(true)
+  })
+}
+
+export const hashSubmission = (
+  formData: EmailFormField[],
+  attachments: IAttachmentInfo[],
+): ResultAsync<SubmissionHash, SubmissionHashError> => {
+  const baseString = concatAttachmentsAndResponses(formData, attachments)
+  const salt = crypto.randomBytes(SALT_LENGTH).toString('base64')
+  const hashPromise = new Promise<SubmissionHash>((resolve, reject) => {
+    crypto.pbkdf2(
+      baseString,
+      salt,
+      HASH_ITERATIONS,
+      KEY_LENGTH,
+      DIGEST_TYPE,
+      (err, hash) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve({
+          hash: hash.toString('base64'),
+          salt,
+        })
+      },
+    )
+  })
+  return ResultAsync.fromPromise(hashPromise, (error) => {
+    logger.error({
+      message: 'Error while hashing submission',
+      meta: {
+        action: 'hashSubmission',
+      },
+      error,
+    })
+    return new SubmissionHashError()
   })
 }
