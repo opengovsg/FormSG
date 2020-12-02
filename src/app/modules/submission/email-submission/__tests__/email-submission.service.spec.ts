@@ -1,6 +1,10 @@
+import crypto from 'crypto'
 import { readFileSync } from 'fs'
+import stringify from 'json-stringify-deterministic'
 import { omit } from 'lodash'
+import { mocked } from 'ts-jest/utils'
 
+import config from 'src/config/config'
 import { types as basicTypes } from 'src/shared/resources/basic'
 import { BasicField, MyInfoAttribute } from 'src/types'
 
@@ -27,6 +31,11 @@ import {
   InvalidFileExtensionError,
 } from '../email-submission.errors'
 import * as EmailSubmissionService from '../email-submission.service'
+import { ParsedMultipartForm } from '../email-submission.types'
+
+jest.mock('src/config/config')
+const MockConfig = mocked(config, true)
+const MOCK_SESSION_SECRET = 'secret'
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
@@ -445,6 +454,42 @@ describe('email-submission.service', () => {
         response1,
       ])
       expect(result._unsafeUnwrap()).toEqual(true)
+    })
+  })
+
+  describe('hashSubmission', () => {
+    beforeAll(() => {
+      MockConfig.sessionSecret = MOCK_SESSION_SECRET
+    })
+
+    beforeEach(() => jest.restoreAllMocks())
+    it('should hash both responses and attachments', () => {
+      const mockUinFin = 'uinFin'
+      const response = generateNewAttachmentResponse()
+      const mockBody: ParsedMultipartForm = {
+        responses: [omit(response, ['isVisible', 'isUserVerified'])],
+      }
+      const submissionToHash =
+        stringify(mockBody) +
+        stringify([
+          {
+            fieldId: response._id,
+            filename: response.filename,
+            content: response.content,
+          },
+        ])
+      const hashedUinFin = crypto
+        .createHmac('sha256', MOCK_SESSION_SECRET)
+        .update(mockUinFin)
+        .digest('hex')
+      const hashedSubmission = crypto
+        .createHmac('sha256', MOCK_SESSION_SECRET)
+        .update(submissionToHash)
+        .digest('hex')
+
+      const result = EmailSubmissionService.hashSubmission(mockBody, mockUinFin)
+      expect(result.hashedUinFin).toBe(hashedUinFin)
+      expect(result.hashedSubmission).toBe(hashedSubmission)
     })
   })
 })
