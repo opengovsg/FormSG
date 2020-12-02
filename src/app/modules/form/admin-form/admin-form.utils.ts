@@ -188,6 +188,13 @@ export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
   }
 }
 
+/**
+ * Reshapes given duplicate params into override props.
+ * @param params the parameters to reshape
+ * @param newAdminId the new admin id to inject
+ *
+ * @returns override props for use in duplicating a form
+ */
 export const processDuplicateOverrideProps = (
   params: DuplicateFormBody,
   newAdminId: string,
