@@ -29,13 +29,16 @@ export class CaptchaService {
     if (!response) {
       return errAsync(new MissingCaptchaError())
     }
-    const verifyCaptchaPromise = axios.get(GOOGLE_RECAPTCHA_URL, {
-      params: {
-        secret: this.#captchaPrivateKey,
-        response,
-        remoteip,
+    const verifyCaptchaPromise = axios.get<{ success: boolean }>(
+      GOOGLE_RECAPTCHA_URL,
+      {
+        params: {
+          secret: this.#captchaPrivateKey,
+          response,
+          remoteip,
+        },
       },
-    })
+    )
     return ResultAsync.fromPromise(verifyCaptchaPromise, (error) => {
       logger.error({
         message: 'Error verifying captcha',
