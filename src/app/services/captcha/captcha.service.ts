@@ -19,6 +19,11 @@ export class CaptchaService {
     this.#captchaPrivateKey = privateKey
   }
 
+  /**
+   * Verifies a Captcha response with Google reCaptcha
+   * @param response Captcha response
+   * @param remoteip IP of sender
+   */
   verifyCaptchaResponse(
     response: string | null | undefined,
     remoteip: string | undefined,

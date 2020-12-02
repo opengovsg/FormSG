@@ -10,6 +10,12 @@ import { mapRouteError } from './captcha.util'
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Validate captcha before allowing submission
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next middleware function
+ */
 export const checkCaptchaResponse: RequestHandler<
   ParamsDictionary,
   { message: string },
