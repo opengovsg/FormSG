@@ -24,7 +24,7 @@ export const checkCaptchaResponse: RequestHandler<
     req.query.captchaResponse,
     req.connection.remoteAddress,
   )
-    .map(next)
+    .map(() => next())
     .mapErr((error) => {
       logger.error({
         message: 'Error while verifying captcha',
