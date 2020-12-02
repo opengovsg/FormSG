@@ -11,7 +11,8 @@ const emailSubmissions = require('../../app/controllers/email-submissions.server
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
-const { CaptchaFactory } = require('../factories/captcha.factory')
+const { CaptchaFactory } = require('../services/captcha/captcha.factory')
+const CaptchaMiddleware = require('../services/captcha/captcha.middleware')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
@@ -160,10 +161,10 @@ module.exports = function (app) {
    */
   app.route('/v2/submissions/email/:formId([a-fA-F0-9]{24})').post(
     limitRate({ max: rateLimitConfig.submissions }),
-    CaptchaFactory.validateCaptcha,
+    CaptchaFactory.validateCaptchaParams,
     forms.formById,
     publicForms.isFormPublic,
-    CaptchaFactory.captchaCheck,
+    CaptchaMiddleware.checkCaptchaResponse,
     SpcpController.isSpcpAuthenticated,
     emailSubmissions.receiveEmailSubmissionUsingBusBoy,
     celebrate({
@@ -223,7 +224,7 @@ module.exports = function (app) {
    */
   app.route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})').post(
     limitRate({ max: rateLimitConfig.submissions }),
-    CaptchaFactory.validateCaptcha,
+    CaptchaFactory.validateCaptchaParams,
     celebrate({
       body: Joi.object({
         responses: Joi.array()
@@ -270,7 +271,7 @@ module.exports = function (app) {
     }),
     forms.formById,
     publicForms.isFormPublic,
-    CaptchaFactory.captchaCheck,
+    CaptchaMiddleware.checkCaptchaResponse,
     encryptSubmissions.validateEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,

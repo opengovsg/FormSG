@@ -26,7 +26,7 @@ interface ICaptchaFactory {
     | MissingCaptchaError
     | MissingFeatureError
   >
-  checkCaptchaParamExists: RequestHandler
+  validateCaptchaParams: RequestHandler
 }
 
 const createCaptchaFactory = ({
@@ -41,7 +41,7 @@ const createCaptchaFactory = ({
       verifyCaptchaResponse: captchaService.verifyCaptchaResponse.bind(
         captchaService,
       ),
-      checkCaptchaParamExists: celebrate({
+      validateCaptchaParams: celebrate({
         [Segments.QUERY]: Joi.object({
           captchaResponse: Joi.string().allow(null).required(),
         }),
@@ -53,7 +53,7 @@ const createCaptchaFactory = ({
   return {
     verifyCaptchaResponse: () =>
       errAsync(new MissingFeatureError(FeatureNames.Captcha)),
-    checkCaptchaParamExists: (_req, _res, next) => next(),
+    validateCaptchaParams: (_req, _res, next) => next(),
   }
 }
 
