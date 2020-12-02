@@ -6,8 +6,6 @@ import { RequestHandler } from 'express'
  * @param  {Object} res - Express response object
  */
 export const home: RequestHandler = (req, res) => {
-  res.render('index', {
-    user: JSON.stringify(req.session?.user) || 'null',
-  })
+  res.render('index')
   return
 }
