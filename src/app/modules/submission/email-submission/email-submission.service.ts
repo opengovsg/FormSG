@@ -153,6 +153,11 @@ export const validateAttachments = (
   })
 }
 
+/**
+ * Creates hash of a submission
+ * @param formData Responses sent to admin
+ * @param attachments Attachments in response
+ */
 export const hashSubmission = (
   formData: EmailFormField[],
   attachments: IAttachmentInfo[],
@@ -189,6 +194,11 @@ export const hashSubmission = (
   })
 }
 
+/**
+ * Saves an email submission to the database.
+ * @param form
+ * @param submissionHash Hash of submission and salt
+ */
 export const saveSubmissionMetadata = (
   form: IFormSchema,
   submissionHash: SubmissionHash,
