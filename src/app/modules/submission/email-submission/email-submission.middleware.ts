@@ -159,6 +159,17 @@ export const validateEmailSubmission: RequestHandler<
     })
 }
 
+/**
+ * Saves new Submission object to db when form.responseMode is email
+ * @param req - Express request object
+ * @param req.form - form object from req
+ * @param req.formData - the submission for the form
+ * @param req.attachments - submitted attachments, parsed by
+ * exports.receiveSubmission
+ * @param res - Express response object
+ * @param next - the next expressjs callback, invoked once attachments
+ * are processed
+ */
 export const saveMetadataToDb: RequestHandler<
   ParamsDictionary,
   { message: string; spcpSubmissionFailure: boolean }
