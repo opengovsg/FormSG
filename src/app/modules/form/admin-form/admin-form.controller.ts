@@ -556,3 +556,58 @@ export const handleDuplicateAdminForm: RequestHandler<
       })
   )
 }
+
+/**
+ * Handler for POST /:formId/adminform/copy
+ * Duplicates the form corresponding to the formId. The form must be public to
+ * be copied.
+ * @note The current user will be the admin of the new duplicated form
+ * @security session
+ *
+ * @returns 200 with the duplicate form dashboard view
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleCopyTemplateForm: RequestHandler<
+  { formId: string },
+  unknown,
+  DuplicateFormBody
+> = (req, res) => {
+  const { formId } = req.params
+  const userId = (req.session as Express.AuthedSession).user._id
+  const overrideParams = req.body
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(userId)
+      .andThen((user) =>
+        // Step 2: Check if form is currently public.
+        AuthService.getFormIfPublic(formId).andThen((originalForm) =>
+          // Step 3: Duplicate form.
+          duplicateForm(originalForm, userId, overrideParams)
+            // Step 4: Retrieve dashboard view of duplicated form.
+            .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
+        ),
+      )
+      // Success; return duplicated form's dashboard view.
+      .map((dupedDashView) => res.json(dupedDashView))
+      // Error; some error occurred in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error copying template form',
+          meta: {
+            action: 'handleCopyTemplateForm',
+            ...createReqMeta(req),
+            userId: userId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}

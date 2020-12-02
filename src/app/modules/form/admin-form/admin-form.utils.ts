@@ -15,6 +15,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  PrivateFormError,
 } from '../form.errors'
 
 import {
@@ -57,6 +58,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.GONE,
         errorMessage: error.message,
       }
+    case PrivateFormError:
     case ForbiddenFormError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
