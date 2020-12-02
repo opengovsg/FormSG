@@ -5,7 +5,7 @@ import { RequestHandler } from 'express'
  * @param  {Object} req - Express request object
  * @param  {Object} res - Express response object
  */
-export const home: RequestHandler = (req, res) => {
+export const home: RequestHandler = (_req, res) => {
   res.render('index')
   return
 }
