@@ -465,7 +465,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleDuplicateForm: RequestHandler<
+export const handleDuplicateAdminForm: RequestHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
