@@ -11,12 +11,14 @@ import {
   SubmissionType,
 } from '../../../../types'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
+import MailService from '../../../services/mail/mail.service'
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import { DatabaseError } from '../../core/core.errors'
 import { transformEmails } from '../../form/form.util'
+import { SendAdminEmailError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import {
@@ -242,4 +244,27 @@ export const saveSubmissionMetadata = (
       return new DatabaseError('Error while saving submission to database')
     },
   )
+}
+
+export const sendSubmissionToAdmin = (
+  adminEmailParams: Parameters<typeof MailService['sendSubmissionToAdmin']>[0],
+): ResultAsync<true, SendAdminEmailError> => {
+  const logParams = {
+    message: 'Error sending submission to admin',
+    meta: {
+      action: 'sendSubmissionToAdmin',
+      submissionId: adminEmailParams.submission.id,
+      formId: adminEmailParams.form._id,
+    },
+  }
+  return ResultAsync.fromPromise(
+    MailService.sendSubmissionToAdmin(adminEmailParams),
+    (error) => {
+      logger.error({ ...logParams, error })
+      return new SendAdminEmailError()
+    },
+  ).andThen((result) => {
+    if (!result) return errAsync(new SendAdminEmailError())
+    return okAsync(true)
+  })
 }
