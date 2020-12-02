@@ -4,7 +4,11 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { MapRouteError } from '../../../types'
 import { MissingFeatureError } from '../../modules/core/core.errors'
 
-import { CaptchaConnectionError, VerifyCaptchaError } from './captcha.errors'
+import {
+  CaptchaConnectionError,
+  MissingCaptchaError,
+  VerifyCaptchaError,
+} from './captcha.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -20,6 +24,11 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was incorrect. Please submit again.',
+      }
+    case MissingCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was missing. Please refresh and submit again.',
       }
     case MissingFeatureError:
       return {

@@ -17,3 +17,12 @@ export class VerifyCaptchaError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Missing captcha response
+ */
+export class MissingCaptchaError extends ApplicationError {
+  constructor(message = 'Missing captcha response') {
+    super(message)
+  }
+}

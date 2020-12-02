@@ -4,7 +4,11 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../config/logger'
 
 import { GOOGLE_RECAPTCHA_URL } from './captcha.constants'
-import { CaptchaConnectionError, VerifyCaptchaError } from './captcha.errors'
+import {
+  CaptchaConnectionError,
+  MissingCaptchaError,
+  VerifyCaptchaError,
+} from './captcha.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -16,9 +20,15 @@ export class CaptchaService {
   }
 
   verifyCaptchaResponse(
-    response: string,
+    response: string | null,
     remoteip: string,
-  ): ResultAsync<true, CaptchaConnectionError | VerifyCaptchaError> {
+  ): ResultAsync<
+    true,
+    CaptchaConnectionError | VerifyCaptchaError | MissingCaptchaError
+  > {
+    if (!response) {
+      return errAsync(new MissingCaptchaError())
+    }
     const verifyCaptchaPromise = axios.get(GOOGLE_RECAPTCHA_URL, {
       params: {
         secret: this.#captchaPrivateKey,
