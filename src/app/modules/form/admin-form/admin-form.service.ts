@@ -231,17 +231,14 @@ export const archiveForm = (
  * @param newOwnerEmail the email of the new owner to transfer to
  *
  * @return ok(updated form) if transfer is successful
- * @return err(MissingUserError) if either the current user or user to transfer to cannot be found in the database
+ * @return err(MissingUserError) if the current form admin cannot be found
  * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
  * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
  */
 export const transferFormOwnership = (
   currentForm: IPopulatedForm,
   newOwnerEmail: string,
-): ResultAsync<
-  IPopulatedForm,
-  MissingUserError | TransferOwnershipError | DatabaseError
-> => {
+): ResultAsync<IPopulatedForm, TransferOwnershipError | DatabaseError> => {
   const logMeta = {
     action: 'transferFormOwnership',
     newOwnerEmail,
@@ -254,10 +251,19 @@ export const transferFormOwnership = (
         // Step 2: Retrieve user document for new owner.
         findAdminByEmail(newOwnerEmail)
           .mapErr((error) => {
+            logger.error({
+              message:
+                'Error occurred whilst finding new owner email to transfer ownership to',
+              meta: logMeta,
+              error,
+            })
+
             // Override MissingUserError with more specific message if new owner
             // cannot be found.
             if (error instanceof MissingUserError) {
-              error.message = `${newOwnerEmail} must have logged in once before being added as Owner`
+              return new TransferOwnershipError(
+                `${newOwnerEmail} must have logged in once before being added as Owner`,
+              )
             }
             return error
           })

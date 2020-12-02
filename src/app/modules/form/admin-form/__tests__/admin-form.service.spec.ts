@@ -387,7 +387,7 @@ describe('admin-form.service', () => {
       expect(mockUpdatedForm.populate).toHaveBeenCalled()
     })
 
-    it('should return MissingUserError with updated messaging when that error is returned whilst retrieving new owner', async () => {
+    it('should return TransferOwnershipError when new owner cannot be found in the database', async () => {
       // Arrange
       MockUserService.findAdminById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
@@ -412,7 +412,7 @@ describe('admin-form.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       // Messaging should have been overridden.
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MissingUserError(
+        new TransferOwnershipError(
           `${MOCK_NEW_OWNER.email} must have logged in once before being added as Owner`,
         ),
       )
