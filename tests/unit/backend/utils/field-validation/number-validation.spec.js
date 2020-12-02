@@ -20,7 +20,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '5',
     }
     const validateResult = validateField('formId', formField, response)
@@ -43,7 +43,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
@@ -66,7 +66,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '555',
     }
     const validateResult = validateField('formId', formField, response)
@@ -91,7 +91,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '555',
     }
     const validateResult = validateField('formId', formField, response)
@@ -114,7 +114,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
@@ -137,7 +137,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
@@ -160,7 +160,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '5',
     }
     const validateResult = validateField('formId', formField, response)
@@ -185,7 +185,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
@@ -208,7 +208,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
@@ -231,7 +231,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
@@ -254,7 +254,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
@@ -277,7 +277,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '',
     }
     const validateResult = validateField('formId', formField, response)
@@ -300,7 +300,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '0',
     }
     const validateResult = validateField('formId', formField, response)
@@ -323,7 +323,7 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '-5',
     }
     const validateResult = validateField('formId', formField, response)
@@ -348,35 +348,11 @@ describe('Number field validation', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'number',
-      isVisible: true,
+      isVisible: false,
       answer: '05',
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
-  })
-  it('should disallow responses submitted for hidden fields', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: false,
-      ValidationOptions: {
-        selectedValidation: null,
-        customMin: null,
-        customMax: null,
-        customVal: null,
-      },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: false,
-      answer: '05',
-    }
-    const validateResult = validateField('formId', formField, response)
-    expect(validateResult.isErr()).toBe(true)
-    expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
-    )
   })
 })
