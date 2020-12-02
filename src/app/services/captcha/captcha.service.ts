@@ -20,7 +20,7 @@ export class CaptchaService {
   }
 
   verifyCaptchaResponse(
-    response: string | null,
+    response: string | null | undefined,
     remoteip: string | undefined,
   ): ResultAsync<
     true,
