@@ -31,13 +31,6 @@ describe('Email Submissions Controller', () => {
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
   // which will be destroyed and re-created for every test
-  const controller = spec(
-    'dist/backend/app/controllers/email-submissions.server.controller',
-    {
-      mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      request: (url, callback) => spyRequest(url, callback),
-    },
-  )
   const submissionsController = spec(
     'dist/backend/app/controllers/submissions.server.controller',
     {
@@ -83,8 +76,10 @@ describe('Email Submissions Controller', () => {
       console.error = jasmine.createSpy()
       app
         .route(endpointPath)
-        .get(injectFixtures, controller.sendAdminEmail, (req, res) =>
-          res.status(200).send(),
+        .get(
+          injectFixtures,
+          EmailSubmissionsMiddleware.sendAdminEmail,
+          (req, res) => res.status(200).send(),
         )
 
       sendSubmissionMailSpy = spyOn(MailService, 'sendSubmissionToAdmin')
@@ -139,8 +134,7 @@ describe('Email Submissions Controller', () => {
 
     it('sends mail with correct parameters', (done) => {
       // Arrange
-      const mockSuccessResponse = 'mockSuccessResponse'
-      sendSubmissionMailSpy.and.callFake(() => mockSuccessResponse)
+      sendSubmissionMailSpy.and.callFake(() => Promise.resolve(true))
 
       request(app)
         .get(endpointPath)
@@ -153,7 +147,7 @@ describe('Email Submissions Controller', () => {
         .catch(done)
     })
 
-    it('errors with 400 on send failure', (done) => {
+    it('errors with 500 on send failure', (done) => {
       // Arrange
       sendSubmissionMailSpy.and.callFake(() =>
         Promise.reject(new Error('mockErrorResponse')),
@@ -162,7 +156,7 @@ describe('Email Submissions Controller', () => {
       delete fixtures.form.emails
       request(app)
         .get(endpointPath)
-        .expect(StatusCodes.BAD_REQUEST)
+        .expect(StatusCodes.INTERNAL_SERVER_ERROR)
         .then(done)
         .catch(done)
     })
