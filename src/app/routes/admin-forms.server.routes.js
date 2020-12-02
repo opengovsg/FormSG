@@ -7,6 +7,7 @@ const { celebrate, Joi, Segments } = require('celebrate')
 
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
+let publicForms = require('../modules/form/public-form/public-form.middlewares')
 let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')

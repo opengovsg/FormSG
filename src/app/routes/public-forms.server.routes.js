@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 const forms = require('../../app/controllers/forms.server.controller')
-const publicForms = require('../../app/controllers/public-forms.server.controller')
+const publicForms = require('../modules/form/public-form/public-form.middlewares')
 const submissions = require('../../app/controllers/submissions.server.controller')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
