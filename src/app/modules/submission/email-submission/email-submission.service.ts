@@ -1,13 +1,21 @@
 import crypto from 'crypto'
 import { sumBy } from 'lodash'
+import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { FieldResponse } from '../../../../types'
+import {
+  FieldResponse,
+  IEmailSubmissionSchema,
+  IFormSchema,
+  SubmissionType,
+} from '../../../../types'
+import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
+import { DatabaseError } from '../../core/core.errors'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import {
@@ -39,6 +47,7 @@ import {
   mapAttachmentsFromResponses,
 } from './email-submission.util'
 
+const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
 const logger = createLoggerWithLabel(module)
 
 /**
@@ -178,4 +187,33 @@ export const hashSubmission = (
     })
     return new SubmissionHashError()
   })
+}
+
+export const saveSubmissionMetadata = (
+  form: IFormSchema,
+  submissionHash: SubmissionHash,
+): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
+  const params = {
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    recipientEmails: form.emails ?? [],
+    responseHash: submissionHash.hash,
+    responseSalt: submissionHash.salt,
+    submissionType: SubmissionType.Email,
+  }
+  return ResultAsync.fromPromise(
+    EmailSubmissionModel.create(params),
+    (error) => {
+      logger.error({
+        message: 'Error while saving submission to database',
+        meta: {
+          action: 'saveSubmissionMetadata',
+          formId: form._id,
+        },
+        error,
+      })
+      return new DatabaseError('Error while saving submission to database')
+    },
+  )
 }
