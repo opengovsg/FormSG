@@ -249,7 +249,7 @@ export const saveSubmissionMetadata = (
 export const sendSubmissionToAdmin = (
   adminEmailParams: Parameters<typeof MailService['sendSubmissionToAdmin']>[0],
 ): ResultAsync<true, SendAdminEmailError> => {
-  const logParams = {
+  const errorLogParams = {
     message: 'Error sending submission to admin',
     meta: {
       action: 'sendSubmissionToAdmin',
@@ -260,11 +260,14 @@ export const sendSubmissionToAdmin = (
   return ResultAsync.fromPromise(
     MailService.sendSubmissionToAdmin(adminEmailParams),
     (error) => {
-      logger.error({ ...logParams, error })
+      logger.error({ ...errorLogParams, error })
       return new SendAdminEmailError()
     },
   ).andThen((result) => {
-    if (!result) return errAsync(new SendAdminEmailError())
+    if (!result) {
+      logger.error(errorLogParams)
+      return errAsync(new SendAdminEmailError())
+    }
     return okAsync(true)
   })
 }
