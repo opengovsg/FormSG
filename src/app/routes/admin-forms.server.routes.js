@@ -170,7 +170,6 @@ module.exports = function (app) {
     .put(authActiveForm(PermissionLevel.Write), adminForms.update)
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
     .post(
-      authActiveForm(PermissionLevel.Read),
       celebrate({
         [Segments.BODY]: {
           // Require valid responsesMode field.
@@ -196,7 +195,7 @@ module.exports = function (app) {
             }),
         },
       }),
-      adminForms.duplicate,
+      AdminFormController.handleDuplicateAdminForm,
     )
 
   /**
