@@ -23,7 +23,7 @@ import {
   ResponseMode,
   Status,
 } from '../../types'
-import { IUserSchema } from '../../types/user'
+import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
@@ -390,7 +390,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getDashboardView = function (this: IFormSchema, admin) {
+  FormSchema.methods.getDashboardView = function (
+    this: IFormSchema,
+    admin: IPopulatedUser,
+  ) {
     return {
       _id: this._id,
       title: this.title,
