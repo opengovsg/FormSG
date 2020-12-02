@@ -2,8 +2,8 @@ import {
   BasicField,
   FieldResponse,
   IBaseResponse,
+  IEmailFormSchema,
   IEmailSubmissionSchema,
-  WithForm,
 } from '../../../../types'
 import { ProcessedResponse } from '../submission.types'
 
@@ -65,8 +65,10 @@ export interface SubmissionHash {
   salt: string
 }
 
+export type WithEmailForm<T> = T & { form: IEmailFormSchema }
+
 export type WithFormMetadata<T> = WithEmailData<T> &
   WithAttachments<T> &
-  WithForm<T>
+  WithEmailForm<T>
 
 export type WithSubmission<T> = T & { submission: IEmailSubmissionSchema }

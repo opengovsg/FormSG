@@ -6,8 +6,8 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   FieldResponse,
+  IEmailFormSchema,
   IEmailSubmissionSchema,
-  IFormSchema,
   SubmissionType,
 } from '../../../../types'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
@@ -200,14 +200,14 @@ export const hashSubmission = (
  * @param submissionHash Hash of submission and salt
  */
 export const saveSubmissionMetadata = (
-  form: IFormSchema,
+  form: IEmailFormSchema,
   submissionHash: SubmissionHash,
 ): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
   const params = {
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
-    recipientEmails: form.emails ?? [],
+    recipientEmails: form.emails,
     responseHash: submissionHash.hash,
     responseSalt: submissionHash.salt,
     submissionType: SubmissionType.Email,
