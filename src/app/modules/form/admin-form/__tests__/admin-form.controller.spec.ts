@@ -11,7 +11,12 @@ import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
-import { IPopulatedForm, IPopulatedUser } from 'src/types'
+import {
+  DashboardFormView,
+  IPopulatedForm,
+  IPopulatedUser,
+  ResponseMode,
+} from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -27,7 +32,7 @@ import {
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
-import { PermissionLevel } from '../admin-form.types'
+import { DuplicateFormBody, PermissionLevel } from '../admin-form.types'
 
 jest.mock('src/app/modules/auth/auth.service')
 const MockAuthService = mocked(AuthService)
@@ -1867,6 +1872,301 @@ describe('admin-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
       })
+    })
+  })
+
+  describe('handleDuplicateAdminForm', () => {
+    const MOCK_USER_ID = new ObjectId()
+    const MOCK_FORM_ID = new ObjectId()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'another@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID.toHexString(),
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+      body: {} as DuplicateFormBody,
+    })
+
+    it('should return duplicated form view on duplicate success', async () => {
+      // Arrange
+      const expectedParams: DuplicateFormBody = {
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        title: 'mock title',
+      }
+      const mockDupedFormView = { title: 'mock view' } as DashboardFormView
+      const mockDupedForm = merge({}, MOCK_FORM, {
+        title: 'duped form with new title',
+        _id: new ObjectId(),
+        getDashboardView: jest.fn().mockReturnValue(mockDupedFormView),
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockReqWithParams = merge({}, MOCK_REQ, {
+        body: expectedParams,
+      })
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.duplicateForm.mockReturnValueOnce(
+        okAsync(mockDupedForm),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        mockReqWithParams,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).not.toHaveBeenCalled()
+      expect(mockRes.json).toHaveBeenCalledWith(mockDupedFormView)
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_USER_ID,
+        expectedParams,
+      )
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'hello no read permissions error'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+    })
+
+    it('should return 404 when form to duplicate cannot be found', async () => {
+      // Arrange
+      const expectedParams: DuplicateFormBody = {
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        title: 'mock title',
+      }
+      const mockRes = expressHandler.mockResponse()
+      const mockReqWithParams = merge({}, MOCK_REQ, {
+        body: expectedParams,
+      })
+      const mockErrorString = 'cannot find form to duplicate suddenly'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.duplicateForm.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        mockReqWithParams,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_USER_ID,
+        expectedParams,
+      )
+    })
+
+    it('should return 410 when form to duplicate is archived', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'form archived error'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'oh no user'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+    })
+
+    it('should return 500 when database error occurs whilst retrieving logged  in user', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'db error retrieving user'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form to duplicate', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'db error retrieving form'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+    })
+
+    it('should return 500 when database error occurs whilst duplicating form', async () => {
+      // Arrange
+      const expectedParams: DuplicateFormBody = {
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        title: 'mock title',
+      }
+      const mockRes = expressHandler.mockResponse()
+      const mockReqWithParams = merge({}, MOCK_REQ, {
+        body: expectedParams,
+      })
+      const mockErrorString = 'db error duplicating form'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.duplicateForm.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleDuplicateAdminForm(
+        mockReqWithParams,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_USER_ID,
+        expectedParams,
+      )
     })
   })
 })
