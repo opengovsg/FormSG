@@ -10,6 +10,7 @@ import {
   MapRouteError,
 } from '../../../../types'
 import { DatabaseError } from '../../core/core.errors'
+import { SendAdminEmailError } from '../submission.errors'
 import {
   ConflictError,
   ProcessingError,
@@ -298,6 +299,7 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case DatabaseError:
     case SubmissionHashError:
+    case SendAdminEmailError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:

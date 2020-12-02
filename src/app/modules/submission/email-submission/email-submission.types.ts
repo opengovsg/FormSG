@@ -72,3 +72,9 @@ export type WithFormMetadata<T> = WithEmailData<T> &
   WithEmailForm<T>
 
 export type WithSubmission<T> = T & { submission: IEmailSubmissionSchema }
+
+export type WithAutoReplyEmails<T> = T & { replyToEmails: string[] | undefined }
+
+export type WithAdminEmailData<T> = WithFormMetadata<T> &
+  WithSubmission<T> &
+  WithAutoReplyEmails<T>

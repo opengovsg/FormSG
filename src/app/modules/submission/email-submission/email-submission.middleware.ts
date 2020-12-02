@@ -13,6 +13,7 @@ import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
 import {
   EmailData,
+  WithAdminEmailData,
   WithAttachments,
   WithEmailData,
   WithFormMetadata,
@@ -200,6 +201,52 @@ export const saveMetadataToDb: RequestHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error while saving metadata to database',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: false,
+      })
+    })
+}
+
+export const sendAdminEmail: RequestHandler<
+  ParamsDictionary,
+  { message: string; spcpSubmissionFailure: boolean }
+> = async (req, res, next) => {
+  const {
+    replyToEmails,
+    form,
+    formData,
+    jsonData,
+    submission,
+    attachments,
+  } = req as WithAdminEmailData<typeof req>
+  const logMeta = {
+    action: 'sendAdminEmail',
+    submissionId: submission.id,
+    formId: form._id,
+    ...createReqMeta(req),
+    submissionHash: submission.responseHash,
+  }
+  logger.info({
+    message: 'Sending admin mail',
+    meta: logMeta,
+  })
+  return EmailSubmissionService.sendSubmissionToAdmin({
+    replyToEmails,
+    form,
+    submission,
+    attachments,
+    jsonData,
+    formData,
+  })
+    .map(() => next())
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error sending submission to admin',
         meta: logMeta,
         error,
       })
