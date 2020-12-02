@@ -453,8 +453,9 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
 }
 
 /**
- * Handler for GET /{formId}/adminform/feedback.
- * Duplicates the form corresponding to the formId.
+ * Handler for POST /:formId/adminform
+ * Duplicates the form corresponding to the formId. The currently logged in user
+ * must have read permissions to the form being copied.
  * @note Even if current user is not admin of the form, the current user will be the admin of the new form
  * @security session
  *
@@ -469,7 +470,7 @@ export const handleDuplicateAdminForm: RequestHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
-> = async (req, res) => {
+> = (req, res) => {
   const { formId } = req.params
   const userId = (req.session as Express.AuthedSession).user._id
   const overrideParams = req.body

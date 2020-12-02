@@ -170,6 +170,7 @@ module.exports = function (app) {
     .put(authActiveForm(PermissionLevel.Write), adminForms.update)
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
     .post(
+      withUserAuthentication,
       celebrate({
         [Segments.BODY]: {
           // Require valid responsesMode field.
