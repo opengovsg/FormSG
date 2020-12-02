@@ -17,20 +17,12 @@ function unlistFormFromExamples(id) {
   if (!ObjectId.isValid(id)) throw new Error('Id is not valid')
   const formId = ObjectId(id)
   const result = db.forms.update(
-    {
-      _id: formId,
-    },
-    {
-      $set: {
-        isListed: false,
-      },
-    },
+    { _id: formId },
+    { $set: { isListed: false } }
   )
   if (result.nMatched === 0) throw new Error(`Form ${formId} not found`)
 
-  return db.forms.find({
-    _id: formId,
-  })
+  return db.forms.find({ _id: formId })
 }
 // unlistFormFromExamples("form id")
 ```
@@ -75,17 +67,15 @@ function unlistFormArrayFromExamples(ids) {
  */
 function createAgency(shortName, fullName, logoUrl, emailDomains) {
   if (!(emailDomains instanceof Array))
-    throw new Error(
-      `Email domains not in an array, emailDomains: ${emailDomains}`,
-    )
+    throw new Error(`Email domains not in an array, emailDomains: ${emailDomains}`)
 
   return db.agencies.insert([
     {
       shortName: shortName,
       fullName: fullName,
       logo: logoUrl,
-      emailDomain: emailDomains,
-    },
+      emailDomain: emailDomains
+    }
   ])
 }
 
@@ -103,26 +93,16 @@ function createAgency(shortName, fullName, logoUrl, emailDomains) {
 function migrateAllForms(oldAdminEmail, newAdminEmail) {
   const oldAdmin = db.users.findOne({ email: oldAdminEmail })
   if (oldAdmin === null)
-    throw new Error(
-      `Could not find any user with the email address: ${oldAdminEmail}`,
-    )
+    throw new Error(`Could not find any user with the email address: ${oldAdminEmail}`)
 
   const newAdmin = db.users.findOne({ email: newAdminEmail })
   if (newAdmin === null)
-    throw new Error(
-      `Could not find any user with the email address: ${newAdminEmail}`,
-    )
+    throw new Error(`Could not find any user with the email address: ${newAdminEmail}`)
 
   return db.forms.update(
-    {
-      admin: oldAdmin._id,
-    },
-    {
-      $set: {
-        admin: newAdmin._id,
-      },
-    },
-    { multi: true },
+    { admin: oldAdmin._id },
+    { $set: { admin: newAdmin._id } },
+    { multi: true }
   )
 }
 // migrateAllForms("oldAdmin", "newAdmin")
@@ -142,37 +122,22 @@ function migrateOneForm(id, oldAdminEmail, newAdminEmail) {
 
   const oldAdmin = db.users.findOne({ email: oldAdminEmail })
   if (oldAdmin === null)
-    throw new Error(
-      `Could not find any user with the email address: ${oldAdminEmail}`,
-    )
+    throw new Error(`Could not find any user with the email address: ${oldAdminEmail}`)
 
   const newAdmin = db.users.findOne({ email: newAdminEmail })
   if (newAdmin === null)
-    throw new Error(
-      `Could not find any user with the email address: ${newAdminEmail}`,
-    )
+    throw new Error(`Could not find any user with the email address: ${newAdminEmail}`)
 
   let form = db.forms.findOne({ _id: formId, admin: oldAdmin._id })
   if (form === null)
-    throw new Error(
-      `Could not find form ${id} that belongs to ${oldAdminEmail}`,
-    )
+    throw new Error(`Could not find form ${id} that belongs to ${oldAdminEmail}`)
 
   db.forms.update(
-    {
-      _id: formId,
-      admin: oldAdmin._id,
-    },
-    {
-      $set: {
-        admin: newAdmin._id,
-      },
-    },
+    { _id: formId, admin: oldAdmin._id },
+    { $set: { admin: newAdmin._id } }
   )
 
-  return db.forms.find({
-    _id: formId,
-  })
+  return db.forms.find({ _id: formId })
 }
 // migrateOneForm("form id", "oldAdmin", "newAdmin")
 ```
