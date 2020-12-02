@@ -192,16 +192,13 @@ export const processDuplicateOverrideProps = (
   params: DuplicateFormBody,
   newAdminId: string,
 ): OverrideProps => {
-  const { isTemplate, responseMode, title } = params
+  const { responseMode, title } = params
 
   const overrideProps: OverrideProps = {
     responseMode,
     title,
     isNew: true,
     admin: newAdminId,
-  }
-  if (isTemplate) {
-    overrideProps.customLogo = undefined
   }
 
   switch (params.responseMode) {

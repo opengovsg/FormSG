@@ -12,8 +12,10 @@ import {
 import {
   AuthType,
   DashboardFormView,
+  FormLogoState,
   IFieldSchema,
   IFormSchema,
+  IPopulatedForm,
   SpcpLocals,
 } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
@@ -244,6 +246,11 @@ export const duplicateForm = (
     newAdminId,
   )
 
+  // Set startPage.logo to default irregardless.
+  overrideProps.startPage = {
+    ...originalForm.startPage,
+    logo: { state: FormLogoState.Default },
+  }
   // Prevent buttonLink from being copied over if buttonLink is the default
   // form hash.
   if (originalForm.endPage?.buttonLink === `#!/${originalForm._id}`) {

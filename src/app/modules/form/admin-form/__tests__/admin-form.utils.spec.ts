@@ -272,7 +272,6 @@ describe('admin-form.utils', () => {
       // Arrange
       const newAdminId = new ObjectId().toHexString()
       const params: DuplicateFormBody = {
-        isTemplate: false,
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'some title',
@@ -296,7 +295,6 @@ describe('admin-form.utils', () => {
       // Arrange
       const newAdminId = new ObjectId().toHexString()
       const params: DuplicateFormBody = {
-        isTemplate: false,
         responseMode: ResponseMode.Email,
         emails: ['some@example.com', 'another@example.com'],
         title: 'some title',
@@ -312,33 +310,6 @@ describe('admin-form.utils', () => {
         isNew: true,
         admin: newAdminId,
         emails: params.emails,
-      }
-      expect(actual).toEqual(expected)
-    })
-
-    it('should return processed props with undefined logo if isTemplate is true', async () => {
-      // Arrange
-      const newAdminId = new ObjectId().toHexString()
-      const params: DuplicateFormBody = {
-        // Set to true.
-        isTemplate: true,
-        responseMode: ResponseMode.Email,
-        emails: ['some@example.com', 'another@example.com'],
-        title: 'some title',
-      }
-
-      // Act
-      const actual = processDuplicateOverrideProps(params, newAdminId)
-
-      // Assert
-      const expected: OverrideProps = {
-        responseMode: params.responseMode,
-        title: params.title,
-        isNew: true,
-        admin: newAdminId,
-        emails: params.emails,
-        // Should have customLogo === undefined
-        customLogo: undefined,
       }
       expect(actual).toEqual(expected)
     })

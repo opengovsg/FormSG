@@ -4,7 +4,7 @@ import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
-import { FormLogoState } from './form_logo'
+import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema } from './user'
 
 export enum AuthType {
@@ -49,10 +49,10 @@ export type Logo = {
 }
 
 export type StartPage = {
-  paragraph: string
-  estTimeTaken: number
-  colorTheme: Colors
-  logo: Logo
+  paragraph?: string
+  estTimeTaken?: number
+  colorTheme?: Colors
+  logo?: IFormLogo
 }
 
 export type EndPage = {

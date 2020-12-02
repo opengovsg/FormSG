@@ -21,7 +21,6 @@ export type AssertFormFn = (
 
 export type DuplicateFormBody = {
   title: string
-  isTemplate: boolean
 } & (
   | {
       responseMode: ResponseMode.Email
@@ -36,6 +35,7 @@ export type DuplicateFormBody = {
 export type OverrideProps = {
   customLogo?: undefined
   endPage?: IForm['endPage']
+  startPage?: IForm['startPage']
   isNew: true
   admin: string
   title: string

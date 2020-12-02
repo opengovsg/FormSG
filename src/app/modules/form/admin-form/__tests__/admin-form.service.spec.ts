@@ -13,6 +13,8 @@ import { aws } from 'src/config/config'
 import { VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
   DashboardFormView,
+  FormLogoState,
+  ICustomFormLogo,
   IEmailFormSchema,
   IEncryptedFormSchema,
   IFormSchema,
@@ -337,21 +339,27 @@ describe('admin-form.service', () => {
   })
   describe('duplicateForm', () => {
     const MOCK_NEW_ADMIN_ID = new ObjectId().toHexString()
-    const MOCK_VALID_FORM = {
+    const MOCK_VALID_FORM = ({
       _id: new ObjectId(),
       admin: new ObjectId(),
       endPage: {
         buttonLink: 'original form endpage link',
       },
-    } as IFormSchema
+      startPage: {
+        logo: {
+          state: FormLogoState.Custom,
+          fileId: 'some file_id',
+          fileName: 'some file name',
+          fileSizeInBytes: 10000,
+        } as ICustomFormLogo,
+      },
+    } as unknown) as IFormSchema
     const MOCK_EMAIL_OVERRIDE_PARAMS: DuplicateFormBody = {
-      isTemplate: false,
       responseMode: ResponseMode.Email,
       title: 'mock new title',
       emails: ['mockExample@example.com'],
     }
     const MOCK_ENCRYPT_OVERRIDE_PARAMS: DuplicateFormBody = {
-      isTemplate: false,
       responseMode: ResponseMode.Encrypt,
       title: 'mock new title',
       publicKey: 'some public key',
@@ -368,7 +376,7 @@ describe('admin-form.service', () => {
       const expectedParams: PickDuplicateForm & OverrideProps = {
         admin: MOCK_NEW_ADMIN_ID,
         isNew: true,
-        ...omit(MOCK_ENCRYPT_OVERRIDE_PARAMS, 'isTemplate'),
+        ...MOCK_ENCRYPT_OVERRIDE_PARAMS,
       }
       const mockForm = createMockForm(expectedParams)
 
@@ -393,9 +401,15 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
       expect(createSpy).toHaveBeenCalledWith(expectedParams)
-      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith(
-        expectedOverrideProps,
-      )
+      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
+        ...expectedOverrideProps,
+        // Should now have start page set to default
+        startPage: {
+          logo: {
+            state: FormLogoState.Default,
+          },
+        },
+      })
     })
 
     it('should omit buttonLink if original form link is to the form itself', async () => {
@@ -440,6 +454,11 @@ describe('admin-form.service', () => {
       expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
         // No more button link.
         endPage: {},
+        startPage: {
+          logo: {
+            state: FormLogoState.Default,
+          },
+        },
       })
     })
 
@@ -476,9 +495,15 @@ describe('admin-form.service', () => {
         new DatabaseError(mockErrorString),
       )
       expect(createSpy).toHaveBeenCalledWith(expectedParams)
-      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith(
-        expectedOverrideProps,
-      )
+      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
+        ...expectedOverrideProps,
+        // Should now have start page set to default
+        startPage: {
+          logo: {
+            state: FormLogoState.Default,
+          },
+        },
+      })
     })
   })
 })

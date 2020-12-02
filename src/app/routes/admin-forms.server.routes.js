@@ -194,7 +194,6 @@ module.exports = function (app) {
               is: ResponseMode.Encrypt,
               then: Joi.string().required().disallow(''),
             }),
-          isTemplate: Joi.boolean().default(false),
         },
       }),
       adminForms.duplicate,
