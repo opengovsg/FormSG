@@ -397,7 +397,7 @@ describe('auth.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
       expect(MockFormService.isFormPublic).toHaveBeenCalledWith(
         expectedForm,
-        'Form must be public to be copied',
+        'Cannot access private form',
       )
     })
 
@@ -424,7 +424,7 @@ describe('auth.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
       expect(MockFormService.isFormPublic).toHaveBeenCalledWith(
         expectedForm,
-        'Form must be public to be copied',
+        'Cannot access private form',
       )
     })
 

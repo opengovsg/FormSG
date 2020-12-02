@@ -316,7 +316,7 @@ export const getFormIfPublic = (
   FormNotFoundError | FormDeletedError | PrivateFormError | DatabaseError
 > => {
   return FormService.retrieveFullFormById(formId).andThen((form) =>
-    FormService.isFormPublic(form, 'Form must be public to be copied').map(
+    FormService.isFormPublic(form, 'Cannot access private form').map(
       () => form,
     ),
   )
