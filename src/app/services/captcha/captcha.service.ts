@@ -43,7 +43,7 @@ export class CaptchaService {
       logger.error({
         message: 'Error verifying captcha',
         meta: {
-          action: 'captchaCheck',
+          action: 'verifyCaptchaResponse',
         },
         error,
       })
@@ -53,7 +53,7 @@ export class CaptchaService {
         logger.error({
           message: 'Incorrect captcha response',
           meta: {
-            action: 'captchaCheck',
+            action: 'verifyCaptchaResponse',
           },
         })
         return errAsync(new VerifyCaptchaError())
