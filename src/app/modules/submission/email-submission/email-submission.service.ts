@@ -33,6 +33,7 @@ import {
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
+
 /**
  * Creates response and autoreply email data for a single response.
  * Helper function for createEmailData.
@@ -92,6 +93,11 @@ export const createEmailData = (
   )
 }
 
+/**
+ * Validates that the attachments in a submission do not violate form-level
+ * constraints e.g. form-wide attachment size limit.
+ * @param parsedResponses Unprocessed responses
+ */
 export const validateAttachments = (
   parsedResponses: FieldResponse[],
 ): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
@@ -131,6 +137,11 @@ export const validateAttachments = (
   })
 }
 
+/**
+ * Hashes a submission for logging purposes
+ * @param body Response body
+ * @param uinFin UIN or FIN if present
+ */
 export const hashSubmission = (
   body: ParsedMultipartForm,
   uinFin?: string,
