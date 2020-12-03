@@ -13,9 +13,7 @@ MockDate.set(MOCKED_DATE)
 
 const AGENCY_DOMAIN = 'example.com'
 const VALID_USER_EMAIL = `test@${AGENCY_DOMAIN}`
-// Obtained from Twilio's
-// https://www.twilio.com/blog/2018/04/twilio-test-credentials-magic-numbers.html
-const VALID_CONTACT = '+15005550006'
+const VALID_CONTACT = '+6581234567'
 
 describe('User Model', () => {
   let agency: IAgencySchema
