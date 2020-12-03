@@ -14,7 +14,7 @@ module.exports = {
   coverageReporters: ['lcov', 'text'],
   coverageThreshold: {
     global: {
-      statements: 25, // Increase this percentage as test coverage improves
+      statements: 38, // Increase this percentage as test coverage improves
     },
   },
   testEnvironment: 'node',
