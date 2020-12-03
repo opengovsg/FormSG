@@ -533,7 +533,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Hooks
-  FormSchema.pre<IFormSchema>('validate', async function (next) {
+  FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
     if (bson.calculateObjectSize(this) > 10 * MB) {
       const err = new Error('Form size exceeded.')
@@ -542,12 +542,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
     // Validate that admin exists before form is created.
-    await User.findById(this.admin, function (error, admin) {
-      if (error) {
-        return next(Error(`Error validating admin for form.`))
-      }
+    return User.findById(this.admin).then((admin) => {
       if (!admin) {
-        return next(Error(`Admin for this form is not found.`))
+        throw new Error(`Admin for this form is not found.`)
       }
       return next()
     })

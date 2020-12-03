@@ -56,10 +56,6 @@ tmp/
 # =======
 .localstack
 
-# @shelf/jest-mongodb generated file
-# =======
-globalConfig.json
-
 # Tests
 # =======
 coverage/
