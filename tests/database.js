@@ -1,4 +1,4 @@
-const { MongoMemoryServer } = require('mongodb-memory-server')
+const { MongoMemoryServer } = require('mongodb-memory-server-core')
 
 class MemoryDatabaseServer {
   constructor() {
