@@ -11,11 +11,15 @@ import {
   ResponseMode,
 } from 'src/types'
 
+import MemoryDatabaseServer from 'tests/database'
+
 /**
- * Connect to the in-memory database using __DB_URL__ set by tests/database.js
+ * Connect to the in-memory database
  */
 const connect = async (): Promise<typeof mongoose> => {
-  const conn = await mongoose.connect((global as any).__DB_URL__ ?? '', {
+  const dbUrl = await MemoryDatabaseServer.getConnectionString()
+
+  const conn = await mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
@@ -28,7 +32,7 @@ const connect = async (): Promise<typeof mongoose> => {
  * Disconnect all mongoose connections.
  */
 const closeDatabase = async (): Promise<void> => {
-  await mongoose.disconnect()
+  return mongoose.disconnect()
 }
 
 /**
