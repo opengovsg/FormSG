@@ -20,6 +20,7 @@ const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
 const SpcpController = require('../modules/spcp/spcp.controller')
+const { ResponseMode } = require('../../types')
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
 const emailValOpts = {
@@ -92,7 +93,41 @@ module.exports = function (app) {
   app
     .route('/adminform')
     .get(withUserAuthentication, AdminFormController.handleListDashboardForms)
-    .post(withUserAuthentication, adminForms.create)
+    .post(
+      withUserAuthentication,
+      celebrate({
+        [Segments.BODY]: {
+          form: Joi.object()
+            .keys({
+              // Require valid responsesMode field.
+              responseMode: Joi.string()
+                .valid(...Object.values(ResponseMode))
+                .required(),
+              // Require title field.
+              title: Joi.string().min(4).max(200).required(),
+              // Require emails string (for backwards compatibility) or string
+              // array if form to be created in Email mode.
+              emails: Joi.alternatives()
+                .try(Joi.array().items(Joi.string()), Joi.string())
+                .when('responseMode', {
+                  is: ResponseMode.Email,
+                  then: Joi.required(),
+                }),
+              // Require publicKey field if form to be created in Storage mode.
+              publicKey: Joi.string()
+                .allow('')
+                .when('responseMode', {
+                  is: ResponseMode.Encrypt,
+                  then: Joi.string().required().disallow(''),
+                }),
+            })
+            .required()
+            // Allow other form schema keys to be passed for form creation.
+            .unknown(true),
+        },
+      }),
+      adminForms.create,
+    )
 
   /**
    * @typedef AdminForm
