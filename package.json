@@ -157,7 +157,7 @@
     "uuid": "^8.3.1",
     "validator": "^13.1.17",
     "web-streams-polyfill": "^2.1.1",
-    "whatwg-fetch": "^3.4.1",
+    "whatwg-fetch": "^3.5.0",
     "winston": "^3.3.3",
     "winston-cloudwatch": "^2.4.0"
   },
