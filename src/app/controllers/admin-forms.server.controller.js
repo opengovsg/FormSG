@@ -46,6 +46,11 @@ function makeModule(connection) {
   }
 
   /**
+   * @deprecated
+   * Note that this function has already been refactored in transformMongoError
+   * in handle-mongo-error.ts. This function remains for Javascript controllers
+   * without mapRouteErrors.
+   *
    * Helper function that handles responding to a client request
    * when encountering a MongoDB error.
    * @param {Object} req Express request object
