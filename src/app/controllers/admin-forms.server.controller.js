@@ -236,27 +236,6 @@ function makeModule(connection) {
       return next()
     },
     /**
-     * Create a new form called on list forms
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    create: function (req, res) {
-      if (!req.body.form) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message: 'Invalid Input',
-        })
-      }
-      let Form = getDiscriminatedFormModel(req.body.form.responseMode)
-      let form = new Form(req.body.form)
-
-      form.admin = req.session.user._id
-
-      form.save(function (err) {
-        if (err) return respondOnMongoError(req, res, err)
-        return res.json(form)
-      })
-    },
-    /**
      * Updates a form from Settings tab
      * @param  {Object} req - Express request object
      * @param  {Object} res - Express response object

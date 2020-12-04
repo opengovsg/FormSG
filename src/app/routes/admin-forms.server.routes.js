@@ -126,7 +126,7 @@ module.exports = function (app) {
             .unknown(true),
         },
       }),
-      adminForms.create,
+      AdminFormController.handleCreateForm,
     )
 
   /**
