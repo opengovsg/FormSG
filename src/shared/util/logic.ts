@@ -2,7 +2,7 @@ import {
   FieldResponse,
   IClientFieldSchema,
   IConditionSchema,
-  IForm,
+  IFormSchema,
   ILogicSchema,
   IPreventSubmitLogicSchema,
   IShowFieldsLogicSchema,
@@ -62,7 +62,7 @@ const isPreventSubmitLogic = (
  * @param form the form object to group its logic by field for
  * @returns an object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
  */
-export const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
+export const groupLogicUnitsByField = (form: IFormSchema): GroupedLogic => {
   const formId = form._id
   const formLogics = form.form_logics?.filter(isShowFieldsLogic) ?? []
   const formFieldIds = new Set(
@@ -101,7 +101,7 @@ export const groupLogicUnitsByField = (form: IForm): GroupedLogic => {
  * @returns array of conditions that prevent submission, can be empty
  */
 const getPreventSubmitConditions = (
-  form: IForm,
+  form: IFormSchema,
 ): IPreventSubmitLogicSchema[] => {
   const formFieldIds = new Set(
     form.form_fields?.map((field) => String(field._id)),
@@ -126,7 +126,7 @@ const getPreventSubmitConditions = (
  */
 export const getLogicUnitPreventingSubmit = (
   submission: LogicFieldArray,
-  form: IForm,
+  form: IFormSchema,
   visibleFieldIds?: FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
   if (!visibleFieldIds) {
@@ -165,7 +165,7 @@ const allConditionsExist = (
  */
 export const getVisibleFieldIds = (
   submission: LogicFieldArray,
-  form: IForm,
+  form: IFormSchema,
 ): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
   const visibleFieldIds: FieldIdSet = new Set()
