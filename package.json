@@ -179,7 +179,7 @@
     "@types/express-serve-static-core": "^4.17.14",
     "@types/express-session": "^1.17.0",
     "@types/has-ansi": "^3.0.0",
-    "@types/helmet": "0.0.48",
+    "@types/helmet": "4.0.0",
     "@types/ip": "^1.1.0",
     "@types/jest": "^26.0.15",
     "@types/json-stringify-safe": "^5.0.0",
