@@ -1,6 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
+import { Merge } from 'type-fest'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -12,6 +13,8 @@ import {
   AuthType,
   DashboardFormView,
   IFieldSchema,
+  IForm,
+  IFormSchema,
   IPopulatedForm,
   SpcpLocals,
 } from '../../../../types'
@@ -221,4 +224,28 @@ export const archiveForm = (
     return new DatabaseError(getMongoErrorMessage(error))
     // On success, return true
   }).map(() => true)
+}
+
+/**
+ * Creates a form with the given form params
+ * @param formParams parameters for the form to be created.
+ *
+ * @returns ok(created form) on success
+ * @returns err(DatabaseError) on database errors
+ */
+export const createForm = (
+  formParams: Merge<IForm, { admin: string }>,
+): ResultAsync<IFormSchema, DatabaseError> => {
+  return ResultAsync.fromPromise(FormModel.create(formParams), (error) => {
+    logger.error({
+      message: 'Database error encountered when creating form',
+      meta: {
+        action: 'createForm',
+        formParams,
+      },
+      error,
+    })
+
+    return new DatabaseError(getMongoErrorMessage(error))
+  })
 }

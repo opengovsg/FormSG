@@ -94,12 +94,13 @@ export interface IForm {
   responseMode: ResponseMode
 
   // Schema properties
-  _id: Document['_id']
   created?: Date
   lastModified?: Date
 
   publicKey?: string
-  emails?: string[]
+  // Allow string in addition to string[] due to setter on schema converting
+  // strings to arrays.
+  emails?: string | string[]
 }
 
 export interface IFormSchema extends IForm, Document {

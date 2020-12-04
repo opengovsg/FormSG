@@ -14,8 +14,10 @@ import {
   DashboardFormView,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  IFormSchema,
   IPopulatedUser,
   IUserSchema,
+  ResponseMode,
   Status,
 } from 'src/types'
 
@@ -25,6 +27,7 @@ import {
 } from '../admin-form.errors'
 import {
   archiveForm,
+  createForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
   getDashboardForms,
@@ -322,6 +325,55 @@ describe('admin-form.service', () => {
       expect(actual._unsafeUnwrapErr()).toEqual(
         new DatabaseError(mockErrorString),
       )
+    })
+  })
+
+  describe('createForm', () => {
+    it('should successfully create form', async () => {
+      // Arrange
+      const formParams: Parameters<typeof createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: ResponseMode.Email,
+        emails: 'example@example.com',
+      }
+      const expectedForm = {
+        _id: new ObjectId(),
+        ...formParams,
+      } as IFormSchema
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce(expectedForm)
+
+      // Act
+      const actualResult = await createForm(formParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createSpy).toHaveBeenCalledWith(formParams)
+    })
+
+    it('should return DatabaseError on database error whilst creating form', async () => {
+      // Arrange
+      const formParams: Parameters<typeof createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some key',
+      }
+      const mockErrorString = 'no'
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockRejectedValueOnce(new Error(mockErrorString))
+
+      // Act
+      const actualResult = await createForm(formParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
+      )
+      expect(createSpy).toHaveBeenCalledWith(formParams)
     })
   })
 })
