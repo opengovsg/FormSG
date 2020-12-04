@@ -6,7 +6,12 @@ import { PassThrough } from 'stream'
 import { mocked } from 'ts-jest/utils'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
-import { DatabaseError } from 'src/app/modules/core/core.errors'
+import {
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+} from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
@@ -162,6 +167,78 @@ describe('admin-form.controller', () => {
       })
     })
 
+    it('should return 409 on DatabaseConflictError', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.findAdminById.mockReturnValueOnce(okAsync(MOCK_USER))
+      const mockErrorString = 'conflict conflict'
+      MockAdminFormService.createForm.mockReturnValueOnce(
+        errAsync(new DatabaseConflictError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(MockUserService.findAdminById).toHaveBeenCalledWith(
+        MOCK_REQ.session?.user?._id,
+      )
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
+        ...MOCK_FORM_PARAMS,
+        admin: MOCK_USER._id,
+      })
+    })
+
+    it('should return 413 on DatabasePayloadSizeError', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.findAdminById.mockReturnValueOnce(okAsync(MOCK_USER))
+      const mockErrorString = 'size exceeds limit'
+      MockAdminFormService.createForm.mockReturnValueOnce(
+        errAsync(new DatabasePayloadSizeError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(413)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(MockUserService.findAdminById).toHaveBeenCalledWith(
+        MOCK_REQ.session?.user?._id,
+      )
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
+        ...MOCK_FORM_PARAMS,
+        admin: MOCK_USER._id,
+      })
+    })
+
+    it('should return 422 on DatabaseValidationError', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.findAdminById.mockReturnValueOnce(okAsync(MOCK_USER))
+      const mockErrorString = 'invalid form'
+      MockAdminFormService.createForm.mockReturnValueOnce(
+        errAsync(new DatabaseValidationError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(422)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(MockUserService.findAdminById).toHaveBeenCalledWith(
+        MOCK_REQ.session?.user?._id,
+      )
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
+        ...MOCK_FORM_PARAMS,
+        admin: MOCK_USER._id,
+      })
+    })
+
     it('should return 422 on MissingUserError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -181,7 +258,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.createForm).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when database error occurs', async () => {
+    it('should return 500 when database error occurs during form creation', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockUserService.findAdminById.mockReturnValueOnce(okAsync(MOCK_USER))
@@ -203,6 +280,26 @@ describe('admin-form.controller', () => {
         ...MOCK_FORM_PARAMS,
         admin: MOCK_USER._id,
       })
+    })
+
+    it('should return 500 when database error occurs during user retrieval', async () => {
+      // Arrange
+      const mockErrorString = 'db ded'
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.findAdminById.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(MockUserService.findAdminById).toHaveBeenCalledWith(
+        MOCK_REQ.session?.user?._id,
+      )
+      expect(MockAdminFormService.createForm).not.toHaveBeenCalled()
     })
   })
 

@@ -60,6 +60,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
+    case DatabaseValidationError:
     case MissingUserError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
@@ -68,11 +69,6 @@ export const mapRouteError = (
     case MalformedParametersError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage: error.message,
-      }
-    case DatabaseValidationError:
-      return {
-        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
     case DatabaseConflictError:

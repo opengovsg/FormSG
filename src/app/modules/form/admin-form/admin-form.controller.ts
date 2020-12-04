@@ -457,7 +457,9 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
  * @security session
  *
  * @returns 200 with newly created form
- * @returns 422 when user of given id cannnot be found in the database
+ * @returns 409 when a database conflict error occurs
+ * @returns 413 when payload for created form exceeds size limit
+ * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
  * @returns 500 when database error occurs
  */
 export const handleCreateForm: RequestHandler<
