@@ -19,8 +19,16 @@ import {
   SpcpLocals,
 } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
-import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
-import { DatabaseError } from '../../core/core.errors'
+import {
+  getMongoErrorMessage,
+  transformMongoError,
+} from '../../../utils/handle-mongo-error'
+import {
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+} from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { findAdminById } from '../../user/user.service'
 
@@ -231,11 +239,17 @@ export const archiveForm = (
  * @param formParams parameters for the form to be created.
  *
  * @returns ok(created form) on success
- * @returns err(DatabaseError) on database errors
+ * @returns err(Database*Error) on database errors
  */
 export const createForm = (
   formParams: Merge<IForm, { admin: string }>,
-): ResultAsync<IFormSchema, DatabaseError> => {
+): ResultAsync<
+  IFormSchema,
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+> => {
   return ResultAsync.fromPromise(FormModel.create(formParams), (error) => {
     logger.error({
       message: 'Database error encountered when creating form',
@@ -246,6 +260,6 @@ export const createForm = (
       error,
     })
 
-    return new DatabaseError(getMongoErrorMessage(error))
+    return transformMongoError(error)
   })
 }
