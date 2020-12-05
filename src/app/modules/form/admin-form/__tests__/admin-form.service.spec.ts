@@ -1,11 +1,16 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import mongoose from 'mongoose'
+import mongoose, { Document } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { DatabaseError } from 'src/app/modules/core/core.errors'
+import {
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+} from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { aws } from 'src/config/config'
@@ -350,6 +355,78 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createSpy).toHaveBeenCalledWith(formParams)
+    })
+
+    it('should return DatabaseValidationError on invalid form params whilst creating form', async () => {
+      // Arrange
+      const formParams: Parameters<typeof createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some key',
+      }
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockRejectedValueOnce(new mongoose.Error.ValidationError())
+
+      // Act
+      const actualResult = await createForm(formParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        DatabaseValidationError,
+      )
+      expect(createSpy).toHaveBeenCalledWith(formParams)
+    })
+
+    it('should return DatabaseConflictError on mongoose version error', async () => {
+      // Arrange
+      const formParams: Parameters<typeof createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some key',
+      }
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockRejectedValueOnce(
+          new mongoose.Error.VersionError({} as Document, 1, ['none']),
+        )
+
+      // Act
+      const actualResult = await createForm(formParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        DatabaseConflictError,
+      )
+      expect(createSpy).toHaveBeenCalledWith(formParams)
+    })
+
+    it('should return DatabasePayloadError on form size error', async () => {
+      // Arrange
+      const formParams: Parameters<typeof createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some key',
+      }
+      const mockErrorString = 'some payload size error'
+      const expectedError = Object.assign(new Error(mockErrorString), {
+        name: 'FormSizeError',
+      })
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockRejectedValueOnce(expectedError)
+
+      // Act
+      const actualResult = await createForm(formParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabasePayloadSizeError(mockErrorString),
+      )
       expect(createSpy).toHaveBeenCalledWith(formParams)
     })
 
