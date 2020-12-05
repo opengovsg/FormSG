@@ -1,4 +1,5 @@
 import { Document, Model } from 'mongoose'
+import { Merge } from 'type-fest'
 
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
@@ -115,7 +116,19 @@ export interface IFormSchema extends IForm, Document {
 }
 
 export interface IPopulatedForm extends IFormSchema {
-  admin: IPopulatedUser
+  // Remove extraneous keys that the populated form should not require.
+  admin: Merge<
+    Omit<
+      IPopulatedUser,
+      '__v' | 'created' | 'lastModified' | 'updatedAt' | 'lastAccessed'
+    >,
+    {
+      agency: Omit<
+        IPopulatedUser['agency'],
+        '__v' | 'created' | 'lastModified' | 'updatedAt'
+      >
+    }
+  >
 }
 
 export interface IEncryptedForm extends IForm {
