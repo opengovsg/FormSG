@@ -162,10 +162,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform')
-    .get(
-      authActiveForm(PermissionLevel.Read),
-      forms.read(forms.REQUEST_TYPE.ADMIN),
-    )
+    .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
     .put(authActiveForm(PermissionLevel.Write), adminForms.update)
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
     .post(authActiveForm(PermissionLevel.Read), adminForms.duplicate)
