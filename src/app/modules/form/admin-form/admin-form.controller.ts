@@ -82,7 +82,7 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
           level: PermissionLevel.Read,
         }),
       )
-      .map((form) => res.json({ form }))
+      .map((form) => res.status(StatusCodes.OK).json({ form }))
       .mapErr((error) => {
         logger.error({
           message: 'Error retrieving single form',
