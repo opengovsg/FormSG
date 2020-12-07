@@ -1,6 +1,7 @@
 /* Type guards */
 import {
   IDateField,
+  IDecimalField,
   IHomenoField,
   ILongTextField,
   IMobileField,
@@ -60,4 +61,10 @@ export const isMobileNumberField = (
 
 export const isDateField = (formField: IField): formField is IDateField => {
   return formField.fieldType === BasicField.Date
+}
+
+export const isDecimalField = (
+  formField: IField,
+): formField is IDecimalField => {
+  return formField.fieldType === BasicField.Decimal
 }
