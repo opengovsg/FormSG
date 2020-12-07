@@ -10,7 +10,7 @@ const dbHandler = require('../helpers/db-handler')
 const { ObjectID } = require('bson-ext')
 const MailService = require('../../../../dist/backend/app/services/mail/mail.service')
   .default
-
+const EmailSubmissionsMiddleware = require('../../../../dist/backend/app/modules/submission/email-submission/email-submission.middleware')
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
@@ -733,7 +733,7 @@ describe('Email Submissions Controller', () => {
           controller.validateEmailSubmission,
           submissionsController.injectAutoReplyInfo,
           spcpController.appendVerifiedSPCPResponses,
-          controller.prepareEmailSubmission,
+          EmailSubmissionsMiddleware.prepareEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -876,10 +876,12 @@ describe('Email Submissions Controller', () => {
               answerTemplate,
             })
           }
-          expected.jsonData.push({
-            question,
-            answer,
-          })
+          if (fields[i].fieldType !== 'section') {
+            expected.jsonData.push({
+              question,
+              answer,
+            })
+          }
           expected.formData.push({
             question,
             answerTemplate,
@@ -902,7 +904,7 @@ describe('Email Submissions Controller', () => {
           question: 'SingPass Validated NRIC',
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
-          fieldType: 'authenticationSp',
+          fieldType: 'nric',
         },
       ]
       const expectedAutoReplyData = [
@@ -935,13 +937,13 @@ describe('Email Submissions Controller', () => {
           question: 'CorpPass Validated UEN',
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
-          fieldType: 'authenticationCp',
+          fieldType: 'textfield',
         },
         {
           question: 'CorpPass Validated UID',
           answerTemplate: [resLocalFixtures.userInfo],
           answer: resLocalFixtures.userInfo,
-          fieldType: 'authenticationCp',
+          fieldType: 'nric',
         },
       ]
       const expectedAutoReplyData = [
@@ -1203,7 +1205,7 @@ describe('Email Submissions Controller', () => {
         question: 'a table',
         fieldType: 'table',
         isHeader: false,
-        answer: '',
+        answerArray: [['', '']],
       })
       reqFixtures.form.form_fields.push({
         _id: fieldId,
@@ -1213,25 +1215,26 @@ describe('Email Submissions Controller', () => {
           { title: 'Name', fieldType: 'textfield' },
           { title: 'Age', fieldType: 'textfield' },
         ],
+        minimumRows: 1,
       })
       const expectedJsonData = [
         {
           question: '[table] a table (Name, Age)',
-          answer: '',
+          answer: ',',
         },
       ]
       const expectedFormData = [
         {
           question: '[table] a table (Name, Age)',
-          answerTemplate: [''],
-          answer: '',
+          answerTemplate: [','],
+          answer: ',',
           fieldType: 'table',
         },
       ]
       const expectedAutoReplyData = [
         {
           question: 'a table (Name, Age)',
-          answerTemplate: [''],
+          answerTemplate: [','],
         },
       ]
       const expected = {
@@ -1526,7 +1529,9 @@ describe('Email Submissions Controller', () => {
             question: title,
             answerTemplate: String(answer).split('\n'),
           })
-          expected.jsonData.push({ question: title, answer: String(answer) })
+          if (fieldType !== 'section') {
+            expected.jsonData.push({ question: title, answer: String(answer) })
+          }
           expected.formData.push({
             question: title,
             answerTemplate: String(answer).split('\n'),

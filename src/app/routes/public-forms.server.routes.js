@@ -16,6 +16,8 @@ const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
 const SpcpController = require('../modules/spcp/spcp.controller')
+const { BasicField } = require('../../types')
+const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
 
 module.exports = function (app) {
   /**
@@ -172,7 +174,9 @@ module.exports = function (app) {
               .keys({
                 _id: Joi.string().required(),
                 question: Joi.string().required(),
-                fieldType: Joi.string().required(),
+                fieldType: Joi.string()
+                  .required()
+                  .valid(...Object.values(BasicField)),
                 answer: Joi.string().allow(''),
                 answerArray: Joi.array(),
                 filename: Joi.string(),
@@ -192,7 +196,7 @@ module.exports = function (app) {
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
-    emailSubmissions.prepareEmailSubmission,
+    EmailSubmissionsMiddleware.prepareEmailSubmission,
     emailSubmissions.saveMetadataToDb,
     emailSubmissions.sendAdminEmail,
     submissions.sendAutoReply,
@@ -227,7 +231,9 @@ module.exports = function (app) {
             Joi.object().keys({
               _id: Joi.string().required(),
               answer: Joi.string().allow('').required(),
-              fieldType: Joi.string().required(),
+              fieldType: Joi.string()
+                .required()
+                .valid(...Object.values(BasicField)),
               signature: Joi.string().allow(''),
             }),
           )

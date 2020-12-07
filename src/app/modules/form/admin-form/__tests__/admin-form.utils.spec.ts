@@ -1,12 +1,20 @@
 import { ObjectId } from 'bson-ext'
 
-import { IPopulatedForm, IPopulatedUser, Permission, Status } from 'src/types'
+import {
+  IPopulatedForm,
+  IPopulatedUser,
+  Permission,
+  ResponseMode,
+  Status,
+} from 'src/types'
 
 import { ForbiddenFormError } from '../../form.errors'
+import { DuplicateFormBody, OverrideProps } from '../admin-form.types'
 import {
   assertHasDeletePermissions,
   assertHasReadPermissions,
   assertHasWritePermissions,
+  processDuplicateOverrideProps,
 } from '../admin-form.utils'
 
 describe('admin-form.utils', () => {
@@ -256,6 +264,52 @@ describe('admin-form.utils', () => {
           `User ${MOCK_USER.email} not authorized to perform delete operation on Form ${mockForm._id} with title: ${mockForm.title}.`,
         ),
       )
+    })
+  })
+
+  describe('processDuplicateOverrideProps', () => {
+    it('should return processed props for ResponseMode.Encrypt', async () => {
+      // Arrange
+      const newAdminId = new ObjectId().toHexString()
+      const params: DuplicateFormBody = {
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        title: 'some title',
+      }
+
+      // Act
+      const actual = processDuplicateOverrideProps(params, newAdminId)
+
+      // Assert
+      const expected: OverrideProps = {
+        responseMode: params.responseMode,
+        title: params.title,
+        admin: newAdminId,
+        publicKey: params.publicKey,
+      }
+      expect(actual).toEqual(expected)
+    })
+
+    it('should return processed props for ResponseMode.Email', async () => {
+      // Arrange
+      const newAdminId = new ObjectId().toHexString()
+      const params: DuplicateFormBody = {
+        responseMode: ResponseMode.Email,
+        emails: ['some@example.com', 'another@example.com'],
+        title: 'some title',
+      }
+
+      // Act
+      const actual = processDuplicateOverrideProps(params, newAdminId)
+
+      // Assert
+      const expected: OverrideProps = {
+        responseMode: params.responseMode,
+        title: params.title,
+        admin: newAdminId,
+        emails: params.emails,
+      }
+      expect(actual).toEqual(expected)
     })
   })
 })

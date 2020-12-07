@@ -1,5 +1,6 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
+import { merge, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -12,12 +13,15 @@ import { aws } from 'src/config/config'
 import { VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
   DashboardFormView,
+  FormLogoState,
+  ICustomFormLogo,
   IEmailFormSchema,
   IEncryptedFormSchema,
   IFormSchema,
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
+  PickDuplicateForm,
   ResponseMode,
   Status,
 } from 'src/types'
@@ -31,9 +35,12 @@ import {
   archiveForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
+  duplicateForm,
   getDashboardForms,
   transferFormOwnership,
 } from '../admin-form.service'
+import { DuplicateFormBody, OverrideProps } from '../admin-form.types'
+import * as AdminFormUtils from '../admin-form.utils'
 
 const FormModel = getFormModel(mongoose)
 
@@ -42,22 +49,27 @@ const MockUserService = mocked(UserService)
 
 describe('admin-form.service', () => {
   beforeEach(() => jest.clearAllMocks())
+
   describe('getDashboardForms', () => {
     it('should return list of forms user is authorized to view', async () => {
       // Arrange
       const mockUserId = 'mockUserId'
-      const mockUser: Partial<IUserSchema> = {
+      const mockUser = {
         email: 'MOCK_EMAIL@example.com',
         _id: mockUserId,
-      }
+      } as IUserSchema
       const mockDashboardForms: DashboardFormView[] = [
         {
           admin: {} as IPopulatedUser,
           title: 'test form 1',
+          _id: 'any',
+          responseMode: ResponseMode.Email,
         },
         {
           admin: {} as IPopulatedUser,
           title: 'test form 2',
+          _id: 'any2',
+          responseMode: ResponseMode.Encrypt,
         },
       ]
       // Mock user admin success.
@@ -94,10 +106,10 @@ describe('admin-form.service', () => {
     it('should return DatabaseError when error occurs whilst querying the database', async () => {
       // Arrange
       const mockUserId = 'mockUserId'
-      const mockUser: Partial<IUserSchema> = {
+      const mockUser = {
         email: 'MOCK_EMAIL@example.com',
         _id: mockUserId,
-      }
+      } as IUserSchema
       // Mock user admin success.
       MockUserService.findUserById.mockReturnValueOnce(
         okAsync(mockUser as IUserSchema),
@@ -146,6 +158,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
@@ -193,6 +207,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isErr()).toEqual(true)
@@ -232,6 +248,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
@@ -279,6 +297,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isErr()).toEqual(true)
@@ -327,6 +347,173 @@ describe('admin-form.service', () => {
       expect(actual._unsafeUnwrapErr()).toEqual(
         new DatabaseError(mockErrorString),
       )
+    })
+  })
+
+  describe('duplicateForm', () => {
+    const MOCK_NEW_ADMIN_ID = new ObjectId().toHexString()
+    const MOCK_VALID_FORM = ({
+      _id: new ObjectId(),
+      admin: new ObjectId(),
+      endPage: {
+        buttonLink: 'original form endpage link',
+      },
+      startPage: {
+        logo: {
+          state: FormLogoState.Custom,
+          fileId: 'some file_id',
+          fileName: 'some file name',
+          fileSizeInBytes: 10000,
+        } as ICustomFormLogo,
+      },
+    } as unknown) as IFormSchema
+    const MOCK_EMAIL_OVERRIDE_PARAMS: DuplicateFormBody = {
+      responseMode: ResponseMode.Email,
+      title: 'mock new title',
+      emails: ['mockExample@example.com'],
+    }
+    const MOCK_ENCRYPT_OVERRIDE_PARAMS: DuplicateFormBody = {
+      responseMode: ResponseMode.Encrypt,
+      title: 'mock new title',
+      publicKey: 'some public key',
+    }
+
+    const createMockForm = (expectedParams: OverrideProps) =>
+      merge({}, MOCK_VALID_FORM, {
+        getDuplicateParams: jest.fn().mockReturnValue(expectedParams),
+      }) as IFormSchema
+
+    it('should successfully duplicate form', async () => {
+      // Arrange
+      const mockNewAdminId = new ObjectId().toHexString()
+      const expectedParams: PickDuplicateForm & OverrideProps = {
+        admin: MOCK_NEW_ADMIN_ID,
+        ...MOCK_ENCRYPT_OVERRIDE_PARAMS,
+      }
+      const mockForm = createMockForm(expectedParams)
+
+      // Mock util return
+      const expectedOverrideProps = { title: 'new title' } as OverrideProps
+      jest
+        .spyOn(AdminFormUtils, 'processDuplicateOverrideProps')
+        .mockReturnValueOnce(expectedOverrideProps)
+      const expectedForm = createMockForm(expectedOverrideProps)
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce(expectedForm)
+
+      // Act
+      const actualResult = await duplicateForm(
+        mockForm,
+        mockNewAdminId,
+        MOCK_EMAIL_OVERRIDE_PARAMS,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createSpy).toHaveBeenCalledWith(expectedParams)
+      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
+        ...expectedOverrideProps,
+        // Should now have start page set to default
+        startPage: {
+          logo: {
+            state: FormLogoState.Default,
+          },
+        },
+      })
+    })
+
+    it('should omit buttonLink if original form link is to the form itself', async () => {
+      // Arrange
+      const mockNewAdminId = new ObjectId().toHexString()
+      const expectedParams: PickDuplicateForm & OverrideProps = {
+        admin: MOCK_NEW_ADMIN_ID,
+        ...omit(MOCK_ENCRYPT_OVERRIDE_PARAMS, 'isTemplate'),
+      }
+      const mockForm = merge({}, MOCK_VALID_FORM, {
+        endPage: {
+          // Legacy: buttonLink is hashed link.
+          buttonLink: `#!/${MOCK_VALID_FORM._id}`,
+        },
+        getDuplicateParams: jest.fn().mockReturnValue(expectedParams),
+      }) as IFormSchema
+
+      // Mock util return
+      const expectedOverrideProps = {
+        endPage: { buttonLink: 'has button link' },
+      } as OverrideProps
+      jest
+        .spyOn(AdminFormUtils, 'processDuplicateOverrideProps')
+        .mockReturnValueOnce(expectedOverrideProps)
+      const expectedForm = createMockForm(expectedOverrideProps)
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce(expectedForm)
+
+      // Act
+      const actualResult = await duplicateForm(
+        mockForm,
+        mockNewAdminId,
+        MOCK_EMAIL_OVERRIDE_PARAMS,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createSpy).toHaveBeenCalledWith(expectedParams)
+      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
+        // No more button link.
+        endPage: {},
+        startPage: {
+          logo: {
+            state: FormLogoState.Default,
+          },
+        },
+      })
+    })
+
+    it('should return DatabaseError if error occurred during the duplication', async () => {
+      // Arrange
+      const mockNewAdminId = new ObjectId().toHexString()
+      const expectedParams: PickDuplicateForm & OverrideProps = {
+        admin: MOCK_NEW_ADMIN_ID,
+        ...omit(MOCK_ENCRYPT_OVERRIDE_PARAMS, 'isTemplate'),
+      }
+      const mockForm = createMockForm(expectedParams)
+
+      const mockErrorString = 'something went wrong!'
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockRejectedValueOnce(new Error(mockErrorString))
+      // Mock util return
+      const expectedOverrideProps = { title: 'new title' } as OverrideProps
+      jest
+        .spyOn(AdminFormUtils, 'processDuplicateOverrideProps')
+        .mockReturnValueOnce(expectedOverrideProps)
+
+      // Act
+      const actualResult = await duplicateForm(
+        mockForm,
+        mockNewAdminId,
+        MOCK_EMAIL_OVERRIDE_PARAMS,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
+      )
+      expect(createSpy).toHaveBeenCalledWith(expectedParams)
+      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
+        ...expectedOverrideProps,
+        // Should now have start page set to default
+        startPage: {
+          logo: {
+            state: FormLogoState.Default,
+          },
+        },
+      })
     })
   })
 

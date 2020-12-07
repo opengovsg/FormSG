@@ -5,7 +5,7 @@ import {
   ITableResponse,
 } from 'src/types/response'
 
-type ProcessedResponse = {
+export type ProcessedResponse = {
   isVisible?: boolean
   isUserVerified?: boolean
 }

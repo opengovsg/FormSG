@@ -1,6 +1,8 @@
 import { ObjectId } from 'bson'
 import { merge, zipWith } from 'lodash'
 
+import { Environment } from 'src/types'
+
 export const MOCK_MYINFO_DATA = {
   name: {
     lastupdated: '2015-06-01',
@@ -179,5 +181,5 @@ export const MOCK_FETCH_PARAMS = {
   singpassEserviceId: 'mockEsrvcId',
 }
 export const MOCK_FORM_ID = new ObjectId().toHexString()
-export const MOCK_NODE_ENV = 'nodeEnv'
+export const MOCK_NODE_ENV = Environment.Test
 export const MOCK_APP_TITLE = 'appTitle'

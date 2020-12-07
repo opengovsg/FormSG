@@ -2,11 +2,7 @@ const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
-const roles = require('../helpers/roles')
-
-const User = dbHandler.makeModel('user.server.model', 'User')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
-const EmailForm = mongoose.model('email')
 
 const Controller = spec(
   'dist/backend/app/controllers/admin-forms.server.controller',
@@ -17,7 +13,6 @@ describe('Admin-Forms Controller', () => {
   let req
   let res
   let testForm
-  let testAgency
   let testUser
 
   beforeAll(async () => await dbHandler.connect())
@@ -26,7 +21,6 @@ describe('Admin-Forms Controller', () => {
     const collections = await dbHandler.preloadCollections()
 
     testUser = collections.user
-    testAgency = collections.agency
     testForm = collections.form
 
     req = {
@@ -182,45 +176,6 @@ describe('Admin-Forms Controller', () => {
         return res
       })
       Controller.update(req, res)
-    })
-  })
-
-  describe('duplicate', () => {
-    it('should duplicate form with correct title, new admin and no collaborators', async (done) => {
-      // Insert collaborator into User collection before duplicating form.
-      const collabAdmin = await User.create({
-        email: 'test1@test.gov.sg',
-        _id: mongoose.Types.ObjectId('000000000002'),
-        agency: testAgency._id,
-      })
-
-      let collaboratedForm = new EmailForm({
-        title: 'Form to duplicate',
-        emails: 'test1@test.gov.sg',
-        admin: collabAdmin._id,
-        permissionList: [roles.collaborator(testUser.email)],
-      })
-      req.form = collaboratedForm
-      // Passed in create-form-modal.client.controller
-      req.body.emails = testUser.email
-      req.body.title = 'Form to duplicate_3'
-
-      collaboratedForm.save().then(() => {
-        res.json.and.callFake((args) => {
-          expect(args.title).toEqual(collaboratedForm.title + '_' + 3)
-          Form.findOne({ _id: args._id }, (err, foundForm) => {
-            if (!err) {
-              let duplicatedForm = foundForm.toObject()
-              expect(duplicatedForm.admin.toString()).toEqual(
-                req.session.user._id.toString(),
-              )
-              expect(duplicatedForm.permissionList).toEqual([])
-            }
-            done(err)
-          })
-        })
-        Controller.duplicate(req, res)
-      })
     })
   })
 })

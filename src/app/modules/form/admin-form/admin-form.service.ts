@@ -1,4 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -11,7 +12,9 @@ import {
 import {
   AuthType,
   DashboardFormView,
+  FormLogoState,
   IFieldSchema,
+  IFormSchema,
   IPopulatedForm,
   IUserSchema,
   SpcpLocals,
@@ -20,14 +23,16 @@ import getFormModel from '../../../models/form.server.model'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
-import { findUserByEmail, findUserById } from '../../user/user.service'
-import { TransferOwnershipError } from '../form.errors'
+import * as UserService from '../../user/user.service'
+import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
 } from './admin-form.errors'
+import { DuplicateFormBody } from './admin-form.types'
+import { processDuplicateOverrideProps } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -51,7 +56,7 @@ export const getDashboardForms = (
 ): ResultAsync<DashboardFormView[], MissingUserError | DatabaseError> => {
   // Step 1: Verify user exists.
   return (
-    findUserById(userId)
+    UserService.findUserById(userId)
       // Step 2: Retrieve lists users are authorized to see.
       .andThen((admin) => {
         return ResultAsync.fromPromise(
@@ -246,7 +251,7 @@ export const transferFormOwnership = (
 
   return (
     // Step 1: Retrieve current owner of form to transfer.
-    findUserById(currentForm.admin._id)
+    UserService.findUserById(currentForm.admin._id)
       .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
@@ -261,7 +266,7 @@ export const transferFormOwnership = (
       })
       .andThen((currentOwner) =>
         // Step 2: Retrieve user document for new owner.
-        findUserByEmail(newOwnerEmail)
+        UserService.findUserByEmail(newOwnerEmail)
           .mapErr((error) => {
             logger.error({
               message:
@@ -313,4 +318,49 @@ export const transferFormOwnership = (
         ),
       )
   )
+}
+
+/**
+ * Duplicates given formId and replace owner with newAdminId.
+ * @param originalForm the form to be duplicated
+ * @param newAdminId the id of the admin of the duplicated form
+ * @param overrideParams params to override in the duplicated form; e.g. the new emails or public key of the form.
+ * @returns the newly created duplicated form
+ */
+export const duplicateForm = (
+  originalForm: IFormSchema,
+  newAdminId: string,
+  overrideParams: DuplicateFormBody,
+): ResultAsync<IFormSchema, FormNotFoundError | DatabaseError> => {
+  const overrideProps = processDuplicateOverrideProps(
+    overrideParams,
+    newAdminId,
+  )
+
+  // Set startPage.logo to default irregardless.
+  overrideProps.startPage = {
+    ...originalForm.startPage,
+    logo: { state: FormLogoState.Default },
+  }
+  // Prevent buttonLink from being copied over if buttonLink is the default
+  // form hash.
+  if (originalForm.endPage?.buttonLink === `#!/${originalForm._id}`) {
+    overrideProps.endPage = omit(originalForm.endPage, 'buttonLink')
+  }
+
+  const duplicateParams = originalForm.getDuplicateParams(overrideProps)
+
+  return ResultAsync.fromPromise(FormModel.create(duplicateParams), (error) => {
+    logger.error({
+      message: 'Error encountered while duplicating form',
+      meta: {
+        action: 'duplicateForm',
+        duplicateParams,
+        newAdminId,
+      },
+      error,
+    })
+
+    return new DatabaseError(getMongoErrorMessage(error))
+  })
 }
