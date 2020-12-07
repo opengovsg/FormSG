@@ -4,11 +4,15 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
-import getFormModel from 'src/app/models/form.server.model'
+import {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
   IAgencySchema,
-  IFormSchema,
+  IEmailFormSchema,
+  IEncryptedFormSchema,
   IUserSchema,
   ResponseMode,
 } from 'src/types'
@@ -138,7 +142,7 @@ const insertEmailForm = async ({
   mailDomain?: string
   shortName?: string
 } = {}): Promise<{
-  form: IFormSchema
+  form: IEmailFormSchema
   user: IUserSchema
   agency: IAgencySchema
 }> => {
@@ -149,14 +153,55 @@ const insertEmailForm = async ({
     shortName,
   })
 
-  const Form = getFormModel(mongoose)
+  const EmailFormModel = getEmailFormModel(mongoose)
 
-  const form = await Form.create({
+  const form = await EmailFormModel.create({
     title: 'example form title',
     admin: user._id,
     responseMode: ResponseMode.Email,
     emails: [user.email],
     _id: formId,
+  })
+
+  return {
+    form,
+    user,
+    agency,
+  }
+}
+
+const insertEncryptForm = async ({
+  formId,
+  userId,
+  mailDomain = 'test.gov.sg',
+  mailName = 'test',
+  shortName = 'govtest',
+}: {
+  formId?: ObjectID
+  userId?: ObjectID
+  mailName?: string
+  mailDomain?: string
+  shortName?: string
+} = {}): Promise<{
+  form: IEncryptedFormSchema
+  user: IUserSchema
+  agency: IAgencySchema
+}> => {
+  const { user, agency } = await insertFormCollectionReqs({
+    userId,
+    mailDomain,
+    mailName,
+    shortName,
+  })
+
+  const EncryptFormModel = getEncryptedFormModel(mongoose)
+
+  const form = await EncryptFormModel.create({
+    title: 'example form title',
+    admin: user._id,
+    responseMode: ResponseMode.Encrypt,
+    _id: formId,
+    publicKey: 'publicKey',
   })
 
   return {
@@ -175,6 +220,7 @@ const dbHandler = {
   insertFormCollectionReqs,
   clearCollection,
   insertEmailForm,
+  insertEncryptForm,
 }
 
 export default dbHandler
