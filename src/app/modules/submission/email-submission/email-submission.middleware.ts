@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
+import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
@@ -101,24 +102,24 @@ export const receiveEmailSubmission: RequestHandler<
 export const validateEmailSubmission: RequestHandler<
   ParamsDictionary,
   { message: string },
-  { responses?: FieldResponse[]; parsedResponses: ProcessedFieldResponse[] }
+  { responses: FieldResponse[] }
 > = async (req, res, next) => {
   const { form } = req as WithForm<typeof req>
 
-  if (!req.body.responses) {
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
-  }
-
   return EmailSubmissionService.validateAttachments(req.body.responses)
-    .andThen(() => getProcessedResponses(form, req.body.responses!))
+    .andThen(() => getProcessedResponses(form, req.body.responses))
     .map((parsedResponses) => {
       // Creates an array of attachments from the validated responses
+      // TODO (#42): remove these types when merging middlewares into controller
       // eslint-disable-next-line @typescript-eslint/no-extra-semi
       ;(req as WithAttachments<
         typeof req
-      >).attachments = mapAttachmentsFromResponses(req.body.responses!)
-      req.body.parsedResponses = parsedResponses
-      delete req.body.responses // Prevent downstream functions from using responses by deleting it
+      >).attachments = mapAttachmentsFromResponses(req.body.responses)
+      ;(req.body as Merge<
+        typeof req.body,
+        { parsedResponses: ProcessedFieldResponse[] }
+      >).parsedResponses = parsedResponses
+      delete (req.body as SetOptional<typeof req.body, 'responses'>).responses // Prevent downstream functions from using responses by deleting it
       return next()
     })
     .mapErr((error) => {
