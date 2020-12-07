@@ -1,5 +1,3 @@
-import mongoSetup from '@shelf/jest-mongodb/setup'
-import mongoTeardown from '@shelf/jest-mongodb/teardown'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
@@ -17,15 +15,15 @@ import {
   ResponseMode,
 } from 'src/types'
 
+import MemoryDatabaseServer from 'tests/database'
+
 /**
- * Connect to the in-memory database using MONGO_URL exposed by
- * \@shelf/jest-mongodb.
+ * Connect to the in-memory database
  */
 const connect = async (): Promise<typeof mongoose> => {
-  // Do it here so each test can have it's own mongoose instance.
-  await mongoSetup()
-  // process.env.MONGO_URL is now set by jest-mongodb.
-  const conn = await mongoose.connect(process.env.MONGO_URL ?? '', {
+  const dbUrl = await MemoryDatabaseServer.getConnectionString()
+
+  const conn = await mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
@@ -38,8 +36,7 @@ const connect = async (): Promise<typeof mongoose> => {
  * Disconnect all mongoose connections.
  */
 const closeDatabase = async (): Promise<void> => {
-  await mongoose.disconnect()
-  await mongoTeardown()
+  return mongoose.disconnect()
 }
 
 /**
