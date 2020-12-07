@@ -484,13 +484,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormModel,
     formId: string,
   ): Promise<IPopulatedForm | null> {
-    const data: IPopulatedForm | null = await this.findById(formId).populate({
+    return this.findById(formId).populate({
       path: 'admin',
+      // Remove irrelevant keys from populated fields of form admin and agency.
+      select: '-__v -created -lastModified -updatedAt -lastAccessed',
       populate: {
         path: 'agency',
+        select: '-__v -created -lastModified -updatedAt',
       },
     })
-    return data
   }
 
   // Deactivate form by ID

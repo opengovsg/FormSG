@@ -108,6 +108,249 @@ describe('admin-form.controller', () => {
     })
   })
 
+  describe('handleGetAdminForm', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    it('should return 200 with queried admin form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      // Act
+      await AdminFormController.handleGetAdminForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({ form: MOCK_FORM })
+    })
+
+    it('should return 403 when ForbiddenFormError is returned when verifying user permissions', async () => {
+      // Arrange
+      const expectedErrorString = 'no read access'
+
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetAdminForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 404 when FormNotFoundError is returned when retrieving form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error when retrieving form.
+      const expectedErrorString = 'form is not found'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetAdminForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 410 when FormDeletedError is returned when retrieving form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error when retrieving form.
+      const expectedErrorString = 'form is deleted'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetAdminForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 422 when MissingUserError is returned when retrieving logged in user', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      const expectedErrorString = 'user is not found'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetAdminForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving user in session', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      const expectedErrorString = 'database goes boom'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetAdminForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving populated form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error when retrieving form.
+      const expectedErrorString = 'database goes boom'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetAdminForm(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+  })
+
   describe('handleCreatePresignedPostForImages', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       body: {
@@ -271,8 +514,8 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleCountFormSubmissions', () => {
-    const MOCK_USER_ID = new ObjectId()
-    const MOCK_FORM_ID = new ObjectId()
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER: Partial<IPopulatedUser> = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
@@ -285,7 +528,7 @@ describe('admin-form.controller', () => {
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
-        formId: MOCK_FORM_ID.toHexString(),
+        formId: MOCK_FORM_ID,
       },
       session: {
         user: {
@@ -325,7 +568,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -376,7 +619,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -415,7 +658,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -456,7 +699,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -497,7 +740,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -604,7 +847,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -647,7 +890,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -665,8 +908,8 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleCountFormFeedback', () => {
-    const MOCK_USER_ID = new ObjectId()
-    const MOCK_FORM_ID = new ObjectId()
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER: Partial<IPopulatedUser> = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
@@ -679,7 +922,7 @@ describe('admin-form.controller', () => {
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
-        formId: MOCK_FORM_ID.toHexString(),
+        formId: MOCK_FORM_ID,
       },
       session: {
         user: {
@@ -719,7 +962,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -757,7 +1000,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -796,7 +1039,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -835,7 +1078,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -936,7 +1179,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -977,7 +1220,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -992,8 +1235,8 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleStreamFormFeedback', () => {
-    const MOCK_USER_ID = new ObjectId()
-    const MOCK_FORM_ID = new ObjectId()
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER: Partial<IPopulatedUser> = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
@@ -1006,7 +1249,7 @@ describe('admin-form.controller', () => {
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
-        formId: MOCK_FORM_ID.toHexString(),
+        formId: MOCK_FORM_ID,
       },
       session: {
         user: {
@@ -1047,7 +1290,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -1083,7 +1326,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -1122,7 +1365,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -1161,7 +1404,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -1262,7 +1505,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Read,
         },
       )
@@ -1582,8 +1825,8 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleArchiveForm', () => {
-    const MOCK_USER_ID = new ObjectId()
-    const MOCK_FORM_ID = new ObjectId()
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
       _id: MOCK_USER_ID,
       email: 'another@example.com',
@@ -1596,7 +1839,7 @@ describe('admin-form.controller', () => {
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
-        formId: MOCK_FORM_ID.toHexString(),
+        formId: MOCK_FORM_ID,
       },
       session: {
         user: {
@@ -1628,7 +1871,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Delete,
         },
       )
@@ -1662,7 +1905,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Delete,
         },
       )
@@ -1697,7 +1940,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Delete,
         },
       )
@@ -1732,7 +1975,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Delete,
         },
       )
@@ -1821,7 +2064,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Delete,
         },
       )
@@ -1858,7 +2101,7 @@ describe('admin-form.controller', () => {
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,
-          formId: MOCK_FORM_ID.toHexString(),
+          formId: MOCK_FORM_ID,
           level: PermissionLevel.Delete,
         },
       )

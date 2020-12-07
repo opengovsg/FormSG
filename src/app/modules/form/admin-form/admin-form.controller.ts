@@ -54,6 +54,52 @@ export const handleListDashboardForms: RequestHandler = async (req, res) => {
 }
 
 /**
+ * Handler for GET /:formId/adminform.
+ * @security session
+ *
+ * @returns 200 with retrieved form with formId if user has read permissions
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has read permissions to form
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      .map((form) => res.status(StatusCodes.OK).json({ form }))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error retrieving single form',
+          meta: {
+            action: 'handleGetSingleForm',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
  * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/images.
  * @security session
  *
