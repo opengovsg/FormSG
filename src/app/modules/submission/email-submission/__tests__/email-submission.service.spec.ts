@@ -1,8 +1,11 @@
-import { pick } from 'lodash'
-
 import { types as basicTypes } from 'src/shared/resources/basic'
 import { BasicField, MyInfoAttribute } from 'src/types'
 
+import {
+  generateSingleAnswerAutoreply,
+  generateSingleAnswerFormData,
+  generateSingleAnswerJson,
+} from 'tests/unit/backend/helpers/generate-email-data'
 import {
   generateNewAttachmentResponse,
   generateNewCheckboxResponse,
@@ -10,30 +13,12 @@ import {
   generateNewTableResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
-import { ProcessedSingleAnswerResponse } from '../../submission.types'
 import * as EmailSubmissionService from '../email-submission.service'
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
   .filter((t) => !t.answerArray && t.name !== BasicField.Attachment)
   .map((t) => generateNewSingleAnswerResponse(t.name))
-
-const generateSingleAnswerJson = (response: ProcessedSingleAnswerResponse) =>
-  pick(response, ['question', 'answer'])
-
-const generateSingleAnswerAutoreply = (
-  response: ProcessedSingleAnswerResponse,
-) => ({
-  question: response.question,
-  answerTemplate: response.answer.split('\n'),
-})
-
-const generateSingleAnswerFormData = (
-  response: ProcessedSingleAnswerResponse,
-) => ({
-  ...pick(response, ['question', 'answer', 'fieldType']),
-  answerTemplate: response.answer.split('\n'),
-})
 
 describe('email-submission.service', () => {
   describe('createEmailData', () => {
