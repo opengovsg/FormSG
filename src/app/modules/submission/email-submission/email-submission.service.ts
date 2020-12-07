@@ -1,5 +1,3 @@
-import { flatten } from 'lodash'
-
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
@@ -51,30 +49,29 @@ export const createEmailData = (
   hashedFields: Set<string>,
 ): EmailData => {
   // First, get an array of email data for each response
-  const emailDataByField = parsedResponses.map((response) => {
-    return createEmailDataForOneField(response, hashedFields)
-  })
   // Each field has an array of email data to accommodate table fields,
   // which have multiple rows of data per field. Hence flatten and maintain
   // the order of responses.
-  const emailDataFlattened = flatten(emailDataByField)
-  // Then reshape such that autoReplyData, jsonData and formData are each arrays
-  const emailData = emailDataFlattened.reduce(
-    (acc, dataForOneField) => {
-      if (dataForOneField.autoReplyData) {
-        acc.autoReplyData.push(dataForOneField.autoReplyData)
-      }
-      if (dataForOneField.jsonData) {
-        acc.jsonData.push(dataForOneField.jsonData)
-      }
-      acc.formData.push(dataForOneField.formData)
-      return acc
-    },
-    {
-      autoReplyData: [] as EmailAutoReplyField[],
-      jsonData: [] as EmailJsonField[],
-      formData: [] as EmailFormField[],
-    },
+  return (
+    parsedResponses
+      .flatMap((response) => createEmailDataForOneField(response, hashedFields))
+      // Then reshape such that autoReplyData, jsonData and formData are each arrays
+      .reduce(
+        (acc, dataForOneField) => {
+          if (dataForOneField.autoReplyData) {
+            acc.autoReplyData.push(dataForOneField.autoReplyData)
+          }
+          if (dataForOneField.jsonData) {
+            acc.jsonData.push(dataForOneField.jsonData)
+          }
+          acc.formData.push(dataForOneField.formData)
+          return acc
+        },
+        {
+          autoReplyData: [] as EmailAutoReplyField[],
+          jsonData: [] as EmailJsonField[],
+          formData: [] as EmailFormField[],
+        },
+      )
   )
-  return emailData
 }
