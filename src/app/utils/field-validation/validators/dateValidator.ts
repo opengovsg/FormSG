@@ -66,19 +66,18 @@ const makeCustomDateValidator: DateValidatorConstructor = (dateField) => (
     : right(response)
 }
 
-const makeDateValidator: DateValidatorConstructor = (dateField) => (
-  response,
-) => {
+const makeDateValidator: DateValidatorConstructor = (dateField) => {
   const { selectedDateValidation } = dateField.dateValidation || {}
   switch (selectedDateValidation) {
     case DateSelectedValidation.NoFuture:
-      return pastOnlyValidator(response)
+      return pastOnlyValidator
     case DateSelectedValidation.NoPast:
-      return futureOnlyValidator(response)
+      return futureOnlyValidator
     case DateSelectedValidation.Custom:
-      return makeCustomDateValidator(dateField)(response)
+      return makeCustomDateValidator(dateField)
+    default:
+      return right
   }
-  return right(response)
 }
 
 export const constructDateValidator: DateValidatorConstructor = (dateField) =>
