@@ -530,12 +530,13 @@ export const handleDuplicateAdminForm: RequestHandler<
           user,
           formId,
           level: PermissionLevel.Read,
-        }).andThen((originalForm) =>
-          // Step 3: Duplicate form.
-          duplicateForm(originalForm, userId, overrideParams)
-            // Step 4: Retrieve dashboard view of duplicated form.
-            .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
-        ),
+        })
+          .andThen((originalForm) =>
+            // Step 3: Duplicate form.
+            duplicateForm(originalForm, userId, overrideParams),
+          )
+          // Step 4: Retrieve dashboard view of duplicated form.
+          .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
       )
       // Success; return duplicated form's dashboard view.
       .map((dupedDashView) => res.json(dupedDashView))
