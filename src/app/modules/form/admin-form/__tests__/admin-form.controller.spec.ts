@@ -521,15 +521,15 @@ describe('admin-form.controller', () => {
   describe('handleCountFormSubmissions', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_USER: Partial<IPopulatedUser> = {
+    const MOCK_USER = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
-    }
-    const MOCK_FORM: Partial<IPopulatedForm> = {
+    } as IPopulatedUser
+    const MOCK_FORM = {
       admin: MOCK_USER as IPopulatedUser,
       _id: MOCK_FORM_ID,
       title: 'mock title',
-    }
+    } as IPopulatedForm
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -915,15 +915,15 @@ describe('admin-form.controller', () => {
   describe('handleCountFormFeedback', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_USER: Partial<IPopulatedUser> = {
+    const MOCK_USER = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
-    }
-    const MOCK_FORM: Partial<IPopulatedForm> = {
+    } as IPopulatedUser
+    const MOCK_FORM = {
       admin: MOCK_USER as IPopulatedUser,
       _id: MOCK_FORM_ID,
       title: 'mock title',
-    }
+    } as IPopulatedForm
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -1242,15 +1242,15 @@ describe('admin-form.controller', () => {
   describe('handleStreamFormFeedback', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_USER: Partial<IPopulatedUser> = {
+    const MOCK_USER = {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
-    }
-    const MOCK_FORM: Partial<IPopulatedForm> = {
+    } as IPopulatedUser
+    const MOCK_FORM = {
       admin: MOCK_USER as IPopulatedUser,
       _id: MOCK_FORM_ID,
       title: 'mock title',
-    }
+    } as IPopulatedForm
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {

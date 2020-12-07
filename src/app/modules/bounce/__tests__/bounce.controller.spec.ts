@@ -6,7 +6,7 @@ import getBounceModel from 'src/app/modules/bounce/bounce.model'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
 import * as FormService from 'src/app/modules/form/form.service'
 import { EmailType } from 'src/app/services/mail/mail.constants'
-import { IBounceSchema, ISnsNotification } from 'src/types'
+import { IBounceSchema, IEmailNotification, ISnsNotification } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
@@ -32,7 +32,7 @@ jest.doMock('mongoose', () => ({
 // eslint-disable-next-line import/first
 import { handleSns } from 'src/app/modules/bounce/bounce.controller'
 
-const MOCK_NOTIFICATION = { someKey: 'someValue' }
+const MOCK_NOTIFICATION = { notificationType: 'Bounce' } as IEmailNotification
 const MOCK_REQ = expressHandler.mockRequest({
   body: ({
     Message: JSON.stringify(MOCK_NOTIFICATION),
