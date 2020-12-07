@@ -191,15 +191,9 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
           msg,
         }
         $timeout(function () {
-          angular.element('#otp-input').focus()
-          angular.element('#otp-input').select()
-        }, 100)
-      },
-    ).finally(function () {
-      $timeout(function () {
-        vm.showOtpDelayNotification = true
-      }, 45000)
-    })
+          vm.showOtpDelayNotification = true
+        }, 45000)
+      })
   }
 
   /**
