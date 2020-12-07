@@ -13,18 +13,22 @@ type DecimalValidator = ResponseValidator<ISingleAnswerResponse>
 type DecimalValidatorConstructor = (
   decimalField: IDecimalField,
 ) => DecimalValidator
+interface IIsFloatOptions {
+  min?: number
+  max?: number
+}
 
 const makeDecimalFloatRangeValidator: DecimalValidatorConstructor = (
   decimalField,
 ) => (response) => {
-  const { customMin, customMax } = decimalField.ValidationOptions || {}
+  const { customMin, customMax } = decimalField.ValidationOptions // defaults to customMin: null, customMax: null
   const { answer } = response
-  interface IIsFloatOptions {
-    min?: number
-    max?: number
-  }
 
   const isFloatOptions: IIsFloatOptions = {}
+  // Necessary to add 'min' and 'max' property manually as
+  // isFloatOptions tests for presence of property
+  // See https://github.com/validatorjs/validator.js/blob/302d2957c924b515cb22f7e87b5e84fee8636d6e/src/lib/isFloat.js#L13
+
   if (customMin || customMin === 0) {
     isFloatOptions['min'] = customMin
   }
