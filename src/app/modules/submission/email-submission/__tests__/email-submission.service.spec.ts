@@ -274,26 +274,60 @@ describe('email-submission.service', () => {
     })
 
     it('should prefix MyInfo-verified fields with [MyInfo] only in form data', () => {
-      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
-        myInfo: { attr: MyInfoAttribute.Name },
-      })
-
-      const emailData = EmailSubmissionService.createEmailData(
-        [response],
-        new Set([response._id]),
+      // MyInfo-verified
+      const nameResponse = generateNewSingleAnswerResponse(
+        BasicField.ShortText,
+        {
+          myInfo: { attr: MyInfoAttribute.Name },
+          answer: 'name',
+        },
       )
 
-      const question = response.question
-      const answer = response.answer
+      // MyInfo field but not MyInfo-verified
+      const vehicleResponse = generateNewSingleAnswerResponse(
+        BasicField.ShortText,
+        {
+          myInfo: { attr: MyInfoAttribute.VehicleNo },
+          answer: 'vehiclenumber',
+        },
+      )
+
+      const emailData = EmailSubmissionService.createEmailData(
+        [nameResponse, vehicleResponse],
+        new Set([nameResponse._id]),
+      )
 
       expect(emailData).toEqual({
-        jsonData: [{ question, answer }],
-        autoReplyData: [{ question, answerTemplate: [answer] }],
+        jsonData: [
+          { question: nameResponse.question, answer: nameResponse.answer },
+          {
+            question: vehicleResponse.question,
+            answer: vehicleResponse.answer,
+          },
+        ],
+        autoReplyData: [
+          {
+            question: nameResponse.question,
+            answerTemplate: [nameResponse.answer],
+          },
+          {
+            question: vehicleResponse.question,
+            answerTemplate: [nameResponse.answer],
+          },
+        ],
         formData: [
           {
-            question: `${MYINFO_PREFIX}${question}`,
-            answer,
-            answerTemplate: [answer],
+            // Prefixed because its ID was in the Set
+            question: `${MYINFO_PREFIX}${nameResponse.question}`,
+            answer: nameResponse.answer,
+            answerTemplate: [nameResponse.answer],
+            fieldType: BasicField.ShortText,
+          },
+          {
+            // Not prefixed because ID not in Set
+            question: vehicleResponse.question,
+            answer: vehicleResponse.answer,
+            answerTemplate: [vehicleResponse.answer],
             fieldType: BasicField.ShortText,
           },
         ],
