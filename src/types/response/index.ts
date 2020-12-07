@@ -2,7 +2,7 @@ import { BasicField, IFieldSchema, IMyInfo } from '../field'
 
 export type AttachmentsMap = Record<IFieldSchema['_id'], File>
 
-interface IBaseResponse {
+export interface IBaseResponse {
   _id: IFieldSchema['_id']
   fieldType: BasicField
   question: string
@@ -10,20 +10,26 @@ interface IBaseResponse {
 }
 
 export interface ISingleAnswerResponse extends IBaseResponse {
+  fieldType: Exclude<BasicField, BasicField.Table | BasicField.Checkbox>
   answer: string
 }
 
 export interface IAttachmentResponse extends ISingleAnswerResponse {
+  fieldType: BasicField.Attachment
   filename: string
   content: Buffer
 }
 
 export interface ICheckboxResponse extends IBaseResponse {
+  fieldType: BasicField.Checkbox
   answerArray: string[]
 }
 
+export type ITableRow = string[]
+
 export interface ITableResponse extends IBaseResponse {
-  answerArray: string[][]
+  fieldType: BasicField.Table
+  answerArray: ITableRow[]
 }
 
 export type FieldResponse =

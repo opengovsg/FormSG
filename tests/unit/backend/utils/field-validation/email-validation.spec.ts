@@ -47,7 +47,7 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'invalidemail.com',
-    }
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -71,7 +71,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: false,
       answer: '',
-    }
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -96,7 +96,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
-    }
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -121,7 +121,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
-    }
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -148,7 +148,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
-    }
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -173,7 +173,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
-    }
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -198,7 +198,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
-    }
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
