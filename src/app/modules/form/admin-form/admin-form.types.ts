@@ -36,7 +36,6 @@ export type OverrideProps = {
   customLogo?: undefined
   endPage?: IForm['endPage']
   startPage?: IForm['startPage']
-  isNew: true
   admin: string
   title: string
   responseMode: ResponseMode

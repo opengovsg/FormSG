@@ -204,7 +204,6 @@ export const processDuplicateOverrideProps = (
   const overrideProps: OverrideProps = {
     responseMode,
     title,
-    isNew: true,
     admin: newAdminId,
   }
 

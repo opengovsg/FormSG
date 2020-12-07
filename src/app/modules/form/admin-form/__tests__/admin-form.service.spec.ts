@@ -375,7 +375,6 @@ describe('admin-form.service', () => {
       const mockNewAdminId = new ObjectId().toHexString()
       const expectedParams: PickDuplicateForm & OverrideProps = {
         admin: MOCK_NEW_ADMIN_ID,
-        isNew: true,
         ...MOCK_ENCRYPT_OVERRIDE_PARAMS,
       }
       const mockForm = createMockForm(expectedParams)
@@ -417,7 +416,6 @@ describe('admin-form.service', () => {
       const mockNewAdminId = new ObjectId().toHexString()
       const expectedParams: PickDuplicateForm & OverrideProps = {
         admin: MOCK_NEW_ADMIN_ID,
-        isNew: true,
         ...omit(MOCK_ENCRYPT_OVERRIDE_PARAMS, 'isTemplate'),
       }
       const mockForm = merge({}, MOCK_VALID_FORM, {
@@ -467,7 +465,6 @@ describe('admin-form.service', () => {
       const mockNewAdminId = new ObjectId().toHexString()
       const expectedParams: PickDuplicateForm & OverrideProps = {
         admin: MOCK_NEW_ADMIN_ID,
-        isNew: true,
         ...omit(MOCK_ENCRYPT_OVERRIDE_PARAMS, 'isTemplate'),
       }
       const mockForm = createMockForm(expectedParams)

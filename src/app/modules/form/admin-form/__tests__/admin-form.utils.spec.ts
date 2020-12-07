@@ -284,7 +284,6 @@ describe('admin-form.utils', () => {
       const expected: OverrideProps = {
         responseMode: params.responseMode,
         title: params.title,
-        isNew: true,
         admin: newAdminId,
         publicKey: params.publicKey,
       }
@@ -307,7 +306,6 @@ describe('admin-form.utils', () => {
       const expected: OverrideProps = {
         responseMode: params.responseMode,
         title: params.title,
-        isNew: true,
         admin: newAdminId,
         emails: params.emails,
       }
