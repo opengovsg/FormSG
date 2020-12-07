@@ -23,7 +23,12 @@ import * as EmailSubmissionService from '../email-submission.service'
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
-  .filter((t) => !t.answerArray && t.name !== BasicField.Attachment)
+  // Section fields are not submitted
+  .filter(
+    (t) =>
+      !t.answerArray &&
+      ![BasicField.Attachment, BasicField.Section].includes(t.name),
+  )
   .map((t) => generateNewSingleAnswerResponse(t.name))
 
 describe('email-submission.service', () => {
@@ -312,7 +317,7 @@ describe('email-submission.service', () => {
           },
           {
             question: vehicleResponse.question,
-            answerTemplate: [nameResponse.answer],
+            answerTemplate: [vehicleResponse.answer],
           },
         ],
         formData: [

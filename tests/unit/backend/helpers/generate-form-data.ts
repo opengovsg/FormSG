@@ -126,7 +126,7 @@ export const generateNewSingleAnswerResponse = (
     )
   }
   return {
-    _id: new ObjectId().toHexString,
+    _id: new ObjectId().toHexString(),
     question: `${fieldType} question`,
     answer: `${fieldType} answer`,
     fieldType: fieldType as Exclude<
