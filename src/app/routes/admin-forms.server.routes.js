@@ -21,7 +21,7 @@ const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
 const SpcpController = require('../modules/spcp/spcp.controller')
-const { BasicField } = require('../../types')
+const { BasicField, ResponseMode } = require('../../types')
 
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
@@ -168,7 +168,35 @@ module.exports = function (app) {
     .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
     .put(authActiveForm(PermissionLevel.Write), adminForms.update)
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
-    .post(authActiveForm(PermissionLevel.Read), adminForms.duplicate)
+    .post(
+      withUserAuthentication,
+      celebrate({
+        [Segments.BODY]: {
+          // Require valid responsesMode field.
+          responseMode: Joi.string()
+            .valid(...Object.values(ResponseMode))
+            .required(),
+          // Require title field.
+          title: Joi.string().min(4).max(200).required(),
+          // Require emails string (for backwards compatibility) or string array
+          // if form to be duplicated in Email mode.
+          emails: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()), Joi.string())
+            .when('responseMode', {
+              is: ResponseMode.Email,
+              then: Joi.required(),
+            }),
+          // Require publicKey field if form to be duplicated in Storage mode.
+          publicKey: Joi.string()
+            .allow('')
+            .when('responseMode', {
+              is: ResponseMode.Encrypt,
+              then: Joi.string().required().disallow(''),
+            }),
+        },
+      }),
+      AdminFormController.handleDuplicateAdminForm,
+    )
 
   /**
    * Return the template form to the user.

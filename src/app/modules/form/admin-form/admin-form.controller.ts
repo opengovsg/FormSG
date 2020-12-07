@@ -15,10 +15,11 @@ import {
   archiveForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
+  duplicateForm,
   getDashboardForms,
   getMockSpcpLocals,
 } from './admin-form.service'
-import { PermissionLevel } from './admin-form.types'
+import { DuplicateFormBody, PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -487,6 +488,65 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
             action: 'handleArchiveForm',
             ...createReqMeta(req),
             userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /:formId/adminform
+ * Duplicates the form corresponding to the formId. The currently logged in user
+ * must have read permissions to the form being copied.
+ * @note Even if current user is not admin of the form, the current user will be the admin of the new form
+ * @security session
+ *
+ * @returns 200 with the duplicate form dashboard view
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDuplicateAdminForm: RequestHandler<
+  { formId: string },
+  unknown,
+  DuplicateFormBody
+> = (req, res) => {
+  const { formId } = req.params
+  const userId = (req.session as Express.AuthedSession).user._id
+  const overrideParams = req.body
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(userId)
+      .andThen((user) =>
+        // Step 2: Check if current user has permissions to read form.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }).andThen((originalForm) =>
+          // Step 3: Duplicate form.
+          duplicateForm(originalForm, userId, overrideParams)
+            // Step 4: Retrieve dashboard view of duplicated form.
+            .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
+        ),
+      )
+      // Success; return duplicated form's dashboard view.
+      .map((dupedDashView) => res.json(dupedDashView))
+      // Error; some error occurred in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error duplicating form',
+          meta: {
+            action: 'handleDuplicateAdminForm',
+            ...createReqMeta(req),
+            userId: userId,
             formId,
           },
           error,
