@@ -17,6 +17,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  PrivateFormError,
 } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
@@ -327,6 +328,123 @@ describe('auth.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+    })
+  })
+
+  describe('getFormIfPublic', () => {
+    it('should return populated form when form to retrieve is public', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const expectedForm = {
+        _id: mockFormId,
+        title: 'some form',
+      } as IPopulatedForm
+
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(expectedForm),
+      )
+      MockFormService.isFormPublic.mockReturnValueOnce(ok(true))
+
+      // Act
+      const actualResult = await AuthService.getFormIfPublic(
+        mockFormId.toHexString(),
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+    })
+
+    it('should return FormNotFoundError when returned form is not found', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const expectedError = new FormNotFoundError('no form')
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      const actualResult = await AuthService.getFormIfPublic(
+        mockFormId.toHexString(),
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+      expect(MockFormService.isFormPublic).not.toHaveBeenCalled()
+    })
+
+    it('should return FormDeletedError when form is already archived', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const expectedForm = {
+        _id: mockFormId,
+        title: 'some form',
+      } as IPopulatedForm
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(expectedForm),
+      )
+      const expectedError = new FormDeletedError('gone')
+      MockFormService.isFormPublic.mockReturnValueOnce(err(expectedError))
+
+      // Act
+      const actualResult = await AuthService.getFormIfPublic(
+        mockFormId.toHexString(),
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(
+        expectedForm,
+        'Cannot access private form',
+      )
+    })
+
+    it('should return PrivateFormError when form is private', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const expectedForm = {
+        _id: mockFormId,
+        title: 'some form',
+      } as IPopulatedForm
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(expectedForm),
+      )
+      const expectedError = new PrivateFormError('you have no access')
+      MockFormService.isFormPublic.mockReturnValueOnce(err(expectedError))
+
+      // Act
+      const actualResult = await AuthService.getFormIfPublic(
+        mockFormId.toHexString(),
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(
+        expectedForm,
+        'Cannot access private form',
+      )
+    })
+
+    it('should return DatabaseError when database error occurs when retrieving form', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const expectedError = new DatabaseError('bam goes the database')
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      const actualResult = await AuthService.getFormIfPublic(
+        mockFormId.toHexString(),
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
+      expect(MockFormService.isFormPublic).not.toHaveBeenCalled()
     })
   })
 })

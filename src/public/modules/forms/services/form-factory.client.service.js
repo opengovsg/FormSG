@@ -19,7 +19,7 @@ function FormFactory(FormApi) {
       case 'duplicate':
         return FormApi.save({ formId }, params)
       case 'useTemplate':
-        return FormApi.useTemplate({ formId }, { ...params, isTemplate: true })
+        return FormApi.useTemplate({ formId }, params)
       default:
         throw new Error('Unsupported mode of form generation.')
     }
