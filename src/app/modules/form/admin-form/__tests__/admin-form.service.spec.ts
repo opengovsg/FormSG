@@ -41,7 +41,7 @@ jest.mock('src/app/modules/user/user.service')
 const MockUserService = mocked(UserService)
 
 describe('admin-form.service', () => {
-  beforeEach(() => jest.restoreAllMocks())
+  beforeEach(() => jest.clearAllMocks())
   describe('getDashboardForms', () => {
     it('should return list of forms user is authorized to view', async () => {
       // Arrange
@@ -499,10 +499,6 @@ describe('admin-form.service', () => {
       MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
-      // Same owner.
-      MockUserService.findUserByEmail.mockReturnValueOnce(
-        okAsync(MOCK_CURRENT_OWNER),
-      )
       const mockValidForm = ({
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
@@ -512,8 +508,7 @@ describe('admin-form.service', () => {
       // Act
       const actualResult = await transferFormOwnership(
         mockValidForm,
-        // Note that these parameters do not matter at all, since the services
-        // already mocked.
+        // Should trigger error since new owner email is the same as current.
         MOCK_CURRENT_OWNER.email,
       )
 
@@ -523,6 +518,7 @@ describe('admin-form.service', () => {
         new TransferOwnershipError('You are already the owner of this form'),
       )
       expect(mockValidForm.transferOwner).not.toHaveBeenCalled()
+      expect(MockUserService.findUserByEmail).not.toHaveBeenCalled()
     })
 
     it('should return DatabaseError when database error occurs during populating the updated form', async () => {

@@ -1,6 +1,6 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import mongoose from 'mongoose'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -12,8 +12,8 @@ import {
   AuthType,
   DashboardFormView,
   IFieldSchema,
-  IFormSchema,
   IPopulatedForm,
+  IUserSchema,
   SpcpLocals,
 } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
@@ -247,6 +247,18 @@ export const transferFormOwnership = (
   return (
     // Step 1: Retrieve current owner of form to transfer.
     findUserById(currentForm.admin._id)
+      .andThen((currentOwner) => {
+        // No need to transfer form ownership if new and current owners are
+        // the same.
+        if (newOwnerEmail === currentOwner.email) {
+          return errAsync(
+            new TransferOwnershipError(
+              'You are already the owner of this form',
+            ),
+          ) as ResultAsync<IUserSchema, TransferOwnershipError | DatabaseError>
+        }
+        return okAsync(currentOwner)
+      })
       .andThen((currentOwner) =>
         // Step 2: Retrieve user document for new owner.
         findUserByEmail(newOwnerEmail)
@@ -268,21 +280,8 @@ export const transferFormOwnership = (
             return error
           })
           // Step 3: Perform form ownership transfer.
-          .andThen((newOwner) => {
-            // No need to transfer form ownership if new and current owners are
-            // the same.
-            if (newOwner.email === currentOwner.email) {
-              return errAsync(
-                new TransferOwnershipError(
-                  'You are already the owner of this form',
-                ),
-              ) as ResultAsync<
-                IFormSchema,
-                TransferOwnershipError | DatabaseError
-              >
-            }
-
-            return ResultAsync.fromPromise(
+          .andThen((newOwner) =>
+            ResultAsync.fromPromise(
               currentForm.transferOwner(currentOwner, newOwner),
               (error) => {
                 logger.error({
@@ -293,8 +292,8 @@ export const transferFormOwnership = (
 
                 return new DatabaseError(getMongoErrorMessage(error))
               },
-            )
-          }),
+            ),
+          ),
       )
       // Step 4: Populate updated form.
       .andThen((updatedForm) =>
