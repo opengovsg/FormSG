@@ -6,12 +6,20 @@ import { IDateField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { ISingleAnswerResponse } from 'src/types/response'
 
-import { createMomentFromDateString } from '../../../../shared/util/date-validation'
-
 import { notEmptySingleAnswerResponse } from './common'
 
 type DateValidator = ResponseValidator<ISingleAnswerResponse>
 type DateValidatorConstructor = (dateField: IDateField) => DateValidator
+
+/**
+ * @param date
+ * @returns a moment with the date in the format 'DD MMM YYYY'
+ */
+export const createMomentFromDateString = (date: string): moment.Moment => {
+  const DATE_FORMAT = 'DD MMM YYYY'
+
+  return moment(date, DATE_FORMAT, true)
+}
 
 const dateFormatValidator: DateValidator = (response) => {
   const { answer } = response
