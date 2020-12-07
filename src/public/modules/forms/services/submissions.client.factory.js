@@ -80,7 +80,12 @@ function SubmissionsFactory(
             response = JSON.parse(xhr.responseText)
             // eslint-disable-next-line no-empty
           } catch (e) {}
-          deferred.reject(`${response.message || 'An unknown error occurred'}`)
+          deferred.reject(
+            `${
+              response.message ||
+              "Please refresh and try again. If this doesn't work, try switching devices or networks."
+            }`,
+          )
         }
       }
     }
@@ -107,7 +112,12 @@ function SubmissionsFactory(
           deferred.resolve('Submission has finished.')
         },
         function (error) {
-          deferred.reject(`${error.message || 'An unknown error occurred'}`)
+          deferred.reject(
+            `${
+              error.message ||
+              "Please refresh and try again. If this doesn't work, try switching devices or networks."
+            }`,
+          )
         },
       )
     return deferred.promise

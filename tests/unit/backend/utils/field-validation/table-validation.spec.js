@@ -226,7 +226,7 @@ describe('Table validation', () => {
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
+        new ValidateFieldError('Response has invalid shape'),
       )
     })
   })
