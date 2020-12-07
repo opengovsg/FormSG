@@ -10,7 +10,7 @@ const dbHandler = require('../helpers/db-handler')
 const { ObjectID } = require('bson-ext')
 const MailService = require('../../../../dist/backend/app/services/mail/mail.service')
   .default
-
+const EmailSubmissionsMiddleware = require('../../../../dist/backend/app/modules/submission/email-submission/email-submission.middleware')
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
@@ -733,7 +733,7 @@ describe('Email Submissions Controller', () => {
           controller.validateEmailSubmission,
           submissionsController.injectAutoReplyInfo,
           spcpController.appendVerifiedSPCPResponses,
-          controller.prepareEmailSubmission,
+          EmailSubmissionsMiddleware.prepareEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -876,10 +876,12 @@ describe('Email Submissions Controller', () => {
               answerTemplate,
             })
           }
-          expected.jsonData.push({
-            question,
-            answer,
-          })
+          if (fields[i].fieldType !== 'section') {
+            expected.jsonData.push({
+              question,
+              answer,
+            })
+          }
           expected.formData.push({
             question,
             answerTemplate,
@@ -1527,7 +1529,9 @@ describe('Email Submissions Controller', () => {
             question: title,
             answerTemplate: String(answer).split('\n'),
           })
-          expected.jsonData.push({ question: title, answer: String(answer) })
+          if (fieldType !== 'section') {
+            expected.jsonData.push({ question: title, answer: String(answer) })
+          }
           expected.formData.push({
             question: title,
             answerTemplate: String(answer).split('\n'),

@@ -17,6 +17,7 @@ const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
+const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
 
 module.exports = function (app) {
   /**
@@ -195,7 +196,7 @@ module.exports = function (app) {
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
-    emailSubmissions.prepareEmailSubmission,
+    EmailSubmissionsMiddleware.prepareEmailSubmission,
     emailSubmissions.saveMetadataToDb,
     emailSubmissions.sendAdminEmail,
     submissions.sendAutoReply,

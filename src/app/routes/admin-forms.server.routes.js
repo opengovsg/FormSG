@@ -11,6 +11,7 @@ let publicForms = require('../../app/controllers/public-forms.server.controller'
 let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
+const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
 let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
@@ -376,7 +377,7 @@ module.exports = function (app) {
     AdminFormController.passThroughSpcp,
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
-    emailSubmissions.prepareEmailSubmission,
+    EmailSubmissionsMiddleware.prepareEmailSubmission,
     adminForms.passThroughSaveMetadataToDb,
     emailSubmissions.sendAdminEmail,
     submissions.sendAutoReply,

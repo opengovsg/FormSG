@@ -2,7 +2,7 @@ import { BasicField, IFieldSchema, IMyInfo } from '../field'
 
 export type AttachmentsMap = Record<IFieldSchema['_id'], File>
 
-interface IBaseResponse {
+export interface IBaseResponse {
   _id: IFieldSchema['_id']
   fieldType: BasicField
   question: string
