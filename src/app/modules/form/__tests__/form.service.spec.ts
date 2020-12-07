@@ -123,12 +123,9 @@ describe('FormService', () => {
       } as IFormSchema
       const retrieveFormSpy = jest
         .spyOn(Form, 'findById')
-        .mockImplementationOnce(
-          () =>
-            (({
-              exec: jest.fn().mockResolvedValue(expectedForm),
-            } as unknown) as mongoose.Query<any>),
-        )
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockResolvedValue(expectedForm),
+        } as unknown) as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -145,12 +142,9 @@ describe('FormService', () => {
       // Resolve query to null.
       const retrieveFormSpy = jest
         .spyOn(Form, 'findById')
-        .mockImplementationOnce(
-          () =>
-            (({
-              exec: jest.fn().mockResolvedValue(null),
-            } as unknown) as mongoose.Query<any>),
-        )
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockResolvedValue(null),
+        } as unknown) as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -171,12 +165,9 @@ describe('FormService', () => {
       } as IFormSchema
       const retrieveFormSpy = jest
         .spyOn(Form, 'findById')
-        .mockImplementationOnce(
-          () =>
-            (({
-              exec: jest.fn().mockResolvedValue(expectedForm),
-            } as unknown) as mongoose.Query<any>),
-        )
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockResolvedValue(expectedForm),
+        } as unknown) as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
@@ -193,12 +184,9 @@ describe('FormService', () => {
       // Mock rejection.
       const retrieveFormSpy = jest
         .spyOn(Form, 'findById')
-        .mockImplementationOnce(
-          () =>
-            (({
-              exec: jest.fn().mockRejectedValue(new Error('some error')),
-            } as unknown) as mongoose.Query<any>),
-        )
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockRejectedValue(new Error('some error')),
+        } as unknown) as mongoose.Query<any>)
 
       // Act
       const actualResult = await FormService.retrieveFormById(formId)
