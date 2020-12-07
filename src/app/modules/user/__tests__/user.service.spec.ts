@@ -373,7 +373,7 @@ describe('user.service', () => {
     })
   })
 
-  describe('findAdminById', () => {
+  describe('findUserById', () => {
     it('should return admin successfully', async () => {
       // Arrange
       const mockUserId = new ObjectID().toHexString()
@@ -385,7 +385,7 @@ describe('user.service', () => {
       )
 
       // Act
-      const actualResult = await UserService.findAdminById(mockUserId)
+      const actualResult = await UserService.findUserById(mockUserId)
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -404,7 +404,7 @@ describe('user.service', () => {
       )
 
       // Act
-      const actualResult = await UserService.findAdminById(mockUserId)
+      const actualResult = await UserService.findUserById(mockUserId)
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -423,7 +423,7 @@ describe('user.service', () => {
       )
 
       // Act
-      const actualResult = await UserService.findAdminById(mockUserId)
+      const actualResult = await UserService.findUserById(mockUserId)
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -432,7 +432,7 @@ describe('user.service', () => {
     })
   })
 
-  describe('findAdminByEmail', () => {
+  describe('findUserByEmail', () => {
     it('should return admin successfully', async () => {
       // Arrange
       const mockEmail = 'someemail@example.com'
@@ -444,7 +444,7 @@ describe('user.service', () => {
       )
 
       // Act
-      const actualResult = await UserService.findAdminByEmail(mockEmail)
+      const actualResult = await UserService.findUserByEmail(mockEmail)
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -463,7 +463,7 @@ describe('user.service', () => {
       )
 
       // Act
-      const actualResult = await UserService.findAdminByEmail(mockEmail)
+      const actualResult = await UserService.findUserByEmail(mockEmail)
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -482,7 +482,7 @@ describe('user.service', () => {
       )
 
       // Act
-      const actualResult = await UserService.findAdminByEmail(mockEmail)
+      const actualResult = await UserService.findUserByEmail(mockEmail)
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)

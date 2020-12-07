@@ -45,7 +45,7 @@ export const createContactOtp = (
   const otp = generateOtp()
   // Step 1: Verify existence of userId.
   return (
-    findAdminById(userId)
+    findUserById(userId)
       // Step 2: Hash OTP and contact number.
       .andThen(() => hashOtpAndContact(otp, contact))
       // Step 3: Upsert hashed data into database..
@@ -88,7 +88,7 @@ export const verifyContactOtp = (
 > => {
   return (
     // Step 1: Verify existence of userId.
-    findAdminById(userId)
+    findUserById(userId)
       // Step 2: Increment OTP verification attempts.
       .andThen(() => incrementOtpAttempts(userId))
       // Step 3: Compare hashes of contact and OTP.
@@ -247,14 +247,14 @@ export const retrieveUser = (
  * @returns err(DatabaseError) if database errors occurs whilst retrieving user
  * @returns err(MissingUserError) if user does not exist in the database
  */
-export const findAdminById = (
+export const findUserById = (
   userId: string,
 ): ResultAsync<IUserSchema, MissingUserError | DatabaseError> => {
   return ResultAsync.fromPromise(UserModel.findById(userId).exec(), (error) => {
     logger.error({
       message: 'Database find user error',
       meta: {
-        action: 'findAdminById',
+        action: 'findUserById',
         userId,
       },
       error,
@@ -275,7 +275,7 @@ export const findAdminById = (
  * @returns err(DatabaseError) if database errors occurs whilst retrieving user
  * @returns err(MissingUserError) if user does not exist in the database
  */
-export const findAdminByEmail = (
+export const findUserByEmail = (
   email: string,
 ): ResultAsync<IUserSchema, MissingUserError | DatabaseError> => {
   return ResultAsync.fromPromise(
@@ -284,7 +284,7 @@ export const findAdminByEmail = (
       logger.error({
         message: 'Database find user email error',
         meta: {
-          action: 'findAdminByEmail',
+          action: 'findUserByEmail',
           email,
         },
         error,

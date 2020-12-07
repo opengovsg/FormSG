@@ -20,7 +20,7 @@ import getFormModel from '../../../models/form.server.model'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
-import { findAdminByEmail, findAdminById } from '../../user/user.service'
+import { findUserByEmail, findUserById } from '../../user/user.service'
 import { TransferOwnershipError } from '../form.errors'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
@@ -51,7 +51,7 @@ export const getDashboardForms = (
 ): ResultAsync<DashboardFormView[], MissingUserError | DatabaseError> => {
   // Step 1: Verify user exists.
   return (
-    findAdminById(userId)
+    findUserById(userId)
       // Step 2: Retrieve lists users are authorized to see.
       .andThen((admin) => {
         return ResultAsync.fromPromise(
@@ -246,10 +246,10 @@ export const transferFormOwnership = (
 
   return (
     // Step 1: Retrieve current owner of form to transfer.
-    findAdminById(currentForm.admin._id)
+    findUserById(currentForm.admin._id)
       .andThen((currentOwner) =>
         // Step 2: Retrieve user document for new owner.
-        findAdminByEmail(newOwnerEmail)
+        findUserByEmail(newOwnerEmail)
           .mapErr((error) => {
             logger.error({
               message:

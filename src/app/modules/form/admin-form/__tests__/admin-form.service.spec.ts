@@ -61,7 +61,7 @@ describe('admin-form.service', () => {
         },
       ]
       // Mock user admin success.
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         okAsync(mockUser as IUserSchema),
       )
       const getSpy = jest
@@ -80,7 +80,7 @@ describe('admin-form.service', () => {
     it('should return MissingUserError when user with userId does not exist', async () => {
       // Arrange
       const expectedError = new MissingUserError('not found')
-      MockUserService.findAdminById.mockReturnValueOnce(errAsync(expectedError))
+      MockUserService.findUserById.mockReturnValueOnce(errAsync(expectedError))
 
       // Act
       const actualResult = await getDashboardForms('any')
@@ -99,7 +99,7 @@ describe('admin-form.service', () => {
         _id: mockUserId,
       }
       // Mock user admin success.
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         okAsync(mockUser as IUserSchema),
       )
       const getSpy = jest
@@ -364,10 +364,10 @@ describe('admin-form.service', () => {
         transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
       } as unknown) as IFormSchema
 
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
-      MockUserService.findAdminByEmail.mockReturnValueOnce(
+      MockUserService.findUserByEmail.mockReturnValueOnce(
         okAsync(MOCK_NEW_OWNER),
       )
 
@@ -389,11 +389,11 @@ describe('admin-form.service', () => {
 
     it('should return TransferOwnershipError when new owner cannot be found in the database', async () => {
       // Arrange
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
       // Mock unable to retrieve new owner.
-      MockUserService.findAdminByEmail.mockReturnValueOnce(
+      MockUserService.findUserByEmail.mockReturnValueOnce(
         errAsync(new MissingUserError()),
       )
       const mockValidForm = ({
@@ -426,7 +426,7 @@ describe('admin-form.service', () => {
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
       } as unknown) as IFormSchema
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         errAsync(new MissingUserError()),
       )
 
@@ -450,7 +450,7 @@ describe('admin-form.service', () => {
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
       } as unknown) as IFormSchema
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
 
@@ -469,10 +469,10 @@ describe('admin-form.service', () => {
 
     it('should return DatabaseError when database error occurs whilst retrieving new owner', async () => {
       // Arrange
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
-      MockUserService.findAdminByEmail.mockReturnValueOnce(
+      MockUserService.findUserByEmail.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
       const mockValidForm = ({
@@ -496,11 +496,11 @@ describe('admin-form.service', () => {
 
     it('should return TransferOwnershipError when new owner is same as current owner', async () => {
       // Arrange
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
       // Same owner.
-      MockUserService.findAdminByEmail.mockReturnValueOnce(
+      MockUserService.findUserByEmail.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
       const mockValidForm = ({
@@ -548,10 +548,10 @@ describe('admin-form.service', () => {
         transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
       } as unknown) as IFormSchema
 
-      MockUserService.findAdminById.mockReturnValueOnce(
+      MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
       )
-      MockUserService.findAdminByEmail.mockReturnValueOnce(
+      MockUserService.findUserByEmail.mockReturnValueOnce(
         okAsync(MOCK_NEW_OWNER),
       )
 
