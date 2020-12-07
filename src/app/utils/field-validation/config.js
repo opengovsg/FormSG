@@ -12,7 +12,6 @@ const ALLOWED_VALIDATORS = [
   'MobileValidator',
   'RatingValidator',
   'TextValidator',
-  'DateValidator',
   'TableValidator',
   'AttachmentValidator',
   'CheckboxValidator',
