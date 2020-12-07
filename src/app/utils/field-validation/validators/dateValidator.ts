@@ -30,27 +30,55 @@ const dateFormatValidator: DateValidator = (response) => {
     : left(`DateValidator:\t answer is not a valid date`)
 }
 
-const makeDateValidator: DateValidatorConstructor = (dateField) => (
+const pastOnlyValidator: DateValidator = (response) => {
+  // Today takes two possible values - a min (in makeFutureOnlyValidator) and max (here), to account for all possible timezones
+  const todayMax = moment().utc().add(14, 'hours').startOf('day')
+  const { answer } = response
+  const answerDate = createMomentFromDateString(answer)
+
+  return answerDate.isAfter(todayMax)
+    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    : right(response)
+}
+
+const futureOnlyValidator: DateValidator = (response) => {
+  // Today takes two possible values - a min (here) and max (in makePastOnlyValidator), to account for all possible timezones
+  const todayMin = moment().utc().subtract(12, 'hours').startOf('day')
+  const { answer } = response
+  const answerDate = createMomentFromDateString(answer)
+
+  return answerDate.isBefore(todayMin)
+    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    : right(response)
+}
+
+const makeCustomDateValidator: DateValidatorConstructor = (dateField) => (
   response,
 ) => {
   const { answer } = response
   const answerDate = createMomentFromDateString(answer)
-  const { selectedDateValidation, customMinDate, customMaxDate } =
-    dateField.dateValidation || {}
 
-  const isFutureOnly = selectedDateValidation === DateSelectedValidation.NoPast
-  const isPastOnly = selectedDateValidation === DateSelectedValidation.NoFuture
+  const { customMinDate, customMaxDate } = dateField.dateValidation || {}
 
-  // Today takes two possible values - a min and max, to account for all possible timezones
-  const todayMin = moment().utc().subtract(12, 'hours').startOf('day')
-  const todayMax = moment().utc().add(14, 'hours').startOf('day')
-
-  return (isFutureOnly && answerDate.isBefore(todayMin)) ||
-    (isPastOnly && answerDate.isAfter(todayMax)) ||
-    (customMinDate && answerDate.isBefore(customMinDate)) ||
+  return (customMinDate && answerDate.isBefore(customMinDate)) ||
     (customMaxDate && answerDate.isAfter(customMaxDate))
     ? left(`DateValidator:\t answer does not pass date logic validation`)
     : right(response)
+}
+
+const makeDateValidator: DateValidatorConstructor = (dateField) => (
+  response,
+) => {
+  const { selectedDateValidation } = dateField.dateValidation || {}
+  switch (selectedDateValidation) {
+    case DateSelectedValidation.NoFuture:
+      return pastOnlyValidator(response)
+    case DateSelectedValidation.NoPast:
+      return futureOnlyValidator(response)
+    case DateSelectedValidation.Custom:
+      return makeCustomDateValidator(dateField)(response)
+  }
+  return right(response)
 }
 
 export const constructDateValidator: DateValidatorConstructor = (dateField) =>
