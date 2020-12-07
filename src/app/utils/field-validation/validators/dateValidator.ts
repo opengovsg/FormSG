@@ -6,6 +6,8 @@ import { IDateField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 import { ISingleAnswerResponse } from 'src/types/response'
 
+import { DateSelectedValidation } from '../../../../shared/constants'
+
 import { notEmptySingleAnswerResponse } from './common'
 
 type DateValidator = ResponseValidator<ISingleAnswerResponse>
@@ -36,8 +38,8 @@ const makeDateValidator: DateValidatorConstructor = (dateField) => (
   const { selectedDateValidation, customMinDate, customMaxDate } =
     dateField.dateValidation || {}
 
-  const isFutureOnly = selectedDateValidation === 'Disallow past dates'
-  const isPastOnly = selectedDateValidation === 'Disallow future dates'
+  const isFutureOnly = selectedDateValidation === DateSelectedValidation.NoPast
+  const isPastOnly = selectedDateValidation === DateSelectedValidation.NoFuture
 
   // Today takes two possible values - a min and max, to account for all possible timezones
   const todayMin = moment().utc().subtract(12, 'hours').startOf('day')

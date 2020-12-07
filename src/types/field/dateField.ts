@@ -1,10 +1,6 @@
-import { IField, IFieldSchema } from './baseField'
+import { DateSelectedValidation } from '../../shared/constants'
 
-export enum DateSelectedValidation {
-  NoPast = 'Disallow past dates',
-  NoFuture = 'Disallow future dates',
-  Custom = 'Custom date range',
-}
+import { IField, IFieldSchema } from './baseField'
 
 export type DateValidationOptions = {
   customMaxDate: Date | null
