@@ -19,6 +19,10 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Initialises a Busboy object to receive the submission stream
+ * @param headers HTTP request headers
+ */
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
 ): Result<busboy.Busboy, InitialiseMultipartReceiverError> => {
@@ -44,6 +48,11 @@ export const createMultipartReceiver = (
   }
 }
 
+/**
+ * Parses the incoming submission stream into responses together with
+ * attachment content for attachment fields.
+ * @param busboy Busboy receiver object
+ */
 export const configureMultipartReceiver = (
   busboy: busboy.Busboy,
 ): ResultAsync<ParsedMultipartForm, MultipartError> => {
