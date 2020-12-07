@@ -65,7 +65,7 @@ export const mapRouteError = (
       }
     case TransferOwnershipError:
       return {
-        statusCode: StatusCodes.CONFLICT,
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
     case MalformedParametersError:
