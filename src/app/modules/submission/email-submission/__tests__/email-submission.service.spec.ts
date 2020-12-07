@@ -13,6 +13,12 @@ import {
   generateNewTableResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
+import {
+  ATTACHMENT_PREFIX,
+  MYINFO_PREFIX,
+  TABLE_PREFIX,
+  VERIFIED_PREFIX,
+} from '../email-submission.constants'
 import * as EmailSubmissionService from '../email-submission.service'
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
@@ -87,8 +93,8 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual({
         jsonData: [
-          { question: `[table] ${question}`, answer: firstRow },
-          { question: `[table] ${question}`, answer: secondRow },
+          { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
+          { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
         ],
         autoReplyData: [
           { question, answerTemplate: [firstRow] },
@@ -96,16 +102,16 @@ describe('email-submission.service', () => {
         ],
         formData: [
           {
-            question: `[table] ${question}`,
+            question: `${TABLE_PREFIX}${question}`,
             answer: firstRow,
             answerTemplate: [firstRow],
-            fieldType: 'table',
+            fieldType: BasicField.Table,
           },
           {
-            question: `[table] ${question}`,
+            question: `${TABLE_PREFIX}${question}`,
             answer: secondRow,
             answerTemplate: [secondRow],
-            fieldType: 'table',
+            fieldType: BasicField.Table,
           },
         ],
       })
@@ -126,7 +132,12 @@ describe('email-submission.service', () => {
         jsonData: [{ question, answer }],
         autoReplyData: [{ question, answerTemplate: [answer] }],
         formData: [
-          { question, answer, answerTemplate: [answer], fieldType: 'checkbox' },
+          {
+            question,
+            answer,
+            answerTemplate: [answer],
+            fieldType: BasicField.Checkbox,
+          },
         ],
       })
     })
@@ -143,14 +154,14 @@ describe('email-submission.service', () => {
       const answer = response.answer
 
       expect(emailData).toEqual({
-        jsonData: [{ question: `[attachment] ${question}`, answer }],
+        jsonData: [{ question: `${ATTACHMENT_PREFIX}${question}`, answer }],
         autoReplyData: [{ question, answerTemplate: [answer] }],
         formData: [
           {
-            question: `[attachment] ${question}`,
+            question: `${ATTACHMENT_PREFIX}${question}`,
             answer,
             answerTemplate: [answer],
-            fieldType: 'attachment',
+            fieldType: BasicField.Attachment,
           },
         ],
       })
@@ -177,7 +188,7 @@ describe('email-submission.service', () => {
             question,
             answer,
             answerTemplate: answer.split('\n'),
-            fieldType: 'textfield',
+            fieldType: BasicField.ShortText,
           },
         ],
       })
@@ -196,14 +207,14 @@ describe('email-submission.service', () => {
       const answer = answerArray[0].join(',')
 
       expect(emailData).toEqual({
-        jsonData: [{ question: `[table] ${question}`, answer }],
+        jsonData: [{ question: `${TABLE_PREFIX}${question}`, answer }],
         autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
         formData: [
           {
-            question: `[table] ${question}`,
+            question: `${TABLE_PREFIX}${question}`,
             answer,
             answerTemplate: answer.split('\n'),
-            fieldType: 'table',
+            fieldType: BasicField.Table,
           },
         ],
       })
@@ -229,7 +240,7 @@ describe('email-submission.service', () => {
             question,
             answer,
             answerTemplate: answer.split('\n'),
-            fieldType: 'checkbox',
+            fieldType: BasicField.Checkbox,
           },
         ],
       })
@@ -253,10 +264,10 @@ describe('email-submission.service', () => {
         autoReplyData: [{ question, answerTemplate: [answer] }],
         formData: [
           {
-            question: `[verified] ${question}`,
+            question: `${VERIFIED_PREFIX}${question}`,
             answer,
             answerTemplate: [answer],
-            fieldType: 'email',
+            fieldType: BasicField.Email,
           },
         ],
       })
@@ -280,10 +291,10 @@ describe('email-submission.service', () => {
         autoReplyData: [{ question, answerTemplate: [answer] }],
         formData: [
           {
-            question: `[MyInfo] ${question}`,
+            question: `${MYINFO_PREFIX}${question}`,
             answer,
             answerTemplate: [answer],
-            fieldType: 'textfield',
+            fieldType: BasicField.ShortText,
           },
         ],
       })
