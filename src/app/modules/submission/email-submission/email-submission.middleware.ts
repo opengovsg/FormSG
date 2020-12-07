@@ -1,12 +1,10 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
-import { ConflictError } from '../submission.errors'
 import { getProcessedResponses } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
 
@@ -124,10 +122,7 @@ export const validateEmailSubmission: RequestHandler<
     })
     .mapErr((error) => {
       logger.error({
-        message:
-          error instanceof ConflictError
-            ? 'Conflict - Form has been updated'
-            : 'Error processing responses',
+        message: 'Error processing responses',
         meta: {
           action: 'validateEmailSubmission',
           ...createReqMeta(req),
@@ -135,15 +130,9 @@ export const validateEmailSubmission: RequestHandler<
         },
         error,
       })
-      if (error instanceof ConflictError) {
-        return res.status(error.status).json({
-          message:
-            'The form has been updated. Please refresh and submit again.',
-        })
-      }
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
       })
     })
 }

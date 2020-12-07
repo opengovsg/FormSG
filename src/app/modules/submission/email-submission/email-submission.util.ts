@@ -10,6 +10,11 @@ import {
   MapRouteError,
 } from '../../../../types'
 import {
+  ConflictError,
+  ProcessingError,
+  ValidateFieldError,
+} from '../submission.errors'
+import {
   ProcessedCheckboxResponse,
   ProcessedTableResponse,
 } from '../submission.types'
@@ -21,7 +26,9 @@ import {
   VERIFIED_PREFIX,
 } from './email-submission.constants'
 import {
+  AttachmentTooLargeError,
   InitialiseMultipartReceiverError,
+  InvalidFileExtensionError,
   MultipartError,
 } from './email-submission.errors'
 import {
@@ -261,10 +268,33 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: 'Submission could not be parsed.',
       }
+    case InvalidFileExtensionError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Some files were invalid. Try uploading another file.',
+      }
+    case AttachmentTooLargeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Please keep the size of your attachments under 7MB.',
+      }
+    case ConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage:
+          'The form has been updated. Please refresh and submit again.',
+      }
+    case ProcessingError:
+    case ValidateFieldError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+      }
     default:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: 'Something went wrong. Please try again.',
+        errorMessage: 'Something went wrong. Please refresh and try again.',
       }
   }
 }
