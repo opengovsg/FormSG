@@ -16,12 +16,7 @@ const {
   aws: { logoBucketUrl },
 } = require('../../config/config')
 const { EditFieldActions } = require('../../shared/constants')
-const {
-  getEncryptedFormModel,
-  getEmailFormModel,
-} = require('../models/form.server.model')
 const getSubmissionModel = require('../models/submission.server.model').default
-const { ResponseMode } = require('../../types')
 
 // Export individual functions (i.e. create, delete)
 // and makeModule function that takes in connection object
@@ -33,17 +28,6 @@ module.exports = _.assign({ makeModule }, makeModule(mongoose))
  * @return  {Object} functions - admin controller functions
  */
 function makeModule(connection) {
-  /**
-   * Get the model depending on responseMode
-   * @param {*} responseMode
-   * @returns the encryptSchema Form if responseMode is 'encrypt' else emailSchema Form
-   */
-  function getDiscriminatedFormModel(responseMode) {
-    return responseMode === ResponseMode.Encrypt
-      ? getEncryptedFormModel(connection)
-      : getEmailFormModel(connection)
-  }
-
   /**
    * @deprecated
    * Note that this function has already been refactored in transformMongoError
