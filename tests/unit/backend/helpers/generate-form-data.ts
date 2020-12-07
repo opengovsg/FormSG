@@ -1,4 +1,4 @@
-import { ObjectID } from 'bson'
+import { ObjectId } from 'bson'
 
 import {
   ProcessedAttachmentResponse,
@@ -25,9 +25,9 @@ export const generateDefaultField = (
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
-    _id: new ObjectID().toHexString(),
+    _id: new ObjectId().toHexString(),
     description: `${fieldType} description`,
-    globalId: new ObjectID().toHexString(),
+    globalId: new ObjectId().toHexString(),
     fieldType,
     required: true,
     disabled: false,
@@ -108,6 +108,33 @@ export const generateSingleAnswerResponse = (
       BasicField,
       BasicField.Table | BasicField.Checkbox
     >,
+    isVisible: true,
+  }
+}
+
+export const generateNewSingleAnswerResponse = (
+  fieldType: BasicField,
+  customParams?: Partial<ProcessedSingleAnswerResponse>,
+): ProcessedSingleAnswerResponse => {
+  if (
+    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
+      fieldType,
+    )
+  ) {
+    throw new Error(
+      'Call the custom response generator functions for attachment, table and checkbox.',
+    )
+  }
+  return {
+    _id: new ObjectId().toHexString(),
+    question: `${fieldType} question`,
+    answer: `${fieldType} answer`,
+    fieldType: fieldType as Exclude<
+      BasicField,
+      BasicField.Table | BasicField.Checkbox
+    >,
+    isVisible: true,
+    ...customParams,
   }
 }
 
@@ -122,6 +149,20 @@ export const generateAttachmentResponse = (
   fieldType: BasicField.Attachment,
   filename,
   content,
+  isVisible: true,
+})
+
+export const generateNewAttachmentResponse = (
+  customParams?: Partial<ProcessedAttachmentResponse>,
+): ProcessedAttachmentResponse => ({
+  _id: new ObjectId().toHexString(),
+  question: `Attachment question`,
+  answer: 'Attachment answer',
+  fieldType: BasicField.Attachment,
+  filename: 'Attachment filename',
+  content: Buffer.from('Attachment content'),
+  isVisible: true,
+  ...customParams,
 })
 
 export const generateCheckboxResponse = (
@@ -132,6 +173,18 @@ export const generateCheckboxResponse = (
   question: field.title,
   answerArray: answerArray ?? [field.fieldOptions[0]],
   fieldType: BasicField.Checkbox,
+  isVisible: true,
+})
+
+export const generateNewCheckboxResponse = (
+  customParams?: Partial<ProcessedCheckboxResponse>,
+): ProcessedCheckboxResponse => ({
+  _id: new ObjectId().toHexString(),
+  question: `Checkbox question`,
+  answerArray: ['Checkbox answer 1', 'Checkbox answer 2'],
+  fieldType: BasicField.Checkbox,
+  isVisible: true,
+  ...customParams,
 })
 
 export const generateTableResponse = (
@@ -156,5 +209,20 @@ export const generateTableResponse = (
     question: field.title,
     answerArray,
     fieldType: BasicField.Table,
+    isVisible: true,
   }
 }
+
+export const generateNewTableResponse = (
+  customParams?: Partial<ProcessedTableResponse>,
+): ProcessedTableResponse => ({
+  _id: new ObjectId().toHexString(),
+  question: 'Table question',
+  answerArray: [
+    ['Table 1', 'Table 2'],
+    ['Table 3', 'Table 4'],
+  ],
+  fieldType: BasicField.Table,
+  isVisible: true,
+  ...customParams,
+})
