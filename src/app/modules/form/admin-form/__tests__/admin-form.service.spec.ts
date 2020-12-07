@@ -56,10 +56,10 @@ describe('admin-form.service', () => {
     it('should return list of forms user is authorized to view', async () => {
       // Arrange
       const mockUserId = 'mockUserId'
-      const mockUser: Partial<IUserSchema> = {
+      const mockUser = {
         email: 'MOCK_EMAIL@example.com',
         _id: mockUserId,
-      }
+      } as IUserSchema
       const mockDashboardForms: DashboardFormView[] = [
         {
           admin: {} as IPopulatedUser,
@@ -108,10 +108,10 @@ describe('admin-form.service', () => {
     it('should return DatabaseError when error occurs whilst querying the database', async () => {
       // Arrange
       const mockUserId = 'mockUserId'
-      const mockUser: Partial<IUserSchema> = {
+      const mockUser = {
         email: 'MOCK_EMAIL@example.com',
         _id: mockUserId,
-      }
+      } as IUserSchema
       // Mock user admin success.
       MockUserService.findAdminById.mockReturnValueOnce(
         okAsync(mockUser as IUserSchema),
@@ -160,6 +160,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
@@ -207,6 +209,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isErr()).toEqual(true)
@@ -246,6 +250,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
@@ -293,6 +299,8 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualResult.isErr()).toEqual(true)

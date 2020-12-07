@@ -20,7 +20,6 @@ const {
   getEncryptedFormModel,
   getEmailFormModel,
 } = require('../models/form.server.model')
-const getFormModel = require('../models/form.server.model').default
 const getSubmissionModel = require('../models/submission.server.model').default
 const { ResponseMode } = require('../../types')
 
@@ -315,68 +314,6 @@ function makeModule(connection) {
       form.save(function (err, savedForm) {
         if (err) return respondOnMongoError(req, res, err)
         return res.json(savedForm)
-      })
-    },
-    /**
-     * Duplicates an entire form from list forms page
-     * Duplicating non-admin form, makes you admin of duplicated form
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    duplicate: function (req, res) {
-      let Form = getFormModel(connection)
-      let id = req.form._id
-      Form.findById({ _id: id }).exec(function (err, form) {
-        if (err) {
-          return respondOnMongoError(req, res, err)
-        } else if (!form) {
-          return res
-            .status(StatusCodes.NOT_FOUND)
-            .json({ message: 'Form not found for duplication' })
-        } else {
-          let responseMode = req.body.responseMode || 'email'
-          // Custom properties on the new form
-          const overrideProps = {
-            responseMode,
-            admin: req.session.user._id,
-            title: req.body.title,
-            isNew: true,
-          }
-          if (responseMode === 'encrypt') {
-            overrideProps.publicKey = req.body.publicKey
-          } else {
-            if (req.body.emails) {
-              overrideProps.emails = req.body.emails
-            }
-          }
-          if (req.body.isTemplate) {
-            overrideProps.customLogo = undefined
-          }
-
-          // Prevent buttonLink from being copied over if same as formHash (for old forms)
-          if (form.endPage && form.endPage.buttonLink) {
-            let oldFormHash = '#!/' + id
-            if (form.endPage.buttonLink === oldFormHash) {
-              overrideProps.endPage = form.endPage
-              delete overrideProps.endPage.buttonLink
-            }
-          }
-
-          const onError = (error) => respondOnMongoError(req, res, error)
-
-          const onSuccess = (successForm) => {
-            const dupedDashView = successForm.getDashboardView(req.session.user)
-            return res.json(dupedDashView)
-          }
-
-          const DiscriminatedForm = getDiscriminatedFormModel(responseMode)
-          const discriminatedForm = new DiscriminatedForm(
-            form.getDuplicateParams(overrideProps),
-          )
-          discriminatedForm.save(function (sErr, duplicated) {
-            return sErr ? onError(sErr) : onSuccess(duplicated)
-          })
-        }
       })
     },
     /**

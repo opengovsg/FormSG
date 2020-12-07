@@ -118,6 +118,8 @@ describe('public-form.service', () => {
         ],
         twitterImage: `${MOCK_METATAGS_PARAMS.imageBaseUrl}/public/modules/core/img/og/logo-vertical-color.png`,
       }
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       expect(findByIdSpy).toHaveBeenCalledWith(MOCK_FORM_ID)
       expect(createResult.isOk()).toEqual(true)
       expect(createResult._unsafeUnwrap()).toEqual(expectedResults)
@@ -135,6 +137,8 @@ describe('public-form.service', () => {
       )
 
       // Assert
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       expect(findByIdSpy).toHaveBeenCalledWith(MOCK_FORM_ID)
       expect(createResult.isErr()).toEqual(true)
       expect(createResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
@@ -152,6 +156,8 @@ describe('public-form.service', () => {
       )
 
       // Assert
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       expect(findByIdSpy).toHaveBeenCalledWith(MOCK_FORM_ID)
       expect(createResult.isErr()).toEqual(true)
       expect(createResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)

@@ -97,6 +97,7 @@ export const retrieveFormById = (
 /**
  * Method to ensure given form is available to the public.
  * @param form the form to check
+ * @param errMessageOverride optional, overrides error message with given string
  * @returns ok(true) if form is public
  * @returns err(FormDeletedError) if form has been deleted
  * @returns err(PrivateFormError) if form is private
@@ -104,6 +105,7 @@ export const retrieveFormById = (
  */
 export const isFormPublic = (
   form: IPopulatedForm,
+  errMessageOverride?: string,
 ): Result<true, FormDeletedError | PrivateFormError | ApplicationError> => {
   if (!form.status) {
     return err(new ApplicationError())
@@ -113,9 +115,11 @@ export const isFormPublic = (
     case Status.Public:
       return ok(true)
     case Status.Archived:
-      return err(new FormDeletedError())
+      return err(new FormDeletedError(errMessageOverride))
     case Status.Private:
-      return err(new PrivateFormError(form.inactiveMessage))
+      return err(
+        new PrivateFormError(errMessageOverride ?? form.inactiveMessage),
+      )
     default:
       return assertUnreachable(form.status)
   }
