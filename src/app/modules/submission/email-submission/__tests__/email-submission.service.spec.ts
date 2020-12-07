@@ -1,5 +1,6 @@
 import { pick } from 'lodash'
 
+import { types as basicTypes } from 'src/shared/resources/basic'
 import { BasicField, MyInfoAttribute } from 'src/types'
 
 import {
@@ -12,21 +13,10 @@ import {
 import { ProcessedSingleAnswerResponse } from '../../submission.types'
 import * as EmailSubmissionService from '../email-submission.service'
 
-const ALL_SINGLE_SUBMITTED_RESPONSES = [
-  generateNewSingleAnswerResponse(BasicField.Email),
-  generateNewSingleAnswerResponse(BasicField.Mobile),
-  generateNewSingleAnswerResponse(BasicField.HomeNo),
-  generateNewSingleAnswerResponse(BasicField.Number),
-  generateNewSingleAnswerResponse(BasicField.Decimal),
-  generateNewSingleAnswerResponse(BasicField.ShortText),
-  generateNewSingleAnswerResponse(BasicField.LongText),
-  generateNewSingleAnswerResponse(BasicField.Dropdown),
-  generateNewSingleAnswerResponse(BasicField.YesNo),
-  generateNewSingleAnswerResponse(BasicField.Radio),
-  generateNewSingleAnswerResponse(BasicField.Date),
-  generateNewSingleAnswerResponse(BasicField.Rating),
-  generateNewSingleAnswerResponse(BasicField.Nric),
-]
+const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
+  // Attachments are special cases, requiring filename and content
+  .filter((t) => !t.answerArray && t.name !== BasicField.Attachment)
+  .map((t) => generateNewSingleAnswerResponse(t.name))
 
 const generateSingleAnswerJson = (response: ProcessedSingleAnswerResponse) =>
   pick(response, ['question', 'answer'])
