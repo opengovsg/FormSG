@@ -108,15 +108,4 @@ describe('Attachment validation', () => {
       expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
   })
-
-  it('should disallow responses submitted for hidden fields', () => {
-    const formField = makeField(fieldId, '3')
-    const response = makeResponse(fieldId, Buffer.alloc(2000000))
-    response.isVisible = false
-    const validateResult = validateField(formId, formField, response)
-    expect(validateResult.isErr()).toBe(true)
-    expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
-    )
-  })
 })

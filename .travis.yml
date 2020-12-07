@@ -82,6 +82,7 @@ jobs:
         - export ELASTIC_BEANSTALK_LABEL="$TAG-$(env TZ=Asia/Singapore date "+%Y%m%d%H%M%S")"
       deploy:
         - provider: elasticbeanstalk
+          skip_cleanup: true
           access_key_id: $AWS_ACCESS_KEY_ID
           secret_access_key: $AWS_SECRET_ACCESS_KEY
           region: $AWS_REGION
@@ -93,6 +94,7 @@ jobs:
             branch: $UAT_BRANCH
 
         - provider: elasticbeanstalk
+          skip_cleanup: true
           access_key_id: $AWS_ACCESS_KEY_ID
           secret_access_key: $AWS_SECRET_ACCESS_KEY
           region: $AWS_REGION
@@ -104,6 +106,7 @@ jobs:
             branch: $STAGING_BRANCH
 
         - provider: elasticbeanstalk
+          skip_cleanup: true
           access_key_id: $AWS_ACCESS_KEY_ID
           secret_access_key: $AWS_SECRET_ACCESS_KEY
           region: $AWS_REGION
@@ -115,6 +118,7 @@ jobs:
             branch: $STAGING_ALT_BRANCH
 
         - provider: elasticbeanstalk
+          skip_cleanup: true
           access_key_id: $AWS_ACCESS_KEY_ID
           secret_access_key: $AWS_SECRET_ACCESS_KEY
           region: $AWS_REGION

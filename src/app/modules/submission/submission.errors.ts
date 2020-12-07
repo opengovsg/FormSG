@@ -40,7 +40,7 @@ export class ProcessingError extends ApplicationError {
  * A custom error class returned when given submission has field validation failure
  */
 export class ValidateFieldError extends ApplicationError {
-  constructor(message = 'Error validating field.', status = 400) {
-    super(message, status)
+  constructor(message = 'Error validating field.') {
+    super(message)
   }
 }

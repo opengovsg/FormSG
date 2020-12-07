@@ -22,10 +22,8 @@ export interface ICheckboxResponse extends IBaseResponse {
   answerArray: string[]
 }
 
-export type ITableRow = Array<string>
-
 export interface ITableResponse extends IBaseResponse {
-  answerArray: ITableRow[]
+  answerArray: string[][]
 }
 
 export type FieldResponse =
