@@ -1,4 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
 import { Merge } from 'type-fest'
@@ -12,6 +13,7 @@ import {
 import {
   AuthType,
   DashboardFormView,
+  FormLogoState,
   IFieldSchema,
   IForm,
   IFormSchema,
@@ -30,13 +32,16 @@ import {
   DatabaseValidationError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
-import { findAdminById } from '../../user/user.service'
+import * as UserService from '../../user/user.service'
+import { FormNotFoundError } from '../form.errors'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
 } from './admin-form.errors'
+import { DuplicateFormBody } from './admin-form.types'
+import { processDuplicateOverrideProps } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -60,7 +65,7 @@ export const getDashboardForms = (
 ): ResultAsync<DashboardFormView[], MissingUserError | DatabaseError> => {
   // Step 1: Verify user exists.
   return (
-    findAdminById(userId)
+    UserService.findAdminById(userId)
       // Step 2: Retrieve lists users are authorized to see.
       .andThen((admin) => {
         return ResultAsync.fromPromise(
@@ -261,5 +266,50 @@ export const createForm = (
     })
 
     return transformMongoError(error)
+  })
+}
+
+/**
+ * Duplicates given formId and replace owner with newAdminId.
+ * @param originalForm the form to be duplicated
+ * @param newAdminId the id of the admin of the duplicated form
+ * @param overrideParams params to override in the duplicated form; e.g. the new emails or public key of the form.
+ * @returns the newly created duplicated form
+ */
+export const duplicateForm = (
+  originalForm: IFormSchema,
+  newAdminId: string,
+  overrideParams: DuplicateFormBody,
+): ResultAsync<IFormSchema, FormNotFoundError | DatabaseError> => {
+  const overrideProps = processDuplicateOverrideProps(
+    overrideParams,
+    newAdminId,
+  )
+
+  // Set startPage.logo to default irregardless.
+  overrideProps.startPage = {
+    ...originalForm.startPage,
+    logo: { state: FormLogoState.Default },
+  }
+  // Prevent buttonLink from being copied over if buttonLink is the default
+  // form hash.
+  if (originalForm.endPage?.buttonLink === `#!/${originalForm._id}`) {
+    overrideProps.endPage = omit(originalForm.endPage, 'buttonLink')
+  }
+
+  const duplicateParams = originalForm.getDuplicateParams(overrideProps)
+
+  return ResultAsync.fromPromise(FormModel.create(duplicateParams), (error) => {
+    logger.error({
+      message: 'Error encountered while duplicating form',
+      meta: {
+        action: 'duplicateForm',
+        duplicateParams,
+        newAdminId,
+      },
+      error,
+    })
+
+    return new DatabaseError(getMongoErrorMessage(error))
   })
 }

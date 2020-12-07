@@ -21,7 +21,8 @@ const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
 const SpcpController = require('../modules/spcp/spcp.controller')
-const { ResponseMode, BasicField } = require('../../types')
+const { BasicField, ResponseMode } = require('../../types')
+
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
 const emailValOpts = {
@@ -94,41 +95,7 @@ module.exports = function (app) {
   app
     .route('/adminform')
     .get(withUserAuthentication, AdminFormController.handleListDashboardForms)
-    .post(
-      withUserAuthentication,
-      celebrate({
-        [Segments.BODY]: {
-          form: Joi.object()
-            .keys({
-              // Require valid responsesMode field.
-              responseMode: Joi.string()
-                .valid(...Object.values(ResponseMode))
-                .required(),
-              // Require title field.
-              title: Joi.string().min(4).max(200).required(),
-              // Require emails string (for backwards compatibility) or string
-              // array if form to be created in Email mode.
-              emails: Joi.alternatives()
-                .try(Joi.array().items(Joi.string()), Joi.string())
-                .when('responseMode', {
-                  is: ResponseMode.Email,
-                  then: Joi.required(),
-                }),
-              // Require publicKey field if form to be created in Storage mode.
-              publicKey: Joi.string()
-                .allow('')
-                .when('responseMode', {
-                  is: ResponseMode.Encrypt,
-                  then: Joi.string().required().disallow(''),
-                }),
-            })
-            .required()
-            // Allow other form schema keys to be passed for form creation.
-            .unknown(true),
-        },
-      }),
-      AdminFormController.handleCreateForm,
-    )
+    .post(withUserAuthentication, adminForms.create)
 
   /**
    * @typedef AdminForm
@@ -198,13 +165,38 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform')
-    .get(
-      authActiveForm(PermissionLevel.Read),
-      forms.read(forms.REQUEST_TYPE.ADMIN),
-    )
+    .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
     .put(authActiveForm(PermissionLevel.Write), adminForms.update)
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
-    .post(authActiveForm(PermissionLevel.Read), adminForms.duplicate)
+    .post(
+      withUserAuthentication,
+      celebrate({
+        [Segments.BODY]: {
+          // Require valid responsesMode field.
+          responseMode: Joi.string()
+            .valid(...Object.values(ResponseMode))
+            .required(),
+          // Require title field.
+          title: Joi.string().min(4).max(200).required(),
+          // Require emails string (for backwards compatibility) or string array
+          // if form to be duplicated in Email mode.
+          emails: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()), Joi.string())
+            .when('responseMode', {
+              is: ResponseMode.Email,
+              then: Joi.required(),
+            }),
+          // Require publicKey field if form to be duplicated in Storage mode.
+          publicKey: Joi.string()
+            .allow('')
+            .when('responseMode', {
+              is: ResponseMode.Encrypt,
+              then: Joi.string().required().disallow(''),
+            }),
+        },
+      }),
+      AdminFormController.handleDuplicateAdminForm,
+    )
 
   /**
    * Return the template form to the user.

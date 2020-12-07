@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { IPopulatedForm, Status } from '../../../../types'
+import { IPopulatedForm, ResponseMode, Status } from '../../../../types'
 import { assertUnreachable } from '../../../utils/assert-unreachable'
 import {
   ApplicationError,
@@ -24,7 +24,12 @@ import {
   CreatePresignedUrlError,
   InvalidFileTypeError,
 } from './admin-form.errors'
-import { AssertFormFn, PermissionLevel } from './admin-form.types'
+import {
+  AssertFormFn,
+  DuplicateFormBody,
+  OverrideProps,
+  PermissionLevel,
+} from './admin-form.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -195,4 +200,35 @@ export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
     default:
       return assertUnreachable(level)
   }
+}
+
+/**
+ * Reshapes given duplicate params into override props.
+ * @param params the parameters to reshape
+ * @param newAdminId the new admin id to inject
+ *
+ * @returns override props for use in duplicating a form
+ */
+export const processDuplicateOverrideProps = (
+  params: DuplicateFormBody,
+  newAdminId: string,
+): OverrideProps => {
+  const { responseMode, title } = params
+
+  const overrideProps: OverrideProps = {
+    responseMode,
+    title,
+    admin: newAdminId,
+  }
+
+  switch (params.responseMode) {
+    case ResponseMode.Encrypt:
+      overrideProps.publicKey = params.publicKey
+      break
+    case ResponseMode.Email:
+      overrideProps.emails = params.emails
+      break
+  }
+
+  return overrideProps
 }

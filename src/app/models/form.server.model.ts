@@ -3,7 +3,6 @@ import { compact, filter, pick, uniq } from 'lodash'
 import { Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
-import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
 import {
   AuthType,
   BasicField,
@@ -15,17 +14,18 @@ import {
   IEmailFormSchema,
   IEncryptedFormModel,
   IEncryptedFormSchema,
-  IForm,
   IFormModel,
   IFormSchema,
   IPopulatedForm,
   LogicType,
   Permission,
+  PickDuplicateForm,
   ResponseMode,
   Status,
 } from '../../types'
-import { IUserSchema } from '../../types/user'
+import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
+import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
@@ -390,13 +390,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getMainFields = function (this: IFormSchema) {
-    const form = {
+  FormSchema.methods.getDashboardView = function (
+    this: IFormSchema,
+    admin: IPopulatedUser,
+  ) {
+    return {
       _id: this._id,
       title: this.title,
       status: this.status,
+      lastModified: this.lastModified,
+      responseMode: this.responseMode,
+      admin,
     }
-    return form
   }
 
   // Method to return myInfo attributes
@@ -409,14 +414,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return compact(uniq(this.form_fields?.map((field) => field.myInfo?.attr)))
   }
 
-  // Return a duplicate form object with the given properties
-  FormSchema.methods.duplicate = function (
+  // Return essential form creation parameters with the given properties
+  FormSchema.methods.getDuplicateParams = function (
     this: IFormSchema,
-    overrideProps: Partial<IForm>,
+    overrideProps: OverrideProps,
   ) {
-    const newForm = pick(this, FORM_DUPLICATE_KEYS)
-    Object.assign(newForm, overrideProps)
-    return newForm
+    const newForm = pick(this, [
+      'form_fields',
+      'form_logics',
+      'startPage',
+      'endPage',
+      'authType',
+      'inactiveMessage',
+      'responseMode',
+    ]) as PickDuplicateForm
+    return { ...newForm, ...overrideProps }
   }
 
   // Archives form.
@@ -484,13 +496,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormModel,
     formId: string,
   ): Promise<IPopulatedForm | null> {
-    const data: IPopulatedForm | null = await this.findById(formId).populate({
+    return this.findById(formId).populate({
       path: 'admin',
+      // Remove irrelevant keys from populated fields of form admin and agency.
+      select: '-__v -created -lastModified -updatedAt -lastAccessed',
       populate: {
         path: 'agency',
+        select: '-__v -created -lastModified -updatedAt',
       },
     })
-    return data
   }
 
   // Deactivate form by ID
@@ -519,7 +533,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         .where('status')
         .ne(Status.Archived)
         // Project selected fields.
-        .select('_id title admin lastModified status form_fields')
+        // `responseMode` is a discriminator key and is returned regardless,
+        // selection is made for explicitness.
+        // `_id` is also returned regardless and selection is made for
+        // explicitness.
+        .select('_id title admin lastModified status responseMode')
         .sort('-lastModified')
         .populate({
           path: 'admin',

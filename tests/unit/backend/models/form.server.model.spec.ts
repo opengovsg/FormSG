@@ -947,7 +947,6 @@ describe('Form Model', () => {
         'title',
         'lastModified',
         'status',
-        'form_fields',
         'responseMode',
       ]
       const expected = orderBy(
@@ -1031,6 +1030,76 @@ describe('Form Model', () => {
 
         // Assert
         expect(actual.status).toEqual(Status.Archived)
+      })
+    })
+
+    describe('getDashboardView', () => {
+      it('should return dashboard view of email mode form', async () => {
+        // Arrange
+        const form = await Form.create<IEmailForm>({
+          admin: populatedAdmin._id,
+          emails: [populatedAdmin.email],
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          status: Status.Private,
+        })
+        expect(form).toBeDefined()
+        // Add additional user.
+        const diffPreload = await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'another',
+          mailDomain: MOCK_ADMIN_DOMAIN,
+        })
+        const diffPopulatedAdmin = merge(diffPreload.user, {
+          agency: diffPreload.agency,
+        })
+
+        // Act
+        const actual = form.getDashboardView(diffPopulatedAdmin)
+
+        // Assert
+        expect(actual).toEqual({
+          _id: form._id,
+          title: form.title,
+          status: form.status,
+          lastModified: form.lastModified,
+          responseMode: form.responseMode,
+          admin: diffPopulatedAdmin,
+        })
+      })
+
+      it('should return dashboard view of encrypt mode form', async () => {
+        // Arrange
+        const form = await Form.create<IEncryptedForm>({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Encrypt,
+          publicKey: 'some public key',
+          title: 'mock email form',
+          status: Status.Private,
+        })
+        expect(form).toBeDefined()
+        // Add additional user.
+        const diffPreload = await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'another-thing',
+          mailDomain: MOCK_ADMIN_DOMAIN,
+        })
+        const diffPopulatedAdmin = merge(diffPreload.user, {
+          agency: diffPreload.agency,
+        })
+
+        // Act
+        const actual = form.getDashboardView(diffPopulatedAdmin)
+
+        // Assert
+        expect(actual).toEqual({
+          _id: form._id,
+          title: form.title,
+          status: form.status,
+          lastModified: form.lastModified,
+          responseMode: form.responseMode,
+          admin: diffPopulatedAdmin,
+        })
       })
     })
   })
