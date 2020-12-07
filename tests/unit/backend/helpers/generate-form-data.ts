@@ -1,4 +1,4 @@
-import { ObjectID, ObjectId } from 'bson'
+import { ObjectId } from 'bson'
 
 import {
   ProcessedAttachmentResponse,
@@ -25,9 +25,9 @@ export const generateDefaultField = (
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
-    _id: new ObjectID().toHexString(),
+    _id: new ObjectId().toHexString(),
     description: `${fieldType} description`,
-    globalId: new ObjectID().toHexString(),
+    globalId: new ObjectId().toHexString(),
     fieldType,
     required: true,
     disabled: false,
