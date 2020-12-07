@@ -347,7 +347,7 @@ module.exports = function (app) {
     authActiveForm(PermissionLevel.Read),
     emailSubmissions.receiveEmailSubmissionUsingBusBoy,
     celebrate({
-      body: Joi.object({
+      [Segments.BODY]: Joi.object({
         responses: Joi.array()
           .items(
             Joi.object()
@@ -406,7 +406,7 @@ module.exports = function (app) {
     authActiveForm(PermissionLevel.Read),
     encryptSubmissions.validateEncryptSubmission,
     celebrate({
-      body: Joi.object({
+      [Segments.BODY]: Joi.object({
         responses: Joi.array()
           .items(
             Joi.object().keys({
