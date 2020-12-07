@@ -93,14 +93,14 @@
           <span class="alert-msg">{{vm.signInMsg.msg}}</span>
         </div>
         <div
-          ng-if="!vm.showOtpDelayNotification && vm.isOtpSending"
+          ng-if="!vm.signInMsg.isMsg && !vm.showOtpDelayNotification && vm.isOtpSending"
           class="alert-custom alert-info"
         >
           <i class="bx bx-loader bx-spin bx-md icon-spacing"></i>
           <span class="alert-msg">Sending OTP...</span>
         </div>
         <div
-          ng-if="!vm.signInMsg.isMsg && vm.showOtpDelayNotification && !vm.isOtpSending"
+          ng-if="!vm.signInMsg.isMsg && vm.showOtpDelayNotification"
           class="alert-custom alert-info"
         >
           <i class="bx bx-info-circle bx-md icon-spacing"></i>
