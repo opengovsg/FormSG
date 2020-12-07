@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 
+import { ResWithHashedFields } from '../../../../types'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionService from './email-submission.service'
@@ -18,7 +19,8 @@ export const prepareEmailSubmission: RequestHandler<
   unknown,
   { parsedResponses: ProcessedFieldResponse[] }
 > = (req, res, next) => {
-  const hashedFields = res.locals.hashedFields || new Set()
+  const hashedFields =
+    (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
   const emailData = EmailSubmissionService.createEmailData(
     req.body.parsedResponses,
     hashedFields,
