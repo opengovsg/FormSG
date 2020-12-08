@@ -122,11 +122,14 @@ export const configureMultipartReceiver = (
           return reject(error)
         })
         .on('finish', () => {
-          // if body is not defined, the Promise would have been rejected elsewhere
           if (body) {
             handleDuplicatesInAttachments(attachments)
             addAttachmentToResponses(body.responses, attachments)
             return resolve(body)
+          } else {
+            // if body is not defined, the Promise would have been rejected elsewhere.
+            // but reject here again just in case.
+            return reject(new MultipartError())
           }
         })
     },
