@@ -1,5 +1,3 @@
-'use strict'
-
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
