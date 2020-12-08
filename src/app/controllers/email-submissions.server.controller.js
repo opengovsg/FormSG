@@ -380,6 +380,10 @@ exports.saveMetadataToDb = function (req, res, next) {
       },
       error: err,
     })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+    })
   }
 
   createHash(concatenatedResponse)
