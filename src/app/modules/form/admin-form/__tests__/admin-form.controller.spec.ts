@@ -17,7 +17,7 @@ import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import {
-  DashboardFormView,
+  FormMetaView,
   IForm,
   IFormSchema,
   IPopulatedForm,
@@ -2343,7 +2343,7 @@ describe('admin-form.controller', () => {
         publicKey: 'some public key',
         title: 'mock title',
       }
-      const mockDupedFormView = { title: 'mock view' } as DashboardFormView
+      const mockDupedFormView = { title: 'mock view' } as FormMetaView
       const mockDupedForm = merge({}, MOCK_FORM, {
         title: 'duped form with new title',
         _id: new ObjectId(),
@@ -2640,7 +2640,7 @@ describe('admin-form.controller', () => {
       }
       const mockDupedFormView = {
         title: 'mock template view',
-      } as DashboardFormView
+      } as FormMetaView
       const mockDupedForm = merge({}, MOCK_FORM, {
         title: 'duped form with new title',
         _id: new ObjectId(),

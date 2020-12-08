@@ -7,8 +7,8 @@ import {
   AuthType,
   BasicField,
   Colors,
-  DashboardFormView,
   FormLogoState,
+  FormMetaView,
   FormOtpData,
   IEmailFormModel,
   IEmailFormSchema,
@@ -510,11 +510,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return form.save()
   }
 
-  FormSchema.statics.getDashboardForms = async function (
+  FormSchema.statics.getAllByUserIdOrEmail = async function (
     this: IFormModel,
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<DashboardFormView[]> {
+  ): Promise<FormMetaView[]> {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.

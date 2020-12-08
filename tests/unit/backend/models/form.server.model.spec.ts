@@ -951,14 +951,17 @@ describe('Form Model', () => {
       })
     })
 
-    describe('getDashboardForms', () => {
+    describe('getAllByUserIdOrEmail', () => {
       it('should return empty array when user has no forms to view', async () => {
         // Arrange
         const randomUserId = new ObjectId()
         const invalidEmail = 'not-valid@example.com'
 
         // Act
-        const actual = await Form.getDashboardForms(randomUserId, invalidEmail)
+        const actual = await Form.getAllByUserIdOrEmail(
+          randomUserId,
+          invalidEmail,
+        )
 
         // Assert
         expect(actual).toEqual([])
@@ -1005,7 +1008,7 @@ describe('Form Model', () => {
         })
 
         // Act
-        const actual = await Form.getDashboardForms(
+        const actual = await Form.getAllByUserIdOrEmail(
           populatedAdmin._id,
           populatedAdmin.email,
         )

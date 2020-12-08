@@ -17,8 +17,8 @@ import * as UserService from 'src/app/modules/user/user.service'
 import { aws } from 'src/config/config'
 import { VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
-  DashboardFormView,
   FormLogoState,
+  FormMetaView,
   ICustomFormLogo,
   IEmailFormSchema,
   IEncryptedFormSchema,
@@ -64,7 +64,7 @@ describe('admin-form.service', () => {
         email: 'MOCK_EMAIL@example.com',
         _id: mockUserId,
       } as IUserSchema
-      const mockDashboardForms: DashboardFormView[] = [
+      const mockDashboardForms: FormMetaView[] = [
         {
           admin: {} as IPopulatedUser,
           title: 'test form 1',
@@ -83,7 +83,7 @@ describe('admin-form.service', () => {
         okAsync(mockUser as IUserSchema),
       )
       const getSpy = jest
-        .spyOn(FormModel, 'getDashboardForms')
+        .spyOn(FormModel, 'getAllByUserIdOrEmail')
         .mockResolvedValueOnce(mockDashboardForms)
 
       // Act
@@ -121,7 +121,7 @@ describe('admin-form.service', () => {
         okAsync(mockUser as IUserSchema),
       )
       const getSpy = jest
-        .spyOn(FormModel, 'getDashboardForms')
+        .spyOn(FormModel, 'getAllByUserIdOrEmail')
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act

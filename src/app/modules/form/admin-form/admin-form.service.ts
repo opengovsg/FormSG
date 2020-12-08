@@ -12,8 +12,8 @@ import {
 } from '../../../../shared/constants'
 import {
   AuthType,
-  DashboardFormView,
   FormLogoState,
+  FormMetaView,
   IFieldSchema,
   IForm,
   IFormSchema,
@@ -63,14 +63,14 @@ type PresignedPostParams = {
  */
 export const getDashboardForms = (
   userId: string,
-): ResultAsync<DashboardFormView[], MissingUserError | DatabaseError> => {
+): ResultAsync<FormMetaView[], MissingUserError | DatabaseError> => {
   // Step 1: Verify user exists.
   return (
     UserService.findUserById(userId)
       // Step 2: Retrieve lists users are authorized to see.
       .andThen((admin) => {
         return ResultAsync.fromPromise(
-          FormModel.getDashboardForms(userId, admin.email),
+          FormModel.getAllByUserIdOrEmail(userId, admin.email),
           (error) => {
             logger.error({
               message: 'Database error when retrieving admin dashboard forms',
