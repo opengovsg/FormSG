@@ -9,29 +9,32 @@ angular.module('forms').component('formEmailsInputComponent', {
     saveForm: '&',
   },
   controllerAs: 'vm',
-  controller: formEmailsInputController,
+  controller: ['$scope', formEmailsInputController],
 })
 
-function formEmailsInputController() {
+function formEmailsInputController($scope) {
   const vm = this
+
+  $scope.$watch('vm.formData.emails', (newEmails) => {
+    vm.emailInfoMsg =
+      newEmails && String(newEmails).split(',').length === 1
+        ? 'Recommended: at least 2 recipients to prevent response loss from bounced emails'
+        : null
+  })
+
   vm.validateEmails = (emails) => {
-    if (!emails) {
-      vm.emailErrorMsg =
-        'You must at least enter one email to receive responses'
-      return
-    }
-
-    const err = checkForErrors(String(emails).split(','))
-
-    if (err) {
-      vm.emailErrorMsg = err
-      vm.formController.emailList.$setValidity('text', false)
-    } else {
-      vm.formController.emailList.$setValidity('text', true)
-    }
+    const emailsToCheck = emails ? String(emails).split(',') : undefined
+    vm.emailErrorMsg = checkForErrors(emailsToCheck)
+    vm.formController.emailList.$setValidity('text', !vm.emailErrorMsg)
   }
 
-  function checkForErrors(emails) {
+  function checkForErrors(emailsToCheck) {
+    if (!emailsToCheck) {
+      return 'You must at least enter one email to receive responses'
+    }
+
+    const emails = String(emailsToCheck).split(',')
+
     if (emails.some((email) => isInvalid(email))) {
       return 'Please enter valid email(s) (e.g. me@example.com) separated by commas'
     }

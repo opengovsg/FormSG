@@ -284,6 +284,7 @@ textarea.input-custom {
 .alert-custom .bx-check,
 .alert-custom .bx-loader,
 .alert-custom .bx-exclamation,
+.alert-custom .bx-error-circle,
 .alert-custom .bx-info-circle {
   float: left;
 }
