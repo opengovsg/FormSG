@@ -366,7 +366,21 @@ exports.saveMetadataToDb = function (req, res, next) {
   })
 
   // Create submission hash
-  let concatenatedResponse = concatResponse(formData, attachments)
+  let concatenatedResponse
+
+  try {
+    concatenatedResponse = concatResponse(formData, attachments)
+  } catch (err) {
+    logger.error({
+      message: 'Error concatenating response for submission hash',
+      meta: {
+        action: 'concatResponse',
+        ...createReqMeta(req),
+        formId: req.form._id,
+      },
+      error: err,
+    })
+  }
 
   createHash(concatenatedResponse)
     .then((result) => {
