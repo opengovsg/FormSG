@@ -2680,12 +2680,11 @@ describe('admin-form.controller', () => {
     it('should return 403 when form is private', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const mockErrorString = 'form is private'
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         okAsync(MOCK_USER),
       )
       MockAuthService.getFormIfPublic.mockReturnValueOnce(
-        errAsync(new PrivateFormError(mockErrorString)),
+        errAsync(new PrivateFormError(undefined, 'some random title')),
       )
 
       // Act
@@ -2697,8 +2696,9 @@ describe('admin-form.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
+      // Should return specific message.
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: mockErrorString,
+        message: 'Form must be public to be copied',
       })
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,

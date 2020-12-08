@@ -10,6 +10,7 @@ import * as AuthService from '../../auth/auth.service'
 import * as FeedbackService from '../../feedback/feedback.service'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
+import { PrivateFormError } from '../form.errors'
 
 import {
   archiveForm,
@@ -548,7 +549,7 @@ export const handleDuplicateAdminForm: RequestHandler<
           meta: {
             action: 'handleDuplicateAdminForm',
             ...createReqMeta(req),
-            userId: userId,
+            userId,
             formId,
           },
           error,
@@ -619,6 +620,13 @@ export const handleCopyTemplateForm: RequestHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
+
+        // Specialized error response for PrivateFormError.
+        if (error instanceof PrivateFormError) {
+          return res.status(statusCode).json({
+            message: 'Form must be public to be copied',
+          })
+        }
         return res.status(statusCode).json({ message: errorMessage })
       })
   )

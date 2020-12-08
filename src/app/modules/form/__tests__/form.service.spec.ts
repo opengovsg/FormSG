@@ -233,7 +233,7 @@ describe('FormService', () => {
       expect(actual._unsafeUnwrapErr()).toEqual(new FormDeletedError())
     })
 
-    it('should return PrivateFormError with form inactive message when form is private', async () => {
+    it('should return PrivateFormError with form inactive message and title when form is private', async () => {
       // Arrange
       const form = {
         _id: new ObjectId(),
@@ -247,38 +247,19 @@ describe('FormService', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(
-        new PrivateFormError(form.inactiveMessage),
-      )
-    })
-
-    it('should return error with error message override when available', async () => {
-      // Arrange
-      const expectedErrorMessage = 'test error message override'
-      const form = {
-        _id: new ObjectId(),
-        // Form deleted.
-        status: Status.Archived,
-      } as IPopulatedForm
-
-      // Act
-      const actual = FormService.isFormPublic(form, expectedErrorMessage)
-
-      // Assert
-      expect(actual._unsafeUnwrapErr()).toEqual(
-        new FormDeletedError(expectedErrorMessage),
+        new PrivateFormError(form.inactiveMessage, form.title),
       )
     })
 
     it('should return ApplicationError when form does not have status', async () => {
       // Arrange
-      const expectedErrorMessage = 'test error message override'
       const form = {
         _id: new ObjectId(),
         // Form without status.
       } as IPopulatedForm
 
       // Act
-      const actual = FormService.isFormPublic(form, expectedErrorMessage)
+      const actual = FormService.isFormPublic(form)
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(new ApplicationError())

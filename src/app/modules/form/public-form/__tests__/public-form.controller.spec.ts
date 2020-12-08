@@ -129,7 +129,7 @@ describe('public-form.controller', () => {
       )
       // Mock return error.
       MockFormService.isFormPublic.mockReturnValueOnce(
-        err(new PrivateFormError()),
+        err(new PrivateFormError(MOCK_FORM.inactiveMessage, MOCK_FORM.title)),
       )
 
       // Act
