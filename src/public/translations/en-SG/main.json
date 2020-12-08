@@ -3,7 +3,7 @@
   "LINKS": {
     "GUIDE": {
       "ROOT": "https://guide.form.gov.sg/",
-      "EMAIL_RELIABILITY": "https://go.gov.sg/formsg-email-reliability",
+      "GUARD_EMAIL_BOUNCE": "https://go.gov.sg/form-prevent-bounces",
       "STORAGE_MODE": "https://guide.form.gov.sg/AdvancedGuide.html#storage-mode",
       "SECRET_KEY_SAFEKEEPING": "https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-make-sure-i-dont-lose-my-secret-key"
     },
