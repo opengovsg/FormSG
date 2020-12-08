@@ -11,6 +11,9 @@ const Controller = spec(
   'dist/backend/app/controllers/admin-forms.server.controller',
 ).makeModule(mongoose)
 
+const NewController = require('../../../../dist/backend/app/modules/form/admin-form/admin-form.controller')
+const { ResponseMode } = require('../../../../dist/backend/types')
+
 describe('Admin-Forms Controller', () => {
   // Declare global variables
   let req
@@ -92,9 +95,15 @@ describe('Admin-Forms Controller', () => {
     it('should successfully save a Form object with user defined fields', (done) => {
       let expected = {
         title: 'form_title',
+        responseMode: ResponseMode.Email,
         emails: ['email@hello.gov.sg', 'user@byebye.gov.sg'],
       }
       req.body.form = _.cloneDeep(expected)
+
+      res.status.and.callFake(() => {
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.OK)
+        return res
+      })
 
       // Check for user-defined fields
       res.json.and.callFake((args) => {
@@ -112,21 +121,15 @@ describe('Admin-Forms Controller', () => {
           }
         })
       })
-      Controller.create(req, res)
+      NewController.handleCreateForm(req, res)
     })
 
-    it('should return 400 error when form param not supplied', (done) => {
-      req.body.form = null
-      res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-        done()
-        return res
-      })
-      Controller.create(req, res)
-    })
-
-    it('should return 405 error when saving a Form object with invalid fields', (done) => {
-      req.body.form = { title: 'bad_form', emails: 'wrongemail.com' }
+    it('should return 422 error when saving a Form object with invalid fields', (done) => {
+      req.body.form = {
+        title: 'bad_form',
+        responseMode: ResponseMode.Email,
+        emails: 'wrongemail.com',
+      }
       res.status.and.callFake(() => {
         expect(res.status).toHaveBeenCalledWith(
           StatusCodes.UNPROCESSABLE_ENTITY,
@@ -134,7 +137,7 @@ describe('Admin-Forms Controller', () => {
         done()
         return res
       })
-      Controller.create(req, res)
+      NewController.handleCreateForm(req, res)
     })
   })
 
