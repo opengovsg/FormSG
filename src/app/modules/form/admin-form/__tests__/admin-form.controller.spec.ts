@@ -35,6 +35,7 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form.errors'
+import { removePrivateDetailsFromForm } from '../../form.utils'
 import * as AdminFormController from '../admin-form.controller'
 import {
   CreatePresignedUrlError,
@@ -2602,6 +2603,154 @@ describe('admin-form.controller', () => {
         MOCK_USER_ID,
         expectedParams,
       )
+    })
+  })
+
+  describe('handleGetTemplateForm', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      agency: {
+        emailDomain: ['example.com'],
+        _id: new ObjectId(),
+        lastModified: new Date('2017-09-15T06:03:58.803Z'),
+        shortName: 'test',
+        fullName: 'Test Agency',
+        logo: 'path/to/nowhere',
+        created: new Date('2017-09-15T06:03:58.792Z'),
+        __v: 0,
+      },
+      email: 'alwaystesting@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: "guess what it's another mock title",
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    it('should return 200 with requested form with only public fields', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.getFormIfPublic.mockReturnValueOnce(okAsync(MOCK_FORM))
+
+      // Act
+      await AdminFormController.handleGetTemplateForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        form: removePrivateDetailsFromForm(MOCK_FORM),
+      })
+    })
+
+    it('should return 403 when PrivateFormError is returned when retrieving form', async () => {
+      // Arrange
+      const mockFormTitle = 'some form title'
+      const mockRes = expressHandler.mockResponse()
+      // Mock error when retrieving form.
+      const expectedErrorString = 'form is not found'
+      MockAuthService.getFormIfPublic.mockReturnValueOnce(
+        errAsync(new PrivateFormError(expectedErrorString, mockFormTitle)),
+      )
+
+      // Act
+      await AdminFormController.handleGetTemplateForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+        isPageFound: true,
+        formTitle: mockFormTitle,
+      })
+    })
+
+    it('should return 404 when FormNotFoundError is returned when retrieving form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock error when retrieving form.
+      const expectedErrorString = 'form is not found'
+      MockAuthService.getFormIfPublic.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetTemplateForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 410 when FormDeletedError is returned when retrieving form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedErrorString = 'form is deleted'
+      MockAuthService.getFormIfPublic.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetTemplateForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedErrorString = 'database goes boom'
+      MockAuthService.getFormIfPublic.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetTemplateForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
     })
   })
 

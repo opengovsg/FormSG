@@ -573,7 +573,9 @@ export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
     AuthService.getFormIfPublic(formId)
       // Step 2: Remove private form details before being returned.
       .map(removePrivateDetailsFromForm)
-      .map((scrubbedForm) => res.json({ form: scrubbedForm }))
+      .map((scrubbedForm) =>
+        res.status(StatusCodes.OK).json({ form: scrubbedForm }),
+      )
       .mapErr((error) => {
         logger.error({
           message: 'Error retrieving form template',
