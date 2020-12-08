@@ -1,14 +1,14 @@
 import BSON from 'bson-ext'
-import { compact, filter, pick, uniq } from 'lodash'
-import { Mongoose, Schema, SchemaOptions } from 'mongoose'
+import { compact, pick, uniq } from 'lodash'
+import mongoose, { Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
 import {
   AuthType,
   BasicField,
   Colors,
-  DashboardFormView,
   FormLogoState,
+  FormMetaView,
   FormOtpData,
   IEmailFormModel,
   IEmailFormSchema,
@@ -443,26 +443,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Transfer ownership of the form to another user
-  FormSchema.methods.transferOwner = async function (
-    currentOwner: IUserSchema,
-    newOwnerEmail: string,
-  ) {
-    // Verify that the new owner exists
-    const newOwner = await User.findOne({ email: newOwnerEmail })
-    if (newOwner == null) {
-      throw new Error(
-        `${newOwnerEmail} must have logged in once before being added as Owner`,
-      )
-    }
-
-    // Update form's admin to new owner's id
+  FormSchema.methods.transferOwner = async function (currentOwner, newOwner) {
+    // Update form's admin to new owner's id.
     this.admin = newOwner._id
 
-    // Remove new owner from perm list and include previous owner as an editor
-    this.permissionList = filter(this.permissionList, (item) => {
-      return item.email !== newOwnerEmail
-    })
+    // Remove new owner from perm list and include previous owner as an editor.
+    this.permissionList =
+      this.permissionList?.filter((item) => item.email !== newOwner.email) ?? []
     this.permissionList.push({ email: currentOwner.email, write: true })
+
+    return this.save()
   }
 
   // Statics
@@ -520,11 +510,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return form.save()
   }
 
-  FormSchema.statics.getDashboardForms = async function (
+  FormSchema.statics.getMetaByUserIdOrEmail = async function (
     this: IFormModel,
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<DashboardFormView[]> {
+  ): Promise<FormMetaView[]> {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.
@@ -562,8 +552,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     // Validate that admin exists before form is created.
     return User.findById(this.admin).then((admin) => {
       if (!admin) {
-        throw new Error(`Admin for this form is not found.`)
+        const validationError = this.invalidate(
+          'admin',
+          'Admin for this form is not found.',
+        ) as mongoose.Error.ValidationError
+        return next(validationError)
       }
+
+      // Remove admin from the permission list if they exist.
+      // This prevents the form owner from being both an admin and another role.
+      this.permissionList = this.permissionList?.filter(
+        (item) => item.email !== admin.email,
+      )
+
       return next()
     })
   })

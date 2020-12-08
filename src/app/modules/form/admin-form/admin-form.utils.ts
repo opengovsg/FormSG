@@ -19,6 +19,7 @@ import {
   FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
+  TransferOwnershipError,
 } from '../form.errors'
 
 import {
@@ -71,6 +72,11 @@ export const mapRouteError = (
     case MissingUserError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case TransferOwnershipError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
     case MalformedParametersError:

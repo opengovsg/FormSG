@@ -336,36 +336,5 @@ function makeModule(connection) {
       req.submission = submission
       return next()
     },
-
-    /**
-     * Transfer a form to another user
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    transferOwner: async function (req, res) {
-      const newOwnerEmail = req.body.email
-
-      // Transfer owner and Save the form
-      try {
-        await req.form.transferOwner(req.session.user, newOwnerEmail)
-      } catch (err) {
-        logger.error({
-          message: err.message,
-          meta: {
-            action: 'makeModule.transferOwner',
-            ...createReqMeta(req),
-          },
-          err,
-        })
-        return res.status(StatusCodes.CONFLICT).json({ message: err.message })
-      }
-      req.form.save(function (err, savedForm) {
-        if (err) return respondOnMongoError(req, res, err)
-        savedForm.populate('admin', (err) => {
-          if (err) return respondOnMongoError(req, res, err)
-          return res.json({ form: savedForm })
-        })
-      })
-    },
   }
 }

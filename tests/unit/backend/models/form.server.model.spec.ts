@@ -8,7 +8,9 @@ import getFormModel, {
 } from 'src/app/models/form.server.model'
 import {
   IEmailForm,
+  IEmailFormSchema,
   IEncryptedForm,
+  IFormSchema,
   IPopulatedUser,
   Permission,
   ResponseMode,
@@ -135,9 +137,9 @@ describe('Form Model', () => {
         // Arrange
         // permissionList has email with valid domain
         // Write is also set to true
-        const permissionList = [{ email: MOCK_ADMIN_EMAIL, write: true }]
+        const permissionList = [{ email: 'newEmail@example.com', write: true }]
         const formParams = merge({}, MOCK_FORM_PARAMS, {
-          permissionList: permissionList,
+          permissionList,
         })
 
         const validForm = new Form(formParams)
@@ -172,6 +174,29 @@ describe('Form Model', () => {
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)
+      })
+
+      it('should save new admin successfully but remove new admin from permissionList', async () => {
+        // Arrange
+        const newAdmin = await dbHandler.insertUser({
+          agencyId: populatedAdmin.agency._id,
+          mailDomain: MOCK_ADMIN_DOMAIN,
+          mailName: 'newAdmin',
+        })
+        // Create new form with newAdmin as collaborator
+        const validForm = await new Form({
+          ...MOCK_FORM_PARAMS,
+          permissionList: [{ email: newAdmin.email, write: false }],
+        }).save()
+
+        // Act
+        validForm.admin = newAdmin._id
+        const updatedForm = (await validForm.save()).toObject()
+
+        // Assert
+        expect(updatedForm.admin).toEqual(newAdmin._id)
+        // PermissionList should now be empty.
+        expect(updatedForm.permissionList).toEqual([])
       })
 
       it('should reject when admin id is invalid', async () => {
@@ -323,9 +348,9 @@ describe('Form Model', () => {
         // Arrange
         // permissionList has email with valid domain
         // Write is also set to true
-        const permissionList = [{ email: MOCK_ADMIN_EMAIL, write: true }]
+        const permissionList = [{ email: 'newEmail2@example.com', write: true }]
         const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          permissionList: permissionList,
+          permissionList,
         })
 
         const validForm = new EncryptedForm(formParams)
@@ -358,6 +383,29 @@ describe('Form Model', () => {
           (permission) => omit(permission, '_id'),
         )
         expect(actualPermissionList).toEqual(permissionList)
+      })
+
+      it('should save new admin successfully but remove new admin from permissionList', async () => {
+        // Arrange
+        const newAdmin = await dbHandler.insertUser({
+          agencyId: populatedAdmin.agency._id,
+          mailDomain: MOCK_ADMIN_DOMAIN,
+          mailName: 'newAdmin',
+        })
+        // Create new form with newAdmin as collaborator
+        const validForm = await new Form({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          permissionList: [{ email: newAdmin.email, write: false }],
+        }).save()
+
+        // Act
+        validForm.admin = newAdmin._id
+        const updatedForm = (await validForm.save()).toObject()
+
+        // Assert
+        expect(updatedForm.admin).toEqual(newAdmin._id)
+        // PermissionList should now be empty.
+        expect(updatedForm.permissionList).toEqual([])
       })
 
       it('should reject when publicKey is missing', async () => {
@@ -562,7 +610,7 @@ describe('Form Model', () => {
         // Arrange
         // permissionList has email with valid domain
         // Write is also set to true
-        const permissionList = [{ email: MOCK_ADMIN_EMAIL, write: true }]
+        const permissionList = [{ email: 'another1@example.com', write: true }]
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           permissionList: permissionList,
         })
@@ -599,6 +647,29 @@ describe('Form Model', () => {
             omit(permission, '_id'),
           )
         expect(actualPermissionList).toEqual(permissionList)
+      })
+
+      it('should save new admin successfully but remove new admin from permissionList', async () => {
+        // Arrange
+        const newAdmin = await dbHandler.insertUser({
+          agencyId: populatedAdmin.agency._id,
+          mailDomain: MOCK_ADMIN_DOMAIN,
+          mailName: 'newAdmin',
+        })
+        // Create new form with newAdmin as collaborator
+        const validForm = await new Form({
+          ...MOCK_EMAIL_FORM_PARAMS,
+          permissionList: [{ email: newAdmin.email, write: true }],
+        }).save()
+
+        // Act
+        validForm.admin = newAdmin._id
+        const updatedForm = (await validForm.save()).toObject()
+
+        // Assert
+        expect(updatedForm.admin).toEqual(newAdmin._id)
+        // PermissionList should now be empty.
+        expect(updatedForm.permissionList).toEqual([])
       })
 
       it('should reject when emails array is missing', async () => {
@@ -879,104 +950,119 @@ describe('Form Model', () => {
         expect(actualOtpData).toEqual(expectedOtpData)
       })
     })
-  })
 
-  describe('getDashboardForms', () => {
-    it('should return empty array when user has no forms to view', async () => {
-      // Arrange
-      const randomUserId = new ObjectId()
-      const invalidEmail = 'not-valid@example.com'
+    describe('getMetaByUserIdOrEmail', () => {
+      it('should return empty array when user has no forms to view', async () => {
+        // Arrange
+        const randomUserId = new ObjectId()
+        const invalidEmail = 'not-valid@example.com'
 
-      // Act
-      const actual = await Form.getDashboardForms(randomUserId, invalidEmail)
+        // Act
+        const actual = await Form.getMetaByUserIdOrEmail(
+          randomUserId,
+          invalidEmail,
+        )
 
-      // Assert
-      expect(actual).toEqual([])
-    })
-
-    it('should return array of forms user is permitted to view', async () => {
-      // Arrange
-      // Add additional user.
-      const differentUserId = new ObjectId()
-      const diffPreload = await dbHandler.insertFormCollectionReqs({
-        userId: differentUserId,
-        mailName: 'something-else',
-        mailDomain: MOCK_ADMIN_DOMAIN,
-      })
-      const diffPopulatedAdmin = merge(diffPreload.user, {
-        agency: diffPreload.agency,
-      })
-      // Populate multiple forms with different permissions.
-      // Is admin.
-      const userOwnedForm = await Form.create(MOCK_EMAIL_FORM_PARAMS)
-      // Has write permissions.
-      const userWritePermissionForm = await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        admin: diffPopulatedAdmin._id,
-        permissionList: [{ email: populatedAdmin.email, write: true }],
-      })
-      // Has read permissions.
-      const userReadPermissionForm = await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        admin: diffPopulatedAdmin._id,
-        // Only read permissions, no write permission.
-        permissionList: [{ email: populatedAdmin.email, write: false }],
-      })
-      // Should not be fetched since form is archived.
-      await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        status: Status.Archived,
-      })
-      // Should not be fetched (not collab or admin).
-      await Form.create({
-        ...MOCK_ENCRYPTED_FORM_PARAMS,
-        admin: differentUserId,
-        // currentUser does not have permissions.
+        // Assert
+        expect(actual).toEqual([])
       })
 
-      // Act
-      const actual = await Form.getDashboardForms(
-        populatedAdmin._id,
-        populatedAdmin.email,
-      )
+      it('should return array of forms user is permitted to view', async () => {
+        // Arrange
+        // Add additional user.
+        const differentUserId = new ObjectId()
+        const diffPreload = await dbHandler.insertFormCollectionReqs({
+          userId: differentUserId,
+          mailName: 'something-else',
+          mailDomain: MOCK_ADMIN_DOMAIN,
+        })
+        const diffPopulatedAdmin = merge(diffPreload.user, {
+          agency: diffPreload.agency,
+        })
+        // Populate multiple forms with different permissions.
+        // Is admin.
+        const userOwnedForm = await Form.create(MOCK_EMAIL_FORM_PARAMS)
+        // Has write permissions.
+        const userWritePermissionForm = await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          admin: diffPopulatedAdmin._id,
+          permissionList: [{ email: populatedAdmin.email, write: true }],
+        })
+        // Has read permissions.
+        const userReadPermissionForm = await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          admin: diffPopulatedAdmin._id,
+          // Only read permissions, no write permission.
+          permissionList: [{ email: populatedAdmin.email, write: false }],
+        })
+        // Should not be fetched since form is archived.
+        await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          status: Status.Archived,
+        })
+        // Should not be fetched (not collab or admin).
+        await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          admin: differentUserId,
+          // currentUser does not have permissions.
+        })
 
-      // Assert
-      // Coerce into expected shape.
-      const keysToPick = [
-        '_id',
-        'title',
-        'lastModified',
-        'status',
-        'responseMode',
-      ]
-      const expected = orderBy(
-        [
-          // Should return form with admin themselves.
-          merge(pick(userOwnedForm.toObject(), keysToPick), {
-            admin: populatedAdmin.toObject(),
-          }),
-          // Should return form where admin has write permission.
-          merge(pick(userWritePermissionForm.toObject(), keysToPick), {
-            admin: diffPopulatedAdmin.toObject(),
-          }),
-          // Should return form where admin has read permission.
-          merge(pick(userReadPermissionForm.toObject(), keysToPick), {
-            admin: diffPopulatedAdmin.toObject(),
-          }),
-        ],
-        'lastModified',
-        'desc',
-      )
-      // Should return list containing only three forms:
-      // (admin, read perms, write perms),
-      // even though there are 5 forms in the collection.
-      await expect(Form.countDocuments()).resolves.toEqual(5)
-      expect(actual.length).toEqual(3)
-      expect(actual).toEqual(expected)
+        // Act
+        const actual = await Form.getMetaByUserIdOrEmail(
+          populatedAdmin._id,
+          populatedAdmin.email,
+        )
+
+        // Assert
+        // Coerce into expected shape.
+        const keysToPick = [
+          '_id',
+          'title',
+          'lastModified',
+          'status',
+          'responseMode',
+        ]
+        const expected = orderBy(
+          [
+            // Should return form with admin themselves.
+            merge(pick(userOwnedForm.toObject(), keysToPick), {
+              admin: populatedAdmin.toObject(),
+            }),
+            // Should return form where admin has write permission.
+            merge(pick(userWritePermissionForm.toObject(), keysToPick), {
+              admin: diffPopulatedAdmin.toObject(),
+            }),
+            // Should return form where admin has read permission.
+            merge(pick(userReadPermissionForm.toObject(), keysToPick), {
+              admin: diffPopulatedAdmin.toObject(),
+            }),
+          ],
+          'lastModified',
+          'desc',
+        )
+        // Should return list containing only three forms:
+        // (admin, read perms, write perms),
+        // even though there are 5 forms in the collection.
+        await expect(Form.countDocuments()).resolves.toEqual(5)
+        expect(actual.length).toEqual(3)
+        expect(actual).toEqual(expected)
+      })
     })
   })
 
   describe('Methods', () => {
+    // TODO(#102): Add tests for other form instance methods.
+    let validForm: IFormSchema
+
+    beforeEach(async () => {
+      validForm = await Form.create<IEmailFormSchema>({
+        admin: populatedAdmin._id,
+        responseMode: ResponseMode.Email,
+        title: 'mock email form',
+        emails: [populatedAdmin.email],
+      })
+    })
+
     describe('archive', () => {
       it('should successfully set email form status to archived', async () => {
         // Arrange
@@ -1100,6 +1186,30 @@ describe('Form Model', () => {
           responseMode: form.responseMode,
           admin: diffPopulatedAdmin,
         })
+      })
+    })
+
+    describe('transferOwner', () => {
+      it('should successfully transfer form ownership', async () => {
+        // Arrange
+        const newUser = await dbHandler.insertUser({
+          agencyId: populatedAdmin.agency._id,
+          mailName: 'newUser',
+          mailDomain: MOCK_ADMIN_DOMAIN,
+        })
+
+        // Act
+        const actual = await validForm.transferOwner(populatedAdmin, newUser)
+
+        // Assert
+        expect(actual).toBeDefined()
+        // New admin should be new user.
+        expect(actual.admin).toEqual(newUser._id)
+        // Previous user should now be in permissionList with editor
+        // permissions.
+        expect(actual.toObject().permissionList).toEqual([
+          { email: populatedAdmin.email, write: true, _id: expect.anything() },
+        ])
       })
     })
   })

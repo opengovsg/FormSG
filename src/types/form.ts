@@ -125,13 +125,24 @@ export interface IFormSchema extends IForm, Document {
    * @param admin the admin to inject into the returned object
    * @returns dashboard form view object
    */
-  getDashboardView(admin: IPopulatedUser): DashboardFormView
+  getDashboardView(admin: IPopulatedUser): FormMetaView
   getUniqueMyInfoAttrs(): MyInfoAttribute[]
   /**
    * Archives form.
    * @returns form that has been archived
    */
   archive(): Promise<IFormSchema>
+
+  /**
+   * Transfer ownership of the form to another user.
+   * @param currentOwner the current owner of the form. The owner is retrieved outside of the method to force validation to be performed correctly.
+   * @param newOwner the new owner of the form. Similarly retrieved outside of method to force correct validation.
+   * @returns updated form
+   */
+  transferOwner(
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ): Promise<IFormSchema>
   /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
@@ -140,7 +151,6 @@ export interface IFormSchema extends IForm, Document {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
-  transferOwner(currentOwner: IUserSchema, newOwnerEmail: string): void
 }
 
 export interface IPopulatedForm extends IFormSchema {
@@ -179,17 +189,16 @@ export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
   deactivateById(formId: string): Promise<IFormSchema | null>
-  getDashboardForms(
+  getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<DashboardFormView[]>
+  ): Promise<FormMetaView[]>
 }
 
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 export type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
-// Typing for the shape of the form document subset that is returned to the
-// frontend when admin lists their available forms in their dashboard.
-export type DashboardFormView = Pick<
+/** Typing for the shape of the important meta subset for form document. */
+export type FormMetaView = Pick<
   IFormSchema,
   'title' | 'lastModified' | 'status' | '_id' | 'responseMode'
 > & {
