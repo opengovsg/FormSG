@@ -1,19 +1,23 @@
 import Busboy from 'busboy'
+import FormData from 'form-data'
+import { createReadStream, readFileSync } from 'fs'
 import { IncomingHttpHeaders } from 'http'
-import { omit } from 'lodash'
+import { pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
-import { generateNewAttachmentResponse } from 'tests/unit/backend/helpers/generate-form-data'
+import { BasicField } from 'src/types'
+
+import {
+  generateNewAttachmentResponse,
+  generateNewSingleAnswerResponse,
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 import { InitialiseMultipartReceiverError } from '../email-submission.errors'
 import * as EmailSubmissionReceiver from '../email-submission.receiver'
-import * as EmailSubmissionUtil from '../email-submission.util'
-
-jest.mock('../email-submission.util')
-const MockEmailSubmissionUtil = mocked(EmailSubmissionUtil, true)
 
 jest.mock('busboy')
 const MockBusboy = mocked(Busboy, true)
+const RealBusboy = jest.requireActual('busboy') as typeof Busboy
 
 const MOCK_HEADERS = { key: 'value' }
 
@@ -21,6 +25,16 @@ const MOCK_BUSBOY_ON = jest.fn().mockReturnThis()
 const MOCK_BUSBOY = ({
   on: MOCK_BUSBOY_ON,
 } as unknown) as busboy.Busboy
+
+const VALID_FILE_PATH = 'tests/unit/backend/resources/'
+const VALID_FILENAME_1 = 'valid.txt'
+const VALID_FILE_CONTENT_1 = readFileSync(
+  `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+)
+const VALID_FILENAME_2 = 'valid2.txt'
+const VALID_FILE_CONTENT_2 = readFileSync(
+  `${VALID_FILE_PATH}${VALID_FILENAME_2}`,
+)
 
 describe('email-submission.receiver', () => {
   describe('createMultipartReceiver', () => {
@@ -64,68 +78,234 @@ describe('email-submission.receiver', () => {
   })
 
   describe('configureMultipartReceiver', () => {
-    it('should receive and store attachments in responses', async () => {
-      const mockFile = jest.fn().mockReturnThis()
-      const mockFileStream = { on: mockFile, resume: jest.fn() }
-      const mockBuffer = Buffer.from('buffer1')
-      const mockFieldId = 'fieldId'
-      const mockFilename = 'filename'
-      const mockResponse = omit(generateNewAttachmentResponse(), [
-        'isVisible',
-        'isUserVerified',
-        'filename',
-        'content',
+    it('should receive a single attachment and add it to the response', async () => {
+      const mockResponse = pick(generateNewAttachmentResponse(), [
+        '_id',
+        'question',
         'answer',
+        'fieldType',
       ])
       const mockBody = { responses: [mockResponse] }
 
-      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
-        MOCK_BUSBOY,
+      const fileStream = createReadStream(
+        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
       )
-      // Call event handlers to test behaviour
-      // Starting with streaming an attachment
-      const fileHandler = MOCK_BUSBOY_ON.mock.calls.find(
-        (args) => args[0] === 'file',
-      )[1]
-      fileHandler(mockFilename, mockFileStream, mockFieldId)
-      const fileDataHandler = mockFile.mock.calls.find(
-        (args) => args[0] === 'data',
-      )[1]
-      fileDataHandler(mockBuffer)
-      const fileEndHandler = mockFile.mock.calls.find(
-        (args) => args[0] === 'end',
-      )[1]
-      fileEndHandler()
-
-      // Then stream form data
-      const fieldHandler = MOCK_BUSBOY_ON.mock.calls.find(
-        (args) => args[0] === 'field',
-      )[1]
-      fieldHandler('body', JSON.stringify(mockBody))
-
-      // Then finish the stream
-      const finishHandler = MOCK_BUSBOY_ON.mock.calls.find(
-        (args) => args[0] === 'finish',
-      )[1]
-      finishHandler()
-
-      const expectedResponses = [mockResponse]
-      const expectedAttachments = [
-        {
-          filename: mockFilename,
-          content: Buffer.concat([mockBuffer]),
-          fieldId: mockFieldId,
+      const form = new FormData()
+      form.append('body', JSON.stringify(mockBody))
+      form.append(VALID_FILENAME_1, fileStream, mockResponse._id)
+      const realBusboy = new RealBusboy({
+        headers: {
+          'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
-      ]
+      })
+      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
+        realBusboy,
+      )
+      form.pipe(realBusboy)
+
+      fileStream.emit('data', VALID_FILE_CONTENT_1)
+      fileStream.emit('end')
+      form.emit('end')
 
       const result = await resultPromise
-      expect(
-        MockEmailSubmissionUtil.handleDuplicatesInAttachments,
-      ).toHaveBeenCalledWith(expectedAttachments)
-      expect(
-        MockEmailSubmissionUtil.addAttachmentToResponses,
-      ).toHaveBeenCalledWith(expectedResponses, expectedAttachments)
-      expect(result._unsafeUnwrap()).toEqual(mockBody)
+      expect(result._unsafeUnwrap()).toEqual({
+        responses: [
+          {
+            _id: mockResponse._id,
+            question: mockResponse.question,
+            answer: VALID_FILENAME_1,
+            fieldType: mockResponse.fieldType,
+            filename: VALID_FILENAME_1,
+            content: Buffer.concat([VALID_FILE_CONTENT_1]),
+          },
+        ],
+      })
+    })
+
+    it('should receive a mix of attachment and non-attachment responses', async () => {
+      const mockAttachment = pick(generateNewAttachmentResponse(), [
+        '_id',
+        'question',
+        'answer',
+        'fieldType',
+      ])
+      const mockTextField = pick(
+        generateNewSingleAnswerResponse(BasicField.ShortText),
+        ['_id', 'question', 'answer', 'fieldType'],
+      )
+      const mockBody = { responses: [mockAttachment, mockTextField] }
+
+      const fileStream = createReadStream(
+        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+      )
+      const form = new FormData()
+      form.append('body', JSON.stringify(mockBody))
+      form.append(VALID_FILENAME_1, fileStream, mockAttachment._id)
+      const realBusboy = new RealBusboy({
+        headers: {
+          'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+      })
+      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
+        realBusboy,
+      )
+      form.pipe(realBusboy)
+
+      fileStream.emit('data', VALID_FILE_CONTENT_1)
+      fileStream.emit('end')
+      form.emit('end')
+
+      const result = await resultPromise
+      expect(result._unsafeUnwrap()).toEqual({
+        responses: [
+          {
+            _id: mockAttachment._id,
+            question: mockAttachment.question,
+            answer: VALID_FILENAME_1,
+            fieldType: mockAttachment.fieldType,
+            filename: VALID_FILENAME_1,
+            content: Buffer.concat([VALID_FILE_CONTENT_1]),
+          },
+          {
+            _id: mockTextField._id,
+            question: mockTextField.question,
+            answer: mockTextField.answer,
+            fieldType: mockTextField.fieldType,
+          },
+        ],
+      })
+    })
+
+    it('should receive multiple attachments and add them to responses', async () => {
+      const mockResponse1 = pick(
+        generateNewAttachmentResponse({
+          question: 'Question 1',
+          answer: VALID_FILENAME_1,
+        }),
+        ['_id', 'question', 'answer', 'fieldType'],
+      )
+      const mockResponse2 = pick(
+        generateNewAttachmentResponse({
+          question: 'Question 2',
+          answer: VALID_FILENAME_2,
+        }),
+        ['_id', 'question', 'answer', 'fieldType'],
+      )
+      const mockBody = { responses: [mockResponse1, mockResponse2] }
+
+      const fileStream1 = createReadStream(
+        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+      )
+      const fileStream2 = createReadStream(
+        `${VALID_FILE_PATH}${VALID_FILENAME_2}`,
+      )
+      const form = new FormData()
+      form.append('body', JSON.stringify(mockBody))
+      form.append(VALID_FILENAME_1, fileStream1, mockResponse1._id)
+      form.append(VALID_FILENAME_2, fileStream2, mockResponse2._id)
+      const realBusboy = new RealBusboy({
+        headers: {
+          'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+      })
+      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
+        realBusboy,
+      )
+      form.pipe(realBusboy)
+
+      fileStream1.emit('data', VALID_FILE_CONTENT_1)
+      fileStream1.emit('end')
+      fileStream2.emit('data', VALID_FILE_CONTENT_2)
+      fileStream2.emit('end')
+      form.emit('end')
+
+      const result = await resultPromise
+      expect(result._unsafeUnwrap()).toEqual({
+        responses: [
+          {
+            _id: mockResponse1._id,
+            question: mockResponse1.question,
+            answer: VALID_FILENAME_1,
+            fieldType: mockResponse1.fieldType,
+            filename: VALID_FILENAME_1,
+            content: Buffer.concat([VALID_FILE_CONTENT_1]),
+          },
+          {
+            _id: mockResponse2._id,
+            question: mockResponse2.question,
+            answer: VALID_FILENAME_2,
+            fieldType: mockResponse2.fieldType,
+            filename: VALID_FILENAME_2,
+            content: Buffer.concat([VALID_FILE_CONTENT_2]),
+          },
+        ],
+      })
+    })
+
+    it('should de-duplicate identical attachment filenames', async () => {
+      const mockResponse1 = pick(
+        generateNewAttachmentResponse({
+          question: 'Question 1',
+          answer: VALID_FILENAME_1,
+        }),
+        ['_id', 'question', 'answer', 'fieldType'],
+      )
+      const mockResponse2 = pick(
+        generateNewAttachmentResponse({
+          question: 'Question 2',
+          answer: VALID_FILENAME_2,
+        }),
+        ['_id', 'question', 'answer', 'fieldType'],
+      )
+      const mockBody = { responses: [mockResponse1, mockResponse2] }
+
+      const fileStream1 = createReadStream(
+        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+      )
+      const fileStream2 = createReadStream(
+        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+      )
+      const form = new FormData()
+      form.append('body', JSON.stringify(mockBody))
+      form.append(VALID_FILENAME_1, fileStream1, mockResponse1._id)
+      form.append(VALID_FILENAME_1, fileStream2, mockResponse2._id)
+      const realBusboy = new RealBusboy({
+        headers: {
+          'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+      })
+      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
+        realBusboy,
+      )
+      form.pipe(realBusboy)
+
+      fileStream1.emit('data', VALID_FILE_CONTENT_1)
+      fileStream1.emit('end')
+      fileStream2.emit('data', VALID_FILE_CONTENT_1)
+      fileStream2.emit('end')
+      form.emit('end')
+
+      const result = await resultPromise
+      expect(result._unsafeUnwrap()).toEqual({
+        responses: [
+          {
+            _id: mockResponse1._id,
+            question: mockResponse1.question,
+            answer: `1-${VALID_FILENAME_1}`,
+            fieldType: mockResponse1.fieldType,
+            filename: `1-${VALID_FILENAME_1}`,
+            content: Buffer.concat([VALID_FILE_CONTENT_1]),
+          },
+          {
+            _id: mockResponse2._id,
+            question: mockResponse2.question,
+            answer: VALID_FILENAME_1,
+            fieldType: mockResponse2.fieldType,
+            filename: VALID_FILENAME_1,
+            content: Buffer.concat([VALID_FILE_CONTENT_1]),
+          },
+        ],
+      })
     })
   })
 })
