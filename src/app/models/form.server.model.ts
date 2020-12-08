@@ -510,7 +510,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return form.save()
   }
 
-  FormSchema.statics.getAllByUserIdOrEmail = async function (
+  FormSchema.statics.getMetaByUserIdOrEmail = async function (
     this: IFormModel,
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],

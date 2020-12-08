@@ -70,7 +70,7 @@ export const getDashboardForms = (
       // Step 2: Retrieve lists users are authorized to see.
       .andThen((admin) => {
         return ResultAsync.fromPromise(
-          FormModel.getAllByUserIdOrEmail(userId, admin.email),
+          FormModel.getMetaByUserIdOrEmail(userId, admin.email),
           (error) => {
             logger.error({
               message: 'Database error when retrieving admin dashboard forms',

@@ -189,7 +189,7 @@ export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
   deactivateById(formId: string): Promise<IFormSchema | null>
-  getAllByUserIdOrEmail(
+  getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<FormMetaView[]>

@@ -83,7 +83,7 @@ describe('admin-form.service', () => {
         okAsync(mockUser as IUserSchema),
       )
       const getSpy = jest
-        .spyOn(FormModel, 'getAllByUserIdOrEmail')
+        .spyOn(FormModel, 'getMetaByUserIdOrEmail')
         .mockResolvedValueOnce(mockDashboardForms)
 
       // Act
@@ -121,7 +121,7 @@ describe('admin-form.service', () => {
         okAsync(mockUser as IUserSchema),
       )
       const getSpy = jest
-        .spyOn(FormModel, 'getAllByUserIdOrEmail')
+        .spyOn(FormModel, 'getMetaByUserIdOrEmail')
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act

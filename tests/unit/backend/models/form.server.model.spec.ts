@@ -951,14 +951,14 @@ describe('Form Model', () => {
       })
     })
 
-    describe('getAllByUserIdOrEmail', () => {
+    describe('getMetaByUserIdOrEmail', () => {
       it('should return empty array when user has no forms to view', async () => {
         // Arrange
         const randomUserId = new ObjectId()
         const invalidEmail = 'not-valid@example.com'
 
         // Act
-        const actual = await Form.getAllByUserIdOrEmail(
+        const actual = await Form.getMetaByUserIdOrEmail(
           randomUserId,
           invalidEmail,
         )
@@ -1008,7 +1008,7 @@ describe('Form Model', () => {
         })
 
         // Act
-        const actual = await Form.getAllByUserIdOrEmail(
+        const actual = await Form.getMetaByUserIdOrEmail(
           populatedAdmin._id,
           populatedAdmin.email,
         )
