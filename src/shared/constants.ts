@@ -12,6 +12,13 @@ export enum FilePlatforms {
   Server = 'server',
 }
 
+// Enum of date validation options
+export enum DateSelectedValidation {
+  NoPast = 'Disallow past dates',
+  NoFuture = 'Disallow future dates',
+  Custom = 'Custom date range',
+}
+
 // File types that can be uploaded for form image/logo
 export const VALID_UPLOAD_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif']
 

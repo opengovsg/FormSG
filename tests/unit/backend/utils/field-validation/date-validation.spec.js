@@ -415,6 +415,7 @@ describe('Date field validation', () => {
       _id: 'abc123',
       fieldType: 'date',
       dateValidation: {
+        selectedDateValidation: 'Custom date range',
         customMinDate: '2020-06-25',
         customMaxDate: '2020-06-28',
       },
@@ -442,6 +443,7 @@ describe('Date field validation', () => {
       _id: 'abc123',
       fieldType: 'date',
       dateValidation: {
+        selectedDateValidation: 'Custom date range',
         customMinDate: '2020-06-25',
         customMaxDate: '2020-06-28',
       },
