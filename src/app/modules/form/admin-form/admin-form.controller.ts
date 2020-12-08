@@ -11,6 +11,7 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
+import { removePrivateDetailsFromForm } from '../form.utils'
 
 import {
   archiveForm,
@@ -555,6 +556,47 @@ export const handleDuplicateAdminForm: RequestHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const userId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve form only if form is currently public.
+    AuthService.getFormIfPublic(formId)
+      // Step 2: Remove private form details before being returned.
+      .map(removePrivateDetailsFromForm)
+      .map((scrubbedForm) => res.json({ form: scrubbedForm }))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error retrieving form template',
+          meta: {
+            action: 'handleGetTemplateForm',
+            ...createReqMeta(req),
+            userId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+
+        // Specialized error response for PrivateFormError.
+        if (error instanceof PrivateFormError) {
+          return res.status(statusCode).json({
+            message: error.message,
+            // Flag to prevent default 404 subtext ("please check link") from
+            // showing.
+            isPageFound: true,
+            formTitle: error.formTitle,
+          })
+        }
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
