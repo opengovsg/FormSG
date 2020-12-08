@@ -2,6 +2,7 @@ import { PresignedPost } from 'aws-sdk/clients/s3'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { Merge } from 'type-fest'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -14,14 +15,23 @@ import {
   DashboardFormView,
   FormLogoState,
   IFieldSchema,
+  IForm,
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
   SpcpLocals,
 } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
-import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
-import { DatabaseError } from '../../core/core.errors'
+import {
+  getMongoErrorMessage,
+  transformMongoError,
+} from '../../../utils/handle-mongo-error'
+import {
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+} from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
@@ -318,6 +328,36 @@ export const transferFormOwnership = (
         ),
       )
   )
+}
+
+/**
+ * Creates a form with the given form params
+ * @param formParams parameters for the form to be created.
+ *
+ * @returns ok(created form) on success
+ * @returns err(Database*Error) on database errors
+ */
+export const createForm = (
+  formParams: Merge<IForm, { admin: string }>,
+): ResultAsync<
+  IFormSchema,
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+> => {
+  return ResultAsync.fromPromise(FormModel.create(formParams), (error) => {
+    logger.error({
+      message: 'Database error encountered when creating form',
+      meta: {
+        action: 'createForm',
+        formParams,
+      },
+      error,
+    })
+
+    return transformMongoError(error)
+  })
 }
 
 /**

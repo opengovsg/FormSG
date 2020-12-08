@@ -6,7 +6,10 @@ import { IPopulatedForm, ResponseMode, Status } from '../../../../types'
 import { assertUnreachable } from '../../../utils/assert-unreachable'
 import {
   ApplicationError,
+  DatabaseConflictError,
   DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
   MalformedParametersError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
@@ -65,6 +68,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
+    case DatabaseValidationError:
     case MissingUserError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
@@ -78,6 +82,16 @@ export const mapRouteError = (
     case MalformedParametersError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case DatabaseConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage: error.message,
+      }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
         errorMessage: error.message,
       }
     case DatabaseError:

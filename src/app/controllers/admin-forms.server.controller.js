@@ -16,12 +16,7 @@ const {
   aws: { logoBucketUrl },
 } = require('../../config/config')
 const { EditFieldActions } = require('../../shared/constants')
-const {
-  getEncryptedFormModel,
-  getEmailFormModel,
-} = require('../models/form.server.model')
 const getSubmissionModel = require('../models/submission.server.model').default
-const { ResponseMode } = require('../../types')
 
 // Export individual functions (i.e. create, delete)
 // and makeModule function that takes in connection object
@@ -34,17 +29,11 @@ module.exports = _.assign({ makeModule }, makeModule(mongoose))
  */
 function makeModule(connection) {
   /**
-   * Get the model depending on responseMode
-   * @param {*} responseMode
-   * @returns the encryptSchema Form if responseMode is 'encrypt' else emailSchema Form
-   */
-  function getDiscriminatedFormModel(responseMode) {
-    return responseMode === ResponseMode.Encrypt
-      ? getEncryptedFormModel(connection)
-      : getEmailFormModel(connection)
-  }
-
-  /**
+   * @deprecated
+   * Note that this function has already been refactored in transformMongoError
+   * in handle-mongo-error.ts. This function remains for Javascript controllers
+   * without mapRouteErrors.
+   *
    * Helper function that handles responding to a client request
    * when encountering a MongoDB error.
    * @param {Object} req Express request object
@@ -228,27 +217,6 @@ function makeModule(connection) {
         })
       }
       return next()
-    },
-    /**
-     * Create a new form called on list forms
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    create: function (req, res) {
-      if (!req.body.form) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message: 'Invalid Input',
-        })
-      }
-      let Form = getDiscriminatedFormModel(req.body.form.responseMode)
-      let form = new Form(req.body.form)
-
-      form.admin = req.session.user._id
-
-      form.save(function (err) {
-        if (err) return respondOnMongoError(req, res, err)
-        return res.json(form)
-      })
     },
     /**
      * Updates a form from Settings tab

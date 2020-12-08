@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { AuthType, WithForm } from '../../../../types'
+import { AuthType, IForm, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import * as FeedbackService from '../../feedback/feedback.service'
@@ -13,6 +13,7 @@ import * as UserService from '../../user/user.service'
 
 import {
   archiveForm,
+  createForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
   duplicateForm,
@@ -672,6 +673,46 @@ export const handleTransferFormOwnership: RequestHandler<
             userId: sessionUserId,
             formId,
             newOwnerEmail,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /adminform.
+ * @security session
+ *
+ * @returns 200 with newly created form
+ * @returns 409 when a database conflict error occurs
+ * @returns 413 when payload for created form exceeds size limit
+ * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
+ * @returns 500 when database error occurs
+ */
+export const handleCreateForm: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  { form: Omit<IForm, 'admin'> }
+> = async (req, res) => {
+  const { form: formParams } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.findUserById(sessionUserId)
+      // Step 2: Create form with given params and set admin to logged in user.
+      .andThen((user) => createForm({ ...formParams, admin: user._id }))
+      .map((createdForm) => res.status(StatusCodes.OK).json(createdForm))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form',
+          meta: {
+            action: 'handleCreateForm',
+            ...createReqMeta(req),
+            userId: sessionUserId,
           },
           error,
         })

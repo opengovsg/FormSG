@@ -34,6 +34,24 @@ export class DatabaseError extends ApplicationError {
     super(message)
   }
 }
+
+export class DatabaseValidationError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
+export class DatabaseConflictError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
+export class DatabasePayloadSizeError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
 export class MalformedParametersError extends ApplicationError {
   constructor(message: string) {
     super(message)
