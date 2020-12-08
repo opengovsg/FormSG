@@ -5,6 +5,7 @@ import { IncomingHttpHeaders } from 'http'
 import { pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
+import { MB } from 'src/app/constants/filesize'
 import { BasicField } from 'src/types'
 
 import {
@@ -12,7 +13,10 @@ import {
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
-import { InitialiseMultipartReceiverError } from '../email-submission.errors'
+import {
+  InitialiseMultipartReceiverError,
+  MultipartError,
+} from '../email-submission.errors'
 import * as EmailSubmissionReceiver from '../email-submission.receiver'
 
 jest.mock('busboy')
@@ -306,6 +310,80 @@ describe('email-submission.receiver', () => {
           },
         ],
       })
+    })
+
+    it('should return MultipartError when file limit is reached', async () => {
+      const mockResponse = pick(generateNewAttachmentResponse(), [
+        '_id',
+        'question',
+        'answer',
+        'fieldType',
+      ])
+      const mockBody = { responses: [mockResponse] }
+
+      const fileStream = createReadStream(
+        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+      )
+      const form = new FormData()
+      form.append('body', JSON.stringify(mockBody))
+      form.append(VALID_FILENAME_1, fileStream, mockResponse._id)
+      const realBusboy = new RealBusboy({
+        headers: {
+          'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+        limits: {
+          fieldSize: 3 * MB,
+          fileSize: 7 * MB,
+        },
+      })
+      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
+        realBusboy,
+      )
+      form.pipe(realBusboy)
+
+      fileStream.emit('data', Buffer.alloc(7 * MB + 1))
+
+      const result = await resultPromise
+      expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
+    })
+
+    it('should return MultipartError when error event is emitted', async () => {
+      const mockBody = { responses: [] }
+
+      const form = new FormData()
+      form.append('body', JSON.stringify(mockBody))
+      const realBusboy = new RealBusboy({
+        headers: {
+          'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+      })
+      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
+        realBusboy,
+      )
+      form.pipe(realBusboy)
+
+      realBusboy.emit('error', new Error())
+
+      const result = await resultPromise
+      expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
+    })
+
+    it('should return MultipartError when body cannot be parsed', async () => {
+      const form = new FormData()
+      form.append('body', 'invalid')
+      const realBusboy = new RealBusboy({
+        headers: {
+          'content-type': `multipart/form-data; boundary=${form.getBoundary()}`,
+        },
+      })
+      const resultPromise = EmailSubmissionReceiver.configureMultipartReceiver(
+        realBusboy,
+      )
+      form.pipe(realBusboy)
+      form.emit('end')
+
+      const result = await resultPromise
+      expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
     })
   })
 })
