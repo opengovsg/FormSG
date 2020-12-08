@@ -1,8 +1,22 @@
+import { ObjectId } from 'bson'
+import crypto from 'crypto'
 import { readFileSync } from 'fs'
 import { omit } from 'lodash'
+import mongoose from 'mongoose'
+import { mocked } from 'ts-jest/utils'
 
+import { getEmailSubmissionModel } from 'src/app/models/submission.server.model'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
+import config from 'src/config/config'
 import { types as basicTypes } from 'src/shared/resources/basic'
-import { BasicField, MyInfoAttribute } from 'src/types'
+import {
+  AuthType,
+  BasicField,
+  IEmailFormSchema,
+  IEmailSubmissionSchema,
+  MyInfoAttribute,
+  SubmissionType,
+} from 'src/types'
 
 import {
   generateSingleAnswerAutoreply,
@@ -18,7 +32,11 @@ import {
 
 import {
   ATTACHMENT_PREFIX,
+  DIGEST_TYPE,
+  HASH_ITERATIONS,
+  KEY_LENGTH,
   MYINFO_PREFIX,
+  SALT_LENGTH,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from '../email-submission.constants'
@@ -29,6 +47,10 @@ import {
 import * as EmailSubmissionService from '../email-submission.service'
 
 jest.mock('src/config/config')
+const MOCK_SALT = Buffer.from('salt')
+const MOCK_HASH = Buffer.from('mockHash')
+
+const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
@@ -447,6 +469,175 @@ describe('email-submission.service', () => {
         response1,
       ])
       expect(result._unsafeUnwrap()).toEqual(true)
+    })
+  })
+
+  describe('hashSubmission', () => {
+    const randomBytesSpy = jest
+      .spyOn(crypto, 'randomBytes')
+      .mockImplementation(() => MOCK_SALT)
+    const pbkdf2Spy = jest
+      .spyOn(crypto, 'pbkdf2')
+      .mockImplementation((_basestring, _salt, _iters, _keylength, _type, cb) =>
+        cb(null, MOCK_HASH),
+      )
+
+    it('should return a submission hash when it has no attachments', async () => {
+      const response = generateNewSingleAnswerResponse(BasicField.LongText)
+      const responseAsEmailField = generateSingleAnswerFormData(response)
+      const expectedBaseString = `${response.question} ${response.answer}; `
+
+      const result = await EmailSubmissionService.hashSubmission(
+        [responseAsEmailField],
+        [],
+      )
+
+      expect(randomBytesSpy).toHaveBeenCalledWith(SALT_LENGTH)
+      expect(pbkdf2Spy).toHaveBeenCalledWith(
+        expectedBaseString,
+        MOCK_SALT.toString('base64'),
+        HASH_ITERATIONS,
+        KEY_LENGTH,
+        DIGEST_TYPE,
+        expect.any(Function),
+      )
+      expect(result._unsafeUnwrap()).toEqual({
+        hash: MOCK_HASH.toString('base64'),
+        salt: MOCK_SALT.toString('base64'),
+      })
+    })
+
+    it('should return a submission hash when it has one attachment', async () => {
+      const response = generateNewAttachmentResponse()
+      const responseAsEmailField = generateSingleAnswerFormData(response)
+      const expectedBaseString = `${response.question} ${response.answer}; ${response.content}`
+
+      const result = await EmailSubmissionService.hashSubmission(
+        [responseAsEmailField],
+        [
+          {
+            fieldId: response._id,
+            content: response.content,
+            filename: response.answer,
+          },
+        ],
+      )
+
+      expect(randomBytesSpy).toHaveBeenCalledWith(SALT_LENGTH)
+      expect(pbkdf2Spy).toHaveBeenCalledWith(
+        expectedBaseString,
+        MOCK_SALT.toString('base64'),
+        HASH_ITERATIONS,
+        KEY_LENGTH,
+        DIGEST_TYPE,
+        expect.any(Function),
+      )
+      expect(result._unsafeUnwrap()).toEqual({
+        hash: MOCK_HASH.toString('base64'),
+        salt: MOCK_SALT.toString('base64'),
+      })
+    })
+
+    it('should return a submission hash when it has multiple attachments', async () => {
+      const response1 = generateNewAttachmentResponse({
+        question: 'question1',
+        answer: 'answer1',
+        content: Buffer.from('content1'),
+      })
+      const responseAsEmailField1 = generateSingleAnswerFormData(response1)
+
+      const response2 = generateNewAttachmentResponse({
+        question: 'question2',
+        answer: 'answer2',
+        content: Buffer.from('content2'),
+      })
+      const expectedBaseString = `${response1.question} ${response1.answer}; ${response2.question} ${response2.answer}; ${response1.content}${response2.content}`
+      const responseAsEmailField2 = generateSingleAnswerFormData(response2)
+
+      const result = await EmailSubmissionService.hashSubmission(
+        [responseAsEmailField1, responseAsEmailField2],
+        [
+          {
+            fieldId: response1._id,
+            content: response1.content,
+            filename: response1.answer,
+          },
+          {
+            fieldId: response2._id,
+            content: response2.content,
+            filename: response2.answer,
+          },
+        ],
+      )
+
+      expect(randomBytesSpy).toHaveBeenCalledWith(SALT_LENGTH)
+      expect(pbkdf2Spy).toHaveBeenCalledWith(
+        expectedBaseString,
+        MOCK_SALT.toString('base64'),
+        HASH_ITERATIONS,
+        KEY_LENGTH,
+        DIGEST_TYPE,
+        expect.any(Function),
+      )
+      expect(result._unsafeUnwrap()).toEqual({
+        hash: MOCK_HASH.toString('base64'),
+        salt: MOCK_SALT.toString('base64'),
+      })
+    })
+  })
+
+  describe('saveSubmissionMetadata', () => {
+    const MYINFO_ATTRS = ['name', 'sex']
+    const MOCK_EMAIL_FORM = {
+      _id: new ObjectId(),
+      title: 'title',
+      authType: AuthType.SP,
+      getUniqueMyInfoAttrs: () => MYINFO_ATTRS,
+      emails: ['a@abc.com', 'b@cde.com'],
+    } as IEmailFormSchema
+    const createEmailSubmissionSpy = jest.spyOn(EmailSubmissionModel, 'create')
+
+    it('should create an email submission with the correct parameters', async () => {
+      const mockSubmission = 'mockSubmission'
+      createEmailSubmissionSpy.mockResolvedValueOnce(
+        (mockSubmission as unknown) as IEmailSubmissionSchema,
+      )
+      const result = await EmailSubmissionService.saveSubmissionMetadata(
+        MOCK_EMAIL_FORM,
+        { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
+      )
+      expect(createEmailSubmissionSpy).toHaveBeenCalledWith({
+        form: MOCK_EMAIL_FORM._id,
+        authType: MOCK_EMAIL_FORM.authType,
+        myInfoFields: MYINFO_ATTRS,
+        recipientEmails: MOCK_EMAIL_FORM.emails,
+        responseHash: MOCK_HASH.toString(),
+        responseSalt: MOCK_SALT.toString(),
+        submissionType: SubmissionType.Email,
+      })
+      expect(result._unsafeUnwrap()).toEqual(mockSubmission)
+    })
+
+    it('should return DatabaseError when email submission creation fails', async () => {
+      createEmailSubmissionSpy.mockImplementationOnce(() =>
+        Promise.reject(new Error()),
+      )
+      const result = await EmailSubmissionService.saveSubmissionMetadata(
+        MOCK_EMAIL_FORM,
+        { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
+      )
+      expect(createEmailSubmissionSpy).toHaveBeenCalledWith({
+        form: MOCK_EMAIL_FORM._id,
+        authType: MOCK_EMAIL_FORM.authType,
+        myInfoFields: MYINFO_ATTRS,
+        recipientEmails: MOCK_EMAIL_FORM.emails,
+        responseHash: MOCK_HASH.toString(),
+        responseSalt: MOCK_SALT.toString(),
+        submissionType: SubmissionType.Email,
+      })
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new DatabaseError('Error while saving submission to database'),
+      )
     })
   })
 })
