@@ -16,6 +16,7 @@ import {
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import { DatabaseError } from '../../core/core.errors'
+import { transformEmails } from '../../form/form.util'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import {
@@ -207,7 +208,7 @@ export const saveSubmissionMetadata = (
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
-    recipientEmails: form.emails,
+    recipientEmails: transformEmails(form.emails),
     responseHash: submissionHash.hash,
     responseSalt: submissionHash.salt,
     submissionType: SubmissionType.Email,
