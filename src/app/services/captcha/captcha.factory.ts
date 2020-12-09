@@ -36,7 +36,6 @@ export const createCaptchaFactory = ({
   // Feature is enabled and valid.
   if (isEnabled && props?.captchaPrivateKey) {
     return {
-      // Need to bind so this keyword works properly
       verifyCaptchaResponse: makeCaptchaResponseVerifier(
         props.captchaPrivateKey,
       ),
