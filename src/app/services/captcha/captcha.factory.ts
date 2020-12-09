@@ -29,7 +29,7 @@ interface ICaptchaFactory {
   validateCaptchaParams: RequestHandler
 }
 
-const createCaptchaFactory = ({
+export const createCaptchaFactory = ({
   isEnabled,
   props,
 }: RegisteredFeature<FeatureNames.Captcha>): ICaptchaFactory => {
