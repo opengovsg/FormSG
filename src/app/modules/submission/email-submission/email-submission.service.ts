@@ -5,6 +5,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
+  BasicField,
   FieldResponse,
   IEmailFormSchema,
   IEmailSubmissionSchema,
@@ -264,4 +265,15 @@ export const sendSubmissionToAdmin = (
       return new SendAdminEmailError()
     },
   )
+}
+
+export const extractEmailAnswers = (
+  parsedResponses: ProcessedFieldResponse[],
+): string[] => {
+  return parsedResponses.reduce((acc, response) => {
+    if (response.fieldType === BasicField.Email && response.answer) {
+      acc.push(response.answer)
+    }
+    return acc
+  }, [] as string[])
 }
