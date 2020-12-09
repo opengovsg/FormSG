@@ -109,7 +109,7 @@ export class MailService {
   #sendNodeMail = async (
     mail: MailOptions,
     sendOptions?: SendMailOptions,
-  ): Promise<boolean> => {
+  ): Promise<true> => {
     const logMeta = {
       action: '#sendNodeMail',
       mailId: sendOptions?.mailId,
@@ -136,7 +136,7 @@ export class MailService {
       return Promise.reject(new Error('Invalid email error'))
     }
 
-    return promiseRetry(async (retry, attemptNum) => {
+    return promiseRetry<true>(async (retry, attemptNum) => {
       logger.info({
         message: `Attempt ${attemptNum} to send mail`,
         meta: logMeta,
@@ -184,7 +184,7 @@ export class MailService {
     form,
     submission,
     index,
-  }: SendSingleAutoreplyMailArgs): Promise<boolean> => {
+  }: SendSingleAutoreplyMailArgs): Promise<true> => {
     const emailSubject =
       autoReplyMailData.subject || `Thank you for submitting ${form.title}`
     // Sender's name appearing after "("" symbol gets truncated. Escaping it
@@ -234,7 +234,7 @@ export class MailService {
   sendVerificationOtp = async (
     recipient: string,
     otp: string,
-  ): Promise<boolean> => {
+  ): Promise<true> => {
     // TODO(#42): Remove param guards once whole backend is TypeScript.
     if (!otp) {
       throw new Error('OTP is missing.')
@@ -274,7 +274,7 @@ export class MailService {
     recipient: string
     otp: string
     ipAddress: string
-  }): ResultAsync<boolean, MailSendError> => {
+  }): ResultAsync<true, MailSendError> => {
     return generateLoginOtpHtml({
       appName: this.#appName,
       appUrl: this.#appUrl,
@@ -331,7 +331,7 @@ export class MailService {
     bounceType: BounceType | undefined
     formTitle: string
     formId: string
-  }): Promise<boolean> => {
+  }): Promise<true> => {
     const htmlData: BounceNotificationHtmlData = {
       formTitle,
       formLink: `${this.#appUrl}/${formId}`,
@@ -379,7 +379,7 @@ export class MailService {
       question: string
       answer: string | number
     }[]
-  }): Promise<boolean> => {
+  }): Promise<true> => {
     const refNo = submission.id
     const formTitle = form.title
     const submissionTime = moment(submission.created)
@@ -452,7 +452,7 @@ export class MailService {
     responsesData,
     autoReplyMailDatas,
     attachments = [],
-  }: SendAutoReplyEmailsArgs): Promise<PromiseSettledResult<boolean>[]> => {
+  }: SendAutoReplyEmailsArgs): Promise<PromiseSettledResult<true>[]> => {
     // Data to render both the submission details mail HTML body PDF.
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
