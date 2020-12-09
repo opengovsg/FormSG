@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -11,20 +11,28 @@ import {
   FieldResponse,
   IFieldSchema,
   IFormDocument,
+  IFormSchema,
+  ISubmissionSchema,
   ResponseMode,
 } from '../../../types'
 import getSubmissionModel from '../../models/submission.server.model'
+import MailService from '../../services/mail/mail.service'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 
 import {
+  EmailAutoReplyField,
+  IAttachmentInfo,
+} from './email-submission/email-submission.types'
+import {
   ConflictError,
   ProcessingError,
+  SendEmailConfirmationError,
   ValidateFieldError,
 } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
-import { getModeFilter } from './submission.utils'
+import { extractConfirmationData, getModeFilter } from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -207,4 +215,61 @@ export const getFormSubmissionsCount = (
       return new DatabaseError()
     },
   )
+}
+
+export const sendEmailConfirmations = ({
+  form,
+  submission,
+  parsedResponses,
+  autoReplyData,
+  attachments,
+}: {
+  form: IFormSchema
+  submission: ISubmissionSchema
+  parsedResponses: ProcessedFieldResponse[]
+  autoReplyData?: EmailAutoReplyField[]
+  attachments?: IAttachmentInfo[]
+}): ResultAsync<true, SendEmailConfirmationError> => {
+  const logMeta = {
+    action: 'sendEmailConfirmations',
+    formId: form._id,
+    submissionid: submission._id,
+  }
+  const confirmationData = extractConfirmationData(
+    parsedResponses,
+    form.form_fields,
+  )
+  if (confirmationData.length === 0) {
+    return okAsync(true)
+  }
+  const sentEmailsPromise = MailService.sendAutoReplyEmails({
+    form,
+    submission,
+    attachments,
+    responsesData: autoReplyData ?? [],
+    autoReplyMailDatas: confirmationData,
+  })
+  return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
+    logger.error({
+      message: 'Error while attempting to send email confirmations',
+      meta: logMeta,
+      error,
+    })
+    return new SendEmailConfirmationError()
+  }).andThen((emailResults) => {
+    const errors = emailResults.reduce((acc, singleEmail) => {
+      if (singleEmail.status === 'rejected') {
+        acc.push(singleEmail.reason)
+      }
+      return acc
+    }, [] as string[])
+    if (errors.length > 0) {
+      logger.error({
+        message: 'Some email confirmations could not be sent',
+        meta: { ...logMeta, errors },
+      })
+      return errAsync(new SendEmailConfirmationError())
+    }
+    return okAsync(true)
+  })
 }
