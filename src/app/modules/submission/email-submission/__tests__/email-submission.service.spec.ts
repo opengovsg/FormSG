@@ -617,14 +617,12 @@ describe('email-submission.service', () => {
     } as IEmailFormSchema
 
     it('should create an email submission with the correct parameters', async () => {
-      const createEmailSubmissionSpy = jest.spyOn(
-        EmailSubmissionModel,
-        'create',
-      )
       const mockSubmission = 'mockSubmission'
-      createEmailSubmissionSpy.mockResolvedValueOnce(
-        (mockSubmission as unknown) as IEmailSubmissionSchema,
-      )
+      const createEmailSubmissionSpy = jest
+        .spyOn(EmailSubmissionModel, 'create')
+        .mockResolvedValueOnce(
+          (mockSubmission as unknown) as IEmailSubmissionSchema,
+        )
       const result = await EmailSubmissionService.saveSubmissionMetadata(
         MOCK_EMAIL_FORM,
         { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
@@ -642,13 +640,9 @@ describe('email-submission.service', () => {
     })
 
     it('should return DatabaseError when email submission creation fails', async () => {
-      const createEmailSubmissionSpy = jest.spyOn(
-        EmailSubmissionModel,
-        'create',
-      )
-      createEmailSubmissionSpy.mockImplementationOnce(() =>
-        Promise.reject(new Error()),
-      )
+      const createEmailSubmissionSpy = jest
+        .spyOn(EmailSubmissionModel, 'create')
+        .mockImplementationOnce(() => Promise.reject(new Error()))
       const result = await EmailSubmissionService.saveSubmissionMetadata(
         MOCK_EMAIL_FORM,
         { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
