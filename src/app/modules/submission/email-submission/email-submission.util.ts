@@ -10,10 +10,10 @@ import {
   MapRouteError,
 } from '../../../../types'
 import { DatabaseError } from '../../core/core.errors'
-import { SendAdminEmailError } from '../submission.errors'
 import {
   ConflictError,
   ProcessingError,
+  SendAdminEmailError,
   ValidateFieldError,
 } from '../submission.errors'
 import {
