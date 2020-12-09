@@ -27,11 +27,6 @@ describe('Submissions Controller', () => {
     controllerStub,
   )
 
-  let spyAxios
-
-  beforeEach(() => {
-    spyAxios = spyOn(axios, 'get')
-  })
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => {
     mockAxios.reset()
@@ -40,99 +35,6 @@ describe('Submissions Controller', () => {
   afterAll(async () => {
     mockAxios.restore()
     await dbHandler.closeDatabase()
-  })
-
-  describe('captchaCheck', () => {
-    let hasCaptcha
-    let originalCaptchaPrivateKey
-    let captchaPrivateKey = '123456789'
-
-    const answerCaptchaWith = (error, body) => {
-      mockAxios
-        .onGet(/https:\/\/www.google.com\/recaptcha\/api\/siteverify?.*/)
-        .reply(error | 200, body)
-
-      // Using callThrough instead of callFake since axios is now mocked.
-      spyAxios.and.callThrough()
-    }
-
-    const expectHTTPCode = (code, done) => {
-      request(app)
-        .post(`${endpointPath}`)
-        .query('captchaResponse=response')
-        .expect(code)
-        .end(done)
-    }
-
-    const expectCaptchaErrorFor = (error, body) => (done) => {
-      answerCaptchaWith(error, body)
-      expectHTTPCode(400, done)
-    }
-
-    const app = express()
-    const endpointPath = '/captcha'
-
-    const injectForm = (req, res, next) => {
-      Object.assign(req, {
-        form: { hasCaptcha },
-        connection: { remoteAddress: '127.0.0.1' },
-      })
-      return next()
-    }
-
-    beforeAll(() => {
-      app
-        .route(endpointPath)
-        .post(
-          injectForm,
-          Controller.captchaCheck(captchaPrivateKey),
-          (req, res) => res.send(),
-        )
-    })
-
-    beforeEach(() => {
-      hasCaptcha = true
-      originalCaptchaPrivateKey = captchaPrivateKey
-      captchaPrivateKey = 'fakeKey'
-    })
-
-    afterEach(() => {
-      captchaPrivateKey = originalCaptchaPrivateKey
-    })
-
-    it('passes through on no form captcha', (done) => {
-      answerCaptchaWith(new Error())
-      hasCaptcha = false
-      request(app).post(endpointPath).expect(StatusCodes.OK).end(done)
-    })
-
-    it('errors with 400 on no captcha response', (done) => {
-      answerCaptchaWith(new Error())
-      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
-    })
-
-    it('errors with 500 if no captcha private key', (done) => {
-      captchaPrivateKey = null
-      expectHTTPCode(500, done)
-    })
-
-    it(
-      'errors with 400 on captcha outcome error',
-      expectCaptchaErrorFor(new Error(), {}),
-    )
-    it(
-      'errors with 400 on bad captcha outcome',
-      expectCaptchaErrorFor(undefined, { success: false }),
-    )
-    it(
-      'errors with 400 on undefined captcha outcome',
-      expectCaptchaErrorFor(undefined, {}),
-    )
-
-    it('passes through on good captcha outcome', (done) => {
-      answerCaptchaWith(undefined, { success: true })
-      expectHTTPCode(200, done)
-    })
   })
 
   describe('sendEmailAutoReply', () => {
