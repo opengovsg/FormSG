@@ -85,9 +85,7 @@ function verifySecretKeyDirective(FormSgSdk) {
           }
 
           const encryptionKey = createEncryptionKey($scope.publicKey, secretKey)
-          if (encryptionKey !== null) {
-            Toastr.success('Verified!')
-          } else {
+          if (!encryptionKey) {
             Toastr.error(getErrorMessage('invalid-key'))
           }
           $scope.callback({ encryptionKey })
