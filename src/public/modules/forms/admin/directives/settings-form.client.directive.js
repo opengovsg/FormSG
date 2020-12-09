@@ -18,6 +18,9 @@ const createTempSettings = (myform) => {
   let tempForm = {}
   SETTINGS_PATH.forEach((path) => set(tempForm, path, get(myform, path)))
   tempForm.mode = 'edit'
+  if (Array.isArray(tempForm.emails)) {
+    tempForm.emails = tempForm.emails.join(', ')
+  }
   return tempForm
 }
 
