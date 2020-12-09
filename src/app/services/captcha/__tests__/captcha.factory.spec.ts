@@ -1,9 +1,6 @@
 import { Request, Response } from 'express'
 import { mocked } from 'ts-jest/utils'
 
-import { MissingFeatureError } from 'src/app/modules/core/core.errors'
-import { FeatureNames } from 'src/config/feature-manager'
-
 import { createCaptchaFactory } from '../captcha.factory'
 import { CaptchaService } from '../captcha.service'
 
@@ -16,7 +13,7 @@ const MockCaptchaService = mocked(CaptchaService, true)
 describe('captcha.factory', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  it('should return error and passthrough functions when isEnabled is false', async () => {
+  it('should return passthrough functions when isEnabled is false', async () => {
     const captchaFactory = createCaptchaFactory({
       isEnabled: false,
       props: {
@@ -35,13 +32,11 @@ describe('captcha.factory', () => {
       ({} as unknown) as Response,
       nextSpy,
     )
-    expect(verifyResult._unsafeUnwrapErr()).toEqual(
-      new MissingFeatureError(FeatureNames.Captcha),
-    )
+    expect(verifyResult._unsafeUnwrap()).toBe(true)
     expect(nextSpy).toHaveBeenCalled()
   })
 
-  it('should return error and passthrough functions when props is falsey', async () => {
+  it('should return passthrough functions when props is falsey', async () => {
     const captchaFactory = createCaptchaFactory({
       isEnabled: true,
       props: undefined,
@@ -57,9 +52,7 @@ describe('captcha.factory', () => {
       ({} as unknown) as Response,
       nextSpy,
     )
-    expect(verifyResult._unsafeUnwrapErr()).toEqual(
-      new MissingFeatureError(FeatureNames.Captcha),
-    )
+    expect(verifyResult._unsafeUnwrap()).toBe(true)
     expect(nextSpy).toHaveBeenCalled()
   })
 
