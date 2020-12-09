@@ -1,6 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import FeatureManager, {
   FeatureNames,
@@ -51,8 +51,7 @@ export const createCaptchaFactory = ({
 
   // Not enabled or invalid props.
   return {
-    verifyCaptchaResponse: () =>
-      errAsync(new MissingFeatureError(FeatureNames.Captcha)),
+    verifyCaptchaResponse: () => okAsync(true),
     validateCaptchaParams: (_req, _res, next) => next(),
   }
 }
