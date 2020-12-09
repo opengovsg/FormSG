@@ -51,6 +51,8 @@ export const createCaptchaFactory = ({
 
   // Not enabled or invalid props.
   return {
+    // hasCaptcha is true on every form by default even when captcha feature is not enabled.
+    // Hence, allow the function to be called but don't take any action.
     verifyCaptchaResponse: () => okAsync(true),
     validateCaptchaParams: (_req, _res, next) => next(),
   }
