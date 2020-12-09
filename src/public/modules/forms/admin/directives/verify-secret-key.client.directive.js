@@ -68,8 +68,7 @@ function verifySecretKeyDirective(FormSgSdk) {
               .toLowerCase()
               .replace(/\./g, '')
               .replace(/  +/g, ' ')
-              .trim() !==
-            'i understand the consequences and have stored my secret key in 2 other places'
+              .trim() !== 'i have shared my secret key with a colleague'
           )
           //Allow regardless of whether user types in upper / lowercase, ignore full stops and multiple spaces
         }
