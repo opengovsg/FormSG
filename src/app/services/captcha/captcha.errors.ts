@@ -13,7 +13,7 @@ export class CaptchaConnectionError extends ApplicationError {
  * Wrong captcha response
  */
 export class VerifyCaptchaError extends ApplicationError {
-  constructor(message = 'Incorrect captcha response') {
+  constructor(message = 'Incorrect Captcha response') {
     super(message)
   }
 }
@@ -22,7 +22,7 @@ export class VerifyCaptchaError extends ApplicationError {
  * Missing captcha response
  */
 export class MissingCaptchaError extends ApplicationError {
-  constructor(message = 'Missing captcha response') {
+  constructor(message = 'Missing Captcha response') {
     super(message)
   }
 }
