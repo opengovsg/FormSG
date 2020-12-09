@@ -1,4 +1,4 @@
-import { BasicField, IBaseResponse } from '../../../../types'
+import { BasicField, FieldResponse, IBaseResponse } from '../../../../types'
 import { ProcessedResponse } from '../submission.types'
 
 export interface EmailAutoReplyField {
@@ -41,3 +41,15 @@ export type ResponseFormattedForEmail = IResponseFormattedForEmail &
   ProcessedResponse
 
 export type WithEmailData<T> = T & EmailData
+
+export interface ParsedMultipartForm {
+  responses: FieldResponse[]
+}
+
+export interface IAttachmentInfo {
+  filename: string
+  content: Buffer
+  fieldId: string
+}
+
+export type WithAttachments<T> = T & { attachments: IAttachmentInfo[] }

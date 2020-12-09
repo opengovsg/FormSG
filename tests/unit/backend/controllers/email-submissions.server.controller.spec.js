@@ -188,7 +188,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectForm,
-          controller.receiveEmailSubmissionUsingBusBoy,
+          EmailSubmissionsMiddleware.receiveEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -233,28 +233,6 @@ describe('Email Submissions Controller', () => {
         .attach('govtech.jpg', Buffer.alloc(1), 'receiveId')
         .expect(StatusCodes.OK)
         .expect(JSON.stringify({ body: parsedBody }))
-        .end(done)
-    })
-
-    it('returns 400 for attachments with invalid file exts', (done) => {
-      const body = { responses: [] }
-      request(app)
-        .post(endpointPath)
-        .field('body', JSON.stringify(body))
-        .attach('invalid.py', Buffer.alloc(1), 'fieldId')
-        .expect(StatusCodes.BAD_REQUEST)
-        .end(done)
-    })
-
-    it('returns 422 for attachments beyond 7 million bytes', (done) => {
-      const body = { responses: [] }
-      request(app)
-        .post(endpointPath)
-        .field('body', JSON.stringify(body))
-        .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId1')
-        .attach('valid2.jpg', Buffer.alloc(3000000), 'fieldId2')
-        .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId3')
-        .expect(StatusCodes.UNPROCESSABLE_ENTITY)
         .end(done)
     })
 
@@ -343,7 +321,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -428,11 +406,59 @@ describe('Email Submissions Controller', () => {
               parsedResponses: expectedResponses,
             },
             attachments: [
-              { filename: validAttachmentName, content: Buffer.alloc(1) },
+              {
+                fieldId: String(requiredAttachmentId),
+                filename: validAttachmentName,
+                content: Buffer.alloc(1),
+              },
             ],
           }),
         )
         .end(done)
+    })
+
+    it('returns 400 for attachments with invalid file exts', (done) => {
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(1),
+        filename: 'invalid.py',
+      })
+      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
+    })
+
+    it('returns 400 for attachments beyond 7 million bytes', (done) => {
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
     })
   })
 
@@ -730,7 +756,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .get(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           submissionsController.injectAutoReplyInfo,
           spcpController.appendVerifiedSPCPResponses,
           EmailSubmissionsMiddleware.prepareEmailSubmission,
@@ -2801,7 +2827,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           sendSubmissionBack,
         )
       testAgency = new Agency({

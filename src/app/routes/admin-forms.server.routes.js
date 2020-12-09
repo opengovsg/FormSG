@@ -433,7 +433,7 @@ module.exports = function (app) {
    */
   app.route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})').post(
     authActiveForm(PermissionLevel.Read),
-    emailSubmissions.receiveEmailSubmissionUsingBusBoy,
+    EmailSubmissionsMiddleware.receiveEmailSubmission,
     celebrate({
       [Segments.BODY]: Joi.object({
         responses: Joi.array()
@@ -460,7 +460,7 @@ module.exports = function (app) {
         isPreview: Joi.boolean().required(),
       }),
     }),
-    emailSubmissions.validateEmailSubmission,
+    EmailSubmissionsMiddleware.validateEmailSubmission,
     AdminFormController.passThroughSpcp,
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,

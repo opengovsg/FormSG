@@ -1,3 +1,10 @@
+import crypto from 'crypto'
+import { readFileSync } from 'fs'
+import stringify from 'json-stringify-deterministic'
+import { omit } from 'lodash'
+import { mocked } from 'ts-jest/utils'
+
+import config from 'src/config/config'
 import { types as basicTypes } from 'src/shared/resources/basic'
 import { BasicField, MyInfoAttribute } from 'src/types'
 
@@ -19,7 +26,16 @@ import {
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from '../email-submission.constants'
+import {
+  AttachmentTooLargeError,
+  InvalidFileExtensionError,
+} from '../email-submission.errors'
 import * as EmailSubmissionService from '../email-submission.service'
+import { ParsedMultipartForm } from '../email-submission.types'
+
+jest.mock('src/config/config')
+const MockConfig = mocked(config, true)
+const MOCK_SESSION_SECRET = 'secret'
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content
@@ -337,6 +353,143 @@ describe('email-submission.service', () => {
           },
         ],
       })
+    })
+  })
+
+  describe('validateAttachments', () => {
+    it('should reject submissions when attachments are more than 7MB', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: Buffer.alloc(3000001),
+      })
+      const processedResponse2 = generateNewAttachmentResponse({
+        content: Buffer.alloc(4000000),
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+      const response2 = omit(processedResponse2, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await EmailSubmissionService.validateAttachments([
+        response1,
+        response2,
+      ])
+      expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
+    })
+
+    it('should reject submissions when file types are invalid', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync('./tests/unit/backend/resources/invalid.py'),
+        filename: 'invalid.py',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await EmailSubmissionService.validateAttachments([
+        response1,
+      ])
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
+    })
+
+    it('should reject submissions when there are invalid file types in zip', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync(
+          './tests/unit/backend/resources/nestedInvalid.zip',
+        ),
+        filename: 'nestedInvalid.zip',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await EmailSubmissionService.validateAttachments([
+        response1,
+      ])
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
+    })
+
+    it('should accept submissions when file types are valid', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync('./tests/unit/backend/resources/govtech.jpg'),
+        filename: 'govtech.jpg',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await EmailSubmissionService.validateAttachments([
+        response1,
+      ])
+      expect(result._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should accept submissions when file types in zip are valid', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync('./tests/unit/backend/resources/nestedValid.zip'),
+        filename: 'nestedValid.zip',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await EmailSubmissionService.validateAttachments([
+        response1,
+      ])
+      expect(result._unsafeUnwrap()).toEqual(true)
+    })
+  })
+
+  describe('hashSubmission', () => {
+    beforeAll(() => {
+      MockConfig.sessionSecret = MOCK_SESSION_SECRET
+    })
+
+    beforeEach(() => jest.restoreAllMocks())
+    it('should hash both responses and attachments', () => {
+      const mockUinFin = 'uinFin'
+      const response = generateNewAttachmentResponse()
+      const mockBody: ParsedMultipartForm = {
+        responses: [omit(response, ['isVisible', 'isUserVerified'])],
+      }
+      const submissionToHash =
+        stringify(mockBody) +
+        stringify([
+          {
+            fieldId: response._id,
+            filename: response.filename,
+            content: response.content,
+          },
+        ])
+      const hashedUinFin = crypto
+        .createHmac('sha256', MOCK_SESSION_SECRET)
+        .update(mockUinFin)
+        .digest('hex')
+      const hashedSubmission = crypto
+        .createHmac('sha256', MOCK_SESSION_SECRET)
+        .update(submissionToHash)
+        .digest('hex')
+
+      const result = EmailSubmissionService.hashSubmission(mockBody, mockUinFin)
+      expect(result.hashedUinFin).toBe(hashedUinFin)
+      expect(result.hashedSubmission).toBe(hashedSubmission)
     })
   })
 })
