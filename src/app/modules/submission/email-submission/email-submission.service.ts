@@ -263,11 +263,5 @@ export const sendSubmissionToAdmin = (
       logger.error({ ...errorLogParams, error })
       return new SendAdminEmailError()
     },
-  ).andThen((result) => {
-    if (!result) {
-      logger.error(errorLogParams)
-      return errAsync(new SendAdminEmailError())
-    }
-    return okAsync(true)
-  })
+  )
 }
