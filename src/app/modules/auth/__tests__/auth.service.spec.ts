@@ -395,10 +395,7 @@ describe('auth.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(
-        expectedForm,
-        'Cannot access private form',
-      )
+      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(expectedForm)
     })
 
     it('should return PrivateFormError when form is private', async () => {
@@ -411,7 +408,10 @@ describe('auth.service', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(expectedForm),
       )
-      const expectedError = new PrivateFormError('you have no access')
+      const expectedError = new PrivateFormError(
+        'you have no access',
+        expectedForm.title,
+      )
       MockFormService.isFormPublic.mockReturnValueOnce(err(expectedError))
 
       // Act
@@ -422,10 +422,7 @@ describe('auth.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(expectedError)
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(
-        expectedForm,
-        'Cannot access private form',
-      )
+      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(expectedForm)
     })
 
     it('should return DatabaseError when database error occurs when retrieving form', async () => {

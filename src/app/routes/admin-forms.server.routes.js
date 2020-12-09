@@ -7,7 +7,6 @@ const { celebrate, Joi, Segments } = require('celebrate')
 
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
-let publicForms = require('../../app/controllers/public-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
@@ -41,15 +40,6 @@ let authActiveForm = (requiredPermission) => [
   forms.formById,
   adminForms.isFormActive,
   auth.verifyPermission(requiredPermission),
-]
-
-/**
- * Authenticates logged in user, before retrieving non-archived form.
- */
-let authAdminActiveAnyForm = [
-  withUserAuthentication,
-  forms.formById,
-  adminForms.isFormActive,
 ]
 
 /**
@@ -247,11 +237,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/template')
-    .get(
-      authAdminActiveAnyForm,
-      publicForms.isFormPublic,
-      forms.read(forms.REQUEST_TYPE.ADMIN),
-    )
+    .get(withUserAuthentication, AdminFormController.handleGetTemplateForm)
 
   /**
    * Return the preview form to the user.
