@@ -13,8 +13,8 @@ import {
 const logger = createLoggerWithLabel(module)
 
 export const makeCaptchaResponseVerifier = (captchaPrivateKey: string) => (
-  response: string | null | undefined,
-  remoteip: string | undefined,
+  response?: string | null,
+  remoteip?: string,
 ): ResultAsync<
   true,
   CaptchaConnectionError | VerifyCaptchaError | MissingCaptchaError
