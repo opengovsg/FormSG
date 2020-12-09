@@ -11,6 +11,7 @@ import {
   BasicField,
   IAttachmentFieldSchema,
   ICheckboxFieldSchema,
+  IDecimalFieldSchema,
   IDropdownField,
   IField,
   IFieldSchema,
@@ -78,6 +79,16 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IShortTextFieldSchema
+    case BasicField.Decimal:
+      return {
+        ...defaultParams,
+        ValidationOptions: {
+          customMin: null,
+          customMax: null,
+        },
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as IDecimalFieldSchema
     default:
       return {
         ...defaultParams,

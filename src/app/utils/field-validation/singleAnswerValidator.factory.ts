@@ -3,6 +3,7 @@ import { left } from 'fp-ts/lib/Either'
 import { IField } from '../../../types/field/baseField'
 import {
   isDateField,
+  isDecimalField,
   isHomeNumberField,
   isLongTextField,
   isMobileNumberField,
@@ -16,6 +17,7 @@ import { ResponseValidator } from '../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../modules/submission/submission.types'
 
 import { constructDateValidator } from './validators/dateValidator'
+import { constructDecimalValidator } from './validators/decimalValidator'
 import { constructHomeNoValidator } from './validators/homeNoValidator'
 import { constructMobileNoValidator } from './validators/mobileNoValidator'
 import { constructNricValidator } from './validators/nricValidator'
@@ -47,6 +49,8 @@ export const constructSingleAnswerValidator = (
     return constructMobileNoValidator(formField)
   } else if (isDateField(formField)) {
     return constructDateValidator(formField)
+  } else if (isDecimalField(formField)) {
+    return constructDecimalValidator(formField)
   }
   return () => left('Unsupported field type')
 }

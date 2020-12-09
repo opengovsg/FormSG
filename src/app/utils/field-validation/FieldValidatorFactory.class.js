@@ -6,7 +6,6 @@ const {
   NumberValidator,
   YesNoValidator,
   BaseFieldValidator,
-  DecimalValidator,
   AttachmentValidator,
 } = require('./validators')
 
@@ -41,6 +40,7 @@ class FieldValidatorFactory {
       case 'rating':
       case 'mobileno':
       case 'date':
+      case 'decimal':
       case 'radiobutton':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'dropdown':
@@ -55,8 +55,6 @@ class FieldValidatorFactory {
         return new NumberValidator(...arguments)
       case 'yes_no':
         return new YesNoValidator(...arguments)
-      case 'decimal':
-        return new DecimalValidator(...arguments)
       case 'attachment':
         return new AttachmentValidator(...arguments)
       default:

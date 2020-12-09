@@ -118,6 +118,7 @@ export const validateField = (
         case BasicField.Radio:
         case BasicField.Rating:
         case BasicField.Date:
+        case BasicField.Decimal:
         case BasicField.Mobile: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
