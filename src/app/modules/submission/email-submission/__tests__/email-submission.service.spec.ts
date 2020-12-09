@@ -473,16 +473,18 @@ describe('email-submission.service', () => {
   })
 
   describe('hashSubmission', () => {
-    const randomBytesSpy = jest
-      .spyOn(crypto, 'randomBytes')
-      .mockImplementation(() => MOCK_SALT)
-    const pbkdf2Spy = jest
-      .spyOn(crypto, 'pbkdf2')
-      .mockImplementation((_basestring, _salt, _iters, _keylength, _type, cb) =>
-        cb(null, MOCK_HASH),
-      )
+    beforeEach(() => jest.clearAllMocks())
 
     it('should return a submission hash when it has no attachments', async () => {
+      const randomBytesSpy = jest
+        .spyOn(crypto, 'randomBytes')
+        .mockImplementation(() => MOCK_SALT)
+      const pbkdf2Spy = jest
+        .spyOn(crypto, 'pbkdf2')
+        .mockImplementation(
+          (_basestring, _salt, _iters, _keylength, _type, cb) =>
+            cb(null, MOCK_HASH),
+        )
       const response = generateNewSingleAnswerResponse(BasicField.LongText)
       const responseAsEmailField = generateSingleAnswerFormData(response)
       const expectedBaseString = `${response.question} ${response.answer}; `
@@ -508,6 +510,15 @@ describe('email-submission.service', () => {
     })
 
     it('should return a submission hash when it has one attachment', async () => {
+      const randomBytesSpy = jest
+        .spyOn(crypto, 'randomBytes')
+        .mockImplementation(() => MOCK_SALT)
+      const pbkdf2Spy = jest
+        .spyOn(crypto, 'pbkdf2')
+        .mockImplementation(
+          (_basestring, _salt, _iters, _keylength, _type, cb) =>
+            cb(null, MOCK_HASH),
+        )
       const response = generateNewAttachmentResponse()
       const responseAsEmailField = generateSingleAnswerFormData(response)
       const expectedBaseString = `${response.question} ${response.answer}; ${response.content}`
@@ -539,6 +550,15 @@ describe('email-submission.service', () => {
     })
 
     it('should return a submission hash when it has multiple attachments', async () => {
+      const randomBytesSpy = jest
+        .spyOn(crypto, 'randomBytes')
+        .mockImplementation(() => MOCK_SALT)
+      const pbkdf2Spy = jest
+        .spyOn(crypto, 'pbkdf2')
+        .mockImplementation(
+          (_basestring, _salt, _iters, _keylength, _type, cb) =>
+            cb(null, MOCK_HASH),
+        )
       const response1 = generateNewAttachmentResponse({
         question: 'question1',
         answer: 'answer1',
@@ -595,9 +615,12 @@ describe('email-submission.service', () => {
       getUniqueMyInfoAttrs: () => MYINFO_ATTRS,
       emails: ['a@abc.com', 'b@cde.com'],
     } as IEmailFormSchema
-    const createEmailSubmissionSpy = jest.spyOn(EmailSubmissionModel, 'create')
 
     it('should create an email submission with the correct parameters', async () => {
+      const createEmailSubmissionSpy = jest.spyOn(
+        EmailSubmissionModel,
+        'create',
+      )
       const mockSubmission = 'mockSubmission'
       createEmailSubmissionSpy.mockResolvedValueOnce(
         (mockSubmission as unknown) as IEmailSubmissionSchema,
@@ -619,6 +642,10 @@ describe('email-submission.service', () => {
     })
 
     it('should return DatabaseError when email submission creation fails', async () => {
+      const createEmailSubmissionSpy = jest.spyOn(
+        EmailSubmissionModel,
+        'create',
+      )
       createEmailSubmissionSpy.mockImplementationOnce(() =>
         Promise.reject(new Error()),
       )
