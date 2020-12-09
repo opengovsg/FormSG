@@ -13,7 +13,7 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from './captcha.errors'
-import { CaptchaService } from './captcha.service'
+import { makeCaptchaResponseVerifier } from './captcha.service'
 
 interface ICaptchaFactory {
   verifyCaptchaResponse: (
@@ -35,11 +35,10 @@ export const createCaptchaFactory = ({
 }: RegisteredFeature<FeatureNames.Captcha>): ICaptchaFactory => {
   // Feature is enabled and valid.
   if (isEnabled && props?.captchaPrivateKey) {
-    const captchaService = new CaptchaService(props.captchaPrivateKey)
     return {
       // Need to bind so this keyword works properly
-      verifyCaptchaResponse: captchaService.verifyCaptchaResponse.bind(
-        captchaService,
+      verifyCaptchaResponse: makeCaptchaResponseVerifier(
+        props.captchaPrivateKey,
       ),
       validateCaptchaParams: celebrate({
         [Segments.QUERY]: Joi.object({

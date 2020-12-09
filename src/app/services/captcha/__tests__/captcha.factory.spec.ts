@@ -2,13 +2,13 @@ import { Request, Response } from 'express'
 import { mocked } from 'ts-jest/utils'
 
 import { createCaptchaFactory } from '../captcha.factory'
-import { CaptchaService } from '../captcha.service'
+import { makeCaptchaResponseVerifier } from '../captcha.service'
 
 const MOCK_PRIVATE_KEY = 'privateKey'
 const MOCK_PUBLIC_KEY = 'publicKey'
 
 jest.mock('../captcha.service')
-const MockCaptchaService = mocked(CaptchaService, true)
+const MockMakeVerifier = mocked(makeCaptchaResponseVerifier, true)
 
 describe('captcha.factory', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -56,7 +56,7 @@ describe('captcha.factory', () => {
     expect(nextSpy).toHaveBeenCalled()
   })
 
-  it('should call CaptchaService constructor when isEnabled is true and props is truthy', () => {
+  it('should call create Captcha verifier when isEnabled is true and props is truthy', () => {
     createCaptchaFactory({
       isEnabled: true,
       props: {
@@ -65,6 +65,6 @@ describe('captcha.factory', () => {
       },
     })
 
-    expect(MockCaptchaService).toHaveBeenCalledWith(MOCK_PRIVATE_KEY)
+    expect(MockMakeVerifier).toHaveBeenCalledWith(MOCK_PRIVATE_KEY)
   })
 })
