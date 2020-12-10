@@ -41,3 +41,11 @@ export class SubmissionHashError extends ApplicationError {
     super(message)
   }
 }
+
+export class ConcatSubmissionError extends ApplicationError {
+  constructor(
+    message = 'Error occurred while concatenating responses to attachments',
+  ) {
+    super(message)
+  }
+}
