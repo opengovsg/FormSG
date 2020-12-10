@@ -75,3 +75,14 @@ export class MissingAttributesError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * JWT has the wrong shape
+ */
+export class InvalidJwtError extends ApplicationError {
+  constructor(
+    message = 'Decoded JWT did not contain the correct SPCP attributes',
+  ) {
+    super(message)
+  }
+}
