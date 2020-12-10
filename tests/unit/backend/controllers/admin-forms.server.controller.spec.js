@@ -2,22 +2,20 @@ const { StatusCodes } = require('http-status-codes')
 const mongoose = require('mongoose')
 
 const dbHandler = require('../helpers/db-handler')
-const roles = require('../helpers/roles')
-
-const User = dbHandler.makeModel('user.server.model', 'User')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
-const EmailForm = mongoose.model('email')
 
 const Controller = spec(
   'dist/backend/app/controllers/admin-forms.server.controller',
 ).makeModule(mongoose)
+
+const NewController = require('../../../../dist/backend/app/modules/form/admin-form/admin-form.controller')
+const { ResponseMode } = require('../../../../dist/backend/types')
 
 describe('Admin-Forms Controller', () => {
   // Declare global variables
   let req
   let res
   let testForm
-  let testAgency
   let testUser
 
   beforeAll(async () => await dbHandler.connect())
@@ -26,7 +24,6 @@ describe('Admin-Forms Controller', () => {
     const collections = await dbHandler.preloadCollections()
 
     testUser = collections.user
-    testAgency = collections.agency
     testForm = collections.form
 
     req = {
@@ -93,9 +90,15 @@ describe('Admin-Forms Controller', () => {
     it('should successfully save a Form object with user defined fields', (done) => {
       let expected = {
         title: 'form_title',
+        responseMode: ResponseMode.Email,
         emails: ['email@hello.gov.sg', 'user@byebye.gov.sg'],
       }
       req.body.form = _.cloneDeep(expected)
+
+      res.status.and.callFake(() => {
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.OK)
+        return res
+      })
 
       // Check for user-defined fields
       res.json.and.callFake((args) => {
@@ -113,21 +116,15 @@ describe('Admin-Forms Controller', () => {
           }
         })
       })
-      Controller.create(req, res)
+      NewController.handleCreateForm(req, res)
     })
 
-    it('should return 400 error when form param not supplied', (done) => {
-      req.body.form = null
-      res.status.and.callFake(() => {
-        expect(res.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-        done()
-        return res
-      })
-      Controller.create(req, res)
-    })
-
-    it('should return 405 error when saving a Form object with invalid fields', (done) => {
-      req.body.form = { title: 'bad_form', emails: 'wrongemail.com' }
+    it('should return 422 error when saving a Form object with invalid fields', (done) => {
+      req.body.form = {
+        title: 'bad_form',
+        responseMode: ResponseMode.Email,
+        emails: 'wrongemail.com',
+      }
       res.status.and.callFake(() => {
         expect(res.status).toHaveBeenCalledWith(
           StatusCodes.UNPROCESSABLE_ENTITY,
@@ -135,7 +132,7 @@ describe('Admin-Forms Controller', () => {
         done()
         return res
       })
-      Controller.create(req, res)
+      NewController.handleCreateForm(req, res)
     })
   })
 
@@ -182,109 +179,6 @@ describe('Admin-Forms Controller', () => {
         return res
       })
       Controller.update(req, res)
-    })
-  })
-
-  describe('delete', () => {
-    it('should delete from by setting status to archived', (done) => {
-      req.form = testForm
-      res.json.and.callFake(() => {
-        Form.findOne({ _id: testForm._id }, (err, foundForm) => {
-          if (err || !foundForm) {
-            done(err || new Error('Form not found'))
-          } else {
-            let foundFormObj = foundForm.toObject()
-            expect(foundFormObj.status).toEqual('ARCHIVED')
-            done()
-          }
-        })
-      })
-      Controller.delete(req, res)
-    })
-  })
-
-  describe('duplicate', () => {
-    it('should duplicate form with correct title, new admin and no collaborators', async (done) => {
-      // Insert collaborator into User collection before duplicating form.
-      const collabAdmin = await User.create({
-        email: 'test1@test.gov.sg',
-        _id: mongoose.Types.ObjectId('000000000002'),
-        agency: testAgency._id,
-      })
-
-      let collaboratedForm = new EmailForm({
-        title: 'Form to duplicate',
-        emails: 'test1@test.gov.sg',
-        admin: collabAdmin._id,
-        permissionList: [roles.collaborator(testUser.email)],
-      })
-      req.form = collaboratedForm
-      // Passed in create-form-modal.client.controller
-      req.body.emails = testUser.email
-      req.body.title = 'Form to duplicate_3'
-
-      collaboratedForm.save().then(() => {
-        res.json.and.callFake((args) => {
-          expect(args.title).toEqual(collaboratedForm.title + '_' + 3)
-          Form.findOne({ _id: args._id }, (err, foundForm) => {
-            if (!err) {
-              let duplicatedForm = foundForm.toObject()
-              expect(duplicatedForm.admin.toString()).toEqual(
-                req.session.user._id.toString(),
-              )
-              expect(duplicatedForm.permissionList).toEqual([])
-            }
-            done(err)
-          })
-        })
-        Controller.duplicate(req, res)
-      })
-    })
-  })
-
-  describe('transferOwner', () => {
-    it('should update admin id and set current owner as editor', async (done) => {
-      const collabAdmin = await User.create({
-        email: 'original@test.gov.sg',
-        _id: mongoose.Types.ObjectId('000000000002'),
-        agency: testAgency._id,
-      })
-
-      const newOwner = await User.create({
-        email: 'newOwner@test.gov.sg',
-        _id: mongoose.Types.ObjectId('000000000003'),
-        agency: testAgency._id,
-      })
-
-      const form1 = new Form({
-        title: 'Transfer Owner Form',
-        admin: collabAdmin._id,
-        permissionList: [roles.collaborator(newOwner.email)],
-      })
-      await form1.save()
-
-      req.session.user = collabAdmin
-      req.body.email = newOwner.email
-      req.form = form1
-
-      res.json.and.callFake((args) => {
-        expect(args.form.admin._id.toString()).toEqual(newOwner._id.toString())
-        expect(args.form.permissionList.length).toEqual(1)
-        expect(args.form.permissionList[0].email).toEqual(collabAdmin.email)
-        expect(args.form.permissionList[0].write).toEqual(true)
-
-        Form.findOne({ _id: args.form._id }, (err, foundForm) => {
-          if (!err) {
-            let form = foundForm.toObject()
-            expect(form.admin.toString()).toEqual(newOwner._id.toString())
-            expect(form.permissionList.length).toEqual(1)
-            expect(form.permissionList[0].email).toEqual(collabAdmin.email)
-            expect(form.permissionList[0].write).toEqual(true)
-          }
-          done(err)
-        })
-      })
-      Controller.transferOwner(req, res)
     })
   })
 })

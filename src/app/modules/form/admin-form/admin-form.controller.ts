@@ -4,20 +4,26 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { AuthType, WithForm } from '../../../../types'
+import { AuthType, IForm, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import * as FeedbackService from '../../feedback/feedback.service'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
+import { PrivateFormError } from '../form.errors'
+import { removePrivateDetailsFromForm } from '../form.utils'
 
 import {
+  archiveForm,
+  createForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
+  duplicateForm,
   getDashboardForms,
   getMockSpcpLocals,
+  transferFormOwnership,
 } from './admin-form.service'
-import { PermissionLevel } from './admin-form.types'
+import { DuplicateFormBody, PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -50,6 +56,52 @@ export const handleListDashboardForms: RequestHandler = async (req, res) => {
 
   // Success.
   return res.json(dashboardResult.value)
+}
+
+/**
+ * Handler for GET /:formId/adminform.
+ * @security session
+ *
+ * @returns 200 with retrieved form with formId if user has read permissions
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has read permissions to form
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      .map((form) => res.status(StatusCodes.OK).json({ form }))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error retrieving single form',
+          meta: {
+            action: 'handleGetSingleForm',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }
 
 /**
@@ -399,4 +451,325 @@ export const handleGetFormFeedbacks: RequestHandler<{
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
+}
+
+/**
+ * Handler for DELETE /{formId}/adminform.
+ * @security session
+ *
+ * @returns 200 with success message when successfully archived
+ * @returns 403 when user does not have permissions to archive form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is already archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has delete permissions for form.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Delete,
+        }),
+      )
+      // Step 3: Currently logged in user has permissions to archive form.
+      .andThen((formToArchive) => archiveForm(formToArchive))
+      .map(() => res.json({ message: 'Form has been archived' }))
+      .mapErr((error) => {
+        logger.warn({
+          message: 'Error occurred when archiving form',
+          meta: {
+            action: 'handleArchiveForm',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /:formId/adminform
+ * Duplicates the form corresponding to the formId. The currently logged in user
+ * must have read permissions to the form being copied.
+ * @note Even if current user is not admin of the form, the current user will be the admin of the new form
+ * @security session
+ *
+ * @returns 200 with the duplicate form dashboard view
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDuplicateAdminForm: RequestHandler<
+  { formId: string },
+  unknown,
+  DuplicateFormBody
+> = (req, res) => {
+  const { formId } = req.params
+  const userId = (req.session as Express.AuthedSession).user._id
+  const overrideParams = req.body
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(userId)
+      .andThen((user) =>
+        // Step 2: Check if current user has permissions to read form.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        })
+          .andThen((originalForm) =>
+            // Step 3: Duplicate form.
+            duplicateForm(originalForm, userId, overrideParams),
+          )
+          // Step 4: Retrieve dashboard view of duplicated form.
+          .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
+      )
+      // Success; return duplicated form's dashboard view.
+      .map((dupedDashView) => res.json(dupedDashView))
+      // Error; some error occurred in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error duplicating form',
+          meta: {
+            action: 'handleDuplicateAdminForm',
+            ...createReqMeta(req),
+            userId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const userId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve form only if form is currently public.
+    AuthService.getFormIfPublic(formId)
+      // Step 2: Remove private form details before being returned.
+      .map(removePrivateDetailsFromForm)
+      .map((scrubbedForm) =>
+        res.status(StatusCodes.OK).json({ form: scrubbedForm }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error retrieving form template',
+          meta: {
+            action: 'handleGetTemplateForm',
+            ...createReqMeta(req),
+            userId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+
+        // Specialized error response for PrivateFormError.
+        if (error instanceof PrivateFormError) {
+          return res.status(statusCode).json({
+            message: error.message,
+            // Flag to prevent default 404 subtext ("please check link") from
+            // showing.
+            isPageFound: true,
+            formTitle: error.formTitle,
+          })
+        }
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /:formId/adminform/copy
+ * Duplicates the form corresponding to the formId. The form must be public to
+ * be copied.
+ * @note The current user will be the admin of the new duplicated form
+ * @security session
+ *
+ * @returns 200 with the duplicate form dashboard view
+ * @returns 403 when form is private
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleCopyTemplateForm: RequestHandler<
+  { formId: string },
+  unknown,
+  DuplicateFormBody
+> = (req, res) => {
+  const { formId } = req.params
+  const userId = (req.session as Express.AuthedSession).user._id
+  const overrideParams = req.body
+
+  // TODO(#792): Remove when frontend has stopped sending isTemplate.
+  if ('isTemplate' in req.body) {
+    logger.info({
+      message: 'isTemplate is still being sent by the frontend',
+      meta: {
+        action: 'handleCopyTemplateForm',
+      },
+    })
+  }
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(userId)
+      .andThen((user) =>
+        // Step 2: Check if form is currently public.
+        AuthService.getFormIfPublic(formId).andThen((originalForm) =>
+          // Step 3: Duplicate form.
+          duplicateForm(originalForm, userId, overrideParams)
+            // Step 4: Retrieve dashboard view of duplicated form.
+            .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
+        ),
+      )
+      // Success; return duplicated form's dashboard view.
+      .map((dupedDashView) => res.json(dupedDashView))
+      // Error; some error occurred in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error copying template form',
+          meta: {
+            action: 'handleCopyTemplateForm',
+            ...createReqMeta(req),
+            userId: userId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+
+        // Specialized error response for PrivateFormError.
+        if (error instanceof PrivateFormError) {
+          return res.status(statusCode).json({
+            message: 'Form must be public to be copied',
+          })
+        }
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /{formId}/adminform/transfer-owner.
+ * @security session
+ *
+ * @returns 200 with updated form with transferred owners
+ * @returns 403 when user is not the current owner of the form
+ * @returns 404 when form cannot be found
+ * @returns 409 when new owner is not in the database yet, or if new owner is current owner
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleTransferFormOwnership: RequestHandler<
+  { formId: string },
+  unknown,
+  { email: string }
+> = (req, res) => {
+  const { formId } = req.params
+  const { email: newOwnerEmail } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with delete permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Delete,
+        }),
+      )
+      // Step 3: User has permissions, transfer form ownership.
+      .andThen((retrievedForm) =>
+        transferFormOwnership(retrievedForm, newOwnerEmail),
+      )
+      // Success, return updated form.
+      .map((updatedPopulatedForm) => res.json({ form: updatedPopulatedForm }))
+      // Some error occurred earlier in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred whilst transferring form ownership',
+          meta: {
+            action: 'handleTransferFormOwnership',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            newOwnerEmail,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /adminform.
+ * @security session
+ *
+ * @returns 200 with newly created form
+ * @returns 409 when a database conflict error occurs
+ * @returns 413 when payload for created form exceeds size limit
+ * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
+ * @returns 500 when database error occurs
+ */
+export const handleCreateForm: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  { form: Omit<IForm, 'admin'> }
+> = async (req, res) => {
+  const { form: formParams } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.findUserById(sessionUserId)
+      // Step 2: Create form with given params and set admin to logged in user.
+      .andThen((user) => createForm({ ...formParams, admin: user._id }))
+      .map((createdForm) => res.status(StatusCodes.OK).json(createdForm))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form',
+          meta: {
+            action: 'handleCreateForm',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }

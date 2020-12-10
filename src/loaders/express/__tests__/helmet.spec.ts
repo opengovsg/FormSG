@@ -163,12 +163,21 @@ describe('helmetMiddlewares', () => {
 
   it('should return the correct values from helmet', () => {
     const result = helmetMiddlewares()
+    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    // @ts-ignore
     expect(result).toContain('xssFilter')
+    // @ts-ignore
     expect(result).toContain('noSniff')
+    // @ts-ignore
     expect(result).toContain('ieNoOpen')
+    // @ts-ignore
     expect(result).toContain('dnsPrefetchControl')
+    // @ts-ignore
     expect(result).toContain('hidePoweredBy')
+    // @ts-ignore
     expect(result).toContain('referrerPolicy')
+    // @ts-ignore
     expect(result).toContain('contentSecurityPolicy')
+    /* eslint-enable */
   })
 })

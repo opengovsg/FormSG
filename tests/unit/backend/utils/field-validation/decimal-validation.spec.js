@@ -341,23 +341,6 @@ describe('Decimal Validation', () => {
     )
   })
 
-  it('should allow validationOption to be undefined', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'decimal',
-      required: false,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'decimal',
-      isVisible: true,
-      answer: '1.0',
-    }
-    const validateResult = validateField('formId', formField, response)
-    expect(validateResult.isOk()).toBe(true)
-    expect(validateResult._unsafeUnwrap()).toEqual(true)
-  })
-
   it('should disallow floats less than 0 when customMin is 0', () => {
     const formField = {
       _id: 'abc123',

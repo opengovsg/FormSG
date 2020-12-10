@@ -44,37 +44,39 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
     return next()
   }
 
-  // Step 1: Fetch the data from MyInfo server
-  MyInfoFactory.fetchMyInfoPersonData({
-    uinFin,
-    requestedAttributes,
-    singpassEserviceId: esrvcId,
-  })
-    // Step 2: Prefill the fields
-    .andThen((myInfoData) =>
-      MyInfoFactory.prefillMyInfoFields(myInfoData, formFields),
-    )
-    // Step 3: Hash the values and save them
-    .andThen((prefilledFields) => {
-      form.form_fields = prefilledFields
-      ;(req as WithForm<typeof req>).form = form
-      return MyInfoFactory.saveMyInfoHashes(uinFin, formId, prefilledFields)
+  return (
+    // Step 1: Fetch the data from MyInfo server.
+    MyInfoFactory.fetchMyInfoPersonData({
+      uinFin,
+      requestedAttributes,
+      singpassEserviceId: esrvcId,
     })
-    .map(() => next())
-    .mapErr((error) => {
-      logger.error({
-        message: error.message,
-        meta: {
-          action: 'addMyInfo',
-          ...createReqMeta(req),
-          formId,
-          esrvcId,
-        },
-        error,
+      // Step 2: Prefill the fields
+      .andThen((myInfoData) =>
+        MyInfoFactory.prefillMyInfoFields(myInfoData, formFields),
+      )
+      // Step 3: Hash the values and save them
+      .andThen((prefilledFields) => {
+        form.form_fields = prefilledFields
+        ;(req as WithForm<typeof req>).form = form
+        return MyInfoFactory.saveMyInfoHashes(uinFin, formId, prefilledFields)
       })
-      res.locals.myInfoError = true
-      return next()
-    })
+      .map(() => next())
+      .mapErr((error) => {
+        logger.error({
+          message: error.message,
+          meta: {
+            action: 'addMyInfo',
+            ...createReqMeta(req),
+            formId,
+            esrvcId,
+          },
+          error,
+        })
+        res.locals.myInfoError = true
+        return next()
+      })
+  )
 }
 
 /**
@@ -106,7 +108,7 @@ export const verifyMyInfoVals: RequestHandler<
       spcpSubmissionFailure: true,
     })
   }
-  MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
+  return MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
     .andThen((hashes) =>
       MyInfoFactory.checkMyInfoHashes(req.body.parsedResponses, hashes),
     )

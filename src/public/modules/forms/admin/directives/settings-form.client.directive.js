@@ -1,5 +1,5 @@
 'use strict'
-
+const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
 
 const SETTINGS_PATH = [
@@ -18,6 +18,9 @@ const createTempSettings = (myform) => {
   let tempForm = {}
   SETTINGS_PATH.forEach((path) => set(tempForm, path, get(myform, path)))
   tempForm.mode = 'edit'
+  if (Array.isArray(tempForm.emails)) {
+    tempForm.emails = tempForm.emails.join(', ')
+  }
   return tempForm
 }
 
@@ -299,7 +302,22 @@ function settingsFormDirective(
             }
             openActivateFormModal(checks)
           } else {
-            updateFormStatusAndSave()
+            // Email form
+            // Next state will be public, show better toast message.
+            if ($scope.tempForm.status === 'PRIVATE') {
+              const toastMessage = dedent`
+                Congrats! Your form is now live.<br/>For high-traffic forms,
+                <a href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-ensure-my-form-responses-will-not-bounce" target="_blank">
+                  AutoArchive your mailbox</a> to prevent lost responses.
+              `
+              updateFormStatusAndSave(toastMessage, {
+                timeOut: 10000,
+                extendedTimeOut: 10000,
+                skipLinky: true,
+              })
+            } else {
+              updateFormStatusAndSave('Form deactivated!')
+            }
           }
         }
       },

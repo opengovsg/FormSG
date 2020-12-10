@@ -7,10 +7,10 @@ const { celebrate, Joi, Segments } = require('celebrate')
 
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
-let publicForms = require('../../app/controllers/public-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
+const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
 let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
@@ -20,6 +20,8 @@ const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
 const SpcpController = require('../modules/spcp/spcp.controller')
+const { BasicField, ResponseMode } = require('../../types')
+
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
 const emailValOpts = {
@@ -38,15 +40,6 @@ let authActiveForm = (requiredPermission) => [
   forms.formById,
   adminForms.isFormActive,
   auth.verifyPermission(requiredPermission),
-]
-
-/**
- * Authenticates logged in user, before retrieving non-archived form.
- */
-let authAdminActiveAnyForm = [
-  withUserAuthentication,
-  forms.formById,
-  adminForms.isFormActive,
 ]
 
 /**
@@ -92,7 +85,41 @@ module.exports = function (app) {
   app
     .route('/adminform')
     .get(withUserAuthentication, AdminFormController.handleListDashboardForms)
-    .post(withUserAuthentication, adminForms.create)
+    .post(
+      withUserAuthentication,
+      celebrate({
+        [Segments.BODY]: {
+          form: Joi.object()
+            .keys({
+              // Require valid responsesMode field.
+              responseMode: Joi.string()
+                .valid(...Object.values(ResponseMode))
+                .required(),
+              // Require title field.
+              title: Joi.string().min(4).max(200).required(),
+              // Require emails string (for backwards compatibility) or string
+              // array if form to be created in Email mode.
+              emails: Joi.alternatives()
+                .try(Joi.array().items(Joi.string()), Joi.string())
+                .when('responseMode', {
+                  is: ResponseMode.Email,
+                  then: Joi.required(),
+                }),
+              // Require publicKey field if form to be created in Storage mode.
+              publicKey: Joi.string()
+                .allow('')
+                .when('responseMode', {
+                  is: ResponseMode.Encrypt,
+                  then: Joi.string().required().disallow(''),
+                }),
+            })
+            .required()
+            // Allow other form schema keys to be passed for form creation.
+            .unknown(true),
+        },
+      }),
+      AdminFormController.handleCreateForm,
+    )
 
   /**
    * @typedef AdminForm
@@ -162,13 +189,38 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform')
-    .get(
-      authActiveForm(PermissionLevel.Read),
-      forms.read(forms.REQUEST_TYPE.ADMIN),
-    )
+    .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
     .put(authActiveForm(PermissionLevel.Write), adminForms.update)
-    .delete(authActiveForm(PermissionLevel.Delete), adminForms.delete)
-    .post(authActiveForm(PermissionLevel.Read), adminForms.duplicate)
+    .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
+    .post(
+      withUserAuthentication,
+      celebrate({
+        [Segments.BODY]: {
+          // Require valid responsesMode field.
+          responseMode: Joi.string()
+            .valid(...Object.values(ResponseMode))
+            .required(),
+          // Require title field.
+          title: Joi.string().min(4).max(200).required(),
+          // Require emails string (for backwards compatibility) or string array
+          // if form to be duplicated in Email mode.
+          emails: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()), Joi.string())
+            .when('responseMode', {
+              is: ResponseMode.Email,
+              then: Joi.required(),
+            }),
+          // Require publicKey field if form to be duplicated in Storage mode.
+          publicKey: Joi.string()
+            .allow('')
+            .when('responseMode', {
+              is: ResponseMode.Encrypt,
+              then: Joi.string().required().disallow(''),
+            }),
+        },
+      }),
+      AdminFormController.handleDuplicateAdminForm,
+    )
 
   /**
    * Return the template form to the user.
@@ -185,11 +237,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/template')
-    .get(
-      authAdminActiveAnyForm,
-      publicForms.isFormPublic,
-      forms.read(forms.REQUEST_TYPE.ADMIN),
-    )
+    .get(withUserAuthentication, AdminFormController.handleGetTemplateForm)
 
   /**
    * Return the preview form to the user.
@@ -225,9 +273,37 @@ module.exports = function (app) {
    * @returns {AdminForm.model} 200 - the form
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/copy')
-    .post(authAdminActiveAnyForm, adminForms.duplicate)
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/copy').post(
+    withUserAuthentication,
+    celebrate({
+      [Segments.BODY]: {
+        // Require valid responsesMode field.
+        responseMode: Joi.string()
+          .valid(...Object.values(ResponseMode))
+          .required(),
+        // Require title field.
+        title: Joi.string().min(4).max(200).required(),
+        // Require emails string (for backwards compatibility) or string array
+        // if form to be duplicated in Email mode.
+        emails: Joi.alternatives()
+          .try(Joi.array().items(Joi.string()), Joi.string())
+          .when('responseMode', {
+            is: ResponseMode.Email,
+            then: Joi.required(),
+          }),
+        // Require publicKey field if form to be duplicated in Storage mode.
+        publicKey: Joi.string()
+          .allow('')
+          .when('responseMode', {
+            is: ResponseMode.Encrypt,
+            then: Joi.string().required().disallow(''),
+          }),
+        // TODO(#792): Remove when frontend has stopped sending isTemplate.
+        isTemplate: Joi.boolean(),
+      },
+    }),
+    AdminFormController.handleCopyTemplateForm,
+  )
 
   /**
    * @typedef FeedbackResponse
@@ -311,16 +387,16 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/transfer-owner').post(
-    authActiveForm(PermissionLevel.Delete),
+    withUserAuthentication,
     celebrate({
-      body: Joi.object().keys({
+      [Segments.BODY]: {
         email: Joi.string()
           .required()
           .email(emailValOpts)
-          .error(() => 'Please enter a valid email'),
-      }),
+          .message('Please enter a valid email'),
+      },
     }),
-    adminForms.transferOwner,
+    AdminFormController.handleTransferFormOwnership,
   )
 
   /**
@@ -341,20 +417,44 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    * @security OTP
    */
-  app
-    .route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})')
-    .post(
-      authActiveForm(PermissionLevel.Read),
-      emailSubmissions.receiveEmailSubmissionUsingBusBoy,
-      emailSubmissions.validateEmailSubmission,
-      AdminFormController.passThroughSpcp,
-      submissions.injectAutoReplyInfo,
-      SpcpController.appendVerifiedSPCPResponses,
-      emailSubmissions.prepareEmailSubmission,
-      adminForms.passThroughSaveMetadataToDb,
-      emailSubmissions.sendAdminEmail,
-      submissions.sendAutoReply,
-    )
+  app.route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})').post(
+    authActiveForm(PermissionLevel.Read),
+    EmailSubmissionsMiddleware.receiveEmailSubmission,
+    celebrate({
+      [Segments.BODY]: Joi.object({
+        responses: Joi.array()
+          .items(
+            Joi.object()
+              .keys({
+                _id: Joi.string().required(),
+                question: Joi.string().required(),
+                fieldType: Joi.string()
+                  .required()
+                  .valid(...Object.values(BasicField)),
+                answer: Joi.string().allow(''),
+                answerArray: Joi.array(),
+                filename: Joi.string(),
+                content: Joi.binary(),
+                isHeader: Joi.boolean(),
+                myInfo: Joi.object(),
+                signature: Joi.string().allow(''),
+              })
+              .xor('answer', 'answerArray') // only answer or answerArray can be present at once
+              .with('filename', 'content'), // if filename is present, content must be present
+          )
+          .required(),
+        isPreview: Joi.boolean().required(),
+      }),
+    }),
+    EmailSubmissionsMiddleware.validateEmailSubmission,
+    AdminFormController.passThroughSpcp,
+    submissions.injectAutoReplyInfo,
+    SpcpController.appendVerifiedSPCPResponses,
+    EmailSubmissionsMiddleware.prepareEmailSubmission,
+    adminForms.passThroughSaveMetadataToDb,
+    emailSubmissions.sendAdminEmail,
+    submissions.sendAutoReply,
+  )
 
   /**
    * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply
@@ -376,18 +476,60 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    * @security OTP
    */
-  app
-    .route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})')
-    .post(
-      authActiveForm(PermissionLevel.Read),
-      encryptSubmissions.validateEncryptSubmission,
-      AdminFormController.passThroughSpcp,
-      submissions.injectAutoReplyInfo,
-      webhookVerifiedContentFactory.encryptedVerifiedFields,
-      encryptSubmissions.prepareEncryptSubmission,
-      adminForms.passThroughSaveMetadataToDb,
-      submissions.sendAutoReply,
-    )
+  app.route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})').post(
+    authActiveForm(PermissionLevel.Read),
+    encryptSubmissions.validateEncryptSubmission,
+    celebrate({
+      [Segments.BODY]: Joi.object({
+        responses: Joi.array()
+          .items(
+            Joi.object().keys({
+              _id: Joi.string().required(),
+              answer: Joi.string().allow('').required(),
+              fieldType: Joi.string()
+                .required()
+                .valid(...Object.values(BasicField)),
+              signature: Joi.string().allow(''),
+            }),
+          )
+          .required(),
+        encryptedContent: Joi.string()
+          .custom((value, helpers) => {
+            const parts = String(value).split(/;|:/)
+            if (
+              parts.length !== 3 ||
+              parts[0].length !== 44 || // public key
+              parts[1].length !== 32 || // nonce
+              !parts.every((part) => Joi.string().base64().validate(part))
+            ) {
+              return helpers.error('Invalid encryptedContent.')
+            }
+            return value
+          }, 'encryptedContent')
+          .required(),
+        attachments: Joi.object()
+          .pattern(
+            /^[a-fA-F0-9]{24}$/,
+            Joi.object().keys({
+              encryptedFile: Joi.object().keys({
+                binary: Joi.string().required(),
+                nonce: Joi.string().required(),
+                submissionPublicKey: Joi.string().required(),
+              }),
+            }),
+          )
+          .optional(),
+        isPreview: Joi.boolean().required(),
+        version: Joi.number().required(),
+      }),
+    }),
+    AdminFormController.passThroughSpcp,
+    submissions.injectAutoReplyInfo,
+    webhookVerifiedContentFactory.encryptedVerifiedFields,
+    encryptSubmissions.prepareEncryptSubmission,
+    adminForms.passThroughSaveMetadataToDb,
+    submissions.sendAutoReply,
+  )
 
   /**
    * Retrieve actual response for a form with encrypted storage

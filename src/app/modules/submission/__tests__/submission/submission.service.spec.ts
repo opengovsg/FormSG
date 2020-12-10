@@ -1,8 +1,7 @@
-import { ObjectID } from 'bson'
-import { cloneDeep, times } from 'lodash'
+import { ObjectID } from 'bson-ext'
+import { times } from 'lodash'
 import mongoose from 'mongoose'
 
-import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import {
   DatabaseError,
@@ -11,25 +10,24 @@ import {
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { createQueryWithDateParam } from 'src/app/utils/date'
-import { FIELDS_TO_REJECT } from 'src/app/utils/field-validation/config'
 import * as LogicUtil from 'src/shared/util/logic'
 import {
-  AttachmentSize,
   BasicField,
-  FieldResponse,
   IEmailFormSchema,
   IEmailSubmissionSchema,
   IEncryptedFormSchema,
   IEncryptedSubmissionSchema,
-  IFieldSchema,
+  IFormSchema,
   IPreventSubmitLogicSchema,
-  ISingleAnswerResponse,
   LogicType,
-  PossibleField,
   ResponseMode,
   SubmissionType,
 } from 'src/types'
 
+import {
+  generateDefaultField,
+  generateSingleAnswerResponse,
+} from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
@@ -38,76 +36,10 @@ import {
   ValidateFieldError,
 } from '../../submission.errors'
 
-const Form = getFormModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
 
-const MOCK_ADMIN_ID = new ObjectID()
-const MOCK_FORM_PARAMS = {
-  title: 'Test Form',
-  admin: MOCK_ADMIN_ID,
-}
-const MOCK_ENCRYPTED_FORM_PARAMS = {
-  ...MOCK_FORM_PARAMS,
-  publicKey: 'mockPublicKey',
-  responseMode: ResponseMode.Encrypt,
-}
-const MOCK_EMAIL_FORM_PARAMS = {
-  ...MOCK_FORM_PARAMS,
-  emails: ['test@example.com'],
-  responseMode: ResponseMode.Email,
-}
-
-// Declare here so the array is static.
-const FIELD_TYPES = Object.values(BasicField)
-const TYPE_TO_INDEX_MAP = (() => {
-  const map: { [field: string]: number } = {}
-  FIELD_TYPES.forEach((type, index) => {
-    map[type] = index
-  })
-  return map
-})()
-
 describe('submission.service', () => {
-  let defaultEmailForm: IEmailFormSchema
-  let defaultEmailResponses: FieldResponse[]
-  let defaultEncryptForm: IEncryptedFormSchema
-  let defaultEncryptResponses: FieldResponse[]
-
-  beforeAll(async () => {
-    await dbHandler.connect()
-    await dbHandler.insertFormCollectionReqs({ userId: MOCK_ADMIN_ID })
-
-    const defaultFormFields = generateDefaultFields()
-
-    defaultEmailForm = (await createAndReturnFormWithFields(
-      defaultFormFields,
-      ResponseMode.Email,
-    )) as IEmailFormSchema
-
-    defaultEncryptForm = (await createAndReturnFormWithFields(
-      defaultFormFields,
-      ResponseMode.Encrypt,
-    )) as IEncryptedFormSchema
-
-    // Process default responses
-    defaultEmailResponses = defaultEmailForm.form_fields!.map((field) => {
-      return {
-        _id: String(field._id),
-        fieldType: field.fieldType,
-        question: field.getQuestion(),
-        answer: '',
-      }
-    })
-
-    defaultEncryptResponses = defaultEncryptForm.form_fields!.map((field) => {
-      return {
-        _id: String(field._id),
-        fieldType: field.fieldType,
-        question: field.getQuestion(),
-        answer: '',
-      }
-    })
-  })
+  beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('getProcessedResponses', () => {
@@ -115,32 +47,31 @@ describe('submission.service', () => {
       // Arrange
       // Only mobile and email fields are parsed, since the other fields are
       // e2e encrypted from the browser.
-      const mobileFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Mobile]
-      const emailFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Email]
-
+      const mobileField = generateDefaultField(BasicField.Mobile)
+      const emailField = generateDefaultField(BasicField.Email)
       // Add answers to both mobile and email fields
-      const updatedResponses = cloneDeep(defaultEncryptResponses)
-      const newEmailResponse: ISingleAnswerResponse = {
-        ...updatedResponses[emailFieldIndex],
-        answer: 'test@example.com',
-      }
-      const newMobileResponse: ISingleAnswerResponse = {
-        ...updatedResponses[mobileFieldIndex],
-        answer: '+6587654321',
-      }
-      updatedResponses[mobileFieldIndex] = newMobileResponse
-      updatedResponses[emailFieldIndex] = newEmailResponse
+      const mobileResponse = generateSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      const emailResponse = generateSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
 
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
-        defaultEncryptForm,
-        updatedResponses,
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [mobileField, emailField],
+        } as unknown) as IFormSchema,
+        [mobileResponse, emailResponse],
       )
 
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
-        { ...newEmailResponse, isVisible: true },
-        { ...newMobileResponse, isVisible: true },
+        { ...mobileResponse, isVisible: true },
+        { ...emailResponse, isVisible: true },
       ]
       // Should only have email and mobile fields for encrypted forms.
       expect(actualResult.isOk()).toEqual(true)
@@ -150,46 +81,33 @@ describe('submission.service', () => {
     it('should return list of parsed responses for email form submission successfully', async () => {
       // Arrange
       // Add answer to subset of field types
-      const shortTextFieldIndex = TYPE_TO_INDEX_MAP[BasicField.ShortText]
-      const decimalFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Decimal]
+      const shortTextField = generateDefaultField(BasicField.ShortText)
+      const decimalField = generateDefaultField(BasicField.Decimal)
 
-      // Add answers to both selected fields.
-      const updatedResponses = cloneDeep(defaultEmailResponses)
-      const newShortTextResponse: ISingleAnswerResponse = {
-        ...updatedResponses[shortTextFieldIndex],
-        answer: 'the quick brown fox jumps over the lazy dog',
-      }
-      const newDecimalResponse: ISingleAnswerResponse = {
-        ...updatedResponses[decimalFieldIndex],
-        answer: '3.142',
-      }
-      updatedResponses[shortTextFieldIndex] = newShortTextResponse
-      updatedResponses[decimalFieldIndex] = newDecimalResponse
+      // Add answers to both mobile and email fields
+      const shortTextResponse = generateSingleAnswerResponse(
+        shortTextField,
+        'the quick brown fox jumps over the lazy dog',
+      )
+      const decimalResponse = generateSingleAnswerResponse(
+        decimalField,
+        '3.142',
+      )
 
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
-        defaultEmailForm,
-        updatedResponses,
+        ({
+          responseMode: ResponseMode.Email,
+          form_fields: [shortTextField, decimalField],
+        } as unknown) as IFormSchema,
+        [shortTextResponse, decimalResponse],
       )
 
       // Assert
-      // Expect metadata to be injected to all responses (except fields to
-      // reject).
-      const expectedParsed: ProcessedFieldResponse[] = []
-      updatedResponses.forEach((response, index) => {
-        if (FIELDS_TO_REJECT.includes(response.fieldType)) {
-          return
-        }
-        const expectedProcessed: ProcessedFieldResponse = {
-          ...response,
-          isVisible: true,
-        }
-
-        if (defaultEmailForm.form_fields![index].isVerifiable) {
-          expectedProcessed.isUserVerified = true
-        }
-        expectedParsed.push(expectedProcessed)
-      })
+      const expectedParsed: ProcessedFieldResponse[] = [
+        { ...shortTextResponse, isVisible: true },
+        { ...decimalResponse, isVisible: true },
+      ]
 
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
@@ -197,18 +115,16 @@ describe('submission.service', () => {
 
     it('should return error when email form has more fields than responses', async () => {
       // Arrange
-      const extraFieldForm = cloneDeep(defaultEmailForm)
-      const secondMobileField = cloneDeep(
-        extraFieldForm.form_fields![TYPE_TO_INDEX_MAP[BasicField.Mobile]],
-      )
-      secondMobileField._id = new ObjectID()
-      extraFieldForm.form_fields!.push(secondMobileField)
+      const extraField = generateDefaultField(BasicField.Mobile)
 
       // Act + Assert
 
       const actualResult = SubmissionService.getProcessedResponses(
-        extraFieldForm,
-        defaultEmailResponses,
+        ({
+          responseMode: ResponseMode.Email,
+          form_fields: [extraField],
+        } as unknown) as IEmailFormSchema,
+        [],
       )
 
       expect(actualResult.isErr()).toEqual(true)
@@ -219,18 +135,16 @@ describe('submission.service', () => {
 
     it('should return error when encrypt form has more fields than responses', async () => {
       // Arrange
-      const extraFieldForm = cloneDeep(defaultEncryptForm)
-      const secondMobileField = cloneDeep(
-        extraFieldForm.form_fields![TYPE_TO_INDEX_MAP[BasicField.Mobile]],
-      )
-      secondMobileField._id = new ObjectID()
-      extraFieldForm.form_fields!.push(secondMobileField)
+      const extraField = generateDefaultField(BasicField.Mobile)
 
       // Act + Assert
 
       const actualResult = SubmissionService.getProcessedResponses(
-        extraFieldForm,
-        defaultEncryptResponses,
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [extraField],
+        } as unknown) as IEncryptedFormSchema,
+        [],
       )
 
       expect(actualResult.isErr()).toEqual(true)
@@ -243,16 +157,19 @@ describe('submission.service', () => {
       // Arrange
       // Only mobile and email fields are parsed, since the other fields are
       // e2e encrypted from the browser.
-      const mobileFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Mobile]
-
-      const requireMobileEncryptForm = cloneDeep(defaultEncryptForm)
-      requireMobileEncryptForm.form_fields![mobileFieldIndex].required = true
+      const mobileField = generateDefaultField(BasicField.Mobile)
+      const mobileResponse = generateSingleAnswerResponse(
+        mobileField,
+        'invalid',
+      )
 
       // Act + Assert
-
       const actualResult = SubmissionService.getProcessedResponses(
-        requireMobileEncryptForm,
-        defaultEncryptResponses,
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [mobileField],
+        } as unknown) as IEncryptedFormSchema,
+        [mobileResponse],
       )
 
       expect(actualResult.isErr()).toEqual(true)
@@ -264,15 +181,16 @@ describe('submission.service', () => {
     it('should return error when any responses are not valid for email form submission', async () => {
       // Arrange
       // Set NRIC field in form as required.
-      const nricFieldIndex = TYPE_TO_INDEX_MAP[BasicField.Nric]
-      const requireNricEmailForm = cloneDeep(defaultEmailForm)
-      requireNricEmailForm.form_fields![nricFieldIndex].required = true
+      const nricField = generateDefaultField(BasicField.Nric)
+      const nricResponse = generateSingleAnswerResponse(nricField, 'invalid')
 
       // Act + Assert
-
       const actualResult = SubmissionService.getProcessedResponses(
-        requireNricEmailForm,
-        defaultEmailResponses,
+        ({
+          responseMode: ResponseMode.Email,
+          form_fields: [nricField],
+        } as unknown) as IEmailFormSchema,
+        [nricResponse],
       )
 
       expect(actualResult.isErr()).toEqual(true)
@@ -294,10 +212,12 @@ describe('submission.service', () => {
         } as unknown) as IPreventSubmitLogicSchema)
 
       // Act + Assert
-
       const actualResult = SubmissionService.getProcessedResponses(
-        defaultEncryptForm,
-        defaultEncryptResponses,
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [],
+        } as unknown) as IEncryptedFormSchema,
+        [],
       )
 
       expect(actualResult.isErr()).toEqual(true)
@@ -321,10 +241,12 @@ describe('submission.service', () => {
         .mockReturnValueOnce(mockReturnLogicUnit)
 
       // Act + Assert
-
       const actualResult = SubmissionService.getProcessedResponses(
-        defaultEmailForm,
-        defaultEmailResponses,
+        ({
+          responseMode: ResponseMode.Email,
+          form_fields: [],
+        } as unknown) as IEmailFormSchema,
+        [],
       )
 
       expect(actualResult.isErr()).toEqual(true)
@@ -336,6 +258,8 @@ describe('submission.service', () => {
 
   describe('getFormSubmissionsCount', () => {
     const countSpy = jest.spyOn(Submission, 'countDocuments')
+    const MOCK_FORM_ID = new ObjectID()
+
     beforeEach(async () => {
       await dbHandler.clearCollection(Submission.collection.name)
     })
@@ -348,7 +272,7 @@ describe('submission.service', () => {
       const subPromises = times(expectedSubmissionCount, () =>
         Submission.create({
           submissionType: SubmissionType.Encrypt,
-          form: defaultEncryptForm._id,
+          form: MOCK_FORM_ID,
           encryptedContent: 'some random encrypted content',
           version: 1,
           responseHash: 'hash',
@@ -359,7 +283,7 @@ describe('submission.service', () => {
 
       // Act
       const actualResult = await SubmissionService.getFormSubmissionsCount(
-        defaultEncryptForm._id,
+        MOCK_FORM_ID.toHexString(),
       )
 
       // Assert
@@ -374,7 +298,7 @@ describe('submission.service', () => {
       const subPromisesNow = times(2, () =>
         Submission.create<IEncryptedSubmissionSchema>({
           submissionType: SubmissionType.Encrypt,
-          form: defaultEncryptForm._id,
+          form: MOCK_FORM_ID,
           version: 1,
           encryptedContent: 'some random encrypted content',
         }),
@@ -382,7 +306,7 @@ describe('submission.service', () => {
       // Insert submissions created in 1 Jan 2019.
       const subPromises2019 = times(expectedSubmissionCount, () =>
         Submission.create<IEmailSubmissionSchema>({
-          form: defaultEmailForm._id,
+          form: MOCK_FORM_ID,
           submissionType: SubmissionType.Email,
           responseHash: 'hash',
           responseSalt: 'salt',
@@ -393,7 +317,7 @@ describe('submission.service', () => {
 
       // Insert one more submission for defaultEmailForm in 2 January 2019.
       const subPromiseDayAfter = Submission.create<IEmailSubmissionSchema>({
-        form: defaultEmailForm._id,
+        form: MOCK_FORM_ID,
         submissionType: SubmissionType.Email,
         responseHash: 'hash',
         responseSalt: 'salt',
@@ -410,7 +334,7 @@ describe('submission.service', () => {
 
       // Act
       const actualResult = await SubmissionService.getFormSubmissionsCount(
-        defaultEmailForm._id,
+        MOCK_FORM_ID.toHexString(),
         { startDate: '2019-01-01', endDate: '2019-01-01' },
       )
 
@@ -426,7 +350,7 @@ describe('submission.service', () => {
       const subPromises = times(2, () =>
         Submission.create<IEncryptedSubmissionSchema>({
           submissionType: SubmissionType.Encrypt,
-          form: defaultEncryptForm._id,
+          form: MOCK_FORM_ID,
           version: 1,
           encryptedContent: 'some random encrypted content',
           created: new Date('2019-12-12'),
@@ -438,13 +362,13 @@ describe('submission.service', () => {
       // Act
       const queryDateRange = { startDate: '2020-01-01', endDate: '2020-01-01' }
       const actualResult = await SubmissionService.getFormSubmissionsCount(
-        defaultEncryptForm._id,
+        MOCK_FORM_ID.toHexString(),
         queryDateRange,
       )
 
       // Assert
       expect(countSpy).toHaveBeenCalledWith({
-        form: defaultEncryptForm._id,
+        form: MOCK_FORM_ID.toHexString(),
         ...createQueryWithDateParam(
           queryDateRange.startDate,
           queryDateRange.endDate,
@@ -458,7 +382,7 @@ describe('submission.service', () => {
     it('should return MalformedParametersError when date range provided is malformed', async () => {
       // Act
       const actualResult = await SubmissionService.getFormSubmissionsCount(
-        defaultEncryptForm._id,
+        MOCK_FORM_ID.toHexString(),
         { startDate: 'some malformed start date', endDate: '2020-01-01' },
       )
 
@@ -481,90 +405,15 @@ describe('submission.service', () => {
 
       // Act
       const actualResult = await SubmissionService.getFormSubmissionsCount(
-        defaultEmailForm._id,
+        MOCK_FORM_ID.toHexString(),
       )
 
       // Assert
       expect(countSpy).toHaveBeenCalledWith({
-        form: defaultEmailForm._id,
+        form: MOCK_FORM_ID.toHexString(),
       })
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
 })
-
-const createAndReturnFormWithFields = async (
-  formFieldParamsList: Partial<PossibleField>[],
-  formType: ResponseMode = ResponseMode.Email,
-) => {
-  let baseParams
-
-  switch (formType) {
-    case ResponseMode.Email:
-      baseParams = MOCK_EMAIL_FORM_PARAMS
-      break
-    case ResponseMode.Encrypt:
-      baseParams = MOCK_ENCRYPTED_FORM_PARAMS
-  }
-
-  const processedParamList = formFieldParamsList.map((params) => {
-    // Insert required params if they do not exist.
-    if (params.fieldType === 'attachment') {
-      params = { attachmentSize: AttachmentSize.ThreeMb, ...params }
-    }
-    if (params.fieldType === 'image') {
-      params = {
-        url: 'http://example.com',
-        fileMd5Hash: 'some hash',
-        name: 'test image name',
-        size: 'some size',
-        ...params,
-      }
-    }
-
-    return params
-  })
-
-  const formParam = {
-    ...baseParams,
-    form_fields: processedParamList as IFieldSchema[],
-  }
-  const form = await Form.create(formParam)
-
-  return form
-}
-
-const generateDefaultFields = () => {
-  // Get all field types
-  const formFields: Partial<PossibleField>[] = FIELD_TYPES.map((fieldType) => {
-    const fieldTitle = `test ${fieldType} field title`
-    if (fieldType === BasicField.Table) {
-      return {
-        title: fieldTitle,
-        minimumRows: 1,
-        columns: [
-          {
-            title: 'Test Column Title 1',
-            required: false,
-            columnType: BasicField.ShortText,
-          },
-          {
-            title: 'Test Column Title 2',
-            required: false,
-            columnType: BasicField.Dropdown,
-          },
-        ],
-        fieldType,
-      }
-    }
-
-    return {
-      fieldType,
-      title: fieldTitle,
-      required: false,
-    }
-  })
-
-  return formFields
-}

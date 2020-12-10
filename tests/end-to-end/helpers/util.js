@@ -630,7 +630,7 @@ async function addSettings(t, formOptions, captchaEnabled, webhookUrl) {
       .typeText(activateFormModal.secretKeyInput, formOptions.secretKey)
       .typeText(
         activateFormModal.acknowledgementInput,
-        'I understand the consequences and have stored my secret key in 2 other places',
+        'I have shared my secret key with a colleague',
       )
       .click(activateFormModal.activateFormBtn)
   } else if (formOptions.authType !== 'NIL') {

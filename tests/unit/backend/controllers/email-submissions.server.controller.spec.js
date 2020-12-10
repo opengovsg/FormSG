@@ -10,7 +10,7 @@ const dbHandler = require('../helpers/db-handler')
 const { ObjectID } = require('bson-ext')
 const MailService = require('../../../../dist/backend/app/services/mail/mail.service')
   .default
-
+const EmailSubmissionsMiddleware = require('../../../../dist/backend/app/modules/submission/email-submission/email-submission.middleware')
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
@@ -188,7 +188,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectForm,
-          controller.receiveEmailSubmissionUsingBusBoy,
+          EmailSubmissionsMiddleware.receiveEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -233,28 +233,6 @@ describe('Email Submissions Controller', () => {
         .attach('govtech.jpg', Buffer.alloc(1), 'receiveId')
         .expect(StatusCodes.OK)
         .expect(JSON.stringify({ body: parsedBody }))
-        .end(done)
-    })
-
-    it('returns 400 for attachments with invalid file exts', (done) => {
-      const body = { responses: [] }
-      request(app)
-        .post(endpointPath)
-        .field('body', JSON.stringify(body))
-        .attach('invalid.py', Buffer.alloc(1), 'fieldId')
-        .expect(StatusCodes.BAD_REQUEST)
-        .end(done)
-    })
-
-    it('returns 422 for attachments beyond 7 million bytes', (done) => {
-      const body = { responses: [] }
-      request(app)
-        .post(endpointPath)
-        .field('body', JSON.stringify(body))
-        .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId1')
-        .attach('valid2.jpg', Buffer.alloc(3000000), 'fieldId2')
-        .attach('valid.jpg', Buffer.alloc(3000000), 'fieldId3')
-        .expect(StatusCodes.UNPROCESSABLE_ENTITY)
         .end(done)
     })
 
@@ -343,7 +321,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -428,11 +406,59 @@ describe('Email Submissions Controller', () => {
               parsedResponses: expectedResponses,
             },
             attachments: [
-              { filename: validAttachmentName, content: Buffer.alloc(1) },
+              {
+                fieldId: String(requiredAttachmentId),
+                filename: validAttachmentName,
+                content: Buffer.alloc(1),
+              },
             ],
           }),
         )
         .end(done)
+    })
+
+    it('returns 400 for attachments with invalid file exts', (done) => {
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(1),
+        filename: 'invalid.py',
+      })
+      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
+    })
+
+    it('returns 400 for attachments beyond 7 million bytes', (done) => {
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      fixtures.body.responses.push({
+        title: 'Attachment',
+        required: true,
+        fieldType: 'attachment',
+        _id: String(new ObjectID()),
+        attachmentSize: '1',
+        content: Buffer.alloc(3000000),
+        filename: 'valid.jpg',
+      })
+      request(app).post(endpointPath).expect(StatusCodes.BAD_REQUEST).end(done)
     })
   })
 
@@ -730,10 +756,10 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .get(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           submissionsController.injectAutoReplyInfo,
           spcpController.appendVerifiedSPCPResponses,
-          controller.prepareEmailSubmission,
+          EmailSubmissionsMiddleware.prepareEmailSubmission,
           sendSubmissionBack,
         )
     })
@@ -876,10 +902,12 @@ describe('Email Submissions Controller', () => {
               answerTemplate,
             })
           }
-          expected.jsonData.push({
-            question,
-            answer,
-          })
+          if (fields[i].fieldType !== 'section') {
+            expected.jsonData.push({
+              question,
+              answer,
+            })
+          }
           expected.formData.push({
             question,
             answerTemplate,
@@ -902,7 +930,7 @@ describe('Email Submissions Controller', () => {
           question: 'SingPass Validated NRIC',
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
-          fieldType: 'authenticationSp',
+          fieldType: 'nric',
         },
       ]
       const expectedAutoReplyData = [
@@ -935,13 +963,13 @@ describe('Email Submissions Controller', () => {
           question: 'CorpPass Validated UEN',
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
-          fieldType: 'authenticationCp',
+          fieldType: 'textfield',
         },
         {
           question: 'CorpPass Validated UID',
           answerTemplate: [resLocalFixtures.userInfo],
           answer: resLocalFixtures.userInfo,
-          fieldType: 'authenticationCp',
+          fieldType: 'nric',
         },
       ]
       const expectedAutoReplyData = [
@@ -1203,7 +1231,7 @@ describe('Email Submissions Controller', () => {
         question: 'a table',
         fieldType: 'table',
         isHeader: false,
-        answer: '',
+        answerArray: [['', '']],
       })
       reqFixtures.form.form_fields.push({
         _id: fieldId,
@@ -1213,25 +1241,26 @@ describe('Email Submissions Controller', () => {
           { title: 'Name', fieldType: 'textfield' },
           { title: 'Age', fieldType: 'textfield' },
         ],
+        minimumRows: 1,
       })
       const expectedJsonData = [
         {
           question: '[table] a table (Name, Age)',
-          answer: '',
+          answer: ',',
         },
       ]
       const expectedFormData = [
         {
           question: '[table] a table (Name, Age)',
-          answerTemplate: [''],
-          answer: '',
+          answerTemplate: [','],
+          answer: ',',
           fieldType: 'table',
         },
       ]
       const expectedAutoReplyData = [
         {
           question: 'a table (Name, Age)',
-          answerTemplate: [''],
+          answerTemplate: [','],
         },
       ]
       const expected = {
@@ -1526,7 +1555,9 @@ describe('Email Submissions Controller', () => {
             question: title,
             answerTemplate: String(answer).split('\n'),
           })
-          expected.jsonData.push({ question: title, answer: String(answer) })
+          if (fieldType !== 'section') {
+            expected.jsonData.push({ question: title, answer: String(answer) })
+          }
           expected.formData.push({
             question: title,
             answerTemplate: String(answer).split('\n'),
@@ -2796,7 +2827,7 @@ describe('Email Submissions Controller', () => {
         .route(endpointPath)
         .post(
           injectFixtures,
-          controller.validateEmailSubmission,
+          EmailSubmissionsMiddleware.validateEmailSubmission,
           sendSubmissionBack,
         )
       testAgency = new Agency({

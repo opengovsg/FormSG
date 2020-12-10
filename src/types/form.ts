@@ -1,8 +1,11 @@
 import { Document, Model } from 'mongoose'
+import { Merge } from 'type-fest'
+
+import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
-import { FormLogoState } from './form_logo'
+import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema } from './user'
 
 export enum AuthType {
@@ -47,17 +50,17 @@ export type Logo = {
 }
 
 export type StartPage = {
-  paragraph: string
-  estTimeTaken: number
-  colorTheme: Colors
-  logo: Logo
+  paragraph?: string
+  estTimeTaken?: number
+  colorTheme?: Colors
+  logo?: IFormLogo
 }
 
 export type EndPage = {
-  title: string
-  paragraph: string
-  buttonLink: string
-  buttonText: string
+  title?: string
+  paragraph?: string
+  buttonLink?: string
+  buttonText?: string
 }
 
 export type Permission = {
@@ -69,6 +72,19 @@ export type Webhook = {
   url: string
 }
 
+/**
+ * Typing for duplicate form with specific keys.
+ */
+export type PickDuplicateForm = Pick<
+  IFormSchema,
+  | 'form_fields'
+  | 'form_logics'
+  | 'startPage'
+  | 'endPage'
+  | 'authType'
+  | 'inactiveMessage'
+  | 'responseMode'
+>
 export interface IForm {
   title: string
   form_fields?: IFieldSchema[]
@@ -94,23 +110,63 @@ export interface IForm {
   responseMode: ResponseMode
 
   // Schema properties
-  _id: Document['_id']
   created?: Date
   lastModified?: Date
 
   publicKey?: string
-  emails?: string[]
+  // string type is allowed due to a setter on the form schema that transforms
+  // strings to string array.
+  emails?: string[] | string
 }
 
 export interface IFormSchema extends IForm, Document {
-  getMainFields(): Pick<IFormSchema, '_id' | 'title' | 'status'>
+  /**
+   * Returns the dashboard form view of the form.
+   * @param admin the admin to inject into the returned object
+   * @returns dashboard form view object
+   */
+  getDashboardView(admin: IPopulatedUser): FormMetaView
   getUniqueMyInfoAttrs(): MyInfoAttribute[]
-  duplicate(overrideProps: Partial<IForm>): Partial<IFormSchema>
-  transferOwner(currentOwner: IUserSchema, newOwnerEmail: string): void
+  /**
+   * Archives form.
+   * @returns form that has been archived
+   */
+  archive(): Promise<IFormSchema>
+
+  /**
+   * Transfer ownership of the form to another user.
+   * @param currentOwner the current owner of the form. The owner is retrieved outside of the method to force validation to be performed correctly.
+   * @param newOwner the new owner of the form. Similarly retrieved outside of method to force correct validation.
+   * @returns updated form
+   */
+  transferOwner(
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ): Promise<IFormSchema>
+  /**
+   * Return essential form creation parameters with the given properties.
+   * @param overrideProps the props to override on the duplicated form
+   * @returns params required to create a new duplicated form object
+   */
+  getDuplicateParams(
+    overrideProps: OverrideProps,
+  ): PickDuplicateForm & OverrideProps
 }
 
 export interface IPopulatedForm extends IFormSchema {
-  admin: IPopulatedUser
+  // Remove extraneous keys that the populated form should not require.
+  admin: Merge<
+    Omit<
+      IPopulatedUser,
+      '__v' | 'created' | 'lastModified' | 'updatedAt' | 'lastAccessed'
+    >,
+    {
+      agency: Omit<
+        IPopulatedUser['agency'],
+        '__v' | 'created' | 'lastModified' | 'updatedAt'
+      >
+    }
+  >
 }
 
 export interface IEncryptedForm extends IForm {
@@ -121,7 +177,9 @@ export interface IEncryptedForm extends IForm {
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
 
 export interface IEmailForm extends IForm {
-  emails: string[]
+  // string type is allowed due to a setter on the form schema that transforms
+  // strings to string array.
+  emails: string[] | string
   publicKey: never
 }
 
@@ -131,19 +189,18 @@ export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
   getFullFormById(formId: string): Promise<IPopulatedForm | null>
   deactivateById(formId: string): Promise<IFormSchema | null>
-  getDashboardForms(
+  getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<DashboardFormView[]>
+  ): Promise<FormMetaView[]>
 }
 
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 export type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
-// Typing for the shape of the form document subset that is returned to the
-// frontend when admin lists their available forms in their dashboard.
-export type DashboardFormView = Pick<
+/** Typing for the shape of the important meta subset for form document. */
+export type FormMetaView = Pick<
   IFormSchema,
-  'title' | 'admin' | 'lastModified' | 'status' | 'form_fields'
+  'title' | 'lastModified' | 'status' | '_id' | 'responseMode'
 > & {
   admin: IPopulatedUser
 }

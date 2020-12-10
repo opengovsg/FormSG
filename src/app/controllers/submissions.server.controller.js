@@ -1,86 +1,8 @@
 'use strict'
 
-const axios = require('axios')
-const { StatusCodes } = require('http-status-codes')
-
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const MailService = require('../services/mail/mail.service').default
-
-const GOOGLE_RECAPTCHA_URL = 'https://www.google.com/recaptcha/api/siteverify'
-
-/**
- * Validate captcha before allowing submission
- * @param  {Object} req - Express request object
- * @param  {Object} res - Express response object
- * @param  {Object} next - Express next middleware function
- */
-exports.captchaCheck = (captchaPrivateKey) => {
-  return (req, res, next) => {
-    if (!req.form.hasCaptcha) {
-      return next()
-    } else {
-      if (!captchaPrivateKey) {
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: 'Captcha not set-up',
-        })
-      } else if (!req.query.captchaResponse) {
-        logger.error({
-          message: 'Missing captchaResponse param',
-          meta: {
-            action: 'captchaCheck',
-            formId: req.form._id,
-            ...createReqMeta(req),
-          },
-        })
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message: 'Captcha was missing. Please refresh and submit again.',
-        })
-      } else {
-        axios
-          .get(GOOGLE_RECAPTCHA_URL, {
-            params: {
-              secret: captchaPrivateKey,
-              response: req.query.captchaResponse,
-              remoteip: req.connection.remoteAddress,
-            },
-          })
-          .then(({ data }) => {
-            if (!data.success) {
-              logger.error({
-                message: 'Incorrect captcha response',
-                meta: {
-                  action: 'captchaCheck',
-                  formId: req.form._id,
-                  ...createReqMeta(req),
-                },
-              })
-              return res.status(StatusCodes.BAD_REQUEST).json({
-                message: 'Captcha was incorrect. Please submit again.',
-              })
-            }
-            return next()
-          })
-          .catch((err) => {
-            // Problem with the verificationUrl - maybe it timed out?
-            logger.error({
-              message: 'Error verifying captcha',
-              meta: {
-                action: 'captchaCheck',
-                formId: req.form._id,
-                ...createReqMeta(req),
-              },
-              error: err,
-            })
-            return res.status(StatusCodes.BAD_REQUEST).json({
-              message:
-                'Could not verify captcha. Please submit again in a few minutes.',
-            })
-          })
-      }
-    }
-  }
-}
 
 /**
  * Injects auto-reply SMS/Email info

@@ -33,11 +33,11 @@ describe('public-form.controller', () => {
 
   describe('handleSubmitFeedback', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_FORM: Partial<IPopulatedForm> = {
+    const MOCK_FORM = {
       _id: MOCK_FORM_ID,
       title: 'mock form title',
       inactiveMessage: 'This mock form is mock closed.',
-    }
+    } as IPopulatedForm
     const MOCK_REQ = expressHandler.mockRequest({
       body: {
         rating: 4,
@@ -129,7 +129,7 @@ describe('public-form.controller', () => {
       )
       // Mock return error.
       MockFormService.isFormPublic.mockReturnValueOnce(
-        err(new PrivateFormError()),
+        err(new PrivateFormError(MOCK_FORM.inactiveMessage, MOCK_FORM.title)),
       )
 
       // Act

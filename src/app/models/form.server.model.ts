@@ -1,31 +1,31 @@
 import BSON from 'bson-ext'
-import { compact, filter, pick, uniq } from 'lodash'
-import { Mongoose, Schema, SchemaOptions } from 'mongoose'
+import { compact, pick, uniq } from 'lodash'
+import mongoose, { Mongoose, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
-import { FORM_DUPLICATE_KEYS } from '../../shared/constants'
 import {
   AuthType,
   BasicField,
   Colors,
-  DashboardFormView,
   FormLogoState,
+  FormMetaView,
   FormOtpData,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormModel,
   IEncryptedFormSchema,
-  IForm,
   IFormModel,
   IFormSchema,
   IPopulatedForm,
   LogicType,
   Permission,
+  PickDuplicateForm,
   ResponseMode,
   Status,
 } from '../../types'
-import { IUserSchema } from '../../types/user'
+import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
+import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
@@ -390,13 +390,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
 
   // Methods
-  FormSchema.methods.getMainFields = function (this: IFormSchema) {
-    const form = {
+  FormSchema.methods.getDashboardView = function (
+    this: IFormSchema,
+    admin: IPopulatedUser,
+  ) {
+    return {
       _id: this._id,
       title: this.title,
       status: this.status,
+      lastModified: this.lastModified,
+      responseMode: this.responseMode,
+      admin,
     }
-    return form
   }
 
   // Method to return myInfo attributes
@@ -409,37 +414,45 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return compact(uniq(this.form_fields?.map((field) => field.myInfo?.attr)))
   }
 
-  // Return a duplicate form object with the given properties
-  FormSchema.methods.duplicate = function (
+  // Return essential form creation parameters with the given properties
+  FormSchema.methods.getDuplicateParams = function (
     this: IFormSchema,
-    overrideProps: Partial<IForm>,
+    overrideProps: OverrideProps,
   ) {
-    const newForm = pick(this, FORM_DUPLICATE_KEYS)
-    Object.assign(newForm, overrideProps)
-    return newForm
+    const newForm = pick(this, [
+      'form_fields',
+      'form_logics',
+      'startPage',
+      'endPage',
+      'authType',
+      'inactiveMessage',
+      'responseMode',
+    ]) as PickDuplicateForm
+    return { ...newForm, ...overrideProps }
+  }
+
+  // Archives form.
+  FormSchema.methods.archive = function (this: IFormSchema) {
+    // Return instantly when form is already archived.
+    if (this.status === Status.Archived) {
+      return Promise.resolve(this)
+    }
+
+    this.status = Status.Archived
+    return this.save()
   }
 
   // Transfer ownership of the form to another user
-  FormSchema.methods.transferOwner = async function (
-    currentOwner: IUserSchema,
-    newOwnerEmail: string,
-  ) {
-    // Verify that the new owner exists
-    const newOwner = await User.findOne({ email: newOwnerEmail })
-    if (newOwner == null) {
-      throw new Error(
-        `${newOwnerEmail} must have logged in once before being added as Owner`,
-      )
-    }
-
-    // Update form's admin to new owner's id
+  FormSchema.methods.transferOwner = async function (currentOwner, newOwner) {
+    // Update form's admin to new owner's id.
     this.admin = newOwner._id
 
-    // Remove new owner from perm list and include previous owner as an editor
-    this.permissionList = filter(this.permissionList, (item) => {
-      return item.email !== newOwnerEmail
-    })
+    // Remove new owner from perm list and include previous owner as an editor.
+    this.permissionList =
+      this.permissionList?.filter((item) => item.email !== newOwner.email) ?? []
     this.permissionList.push({ email: currentOwner.email, write: true })
+
+    return this.save()
   }
 
   // Statics
@@ -473,13 +486,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormModel,
     formId: string,
   ): Promise<IPopulatedForm | null> {
-    const data: IPopulatedForm | null = await this.findById(formId).populate({
+    return this.findById(formId).populate({
       path: 'admin',
+      // Remove irrelevant keys from populated fields of form admin and agency.
+      select: '-__v -created -lastModified -updatedAt -lastAccessed',
       populate: {
         path: 'agency',
+        select: '-__v -created -lastModified -updatedAt',
       },
     })
-    return data
   }
 
   // Deactivate form by ID
@@ -495,11 +510,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return form.save()
   }
 
-  FormSchema.statics.getDashboardForms = async function (
+  FormSchema.statics.getMetaByUserIdOrEmail = async function (
     this: IFormModel,
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
-  ): Promise<DashboardFormView[]> {
+  ): Promise<FormMetaView[]> {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.
@@ -508,7 +523,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         .where('status')
         .ne(Status.Archived)
         // Project selected fields.
-        .select('_id title admin lastModified status form_fields')
+        // `responseMode` is a discriminator key and is returned regardless,
+        // selection is made for explicitness.
+        // `_id` is also returned regardless and selection is made for
+        // explicitness.
+        .select('_id title admin lastModified status responseMode')
         .sort('-lastModified')
         .populate({
           path: 'admin',
@@ -522,7 +541,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Hooks
-  FormSchema.pre<IFormSchema>('validate', async function (next) {
+  FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
     if (bson.calculateObjectSize(this) > 10 * MB) {
       const err = new Error('Form size exceeded.')
@@ -531,13 +550,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
     // Validate that admin exists before form is created.
-    await User.findById(this.admin, function (error, admin) {
-      if (error) {
-        return next(Error(`Error validating admin for form.`))
-      }
+    return User.findById(this.admin).then((admin) => {
       if (!admin) {
-        return next(Error(`Admin for this form is not found.`))
+        const validationError = this.invalidate(
+          'admin',
+          'Admin for this form is not found.',
+        ) as mongoose.Error.ValidationError
+        return next(validationError)
       }
+
+      // Remove admin from the permission list if they exist.
+      // This prevents the form owner from being both an admin and another role.
+      this.permissionList = this.permissionList?.filter(
+        (item) => item.email !== admin.email,
+      )
+
       return next()
     })
   })

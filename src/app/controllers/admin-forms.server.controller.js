@@ -16,13 +16,7 @@ const {
   aws: { logoBucketUrl },
 } = require('../../config/config')
 const { EditFieldActions } = require('../../shared/constants')
-const {
-  getEncryptedFormModel,
-  getEmailFormModel,
-} = require('../models/form.server.model')
-const getFormModel = require('../models/form.server.model').default
 const getSubmissionModel = require('../models/submission.server.model').default
-const { ResponseMode } = require('../../types')
 
 // Export individual functions (i.e. create, delete)
 // and makeModule function that takes in connection object
@@ -35,17 +29,11 @@ module.exports = _.assign({ makeModule }, makeModule(mongoose))
  */
 function makeModule(connection) {
   /**
-   * Get the model depending on responseMode
-   * @param {*} responseMode
-   * @returns the encryptSchema Form if responseMode is 'encrypt' else emailSchema Form
-   */
-  function getDiscriminatedFormModel(responseMode) {
-    return responseMode === ResponseMode.Encrypt
-      ? getEncryptedFormModel(connection)
-      : getEmailFormModel(connection)
-  }
-
-  /**
+   * @deprecated
+   * Note that this function has already been refactored in transformMongoError
+   * in handle-mongo-error.ts. This function remains for Javascript controllers
+   * without mapRouteErrors.
+   *
    * Helper function that handles responding to a client request
    * when encountering a MongoDB error.
    * @param {Object} req Express request object
@@ -231,27 +219,6 @@ function makeModule(connection) {
       return next()
     },
     /**
-     * Create a new form called on list forms
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    create: function (req, res) {
-      if (!req.body.form) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message: 'Invalid Input',
-        })
-      }
-      let Form = getDiscriminatedFormModel(req.body.form.responseMode)
-      let form = new Form(req.body.form)
-
-      form.admin = req.session.user._id
-
-      form.save(function (err) {
-        if (err) return respondOnMongoError(req, res, err)
-        return res.json(form)
-      })
-    },
-    /**
      * Updates a form from Settings tab
      * @param  {Object} req - Express request object
      * @param  {Object} res - Express response object
@@ -334,87 +301,6 @@ function makeModule(connection) {
       })
     },
     /**
-     * Deletes a form from list forms page (no delete on view form)
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    delete: function (req, res) {
-      let form = req.form
-      // Set form to inactive
-      form.status = 'ARCHIVED'
-      form.save(function (err, savedForm) {
-        if (err) {
-          return respondOnMongoError(req, res, err)
-        }
-        return res.json(savedForm)
-      })
-    },
-    /**
-     * Duplicates an entire form from list forms page
-     * Duplicating non-admin form, makes you admin of duplicated form
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    duplicate: function (req, res) {
-      let Form = getFormModel(connection)
-      let id = req.form._id
-      Form.findById({ _id: id }).exec(function (err, form) {
-        if (err) {
-          return respondOnMongoError(req, res, err)
-        } else if (!form) {
-          return res
-            .status(StatusCodes.NOT_FOUND)
-            .json({ message: 'Form not found for duplication' })
-        } else {
-          let responseMode = req.body.responseMode || 'email'
-          // Custom properties on the new form
-          const overrideProps = {
-            responseMode,
-            admin: req.session.user._id,
-            title: req.body.title,
-            isNew: true,
-          }
-          if (responseMode === 'encrypt') {
-            overrideProps.publicKey = req.body.publicKey
-          } else {
-            if (req.body.emails) {
-              overrideProps.emails = req.body.emails
-            }
-          }
-          if (req.body.isTemplate) {
-            overrideProps.customLogo = undefined
-          }
-
-          // Prevent buttonLink from being copied over if same as formHash (for old forms)
-          if (form.endPage && form.endPage.buttonLink) {
-            let oldFormHash = '#!/' + id
-            if (form.endPage.buttonLink === oldFormHash) {
-              overrideProps.endPage = form.endPage
-              delete overrideProps.endPage.buttonLink
-            }
-          }
-
-          const onError = (error) => respondOnMongoError(req, res, error)
-
-          const onSuccess = (successForm) => {
-            let formFields = successForm.getMainFields()
-            // Have to set admin here if not duplicated form will
-            // not be admin before refresh
-            formFields.admin = req.session.user
-            return res.json(formFields)
-          }
-
-          const DiscriminatedForm = getDiscriminatedFormModel(responseMode)
-          const discriminatedForm = new DiscriminatedForm(
-            form.duplicate(overrideProps),
-          )
-          discriminatedForm.save(function (sErr, duplicated) {
-            return sErr ? onError(sErr) : onSuccess(duplicated)
-          })
-        }
-      })
-    },
-    /**
      * Submit feedback when previewing forms
      * Preview feedback is not stored
      * @param  {Object} req - Express request object
@@ -449,37 +335,6 @@ function makeModule(connection) {
       let submission = new Submission({})
       req.submission = submission
       return next()
-    },
-
-    /**
-     * Transfer a form to another user
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    transferOwner: async function (req, res) {
-      const newOwnerEmail = req.body.email
-
-      // Transfer owner and Save the form
-      try {
-        await req.form.transferOwner(req.session.user, newOwnerEmail)
-      } catch (err) {
-        logger.error({
-          message: err.message,
-          meta: {
-            action: 'makeModule.transferOwner',
-            ...createReqMeta(req),
-          },
-          err,
-        })
-        return res.status(StatusCodes.CONFLICT).json({ message: err.message })
-      }
-      req.form.save(function (err, savedForm) {
-        if (err) return respondOnMongoError(req, res, err)
-        savedForm.populate('admin', (err) => {
-          if (err) return respondOnMongoError(req, res, err)
-          return res.json({ form: savedForm })
-        })
-      })
     },
   }
 }

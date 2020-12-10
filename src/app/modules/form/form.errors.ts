@@ -17,13 +17,19 @@ export class FormDeletedError extends ApplicationError {
  * that is to be returned for public consumption when its status is PRIVATE.
  */
 export class PrivateFormError extends ApplicationError {
+  /** Extra meta for form title. */
+  formTitle: string
+
   /**
    * @param message Message used should be the form's inactive message.
+   * @param formTitle Extra meta for form title
    */
   constructor(
     message = 'If you think this is a mistake, please contact the agency that gave you the form link.',
+    formTitle: string,
   ) {
     super(message)
+    this.formTitle = formTitle
   }
 }
 
@@ -32,6 +38,15 @@ export class PrivateFormError extends ApplicationError {
  * form.
  */
 export class ForbiddenFormError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
+/**
+ * Error to be returned when form ownership transfer fails.
+ */
+export class TransferOwnershipError extends ApplicationError {
   constructor(message: string) {
     super(message)
   }
