@@ -71,11 +71,6 @@ export const receiveEmailSubmission: RequestHandler<
     })
     .map((parsed) => {
       req.body = parsed
-      const hashes = EmailSubmissionService.hashSubmission(parsed)
-      logger.info({
-        message: 'Submission successfully hashed',
-        meta: { ...logMeta, ...hashes },
-      })
       return next()
     })
     .mapErr((error) => {

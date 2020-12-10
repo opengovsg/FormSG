@@ -1,9 +1,6 @@
-import crypto from 'crypto'
-import stringify from 'json-stringify-deterministic'
 import { sumBy } from 'lodash'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { sessionSecret } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { FieldResponse } from '../../../../types'
 import {
@@ -22,7 +19,6 @@ import {
   EmailDataForOneField,
   EmailFormField,
   EmailJsonField,
-  ParsedMultipartForm,
 } from './email-submission.types'
 import {
   getAnswerForCheckbox,
@@ -135,27 +131,4 @@ export const validateAttachments = (
     }
     return okAsync(true)
   })
-}
-
-/**
- * Hashes a submission for logging purposes
- * @param body Response body
- * @param uinFin UIN or FIN if present
- */
-export const hashSubmission = (
-  body: ParsedMultipartForm,
-  uinFin?: string,
-): { hashedUinFin?: string; hashedSubmission?: string } => {
-  const hashedUinFin = uinFin
-    ? crypto.createHmac('sha256', sessionSecret).update(uinFin).digest('hex')
-    : undefined
-  const attachments = mapAttachmentsFromResponses(body.responses)
-  const concatenatedResponse = stringify(body) + stringify(attachments)
-  const hashedSubmission = concatenatedResponse
-    ? crypto
-        .createHmac('sha256', sessionSecret)
-        .update(concatenatedResponse)
-        .digest('hex')
-    : undefined
-  return { hashedUinFin, hashedSubmission }
 }
