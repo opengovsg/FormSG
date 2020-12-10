@@ -10,6 +10,7 @@ import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
+  InvalidJwtError,
   LoginPageValidationError,
   VerifyJwtError,
 } from './spcp.errors'
@@ -119,15 +120,39 @@ export const getSubstringBetween = (
 export const verifyJwtPromise = (
   authClient: SPCPAuthClient,
   jwt: string,
-): Promise<JwtPayload> => {
-  return new Promise<JwtPayload>((resolve, reject) => {
-    authClient.verifyJWT<JwtPayload>(jwt, (error: Error, data: JwtPayload) => {
+): Promise<unknown> => {
+  return new Promise<unknown>((resolve, reject) => {
+    authClient.verifyJWT<unknown>(jwt, (error: Error, data: unknown) => {
       if (error) {
         return reject(error)
       }
       return resolve(data)
     })
   })
+}
+
+/**
+ * Typeguard for JWT payload.
+ * @param payload Payload decrypted from JWT
+ */
+export const isJwtPayload = (
+  payload: unknown,
+  authType: AuthType.SP | AuthType.CP,
+): payload is JwtPayload => {
+  if (authType === AuthType.SP) {
+    return (
+      !!payload &&
+      typeof payload === 'object' &&
+      typeof (payload as Record<string, unknown>).userName === 'string'
+    )
+  } else {
+    return (
+      !!payload &&
+      typeof payload === 'object' &&
+      typeof (payload as Record<string, unknown>).userName === 'string' &&
+      typeof (payload as Record<string, unknown>).userInfo === 'string'
+    )
+  }
 }
 
 /**
@@ -220,6 +245,12 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: 'User is not SPCP authenticated',
+      }
+    case InvalidJwtError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage:
+          'Sorry, something went wrong with your login. Please refresh and try again.',
       }
     default:
       logger.error({
