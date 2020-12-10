@@ -45,6 +45,12 @@ export const MOCK_LOGIN_HTML = 'html'
 export const MOCK_ERROR_CODE = 'errorCode'
 export const MOCK_TITLE = 'title'
 export const MOCK_JWT = 'jwt'
+
+export const MOCK_SP_JWT_PAYLOAD = { userName: 'mockUserName' }
+export const MOCK_CP_JWT_PAYLOAD = {
+  userName: 'mockUserName',
+  userInfo: 'mockUserInfo',
+}
 const spPartnerHash = crypto
   .createHash('sha1')
   .update(MOCK_SERVICE_PARAMS.spIdpId, 'utf8')

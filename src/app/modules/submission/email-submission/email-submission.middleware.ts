@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -10,7 +11,11 @@ import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
-import { WithAttachments, WithEmailData } from './email-submission.types'
+import {
+  EmailData,
+  WithAttachments,
+  WithEmailData,
+} from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
@@ -32,10 +37,30 @@ export const prepareEmailSubmission: RequestHandler<
 > = (req, res, next) => {
   const hashedFields =
     (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
-  const emailData = EmailSubmissionService.createEmailData(
-    req.body.parsedResponses,
-    hashedFields,
-  )
+  let emailData: EmailData
+  try {
+    emailData = EmailSubmissionService.createEmailData(
+      req.body.parsedResponses,
+      hashedFields,
+    )
+  } catch (error) {
+    logger.error({
+      message: 'Failed to create answer template',
+      meta: {
+        action: 'getFormattedResponse',
+        questions: req.body.parsedResponses.map(
+          (response) => response?.question,
+        ),
+        keys: req.body.parsedResponses.map(Object.keys),
+      },
+      error,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'There was something wrong with your submission. Please refresh and try again.',
+    })
+  }
+  // eslint-disable-next-line @typescript-eslint/no-extra-semi
   ;(req as WithEmailData<typeof req>).autoReplyData = emailData.autoReplyData
   ;(req as WithEmailData<typeof req>).jsonData = emailData.jsonData
   ;(req as WithEmailData<typeof req>).formData = emailData.formData
