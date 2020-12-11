@@ -7,7 +7,11 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
-import { ProcessedFieldResponse } from '../submission.types'
+import {
+  ProcessedCheckboxResponse,
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
@@ -40,6 +44,7 @@ export const prepareEmailSubmission: RequestHandler<
   const hashedFields =
     (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
   let emailData: EmailData
+  // TODO (#847): remove when we are sure of the shape of responses
   try {
     emailData = EmailSubmissionService.createEmailData(
       req.body.parsedResponses,
@@ -47,13 +52,23 @@ export const prepareEmailSubmission: RequestHandler<
     )
   } catch (error) {
     logger.error({
-      message: 'Failed to create answer template',
+      message: 'Failed to create email data',
       meta: {
-        action: 'getFormattedResponse',
-        questions: req.body.parsedResponses.map(
-          (response) => response?.question,
-        ),
-        keys: req.body.parsedResponses.map(Object.keys),
+        action: 'prepareEmailSubmission',
+        responseMetaData: req.body.parsedResponses.map((response) => ({
+          question: response?.question,
+          // Cast just for logging purposes
+          answerType: typeof (response as ProcessedSingleAnswerResponse)
+            ?.answer,
+          isAnswerTruthy: !!(response as ProcessedSingleAnswerResponse)?.answer,
+          isAnswerArrayAnArray: Array.isArray(
+            (response as ProcessedCheckboxResponse)?.answerArray,
+          ),
+          isAnswerArrayTruthy: !!(response as ProcessedCheckboxResponse)
+            ?.answerArray,
+          _id: response?._id,
+          fieldType: response?.fieldType,
+        })),
       },
       error,
     })
