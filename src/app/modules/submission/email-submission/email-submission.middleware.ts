@@ -51,9 +51,9 @@ export const prepareEmailSubmission: RequestHandler<
     )
   } catch (error) {
     logger.error({
-      message: 'Failed to create answer template',
+      message: 'Failed to create email data',
       meta: {
-        action: 'getFormattedResponse',
+        action: 'prepareEmailSubmission',
         responseMetaData: req.body.parsedResponses.map((response) => ({
           question: response?.question,
           answerTruthy:
