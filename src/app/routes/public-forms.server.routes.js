@@ -7,7 +7,6 @@ const forms = require('../../app/controllers/forms.server.controller')
 const publicForms = require('../../app/controllers/public-forms.server.controller')
 const submissions = require('../../app/controllers/submissions.server.controller')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
-const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
@@ -199,7 +198,7 @@ module.exports = function (app) {
     SpcpController.appendVerifiedSPCPResponses,
     EmailSubmissionsMiddleware.prepareEmailSubmission,
     EmailSubmissionsMiddleware.saveMetadataToDb,
-    emailSubmissions.sendAdminEmail,
+    EmailSubmissionsMiddleware.sendAdminEmail,
     submissions.sendAutoReply,
   )
 

@@ -44,3 +44,9 @@ export class ValidateFieldError extends ApplicationError {
     super(message)
   }
 }
+
+export class SendAdminEmailError extends ApplicationError {
+  constructor(message = 'Error sending submission to admin') {
+    super(message)
+  }
+}

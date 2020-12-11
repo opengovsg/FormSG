@@ -13,6 +13,7 @@ import { DatabaseError } from '../../core/core.errors'
 import {
   ConflictError,
   ProcessingError,
+  SendAdminEmailError,
   ValidateFieldError,
 } from '../submission.errors'
 import {
@@ -300,6 +301,12 @@ export const mapRouteError: MapRouteError = (error) => {
     case SubmissionHashError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage:
+          'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case SendAdminEmailError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       }
