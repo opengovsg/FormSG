@@ -9,6 +9,7 @@ import {
   IAttachmentResponse,
   MapRouteError,
 } from '../../../../types'
+import { DatabaseError } from '../../core/core.errors'
 import {
   ConflictError,
   ProcessingError,
@@ -27,13 +28,16 @@ import {
 } from './email-submission.constants'
 import {
   AttachmentTooLargeError,
+  ConcatSubmissionError,
   InitialiseMultipartReceiverError,
   InvalidFileExtensionError,
   MultipartError,
+  SubmissionHashError,
 } from './email-submission.errors'
 import {
   EmailAutoReplyField,
   EmailDataForOneField,
+  EmailFormField,
   EmailJsonField,
   IAttachmentInfo,
   ResponseFormattedForEmail,
@@ -286,10 +290,18 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case ProcessingError:
     case ValidateFieldError:
+    case ConcatSubmissionError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+      }
+    case DatabaseError:
+    case SubmissionHashError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage:
+          'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       }
     default:
       return {
@@ -369,4 +381,24 @@ export const handleDuplicatesInAttachments = (
       a.filename = `${count}-${a.filename}`
     }
   })
+}
+
+/**
+ * Concatenate response into a string for hashing
+ * @param formData Field-value tuples for admin email
+ * @param attachments Array of attachments as buffers
+ * @return concatenated response to hash
+ */
+export const concatAttachmentsAndResponses = (
+  formData: EmailFormField[],
+  attachments: IAttachmentInfo[],
+): string => {
+  let response = ''
+  response += formData.reduce((acc, fieldData) => {
+    const question = fieldData.question.toString().trim()
+    const answer = fieldData.answer.toString().trim()
+    return acc + `${question} ${answer}; `
+  }, '')
+  response += attachments.reduce((acc, { content }) => acc + content, '')
+  return response
 }

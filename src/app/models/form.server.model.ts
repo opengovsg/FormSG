@@ -26,6 +26,7 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
+import { transformEmails } from '../modules/form/form.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
@@ -96,30 +97,6 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     required: true,
   },
 })
-
-// Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
-function transformEmailString(v: string): string[] {
-  return v
-    .split(',')
-    .map((item) => item.trim().toLowerCase())
-    .filter((email) => email.includes('@')) // remove ""
-}
-
-// Function that coerces the string of comma-separated emails sent by the client
-// into an array of emails
-function transformEmails(v: string | string[]): string[] {
-  // Cases
-  // ['test@hotmail.com'] => ['test@hotmail.com'] ~ unchanged
-  // ['test@hotmail.com', 'test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com'] ~ unchanged
-  // ['test@hotmail.com, test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com']
-  // ['test@hotmail.com, test@gmail.com', 'test@yahoo.com'] => ['test@hotmail.com', 'test@gmail.com', 'test@yahoo.com']
-  // 'test@hotmail.com, test@gmail.com' => ['test@hotmail.com', 'test@gmail.com']
-  if (Array.isArray(v)) {
-    return transformEmailString(v.join(','))
-  } else {
-    return transformEmailString(v)
-  }
-}
 
 const EmailFormSchema = new Schema<IEmailFormSchema>({
   emails: {

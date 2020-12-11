@@ -486,7 +486,7 @@ describe('Email Submissions Controller', () => {
           req.attachments = attachments
           return next()
         },
-        controller.saveMetadataToDb,
+        EmailSubmissionsMiddleware.saveMetadataToDb,
         (req, res) => res.status(200).send(req.submission),
       )
     })
@@ -673,40 +673,6 @@ describe('Email Submissions Controller', () => {
         })
         .then(done)
         .catch(done)
-    })
-
-    it('errors with 400 if submission fail', (done) => {
-      const badSubmission = jasmine.createSpyObj('Submission', ['save'])
-      badSubmission.save.and.callFake((callback) => callback(new Error('boom')))
-      const badSubmissionModel = jasmine.createSpy()
-      badSubmissionModel.and.returnValue(badSubmission)
-      const getEmailSubmissionModel = jasmine.createSpy(
-        'getEmailSubmissionModel',
-      )
-      getEmailSubmissionModel.and.returnValue(badSubmissionModel)
-      const badController = spec(
-        'dist/backend/app/controllers/email-submissions.server.controller',
-        {
-          '../models/submission.server.model': { getEmailSubmissionModel },
-        },
-      )
-
-      const badApp = express()
-      badApp.route(endpointPath).get(
-        (req, res, next) => {
-          req.form = testForm
-          req.formData = formData
-          req.attachments = attachments
-          return next()
-        },
-        badController.saveMetadataToDb,
-        (req, res) => res.status(200).send(),
-      )
-
-      request(badApp)
-        .get(endpointPath)
-        .expect(StatusCodes.BAD_REQUEST)
-        .end(done)
     })
   })
 

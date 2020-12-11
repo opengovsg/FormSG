@@ -15,6 +15,8 @@ import {
   EmailData,
   WithAttachments,
   WithEmailData,
+  WithFormMetadata,
+  WithSubmission,
 } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
@@ -153,6 +155,58 @@ export const validateEmailSubmission: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({
         message: errorMessage,
+      })
+    })
+}
+
+/**
+ * Saves new Submission object to db when form.responseMode is email
+ * @param req - Express request object
+ * @param req.form - form object from req
+ * @param req.formData - the submission for the form
+ * @param req.attachments - submitted attachments, parsed by
+ * exports.receiveSubmission
+ * @param res - Express response object
+ * @param next - the next expressjs callback, invoked once attachments
+ * are processed
+ */
+export const saveMetadataToDb: RequestHandler<
+  ParamsDictionary,
+  { message: string; spcpSubmissionFailure: boolean }
+> = async (req, res, next) => {
+  const { form, attachments, formData } = req as WithFormMetadata<typeof req>
+  const logMeta = {
+    action: 'saveMetadataToDb',
+    formId: form._id,
+    ...createReqMeta(req),
+  }
+  return EmailSubmissionService.hashSubmission(formData, attachments)
+    .andThen((submissionHash) =>
+      EmailSubmissionService.saveSubmissionMetadata(form, submissionHash),
+    )
+    .map((submission) => {
+      // Important log message which links IP address to submission ID for investigation purposes
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        meta: {
+          ...logMeta,
+          submissionId: submission.id,
+          responseHash: submission.responseHash,
+        },
+      })
+      ;(req as WithSubmission<typeof req>).submission = submission
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while saving metadata to database',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: false,
       })
     })
 }

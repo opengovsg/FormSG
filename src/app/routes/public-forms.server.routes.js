@@ -198,7 +198,7 @@ module.exports = function (app) {
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
     EmailSubmissionsMiddleware.prepareEmailSubmission,
-    emailSubmissions.saveMetadataToDb,
+    EmailSubmissionsMiddleware.saveMetadataToDb,
     emailSubmissions.sendAdminEmail,
     submissions.sendAutoReply,
   )
