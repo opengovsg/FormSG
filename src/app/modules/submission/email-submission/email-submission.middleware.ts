@@ -4,7 +4,12 @@ import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
+import {
+  BasicField,
+  FieldResponse,
+  ResWithHashedFields,
+  WithForm,
+} from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
@@ -38,6 +43,7 @@ export const prepareEmailSubmission: RequestHandler<
   const hashedFields =
     (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
   let emailData: EmailData
+  // TODO (#847): remove when we are sure of the shape of responses
   try {
     emailData = EmailSubmissionService.createEmailData(
       req.body.parsedResponses,
@@ -48,9 +54,17 @@ export const prepareEmailSubmission: RequestHandler<
       message: 'Failed to create answer template',
       meta: {
         action: 'getFormattedResponse',
-        questions: req.body.parsedResponses.map(
-          (response) => response?.question,
-        ),
+        responseMetaData: req.body.parsedResponses.map((response) => ({
+          question: response?.question,
+          answerTruthy:
+            response.fieldType !== BasicField.Table &&
+            response.fieldType !== BasicField.Checkbox &&
+            !!response?.answer,
+          answerArrayTruthy:
+            (response.fieldType === BasicField.Table ||
+              response.fieldType === BasicField.Checkbox) &&
+            !!response?.answerArray,
+        })),
         keys: req.body.parsedResponses.map(Object.keys),
       },
       error,
