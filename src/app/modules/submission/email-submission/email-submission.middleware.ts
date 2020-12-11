@@ -56,8 +56,13 @@ export const prepareEmailSubmission: RequestHandler<
         responseMetaData: req.body.parsedResponses.map((response) => ({
           question: response?.question,
           // Cast just for logging purposes
-          answerTruthy: !!(response as ProcessedSingleAnswerResponse)?.answer,
-          answerArrayTruthy: !!(response as ProcessedCheckboxResponse)
+          answerType: typeof (response as ProcessedSingleAnswerResponse)
+            ?.answer,
+          isAnswerTruthy: !!(response as ProcessedSingleAnswerResponse)?.answer,
+          isAnswerArrayAnArray: Array.isArray(
+            (response as ProcessedCheckboxResponse)?.answerArray,
+          ),
+          isAnswerArrayTruthy: !!(response as ProcessedCheckboxResponse)
             ?.answerArray,
           _id: response?._id,
           fieldType: response?.fieldType,
