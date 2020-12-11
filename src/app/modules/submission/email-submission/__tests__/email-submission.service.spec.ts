@@ -3,11 +3,9 @@ import crypto from 'crypto'
 import { readFileSync } from 'fs'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
-import { mocked } from 'ts-jest/utils'
 
 import { getEmailSubmissionModel } from 'src/app/models/submission.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import config from 'src/config/config'
 import { types as basicTypes } from 'src/shared/resources/basic'
 import {
   AuthType,
