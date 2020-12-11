@@ -201,7 +201,7 @@ export class SpcpService {
     authType: AuthType.SP | AuthType.CP,
   ): ResultAsync<JwtPayload, VerifyJwtError> {
     const logMeta = {
-      action: 'extractPayload',
+      action: 'extractJwtPayload',
       authType,
     }
     const authClient = this.getAuthClient(authType)
