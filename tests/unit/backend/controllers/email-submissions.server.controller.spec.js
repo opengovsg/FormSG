@@ -147,7 +147,7 @@ describe('Email Submissions Controller', () => {
         .catch(done)
     })
 
-    it('errors with 500 on send failure', (done) => {
+    it('errors with 400 on send failure', (done) => {
       // Arrange
       sendSubmissionMailSpy.and.callFake(() =>
         Promise.reject(new Error('mockErrorResponse')),
@@ -156,7 +156,7 @@ describe('Email Submissions Controller', () => {
       delete fixtures.form.emails
       request(app)
         .get(endpointPath)
-        .expect(StatusCodes.INTERNAL_SERVER_ERROR)
+        .expect(StatusCodes.BAD_REQUEST)
         .then(done)
         .catch(done)
     })
