@@ -269,7 +269,7 @@ module.exports = function (app) {
 
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
-    .get(authActiveForm(PermissionLevel.Read), adminForms.getFeedback)
+    .get(withUserAuthentication, AdminFormController.handleGetFormFeedbacks)
     .post(authActiveForm(PermissionLevel.Read), adminForms.passThroughFeedback)
 
   /**
@@ -298,7 +298,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback/download')
-    .get(authActiveForm(PermissionLevel.Read), adminForms.streamFeedback)
+    .get(withUserAuthentication, AdminFormController.handleStreamFormFeedback)
 
   /**
    * Transfer form ownership to another user
@@ -400,12 +400,17 @@ module.exports = function (app) {
    * @returns {Object} 200 - Response document
    * @security OTP
    */
-  app
-    .route('/:formId([a-fA-F0-9]{24})/adminform/submissions')
-    .get(
-      authEncryptedResponseAccess,
-      EncryptSubmissionController.handleGetEncryptedResponse,
-    )
+  app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions').get(
+    authEncryptedResponseAccess,
+    celebrate({
+      [Segments.QUERY]: {
+        submissionId: Joi.string()
+          .regex(/^[0-9a-fA-F]{24}$/)
+          .required(),
+      },
+    }),
+    EncryptSubmissionController.handleGetEncryptedResponse,
+  )
 
   /**
    * Count the number of submissions for a public form
@@ -452,11 +457,14 @@ module.exports = function (app) {
     authEncryptedResponseAccess,
     celebrate({
       [Segments.QUERY]: {
-        page: Joi.number().min(1).required(),
         submissionId: Joi.string().optional(),
+        page: Joi.number().min(1).when('submissionId', {
+          not: Joi.exist(),
+          then: Joi.required(),
+        }),
       },
     }),
-    encryptSubmissions.getMetadata,
+    EncryptSubmissionController.handleGetMetadata,
   )
 
   /**

@@ -6,10 +6,6 @@ const roles = require('../helpers/roles')
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
-const FormFeedback = dbHandler.makeModel(
-  'form_feedback.server.model',
-  'FormFeedback',
-)
 const EmailForm = mongoose.model('email')
 
 const Controller = spec(
@@ -289,59 +285,6 @@ describe('Admin-Forms Controller', () => {
         })
       })
       Controller.transferOwner(req, res)
-    })
-  })
-
-  describe('getFeedback', () => {
-    it('should retrieve correct response based on saved FormFeedbacks', (done) => {
-      // Define feedback to be added to MongoMemoryServer db
-      let p1 = new FormFeedback({
-        formId: mongoose.Types.ObjectId('4edd40c86762e0fb12000003'),
-        rating: 2,
-        comment: 'nice',
-        created: '2018-05-18 09:12:07.126Z',
-      }).save()
-      let p2 = new FormFeedback({
-        formId: mongoose.Types.ObjectId('4edd40c86762e0fb12000003'),
-        rating: 5,
-        comment: 'great',
-        created: '2018-03-15 03:52:07.126Z',
-      }).save()
-
-      Promise.all([p1, p2]).then(([_r1, _r2]) => {
-        req.form = { _id: '4edd40c86762e0fb12000003' }
-        let expected = {
-          average: '3.50',
-          count: 2,
-          feedback: [
-            {
-              index: 2,
-              timestamp: 1526634727126,
-              rating: 2,
-              comment: 'nice',
-              date: '18 May 2018',
-              dateShort: '18 May',
-            },
-            {
-              index: 1,
-              timestamp: 1521085927126,
-              rating: 5,
-              comment: 'great',
-              date: '15 Mar 2018',
-              dateShort: '15 Mar',
-            },
-          ],
-        }
-        res.json.and.callFake((args) => {
-          expect(args.average).toEqual(expected.average)
-          expect(args.count).toEqual(expected.count)
-          expect(args.feedback.length).toEqual(2)
-          expect(args.feedback).toContain(expected.feedback[0])
-          expect(args.feedback).toContain(expected.feedback[1])
-          done()
-        })
-        Controller.getFeedback(req, res)
-      })
     })
   })
 })

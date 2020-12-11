@@ -2,7 +2,10 @@
 import {
   IHomenoField,
   ILongTextField,
+  IMobileField,
   INricField,
+  IRadioField,
+  IRatingField,
   ISectionFieldSchema,
   IShortTextField,
 } from 'src/types/field'
@@ -36,4 +39,20 @@ export const isHomeNumberField = (
   formField: IField,
 ): formField is IHomenoField => {
   return formField.fieldType === BasicField.HomeNo
+}
+
+export const isRadioButtonField = (
+  formField: IField,
+): formField is IRadioField => {
+  return formField.fieldType === BasicField.Radio
+}
+
+export const isRatingField = (formField: IField): formField is IRatingField => {
+  return formField.fieldType === BasicField.Rating
+}
+
+export const isMobileNumberField = (
+  formField: IField,
+): formField is IMobileField => {
+  return formField.fieldType === BasicField.Mobile
 }

@@ -1,0 +1,47 @@
+import { chain, left, right } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
+
+import { IMobileField } from 'src/types/field'
+import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ISingleAnswerResponse } from 'src/types/response'
+
+import {
+  isMobilePhoneNumber,
+  startsWithSgPrefix,
+} from '../../../../shared/util/phone-num-validation'
+
+import { notEmptySingleAnswerResponse } from './common'
+
+type MobileNoValidator = ResponseValidator<ISingleAnswerResponse>
+type MobileNoValidatorConstructor = (
+  mobileNumberField: IMobileField,
+) => MobileNoValidator
+
+const mobilePhoneNumberValidator: MobileNoValidator = (response) => {
+  return isMobilePhoneNumber(response.answer)
+    ? right(response)
+    : left(`MobileNoValidator:\t answer is not a valid mobile phone number`)
+}
+
+const sgPrefixValidator: MobileNoValidator = (response) => {
+  return startsWithSgPrefix(response.answer)
+    ? right(response)
+    : left(
+        `MobileNoValidator:\t answer is not an SG number but intl numbers are not allowed`,
+      )
+}
+
+const makePrefixValidator: MobileNoValidatorConstructor = (
+  mobileNumberField,
+) => {
+  return mobileNumberField.allowIntlNumbers ? right : sgPrefixValidator
+}
+
+export const constructMobileNoValidator: MobileNoValidatorConstructor = (
+  mobileNumberField,
+) =>
+  flow(
+    notEmptySingleAnswerResponse,
+    chain(mobilePhoneNumberValidator),
+    chain(makePrefixValidator(mobileNumberField)),
+  )

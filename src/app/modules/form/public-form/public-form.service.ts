@@ -29,7 +29,7 @@ export const insertFormFeedback = ({
 }: {
   formId: string
   rating: number
-  comment: string
+  comment?: string
 }): ResultAsync<IFormFeedbackSchema, FormNotFoundError | DatabaseError> => {
   if (!mongoose.Types.ObjectId.isValid(formId)) {
     return errAsync(new FormNotFoundError())

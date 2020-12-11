@@ -3,7 +3,6 @@ const crypto = require('crypto')
 const { StatusCodes } = require('http-status-codes')
 
 const mongoose = require('mongoose')
-const errorHandler = require('../utils/handle-mongo-error')
 const {
   getEncryptSubmissionModel,
 } = require('../models/submission.server.model')
@@ -19,8 +18,6 @@ const {
 const {
   getProcessedResponses,
 } = require('../modules/submission/submission.service')
-
-const HttpStatus = require('http-status-codes')
 
 /**
  * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
@@ -209,60 +206,4 @@ exports.saveResponseToDb = function (req, res, next) {
     .catch((err) => {
       return onEncryptSubmissionFailure(err, req, res, submission)
     })
-}
-
-/**
- * Return metadata for encrypted form responses matching form._id
- * @param {Object} req - Express request object
- * @param {String} req.query.pageNo - page of table to return data for
- * @param {Object} req.form - the form
- * @param {Object} res - Express response object
- */
-exports.getMetadata = function (req, res) {
-  let { page, submissionId } = req.query || {}
-
-  if (submissionId) {
-    // Early return if submissionId is invalid.
-    if (!mongoose.Types.ObjectId.isValid(submissionId)) {
-      return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
-    }
-
-    return EncryptSubmission.findSingleMetadata(req.form._id, submissionId)
-      .then((result) => {
-        if (!result) {
-          return res.status(HttpStatus.OK).json({ metadata: [], count: 0 })
-        }
-
-        return res.status(HttpStatus.OK).json({ metadata: [result], count: 1 })
-      })
-      .catch((error) => {
-        logger.error({
-          message: 'Failure retrieving metadata from database',
-          meta: {
-            action: 'getMetadata',
-            ...createReqMeta(req),
-          },
-          error,
-        })
-        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          message: errorHandler.getMongoErrorMessage(error),
-        })
-      })
-  } else {
-    return EncryptSubmission.findAllMetadataByFormId(req.form._id, { page })
-      .then((result) => res.status(StatusCodes.OK).json(result))
-      .catch((error) => {
-        logger.error({
-          message: 'Failure retrieving metadata from database',
-          meta: {
-            action: 'getMetadata',
-            ...createReqMeta(req),
-          },
-          error: error,
-        })
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: errorHandler.getMongoErrorMessage(error),
-        })
-      })
-  }
 }

@@ -35,6 +35,34 @@ function unlistFormFromExamples(id) {
 // unlistFormFromExamples("form id")
 ```
 
+```javascript
+/**
+ * Unlist an array of forms from the examples page
+ * @param  {String[]} ids of the forms. These can be any string
+ * where the first sequence of 24 consecutive alphanumerics is the
+ * form ID, e.g. the form link.
+ */
+function unlistFormArrayFromExamples(ids) {
+  const formIdRegex = /[0-9a-fA-F]{24}/
+  // Wrap all ids in ObjectId
+  const objectIds = []
+  for (let id of ids) {
+    const parsed = formIdRegex.exec(id)
+    if (parsed) {
+      objectIds.push(ObjectId(parsed[0]))
+    } else {
+      throw new Error(`${id} does not contain a valid form ID.`)
+    }
+  }
+  const result = db
+    .getCollection('forms')
+    .updateMany({ _id: { $in: objectIds } }, { $set: { isListed: false } })
+  return `${ids.length} forms given, ${result.matchedCount} matched, ${result.modifiedCount} modified`
+}
+// const ids = ['https://some.url/5f8817b7bde9d4002a800d78', 'some.url/#!/5f9a587b119c07002b56124f']
+// unlistFormArrayFromExamples(ids)
+```
+
 - **Create new agency**
 
 ```javascript
