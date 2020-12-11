@@ -4,15 +4,14 @@ import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import {
-  BasicField,
-  FieldResponse,
-  ResWithHashedFields,
-  WithForm,
-} from '../../../../types'
+import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
-import { ProcessedFieldResponse } from '../submission.types'
+import {
+  ProcessedCheckboxResponse,
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
@@ -56,14 +55,10 @@ export const prepareEmailSubmission: RequestHandler<
         action: 'prepareEmailSubmission',
         responseMetaData: req.body.parsedResponses.map((response) => ({
           question: response?.question,
-          answerTruthy:
-            response.fieldType !== BasicField.Table &&
-            response.fieldType !== BasicField.Checkbox &&
-            !!response?.answer,
-          answerArrayTruthy:
-            (response.fieldType === BasicField.Table ||
-              response.fieldType === BasicField.Checkbox) &&
-            !!response?.answerArray,
+          // Cast just for logging purposes
+          answerTruthy: !!(response as ProcessedSingleAnswerResponse)?.answer,
+          answerArrayTruthy: !!(response as ProcessedCheckboxResponse)
+            ?.answerArray,
           _id: response?._id,
           fieldType: response?.fieldType,
         })),
