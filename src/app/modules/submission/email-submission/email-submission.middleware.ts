@@ -64,8 +64,9 @@ export const prepareEmailSubmission: RequestHandler<
             (response.fieldType === BasicField.Table ||
               response.fieldType === BasicField.Checkbox) &&
             !!response?.answerArray,
+          _id: response?._id,
+          fieldType: response?.fieldType,
         })),
-        keys: req.body.parsedResponses.map(Object.keys),
       },
       error,
     })
