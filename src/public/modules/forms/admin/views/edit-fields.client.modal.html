@@ -593,7 +593,12 @@
           </div>
         </div>
 
-        <div class="row" ng-show="vm.field.fieldType === 'email'">
+        <div
+          class="row"
+          ng-show="vm.field.fieldType === 'email'"
+          feature-toggle
+          feature-name="verified-fields"
+        >
           <br />
           <div class="toggle-option">
             <div
