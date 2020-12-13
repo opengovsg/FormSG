@@ -275,12 +275,17 @@ function SubmissionsFactory(
             expectedNumResponses,
             NUM_OF_METADATA_ROWS,
           )
+          let attachmentErrorCount = 0
           let errorCount = 0
           let unverifiedCount = 0
           let receivedRecordCount = 0
 
           // Create a pool of decryption workers
-          const numWorkers = $window.navigator.hardwareConcurrency || 4
+          // If we are downloading attachments, we restrict the number of threads
+          // to one to limit resource usage on the client's browser.
+          const numWorkers = downloadAttachments
+            ? 1
+            : $window.navigator.hardwareConcurrency || 4
 
           // Trigger analytics here before starting decryption worker.
           GTag.downloadResponseStart(params, expectedNumResponses, numWorkers)
@@ -297,7 +302,10 @@ function SubmissionsFactory(
               const { data } = event
               const { csvRecord, downloadBlob } = data
 
-              if (csvRecord.status === 'ERROR') {
+              if (csvRecord.status === 'ATTACHMENT_ERROR') {
+                attachmentErrorCount++
+                errorCount++
+              } else if (csvRecord.status === 'ERROR') {
                 errorCount++
               } else if (csvRecord.status === 'UNVERIFIED') {
                 unverifiedCount++
@@ -392,6 +400,7 @@ function SubmissionsFactory(
                         numWorkers,
                         experimentalCsvGenerator.length(),
                         errorCount,
+                        attachmentErrorCount,
                         timeDifference,
                       )
                       killWorkers(workerPool)

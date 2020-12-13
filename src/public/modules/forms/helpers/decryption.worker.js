@@ -6,10 +6,12 @@ const {
 } = require('../../../../shared/util/verification')
 const JSZip = require('jszip')
 const { decode: decodeBase64 } = require('@stablelib/base64')
+const { default: PQueue } = require('p-queue')
 require('core-js/stable/promise')
 require('regenerator-runtime/runtime')
 
 let formsgSdk
+const queue = new PQueue({ concurrency: 1 })
 
 function initFormSg(formsgSdkMode) {
   if (!formsgSdkMode) {
@@ -150,10 +152,16 @@ async function decryptIntoCsv(data) {
           }
         })
 
-        downloadBlob = await downloadAndDecryptAttachmentsAsZip(
-          attachmentDownloadUrls,
-          secretKey,
-        )
+        try {
+          downloadBlob = await queue.add(() =>
+            downloadAndDecryptAttachmentsAsZip(
+              attachmentDownloadUrls,
+              secretKey,
+            ),
+          )
+        } catch (error) {
+          csvRecord.status = 'ATTACHMENT_ERROR'
+        }
       }
     } catch (error) {
       csvRecord.status = 'ERROR'

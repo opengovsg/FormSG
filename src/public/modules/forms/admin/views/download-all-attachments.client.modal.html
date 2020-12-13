@@ -1,0 +1,32 @@
+<div class="pop-up-modal">
+  <div class="modal-body">
+    <div class="field-title">
+      Download attachments for {{ responsesCount }} responses
+      <span class="beta-icon">beta</span>
+    </div>
+    <div ng-if="responsesCount > 0" class="field-description">
+      <p>
+        Downloading many attachments may take a long time. The attachments from
+        each response will be downloaded as a separate ZIP file. Start now, or
+        adjust your date range before proceeding.
+      </p>
+    </div>
+    <div ng-if="responsesCount === 0" class="field-description">
+      <p>
+        The date range you selected does not contain any responses. Please
+        select a date range containing responses and try again.
+      </p>
+    </div>
+    <div class="action-buttons">
+      <button
+        type="button"
+        class="btn-custom btn-medium"
+        ng-click="$close()"
+        ng-disabled="responsesCount === 0"
+      >
+        Download
+      </button>
+      <a class="modal-cancel-btn" ng-click="$dismiss()"> Cancel </a>
+    </div>
+  </div>
+</div>

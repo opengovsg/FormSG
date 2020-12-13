@@ -121,7 +121,7 @@ function ViewResponsesController(
   }
 
   // Trigger for export CSV
-  vm.exportCsv = function () {
+  vm.exportCsv = function (downloadAttachments) {
     let params = {
       formId: vm.myform._id,
       formTitle: vm.myform.title,
@@ -138,7 +138,7 @@ function ViewResponsesController(
     vm.csvDownloading = true
     Submissions.downloadEncryptedResponses(
       params,
-      false, // whether to download attachments
+      downloadAttachments, // whether to download attachments
       vm.encryptionKey.secretKey,
     )
       .then(function (result) {
@@ -244,6 +244,40 @@ function ViewResponsesController(
       }
 
       vm.loading = false
+    })
+  }
+
+  vm.confirmSubmissionCountsBeforeDownload = function () {
+    let params = {
+      formId: vm.myform._id,
+      formTitle: vm.myform.title,
+    }
+    if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
+      params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
+        'YYYY-MM-DD',
+      )
+      params.endDate = moment(new Date(vm.datePicker.date.endDate)).format(
+        'YYYY-MM-DD',
+      )
+    }
+    Submissions.count(params).then((responsesCount) => {
+      $uibModal
+        .open({
+          backdrop: 'static',
+          resolve: { responsesCount },
+          controller: [
+            '$scope',
+            '$uibModalInstance',
+            'responsesCount',
+            function ($scope, $uibModalInstance, responsesCount) {
+              $scope.responsesCount = responsesCount
+            },
+          ],
+          windowClass: 'pop-up-modal-window',
+          templateUrl:
+            'modules/forms/admin/views/download-all-attachments.client.modal.html',
+        })
+        .result.then(() => vm.exportCsv(true))
     })
   }
 
