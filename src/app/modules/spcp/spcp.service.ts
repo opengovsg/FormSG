@@ -200,16 +200,17 @@ export class SpcpService {
     jwt: string,
     authType: AuthType.SP | AuthType.CP,
   ): ResultAsync<JwtPayload, VerifyJwtError> {
+    const logMeta = {
+      action: 'extractJwtPayload',
+      authType,
+    }
     const authClient = this.getAuthClient(authType)
     return ResultAsync.fromPromise(
       verifyJwtPromise(authClient, jwt),
       (error) => {
         logger.error({
           message: 'Failed to verify JWT with auth client',
-          meta: {
-            action: 'extractPayload',
-            authType,
-          },
+          meta: logMeta,
           error,
         })
         return new VerifyJwtError()
@@ -218,6 +219,17 @@ export class SpcpService {
       if (isJwtPayload(payload, authType)) {
         return okAsync(payload)
       }
+      const payloadIsDefined = !!payload
+      const payloadKeys =
+        typeof payload === 'object' && !!payload && Object.keys(payload)
+      logger.error({
+        message: 'JWT has incorrect shape',
+        meta: {
+          ...logMeta,
+          payloadIsDefined,
+          payloadKeys,
+        },
+      })
       return errAsync(new InvalidJwtError())
     })
   }

@@ -7,14 +7,21 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
-import { ProcessedFieldResponse } from '../submission.types'
+import {
+  ProcessedCheckboxResponse,
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
 import {
   EmailData,
+  WithAdminEmailData,
   WithAttachments,
   WithEmailData,
+  WithFormMetadata,
+  WithSubmission,
 } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
@@ -38,6 +45,7 @@ export const prepareEmailSubmission: RequestHandler<
   const hashedFields =
     (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
   let emailData: EmailData
+  // TODO (#847): remove when we are sure of the shape of responses
   try {
     emailData = EmailSubmissionService.createEmailData(
       req.body.parsedResponses,
@@ -45,13 +53,23 @@ export const prepareEmailSubmission: RequestHandler<
     )
   } catch (error) {
     logger.error({
-      message: 'Failed to create answer template',
+      message: 'Failed to create email data',
       meta: {
-        action: 'getFormattedResponse',
-        questions: req.body.parsedResponses.map(
-          (response) => response?.question,
-        ),
-        keys: req.body.parsedResponses.map(Object.keys),
+        action: 'prepareEmailSubmission',
+        responseMetaData: req.body.parsedResponses.map((response) => ({
+          question: response?.question,
+          // Cast just for logging purposes
+          answerType: typeof (response as ProcessedSingleAnswerResponse)
+            ?.answer,
+          isAnswerTruthy: !!(response as ProcessedSingleAnswerResponse)?.answer,
+          isAnswerArrayAnArray: Array.isArray(
+            (response as ProcessedCheckboxResponse)?.answerArray,
+          ),
+          isAnswerArrayTruthy: !!(response as ProcessedCheckboxResponse)
+            ?.answerArray,
+          _id: response?._id,
+          fieldType: response?.fieldType,
+        })),
       },
       error,
     })
@@ -153,6 +171,104 @@ export const validateEmailSubmission: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({
         message: errorMessage,
+      })
+    })
+}
+
+/**
+ * Saves new Submission object to db when form.responseMode is email
+ * @param req - Express request object
+ * @param req.form - form object from req
+ * @param req.formData - the submission for the form
+ * @param req.attachments - submitted attachments, parsed by
+ * exports.receiveSubmission
+ * @param res - Express response object
+ * @param next - the next expressjs callback, invoked once attachments
+ * are processed
+ */
+export const saveMetadataToDb: RequestHandler<
+  ParamsDictionary,
+  { message: string; spcpSubmissionFailure: boolean }
+> = async (req, res, next) => {
+  const { form, attachments, formData } = req as WithFormMetadata<typeof req>
+  const logMeta = {
+    action: 'saveMetadataToDb',
+    formId: form._id,
+    ...createReqMeta(req),
+  }
+  return EmailSubmissionService.hashSubmission(formData, attachments)
+    .andThen((submissionHash) =>
+      EmailSubmissionService.saveSubmissionMetadata(form, submissionHash),
+    )
+    .map((submission) => {
+      // Important log message which links IP address to submission ID for investigation purposes
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        meta: {
+          ...logMeta,
+          submissionId: submission.id,
+          responseHash: submission.responseHash,
+        },
+      })
+      ;(req as WithSubmission<typeof req>).submission = submission
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while saving metadata to database',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: false,
+      })
+    })
+}
+
+export const sendAdminEmail: RequestHandler<
+  ParamsDictionary,
+  { message: string; spcpSubmissionFailure: boolean }
+> = async (req, res, next) => {
+  const {
+    replyToEmails,
+    form,
+    formData,
+    jsonData,
+    submission,
+    attachments,
+  } = req as WithAdminEmailData<typeof req>
+  const logMeta = {
+    action: 'sendAdminEmail',
+    submissionId: submission.id,
+    formId: form._id,
+    ...createReqMeta(req),
+    submissionHash: submission.responseHash,
+  }
+  logger.info({
+    message: 'Sending admin mail',
+    meta: logMeta,
+  })
+  return EmailSubmissionService.sendSubmissionToAdmin({
+    replyToEmails,
+    form,
+    submission,
+    attachments,
+    jsonData,
+    formData,
+  })
+    .map(() => next())
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error sending submission to admin',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: false,
       })
     })
 }

@@ -35,3 +35,17 @@ export class AttachmentTooLargeError extends ApplicationError {
     super(message)
   }
 }
+
+export class SubmissionHashError extends ApplicationError {
+  constructor(message = 'Error occurred while attempting to hash submission') {
+    super(message)
+  }
+}
+
+export class ConcatSubmissionError extends ApplicationError {
+  constructor(
+    message = 'Error occurred while concatenating responses to attachments',
+  ) {
+    super(message)
+  }
+}
