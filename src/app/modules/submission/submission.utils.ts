@@ -38,7 +38,7 @@ const encryptModeFilter = <T extends ModeFilterParam>(responses: T[] = []) => {
   )
 }
 
-export const extractConfirmationData = (
+export const extractEmailConfirmationData = (
   parsedResponses: ProcessedFieldResponse[],
   formFields: IFieldSchema[] | undefined,
 ): AutoReplyMailData[] => {
