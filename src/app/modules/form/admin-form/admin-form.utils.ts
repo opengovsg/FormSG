@@ -313,7 +313,7 @@ const deleteField = (
   )
 
   return updatedFormFields.length === existingFormFields.length
-    ? err(new EditFieldError(`Field to deleted does not exist`))
+    ? err(new EditFieldError('Field to be deleted does not exist'))
     : ok(updatedFormFields)
 }
 
