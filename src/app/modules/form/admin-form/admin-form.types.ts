@@ -1,12 +1,16 @@
 import { Result } from 'neverthrow'
 
+import { EditFieldActions } from '../../../../shared/constants'
 import {
+  IFieldSchema,
   IForm,
   IPopulatedForm,
   IUserSchema,
   ResponseMode,
 } from '../../../../types'
 import { ForbiddenFormError } from '../form.errors'
+
+import { EditFieldError } from './admin-form.errors'
 
 export enum PermissionLevel {
   Read = 'read',
@@ -42,3 +46,25 @@ export type OverrideProps = {
   emails?: string | string[]
   publicKey?: string
 }
+
+export type EditFormFieldParams = {
+  field: IFieldSchema
+} & (
+  | {
+      action: {
+        name: Exclude<EditFieldActions, EditFieldActions.Reorder>
+      }
+    }
+  | {
+      action: {
+        name: EditFieldActions.Reorder
+        position: number
+      }
+    }
+)
+
+export type FormUpdateParams = {
+  editFormField?: EditFormFieldParams
+}
+
+export type EditFormFieldResult = Result<IFieldSchema[], EditFieldError>
