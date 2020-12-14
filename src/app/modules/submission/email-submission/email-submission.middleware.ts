@@ -229,10 +229,10 @@ export const saveMetadataToDb: RequestHandler<
 
 export const sendAdminEmail: RequestHandler<
   ParamsDictionary,
-  { message: string; spcpSubmissionFailure: boolean }
+  { message: string; spcpSubmissionFailure: boolean },
+  { parsedResponses: ProcessedFieldResponse[] }
 > = async (req, res, next) => {
   const {
-    replyToEmails,
     form,
     formData,
     jsonData,
@@ -251,7 +251,9 @@ export const sendAdminEmail: RequestHandler<
     meta: logMeta,
   })
   return EmailSubmissionService.sendSubmissionToAdmin({
-    replyToEmails,
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(
+      req.body.parsedResponses,
+    ),
     form,
     submission,
     attachments,
