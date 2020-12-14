@@ -5,7 +5,12 @@ import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
   BasicField,
+  EmailAutoReplyField,
+  EmailDataForOneField,
+  EmailFormField,
+  EmailJsonField,
   FieldResponse,
+  IAttachmentInfo,
   IAttachmentResponse,
   MapRouteError,
 } from '../../../../types'
@@ -35,14 +40,7 @@ import {
   MultipartError,
   SubmissionHashError,
 } from './email-submission.errors'
-import {
-  EmailAutoReplyField,
-  EmailDataForOneField,
-  EmailFormField,
-  EmailJsonField,
-  IAttachmentInfo,
-  ResponseFormattedForEmail,
-} from './email-submission.types'
+import { ResponseFormattedForEmail } from './email-submission.types'
 
 /**
  * Determines the prefix for a question based on whether it is verified

@@ -8,7 +8,9 @@ import {
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
 import {
+  EmailAutoReplyField,
   FieldResponse,
+  IAttachmentInfo,
   IFieldSchema,
   IFormSchema,
   ISubmissionSchema,
@@ -19,10 +21,6 @@ import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 
-import {
-  EmailAutoReplyField,
-  IAttachmentInfo,
-} from './email-submission/email-submission.types'
 import {
   ConflictError,
   ProcessingError,
