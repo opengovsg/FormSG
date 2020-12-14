@@ -2,28 +2,42 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
+import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { AuthType, IForm, WithForm } from '../../../../types'
+import { AuthType, IForm, IPopulatedForm, WithForm } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
+import {
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+} from '../../core/core.errors'
 import * as FeedbackService from '../../feedback/feedback.service'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import { removePrivateDetailsFromForm } from '../form.utils'
 
+import { EditFieldError } from './admin-form.errors'
 import {
   archiveForm,
   createForm,
   createPresignedPostForImages,
   createPresignedPostForLogos,
   duplicateForm,
+  editFormFields,
   getDashboardForms,
   getMockSpcpLocals,
   transferFormOwnership,
+  updateForm,
 } from './admin-form.service'
-import { DuplicateFormBody, PermissionLevel } from './admin-form.types'
+import {
+  DuplicateFormBody,
+  FormUpdateParams,
+  PermissionLevel,
+} from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -772,4 +786,75 @@ export const handleCreateForm: RequestHandler<
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
+}
+
+/**
+ * Handler for PUT /:formId/adminform.
+ * @security session
+ *
+ * @returns 200 with updated form
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form to update cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when an invalid update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateForm: RequestHandler<
+  { formId: string },
+  unknown,
+  { form: FormUpdateParams }
+> = (req, res) => {
+  const { formId } = req.params
+  const { form: formUpdateParams } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      // Step 3: Update form or form fields depending on form update parameters
+      // passed in.
+      const { editFormField } = formUpdateParams
+
+      // Use different service function depending on type of form update.
+      const updateFormResult: ResultAsync<
+        IPopulatedForm,
+        | EditFieldError
+        | DatabaseError
+        | DatabaseValidationError
+        | DatabaseConflictError
+        | DatabasePayloadSizeError
+      > = editFormField
+        ? editFormFields(retrievedForm, editFormField)
+        : updateForm(retrievedForm, formUpdateParams)
+
+      return updateFormResult
+    })
+    .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form',
+        meta: {
+          action: 'handleUpdateForm',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          formUpdateParams,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
