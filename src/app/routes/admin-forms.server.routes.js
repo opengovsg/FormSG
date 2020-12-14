@@ -199,7 +199,7 @@ module.exports = function (app) {
     .route('/:formId([a-fA-F0-9]{24})/adminform')
     .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
     .put(
-      authActiveForm(PermissionLevel.Write),
+      withUserAuthentication,
       celebrate({
         [Segments.BODY]: {
           form: Joi.object({
@@ -270,7 +270,7 @@ module.exports = function (app) {
             ),
         },
       }),
-      adminForms.update,
+      AdminFormController.handleUpdateForm,
     )
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
     .post(
