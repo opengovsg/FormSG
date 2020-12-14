@@ -76,6 +76,7 @@ export type WithEmailModeMetadata<T> = WithEmailData<T> &
   WithAttachments<T> &
   WithEmailForm<T>
 
-export type WithAutoReplyEmailData<T> =
-  | (WithForm<T> & WithSubmission<T>)
-  | WithEmailModeMetadata<T>
+export type WithAutoReplyEmailData<T> = WithForm<T> &
+  WithSubmission<T> &
+  Partial<WithAttachments<T>> &
+  Partial<WithEmailData<T>>
