@@ -4,7 +4,16 @@ import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
+import {
+  EmailData,
+  FieldResponse,
+  ResWithHashedFields,
+  WithAttachments,
+  WithEmailData,
+  WithEmailModeMetadata,
+  WithForm,
+  WithSubmission,
+} from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
 import {
@@ -15,14 +24,7 @@ import {
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
-import {
-  EmailData,
-  WithAdminEmailData,
-  WithAttachments,
-  WithEmailData,
-  WithFormMetadata,
-  WithSubmission,
-} from './email-submission.types'
+import { WithAdminEmailData } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
@@ -191,7 +193,9 @@ export const saveMetadataToDb: RequestHandler<
   ParamsDictionary,
   { message: string; spcpSubmissionFailure: boolean }
 > = async (req, res, next) => {
-  const { form, attachments, formData } = req as WithFormMetadata<typeof req>
+  const { form, attachments, formData } = req as WithEmailModeMetadata<
+    typeof req
+  >
   const logMeta = {
     action: 'saveMetadataToDb',
     formId: form._id,

@@ -6,7 +6,13 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   BasicField,
+  EmailAutoReplyField,
+  EmailData,
+  EmailDataForOneField,
+  EmailFormField,
+  EmailJsonField,
   FieldResponse,
+  IAttachmentInfo,
   IEmailFormSchema,
   IEmailSubmissionSchema,
   SubmissionType,
@@ -34,15 +40,7 @@ import {
   InvalidFileExtensionError,
   SubmissionHashError,
 } from './email-submission.errors'
-import {
-  EmailAutoReplyField,
-  EmailData,
-  EmailDataForOneField,
-  EmailFormField,
-  EmailJsonField,
-  IAttachmentInfo,
-  SubmissionHash,
-} from './email-submission.types'
+import { SubmissionHash } from './email-submission.types'
 import {
   concatAttachmentsAndResponses,
   getAnswerForCheckbox,
