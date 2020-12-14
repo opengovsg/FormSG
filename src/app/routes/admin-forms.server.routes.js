@@ -19,7 +19,16 @@ const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
 const SpcpController = require('../modules/spcp/spcp.controller')
-const { BasicField, ResponseMode } = require('../../types')
+const {
+  BasicField,
+  ResponseMode,
+  AuthType,
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+  Status,
+} = require('../../types')
+const { EditFieldActions } = require('../../shared/constants')
 
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
@@ -189,7 +198,80 @@ module.exports = function (app) {
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform')
     .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
-    .put(authActiveForm(PermissionLevel.Write), adminForms.update)
+    .put(
+      authActiveForm(PermissionLevel.Write),
+      celebrate({
+        [Segments.BODY]: {
+          form: Joi.object({
+            authType: Joi.string().valid(...Object.values(AuthType)),
+            editFormField: Joi.object({
+              action: {
+                name: Joi.string().valid(...Object.values(EditFieldActions)),
+                position: Joi.when('form.editFormField.action.name', {
+                  is: EditFieldActions.Reorder,
+                  then: Joi.number().required(),
+                }),
+              },
+              field: Joi.object({
+                fieldType: Joi.string()
+                  .valid(...Object.values(BasicField))
+                  .required(),
+              })
+                .unknown(true)
+                .required(),
+            }),
+            emails: Joi.alternatives().try(
+              Joi.array().items(Joi.string()),
+              Joi.string(),
+            ),
+            esrvcId: Joi.string().allow(''),
+            form_logics: Joi.array().items(
+              Joi.object({
+                conditions: Joi.array().items(
+                  Joi.object({
+                    field: Joi.string().required(),
+                    ifValueType: Joi.string().valid(
+                      ...Object.values(LogicIfValue),
+                    ),
+                    state: Joi.string()
+                      .valid(...Object.values(LogicConditionState))
+                      .required(),
+                    value: Joi.alternatives()
+                      .try(
+                        Joi.string(),
+                        Joi.number(),
+                        Joi.array().items(Joi.string()),
+                        Joi.array().items(Joi.number()),
+                      )
+                      .required(),
+                  }).unknown(true),
+                ),
+                logicType: Joi.string()
+                  .valid(...Object.values(LogicType))
+                  .required(),
+              }).unknown(true),
+            ),
+            hasCaptcha: Joi.boolean(),
+            inactiveMessage: Joi.string(),
+            status: Joi.string().valid(...Object.values(Status)),
+            title: Joi.string(),
+          })
+            .required()
+            .xor(
+              'authType',
+              'editFormField',
+              'emails',
+              'esrvcId',
+              'form_logics',
+              'hasCaptcha',
+              'inactiveMessage',
+              'status',
+              'title',
+            ),
+        },
+      }),
+      adminForms.update,
+    )
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
     .post(
       withUserAuthentication,
