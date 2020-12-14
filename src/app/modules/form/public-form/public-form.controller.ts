@@ -68,11 +68,11 @@ export const handleSubmitFeedback: RequestHandler<
     // Specialized error response for PrivateFormError.
     if (error instanceof PrivateFormError) {
       return res.status(statusCode).json({
-        message: form.inactiveMessage,
+        message: error.message,
         // Flag to prevent default 404 subtext ("please check link") from
         // showing.
         isPageFound: true,
-        formTitle: form.title,
+        formTitle: error.formTitle,
       })
     }
     return res.status(statusCode).json({ message: errorMessage })

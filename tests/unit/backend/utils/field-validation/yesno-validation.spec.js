@@ -10,6 +10,7 @@ describe('Yes/No field validation', () => {
       _id: 'abc123',
       fieldType: 'yes_no',
       answer: 'Yes',
+      isVisible: 'true',
     }
     const formField = {
       _id: 'abc123',
@@ -26,6 +27,7 @@ describe('Yes/No field validation', () => {
       _id: 'abc123',
       fieldType: 'yes_no',
       answer: 'No',
+      isVisible: 'true',
     }
     const formField = {
       _id: 'abc123',
@@ -77,6 +79,7 @@ describe('Yes/No field validation', () => {
       _id: 'abc123',
       fieldType: 'yes_no',
       answer: 'somethingRandom',
+      isVisible: 'true',
     }
     const formField = {
       _id: 'abc123',

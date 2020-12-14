@@ -3,7 +3,7 @@ import axios from 'axios'
 import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -15,6 +15,7 @@ import {
   AuthTypeMismatchError,
   CreateRedirectUrlError,
   FetchLoginPageError,
+  InvalidJwtError,
   InvalidOOBParamsError,
   LoginPageValidationError,
   MissingAttributesError,
@@ -33,6 +34,7 @@ import {
   extractFormId,
   getAttributesPromise,
   getSubstringBetween,
+  isJwtPayload,
   isValidAuthenticationQuery,
   verifyJwtPromise,
 } from './spcp.util'
@@ -212,7 +214,12 @@ export class SpcpService {
         })
         return new VerifyJwtError()
       },
-    )
+    ).andThen((payload) => {
+      if (isJwtPayload(payload, authType)) {
+        return okAsync(payload)
+      }
+      return errAsync(new InvalidJwtError())
+    })
   }
 
   /**

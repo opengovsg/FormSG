@@ -11,11 +11,14 @@ const emailSubmissions = require('../../app/controllers/email-submissions.server
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
-const { CaptchaFactory } = require('../factories/captcha.factory')
+const { CaptchaFactory } = require('../services/captcha/captcha.factory')
+const CaptchaMiddleware = require('../services/captcha/captcha.middleware')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
 const SpcpController = require('../modules/spcp/spcp.controller')
+const { BasicField } = require('../../types')
+const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
 
 module.exports = function (app) {
   /**
@@ -158,12 +161,12 @@ module.exports = function (app) {
    */
   app.route('/v2/submissions/email/:formId([a-fA-F0-9]{24})').post(
     limitRate({ max: rateLimitConfig.submissions }),
-    CaptchaFactory.validateCaptcha,
+    CaptchaFactory.validateCaptchaParams,
     forms.formById,
     publicForms.isFormPublic,
-    CaptchaFactory.captchaCheck,
+    CaptchaMiddleware.checkCaptchaResponse,
     SpcpController.isSpcpAuthenticated,
-    emailSubmissions.receiveEmailSubmissionUsingBusBoy,
+    EmailSubmissionsMiddleware.receiveEmailSubmission,
     celebrate({
       body: Joi.object({
         responses: Joi.array()
@@ -172,7 +175,9 @@ module.exports = function (app) {
               .keys({
                 _id: Joi.string().required(),
                 question: Joi.string().required(),
-                fieldType: Joi.string().required(),
+                fieldType: Joi.string()
+                  .required()
+                  .valid(...Object.values(BasicField)),
                 answer: Joi.string().allow(''),
                 answerArray: Joi.array(),
                 filename: Joi.string(),
@@ -188,11 +193,11 @@ module.exports = function (app) {
         isPreview: Joi.boolean().required(),
       }),
     }),
-    emailSubmissions.validateEmailSubmission,
+    EmailSubmissionsMiddleware.validateEmailSubmission,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
-    emailSubmissions.prepareEmailSubmission,
+    EmailSubmissionsMiddleware.prepareEmailSubmission,
     emailSubmissions.saveMetadataToDb,
     emailSubmissions.sendAdminEmail,
     submissions.sendAutoReply,
@@ -219,7 +224,7 @@ module.exports = function (app) {
    */
   app.route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})').post(
     limitRate({ max: rateLimitConfig.submissions }),
-    CaptchaFactory.validateCaptcha,
+    CaptchaFactory.validateCaptchaParams,
     celebrate({
       body: Joi.object({
         responses: Joi.array()
@@ -227,7 +232,9 @@ module.exports = function (app) {
             Joi.object().keys({
               _id: Joi.string().required(),
               answer: Joi.string().allow('').required(),
-              fieldType: Joi.string().required(),
+              fieldType: Joi.string()
+                .required()
+                .valid(...Object.values(BasicField)),
               signature: Joi.string().allow(''),
             }),
           )
@@ -264,7 +271,7 @@ module.exports = function (app) {
     }),
     forms.formById,
     publicForms.isFormPublic,
-    CaptchaFactory.captchaCheck,
+    CaptchaMiddleware.checkCaptchaResponse,
     encryptSubmissions.validateEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,

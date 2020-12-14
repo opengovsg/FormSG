@@ -5,6 +5,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { IFormSchema, IPopulatedForm, Status } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 import { assertUnreachable } from '../../utils/assert-unreachable'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 import {
@@ -58,11 +59,47 @@ export const retrieveFullFormById = (
 }
 
 /**
+ * Retrieves (non-populated) form document of the given formId.
+ * @param formId the id of the form to retrieve
+ * @returns ok(form) if form exists
+ * @returns err(FormNotFoundError) if the form or form admin does not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const retrieveFormById = (
+  formId: string,
+): ResultAsync<IFormSchema, FormNotFoundError | DatabaseError> => {
+  if (!mongoose.Types.ObjectId.isValid(formId)) {
+    return errAsync(new FormNotFoundError())
+  }
+
+  return ResultAsync.fromPromise(FormModel.findById(formId).exec(), (error) => {
+    logger.error({
+      message: 'Error retrieving form from database',
+      meta: {
+        action: 'retrieveFormById',
+        formId,
+      },
+      error,
+    })
+    return new DatabaseError(getMongoErrorMessage(error))
+  }).andThen((result) => {
+    // Either form not found, or form admin is not in the database anymore.
+    // The latter is less likely, but guarding it just in case. Treat as form
+    // not found since form has no ownership.
+    if (!result || !result.admin) {
+      return errAsync(new FormNotFoundError())
+    }
+
+    return okAsync(result)
+  })
+}
+
+/**
  * Method to ensure given form is available to the public.
  * @param form the form to check
  * @returns ok(true) if form is public
  * @returns err(FormDeletedError) if form has been deleted
- * @returns err(PrivateFormError) if form is private
+ * @returns err(PrivateFormError) if form is private, the message will be the form inactive message
  * @returns err(ApplicationError) if form has an invalid state
  */
 export const isFormPublic = (
@@ -78,7 +115,7 @@ export const isFormPublic = (
     case Status.Archived:
       return err(new FormDeletedError())
     case Status.Private:
-      return err(new PrivateFormError(form.inactiveMessage))
+      return err(new PrivateFormError(form.inactiveMessage, form.title))
     default:
       return assertUnreachable(form.status)
   }

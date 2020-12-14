@@ -13,6 +13,7 @@ import { AuthRouter } from '../../app/modules/auth/auth.routes'
 import { BillingRouter } from '../../app/modules/billing/billing.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import { ExamplesRouter } from '../../app/modules/examples/examples.routes'
+import { HomeRouter } from '../../app/modules/home/home.routes'
 import {
   CorppassLoginRouter,
   SingpassLoginRouter,
@@ -138,6 +139,7 @@ const loadExpressApp = async (connection: Connection) => {
     routeFunction(app)
   })
 
+  app.use('/', HomeRouter)
   app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
   app.use('/emailnotifications', BounceRouter)

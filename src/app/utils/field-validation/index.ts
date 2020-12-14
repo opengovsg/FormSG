@@ -9,10 +9,14 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { IField } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
 import { FieldResponse } from '../../../types/response'
-import { isProcessedSingleAnswerResponse } from '../../../types/response/guards'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
+import {
+  isProcessedCheckboxResponse,
+  isProcessedSingleAnswerResponse,
+  isProcessedTableResponse,
+} from './field-validation.guards'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
 import { constructSingleAnswerValidator } from './singleAnswerValidator.factory'
 
@@ -88,7 +92,7 @@ const logInvalidAnswer = (
 export const validateField = (
   formId: string,
   formField: IField,
-  response: FieldResponse,
+  response: ProcessedFieldResponse,
 ): Result<true, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
     return err(
@@ -113,6 +117,8 @@ export const validateField = (
         case BasicField.HomeNo:
         case BasicField.Radio:
         case BasicField.Rating:
+        case BasicField.Date:
+        case BasicField.Decimal:
         case BasicField.Mobile: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)
@@ -128,9 +134,15 @@ export const validateField = (
         }
       }
     }
-  } else {
-    // fallback for processed checkbox/table/attachment responses
+  } else if (
+    isProcessedCheckboxResponse(response) ||
+    isProcessedTableResponse(response)
+  ) {
+    // fallback for processed checkbox/table responses
     return classBasedValidation(formId, formField, response)
+  } else {
+    logInvalidAnswer(formId, formField, 'Invalid response shape')
+    return err(new ValidateFieldError('Response has invalid shape'))
   }
   return ok(true)
 }

@@ -46,7 +46,7 @@ describe('billing.controller', () => {
         MOCK_REQ_QUERY.esrvcId,
         expectedStartArg.toDate(),
         expectedEndArg.toDate(),
-      ]
+      ] as [esrvcId: string, minDate: Date, maxDate: Date]
     })()
 
     it('should return 200 with login statistics successfully', async () => {

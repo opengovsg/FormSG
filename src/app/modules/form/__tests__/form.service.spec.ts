@@ -2,12 +2,16 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { IPopulatedForm } from 'src/types'
+import { IFormSchema, IPopulatedForm, Status } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { DatabaseError } from '../../core/core.errors'
-import { FormNotFoundError } from '../form.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../form.errors'
 import * as FormService from '../form.service'
 
 const MOCK_FORM_ID = new ObjectId()
@@ -109,6 +113,156 @@ describe('FormService', () => {
       expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('retrieveFormById', () => {
+    it('should return form successfully', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      const expectedForm = {
+        _id: formId,
+        title: 'mock title',
+        admin: new ObjectId(),
+      } as IFormSchema
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockResolvedValue(expectedForm),
+        } as unknown) as mongoose.Query<any>)
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+    })
+
+    it('should return FormNotFoundError if formId is invalid', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      // Resolve query to null.
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockResolvedValue(null),
+        } as unknown) as mongoose.Query<any>)
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
+    })
+
+    it('should return FormNotFoundError when retrieved form does not contain admin', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      const expectedForm = {
+        _id: formId,
+        title: 'mock title',
+        // Note no admin key-value.
+      } as IFormSchema
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockResolvedValue(expectedForm),
+        } as unknown) as mongoose.Query<any>)
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      // Mock rejection.
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'findById')
+        .mockReturnValueOnce(({
+          exec: jest.fn().mockRejectedValue(new Error('some error')),
+        } as unknown) as mongoose.Query<any>)
+
+      // Act
+      const actualResult = await FormService.retrieveFormById(formId)
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('isFormPublic', () => {
+    it('should return true when form is public', async () => {
+      // Arrange
+      const form = {
+        _id: new ObjectId(),
+        // Form public.
+        status: Status.Public,
+      } as IPopulatedForm
+
+      // Act
+      const actual = FormService.isFormPublic(form)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return FormDeletedError when form has been deleted', async () => {
+      // Arrange
+      const form = {
+        _id: new ObjectId(),
+        // Form deleted.
+        status: Status.Archived,
+      } as IPopulatedForm
+
+      // Act
+      const actual = FormService.isFormPublic(form)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormDeletedError())
+    })
+
+    it('should return PrivateFormError with form inactive message and title when form is private', async () => {
+      // Arrange
+      const form = {
+        _id: new ObjectId(),
+        // Form private.
+        status: Status.Private,
+        inactiveMessage: 'test inactive message',
+      } as IPopulatedForm
+
+      // Act
+      const actual = FormService.isFormPublic(form)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new PrivateFormError(form.inactiveMessage, form.title),
+      )
+    })
+
+    it('should return ApplicationError when form does not have status', async () => {
+      // Arrange
+      const form = {
+        _id: new ObjectId(),
+        // Form without status.
+      } as IPopulatedForm
+
+      // Act
+      const actual = FormService.isFormPublic(form)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new ApplicationError())
     })
   })
 })

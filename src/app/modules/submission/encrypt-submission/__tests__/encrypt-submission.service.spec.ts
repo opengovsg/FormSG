@@ -204,6 +204,8 @@ describe('encrypt-submission.service', () => {
           Key: MOCK_SUB_CURSOR_DATA_1.attachmentMetadata!['mockId1'],
           Expires: expectedExpiry,
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(awsSpy).toHaveBeenNthCalledWith(
@@ -214,6 +216,8 @@ describe('encrypt-submission.service', () => {
           Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
           Expires: expectedExpiry,
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
     })
@@ -343,6 +347,8 @@ describe('encrypt-submission.service', () => {
           Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
           Expires: expectedExpiry,
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         expect.any(Function),
       )
       expect(actualErrors).toEqual([expectedError])
