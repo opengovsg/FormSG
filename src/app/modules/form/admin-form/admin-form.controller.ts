@@ -110,7 +110,7 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
  *
  * @returns 200 with presigned POST object
  * @returns 400 when error occurs whilst creating presigned POST object
- * @returns 403 when user does not have permissions to access form
+ * @returns 403 when user does not have write permissions for form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
@@ -166,6 +166,10 @@ export const handleCreatePresignedPostForImages: RequestHandler<
  *
  * @returns 200 with presigned POST object
  * @returns 400 when error occurs whilst creating presigned POST object
+ * @returns 403 when user does not have write permissions for form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
  */
 export const handleCreatePresignedPostForLogos: RequestHandler<
   ParamsDictionary,
