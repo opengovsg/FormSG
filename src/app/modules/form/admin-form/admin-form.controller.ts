@@ -176,23 +176,40 @@ export const handleCreatePresignedPostForLogos: RequestHandler<
     fileType: string
   }
 > = async (req, res) => {
+  const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
-  return createPresignedPostForLogos({ fileId, fileMd5Hash, fileType })
-    .map((presignedPost) => res.json(presignedPost))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Presigning post data encountered an error',
-        meta: {
-          action: 'handleCreatePresignedPostForLogos',
-          ...createReqMeta(req),
-        },
-        error,
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has write permissions to form
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Has write permissions, generate presigned POST URL.
+      .andThen(() =>
+        createPresignedPostForLogos({ fileId, fileMd5Hash, fileType }),
+      )
+      .map((presignedPost) => res.json(presignedPost))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Presigning post data encountered an error',
+          meta: {
+            action: 'handleCreatePresignedPostForLogos',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
       })
-
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+  )
 }
 
 /**
