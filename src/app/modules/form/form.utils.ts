@@ -21,7 +21,7 @@ type PublicFormValues = Pick<
   | 'responseMode'
 >
 
-type PublicForm = Merge<
+export type PublicForm = Merge<
   PublicFormValues,
   { admin: Pick<IPopulatedForm['admin'], 'agency'> }
 >
