@@ -8,7 +8,6 @@ const { celebrate, Joi, Segments } = require('celebrate')
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
-let submissions = require('../../app/controllers/submissions.server.controller')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
 const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
@@ -448,7 +447,6 @@ module.exports = function (app) {
     }),
     EmailSubmissionsMiddleware.validateEmailSubmission,
     AdminFormController.passThroughSpcp,
-    submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
     EmailSubmissionsMiddleware.prepareEmailSubmission,
     adminForms.passThroughSaveMetadataToDb,
@@ -524,7 +522,6 @@ module.exports = function (app) {
       }),
     }),
     AdminFormController.passThroughSpcp,
-    submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
     encryptSubmissions.prepareEncryptSubmission,
     adminForms.passThroughSaveMetadataToDb,

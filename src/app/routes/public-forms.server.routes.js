@@ -5,7 +5,6 @@
  */
 const forms = require('../../app/controllers/forms.server.controller')
 const publicForms = require('../modules/form/public-form/public-form.middlewares')
-const submissions = require('../../app/controllers/submissions.server.controller')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
@@ -195,7 +194,6 @@ module.exports = function (app) {
     }),
     EmailSubmissionsMiddleware.validateEmailSubmission,
     myInfoController.verifyMyInfoVals,
-    submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
     EmailSubmissionsMiddleware.prepareEmailSubmission,
     EmailSubmissionsMiddleware.saveMetadataToDb,
@@ -275,7 +273,6 @@ module.exports = function (app) {
     encryptSubmissions.validateEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,
-    submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
     encryptSubmissions.prepareEncryptSubmission,
     encryptSubmissions.saveResponseToDb,
