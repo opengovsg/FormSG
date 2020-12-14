@@ -35,8 +35,8 @@
         ng-model="vm.field.fieldValue"
         ng-required="vm.field.required"
         ng-disabled="vm.field.disabled"
-        ng-pattern="vm.pattern"
         validate-email-domain
+        validate-email-format
         ng-model-options="{ allowInvalid: true }"
         ng-keyup="vm.forms.myForm[(vm.field._id || 'defaultID')].$setTouched()"
         placeholder="me@example.com"
