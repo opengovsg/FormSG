@@ -1,5 +1,5 @@
 const { StatusCodes } = require('http-status-codes')
-const { times } = require('lodash')
+const { times, omit } = require('lodash')
 const ejs = require('ejs')
 const express = require('express')
 const request = require('supertest')
@@ -93,6 +93,9 @@ describe('Email Submissions Controller', () => {
 
     beforeEach(() => {
       fixtures = {
+        body: {
+          parsedResponses: [],
+        },
         replyToEmails: [],
         attachments: [
           {
@@ -141,7 +144,7 @@ describe('Email Submissions Controller', () => {
         .expect(StatusCodes.OK)
         .then(() => {
           const mailOptions = sendSubmissionMailSpy.calls.mostRecent().args[0]
-          expect(mailOptions).toEqual(fixtures)
+          expect(mailOptions).toEqual(omit(fixtures, 'body'))
         })
         .then(done)
         .catch(done)
