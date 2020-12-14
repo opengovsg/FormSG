@@ -32,6 +32,48 @@ describe('Email field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
+  it('should allow emails with 163.com domain', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      description: 'random',
+      required: true,
+      disabled: false,
+    }
+    const response: ISingleAnswerResponse = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      answer: 'abc@163.com',
+    }
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow emails with 126.com domain', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      description: 'random',
+      required: true,
+      disabled: false,
+    }
+    const response: ISingleAnswerResponse = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      answer: 'abc@126.com',
+    }
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
   it('should disallow invalid emails', () => {
     const formField = {
       _id: 'abc123',
