@@ -46,6 +46,7 @@ export const extractEmailConfirmationData = (
   return parsedResponses.reduce((acc, response) => {
     const field = fieldsById[response._id]
     if (
+      field &&
       isEmailField(field) &&
       response.fieldType === BasicField.Email &&
       response.answer
