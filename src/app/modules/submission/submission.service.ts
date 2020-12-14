@@ -30,7 +30,7 @@ import {
   ValidateFieldError,
 } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
-import { extractConfirmationData, getModeFilter } from './submission.utils'
+import { extractEmailConfirmationData, getModeFilter } from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -222,7 +222,7 @@ export const sendEmailConfirmations = ({
     formId: form._id,
     submissionid: submission._id,
   }
-  const confirmationData = extractConfirmationData(
+  const confirmationData = extractEmailConfirmationData(
     parsedResponses,
     form.form_fields,
   )
