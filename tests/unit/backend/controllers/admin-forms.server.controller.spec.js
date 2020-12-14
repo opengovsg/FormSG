@@ -146,11 +146,15 @@ describe('Admin-Forms Controller', () => {
         },
         permissionList: [],
       }
-      req.form = testForm
+      req.params.formId = testForm._id
       req.body.form = _.cloneDeep(expected)
       // Check for user-defined fields
+      res.status.and.callFake(() => {
+        expect(res.status).toHaveBeenCalledWith(StatusCodes.OK)
+        return res
+      })
       res.json.and.callFake(() => {
-        Form.findOne({ _id: req.form._id }, (err, updatedForm) => {
+        Form.findOne({ _id: testForm._id }, (err, updatedForm) => {
           expect(err).not.toBeTruthy()
           let updatedFormObj = updatedForm.toObject()
           expect(updatedFormObj.title).toEqual(expected.title)
@@ -158,11 +162,11 @@ describe('Admin-Forms Controller', () => {
           done()
         })
       })
-      Controller.update(req, res)
+      NewController.handleUpdateForm(req, res)
     })
 
-    it('should return 405 error when updating a Form object with invalid fields', (done) => {
-      req.form = testForm
+    it('should return 422 error when updating a Form object with invalid fields', (done) => {
+      req.params.formId = testForm._id
       req.body.form = {
         title: 'form_title3',
         startPage: {
@@ -178,7 +182,7 @@ describe('Admin-Forms Controller', () => {
         done()
         return res
       })
-      Controller.update(req, res)
+      NewController.handleUpdateForm(req, res)
     })
   })
 })
