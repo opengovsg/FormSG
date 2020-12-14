@@ -22,33 +22,17 @@ const EmailForm = mongoose.model('email')
 const vfnConstants = require('../../../../dist/backend/shared/util/verification')
 
 describe('Email Submissions Controller', () => {
-  const SESSION_SECRET = 'secret'
-
   // Declare global variables
-  let spyRequest
   let sendSubmissionMailSpy
 
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
   // which will be destroyed and re-created for every test
-  const submissionsController = spec(
-    'dist/backend/app/controllers/submissions.server.controller',
-    {
-      mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      request: (url, callback) => spyRequest(url, callback),
-      '../../config/config': {
-        sessionSecret: SESSION_SECRET,
-      },
-    },
-  )
   const spcpController = spec('dist/backend/app/modules/spcp/spcp.controller', {
     mongoose: Object.assign(mongoose, { '@noCallThru': true }),
   })
 
   beforeAll(async () => await dbHandler.connect())
-  beforeEach(() => {
-    spyRequest = jasmine.createSpy('request')
-  })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -708,7 +692,6 @@ describe('Email Submissions Controller', () => {
           b.content = b.content.toString('base64')
           return b
         }),
-        replyToEmails: req.replyToEmails,
       })
     }
 
@@ -720,7 +703,6 @@ describe('Email Submissions Controller', () => {
         .get(
           injectFixtures,
           EmailSubmissionsMiddleware.validateEmailSubmission,
-          submissionsController.injectAutoReplyInfo,
           spcpController.appendVerifiedSPCPResponses,
           EmailSubmissionsMiddleware.prepareEmailSubmission,
           sendSubmissionBack,
@@ -731,18 +713,13 @@ describe('Email Submissions Controller', () => {
       request(app)
         .get(endpointPath)
         .expect(StatusCodes.OK)
-        .then(
-          ({ body: { formData, autoReplyData, jsonData, replyToEmails } }) => {
-            expect(formData).withContext('Form Data').toEqual(expected.formData)
-            expect(autoReplyData)
-              .withContext('autoReplyData')
-              .toEqual(expected.autoReplyData)
-            expect(jsonData).withContext('jsonData').toEqual(expected.jsonData)
-            expect(replyToEmails)
-              .withContext('replyToEmails')
-              .toEqual(expected.replyToEmails)
-          },
-        )
+        .then(({ body: { formData, autoReplyData, jsonData } }) => {
+          expect(formData).withContext('Form Data').toEqual(expected.formData)
+          expect(autoReplyData)
+            .withContext('autoReplyData')
+            .toEqual(expected.autoReplyData)
+          expect(jsonData).withContext('jsonData').toEqual(expected.jsonData)
+        })
         .then(done)
         .catch(done)
     }
@@ -808,7 +785,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: [],
         formData: [],
         jsonData: [],
-        replyToEmails: [],
       }
       for (let answer of answerArray) {
         answer = String(answer)
@@ -838,14 +814,13 @@ describe('Email Submissions Controller', () => {
      *  Generate expected output
      * @param {Array} fields
      * @param {Array} responses
-     * @returns {Object} { autoReplyData: Array, formData: Array, jsonData: Array, replyToEmails: Array }
+     * @returns {Object} { autoReplyData: Array, formData: Array, jsonData: Array }
      */
     const getExpectedOutput = (fields, responses) => {
       let expected = {
         autoReplyData: [],
         formData: [],
         jsonData: [],
-        replyToEmails: [],
       }
       for (let i = 0; i < fields.length; i++) {
         const answer = String(responses[i].answer)
@@ -855,7 +830,6 @@ describe('Email Submissions Controller', () => {
           expected.autoReplyData.push(...expectedTable.autoReplyData)
           expected.jsonData.push(...expectedTable.jsonData)
           expected.formData.push(...expectedTable.formData)
-          expected.replyToEmails.push(...expectedTable.replyToEmails)
         } else {
           let question = fields[i].title
           if (responses[i].isExpectedToBeVisible) {
@@ -877,9 +851,6 @@ describe('Email Submissions Controller', () => {
             answer,
             fieldType: fields[i].fieldType,
           })
-          if (fields[i].fieldType === 'email') {
-            expected.replyToEmails.push(answer)
-          }
         }
       }
       return expected
@@ -912,7 +883,6 @@ describe('Email Submissions Controller', () => {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -959,7 +929,6 @@ describe('Email Submissions Controller', () => {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1009,7 +978,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1052,7 +1020,6 @@ describe('Email Submissions Controller', () => {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1135,7 +1102,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1182,7 +1148,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1230,59 +1195,7 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
-      prepareSubmissionThenCompare(expected, done)
-    })
-
-    it('maps replyToEmails', (done) => {
-      const emails = ['email@test.com', 'email@mymail.com']
-      let expected = {
-        autoReplyData: [],
-        formData: [],
-        jsonData: [],
-        replyToEmails: [],
-      }
-      for (let i = 0; i < emails.length; i++) {
-        const fieldId = new ObjectID()
-        const field = {
-          _id: fieldId,
-          fieldType: 'email',
-          title: `Send a reply to this email ${i}`,
-          autoReplyOptions: {
-            hasAutoReply: false,
-            autoReplySubject: '',
-            autoReplySender: '',
-            autoReplyMessage: '',
-            includeFormSummary: false,
-          },
-        }
-        const response = {
-          _id: String(fieldId),
-          question: 'Some question',
-          fieldType: 'email',
-          isHeader: false,
-          answer: emails[i],
-        }
-        reqFixtures.form.form_fields.push(field)
-        reqFixtures.body.responses.push(response)
-        expected.autoReplyData.push({
-          question: field.title,
-          answerTemplate: [emails[i]],
-        })
-        expected.jsonData.push({
-          question: field.title,
-          answer: emails[i],
-        })
-        expected.formData.push({
-          question: field.title,
-          answerTemplate: [emails[i]],
-          answer: emails[i],
-          fieldType: field.fieldType,
-        })
-        expected.replyToEmails.push(emails[i])
-      }
-
       prepareSubmissionThenCompare(expected, done)
     })
 
@@ -1508,7 +1421,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: [],
         formData: [],
         jsonData: [],
-        replyToEmails: [],
       }
       for (let i = 0; i < fields.length; i++) {
         let { fieldType, title } = fields[i]
