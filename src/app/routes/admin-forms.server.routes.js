@@ -10,6 +10,7 @@ let adminForms = require('../../app/controllers/admin-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
+const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
@@ -452,7 +453,7 @@ module.exports = function (app) {
     EmailSubmissionsMiddleware.prepareEmailSubmission,
     adminForms.passThroughSaveMetadataToDb,
     EmailSubmissionsMiddleware.sendAdminEmail,
-    submissions.sendAutoReply,
+    SubmissionsMiddleware.sendEmailConfirmations,
   )
 
   /**
@@ -527,7 +528,7 @@ module.exports = function (app) {
     webhookVerifiedContentFactory.encryptedVerifiedFields,
     EncryptSubmissionMiddleware.prepareEncryptSubmission,
     adminForms.passThroughSaveMetadataToDb,
-    submissions.sendAutoReply,
+    SubmissionsMiddleware.sendEmailConfirmations,
   )
 
   /**
