@@ -551,7 +551,26 @@ describe('admin-form.controller', () => {
   })
 
   describe('handleCreatePresignedPostForImages', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
     const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
       body: {
         fileId: 'any file id',
         fileMd5Hash: 'any hash',
@@ -562,6 +581,13 @@ describe('admin-form.controller', () => {
     it('should return 200 with presigned POST object when successful', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
       const expectedPresignedPost: PresignedPost = {
         fields: {
           'X-Amz-Signature': 'some-amz-signature',
@@ -586,6 +612,13 @@ describe('admin-form.controller', () => {
 
     it('should return 400 when InvalidFileTypeError is returned when creating presigned POST', async () => {
       // Arrange
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
       // Mock error
       const mockErrorString = 'bad file type, bad!'
       const mockRes = expressHandler.mockResponse()
@@ -609,6 +642,13 @@ describe('admin-form.controller', () => {
 
     it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST', async () => {
       // Arrange
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
       // Mock error
       const mockErrorString = 'creating presigned post failed, oh no'
       const mockRes = expressHandler.mockResponse()
@@ -628,6 +668,120 @@ describe('admin-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         message: mockErrorString,
       })
+    })
+
+    it('should return 403 when user does not have write permissions to form', async () => {
+      // Arrange
+      const expectedErrorString = 'no write permissions'
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleCreatePresignedPostForImages(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(
+        MockAdminFormService.createPresignedPostForImages,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      // Arrange
+      const expectedErrorString = 'no form found'
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleCreatePresignedPostForImages(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(
+        MockAdminFormService.createPresignedPostForImages,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 410 when form is archived', async () => {
+      // Arrange
+      const expectedErrorString = 'form deleted'
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleCreatePresignedPostForImages(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(
+        MockAdminFormService.createPresignedPostForImages,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when MissingUserError is returned when retrieving logged in user', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      const expectedErrorString = 'user is not found'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleCreatePresignedPostForImages(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(AuthService.getFormAfterPermissionChecks).not.toHaveBeenCalled()
+      expect(
+        MockAdminFormService.createPresignedPostForImages,
+      ).not.toHaveBeenCalled()
     })
   })
 

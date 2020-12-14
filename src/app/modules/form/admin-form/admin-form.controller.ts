@@ -110,9 +110,13 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
  *
  * @returns 200 with presigned POST object
  * @returns 400 when error occurs whilst creating presigned POST object
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
  */
 export const handleCreatePresignedPostForImages: RequestHandler<
-  ParamsDictionary,
+  { formId: string },
   unknown,
   {
     fileId: string
@@ -120,23 +124,40 @@ export const handleCreatePresignedPostForImages: RequestHandler<
     fileType: string
   }
 > = async (req, res) => {
+  const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
-  return createPresignedPostForImages({ fileId, fileMd5Hash, fileType })
-    .map((presignedPost) => res.json(presignedPost))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Presigning post data encountered an error',
-        meta: {
-          action: 'handleCreatePresignedPostForImages',
-          ...createReqMeta(req),
-        },
-        error,
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has write permissions to form
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Has write permissions, generate presigned POST URL.
+      .andThen(() =>
+        createPresignedPostForImages({ fileId, fileMd5Hash, fileType }),
+      )
+      .map((presignedPost) => res.json(presignedPost))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Presigning post data encountered an error',
+          meta: {
+            action: 'handleCreatePresignedPostForImages',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
       })
-
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+  )
 }
 
 /**
