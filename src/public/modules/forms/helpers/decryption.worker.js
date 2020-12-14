@@ -152,6 +152,14 @@ async function decryptIntoCsv(data) {
           }
         })
 
+        let downloadStatus = {
+          _id: '000000000000000000000000',
+          fieldType: 'textfield',
+          question: 'Attachment Download Status',
+          answer: 'Unknown',
+          questionNumber: 1000000,
+        }
+
         try {
           downloadBlob = await queue.add(() =>
             downloadAndDecryptAttachmentsAsZip(
@@ -159,9 +167,12 @@ async function decryptIntoCsv(data) {
               secretKey,
             ),
           )
+          downloadStatus.answer = 'Success'
         } catch (error) {
           csvRecord.status = 'ATTACHMENT_ERROR'
+          downloadStatus.answer = 'Failed'
         }
+        csvRecord.submissionData.record.push(downloadStatus)
       }
     } catch (error) {
       csvRecord.status = 'ERROR'

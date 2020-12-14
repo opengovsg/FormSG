@@ -121,11 +121,12 @@
             </button>
             <ul
               class="dropdown-menu"
+              id="export-dropdown-options"
               uib-dropdown-menu
               role="menu"
               aria-labelledby="btn-export-dropdown"
             >
-              <li>
+              <li role="menuitem">
                 <a
                   id="btn-export-dropdown-responses"
                   ng-click="vm.exportCsv(false)"
@@ -133,7 +134,7 @@
                   >Responses</a
                 >
               </li>
-              <li>
+              <li role="menuitem">
                 <a
                   ng-click="vm.confirmSubmissionCountsBeforeDownload()"
                   style="cursor: pointer"
