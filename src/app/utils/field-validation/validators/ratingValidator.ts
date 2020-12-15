@@ -2,13 +2,13 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isInt from 'validator/lib/isInt'
 
+import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { IRatingField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
-import { ISingleAnswerResponse } from 'src/types/response'
 
 import { notEmptySingleAnswerResponse } from './common'
 
-type RatingValidator = ResponseValidator<ISingleAnswerResponse>
+type RatingValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type RatingValidatorConstructor = (ratingField: IRatingField) => RatingValidator
 
 const makeRatingLimitsValidator: RatingValidatorConstructor = (ratingField) => (
