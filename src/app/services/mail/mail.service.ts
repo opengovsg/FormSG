@@ -9,6 +9,7 @@ import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import { BounceType, IEmailFormSchema, ISubmissionSchema } from '../../../types'
+import { EmailFormField } from '../../modules/submission/email-submission/email-submission.types'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailSendError } from './mail.errors'
@@ -374,7 +375,7 @@ export class MailService {
     form: Pick<IEmailFormSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
-    formData: any[]
+    formData: EmailFormField[]
     jsonData: {
       question: string
       answer: string | number
