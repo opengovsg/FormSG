@@ -59,10 +59,17 @@ export const isMobilePhoneNumber = (mobileNumber: string): boolean => {
  */
 export const isHomePhoneNumber = (phoneNum: string): boolean => {
   const parsedNumber = parsePhoneNumberFromString(phoneNum)
-
   if (!parsedNumber) return false
 
-  return isPhoneNumber(phoneNum) && 'FIXED_LINE' === parsedNumber.getType()
+  const parsedType = parsedNumber.getType()
+  if (!parsedType) return false
+
+  return (
+    isPhoneNumber(phoneNum) &&
+    // Have to include both FIXED_LINE, FIXED_LINE_OR_MOBILE as some countries lump
+    // the types together.
+    ['FIXED_LINE', 'FIXED_LINE_OR_MOBILE'].includes(parsedType)
+  )
 }
 
 export const startsWithSgPrefix = (mobileNumber: string): boolean => {
