@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
@@ -20,11 +21,12 @@ describe('FormStatisticsTotal Model', () => {
         const submissionPromises: Promise<IFormStatisticsTotalSchema>[] = []
         formCounts.forEach((count) => {
           submissionPromises.push(
-            FormStatsModel.create({
-              formId: mongoose.Types.ObjectId(),
+            // Using mongodb native function to bypass collection presave hook.
+            (FormStatsModel.collection.insertOne({
+              formId: new ObjectId(),
               totalCount: count,
               lastSubmission: new Date(),
-            }),
+            }) as unknown) as Promise<IFormStatisticsTotalSchema>,
           )
         })
         await Promise.all(submissionPromises)
@@ -50,11 +52,12 @@ describe('FormStatisticsTotal Model', () => {
         const submissionPromises: Promise<IFormStatisticsTotalSchema>[] = []
         formCounts.forEach((count) => {
           submissionPromises.push(
-            FormStatsModel.create({
-              formId: mongoose.Types.ObjectId(),
+            // Using mongodb native function to bypass collection presave hook.
+            (FormStatsModel.collection.insertOne({
+              formId: new ObjectId(),
               totalCount: count,
               lastSubmission: new Date(),
-            }),
+            }) as unknown) as Promise<IFormStatisticsTotalSchema>,
           )
         })
         await Promise.all(submissionPromises)
