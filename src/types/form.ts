@@ -1,5 +1,5 @@
-import { Document, Model } from 'mongoose'
-import { Merge } from 'type-fest'
+import { Document, LeanDocument, Model, ToObjectOptions } from 'mongoose'
+import { Merge, SetRequired } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
@@ -153,7 +153,29 @@ export interface IFormSchema extends IForm, Document {
   ): PickDuplicateForm & OverrideProps
 }
 
-export interface IPopulatedForm extends IFormSchema {
+/**
+ * Schema type with defaults populated and thus set to be defined.
+ */
+export interface IFormDocument
+  extends SetRequired<
+    IFormSchema,
+    | 'form_logics'
+    | 'permissionList'
+    | 'hasCaptcha'
+    | 'authType'
+    | 'status'
+    | 'inactiveMessage'
+    | 'isListed'
+  > {
+  form_fields: NonNullable<IFormSchema['form_fields']>
+  startPage: SetRequired<NonNullable<IFormSchema['startPage']>, 'colorTheme'>
+  endPage: SetRequired<
+    NonNullable<IFormSchema['endPage']>,
+    'title' | 'buttonText'
+  >
+  webhook: SetRequired<NonNullable<IFormSchema['webhook']>, 'url'>
+}
+export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   // Remove extraneous keys that the populated form should not require.
   admin: Merge<
     Omit<
@@ -167,6 +189,9 @@ export interface IPopulatedForm extends IFormSchema {
       >
     }
   >
+
+  // Override types.
+  toJSON(options?: ToObjectOptions): LeanDocument<IPopulatedForm>
 }
 
 export interface IEncryptedForm extends IForm {
