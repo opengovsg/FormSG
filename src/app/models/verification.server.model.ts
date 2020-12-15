@@ -1,4 +1,4 @@
-import { DocumentQuery, Model, Mongoose, Schema } from 'mongoose'
+import { Model, Mongoose, Query, Schema } from 'mongoose'
 
 import * as vfnConstants from '../../shared/util/verification'
 import { IVerificationFieldSchema, IVerificationSchema } from '../../types'
@@ -11,7 +11,7 @@ const VERIFICATION_SCHEMA_ID = 'Verification'
 interface IVerificationModel extends Model<IVerificationSchema> {
   findTransactionMetadata(
     id: IVerificationSchema['_id'],
-  ): DocumentQuery<Omit<IVerificationSchema, 'fields'>, IVerificationSchema>
+  ): Query<Omit<IVerificationSchema, 'fields'>, IVerificationSchema>
 }
 
 const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
@@ -85,7 +85,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
  * @param db The mongoose instance to retrieve the Verification model from
  * @returns The Verification model
  */
-const getVerificationModel = (db: Mongoose) => {
+const getVerificationModel = (db: Mongoose): IVerificationModel => {
   try {
     return db.model(VERIFICATION_SCHEMA_ID) as IVerificationModel
   } catch {

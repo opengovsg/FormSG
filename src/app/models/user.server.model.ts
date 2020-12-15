@@ -1,6 +1,6 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { MongoError } from 'mongodb'
-import { CallbackError, Mongoose, NativeError, Schema } from 'mongoose'
+import { CallbackError, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import { IUser, IUserModel, IUserSchema } from '../../types'
@@ -16,6 +16,8 @@ const compileUserModel = (db: Mongoose) => {
     {
       email: {
         type: String,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         trim: true,
         unique: true,
         required: 'Please enter your email',
@@ -81,13 +83,9 @@ const compileUserModel = (db: Mongoose) => {
    */
   UserSchema.post<IUserSchema>(
     'save',
-    function (
-      err: NativeError | MongoError,
-      _doc: unknown,
-      next: (err?: CallbackError) => void,
-    ) {
+    function (err: Error, _doc: unknown, next: (err?: CallbackError) => void) {
       if (err) {
-        if (err instanceof MongoError && err.code === 11000) {
+        if (err.name === 'MongoError' && (err as MongoError)?.code === 11000) {
           next(new Error('Account already exists with this email'))
         } else {
           next(err)

@@ -214,7 +214,7 @@ export class MailService {
       html: mailHtml,
       headers: {
         [EMAIL_HEADERS.formId]: String(form._id),
-        [EMAIL_HEADERS.submissionId]: submission.id,
+        [EMAIL_HEADERS.submissionId]: String(submission.id),
         [EMAIL_HEADERS.emailType]: EmailType.EmailConfirmation,
       },
     }
@@ -380,7 +380,7 @@ export class MailService {
       answer: string | number
     }[]
   }): Promise<true> => {
-    const refNo = submission.id
+    const refNo = String(submission.id)
     const formTitle = form.title
     const submissionTime = moment(submission.created)
       .tz('Asia/Singapore')

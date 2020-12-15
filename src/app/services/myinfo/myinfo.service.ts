@@ -7,7 +7,7 @@ import {
 import Bluebird from 'bluebird'
 import fs from 'fs'
 import { cloneDeep } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { LeanDocument } from 'mongoose'
 import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
@@ -164,10 +164,10 @@ export class MyInfoService {
    */
   prefillMyInfoFields(
     myInfoData: IPersonBasic,
-    currFormFields: IFieldSchema[],
+    currFormFields: LeanDocument<IFieldSchema[]>,
   ): Result<IPossiblyPrefilledField[], never> {
     const prefilledFields = currFormFields.map((field) => {
-      if (!field?.myInfo?.attr) return field
+      if (!field.myInfo?.attr) return field
 
       const myInfoAttr = field.myInfo.attr
       const myInfoValue = getMyInfoValue(myInfoAttr, myInfoData)
