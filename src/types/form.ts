@@ -139,10 +139,10 @@ export interface IFormSchema extends IForm, Document {
    * @param newOwner the new owner of the form. Similarly retrieved outside of method to force correct validation.
    * @returns updated form
    */
-  transferOwner(
+  transferOwner<T = IFormSchema>(
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
-  ): Promise<IFormSchema>
+  ): Promise<T>
   /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
@@ -156,17 +156,14 @@ export interface IFormSchema extends IForm, Document {
 /**
  * Schema type with defaults populated and thus set to be defined.
  */
-export interface IFormDocument
-  extends SetRequired<
-    IFormSchema,
-    | 'form_logics'
-    | 'permissionList'
-    | 'hasCaptcha'
-    | 'authType'
-    | 'status'
-    | 'inactiveMessage'
-    | 'isListed'
-  > {
+export interface IFormDocument extends IFormSchema {
+  form_logics: NonNullable<IFormSchema['form_logics']>
+  permissionList: NonNullable<IFormSchema['permissionList']>
+  hasCaptcha: NonNullable<IFormSchema['hasCaptcha']>
+  authType: NonNullable<IFormSchema['authType']>
+  status: NonNullable<IFormSchema['status']>
+  inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
+  isListed: NonNullable<IFormSchema['isListed']>
   form_fields: NonNullable<IFormSchema['form_fields']>
   startPage: SetRequired<NonNullable<IFormSchema['startPage']>, 'colorTheme'>
   endPage: SetRequired<
@@ -220,8 +217,9 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<FormMetaView[]>
 }
 
-export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
-export type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
+export type IEncryptedFormModel = Merge<IFormModel, Model<IEncryptedFormSchema>>
+export type IEmailFormModel = Merge<IFormModel, Model<IEmailFormSchema>>
+
 /** Typing for the shape of the important meta subset for form document. */
 export type FormMetaView = Pick<
   IFormSchema,

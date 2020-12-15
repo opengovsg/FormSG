@@ -7,7 +7,7 @@ import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
-import { FieldResponse, IFieldSchema, IFormSchema } from '../../../types'
+import { FieldResponse, IFieldSchema, IFormDocument } from '../../../types'
 import getSubmissionModel from '../../models/submission.server.model'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
@@ -34,7 +34,7 @@ const SubmissionModel = getSubmissionModel(mongoose)
  * @returns neverthrow err(ConflictError) if the given form's form field ids count do not match given responses'
  */
 const getFilteredResponses = (
-  form: IFormSchema,
+  form: IFormDocument,
   responses: FieldResponse[],
 ): Result<FieldResponse[], ConflictError> => {
   const modeFilter = getModeFilter(form.responseMode)
@@ -73,7 +73,7 @@ const getFilteredResponses = (
  * @returns neverthrow err() if response validation fails
  */
 export const getProcessedResponses = (
-  form: IFormSchema,
+  form: IFormDocument,
   originalResponses: FieldResponse[],
 ): Result<
   ProcessedFieldResponse[],
