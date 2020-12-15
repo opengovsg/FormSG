@@ -107,7 +107,7 @@ export interface IWebhookResponse {
 export type SubmissionCursorData = Pick<
   IEncryptedSubmissionSchema,
   'encryptedContent' | 'verifiedContent' | 'created' | 'id'
-> & { attachmentMetadata?: Record<string, string> } & Document
+> & { attachmentMetadata?: Map<string, string> } & Document
 
 export type SubmissionData = Omit<
   IEncryptedSubmissionSchema,
