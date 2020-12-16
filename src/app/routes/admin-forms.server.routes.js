@@ -659,7 +659,7 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    AdminFormController.handleCreatePresignedPostForImages,
+    AdminFormController.handleCreatePresignedPostUrlForImages,
   )
 
   /**
@@ -687,6 +687,6 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    AdminFormController.handleCreatePresignedPostForLogos,
+    AdminFormController.handleCreatePresignedPostUrlForLogos,
   )
 }

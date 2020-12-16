@@ -16,8 +16,8 @@ import { removePrivateDetailsFromForm } from '../form.utils'
 import {
   archiveForm,
   createForm,
-  createPresignedPostForImages,
-  createPresignedPostForLogos,
+  createPresignedPostUrlForImages,
+  createPresignedPostUrlForLogos,
   duplicateForm,
   getDashboardForms,
   getMockSpcpLocals,
@@ -108,14 +108,14 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
  * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/images.
  * @security session
  *
- * @returns 200 with presigned POST object
- * @returns 400 when error occurs whilst creating presigned POST object
+ * @returns 200 with presigned POST URL object
+ * @returns 400 when error occurs whilst creating presigned POST URL object
  * @returns 403 when user does not have write permissions for form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const handleCreatePresignedPostForImages: RequestHandler<
+export const handleCreatePresignedPostUrlForImages: RequestHandler<
   { formId: string },
   unknown,
   {
@@ -141,14 +141,14 @@ export const handleCreatePresignedPostForImages: RequestHandler<
       )
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
-        createPresignedPostForImages({ fileId, fileMd5Hash, fileType }),
+        createPresignedPostUrlForImages({ fileId, fileMd5Hash, fileType }),
       )
-      .map((presignedPost) => res.json(presignedPost))
+      .map((presignedPostUrl) => res.json(presignedPostUrl))
       .mapErr((error) => {
         logger.error({
           message: 'Presigning post data encountered an error',
           meta: {
-            action: 'handleCreatePresignedPostForImages',
+            action: 'handleCreatePresignedPostUrlForImages',
             ...createReqMeta(req),
           },
           error,
@@ -164,14 +164,14 @@ export const handleCreatePresignedPostForImages: RequestHandler<
  * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/logos.
  * @security session
  *
- * @returns 200 with presigned POST object
- * @returns 400 when error occurs whilst creating presigned POST object
+ * @returns 200 with presigned POST URL object
+ * @returns 400 when error occurs whilst creating presigned POST URL object
  * @returns 403 when user does not have write permissions for form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const handleCreatePresignedPostForLogos: RequestHandler<
+export const handleCreatePresignedPostUrlForLogos: RequestHandler<
   ParamsDictionary,
   unknown,
   {
@@ -197,14 +197,14 @@ export const handleCreatePresignedPostForLogos: RequestHandler<
       )
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
-        createPresignedPostForLogos({ fileId, fileMd5Hash, fileType }),
+        createPresignedPostUrlForLogos({ fileId, fileMd5Hash, fileType }),
       )
-      .map((presignedPost) => res.json(presignedPost))
+      .map((presignedPostUrl) => res.json(presignedPostUrl))
       .mapErr((error) => {
         logger.error({
           message: 'Presigning post data encountered an error',
           meta: {
-            action: 'handleCreatePresignedPostForLogos',
+            action: 'handleCreatePresignedPostUrlForLogos',
             ...createReqMeta(req),
           },
           error,

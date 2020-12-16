@@ -550,7 +550,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleCreatePresignedPostForImages', () => {
+  describe('handleCreatePresignedPostUrlForImages', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -578,7 +578,7 @@ describe('admin-form.controller', () => {
       },
     })
 
-    it('should return 200 with presigned POST object when successful', async () => {
+    it('should return 200 with presigned POST URL object when successful', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock various services to return expected results.
@@ -595,12 +595,12 @@ describe('admin-form.controller', () => {
         },
         url: 'some url',
       }
-      MockAdminFormService.createPresignedPostForImages.mockReturnValueOnce(
+      MockAdminFormService.createPresignedPostUrlForImages.mockReturnValueOnce(
         okAsync(expectedPresignedPost),
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForImages(
+      await AdminFormController.handleCreatePresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -610,7 +610,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(expectedPresignedPost)
     })
 
-    it('should return 400 when InvalidFileTypeError is returned when creating presigned POST', async () => {
+    it('should return 400 when InvalidFileTypeError is returned when creating presigned POST URL', async () => {
       // Arrange
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
@@ -622,12 +622,12 @@ describe('admin-form.controller', () => {
       // Mock error
       const mockErrorString = 'bad file type, bad!'
       const mockRes = expressHandler.mockResponse()
-      MockAdminFormService.createPresignedPostForImages.mockReturnValueOnce(
+      MockAdminFormService.createPresignedPostUrlForImages.mockReturnValueOnce(
         errAsync(new InvalidFileTypeError(mockErrorString)),
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForImages(
+      await AdminFormController.handleCreatePresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -640,7 +640,7 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST', async () => {
+    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST URL', async () => {
       // Arrange
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
@@ -650,14 +650,14 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM),
       )
       // Mock error
-      const mockErrorString = 'creating presigned post failed, oh no'
+      const mockErrorString = 'creating presigned post url failed, oh no'
       const mockRes = expressHandler.mockResponse()
-      MockAdminFormService.createPresignedPostForImages.mockReturnValueOnce(
+      MockAdminFormService.createPresignedPostUrlForImages.mockReturnValueOnce(
         errAsync(new CreatePresignedUrlError(mockErrorString)),
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForImages(
+      await AdminFormController.handleCreatePresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -683,7 +683,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForImages(
+      await AdminFormController.handleCreatePresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -695,7 +695,7 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(
-        MockAdminFormService.createPresignedPostForImages,
+        MockAdminFormService.createPresignedPostUrlForImages,
       ).not.toHaveBeenCalled()
     })
 
@@ -712,7 +712,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForImages(
+      await AdminFormController.handleCreatePresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -724,7 +724,7 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(
-        MockAdminFormService.createPresignedPostForImages,
+        MockAdminFormService.createPresignedPostUrlForImages,
       ).not.toHaveBeenCalled()
     })
 
@@ -741,7 +741,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForImages(
+      await AdminFormController.handleCreatePresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -753,7 +753,7 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(
-        MockAdminFormService.createPresignedPostForImages,
+        MockAdminFormService.createPresignedPostUrlForImages,
       ).not.toHaveBeenCalled()
     })
 
@@ -767,7 +767,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForImages(
+      await AdminFormController.handleCreatePresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -780,12 +780,12 @@ describe('admin-form.controller', () => {
       })
       expect(AuthService.getFormAfterPermissionChecks).not.toHaveBeenCalled()
       expect(
-        MockAdminFormService.createPresignedPostForImages,
+        MockAdminFormService.createPresignedPostUrlForImages,
       ).not.toHaveBeenCalled()
     })
   })
 
-  describe('handleCreatePresignedPostForLogos', () => {
+  describe('handleCreatePresignedPostUrlForLogos', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -813,7 +813,7 @@ describe('admin-form.controller', () => {
       },
     })
 
-    it('should return 200 with presigned POST object when successful', async () => {
+    it('should return 200 with presigned POST URL object when successful', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock various services to return expected results.
@@ -830,12 +830,12 @@ describe('admin-form.controller', () => {
         },
         url: 'some url',
       }
-      MockAdminFormService.createPresignedPostForLogos.mockReturnValueOnce(
+      MockAdminFormService.createPresignedPostUrlForLogos.mockReturnValueOnce(
         okAsync(expectedPresignedPost),
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForLogos(
+      await AdminFormController.handleCreatePresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -845,7 +845,7 @@ describe('admin-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(expectedPresignedPost)
     })
 
-    it('should return 400 when InvalidFileTypeError is returned when creating presigned POST', async () => {
+    it('should return 400 when InvalidFileTypeError is returned when creating presigned POST URL', async () => {
       // Arrange
       // Mock error
       const mockErrorString = 'bad file type, bad!'
@@ -857,12 +857,12 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM),
       )
       const mockRes = expressHandler.mockResponse()
-      MockAdminFormService.createPresignedPostForLogos.mockReturnValueOnce(
+      MockAdminFormService.createPresignedPostUrlForLogos.mockReturnValueOnce(
         errAsync(new InvalidFileTypeError(mockErrorString)),
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForLogos(
+      await AdminFormController.handleCreatePresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -875,11 +875,11 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST', async () => {
+    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST URL', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock error
-      const mockErrorString = 'creating presigned post failed, oh no'
+      const mockErrorString = 'creating presigned post url failed, oh no'
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         okAsync(MOCK_USER),
@@ -887,12 +887,12 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockAdminFormService.createPresignedPostForLogos.mockReturnValueOnce(
+      MockAdminFormService.createPresignedPostUrlForLogos.mockReturnValueOnce(
         errAsync(new CreatePresignedUrlError(mockErrorString)),
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForLogos(
+      await AdminFormController.handleCreatePresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -918,7 +918,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForLogos(
+      await AdminFormController.handleCreatePresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -930,7 +930,7 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(
-        MockAdminFormService.createPresignedPostForLogos,
+        MockAdminFormService.createPresignedPostUrlForLogos,
       ).not.toHaveBeenCalled()
     })
 
@@ -947,7 +947,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForLogos(
+      await AdminFormController.handleCreatePresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -959,7 +959,7 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(
-        MockAdminFormService.createPresignedPostForLogos,
+        MockAdminFormService.createPresignedPostUrlForLogos,
       ).not.toHaveBeenCalled()
     })
 
@@ -976,7 +976,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForLogos(
+      await AdminFormController.handleCreatePresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -988,7 +988,7 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(
-        MockAdminFormService.createPresignedPostForLogos,
+        MockAdminFormService.createPresignedPostUrlForLogos,
       ).not.toHaveBeenCalled()
     })
 
@@ -1002,7 +1002,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostForLogos(
+      await AdminFormController.handleCreatePresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1015,7 +1015,7 @@ describe('admin-form.controller', () => {
       })
       expect(AuthService.getFormAfterPermissionChecks).not.toHaveBeenCalled()
       expect(
-        MockAdminFormService.createPresignedPostForLogos,
+        MockAdminFormService.createPresignedPostUrlForLogos,
       ).not.toHaveBeenCalled()
     })
   })
