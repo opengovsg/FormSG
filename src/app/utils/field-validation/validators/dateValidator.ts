@@ -2,15 +2,15 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
+import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { IDateField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
-import { ISingleAnswerResponse } from 'src/types/response'
 
 import { DateSelectedValidation } from '../../../../shared/constants'
 
 import { notEmptySingleAnswerResponse } from './common'
 
-type DateValidator = ResponseValidator<ISingleAnswerResponse>
+type DateValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type DateValidatorConstructor = (dateField: IDateField) => DateValidator
 
 /**
