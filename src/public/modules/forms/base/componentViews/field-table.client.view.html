@@ -18,7 +18,8 @@
   <div>
     <!-- View for screen width >= 768px. Either this or the next div is shown. -->
     <div class="table-scrollable table-desktop">
-      <div class="table-row">
+      <!-- Labels to be shown in desktop mode but not mobile mode -->
+      <div class="table-row table-labels-desktop">
         <!-- ng-class in ng-repeat below sets whether the column is col-xs-6, col-xs-12 or max-width -->
         <div
           ng-repeat="tableField in vm.field.columns"
@@ -52,6 +53,13 @@
             ng-class="{'table-row-blue': $evenRow, 'col-xs-12': vm.field.columns.length === 1,
               'col-xs-6': vm.field.columns.length === 2,'bottom-row-line': vm.isLastRow(n) && $oddRow }"
           >
+            <!-- Labels to be shown in mobile mode but not desktop mode -->
+            <div class="label-custom label-bottom table-labels-mobile">
+              {{vm.field.columns[$index].title}}
+              <span class="field-optional" ng-if="!component.required"
+                >(optional)</span
+              >
+            </div>
             <field-directive
               class="table-component"
               field="component"
@@ -61,7 +69,16 @@
           <!-- ng-class below sets a couple of things:
 						=> whether a row is blue or white
 						=> whether a line should be added at the bottom (applies only for the bottom row)
-					-->
+          -->
+          <!-- Mobile delete button for layout purposes, will be hidden on desktop -->
+          <div
+            class="table-delete-row-mobile"
+            ng-if="vm.field.additionalRowCount > 0 && n >= vm.field.minimumRows"
+            ng-class="{ 'bottom-row-line': vm.isLastRow(n) && $oddRow, 'table-row-blue': $evenRow }"
+            ng-style="{ 'pointer-events': vm.field.disabled ? 'none' : '', 'cursor': vm.field.disabled ? 'default' : '' }"
+          >
+            <i class="bx bx-trash bx-lg" ng-click="vm.deleteTableRow(n)"></i>
+          </div>
           <div
             class="table-delete-row"
             ng-if="vm.field.additionalRowCount > 0"
@@ -73,40 +90,6 @@
               ng-click="vm.deleteTableRow(n)"
               ng-if="n >= vm.field.minimumRows"
             ></i>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- View for screen width < 768px. Either this or the previous div is shown. -->
-    <div class="row table-mobile">
-      <!-- ng-class in ng-repeat below sets a couple of things:
-				=> whether a row is blue or white
-				=> whether a line should be added at the bottom (applies only for the bottom row)
-			-->
-      <div class="col-xs-12">
-        <div
-          ng-repeat="n in vm.generateTableRowIndexes()"
-          ng-init="$evenRow = $even; $oddRow = $odd"
-          class="col-xs-12 table-column-mobile"
-          ng-class="{'table-row-blue': $evenRow,'bottom-row-line': vm.isLastRow(n) && $oddRow }"
-        >
-          <div ng-repeat="component in vm.field.components[n]">
-            <div class="table-row-mobile field-input">
-              <div class="label-custom label-bottom">
-                {{vm.field.columns[$index].title}}
-                <span class="field-optional" ng-if="!component.required"
-                  >(optional)</span
-                >
-              </div>
-              <field-directive field="component" class="table-component" />
-            </div>
-          </div>
-          <div
-            class="table-delete-row-mobile"
-            ng-if="n >= vm.field.minimumRows"
-            ng-style="{ 'pointer-events': vm.field.disabled ? 'none' : '', 'cursor': vm.field.disabled ? 'default' : '' }"
-          >
-            <i class="bx bx-trash bx-lg" ng-click="vm.deleteTableRow(n)"></i>
           </div>
         </div>
       </div>
