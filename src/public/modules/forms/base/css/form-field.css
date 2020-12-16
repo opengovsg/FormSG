@@ -444,21 +444,13 @@
 
 /* Table */
 
-@media (min-width: 768px) {
-  .field-group.table-field .table-mobile {
-    display: none;
-  }
-}
-
-@media not all and (min-width: 768px) {
-  .field-group.table-field .table-desktop {
-    display: none;
-  }
-}
-
 .field-group.table-field .table-row {
   display: flex;
   align-items: center;
+}
+
+.field-group.table-field .table-labels-mobile {
+  display: none;
 }
 
 .field-group.table-field .table-column {
@@ -467,6 +459,7 @@
   padding-bottom: 12px;
   padding-top: 12px;
   min-width: 280px;
+  flex: 1;
 }
 
 .field-group.table-field .table-column .field-group.row,
@@ -521,9 +514,7 @@
 }
 
 .field-group.table-field .table-delete-row-mobile {
-  padding-bottom: 15px;
-  padding-top: 5px;
-  color: #2f60ce;
+  display: none;
 }
 
 .field-group.table-field .table-row-mobile {
@@ -577,4 +568,44 @@
 
 .field-group.table-field .ui-select-match {
   overflow: hidden;
+}
+
+/* Mobile styling for table */
+@media (max-width: 768px) {
+  .field-group.table-field .table-row div.bottom-row-line {
+    border-bottom: none;
+  }
+
+  .field-group.table-field .table-row.table-labels-desktop {
+    display: none;
+  }
+
+  .field-group.table-field .table-row div.bottom-row-line:last-child {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .field-group.table-field .table-delete-row {
+    display: none;
+  }
+
+  .field-group.table-field .table-delete-row-mobile {
+    display: flex;
+    width: 100%;
+    padding: 10px;
+    padding-top: 0;
+    color: #2f60ce;
+  }
+
+  .field-group.table-field .table-labels-mobile {
+    display: flex;
+  }
+
+  .field-group.table-field .table-row {
+    /* Block for IE11 compatibility in mobile */
+    display: block;
+  }
+
+  .field-group.table-field .table-column {
+    width: 100%;
+  }
 }
