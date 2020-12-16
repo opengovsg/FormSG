@@ -124,17 +124,13 @@ describe('encrypt-submission.service', () => {
 
   describe('transformAttachmentMetaStream', () => {
     const MOCK_SUB_CURSOR_DATA_1: Partial<SubmissionCursorData> = {
-      attachmentMetadata: new Map([['mockId1', 'mock metadata 1']]),
+      attachmentMetadata: { mockId1: 'mock metadata 1' },
     }
     const MOCK_SUB_CURSOR_DATA_2: Partial<SubmissionCursorData> = {
-      attachmentMetadata: new Map([['mockId2', 'mock metadata 2']]),
+      attachmentMetadata: { mockId2: 'mock metadata 2' },
     }
 
     const EMPTY_METADATA = {
-      attachmentMetadata: new Map(),
-    }
-
-    const EMPTY_RESPONSE = {
       attachmentMetadata: {},
     }
 
@@ -201,7 +197,7 @@ describe('encrypt-submission.service', () => {
         'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
-          Key: MOCK_SUB_CURSOR_DATA_1.attachmentMetadata?.get('mockId1'),
+          Key: MOCK_SUB_CURSOR_DATA_1.attachmentMetadata!['mockId1'],
           Expires: expectedExpiry,
         },
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -213,7 +209,7 @@ describe('encrypt-submission.service', () => {
         'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
-          Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata?.get('mockId2'),
+          Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
           Expires: expectedExpiry,
         },
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -248,7 +244,7 @@ describe('encrypt-submission.service', () => {
       mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_1))
 
       // Assert
-      expect(actualTransformedData).toEqual([EMPTY_RESPONSE])
+      expect(actualTransformedData).toEqual([EMPTY_METADATA])
       expect(awsSpy).not.toHaveBeenCalled()
     })
 
@@ -278,7 +274,7 @@ describe('encrypt-submission.service', () => {
       mockInput.emit('data', EMPTY_METADATA)
 
       // Assert
-      expect(actualTransformedData).toEqual([EMPTY_RESPONSE])
+      expect(actualTransformedData).toEqual([EMPTY_METADATA])
       expect(awsSpy).not.toHaveBeenCalled()
     })
 
@@ -307,7 +303,7 @@ describe('encrypt-submission.service', () => {
       mockInput.emit('data', {})
 
       // Assert
-      expect(actualTransformedData).toEqual([EMPTY_RESPONSE])
+      expect(actualTransformedData).toEqual([EMPTY_METADATA])
       expect(awsSpy).not.toHaveBeenCalled()
     })
 
@@ -344,7 +340,7 @@ describe('encrypt-submission.service', () => {
         'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
-          Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata?.get('mockId2'),
+          Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
           Expires: expectedExpiry,
         },
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

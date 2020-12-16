@@ -1,9 +1,8 @@
 import Bluebird from 'bluebird'
-import { cloneDeep, merge } from 'lodash'
+import { cloneDeep } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
-import { Merge } from 'type-fest'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -71,16 +70,10 @@ export const transformAttachmentMetaStream = ({
   return new Transform({
     objectMode: true,
     transform: (data: SubmissionCursorData, _encoding, callback) => {
-      const unprocessedMetadata = data.attachmentMetadata
-        ? Object.fromEntries(data.attachmentMetadata)
-        : {}
+      const unprocessedMetadata = data.attachmentMetadata ?? {}
 
-      // Create new pure object to transform.
-      const transformedData: Merge<
-        SubmissionCursorData,
-        // Override map to object for ease of serializing.
-        { attachmentMetadata: Record<string, string> }
-      > = merge(cloneDeep(data), { attachmentMetadata: unprocessedMetadata })
+      // Create new pure object to transform attachment data.
+      const transformedData: SubmissionCursorData = cloneDeep(data)
 
       const totalCount = Object.keys(unprocessedMetadata).length
       // Early return if pipe is disabled or nothing to transform.
