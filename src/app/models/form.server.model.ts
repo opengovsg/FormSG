@@ -62,7 +62,8 @@ import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-const FORM_PUBLIC_FIELDS = [
+// Exported for testing.
+export const FORM_PUBLIC_FIELDS = [
   'admin',
   'authType',
   'endPage',
@@ -77,6 +78,16 @@ const FORM_PUBLIC_FIELDS = [
   '_id',
   'responseMode',
 ]
+
+const POPULATE_FORM_PARAMS = {
+  path: 'admin',
+  // Remove irrelevant keys from populated fields of form admin and agency.
+  select: '-__v -created -lastModified -updatedAt -lastAccessed',
+  populate: {
+    path: 'agency',
+    select: '-__v -created -lastModified -updatedAt',
+  },
+}
 
 const bson = new BSON([
   BSON.Binary,
@@ -427,16 +438,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.methods.getPublicView = async function (this: IFormSchema) {
     // Populate form if not populated yet.
-    const populatedForm = this.populated('admin')
-      ? this
-      : await this.populate({
-          path: 'admin',
-          select: 'agency',
-        }).execPopulate()
+    if (!this.populated('admin')) {
+      await this.populate(POPULATE_FORM_PARAMS).execPopulate()
+    }
 
     return {
-      ...(pick(populatedForm, FORM_PUBLIC_FIELDS) as PublicFormValues),
-      admin: pick(populatedForm.admin, 'agency'),
+      ...(pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues),
+      admin: pick(this.admin, 'agency'),
     }
   }
 
@@ -495,15 +503,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormModel,
     formId: string,
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId).populate({
-      path: 'admin',
-      // Remove irrelevant keys from populated fields of form admin and agency.
-      select: '-__v -created -lastModified -updatedAt -lastAccessed',
-      populate: {
-        path: 'agency',
-        select: '-__v -created -lastModified -updatedAt',
-      },
-    })
+    return this.findById(formId).populate(POPULATE_FORM_PARAMS)
   }
 
   // Deactivate form by ID
