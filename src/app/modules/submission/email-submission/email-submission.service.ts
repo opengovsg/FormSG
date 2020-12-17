@@ -17,7 +17,7 @@ import {
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import { DatabaseError } from '../../core/core.errors'
-import { transformEmails } from '../../form/form.util'
+import { transformEmails } from '../../form/form.utils'
 import { SendAdminEmailError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
 
