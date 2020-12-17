@@ -35,6 +35,28 @@ export enum ResponseMode {
 }
 
 // Typings
+// Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
+export type PublicFormValues = Pick<
+  IPopulatedForm,
+  | 'authType'
+  | 'endPage'
+  | 'esrvcId'
+  | 'form_fields'
+  | 'form_logics'
+  | 'hasCaptcha'
+  | 'publicKey'
+  | 'startPage'
+  | 'status'
+  | 'title'
+  | '_id'
+  | 'responseMode'
+>
+
+export type PublicForm = Merge<
+  PublicFormValues,
+  { admin: Pick<IPopulatedForm['admin'], 'agency'> }
+>
+
 export type FormOtpData = {
   form: IFormSchema['_id']
   formAdmin: {
@@ -151,6 +173,8 @@ export interface IFormSchema extends IForm, Document {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
+
+  getPublicView(): Promise<PublicForm>
 }
 
 export interface IPopulatedForm extends IFormSchema {

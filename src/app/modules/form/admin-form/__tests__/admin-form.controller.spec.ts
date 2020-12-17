@@ -3,6 +3,7 @@ import { ObjectId } from 'bson-ext'
 import { merge } from 'lodash'
 import { errAsync, okAsync } from 'neverthrow'
 import { PassThrough } from 'stream'
+import { MockedObject } from 'ts-jest/dist/utils/testing'
 import { mocked } from 'ts-jest/utils'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
@@ -23,6 +24,7 @@ import {
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
+  PublicForm,
   ResponseMode,
 } from 'src/types'
 
@@ -36,7 +38,6 @@ import {
   PrivateFormError,
   TransferOwnershipError,
 } from '../../form.errors'
-import * as FormUtils from '../../form.utils'
 import * as AdminFormController from '../admin-form.controller'
 import {
   CreatePresignedUrlError,
@@ -557,15 +558,19 @@ describe('admin-form.controller', () => {
       _id: MOCK_USER_ID,
       email: 'randomrandomtest@example.com',
     } as IPopulatedUser
-    const MOCK_FORM = {
-      admin: MOCK_USER,
+
+    const MOCK_SCRUBBED_FORM = ({
       _id: MOCK_FORM_ID,
       title: 'mock preview title',
-    } as IPopulatedForm
-    const MOCK_SCRUBBED_FORM = ({
-      ...MOCK_FORM,
       admin: { _id: MOCK_USER_ID },
-    } as unknown) as FormUtils.PublicForm
+    } as unknown) as PublicForm
+
+    const MOCK_FORM = (mocked({
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: MOCK_SCRUBBED_FORM.title,
+      getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
+    }) as unknown) as MockedObject<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -578,12 +583,7 @@ describe('admin-form.controller', () => {
       },
     })
 
-    const SCRUB_DETAILS_SPY = jest.spyOn(
-      FormUtils,
-      'removePrivateDetailsFromForm',
-    )
-
-    beforeEach(() => SCRUB_DETAILS_SPY.mockClear())
+    beforeEach(() => MOCK_FORM.getPublicView.mockClear())
 
     it('should return 200 with preview form', async () => {
       // Arrange
@@ -595,7 +595,6 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      SCRUB_DETAILS_SPY.mockReturnValueOnce(MOCK_SCRUBBED_FORM)
 
       // Act
       await AdminFormController.handlePreviewAdminForm(
@@ -616,7 +615,7 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(SCRUB_DETAILS_SPY).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MOCK_FORM.getPublicView).toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({ form: MOCK_SCRUBBED_FORM })
     })
@@ -653,7 +652,7 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(SCRUB_DETAILS_SPY).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(403)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -692,7 +691,7 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(SCRUB_DETAILS_SPY).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -731,7 +730,7 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(SCRUB_DETAILS_SPY).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(410)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -762,7 +761,7 @@ describe('admin-form.controller', () => {
       expect(
         MockAuthService.getFormAfterPermissionChecks,
       ).not.toHaveBeenCalled()
-      expect(SCRUB_DETAILS_SPY).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(422)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -793,7 +792,7 @@ describe('admin-form.controller', () => {
       expect(
         MockAuthService.getFormAfterPermissionChecks,
       ).not.toHaveBeenCalled()
-      expect(SCRUB_DETAILS_SPY).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -832,7 +831,7 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(SCRUB_DETAILS_SPY).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -2914,11 +2913,19 @@ describe('admin-form.controller', () => {
       },
       email: 'alwaystesting@example.com',
     } as IPopulatedUser
-    const MOCK_FORM = {
-      admin: MOCK_USER,
+
+    const MOCK_SCRUBBED_FORM = ({
       _id: MOCK_FORM_ID,
       title: "guess what it's another mock title",
-    } as IPopulatedForm
+      admin: { _id: MOCK_USER_ID },
+    } as unknown) as PublicForm
+
+    const MOCK_FORM = (mocked({
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: MOCK_SCRUBBED_FORM.title,
+      getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
+    }) as unknown) as MockedObject<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -2946,7 +2953,7 @@ describe('admin-form.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({
-        form: FormUtils.removePrivateDetailsFromForm(MOCK_FORM),
+        form: MOCK_SCRUBBED_FORM,
       })
     })
 

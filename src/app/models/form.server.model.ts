@@ -20,6 +20,7 @@ import {
   LogicType,
   Permission,
   PickDuplicateForm,
+  PublicFormValues,
   ResponseMode,
   Status,
 } from '../../types'
@@ -60,6 +61,22 @@ import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
+
+const FORM_PUBLIC_FIELDS = [
+  'admin',
+  'authType',
+  'endPage',
+  'esrvcId',
+  'form_fields',
+  'form_logics',
+  'hasCaptcha',
+  'publicKey',
+  'startPage',
+  'status',
+  'title',
+  '_id',
+  'responseMode',
+]
 
 const bson = new BSON([
   BSON.Binary,
@@ -406,6 +423,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'responseMode',
     ]) as PickDuplicateForm
     return { ...newForm, ...overrideProps }
+  }
+
+  FormSchema.methods.getPublicView = async function (this: IFormSchema) {
+    // Populate form if not populated yet.
+    const populatedForm = this.populated('admin')
+      ? this
+      : await this.populate({
+          path: 'admin',
+          select: 'agency',
+        }).execPopulate()
+
+    return {
+      ...(pick(populatedForm, FORM_PUBLIC_FIELDS) as PublicFormValues),
+      admin: pick(populatedForm.admin, 'agency'),
+    }
   }
 
   // Archives form.
