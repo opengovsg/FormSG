@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
+import { mocked, MockedObject } from 'ts-jest/dist/utils/testing'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { IFormSchema, IPopulatedForm, Status } from 'src/types'
@@ -263,6 +264,47 @@ describe('FormService', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(new ApplicationError())
+    })
+  })
+
+  describe('getFormPublicView', () => {
+    it('should successfully return public view of given form', async () => {
+      // Arrange
+      const mockFormPublicView = {
+        title:
+          'form title should not change in public view but this is just a test',
+      }
+      const mockForm = (mocked({
+        _id: new ObjectId(),
+        title: 'some mock form',
+        getPublicView: jest.fn().mockResolvedValue(mockFormPublicView),
+      }) as unknown) as MockedObject<IPopulatedForm>
+
+      // Act
+      const actualResult = FormService.getFormPublicView(mockForm)
+
+      // Assert
+      expect(mockForm.getPublicView).toHaveBeenCalled()
+      expect((await actualResult)._unsafeUnwrap()).toEqual(mockFormPublicView)
+    })
+
+    it('should return DatabaseError when database errors occurs whilst getting public view of form', async () => {
+      // Arrange
+      const mockErrorString = 'something went wrong'
+      const mockForm = (mocked({
+        _id: new ObjectId(),
+        title: 'some mock form',
+        getPublicView: jest.fn().mockRejectedValue(new Error(mockErrorString)),
+      }) as unknown) as MockedObject<IPopulatedForm>
+
+      // Act
+      const actualResult = FormService.getFormPublicView(mockForm)
+
+      // Assert
+      expect(mockForm.getPublicView).toHaveBeenCalled()
+      expect((await actualResult)._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(mockErrorString),
+      )
     })
   })
 })
