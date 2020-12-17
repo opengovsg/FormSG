@@ -1,9 +1,9 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
+import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { ILongTextField, IShortTextField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
-import { ISingleAnswerResponse } from 'src/types/response'
 
 import { TextSelectedValidation } from '../../../../types/field/baseField'
 
@@ -11,7 +11,7 @@ import { notEmptySingleAnswerResponse } from './common'
 
 type TextFieldValidatorConstructor = (
   textField: IShortTextField | ILongTextField,
-) => ResponseValidator<ISingleAnswerResponse>
+) => ResponseValidator<ProcessedSingleAnswerResponse>
 
 const minLengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
