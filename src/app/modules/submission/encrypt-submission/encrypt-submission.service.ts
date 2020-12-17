@@ -1,5 +1,4 @@
 import Bluebird from 'bluebird'
-import { cloneDeep } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
@@ -72,14 +71,11 @@ export const transformAttachmentMetaStream = ({
     transform: (data: SubmissionCursorData, _encoding, callback) => {
       const unprocessedMetadata = data.attachmentMetadata ?? {}
 
-      // Create new pure object to transform attachment data.
-      const transformedData: SubmissionCursorData = cloneDeep(data)
-
       const totalCount = Object.keys(unprocessedMetadata).length
       // Early return if pipe is disabled or nothing to transform.
       if (!enabled || totalCount === 0) {
-        transformedData.attachmentMetadata = {}
-        return callback(null, transformedData)
+        data.attachmentMetadata = {}
+        return callback(null, data)
       }
 
       const transformedMetadata: Record<string, string> = {}
@@ -113,8 +109,8 @@ export const transformAttachmentMetaStream = ({
             // Finished processing, replace current attachment metadata with the
             // signed URLs.
             if (processedCount === totalCount) {
-              transformedData.attachmentMetadata = transformedMetadata
-              return callback(null, transformedData)
+              data.attachmentMetadata = transformedMetadata
+              return callback(null, data)
             }
           },
         )
