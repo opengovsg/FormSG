@@ -3,6 +3,7 @@ import { merge, omit, orderBy, pick } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel, {
+  FORM_PUBLIC_FIELDS,
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
@@ -10,6 +11,7 @@ import {
   IEmailForm,
   IEmailFormSchema,
   IEncryptedForm,
+  IEncryptedFormSchema,
   IFormSchema,
   IPopulatedUser,
   Permission,
@@ -1210,6 +1212,129 @@ describe('Form Model', () => {
         expect(actual.toObject().permissionList).toEqual([
           { email: populatedAdmin.email, write: true, _id: expect.anything() },
         ])
+      })
+    })
+
+    describe('getPublicView', () => {
+      it('should correctly return public view of unpopulated email mode form', async () => {
+        // Arrange
+        const emailForm = await Form.create<IEmailFormSchema>({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+        })
+        // Retrieve populated form to assert end shape.
+        const populatedEmailForm = await Form.getFullFormById(emailForm._id)
+        expect(populatedEmailForm).not.toBeNull()
+
+        // Act
+        const actual = await emailForm.getPublicView()
+
+        // Assert
+        const expectedPublicAgencyView = omit(
+          populatedAdmin.agency.toObject(),
+          ['created', 'lastModified', '__v'],
+        )
+
+        expect(JSON.stringify(actual)).toEqual(
+          JSON.stringify({
+            ...pick(populatedEmailForm, FORM_PUBLIC_FIELDS),
+            admin: {
+              agency: expectedPublicAgencyView,
+            },
+          }),
+        )
+      })
+
+      it('should correctly return public view of populated email mode form', async () => {
+        // Arrange
+        const emailForm = await Form.create<IEmailFormSchema>({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+        })
+        const populatedEmailForm = await Form.getFullFormById(emailForm._id)
+        expect(populatedEmailForm).not.toBeNull()
+
+        // Act
+        const actual = await populatedEmailForm!.getPublicView()
+
+        // Assert
+        const expectedPublicAgencyView = omit(
+          populatedAdmin.agency.toObject(),
+          ['created', 'lastModified', '__v'],
+        )
+
+        expect(JSON.stringify(actual)).toEqual(
+          JSON.stringify({
+            ...pick(populatedEmailForm, FORM_PUBLIC_FIELDS),
+            admin: {
+              agency: expectedPublicAgencyView,
+            },
+          }),
+        )
+      })
+
+      it('should correctly return public view of unpopulated encrypt mode form', async () => {
+        // Arrange
+        const encryptForm = await Form.create<IEncryptedFormSchema>({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          publicKey: 'mock public key',
+        })
+        // Retrieve populated form to assert end shape.
+        const populatedEncryptForm = await Form.getFullFormById(encryptForm._id)
+        expect(populatedEncryptForm).not.toBeNull()
+
+        // Act
+        const actual = await encryptForm.getPublicView()
+
+        // Assert
+        const expectedPublicAgencyView = omit(
+          populatedAdmin.agency.toObject(),
+          ['created', 'lastModified', '__v'],
+        )
+
+        expect(JSON.stringify(actual)).toEqual(
+          JSON.stringify({
+            ...pick(populatedEncryptForm, FORM_PUBLIC_FIELDS),
+            admin: {
+              agency: expectedPublicAgencyView,
+            },
+          }),
+        )
+      })
+
+      it('should correctly return public view of populated encrypt mode form', async () => {
+        // Arrange
+        const encryptForm = await Form.create<IEncryptedFormSchema>({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Encrypt,
+          title: 'mock encrypt form electric boogaloo',
+          publicKey: 'some public key again',
+        })
+        const populatedEncryptForm = await Form.getFullFormById(encryptForm._id)
+        expect(populatedEncryptForm).not.toBeNull()
+        // Act
+        const actual = await populatedEncryptForm!.getPublicView()
+
+        // Assert
+        const expectedPublicAgencyView = omit(
+          populatedAdmin.agency.toObject(),
+          ['created', 'lastModified', '__v'],
+        )
+
+        expect(JSON.stringify(actual)).toEqual(
+          JSON.stringify({
+            ...pick(populatedEncryptForm, FORM_PUBLIC_FIELDS),
+            admin: {
+              agency: expectedPublicAgencyView,
+            },
+          }),
+        )
       })
     })
   })
