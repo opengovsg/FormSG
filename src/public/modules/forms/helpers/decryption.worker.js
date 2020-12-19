@@ -172,7 +172,7 @@ async function decryptIntoCsv(data) {
           csvRecord.status = 'ATTACHMENT_ERROR'
           downloadStatus.answer = 'Failed'
         }
-        csvRecord.submissionData.record.push(downloadStatus)
+        csvRecord.submissionData.record.unshift(downloadStatus)
       }
     } catch (error) {
       csvRecord.status = 'ERROR'

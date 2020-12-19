@@ -10,7 +10,7 @@ const { forOwn } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
 
-const NUM_OF_METADATA_ROWS = 4
+const NUM_OF_METADATA_ROWS = 5
 
 angular
   .module('forms')
