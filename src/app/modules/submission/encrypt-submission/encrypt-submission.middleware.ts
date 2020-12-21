@@ -6,6 +6,7 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import { FieldResponse, WithForm, WithParsedResponses } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { getProcessedResponses } from '../submission.service'
+import { ProcessedFieldResponse } from '../submission.types'
 
 import { mapRouteError } from './encrypt-submission.utils'
 
@@ -24,6 +25,26 @@ type EncryptSubmissionBody = {
   isPreview: boolean
   version: number
 }
+
+type attachments = {
+  encryptedFile?: {
+    binary: string
+    nonce: string
+    submissionPublicKey: string
+  }
+}
+type EncryptSubmissionBodyAfterProcess = {
+  responses?: FieldResponse[]
+  encryptedContent: string
+  attachments?: attachments
+  isPreview: boolean
+  version: number
+  parsedResponses: ProcessedFieldResponse[]
+}
+
+type WithAttachmentsData<T> = T & { attachmentData: attachments }
+
+type WithFormData<T> = T & { formData: string }
 
 export const validateAndProcessEncryptSubmission: RequestHandler<
   { formId: string },
@@ -67,4 +88,18 @@ export const validateAndProcessEncryptSubmission: RequestHandler<
         })
       })
   )
+}
+
+export const prepareEncryptSubmission: RequestHandler<
+  { formId: string },
+  unknown,
+  EncryptSubmissionBodyAfterProcess
+> = (req, res, next) => {
+  // Step 1: Add req.body.encryptedContent to req.formData
+  // eslint-disable-next-line @typescript-eslint/no-extra-semi
+  ;(req as WithFormData<typeof req>).formData = req.body.encryptedContent
+  // Step 2: Add req.body.attachments to req.attachmentData
+  ;(req as WithAttachmentsData<typeof req>).attachmentData =
+    req.body.attachments || {}
+  return next()
 }

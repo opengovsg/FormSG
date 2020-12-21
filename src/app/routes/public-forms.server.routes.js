@@ -18,7 +18,7 @@ const PublicFormController = require('../modules/form/public-form/public-form.co
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
-
+const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 module.exports = function (app) {
   /**
    * Redirect a form to the main index, with the specified path
@@ -276,12 +276,12 @@ module.exports = function (app) {
     forms.formById,
     publicForms.isFormPublicCheck,
     CaptchaMiddleware.checkCaptchaResponse,
-    encryptSubmissions.validateEncryptSubmission,
+    EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
-    encryptSubmissions.prepareEncryptSubmission,
+    EncryptSubmissionMiddleware.prepareEncryptSubmission,
     encryptSubmissions.saveResponseToDb,
     webhookVerifiedContentFactory.post,
     submissions.sendAutoReply,
