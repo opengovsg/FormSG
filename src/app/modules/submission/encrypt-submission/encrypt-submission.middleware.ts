@@ -46,6 +46,15 @@ type WithAttachmentsData<T> = T & { attachmentData: attachments }
 
 type WithFormData<T> = T & { formData: string }
 
+/**
+ * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
+ * to produce req.body.parsedResponses
+ *
+ * @param  {Express.Request} req - Express request object
+ * @param  {Express.Response} res - Express response object
+ * @param  {Function} next - Express next middleware function
+ */
+
 export const validateAndProcessEncryptSubmission: RequestHandler<
   { formId: string },
   unknown,
@@ -73,9 +82,10 @@ export const validateAndProcessEncryptSubmission: RequestHandler<
       // If error, log and return res error.
       .mapErr((error) => {
         logger.error({
-          message: 'Error validating encrypt submission responses',
+          message:
+            'Error validating and processing encrypt submission responses',
           meta: {
-            action: 'validateEncryptSubmission',
+            action: 'validateAndProcessEncryptSubmission',
             ...createReqMeta(req),
             formId: form._id,
           },
@@ -89,6 +99,14 @@ export const validateAndProcessEncryptSubmission: RequestHandler<
       })
   )
 }
+
+/**
+ * Verify structure of encrypted response
+ *
+ * @param  {Express.Request} req - Express request object
+ * @param  {Express.Response} res - Express response object
+ * @param  {Function} next - Express next middleware function
+ */
 
 export const prepareEncryptSubmission: RequestHandler<
   { formId: string },
