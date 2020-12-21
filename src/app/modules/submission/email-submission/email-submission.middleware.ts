@@ -232,6 +232,19 @@ export const saveMetadataToDb: RequestHandler<
     })
 }
 
+/**
+ * Sends response email to admin
+ * @param req - Express request object
+ * @param req.form - form object from req
+ * @param req.formData - the submission for the form
+ * @param req.jsonData - data to be included in JSON section of email
+ * @param req.submission - submission which was saved to database
+ * @param req.attachments - submitted attachments, parsed by
+ * exports.receiveSubmission
+ * @param res - Express response object
+ * @param next - the next expressjs callback, invoked once attachments
+ * are processed
+ */
 export const sendAdminEmail: RequestHandler<
   ParamsDictionary,
   { message: string; spcpSubmissionFailure: boolean },

@@ -230,6 +230,10 @@ export const getInvalidFileExtensions = (
   return Promise.all(promises).then((results) => flattenDeep(results))
 }
 
+/**
+ * Checks whether the total size of attachments exceeds 7MB
+ * @param attachments List of attachments
+ */
 export const areAttachmentsMoreThan7MB = (
   attachments: IAttachmentInfo[],
 ): boolean => {
@@ -247,6 +251,10 @@ const isAttachmentResponse = (
   )
 }
 
+/**
+ * Extracts attachment fields from form responses
+ * @param responses Form responses
+ */
 export const mapAttachmentsFromResponses = (
   responses: FieldResponse[],
 ): IAttachmentInfo[] => {
@@ -316,6 +324,11 @@ export const mapRouteError: MapRouteError = (error) => {
   }
 }
 
+/**
+ * Checks whether attachmentMap contains the given response
+ * @param attachmentMap Map of field IDs to attachments
+ * @param response The response to check
+ */
 const isAttachmentResponseFromMap = (
   attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
   response: FieldResponse,

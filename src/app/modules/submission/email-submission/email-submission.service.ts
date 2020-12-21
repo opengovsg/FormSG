@@ -245,6 +245,10 @@ export const saveSubmissionMetadata = (
   )
 }
 
+/**
+ * Sends email mode response to admin
+ * @param adminEmailParams Parameters to be passed on to mail service
+ */
 export const sendSubmissionToAdmin = (
   adminEmailParams: Parameters<typeof MailService['sendSubmissionToAdmin']>[0],
 ): ResultAsync<true, SendAdminEmailError> => {
@@ -265,6 +269,10 @@ export const sendSubmissionToAdmin = (
   )
 }
 
+/**
+ * Extracts an array of answers to email fields
+ * @param parsedResponses All form responses
+ */
 export const extractEmailAnswers = (
   parsedResponses: ProcessedFieldResponse[],
 ): string[] => {

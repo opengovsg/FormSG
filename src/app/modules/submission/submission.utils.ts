@@ -38,6 +38,11 @@ const encryptModeFilter = <T extends ModeFilterParam>(responses: T[] = []) => {
   )
 }
 
+/**
+ * Extracts response data to be sent in email confirmations
+ * @param parsedResponses Responses from form filler
+ * @param formFields Fields from form object
+ */
 export const extractEmailConfirmationData = (
   parsedResponses: ProcessedFieldResponse[],
   formFields: IFieldSchema[] | undefined,

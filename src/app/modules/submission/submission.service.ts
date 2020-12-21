@@ -215,6 +215,16 @@ export const getFormSubmissionsCount = (
   )
 }
 
+/**
+ * Sends email confirmation to form-fillers, for email fields with email confirmation
+ * enabled.
+ * @param param0 Data to include in email confirmations
+ * @param param0.form Form object
+ * @param param0.submission Submission object which was saved to database
+ * @param param0.parsedResponses Responses for each field
+ * @param param0.autoReplyData Subset of responses to be included in email confirmation
+ * @param param0.attachments Attachments to be included in email
+ */
 export const sendEmailConfirmations = ({
   form,
   submission,

@@ -9,6 +9,12 @@ import { ProcessedFieldResponse } from './submission.types'
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Sends email confirmations to form-fillers, for email fields which have
+ * email confirmation enabled.
+ * @param req Express request object
+ * @param res Express response object
+ */
 export const sendEmailConfirmations: RequestHandler<
   ParamsDictionary,
   unknown,
