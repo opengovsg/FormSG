@@ -51,7 +51,9 @@ const doFieldTypesMatch = (
  * This may happen if a submission is made programatically to try and bypass form logic.
  * @param response The submitted response
  */
-const isResponsePresentOnHiddenField = (response: FieldResponse): boolean => {
+const isResponsePresentOnHiddenField = (
+  response: ProcessedFieldResponse,
+): boolean => {
   if (isProcessedSingleAnswerResponse(response)) {
     if (!response.isVisible && response.answer.trim() !== '') {
       return true
