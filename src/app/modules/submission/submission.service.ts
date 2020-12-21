@@ -13,7 +13,7 @@ import {
   IAttachmentInfo,
   IFieldSchema,
   IFormDocument,
-  IFormSchema,
+  IPopulatedForm,
   ISubmissionSchema,
   ResponseMode,
 } from '../../../types'
@@ -232,7 +232,7 @@ export const sendEmailConfirmations = ({
   autoReplyData,
   attachments,
 }: {
-  form: IFormSchema
+  form: IPopulatedForm
   submission: ISubmissionSchema
   parsedResponses: ProcessedFieldResponse[]
   autoReplyData?: EmailAutoReplyField[]
