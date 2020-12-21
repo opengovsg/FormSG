@@ -385,4 +385,27 @@ describe('Decimal Validation', () => {
       new ValidateFieldError('Invalid answer submitted'),
     )
   })
+
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: 'decimal',
+      required: true,
+      ValidationOptions: {
+        customMin: 0,
+        customMax: null,
+      },
+    }
+    const response = {
+      _id: 'abc123',
+      fieldType: 'decimal',
+      isVisible: false,
+      answer: '-0.2',
+    }
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
 })
