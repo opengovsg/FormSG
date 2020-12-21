@@ -225,15 +225,11 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case MissingJwtError:
     case VerifyJwtError:
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        errorMessage: 'User is not SPCP authenticated',
-      }
     case InvalidJwtError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
-          'Sorry, something went wrong with your login. Please refresh and try again.',
+          'Something went wrong with your login. Please try logging in and submitting again.',
       }
     default:
       logger.error({
