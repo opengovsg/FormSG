@@ -16,6 +16,7 @@ import {
   FormMetaView,
   IFieldSchema,
   IForm,
+  IFormDocument,
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
@@ -55,7 +56,7 @@ import {
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 
-type PresignedPostParams = {
+type PresignedPostUrlParams = {
   fileId: string
   fileMd5Hash: string
   fileType: string
@@ -105,9 +106,9 @@ export const getDashboardForms = (
  * @param param.fileMd5Hash the MD5 hash of the file
  * @param param.fileType the file type of the file
  */
-const createPresignedPost = (
+const createPresignedPostUrl = (
   bucketName: string,
-  { fileId, fileMd5Hash, fileType }: PresignedPostParams,
+  { fileId, fileMd5Hash, fileType }: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
   InvalidFileTypeError | CreatePresignedUrlError
@@ -118,36 +119,38 @@ const createPresignedPost = (
     )
   }
 
-  const presignedPostPromise = new Promise<PresignedPost>((resolve, reject) => {
-    AwsConfig.s3.createPresignedPost(
-      {
-        Bucket: bucketName,
-        Expires: PRESIGNED_POST_EXPIRY_SECS,
-        Conditions: [
-          // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
-          ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE],
-        ],
-        Fields: {
-          acl: 'public-read',
-          key: fileId,
-          'Content-MD5': fileMd5Hash,
-          'Content-Type': fileType,
+  const presignedPostUrlPromise = new Promise<PresignedPost>(
+    (resolve, reject) => {
+      AwsConfig.s3.createPresignedPost(
+        {
+          Bucket: bucketName,
+          Expires: PRESIGNED_POST_EXPIRY_SECS,
+          Conditions: [
+            // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
+            ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE],
+          ],
+          Fields: {
+            acl: 'public-read',
+            key: fileId,
+            'Content-MD5': fileMd5Hash,
+            'Content-Type': fileType,
+          },
         },
-      },
-      (err, data) => {
-        if (err) {
-          return reject(err)
-        }
-        return resolve(data)
-      },
-    )
-  })
+        (err, data) => {
+          if (err) {
+            return reject(err)
+          }
+          return resolve(data)
+        },
+      )
+    },
+  )
 
-  return ResultAsync.fromPromise(presignedPostPromise, (error) => {
+  return ResultAsync.fromPromise(presignedPostUrlPromise, (error) => {
     logger.error({
       message: 'Error encountered when creating presigned POST URL',
       meta: {
-        action: 'createPresignedPost',
+        action: 'createPresignedPostUrl',
         fileId,
         fileMd5Hash,
         fileType,
@@ -170,13 +173,13 @@ const createPresignedPost = (
  * @returns err(InvalidFileTypeError) when given file type is not supported
  * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
  */
-export const createPresignedPostForImages = (
-  uploadParams: PresignedPostParams,
+export const createPresignedPostUrlForImages = (
+  uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
   InvalidFileTypeError | CreatePresignedUrlError
 > => {
-  return createPresignedPost(AwsConfig.imageS3Bucket, uploadParams)
+  return createPresignedPostUrl(AwsConfig.imageS3Bucket, uploadParams)
 }
 
 /**
@@ -190,13 +193,13 @@ export const createPresignedPostForImages = (
  * @returns err(InvalidFileTypeError) when given file type is not supported
  * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
  */
-export const createPresignedPostForLogos = (
-  uploadParams: PresignedPostParams,
+export const createPresignedPostUrlForLogos = (
+  uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
   InvalidFileTypeError | CreatePresignedUrlError
 > => {
-  return createPresignedPost(AwsConfig.logoS3Bucket, uploadParams)
+  return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
 }
 
 export const getMockSpcpLocals = (
@@ -305,7 +308,7 @@ export const transferFormOwnership = (
           // Step 3: Perform form ownership transfer.
           .andThen((newOwner) =>
             ResultAsync.fromPromise(
-              currentForm.transferOwner(currentOwner, newOwner),
+              currentForm.transferOwner<IPopulatedForm>(currentOwner, newOwner),
               (error) => {
                 logger.error({
                   message: 'Error occurred whilst transferring form ownership',
@@ -376,10 +379,10 @@ export const createForm = (
  * @returns the newly created duplicated form
  */
 export const duplicateForm = (
-  originalForm: IFormSchema,
+  originalForm: IFormDocument,
   newAdminId: string,
   overrideParams: DuplicateFormBody,
-): ResultAsync<IFormSchema, FormNotFoundError | DatabaseError> => {
+): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
     newAdminId,
@@ -398,19 +401,22 @@ export const duplicateForm = (
 
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
-  return ResultAsync.fromPromise(FormModel.create(duplicateParams), (error) => {
-    logger.error({
-      message: 'Error encountered while duplicating form',
-      meta: {
-        action: 'duplicateForm',
-        duplicateParams,
-        newAdminId,
-      },
-      error,
-    })
+  return ResultAsync.fromPromise(
+    FormModel.create(duplicateParams) as Promise<IFormDocument>,
+    (error) => {
+      logger.error({
+        message: 'Error encountered while duplicating form',
+        meta: {
+          action: 'duplicateForm',
+          duplicateParams,
+          newAdminId,
+        },
+        error,
+      })
 
-    return new DatabaseError(getMongoErrorMessage(error))
-  })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
 }
 
 /**

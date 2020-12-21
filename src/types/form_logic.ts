@@ -27,16 +27,13 @@ export interface ICondition {
   ifValueType?: LogicIfValue
 }
 
-export interface IConditionSchema extends ICondition, Document {
-  // Override ObjectId with String type since the field id passed in is in
-  // String form.
-  _id: string
-}
+// Override ObjectId with String type since the field id passed in is in
+// String form.
+export interface IConditionSchema extends ICondition, Document<string> {}
 
 export interface ILogic {
   conditions: IConditionSchema[]
   logicType: LogicType
-  _id: Document['_id']
 }
 
 export interface ILogicSchema extends ILogic, Document {}

@@ -14,6 +14,7 @@ import {
   ResWithSpcpSession,
   ResWithUinFin,
   WithForm,
+  WithJsonForm,
 } from '../../types'
 import { MyInfoFactory } from '../services/myinfo/myinfo.factory'
 import { mapVerifyMyInfoError } from '../services/myinfo/myinfo.util'
@@ -58,7 +59,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
       // Step 3: Hash the values and save them
       .andThen((prefilledFields) => {
         form.form_fields = prefilledFields
-        ;(req as WithForm<typeof req>).form = form
+        ;(req as WithJsonForm<typeof req>).form = form
         return MyInfoFactory.saveMyInfoHashes(uinFin, formId, prefilledFields)
       })
       .map(() => next())

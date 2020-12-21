@@ -11,12 +11,9 @@ export interface ILogin {
   authType: AuthType
   esrvcId: string
   created?: Date
-  _id?: Document['_id']
 }
 
-export interface ILoginSchema extends ILogin, Document {
-  _id: Document['_id']
-}
+export interface ILoginSchema extends ILogin, Document {}
 
 export type LoginStatistic = {
   adminEmail: IUserSchema['email']

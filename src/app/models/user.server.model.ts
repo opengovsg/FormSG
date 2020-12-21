@@ -1,5 +1,6 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
-import { Mongoose, Schema } from 'mongoose'
+import { MongoError } from 'mongodb'
+import { CallbackError, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import { IUser, IUserModel, IUserSchema } from '../../types'
@@ -11,10 +12,12 @@ export const USER_SCHEMA_ID = 'User'
 const compileUserModel = (db: Mongoose) => {
   const Agency = getAgencyModel(db)
 
-  const UserSchema = new Schema<IUserSchema>(
+  const UserSchema: Schema<IUserSchema> = new Schema(
     {
       email: {
         type: String,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         trim: true,
         unique: true,
         required: 'Please enter your email',
@@ -80,9 +83,13 @@ const compileUserModel = (db: Mongoose) => {
    */
   UserSchema.post<IUserSchema>(
     'save',
-    function (err: any, _doc: IUserSchema, next: any) {
-      if (err.name === 'MongoError' && err.code === 11000) {
-        next(new Error('Account already exists with this email'))
+    function (err: Error, _doc: unknown, next: (err?: CallbackError) => void) {
+      if (err) {
+        if (err.name === 'MongoError' && (err as MongoError)?.code === 11000) {
+          next(new Error('Account already exists with this email'))
+        } else {
+          next(err)
+        }
       } else {
         next()
       }

@@ -1,5 +1,6 @@
 import { IPersonBasic, IPersonBasicRequest } from '@opengovsg/myinfo-gov-client'
 import { pick } from 'lodash'
+import { LeanDocument } from 'mongoose'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 
 import config from '../../../config/config'
@@ -33,7 +34,7 @@ interface IMyInfoFactory {
   >
   prefillMyInfoFields: (
     myInfoData: IPersonBasic,
-    currFormFields: IFieldSchema[],
+    currFormFields: LeanDocument<IFieldSchema[]>,
   ) => Result<IPossiblyPrefilledField[], MissingFeatureError>
   saveMyInfoHashes: (
     uinFin: string,

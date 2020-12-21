@@ -6,6 +6,7 @@ import {
 } from 'src/types/response'
 
 export type ProcessedResponse = {
+  question: string
   isVisible?: boolean
   isUserVerified?: boolean
 }

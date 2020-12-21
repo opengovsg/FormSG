@@ -39,7 +39,7 @@ const LoginSchema = new Schema<ILoginSchema>(
     esrvcId: {
       type: String,
       required: true,
-      match: [
+      validate: [
         /^([a-zA-Z0-9-]){1,25}$/i,
         'e-service ID must be alphanumeric, dashes are allowed',
       ],

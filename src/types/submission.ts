@@ -22,7 +22,6 @@ export interface ISubmission {
   submissionType: SubmissionType
   created?: Date
   lastModified?: Date
-  _id?: Document['_id']
   recipientEmails?: string[]
   responseHash?: string
   responseSalt?: string
@@ -48,7 +47,6 @@ export interface WebhookView {
 }
 
 export interface ISubmissionSchema extends ISubmission, Document {
-  _id: Document['_id']
   getWebhookView(): WebhookView | null
 }
 

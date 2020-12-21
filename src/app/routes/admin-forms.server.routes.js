@@ -18,6 +18,7 @@ const EncryptSubmissionController = require('../modules/submission/encrypt-submi
 const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
+const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const {
   BasicField,
@@ -567,8 +568,6 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})').post(
-    authActiveForm(PermissionLevel.Read),
-    encryptSubmissions.validateEncryptSubmission,
     celebrate({
       [Segments.BODY]: Joi.object({
         responses: Joi.array()
@@ -613,6 +612,8 @@ module.exports = function (app) {
         version: Joi.number().required(),
       }),
     }),
+    authActiveForm(PermissionLevel.Read),
+    EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     AdminFormController.passThroughSpcp,
     submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
@@ -735,6 +736,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/images').post(
+    withUserAuthentication,
     celebrate({
       [Segments.BODY]: {
         fileId: Joi.string()
@@ -749,8 +751,7 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    authActiveForm(PermissionLevel.Write),
-    AdminFormController.handleCreatePresignedPostForImages,
+    AdminFormController.handleCreatePresignedPostUrlForImages,
   )
 
   /**
@@ -763,6 +764,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/logos').post(
+    withUserAuthentication,
     celebrate({
       [Segments.BODY]: {
         fileId: Joi.string()
@@ -777,7 +779,6 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    authActiveForm(PermissionLevel.Write),
-    AdminFormController.handleCreatePresignedPostForLogos,
+    AdminFormController.handleCreatePresignedPostUrlForLogos,
   )
 }

@@ -3,10 +3,6 @@ import { Document } from 'mongoose'
 import { IFormSchema } from './form'
 
 export interface IVerificationField {
-  // _id is basically a generated transactionId, so it has to be a string,
-  // instead of being converted to a string from ObjectId.
-  // This must be a string, or transaction fetching will fail.
-  _id: string
   fieldType: string
   signedData?: string | null
   hashedOtp?: string | null
@@ -14,11 +10,12 @@ export interface IVerificationField {
   hashRetries?: number
 }
 
-export interface IVerificationFieldSchema extends IVerificationField, Document {
+export interface IVerificationFieldSchema
+  extends IVerificationField,
+    Document<string> {
   // _id is basically a generated transactionId, so it has to be a string,
   // instead of being converted to a string from ObjectId.
   // This must be a string, or transaction fetching will fail.
-  _id: string
 }
 
 export interface IVerification {
