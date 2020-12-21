@@ -1,8 +1,17 @@
-import { Model, Mongoose, Schema } from 'mongoose'
+import { pick } from 'lodash'
+import { Mongoose, Schema } from 'mongoose'
 
-import { IAgencySchema } from '../../types'
+import { IAgencyModel, IAgencySchema, PublicAgency } from '../../types'
 
 export const AGENCY_SCHEMA_ID = 'Agency'
+
+// Exported for testing.
+export const AGENCY_PUBLIC_FIELDS = [
+  'shortName',
+  'fullName',
+  'emailDomain',
+  'logo',
+]
 
 const AgencySchema = new Schema<IAgencySchema>(
   {
@@ -40,7 +49,14 @@ const AgencySchema = new Schema<IAgencySchema>(
   },
 )
 
-const compileAgencyModel = (db: Mongoose) =>
+// Methods
+AgencySchema.methods.getPublicView = function (
+  this: IAgencySchema,
+): PublicAgency {
+  return pick(this, AGENCY_PUBLIC_FIELDS) as PublicAgency
+}
+
+const compileAgencyModel = (db: Mongoose): IAgencyModel =>
   db.model<IAgencySchema>(AGENCY_SCHEMA_ID, AgencySchema)
 
 /**
@@ -49,9 +65,9 @@ const compileAgencyModel = (db: Mongoose) =>
  * @param db The mongoose instance to retrieve the Agency model from
  * @returns The agency model
  */
-const getAgencyModel = (db: Mongoose) => {
+const getAgencyModel = (db: Mongoose): IAgencyModel => {
   try {
-    return db.model(AGENCY_SCHEMA_ID) as Model<IAgencySchema>
+    return db.model(AGENCY_SCHEMA_ID) as IAgencyModel
   } catch {
     return compileAgencyModel(db)
   }
