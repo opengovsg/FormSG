@@ -203,7 +203,6 @@ module.exports = function (app) {
       celebrate({
         [Segments.BODY]: {
           form: Joi.object({
-            authType: Joi.string().valid(...Object.values(AuthType)),
             editFormField: Joi.object({
               action: {
                 name: Joi.string().valid(...Object.values(EditFieldActions)),
@@ -220,6 +219,7 @@ module.exports = function (app) {
                 .unknown(true)
                 .required(),
             }),
+            authType: Joi.string().valid(...Object.values(AuthType)),
             emails: Joi.alternatives().try(
               Joi.array().items(Joi.string()),
               Joi.string(),
@@ -257,9 +257,9 @@ module.exports = function (app) {
             title: Joi.string(),
           })
             .required()
-            .xor(
+            // editFormField should not consist of any other key when it exists.
+            .without('editFormField', [
               'authType',
-              'editFormField',
               'emails',
               'esrvcId',
               'form_logics',
@@ -267,7 +267,7 @@ module.exports = function (app) {
               'inactiveMessage',
               'status',
               'title',
-            ),
+            ]),
         },
       }),
       AdminFormController.handleUpdateForm,
