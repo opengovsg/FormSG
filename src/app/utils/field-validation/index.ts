@@ -54,6 +54,7 @@ const doFieldTypesMatch = (
 const isResponsePresentOnHiddenField = (
   response: ProcessedFieldResponse,
 ): boolean => {
+  if (response.isVisible) return false
   if (isProcessedSingleAnswerResponse(response)) {
     if (!response.isVisible && response.answer.trim() !== '') {
       return true

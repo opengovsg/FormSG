@@ -11,14 +11,18 @@ export interface IBaseResponse {
 }
 
 export interface ISingleAnswerResponse extends IBaseResponse {
-  fieldType: Exclude<BasicField, BasicField.Table | BasicField.Checkbox>
+  fieldType: Exclude<
+    BasicField,
+    BasicField.Table | BasicField.Checkbox | BasicField.Attachment
+  >
   answer: string
 }
 
-export interface IAttachmentResponse extends ISingleAnswerResponse {
+export interface IAttachmentResponse extends IBaseResponse {
   fieldType: BasicField.Attachment
   filename: string
   content: Buffer
+  answer: string
 }
 
 export interface ICheckboxResponse extends IBaseResponse {
