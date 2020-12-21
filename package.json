@@ -12,7 +12,7 @@
     "url": "https://github.com/datagovsg/formsg.git"
   },
   "engines": {
-    "node": "~12.20.0",
+    "node": "~12",
     "npm": "~6.4.0"
   },
   "scripts": {
