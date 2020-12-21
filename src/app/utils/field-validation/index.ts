@@ -56,18 +56,15 @@ const isResponsePresentOnHiddenField = (response: FieldResponse): boolean => {
     if (!response.isVisible && response.answer.trim() !== '') {
       return true
     }
-  }
-  if (isProcessedCheckboxResponse(response)) {
+  } else if (isProcessedCheckboxResponse(response)) {
     if (!response.isVisible && response.answerArray.length > 0) {
       return true
     }
-  }
-  if (isProcessedTableResponse(response)) {
+  } else if (isProcessedTableResponse(response)) {
     if (!response.isVisible && response.answerArray[0].length > 0) {
       return true
     }
-  }
-  if (isProcessedAttachmentResponse(response)) {
+  } else if (isProcessedAttachmentResponse(response)) {
     if (!response.isVisible && response.filename.trim() !== '') {
       return true
     }
