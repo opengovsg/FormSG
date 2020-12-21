@@ -56,6 +56,7 @@ export const prepareEmailSubmission: RequestHandler<
       message: 'Failed to create email data',
       meta: {
         action: 'prepareEmailSubmission',
+        ...createReqMeta(req),
         responseMetaData: req.body.parsedResponses.map((response) => ({
           question: response?.question,
           // Cast just for logging purposes
