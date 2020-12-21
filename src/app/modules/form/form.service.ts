@@ -2,13 +2,10 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IFormSchema, IPopulatedForm, PublicForm, Status } from '../../../types'
+import { IFormSchema, IPopulatedForm, Status } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 import { assertUnreachable } from '../../utils/assert-unreachable'
-import {
-  getMongoErrorMessage,
-  transformMongoError,
-} from '../../utils/handle-mongo-error'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 import {
@@ -122,26 +119,4 @@ export const isFormPublic = (
     default:
       return assertUnreachable(form.status)
   }
-}
-
-/**
- * Returns public view for given form, removing all private details.
- * @param form the form to return public view for
- * @returns ok(public form view)
- * @returns err(Database*Errors) if any database error occurs.
- */
-export const getFormPublicView = (
-  form: IFormSchema,
-): ResultAsync<PublicForm, ReturnType<typeof transformMongoError>> => {
-  return ResultAsync.fromPromise(form.getPublicView(), (error) => {
-    logger.error({
-      message: 'Error retrieving form public view',
-      meta: {
-        action: 'getFormPublicView',
-        formId: form._id,
-      },
-      error,
-    })
-    return transformMongoError(error)
-  })
 }

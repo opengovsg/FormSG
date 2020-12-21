@@ -11,7 +11,6 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
-import * as FormService from '../form.service'
 
 import {
   archiveForm,
@@ -133,7 +132,7 @@ export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
         }),
       )
       // Step 3: Remove private details from form for previewing.
-      .andThen(FormService.getFormPublicView)
+      .map((populatedForm) => populatedForm.getPublicView())
       .map((scrubbedForm) =>
         res.status(StatusCodes.OK).json({ form: scrubbedForm }),
       )
@@ -665,7 +664,7 @@ export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
     // Step 1: Retrieve form only if form is currently public.
     AuthService.getFormIfPublic(formId)
       // Step 2: Remove private form details before being returned.
-      .andThen(FormService.getFormPublicView)
+      .map((populatedForm) => populatedForm.getPublicView())
       .map((scrubbedForm) =>
         res.status(StatusCodes.OK).json({ form: scrubbedForm }),
       )
