@@ -116,6 +116,11 @@ module.exports = function (app) {
    * Returns the specified form to the user, along with any
    * identity information obtained from SingPass/CorpPass,
    * and MyInfo details, if any.
+   *
+   * WARNING: TemperatureSG batch jobs rely on this endpoint to
+   * retrieve the master list of personnel for daily reporting.
+   * Please strictly ensure backwards compatibility.
+   *
    * @route GET /{formId}/publicform
    * @group forms - endpoints to serve forms
    * @param {string} formId.path.required - the form id
