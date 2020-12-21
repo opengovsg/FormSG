@@ -503,7 +503,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormModel,
     formId: string,
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId).populate(POPULATE_FORM_PARAMS)
+    return this.findById(formId).populate({
+      path: 'admin',
+      populate: {
+        path: 'agency',
+      },
+    })
   }
 
   // Deactivate form by ID
