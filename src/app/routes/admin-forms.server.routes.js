@@ -253,8 +253,15 @@ module.exports = function (app) {
             ),
             hasCaptcha: Joi.boolean(),
             inactiveMessage: Joi.string(),
+            permissionList: Joi.array().items({
+              email: Joi.string().email().required(),
+              write: Joi.boolean(),
+            }),
             status: Joi.string().valid(...Object.values(Status)),
             title: Joi.string(),
+            webhook: Joi.object({
+              url: Joi.string().uri().required().allow(''),
+            }),
           })
             .required()
             // editFormField should not consist of any other key when it exists.
@@ -265,8 +272,10 @@ module.exports = function (app) {
               'form_logics',
               'hasCaptcha',
               'inactiveMessage',
+              'permissionList',
               'status',
               'title',
+              'webhook',
             ]),
         },
       }),
