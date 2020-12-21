@@ -26,7 +26,7 @@ export interface ICheckboxResponse extends IBaseResponse {
   answerArray: string[]
 }
 
-export type ITableRow = string[]
+export type ITableRow = Array<string>
 
 export interface ITableResponse extends IBaseResponse {
   fieldType: BasicField.Table
