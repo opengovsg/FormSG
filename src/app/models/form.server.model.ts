@@ -1,6 +1,6 @@
 import BSON from 'bson-ext'
 import { compact, pick, uniq } from 'lodash'
-import mongoose, { Mongoose, Schema, SchemaOptions } from 'mongoose'
+import mongoose, { Mongoose, Query, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
 import {
@@ -14,6 +14,7 @@ import {
   IEmailFormSchema,
   IEncryptedFormModel,
   IEncryptedFormSchema,
+  IFormDocument,
   IFormModel,
   IFormSchema,
   IPopulatedForm,
@@ -158,14 +159,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        trim: true,
-        required: 'Form name cannot be blank',
-        minlength: [4, 'Form name must be at least 4 characters'],
-        maxlength: [200, 'Form name can have a maximum of 200 characters'],
-        match: [
+        validate: [
           /^[a-zA-Z0-9_\-./() &`;'"]*$/,
           'Form name cannot contain special characters',
         ],
+        required: 'Form name cannot be blank',
+        minlength: [4, 'Form name must be at least 4 characters'],
+        maxlength: [200, 'Form name can have a maximum of 200 characters'],
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        trim: true,
       },
 
       form_fields: [BaseFieldSchema],
@@ -301,7 +304,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       esrvcId: {
         type: String,
         required: false,
-        match: [
+        validate: [
           /^([a-zA-Z0-9-]){1,25}$/i,
           'e-service ID must be alphanumeric, dashes are allowed',
         ],
@@ -324,7 +327,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // Name of credentials for messaging service, stored in secrets manager
         type: String,
         required: false,
-        match: [
+        validate: [
           /^([a-zA-Z0-9-])+$/i,
           'msgSrvcName must be alphanumeric, dashes are allowed',
         ],
@@ -460,13 +463,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Transfer ownership of the form to another user
-  FormSchema.methods.transferOwner = async function (currentOwner, newOwner) {
+  FormSchema.methods.transferOwner = async function (
+    this: IFormDocument,
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ) {
     // Update form's admin to new owner's id.
     this.admin = newOwner._id
 
     // Remove new owner from perm list and include previous owner as an editor.
-    this.permissionList =
-      this.permissionList?.filter((item) => item.email !== newOwner.email) ?? []
+    this.permissionList = this.permissionList.filter(
+      (item) => item.email !== newOwner.email,
+    )
     this.permissionList.push({ email: currentOwner.email, write: true })
 
     return this.save()
@@ -508,7 +516,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       populate: {
         path: 'agency',
       },
-    })
+    }) as Query<IPopulatedForm, IFormDocument>
   }
 
   // Deactivate form by ID

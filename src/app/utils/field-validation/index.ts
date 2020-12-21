@@ -6,7 +6,7 @@ import {
   ProcessedSingleAnswerResponse,
 } from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IField } from '../../../types/field/baseField'
+import { IFieldSchema } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
 import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
@@ -35,7 +35,7 @@ const isValidResponseFieldType = (response: ProcessedFieldResponse): boolean =>
  * @param response The submitted response
  */
 const doFieldTypesMatch = (
-  formField: IField,
+  formField: IFieldSchema,
   response: ProcessedFieldResponse,
 ): Either<string, undefined> => {
   return response.fieldType !== formField.fieldType
@@ -53,7 +53,7 @@ const doFieldTypesMatch = (
  * @param response The submitted response
  */
 const singleAnswerRequiresValidation = (
-  formField: IField,
+  formField: IFieldSchema,
   response: ProcessedSingleAnswerResponse,
 ) => (formField.required && response.isVisible) || response.answer.trim() !== ''
 
@@ -67,7 +67,7 @@ const singleAnswerRequiresValidation = (
  */
 const logInvalidAnswer = (
   formId: string,
-  formField: IField,
+  formField: IFieldSchema,
   message: string,
 ) => {
   logger.error({
@@ -91,7 +91,7 @@ const logInvalidAnswer = (
  */
 export const validateField = (
   formId: string,
-  formField: IField,
+  formField: IFieldSchema,
   response: ProcessedFieldResponse,
 ): Result<true, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
@@ -154,7 +154,7 @@ export const validateField = (
  */
 const classBasedValidation = (
   formId: string,
-  formField: IField,
+  formField: IFieldSchema,
   response: FieldResponse,
 ): Result<true, ValidateFieldError> => {
   const fieldValidator = fieldValidatorFactory.createFieldValidator(

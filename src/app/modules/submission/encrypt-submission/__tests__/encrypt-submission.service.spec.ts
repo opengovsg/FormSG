@@ -124,14 +124,10 @@ describe('encrypt-submission.service', () => {
 
   describe('transformAttachmentMetaStream', () => {
     const MOCK_SUB_CURSOR_DATA_1: Partial<SubmissionCursorData> = {
-      attachmentMetadata: {
-        mockId1: 'mock metadata 1',
-      },
+      attachmentMetadata: { mockId1: 'mock metadata 1' },
     }
     const MOCK_SUB_CURSOR_DATA_2: Partial<SubmissionCursorData> = {
-      attachmentMetadata: {
-        mockId2: 'mock metadata 2',
-      },
+      attachmentMetadata: { mockId2: 'mock metadata 2' },
     }
 
     const EMPTY_METADATA = {

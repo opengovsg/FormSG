@@ -6,11 +6,9 @@ export interface IFormFeedback {
   formId: IFormSchema['_id']
   rating: number
   comment?: string
-  _id?: Document['_id']
 }
 
 export interface IFormFeedbackSchema extends IFormFeedback, Document {
-  _id: Document['_id']
   created?: Date
   lastModified?: Date
 }

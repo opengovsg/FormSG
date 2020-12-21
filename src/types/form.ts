@@ -1,5 +1,5 @@
-import { Document, Model } from 'mongoose'
-import { Merge } from 'type-fest'
+import { Document, LeanDocument, Model, ToObjectOptions } from 'mongoose'
+import { Merge, SetRequired } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
@@ -161,10 +161,10 @@ export interface IFormSchema extends IForm, Document {
    * @param newOwner the new owner of the form. Similarly retrieved outside of method to force correct validation.
    * @returns updated form
    */
-  transferOwner(
+  transferOwner<T = IFormSchema>(
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
-  ): Promise<IFormSchema>
+  ): Promise<T>
   /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
@@ -177,7 +177,26 @@ export interface IFormSchema extends IForm, Document {
   getPublicView(): Promise<PublicForm>
 }
 
-export interface IPopulatedForm extends IFormSchema {
+/**
+ * Schema type with defaults populated and thus set to be defined.
+ */
+export interface IFormDocument extends IFormSchema {
+  form_logics: NonNullable<IFormSchema['form_logics']>
+  permissionList: NonNullable<IFormSchema['permissionList']>
+  hasCaptcha: NonNullable<IFormSchema['hasCaptcha']>
+  authType: NonNullable<IFormSchema['authType']>
+  status: NonNullable<IFormSchema['status']>
+  inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
+  isListed: NonNullable<IFormSchema['isListed']>
+  form_fields: NonNullable<IFormSchema['form_fields']>
+  startPage: SetRequired<NonNullable<IFormSchema['startPage']>, 'colorTheme'>
+  endPage: SetRequired<
+    NonNullable<IFormSchema['endPage']>,
+    'title' | 'buttonText'
+  >
+  webhook: SetRequired<NonNullable<IFormSchema['webhook']>, 'url'>
+}
+export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   // Remove extraneous keys that the populated form should not require.
   admin: Merge<
     Omit<
@@ -191,6 +210,9 @@ export interface IPopulatedForm extends IFormSchema {
       >
     }
   >
+
+  // Override types.
+  toJSON(options?: ToObjectOptions): LeanDocument<IPopulatedForm>
 }
 
 export interface IEncryptedForm extends IForm {
@@ -219,8 +241,9 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<FormMetaView[]>
 }
 
-export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
-export type IEmailFormModel = Model<IEmailFormSchema> & IFormModel
+export type IEncryptedFormModel = Merge<IFormModel, Model<IEncryptedFormSchema>>
+export type IEmailFormModel = Merge<IFormModel, Model<IEmailFormSchema>>
+
 /** Typing for the shape of the important meta subset for form document. */
 export type FormMetaView = Pick<
   IFormSchema,
