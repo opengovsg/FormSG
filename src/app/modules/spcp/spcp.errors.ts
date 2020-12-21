@@ -28,7 +28,7 @@ export class LoginPageValidationError extends ApplicationError {
 }
 
 /**
- * Invalid JWT.
+ * JWT could not be decoded.
  */
 export class VerifyJwtError extends ApplicationError {
   constructor(message = 'Invalid JWT') {
@@ -77,7 +77,7 @@ export class MissingAttributesError extends ApplicationError {
 }
 
 /**
- * JWT has the wrong shape
+ * JWT could be decoded but has the wrong shape
  */
 export class InvalidJwtError extends ApplicationError {
   constructor(
