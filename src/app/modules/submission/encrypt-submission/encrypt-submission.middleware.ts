@@ -3,48 +3,19 @@ import { SetOptional } from 'type-fest'
 
 import { createReqMeta } from '../../../../app/utils/request'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { FieldResponse, WithForm, WithParsedResponses } from '../../../../types'
+import { WithForm, WithParsedResponses } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { getProcessedResponses } from '../submission.service'
-import { ProcessedFieldResponse } from '../submission.types'
 
+import {
+  EncryptSubmissionBody,
+  EncryptSubmissionBodyAfterProcess,
+  WithAttachmentsData,
+  WithFormData,
+} from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
-
-type EncryptSubmissionBody = {
-  responses: FieldResponse[]
-  encryptedContent: string
-  attachments?: {
-    encryptedFile?: {
-      binary: string
-      nonce: string
-      submissionPublicKey: string
-    }
-  }
-  isPreview: boolean
-  version: number
-}
-
-type attachments = {
-  encryptedFile?: {
-    binary: string
-    nonce: string
-    submissionPublicKey: string
-  }
-}
-type EncryptSubmissionBodyAfterProcess = {
-  responses?: FieldResponse[]
-  encryptedContent: string
-  attachments?: attachments
-  isPreview: boolean
-  version: number
-  parsedResponses: ProcessedFieldResponse[]
-}
-
-type WithAttachmentsData<T> = T & { attachmentData: attachments }
-
-type WithFormData<T> = T & { formData: string }
 
 /**
  * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
