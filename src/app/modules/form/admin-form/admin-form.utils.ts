@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes'
-import { cloneDeep } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -366,30 +365,28 @@ const reorderField = (
 
 /**
  * Utility factory to run correct update function depending on given action.
- * @param originalForm the original form to update form fields for
+ * @param currentFormFields the existing form fields to update
  * @param editFieldParams the parameters with the given update to perform and any metadata required.
  *
- * @returns ok(new array with updated field) if fields update successfully
+ * @returns ok(updated form fields array) if fields update successfully
  * @returns err(EditFieldError) if any errors occur whilst updating fields
  */
 export const getUpdatedFormFields = (
-  originalForm: IPopulatedForm,
+  currentFormFields: IPopulatedForm['form_fields'],
   editFieldParams: EditFormFieldParams,
 ): EditFormFieldResult => {
   const { field: fieldToUpdate, action } = editFieldParams
 
-  const existingFormFields = cloneDeep(originalForm.form_fields) ?? []
-
   switch (action.name) {
     case EditFieldActions.Create:
-      return insertNewField(existingFormFields, fieldToUpdate)
+      return insertNewField(currentFormFields, fieldToUpdate)
     case EditFieldActions.Delete:
-      return deleteField(existingFormFields, fieldToUpdate)
+      return deleteField(currentFormFields, fieldToUpdate)
     case EditFieldActions.Duplicate:
-      return insertDuplicatedField(existingFormFields, fieldToUpdate)
+      return insertDuplicatedField(currentFormFields, fieldToUpdate)
     case EditFieldActions.Reorder:
-      return reorderField(existingFormFields, fieldToUpdate, action.position)
+      return reorderField(currentFormFields, fieldToUpdate, action.position)
     case EditFieldActions.Update:
-      return updateCurrentField(existingFormFields, fieldToUpdate)
+      return updateCurrentField(currentFormFields, fieldToUpdate)
   }
 }

@@ -436,25 +436,26 @@ export const editFormFields = (
   EditFieldError | ReturnType<typeof transformMongoError>
 > => {
   // TODO(#815): Split out this function into their own separate service functions depending on the update type.
-  return getUpdatedFormFields(originalForm, editFormFieldParams).asyncAndThen(
-    (newFormFields) => {
-      // Update form fields of original form.
-      originalForm.form_fields = newFormFields
-      return ResultAsync.fromPromise(originalForm.save(), (error) => {
-        logger.error({
-          message: 'Error encountered while editing form fields',
-          meta: {
-            action: 'editFormFields',
-            originalForm,
-            editFormFieldParams,
-          },
-          error,
-        })
-
-        return transformMongoError(error)
+  return getUpdatedFormFields(
+    originalForm.form_fields,
+    editFormFieldParams,
+  ).asyncAndThen((newFormFields) => {
+    // Update form fields of original form.
+    originalForm.form_fields = newFormFields
+    return ResultAsync.fromPromise(originalForm.save(), (error) => {
+      logger.error({
+        message: 'Error encountered while editing form fields',
+        meta: {
+          action: 'editFormFields',
+          originalForm,
+          editFormFieldParams,
+        },
+        error,
       })
-    },
-  )
+
+      return transformMongoError(error)
+    })
+  })
 }
 
 /**
