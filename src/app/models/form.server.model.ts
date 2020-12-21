@@ -21,6 +21,7 @@ import {
   LogicType,
   Permission,
   PickDuplicateForm,
+  PublicForm,
   PublicFormValues,
   ResponseMode,
   Status,
@@ -79,16 +80,6 @@ export const FORM_PUBLIC_FIELDS = [
   '_id',
   'responseMode',
 ]
-
-const POPULATE_FORM_PARAMS = {
-  path: 'admin',
-  // Remove irrelevant keys from populated fields of form admin and agency.
-  select: '-__v -created -lastModified -updatedAt -lastAccessed',
-  populate: {
-    path: 'agency',
-    select: '-__v -created -lastModified -updatedAt',
-  },
-}
 
 const bson = new BSON([
   BSON.Binary,
@@ -439,15 +430,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return { ...newForm, ...overrideProps }
   }
 
-  FormSchema.methods.getPublicView = async function (this: IFormSchema) {
-    // Populate form if not populated yet.
+  FormSchema.methods.getPublicView = function (this: IFormSchema): PublicForm {
+    const basePublicView = pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues
+
+    // Return non-populated public fields of form if not populated.
     if (!this.populated('admin')) {
-      await this.populate(POPULATE_FORM_PARAMS).execPopulate()
+      return basePublicView
     }
 
+    // Populated, return public view with user's public view.
     return {
-      ...(pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues),
-      admin: pick(this.admin, 'agency'),
+      ...basePublicView,
+      admin: (this.admin as IUserSchema).getPublicView(),
     }
   }
 

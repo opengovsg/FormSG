@@ -6,7 +6,7 @@ import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
-import { IPopulatedUser, IUserSchema } from './user'
+import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
 export enum AuthType {
   NIL = 'NIL',
@@ -37,7 +37,8 @@ export enum ResponseMode {
 // Typings
 // Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
 export type PublicFormValues = Pick<
-  IPopulatedForm,
+  IFormDocument,
+  | 'admin'
   | 'authType'
   | 'endPage'
   | 'esrvcId'
@@ -54,7 +55,9 @@ export type PublicFormValues = Pick<
 
 export type PublicForm = Merge<
   PublicFormValues,
-  { admin: Pick<IPopulatedForm['admin'], 'agency'> }
+  {
+    admin: PublicUser
+  }
 >
 
 export type FormOtpData = {
@@ -174,7 +177,10 @@ export interface IFormSchema extends IForm, Document {
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
 
-  getPublicView(): Promise<PublicForm>
+  /**
+   * Returns the public view of the form document.
+   */
+  getPublicView(): PublicForm
 }
 
 /**
@@ -197,20 +203,7 @@ export interface IFormDocument extends IFormSchema {
   webhook: SetRequired<NonNullable<IFormSchema['webhook']>, 'url'>
 }
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
-  // Remove extraneous keys that the populated form should not require.
-  admin: Merge<
-    Omit<
-      IPopulatedUser,
-      '__v' | 'created' | 'lastModified' | 'updatedAt' | 'lastAccessed'
-    >,
-    {
-      agency: Omit<
-        IPopulatedUser['agency'],
-        '__v' | 'created' | 'lastModified' | 'updatedAt'
-      >
-    }
-  >
-
+  admin: IPopulatedUser
   // Override types.
   toJSON(options?: ToObjectOptions): LeanDocument<IPopulatedForm>
 }
