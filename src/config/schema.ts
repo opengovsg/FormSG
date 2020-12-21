@@ -268,9 +268,10 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   },
   rateLimit: {
     submissions: {
-      doc: 'Per-minute, per-IP request limit for submissions endpoints',
+      doc:
+        'Per-minute, per-IP, per-instance request limit for submissions endpoints',
       format: 'int',
-      default: 200,
+      default: 80,
       env: 'SUBMISSIONS_RATE_LIMIT',
     },
     sendAuthOtp: {
