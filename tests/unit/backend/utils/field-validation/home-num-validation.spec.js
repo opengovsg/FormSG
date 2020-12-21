@@ -34,7 +34,7 @@ describe('Home phone number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'homeno',
-      isVisible: false,
+      isVisible: true,
       answer: '',
     }
     const validateResult = validateField('formId', formField, response)
@@ -71,7 +71,7 @@ describe('Home phone number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'homeno',
-      isVisible: false,
+      isVisible: true,
       answer: '+6565656565',
     }
     const validateResult = validateField('formId', formField, response)
@@ -89,7 +89,7 @@ describe('Home phone number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'homeno',
-      isVisible: false,
+      isVisible: true,
       answer: '6567772918',
     }
     const validateResult = validateField('formId', formField, response)
@@ -109,7 +109,7 @@ describe('Home phone number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'homeno',
-      isVisible: false,
+      isVisible: true,
       answer: '+6598765432',
     }
     const validateResult = validateField('formId', formField, response)
@@ -129,7 +129,7 @@ describe('Home phone number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'homeno',
-      isVisible: false,
+      isVisible: true,
       answer: '+441285291028',
     }
     const validateResult = validateField('formId', formField, response)
@@ -149,7 +149,7 @@ describe('Home phone number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'homeno',
-      isVisible: false,
+      isVisible: true,
       answer: '+441285291028',
     }
     const validateResult = validateField('formId', formField, response)
