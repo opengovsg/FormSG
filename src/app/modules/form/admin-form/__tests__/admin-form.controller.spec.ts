@@ -3,6 +3,7 @@ import { ObjectId } from 'bson-ext'
 import { merge } from 'lodash'
 import { errAsync, okAsync } from 'neverthrow'
 import { PassThrough } from 'stream'
+import { MockedObject } from 'ts-jest/dist/utils/testing'
 import { mocked } from 'ts-jest/utils'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
@@ -37,7 +38,6 @@ import {
   PrivateFormError,
   TransferOwnershipError,
 } from '../../form.errors'
-import * as FormService from '../../form.service'
 import * as AdminFormController from '../admin-form.controller'
 import {
   CreatePresignedUrlError,
@@ -56,8 +56,6 @@ jest.mock('../admin-form.service')
 const MockAdminFormService = mocked(AdminFormService)
 jest.mock('../../../user/user.service')
 const MockUserService = mocked(UserService)
-jest.mock('../../form.service')
-const MockFormService = mocked(FormService)
 
 describe('admin-form.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -567,11 +565,12 @@ describe('admin-form.controller', () => {
       admin: { _id: MOCK_USER_ID },
     } as unknown) as PublicForm
 
-    const MOCK_FORM = {
+    const MOCK_FORM = (mocked({
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: MOCK_SCRUBBED_FORM.title,
-    } as IPopulatedForm
+      getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
+    }) as unknown) as MockedObject<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -584,6 +583,8 @@ describe('admin-form.controller', () => {
       },
     })
 
+    beforeEach(() => MOCK_FORM.getPublicView.mockClear())
+
     it('should return 200 with preview form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -593,9 +594,6 @@ describe('admin-form.controller', () => {
       )
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
-      )
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        okAsync(MOCK_SCRUBBED_FORM),
       )
 
       // Act
@@ -617,7 +615,7 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockFormService.getFormPublicView).toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({ form: MOCK_SCRUBBED_FORM })
     })
@@ -654,7 +652,7 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockFormService.getFormPublicView).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(403)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -693,50 +691,11 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockFormService.getFormPublicView).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
       })
-    })
-
-    it('should return 409 when database conflict error occurs whilst retrieving form public view', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      // Mock various services to return expected results.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      const mockErrorString = 'database conflict error'
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        errAsync(new DatabaseConflictError(mockErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handlePreviewAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
-        MOCK_USER_ID,
-      )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Read,
-        },
-      )
-      expect(MockFormService.getFormPublicView).toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(409)
-      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 410 when FormDeletedError is returned when retrieving form', async () => {
@@ -771,89 +730,11 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockFormService.getFormPublicView).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(410)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
       })
-    })
-
-    it('should return 413 when database payload size error occurs whilst retrieving form public view', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      // Mock various services to return expected results.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      const mockErrorString = 'database payload size error'
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        errAsync(new DatabasePayloadSizeError(mockErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handlePreviewAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
-        MOCK_USER_ID,
-      )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Read,
-        },
-      )
-      expect(MockFormService.getFormPublicView).toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(413)
-      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
-    })
-
-    it('should return 422 when database validation error occurs whilst retrieving form public view', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      // Mock various services to return expected results.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      const mockErrorString = 'database validation error'
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        errAsync(new DatabaseValidationError(mockErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handlePreviewAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
-        MOCK_USER_ID,
-      )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Read,
-        },
-      )
-      expect(MockFormService.getFormPublicView).toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(422)
-      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 422 when MissingUserError is returned when retrieving logged in user', async () => {
@@ -880,7 +761,7 @@ describe('admin-form.controller', () => {
       expect(
         MockAuthService.getFormAfterPermissionChecks,
       ).not.toHaveBeenCalled()
-      expect(MockFormService.getFormPublicView).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(422)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -911,7 +792,7 @@ describe('admin-form.controller', () => {
       expect(
         MockAuthService.getFormAfterPermissionChecks,
       ).not.toHaveBeenCalled()
-      expect(MockFormService.getFormPublicView).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -950,50 +831,11 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockFormService.getFormPublicView).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
       })
-    })
-
-    it('should return 500 when database error occurs whilst retrieving form public view', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      // Mock various services to return expected results.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      const mockErrorString = 'database error'
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        errAsync(new DatabaseError(mockErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handlePreviewAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
-        MOCK_USER_ID,
-      )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Read,
-        },
-      )
-      expect(MockFormService.getFormPublicView).toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
   })
 
@@ -3386,11 +3228,12 @@ describe('admin-form.controller', () => {
       admin: { _id: MOCK_USER_ID },
     } as unknown) as PublicForm
 
-    const MOCK_FORM = {
+    const MOCK_FORM = (mocked({
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: MOCK_SCRUBBED_FORM.title,
-    } as IPopulatedForm
+      getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
+    }) as unknown) as MockedObject<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -3407,9 +3250,6 @@ describe('admin-form.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       MockAuthService.getFormIfPublic.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        okAsync(MOCK_SCRUBBED_FORM),
-      )
 
       // Act
       await AdminFormController.handleGetTemplateForm(
@@ -3474,30 +3314,6 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it("should return 409 when DatabaseConflictError is returned whilst getting form's public view", async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const expectedErrorString = 'public view conflict error'
-      MockAuthService.getFormIfPublic.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        errAsync(new DatabaseConflictError(expectedErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handleGetTemplateForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(mockRes.status).toHaveBeenCalledWith(409)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expectedErrorString,
-      })
-    })
-
     it('should return 410 when FormDeletedError is returned when retrieving form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -3520,83 +3336,11 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it("should return 413 when DatabasePayloadSizeError is returned whilst getting form's public view", async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const expectedErrorString = 'public view payload error'
-      MockAuthService.getFormIfPublic.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        errAsync(new DatabasePayloadSizeError(expectedErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handleGetTemplateForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(mockRes.status).toHaveBeenCalledWith(413)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expectedErrorString,
-      })
-    })
-
-    it("should return 422 when DatabaseValidationError is returned whilst getting form's public view", async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const expectedErrorString = 'public view validation error'
-      MockAuthService.getFormIfPublic.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockFormService.getFormPublicView.mockReturnValueOnce(
-        errAsync(new DatabaseValidationError(expectedErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handleGetTemplateForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(mockRes.status).toHaveBeenCalledWith(422)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expectedErrorString,
-      })
-    })
-
-    it('should return 500 when DatabaseError is returned whilst retrieving form', async () => {
+    it('should return 500 when database error occurs whilst retrieving form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const expectedErrorString = 'database goes boom'
       MockAuthService.getFormIfPublic.mockReturnValueOnce(
-        errAsync(new DatabaseError(expectedErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handleGetTemplateForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check all arguments of called services.
-      expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expectedErrorString,
-      })
-    })
-
-    it("should return 500 when DatabaseError is returned whilst getting form's public view", async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const expectedErrorString = 'public view error'
-      MockAuthService.getFormIfPublic.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockFormService.getFormPublicView.mockReturnValueOnce(
         errAsync(new DatabaseError(expectedErrorString)),
       )
 
