@@ -56,22 +56,21 @@ const isResponsePresentOnHiddenField = (
 ): boolean => {
   if (response.isVisible) return false
   if (isProcessedSingleAnswerResponse(response)) {
-    if (!response.isVisible && response.answer.trim() !== '') {
+    if (response.answer.trim() !== '') {
       return true
     }
   } else if (isProcessedCheckboxResponse(response)) {
-    if (!response.isVisible && response.answerArray.length > 0) {
+    if (response.answerArray.length > 0) {
       return true
     }
   } else if (isProcessedTableResponse(response)) {
     if (
-      !response.isVisible &&
       !response.answerArray.every((row) => row.every((elem) => elem === ''))
     ) {
       return true
     }
   } else if (isProcessedAttachmentResponse(response)) {
-    if (!response.isVisible && response.filename.trim() !== '') {
+    if (response.filename.trim() !== '') {
       return true
     }
   }
