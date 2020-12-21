@@ -48,6 +48,7 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@163.com',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
@@ -69,6 +70,7 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@126.com',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
