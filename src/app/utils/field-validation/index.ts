@@ -62,7 +62,10 @@ const isResponsePresentOnHiddenField = (response: FieldResponse): boolean => {
       return true
     }
   } else if (isProcessedTableResponse(response)) {
-    if (!response.isVisible && flattenDeep(response.answerArray).length > 0) {
+    if (
+      !response.isVisible &&
+      flattenDeep(response.answerArray).join('').length > 0
+    ) {
       return true
     }
   } else if (isProcessedAttachmentResponse(response)) {
