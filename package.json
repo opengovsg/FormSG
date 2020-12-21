@@ -206,7 +206,7 @@
     "core-js": "^3.8.1",
     "coveralls": "^3.1.0",
     "css-loader": "^2.1.1",
-    "csv-parse": "^4.14.1",
+    "csv-parse": "^4.14.2",
     "env-cmd": "^10.1.0",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^7.0.0",
