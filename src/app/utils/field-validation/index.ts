@@ -8,13 +8,7 @@ import {
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IFieldSchema } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
-import {
-  FieldResponse,
-  IAttachmentResponse,
-  ICheckboxResponse,
-  ISingleAnswerResponse,
-  ITableResponse,
-} from '../../../types/response'
+import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
@@ -57,13 +51,7 @@ const doFieldTypesMatch = (
  * This may happen if a submission is made programatically to try and bypass form logic.
  * @param response The submitted response
  */
-const isResponsePresentOnHiddenField = (
-  response:
-    | ISingleAnswerResponse
-    | ICheckboxResponse
-    | ITableResponse
-    | IAttachmentResponse,
-): boolean => {
+const isResponsePresentOnHiddenField = (response: FieldResponse): boolean => {
   if (isProcessedSingleAnswerResponse(response)) {
     if (!response.isVisible && response.answer.trim() !== '') {
       return true
