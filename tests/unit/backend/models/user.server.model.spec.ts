@@ -146,6 +146,49 @@ describe('User Model', () => {
     })
   })
 
+  describe('Methods', () => {
+    describe('getPublicView', () => {
+      it('should return public view of unpopulated user document successfully', async () => {
+        // Arrange
+        const unpopUser = await User.create({
+          agency: agency._id,
+          email: VALID_USER_EMAIL,
+        })
+        expect(unpopUser).toBeDefined()
+
+        // Act
+        const actual = unpopUser.getPublicView()
+
+        // Assert
+        // Since user document is unpopulated, should only contain agency id.
+        expect(actual).toEqual({
+          agency: agency._id,
+        })
+      })
+
+      it('should return public view of populated user document successfully', async () => {
+        // Arrange
+        const user = await User.create({
+          agency: agency._id,
+          email: VALID_USER_EMAIL,
+        })
+        const populatedUser = await user
+          .populate({ path: 'agency' })
+          .execPopulate()
+        expect(populatedUser).toBeDefined()
+
+        // Act
+        const actual = populatedUser.getPublicView()
+
+        // Assert
+        // Should hide all details about user except its agency.
+        expect(JSON.stringify(actual)).toEqual(
+          JSON.stringify({ agency: agency.getPublicView() }),
+        )
+      })
+    })
+  })
+
   describe('Statics', () => {
     describe('upsertUser', () => {
       it('should create new User document when user does not yet exist in the collection', async () => {
