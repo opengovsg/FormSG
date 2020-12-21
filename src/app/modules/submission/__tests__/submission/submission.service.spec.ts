@@ -26,6 +26,7 @@ import {
 
 import {
   generateDefaultField,
+  generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -59,6 +60,15 @@ describe('submission.service', () => {
         'test@example.com',
       )
 
+      const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      const emailProcessedResponse = generateProcessedSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
+
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
         ({
@@ -70,8 +80,8 @@ describe('submission.service', () => {
 
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
-        { ...mobileResponse, isVisible: true },
-        { ...emailResponse, isVisible: true },
+        { ...mobileProcessedResponse, isVisible: true },
+        { ...emailProcessedResponse, isVisible: true },
       ]
       // Should only have email and mobile fields for encrypted forms.
       expect(actualResult.isOk()).toEqual(true)
@@ -94,6 +104,15 @@ describe('submission.service', () => {
         '3.142',
       )
 
+      const shortTextProcessedResponse = generateProcessedSingleAnswerResponse(
+        shortTextField,
+        'the quick brown fox jumps over the lazy dog',
+      )
+      const decimalProcessedResponse = generateProcessedSingleAnswerResponse(
+        decimalField,
+        '3.142',
+      )
+
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
         ({
@@ -105,8 +124,8 @@ describe('submission.service', () => {
 
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
-        { ...shortTextResponse, isVisible: true },
-        { ...decimalResponse, isVisible: true },
+        { ...shortTextProcessedResponse, isVisible: true },
+        { ...decimalProcessedResponse, isVisible: true },
       ]
 
       expect(actualResult.isOk()).toEqual(true)
@@ -163,13 +182,23 @@ describe('submission.service', () => {
         mobileField,
         '+6587654321',
       )
-      mobileResponse.isVisible = false
 
       const emailResponse = generateSingleAnswerResponse(
         emailField,
         'test@example.com',
       )
-      emailResponse.isVisible = false
+
+      const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      mobileProcessedResponse.isVisible = false
+
+      const emailProcessedResponse = generateProcessedSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
+      emailProcessedResponse.isVisible = false
 
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
@@ -182,8 +211,8 @@ describe('submission.service', () => {
 
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
-        { ...mobileResponse, isVisible: true }, //getProcessedResponses sets isVisible to be true for encrypt mode
-        { ...emailResponse, isVisible: true },
+        { ...mobileProcessedResponse, isVisible: true }, //getProcessedResponses sets isVisible to be true for encrypt mode
+        { ...emailProcessedResponse, isVisible: true },
       ]
       // Should only have email and mobile fields for encrypted forms.
       expect(actualResult.isOk()).toEqual(true)
