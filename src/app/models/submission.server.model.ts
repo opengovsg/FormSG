@@ -1,5 +1,5 @@
 import moment from 'moment-timezone'
-import mongoose, { Mongoose, Schema } from 'mongoose'
+import mongoose, { Mongoose, QueryCursor, Schema } from 'mongoose'
 import { FixedLengthArray } from 'type-fest'
 
 import {
@@ -13,6 +13,7 @@ import {
   ISubmissionSchema,
   IWebhookResponseSchema,
   MyInfoAttribute,
+  SubmissionCursorData,
   SubmissionMetadata,
   SubmissionType,
   WebhookData,
@@ -304,18 +305,21 @@ const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorB
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
   }
-  return this.find(streamQuery)
-    .select({
-      encryptedContent: 1,
-      verifiedContent: 1,
-      attachmentMetadata: 1,
-      created: 1,
-      id: 1,
-    })
-    .batchSize(2000)
-    .read('secondary')
-    .lean()
-    .cursor()
+  return (
+    this.find(streamQuery)
+      .select({
+        encryptedContent: 1,
+        verifiedContent: 1,
+        attachmentMetadata: 1,
+        created: 1,
+        id: 1,
+      })
+      .batchSize(2000)
+      .read('secondary')
+      .lean()
+      // Override typing as Map is converted to Object once passed through `lean()`.
+      .cursor() as QueryCursor<SubmissionCursorData>
+  )
 }
 
 EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = getSubmissionCursorByFormId

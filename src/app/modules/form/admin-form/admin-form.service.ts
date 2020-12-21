@@ -16,6 +16,7 @@ import {
   FormMetaView,
   IFieldSchema,
   IForm,
+  IFormDocument,
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
@@ -299,7 +300,7 @@ export const transferFormOwnership = (
           // Step 3: Perform form ownership transfer.
           .andThen((newOwner) =>
             ResultAsync.fromPromise(
-              currentForm.transferOwner(currentOwner, newOwner),
+              currentForm.transferOwner<IPopulatedForm>(currentOwner, newOwner),
               (error) => {
                 logger.error({
                   message: 'Error occurred whilst transferring form ownership',
@@ -370,10 +371,10 @@ export const createForm = (
  * @returns the newly created duplicated form
  */
 export const duplicateForm = (
-  originalForm: IFormSchema,
+  originalForm: IFormDocument,
   newAdminId: string,
   overrideParams: DuplicateFormBody,
-): ResultAsync<IFormSchema, FormNotFoundError | DatabaseError> => {
+): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
     newAdminId,
@@ -392,17 +393,20 @@ export const duplicateForm = (
 
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
-  return ResultAsync.fromPromise(FormModel.create(duplicateParams), (error) => {
-    logger.error({
-      message: 'Error encountered while duplicating form',
-      meta: {
-        action: 'duplicateForm',
-        duplicateParams,
-        newAdminId,
-      },
-      error,
-    })
+  return ResultAsync.fromPromise(
+    FormModel.create(duplicateParams) as Promise<IFormDocument>,
+    (error) => {
+      logger.error({
+        message: 'Error encountered while duplicating form',
+        meta: {
+          action: 'duplicateForm',
+          duplicateParams,
+          newAdminId,
+        },
+        error,
+      })
 
-    return new DatabaseError(getMongoErrorMessage(error))
-  })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
 }

@@ -70,6 +70,7 @@ export const transformAttachmentMetaStream = ({
     objectMode: true,
     transform: (data: SubmissionCursorData, _encoding, callback) => {
       const unprocessedMetadata = data.attachmentMetadata ?? {}
+
       const totalCount = Object.keys(unprocessedMetadata).length
       // Early return if pipe is disabled or nothing to transform.
       if (!enabled || totalCount === 0) {

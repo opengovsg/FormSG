@@ -20,7 +20,6 @@ export interface IBounce {
   bounces: ISingleBounce[]
   hasAutoEmailed: boolean
   expireAt: Date
-  _id: Document['_id']
 }
 
 export interface IBounceSchema extends IBounce, Document {

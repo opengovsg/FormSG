@@ -6,7 +6,6 @@ export interface IFormStatisticsTotal {
   formId: IFormSchema['_id']
   totalCount: number
   lastSubmission: Date
-  _id: Document['_id']
 }
 
 export interface IFormStatisticsTotalSchema

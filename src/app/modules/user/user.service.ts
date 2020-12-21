@@ -6,7 +6,7 @@ import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   IAdminVerificationDoc,
-  IAgency,
+  IAgencySchema,
   IPopulatedUser,
   IUserSchema,
   UpsertOtpParams,
@@ -212,7 +212,7 @@ export const getPopulatedUserById = (
  */
 export const retrieveUser = (
   email: string,
-  agencyId: IAgency['_id'],
+  agencyId: IAgencySchema['_id'],
 ): ResultAsync<IPopulatedUser, InvalidDomainError | DatabaseError> => {
   if (!validator.isEmail(email)) {
     return errAsync(new InvalidDomainError())
