@@ -86,3 +86,12 @@ export class InvalidJwtError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * JWT not present in cookies
+ */
+export class MissingJwtError extends ApplicationError {
+  constructor(message = 'No JWT present in cookies') {
+    super(message)
+  }
+}

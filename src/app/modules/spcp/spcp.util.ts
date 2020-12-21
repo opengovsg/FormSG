@@ -12,9 +12,10 @@ import {
   FetchLoginPageError,
   InvalidJwtError,
   LoginPageValidationError,
+  MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
-import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
+import { JwtPayload } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -156,25 +157,6 @@ export const isJwtPayload = (
 }
 
 /**
- * Extracts the SP or CP JWT from an object containing cookies
- * @param cookies Object containing cookies
- * @param authType 'SP' or 'CP'
- */
-export const extractJwt = (
-  cookies: SpcpCookies,
-  authType: AuthType,
-): string | undefined => {
-  switch (authType) {
-    case AuthType.SP:
-      return cookies[JwtName.SP]
-    case AuthType.CP:
-      return cookies[JwtName.CP]
-    default:
-      return undefined
-  }
-}
-
-/**
  * Wraps SingPass data in the form of parsed form fields.
  * @param uinFin UIN or FIN
  */
@@ -241,6 +223,7 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: 'Error while contacting SingPass. Please try again.',
       }
+    case MissingJwtError:
     case VerifyJwtError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
