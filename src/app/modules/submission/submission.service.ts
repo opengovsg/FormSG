@@ -7,7 +7,12 @@ import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
-import { FieldResponse, IFieldSchema, IFormDocument } from '../../../types'
+import {
+  FieldResponse,
+  IFieldSchema,
+  IFormDocument,
+  ResponseMode,
+} from '../../../types'
 import getSubmissionModel from '../../models/submission.server.model'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
@@ -121,7 +126,18 @@ export const getProcessedResponses = (
 
     const processingResponse: ProcessedFieldResponse = {
       ...response,
-      isVisible: visibleFieldIds.has(responseId),
+      isVisible:
+        // Set isVisible as true for Encrypt mode if there is a response for mobile and email field
+        // Because we cannot tell if the field is unhidden by logic
+        // This prevents downstream validateField from incorrectly preventing
+        // encrypt mode submissions with responses on unhidden fields
+        // TODO(#780): Remove this once submission service is separated into
+        // Email and Encrypted services
+        form.responseMode === ResponseMode.Encrypt
+          ? 'answer' in response &&
+            typeof response.answer === 'string' &&
+            response.answer.trim() !== ''
+          : visibleFieldIds.has(responseId),
       question: formField.getQuestion(),
     }
 

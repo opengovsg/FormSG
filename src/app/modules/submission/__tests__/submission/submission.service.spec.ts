@@ -152,6 +152,43 @@ describe('submission.service', () => {
         new ConflictError('Some form fields are missing'),
       )
     })
+    it('should allow responses for encrypt mode hidden fields', async () => {
+      // Arrange
+      // Only check for mobile and email fields, since the other fields are
+      // e2e encrypted from the browser.
+      const mobileField = generateDefaultField(BasicField.Mobile)
+      const emailField = generateDefaultField(BasicField.Email)
+      // Add answers to both mobile and email fields
+      const mobileResponse = generateSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      mobileResponse.isVisible = false
+
+      const emailResponse = generateSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
+      emailResponse.isVisible = false
+
+      // Act
+      const actualResult = SubmissionService.getProcessedResponses(
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [mobileField, emailField],
+        } as unknown) as IFormSchema,
+        [mobileResponse, emailResponse],
+      )
+
+      // Assert
+      const expectedParsed: ProcessedFieldResponse[] = [
+        { ...mobileResponse, isVisible: true }, //getProcessedResponses sets isVisible to be true for encrypt mode
+        { ...emailResponse, isVisible: true },
+      ]
+      // Should only have email and mobile fields for encrypted forms.
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
+    })
 
     it('should return error when any responses are not valid for encrypted form submission', async () => {
       // Arrange
