@@ -183,7 +183,7 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
         // Configure message to be shown
         const msg =
           (error && error.data && error.data.message) ||
-          'There was an error. Please try again.'
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
         vm.signInMsg = {
           isMsg: true,
           isError: true,
