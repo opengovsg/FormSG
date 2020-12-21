@@ -24,7 +24,6 @@ type Attachments = {
   }
 }
 export type EncryptSubmissionBodyAfterProcess = {
-  responses?: FieldResponse[]
   encryptedContent: string
   attachments?: Attachments
   isPreview: boolean
