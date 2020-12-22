@@ -236,7 +236,7 @@ describe('Encrypt Submissions Controller', () => {
           .post(
             injectFixtures,
             SpcpController.encryptedVerifiedFields(secretSigningKey),
-            Controller.prepareEncryptSubmission,
+            EncryptSubmissionsMiddleware.prepareEncryptSubmission,
             sendSubmissionBack,
           )
       })
