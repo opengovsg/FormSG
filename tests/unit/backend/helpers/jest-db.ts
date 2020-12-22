@@ -198,7 +198,7 @@ const insertEncryptForm = async ({
     admin: user._id,
     responseMode: ResponseMode.Encrypt,
     _id: formId,
-    publicKey: 'publicKey',
+    publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
   })
 
   return {
