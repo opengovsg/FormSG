@@ -50,7 +50,7 @@ describe('submission.utils', () => {
       const invalidResponseMode = 'something' as ResponseMode
       // Act + Assert
       expect(() => getModeFilter(invalidResponseMode)).toThrowError(
-        `This should never be reached in TypeScript: "${invalidResponseMode}"`,
+        `Unreachable case: ${invalidResponseMode}`,
       )
     })
   })
