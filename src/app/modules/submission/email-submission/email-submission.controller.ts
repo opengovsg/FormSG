@@ -201,7 +201,7 @@ export const handleEmailSubmission: RequestHandler<
   if (sendAdminEmailResult.isErr()) {
     logger.error({
       message: 'Error while saving metadata to database',
-      meta: logMeta,
+      meta: logMetaWithSubmission,
       error: sendAdminEmailResult.error,
     })
     const { statusCode, errorMessage } = mapRouteError(
