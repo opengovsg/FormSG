@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { flattenDeep, sumBy } from 'lodash'
 
+import { createLoggerWithLabel } from '../../../../config/logger'
 import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
@@ -51,6 +52,8 @@ import {
   SubmissionHashError,
 } from './email-submission.errors'
 import { ResponseFormattedForEmail } from './email-submission.types'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Determines the prefix for a question based on whether it is verified
@@ -365,6 +368,13 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
       }
     default:
+      logger.error({
+        message: 'mapRouteError called with unknown error type',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please refresh and try again.',
