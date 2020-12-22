@@ -21,10 +21,10 @@ const ngrok = require('ngrok')
 
 // Index of the column headers in the exported CSV. The first 4 rows are
 // metadata about the number of responses decrypted.
-const CSV_HEADER_ROW_INDEX = 4
+const CSV_HEADER_ROW_INDEX = 5
 // The first two columns are "Reference number" and "Timestamp", so the
 // fields to check only start from the third column.
-const CSV_ANSWER_COL_INDEX = 2
+const CSV_ANSWER_COL_INDEX = 3
 
 const WEBHOOK_PORT = process.env.MOCK_WEBHOOK_PORT
 const WEBHOOK_CONFIG_FILE = process.env.MOCK_WEBHOOK_CONFIG_FILE
