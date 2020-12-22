@@ -13,13 +13,13 @@ import {
 const logger = createLoggerWithLabel(module)
 
 export const makeCaptchaResponseVerifier = (captchaPrivateKey: string) => (
-  response?: string | null,
+  response?: unknown,
   remoteip?: string,
 ): ResultAsync<
   true,
   CaptchaConnectionError | VerifyCaptchaError | MissingCaptchaError
 > => {
-  if (!response) {
+  if (!response || typeof response !== 'string') {
     return errAsync(new MissingCaptchaError())
   }
   const verifyCaptchaPromise = axios.get<{ success: boolean }>(

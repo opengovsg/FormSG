@@ -25,7 +25,7 @@ export const handleEmailSubmission: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string; spcpSubmissionFailure?: boolean },
   { responses: FieldResponse[]; isPreview: boolean },
-  { captchaResponse: string | null }
+  { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
