@@ -4,6 +4,7 @@ const express = require('express')
 const request = require('supertest')
 
 const dbHandler = require('../helpers/db-handler')
+const EncryptSubmissionsMiddleware = require('../../../../dist/backend/app/modules/submission/encrypt-submission/encrypt-submission.middleware')
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
@@ -141,7 +142,7 @@ describe('Encrypt Submissions Controller', () => {
       })
     }
 
-    describe('validateEncryptSubmission', () => {
+    describe('validateAndProcessEncryptSubmission', () => {
       const app = express()
 
       beforeAll(() => {
@@ -149,7 +150,7 @@ describe('Encrypt Submissions Controller', () => {
           .route(endpointPath)
           .post(
             injectFixtures,
-            Controller.validateEncryptSubmission,
+            EncryptSubmissionsMiddleware.validateAndProcessEncryptSubmission,
             sendSubmissionBack,
           )
       })
@@ -235,7 +236,7 @@ describe('Encrypt Submissions Controller', () => {
           .post(
             injectFixtures,
             SpcpController.encryptedVerifiedFields(secretSigningKey),
-            Controller.prepareEncryptSubmission,
+            EncryptSubmissionsMiddleware.prepareEncryptSubmission,
             sendSubmissionBack,
           )
       })

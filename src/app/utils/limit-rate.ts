@@ -2,6 +2,7 @@ import RateLimit, {
   Options as RateLimitOptions,
   RateLimit as RateLimitFn,
 } from 'express-rate-limit'
+import { StatusCodes } from 'http-status-codes'
 import { merge } from 'lodash'
 
 import { createLoggerWithLabel } from '../../config/logger'
@@ -21,7 +22,7 @@ export const limitRate = (options: RateLimitOptions = {}): RateLimitFn => {
   const defaultOptions: RateLimitOptions = {
     windowMs: 60 * 1000, // Apply rate per-minute
     max: 1200,
-    handler: (req, _res, next) => {
+    handler: (req, res) => {
       logger.warn({
         message: 'Rate limit exceeded',
         meta: {
@@ -31,8 +32,10 @@ export const limitRate = (options: RateLimitOptions = {}): RateLimitFn => {
           rateLimitInfo: req.rateLimit,
         },
       })
-      // TODO (private #49): terminate the request with HTTP 429
-      return next()
+      return res.status(StatusCodes.TOO_MANY_REQUESTS).json({
+        message:
+          'We are experiencing a temporary issue. Please try again in one minute.',
+      })
     },
   }
   return RateLimit(merge(defaultOptions, options))

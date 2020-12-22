@@ -4,7 +4,13 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import { MapRouteError } from '../../../../types/routing'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
-import { SubmissionNotFoundError } from '../submission.errors'
+import {
+  ConflictError,
+  InvalidEncodingError,
+  ProcessingError,
+  SubmissionNotFoundError,
+  ValidateFieldError,
+} from '../submission.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -24,6 +30,25 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
+      }
+    case InvalidEncodingError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Invalid data was found. Please check your responses and submit again.',
+      }
+    case ValidateFieldError:
+    case ProcessingError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+      }
+    case ConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage:
+          'The form has been updated. Please refresh and submit again.',
       }
     case CreatePresignedUrlError:
     case DatabaseError:

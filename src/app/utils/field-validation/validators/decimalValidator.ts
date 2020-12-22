@@ -3,13 +3,13 @@ import { flow } from 'fp-ts/lib/function'
 import isFloat from 'validator/lib/isFloat'
 import isInt from 'validator/lib/isInt'
 
+import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { IDecimalField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
-import { ISingleAnswerResponse } from 'src/types/response'
 
 import { notEmptySingleAnswerResponse } from './common'
 
-type DecimalValidator = ResponseValidator<ISingleAnswerResponse>
+type DecimalValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type DecimalValidatorConstructor = (
   decimalField: IDecimalField,
 ) => DecimalValidator

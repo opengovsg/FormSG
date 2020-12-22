@@ -155,6 +155,21 @@ describe('Text validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
     })
+    it('should disallow responses submitted for hidden fields', () => {
+      const formField = makeShortTextField(fieldId, {
+        customMax: 10,
+        selectedValidation: 'Maximum',
+      })
+      const response = makeShortTextResponse(fieldId, 'many more characters')
+      response.isVisible = false
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError(
+          'Attempted to submit response on a hidden field',
+        ),
+      )
+    })
   })
 
   describe('Long text', () => {
@@ -275,6 +290,21 @@ describe('Text validation', () => {
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
         new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+    it('should disallow responses submitted for hidden fields', () => {
+      const formField = makeLongTextField(fieldId, {
+        customMax: 10,
+        selectedValidation: 'Maximum',
+      })
+      const response = makeLongTextResponse(fieldId, 'many more characters')
+      response.isVisible = false
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError(
+          'Attempted to submit response on a hidden field',
+        ),
       )
     })
   })

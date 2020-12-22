@@ -53,6 +53,7 @@ const formPublicFields = [
  */
 exports.read = (requestType) =>
   /**
+   * ! Note that this function should not call any mongoose functions on req.form as it is possibly already a plain JSON object.
    * Takes the form and replaces admin details with agency details, as well as scrubbing the form if the
    * request is not for admin purposes.
    * @param  {Object} req - Express request object

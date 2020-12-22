@@ -180,11 +180,14 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
       function (error) {
         vm.isOtpSending = false
         vm.buttonClicked = false
-        // Configure message to be show
+        // Configure message to be shown
+        const msg =
+          (error && error.data && error.data.message) ||
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
         vm.signInMsg = {
           isMsg: true,
           isError: true,
-          msg: error.data,
+          msg,
         }
         $timeout(function () {
           angular.element('#otp-input').focus()

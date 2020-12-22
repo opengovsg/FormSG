@@ -11,13 +11,11 @@ export interface IUser {
   agency: IAgencySchema['_id']
   contact?: string
   betaFlags?: Record<string, never>
-  _id?: Document['_id']
   lastAccessed?: Date
   updatedAt?: Date
 }
 
 export interface IUserSchema extends IUser, Document {
-  _id: Document['_id']
   created?: Date
 }
 

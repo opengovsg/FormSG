@@ -30,15 +30,17 @@ describe('limitRate', () => {
     )
   })
 
-  it('should call next() in the handler', () => {
-    limitRate()
+  it('should return 429 when the rate limit is exceeded', () => {
+    limitRate({ max: 0 })
     const handler = MockRateLimit.mock.calls[0][0]!.handler!
     const mockNext = jest.fn()
-    handler(
-      expressHandler.mockRequest(),
-      expressHandler.mockResponse(),
-      mockNext,
-    )
-    expect(mockNext).toHaveBeenCalled()
+    const mockRes = expressHandler.mockResponse()
+    handler(expressHandler.mockRequest(), mockRes, mockNext)
+    expect(mockNext).not.toHaveBeenCalled()
+    expect(mockRes.status).toHaveBeenCalledWith(429)
+    expect(mockRes.json).toHaveBeenCalledWith({
+      message:
+        'We are experiencing a temporary issue. Please try again in one minute.',
+    })
   })
 })

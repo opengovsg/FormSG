@@ -1,7 +1,9 @@
+import { LeanDocument } from 'mongoose'
+
 import { IFieldSchema, IMyInfo, MyInfoAttribute } from '../../../types'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
-export interface IPossiblyPrefilledField extends IFieldSchema {
+export interface IPossiblyPrefilledField extends LeanDocument<IFieldSchema> {
   fieldValue?: string
 }
 

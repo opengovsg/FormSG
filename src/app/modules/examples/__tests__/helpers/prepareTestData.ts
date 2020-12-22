@@ -141,7 +141,8 @@ const prepareTestData = async (
   // Add form statistics for "submissions" for both form prefixes.
   const formStatsPromises = testData.first.forms
     .map((form) =>
-      FormStatsModel.create({
+      // Using mongodb native function to bypass collection presave hook.
+      FormStatsModel.collection.insertOne({
         lastSubmission: new Date(),
         totalCount: testData.first.submissionCount,
         formId: form._id,
@@ -149,7 +150,7 @@ const prepareTestData = async (
     )
     .concat(
       testData.second.forms.map((form) =>
-        FormStatsModel.create({
+        FormStatsModel.collection.insertOne({
           lastSubmission: new Date(),
           totalCount: testData.second.submissionCount,
           formId: form._id,

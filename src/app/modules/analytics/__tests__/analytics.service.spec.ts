@@ -42,11 +42,11 @@ describe('analytics.service', () => {
       const submissionPromises: Promise<IFormStatisticsTotalSchema>[] = []
       formCounts.forEach((count) => {
         submissionPromises.push(
-          FormStatsModel.create({
+          (FormStatsModel.collection.insertOne({
             formId: mongoose.Types.ObjectId(),
             totalCount: count,
             lastSubmission: new Date(),
-          }),
+          }) as unknown) as Promise<IFormStatisticsTotalSchema>,
         )
       })
       await Promise.all(submissionPromises)
@@ -68,11 +68,11 @@ describe('analytics.service', () => {
       const submissionPromises: Promise<IFormStatisticsTotalSchema>[] = []
       formCounts.forEach((count) => {
         submissionPromises.push(
-          FormStatsModel.create({
+          (FormStatsModel.collection.insertOne({
             formId: mongoose.Types.ObjectId(),
             totalCount: count,
             lastSubmission: new Date(),
-          }),
+          }) as unknown) as Promise<IFormStatisticsTotalSchema>,
         )
       })
       await Promise.all(submissionPromises)

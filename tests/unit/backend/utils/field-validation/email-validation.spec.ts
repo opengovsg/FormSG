@@ -21,12 +21,13 @@ describe('Email field validation', () => {
       required: true,
       disabled: false,
     }
-    const response: ISingleAnswerResponse = {
+    const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'valid@email.com',
-    }
+      isVisible: true,
+    } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -47,6 +48,7 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@163.com',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
@@ -68,6 +70,7 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@126.com',
+      isVisible: true,
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
@@ -89,6 +92,7 @@ describe('Email field validation', () => {
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'invalidemail.com',
+      isVisible: true,
     } as ISingleAnswerResponse
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
@@ -244,5 +248,31 @@ describe('Email field validation', () => {
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      description: 'random',
+      required: true,
+      disabled: false,
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@example.com'],
+    }
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: false,
+      answer: 'volunteer-testing@test.gov.sg',
+    } as ISingleAnswerResponse
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
   })
 })

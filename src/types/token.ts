@@ -6,12 +6,9 @@ export interface IToken {
   expireAt: Date
   numOtpAttempts?: number
   numOtpSent?: number
-  _id?: Document['_id']
 }
 
-export interface ITokenSchema extends IToken, Document {
-  _id: Document['_id']
-}
+export interface ITokenSchema extends IToken, Document {}
 
 export interface ITokenModel extends Model<ITokenSchema> {
   upsertOtp: (

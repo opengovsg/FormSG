@@ -17,6 +17,7 @@ import {
   IFieldSchema,
   IImageFieldSchema,
   IShortTextFieldSchema,
+  ISingleAnswerResponse,
   ITableFieldSchema,
 } from 'src/types'
 
@@ -98,7 +99,7 @@ export const generateDefaultField = (
   }
 }
 
-export const generateSingleAnswerResponse = (
+export const generateProcessedSingleAnswerResponse = (
   field: IFieldSchema,
   answer = 'answer',
 ): ProcessedSingleAnswerResponse => {
@@ -117,9 +118,32 @@ export const generateSingleAnswerResponse = (
     answer,
     fieldType: field.fieldType as Exclude<
       BasicField,
-      BasicField.Table | BasicField.Checkbox
+      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
     >,
     isVisible: true,
+  }
+}
+
+export const generateSingleAnswerResponse = (
+  field: IFieldSchema,
+  answer = 'answer',
+): ISingleAnswerResponse => {
+  if (
+    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
+      field.fieldType,
+    )
+  ) {
+    throw new Error(
+      'Call the custom response generator functions for attachment, table and checkbox.',
+    )
+  }
+  return {
+    _id: field._id,
+    answer,
+    fieldType: field.fieldType as Exclude<
+      BasicField,
+      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
+    >,
   }
 }
 

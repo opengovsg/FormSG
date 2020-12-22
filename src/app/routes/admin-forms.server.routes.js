@@ -10,7 +10,6 @@ let adminForms = require('../../app/controllers/admin-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
-let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
@@ -18,6 +17,7 @@ const EncryptSubmissionController = require('../modules/submission/encrypt-submi
 const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
+const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField, ResponseMode } = require('../../types')
 
@@ -476,8 +476,6 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})').post(
-    authActiveForm(PermissionLevel.Read),
-    encryptSubmissions.validateEncryptSubmission,
     celebrate({
       [Segments.BODY]: Joi.object({
         responses: Joi.array()
@@ -522,10 +520,12 @@ module.exports = function (app) {
         version: Joi.number().required(),
       }),
     }),
+    authActiveForm(PermissionLevel.Read),
+    EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     AdminFormController.passThroughSpcp,
     submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
-    encryptSubmissions.prepareEncryptSubmission,
+    EncryptSubmissionMiddleware.prepareEncryptSubmission,
     adminForms.passThroughSaveMetadataToDb,
     submissions.sendAutoReply,
   )
@@ -644,6 +644,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/images').post(
+    withUserAuthentication,
     celebrate({
       [Segments.BODY]: {
         fileId: Joi.string()
@@ -658,8 +659,7 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    authActiveForm(PermissionLevel.Write),
-    AdminFormController.handleCreatePresignedPostForImages,
+    AdminFormController.handleCreatePresignedPostUrlForImages,
   )
 
   /**
@@ -672,6 +672,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/logos').post(
+    withUserAuthentication,
     celebrate({
       [Segments.BODY]: {
         fileId: Joi.string()
@@ -686,7 +687,6 @@ module.exports = function (app) {
           .error(() => 'Error - your file could not be verified'),
       },
     }),
-    authActiveForm(PermissionLevel.Write),
-    AdminFormController.handleCreatePresignedPostForLogos,
+    AdminFormController.handleCreatePresignedPostUrlForLogos,
   )
 }
