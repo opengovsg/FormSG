@@ -104,7 +104,6 @@ export const receiveEmailSubmission: RequestHandler<
 > = async (req, res, next) => {
   const logMeta = {
     action: 'receiveEmailSubmission',
-    formId: (req as WithForm<typeof req>).form._id,
     ...createReqMeta(req),
   }
   return EmailSubmissionReceiver.createMultipartReceiver(req.headers)
