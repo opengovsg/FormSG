@@ -1,22 +1,14 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
-import { celebrate, Joi } from 'celebrate'
-import { RequestHandler, Router } from 'express'
 import { omit } from 'lodash'
 import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import * as FormController from 'src/app/controllers/forms.server.controller'
-import * as MyInfoController from 'src/app/controllers/myinfo.server.controller'
-import * as PublicFormMiddleware from 'src/app/modules/form/public-form/public-form.middlewares'
-import * as SpcpController from 'src/app/modules/spcp/spcp.controller'
-import * as EmailSubmissionsMiddleware from 'src/app/modules/submission/email-submission/email-submission.middleware'
-import * as SubmissionsMiddleware from 'src/app/modules/submission/submission.middleware'
-import { CaptchaFactory } from 'src/app/services/captcha/captcha.factory'
-import * as CaptchaMiddleware from 'src/app/services/captcha/captcha.middleware'
-import { AuthType, BasicField, IFieldSchema, Status } from 'src/types'
+import { AuthType, IFieldSchema, Status } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
+import { EmailSubmissionRouter } from '../email-submission.routes'
 
 import {
   MOCK_ATTACHMENT_FIELD,
@@ -43,57 +35,12 @@ jest.mock('nodemailer', () => ({
   }),
 }))
 
-// TODO (#149): Import router instead of creating it here
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/email'
-const SUBMISSIONS_ENDPT = `${SUBMISSIONS_ENDPT_BASE}/:formId([a-fA-F0-9]{24})`
 
-const EmailSubmissionsRouter = Router()
-EmailSubmissionsRouter.post(
-  SUBMISSIONS_ENDPT,
-  CaptchaFactory.validateCaptchaParams,
-  FormController.formById,
-  PublicFormMiddleware.isFormPublicCheck,
-  CaptchaMiddleware.checkCaptchaResponse as RequestHandler,
-  SpcpController.isSpcpAuthenticated,
-  EmailSubmissionsMiddleware.receiveEmailSubmission,
-  celebrate({
-    body: Joi.object({
-      responses: Joi.array()
-        .items(
-          Joi.object()
-            .keys({
-              _id: Joi.string().required(),
-              // Question is optional in anticipation of the same change
-              // when merging middlewares into controller
-              question: Joi.string(),
-              fieldType: Joi.string()
-                .required()
-                .valid(...Object.values(BasicField)),
-              answer: Joi.string().allow(''),
-              answerArray: Joi.array(),
-              filename: Joi.string(),
-              content: Joi.binary(),
-              isHeader: Joi.boolean(),
-              myInfo: Joi.object(),
-              signature: Joi.string().allow(''),
-            })
-            .xor('answer', 'answerArray') // only answer or answerArray can be present at once
-            .with('filename', 'content'), // if filename is present, content must be present
-        )
-        .required(),
-      isPreview: Joi.boolean().required(),
-    }),
-  }),
-  EmailSubmissionsMiddleware.validateEmailSubmission,
-  MyInfoController.verifyMyInfoVals as RequestHandler,
-  SpcpController.appendVerifiedSPCPResponses as RequestHandler,
-  EmailSubmissionsMiddleware.prepareEmailSubmission as RequestHandler,
-  EmailSubmissionsMiddleware.saveMetadataToDb,
-  EmailSubmissionsMiddleware.sendAdminEmail,
-  SubmissionsMiddleware.sendEmailConfirmations as RequestHandler,
+const EmailSubmissionsApp = setupApp(
+  SUBMISSIONS_ENDPT_BASE,
+  EmailSubmissionRouter,
 )
-
-const EmailSubmissionsApp = setupApp('/', EmailSubmissionsRouter)
 
 describe('email-submission.routes', () => {
   let request: Session
