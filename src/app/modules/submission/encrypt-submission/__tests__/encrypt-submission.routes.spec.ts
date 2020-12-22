@@ -159,6 +159,7 @@ describe('encrypt-submission.routes', () => {
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
           .send(MOCK_SUBMISSION_BODY)
           .query({ captchaResponse: 'null' })
+        // Note cookie is not set
 
         expect(response.status).toBe(401)
         expect(response.body).toEqual({
@@ -183,6 +184,7 @@ describe('encrypt-submission.routes', () => {
           .send(MOCK_SUBMISSION_BODY)
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtCp=mockJwt'])
+        // Note cookie is for CorpPass, not SingPass
 
         expect(response.status).toBe(401)
         expect(response.body).toEqual({
@@ -193,6 +195,7 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission has invalid JWT', async () => {
+        // Mock auth client to return error when decoding JWT
         mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
           cb(new Error()),
         )
@@ -220,6 +223,7 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission has JWT with the wrong shape', async () => {
+        // Mock auth client to return wrong decoded JWT shape
         mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
           cb(null, {
             wrongKey: 'S1234567A',
@@ -293,6 +297,7 @@ describe('encrypt-submission.routes', () => {
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
           .send(MOCK_SUBMISSION_BODY)
           .query({ captchaResponse: 'null' })
+        // Note cookie is not set
 
         expect(response.status).toBe(401)
         expect(response.body).toEqual({
@@ -316,6 +321,7 @@ describe('encrypt-submission.routes', () => {
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
           .send(MOCK_SUBMISSION_BODY)
           .query({ captchaResponse: 'null' })
+          // Note cookie is for SingPass, not CorpPass
           .set('Cookie', ['jwtSp=mockJwt'])
 
         expect(response.status).toBe(401)
@@ -327,6 +333,7 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission has invalid JWT', async () => {
+        // Mock auth client to return error when decoding JWT
         mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
           cb(new Error()),
         )
@@ -354,6 +361,7 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission has JWT with the wrong shape', async () => {
+        // Mock auth client to return wrong decoded JWT shape
         mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
           cb(null, {
             wrongKey: 'S1234567A',
