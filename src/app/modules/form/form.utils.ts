@@ -1,7 +1,12 @@
 import { pick } from 'lodash'
 import { Merge } from 'type-fest'
 
-import { IPopulatedForm } from 'src/types'
+import {
+  IEncryptedFormSchema,
+  IFormSchema,
+  IPopulatedForm,
+  ResponseMode,
+} from '../../../types'
 
 // Kept in this file instead of form.types.ts so that this can be kept in sync
 // with FORM_PUBLIC_FIELDS more easily.
@@ -54,4 +59,15 @@ export const removePrivateDetailsFromForm = (
     ...(pick(form, FORM_PUBLIC_FIELDS) as PublicFormValues),
     admin: pick(form.admin, 'agency'),
   }
+}
+
+/**
+ * Typeguard to check if given form is an encrypt mode form.
+ * @param form the form to check
+ * @returns true if form is encrypt mode form, false otherwise.
+ */
+export const isFormEncryptMode = (
+  form: IFormSchema | IPopulatedForm,
+): form is IEncryptedFormSchema => {
+  return form.responseMode === ResponseMode.Encrypt
 }
