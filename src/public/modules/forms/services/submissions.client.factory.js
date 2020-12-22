@@ -309,9 +309,6 @@ function SubmissionsFactory(
                 errorCount++
               } else if (csvRecord.status === 'UNVERIFIED') {
                 unverifiedCount++
-              } else {
-                // accumulate dataset
-                experimentalCsvGenerator.addRecord(csvRecord.submissionData)
               }
 
               if (csvRecord.submissionData) {
