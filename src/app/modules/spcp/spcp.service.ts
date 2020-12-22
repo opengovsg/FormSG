@@ -19,15 +19,18 @@ import {
   InvalidOOBParamsError,
   LoginPageValidationError,
   MissingAttributesError,
+  MissingJwtError,
   RetrieveAttributesError,
   VerifyJwtError,
 } from './spcp.errors'
 import {
   CorppassAttributes,
+  JwtName,
   JwtPayload,
   LoginPageValidationResult,
   ParsedSpcpParams,
   SingpassAttributes,
+  SpcpCookies,
   SpcpDomainSettings,
 } from './spcp.types'
 import {
@@ -189,6 +192,23 @@ export class SpcpService {
       })
       return ok({ isValid: false, errorCode })
     }
+  }
+
+  /**
+   * Extracts the SP or CP JWT from an object containing cookies
+   * @param cookies Object containing cookies
+   * @param authType 'SP' or 'CP'
+   */
+  extractJwt(
+    cookies: SpcpCookies,
+    authType: AuthType.SP | AuthType.CP,
+  ): Result<string, MissingJwtError> {
+    const jwtName = authType === AuthType.SP ? JwtName.SP : JwtName.CP
+    const cookie = cookies[jwtName]
+    if (!cookie) {
+      return err(new MissingJwtError())
+    }
+    return ok(cookie)
   }
 
   /**
