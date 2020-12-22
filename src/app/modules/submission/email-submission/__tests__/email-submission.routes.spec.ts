@@ -79,7 +79,7 @@ EmailSubmissionsRouter.post(
 
 const EmailSubmissionsApp = setupApp('/', EmailSubmissionsRouter)
 
-describe('email-submissions.routes', () => {
+describe('email-submission.routes', () => {
   let request: Session
 
   beforeAll(async () => await dbHandler.connect())
@@ -93,208 +93,270 @@ describe('email-submissions.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('SPCP authentication', () => {
-    it('should return 200 when SingPass submission is valid', async () => {
-      mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-        cb(null, {
-          userName: 'S1234567A',
-        }),
-      )
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.SP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
+    describe('SingPass', () => {
+      it('should return 200 when submission is valid', async () => {
+        mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+          cb(null, {
+            userName: 'S1234567A',
+          }),
+        )
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.SP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
 
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
-        .set('Cookie', ['jwtSp=mockJwt'])
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtSp=mockJwt'])
 
-      expect(response.status).toBe(200)
-      expect(response.body).toEqual({
-        message: 'Form submission successful.',
-        submissionId: expect.any(String),
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+        })
+      })
+
+      it('should return 401 when submission does not have JWT', async () => {
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.SP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
+      })
+
+      it('should return 401 when submission has the wrong JWT type', async () => {
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.SP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtCp=mockJwt'])
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
+      })
+
+      it('should return 401 when submission has invalid JWT', async () => {
+        mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+          cb(new Error()),
+        )
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.SP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtSp=mockJwt'])
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
+      })
+
+      it('should return 401 when submission has JWT with the wrong shape', async () => {
+        mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+          cb(null, {
+            wrongKey: 'S1234567A',
+          }),
+        )
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.SP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtSp=mockJwt'])
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
       })
     })
 
-    it('should return 200 when CorpPass submission is valid', async () => {
-      mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-        cb(null, {
-          userName: 'S1234567A',
-          userInfo: 'MyCorpPassUEN',
-        }),
-      )
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.CP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
+    describe('CorpPass', () => {
+      it('should return 200 when submission is valid', async () => {
+        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+          cb(null, {
+            userName: 'S1234567A',
+            userInfo: 'MyCorpPassUEN',
+          }),
+        )
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.CP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
 
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
-        .set('Cookie', ['jwtCp=mockJwt'])
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtCp=mockJwt'])
 
-      expect(response.status).toBe(200)
-      expect(response.body).toEqual({
-        message: 'Form submission successful.',
-        submissionId: expect.any(String),
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+        })
       })
-    })
 
-    it('should return 401 when SingPass submission does not have JWT', async () => {
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.SP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
+      it('should return 401 when submission does not have JWT', async () => {
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.CP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
 
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
 
-      expect(response.status).toBe(401)
-      expect(response.body).toEqual({
-        message:
-          'Something went wrong with your login. Please try logging in and submitting again.',
-        spcpSubmissionFailure: true,
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
       })
-    })
 
-    it('should return 401 when CorpPass submission does not have JWT', async () => {
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.CP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
+      it('should return 401 when submission has the wrong JWT type', async () => {
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.CP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
 
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtSp=mockJwt'])
 
-      expect(response.status).toBe(401)
-      expect(response.body).toEqual({
-        message:
-          'Something went wrong with your login. Please try logging in and submitting again.',
-        spcpSubmissionFailure: true,
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
       })
-    })
 
-    it('should return 401 when SingPass submission has the wrong JWT type', async () => {
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.SP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
+      it('should return 401 when submission has invalid JWT', async () => {
+        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+          cb(new Error()),
+        )
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.CP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
 
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
-        .set('Cookie', ['jwtCp=mockJwt'])
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtCp=mockJwt'])
 
-      expect(response.status).toBe(401)
-      expect(response.body).toEqual({
-        message:
-          'Something went wrong with your login. Please try logging in and submitting again.',
-        spcpSubmissionFailure: true,
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
       })
-    })
 
-    it('should return 401 when CorpPass submission has the wrong JWT type', async () => {
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.CP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
+      it('should return 401 when submission has JWT with the wrong shape', async () => {
+        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+          cb(null, {
+            wrongKey: 'S1234567A',
+          }),
+        )
+        const { form } = await dbHandler.insertEmailForm()
+        // authType cannot be saved if form is published, so need to save twice
+        form.esrvcId = 'mockEsrvcId'
+        form.authType = AuthType.CP
+        form.hasCaptcha = false
+        await form.save()
+        form.status = Status.Public
+        await form.save()
 
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
-        .set('Cookie', ['jwtSp=mockJwt'])
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', ['jwtCp=mockJwt'])
 
-      expect(response.status).toBe(401)
-      expect(response.body).toEqual({
-        message:
-          'Something went wrong with your login. Please try logging in and submitting again.',
-        spcpSubmissionFailure: true,
-      })
-    })
-
-    it('should return 401 when SingPass submission has invalid JWT', async () => {
-      mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-        cb(new Error()),
-      )
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.SP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
-
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
-        .set('Cookie', ['jwtSp=mockJwt'])
-
-      expect(response.status).toBe(401)
-      expect(response.body).toEqual({
-        message:
-          'Something went wrong with your login. Please try logging in and submitting again.',
-        spcpSubmissionFailure: true,
-      })
-    })
-
-    it('should return 401 when CorpPass submission has invalid JWT', async () => {
-      mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-        cb(new Error()),
-      )
-      const { form } = await dbHandler.insertEmailForm()
-      // authType cannot be saved if form is published, so need to save twice
-      form.esrvcId = 'mockEsrvcId'
-      form.authType = AuthType.CP
-      form.hasCaptcha = false
-      await form.save()
-      form.status = Status.Public
-      await form.save()
-
-      const response = await request
-        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-        .field('body', JSON.stringify({ isPreview: false, responses: [] }))
-        .query({ captchaResponse: 'null' })
-        .set('Cookie', ['jwtCp=mockJwt'])
-
-      expect(response.status).toBe(401)
-      expect(response.body).toEqual({
-        message:
-          'Something went wrong with your login. Please try logging in and submitting again.',
-        spcpSubmissionFailure: true,
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
       })
     })
   })
