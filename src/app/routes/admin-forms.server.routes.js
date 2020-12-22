@@ -10,7 +10,6 @@ let adminForms = require('../../app/controllers/admin-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
 let submissions = require('../../app/controllers/submissions.server.controller')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
-const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
@@ -20,6 +19,7 @@ const {
 const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField, ResponseMode } = require('../../types')
+const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
 
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
@@ -524,7 +524,7 @@ module.exports = function (app) {
     EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     AdminFormController.passThroughSpcp,
     submissions.injectAutoReplyInfo,
-    webhookVerifiedContentFactory.encryptedVerifiedFields,
+    VerifiedContentMiddleware.encryptVerifiedSpcpFields,
     EncryptSubmissionMiddleware.prepareEncryptSubmission,
     adminForms.passThroughSaveMetadataToDb,
     submissions.sendAutoReply,
