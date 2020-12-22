@@ -126,6 +126,7 @@ async function decryptIntoCsv(data) {
       id: submission._id,
     }
     try {
+      csvRecord.submissionData = { record: [] }
       const decryptedSubmission = processDecryptedContent(
         formsgSdk.crypto.decrypt(secretKey, {
           encryptedContent: submission.encryptedContent,
