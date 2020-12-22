@@ -132,12 +132,14 @@ const insertEmailForm = async ({
   mailDomain = 'test.gov.sg',
   mailName = 'test',
   shortName = 'govtest',
+  formOptions = {},
 }: {
   formId?: ObjectID
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
   shortName?: string
+  formOptions?: Partial<IEmailFormSchema>
 } = {}): Promise<{
   form: IEmailFormSchema
   user: IUserSchema
@@ -158,6 +160,7 @@ const insertEmailForm = async ({
     responseMode: ResponseMode.Email,
     emails: [user.email],
     _id: formId,
+    ...formOptions,
   })
 
   return {
@@ -173,12 +176,14 @@ const insertEncryptForm = async ({
   mailDomain = 'test.gov.sg',
   mailName = 'test',
   shortName = 'govtest',
+  formOptions = {},
 }: {
   formId?: ObjectID
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
   shortName?: string
+  formOptions?: Partial<IEncryptedFormSchema>
 } = {}): Promise<{
   form: IEncryptedFormSchema
   user: IUserSchema
@@ -199,6 +204,7 @@ const insertEncryptForm = async ({
     responseMode: ResponseMode.Encrypt,
     _id: formId,
     publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
+    ...formOptions,
   })
 
   return {

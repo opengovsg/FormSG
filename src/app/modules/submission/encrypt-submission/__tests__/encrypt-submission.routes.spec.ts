@@ -123,14 +123,14 @@ describe('encrypt-submission.routes', () => {
             userName: 'S1234567A',
           }),
         )
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.SP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.SP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -146,14 +146,14 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission does not have JWT', async () => {
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.SP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.SP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -169,14 +169,14 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission has the wrong JWT type', async () => {
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.SP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.SP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -196,14 +196,14 @@ describe('encrypt-submission.routes', () => {
         mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
           cb(new Error()),
         )
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.SP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.SP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -225,14 +225,14 @@ describe('encrypt-submission.routes', () => {
             wrongKey: 'S1234567A',
           }),
         )
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.SP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.SP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -257,14 +257,14 @@ describe('encrypt-submission.routes', () => {
             userInfo: 'MyCorpPassUEN',
           }),
         )
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.CP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.CP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -280,14 +280,14 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission does not have JWT', async () => {
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.CP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.CP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -303,14 +303,14 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission has the wrong JWT type', async () => {
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.CP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.CP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -330,14 +330,14 @@ describe('encrypt-submission.routes', () => {
         mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
           cb(new Error()),
         )
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.CP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.CP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -359,14 +359,14 @@ describe('encrypt-submission.routes', () => {
             wrongKey: 'S1234567A',
           }),
         )
-        const { form } = await dbHandler.insertEncryptForm()
-        // authType cannot be saved if form is published, so need to save twice
-        form.esrvcId = 'mockEsrvcId'
-        form.authType = AuthType.CP
-        form.hasCaptcha = false
-        await form.save()
-        form.status = Status.Public
-        await form.save()
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: AuthType.CP,
+            hasCaptcha: false,
+            status: Status.Public,
+          },
+        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
