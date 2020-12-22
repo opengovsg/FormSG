@@ -20,12 +20,22 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
+import {
+  HashDidNotMatchError,
+  HashingError,
+  MissingHashError,
+} from '../../../services/myinfo/myinfo.errors'
 import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
 import {
   FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import {
+  InvalidJwtError,
+  MissingJwtError,
+  VerifyJwtError,
+} from '../../spcp/spcp.errors'
 import {
   ConflictError,
   ProcessingError,
@@ -366,6 +376,31 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
+      }
+    case MissingJwtError:
+    case VerifyJwtError:
+    case InvalidJwtError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage:
+          'Something went wrong with your login. Please try logging in and submitting again.',
+      }
+    case MissingHashError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'MyInfo verification expired, please refresh and try again.',
+      }
+    case HashDidNotMatchError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'MyInfo verification failed.',
+      }
+    case HashingError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage:
+          'MyInfo verification unavailable, please try again later.',
       }
     default:
       logger.error({
