@@ -20,10 +20,6 @@ const logger = createLoggerWithLabel(module)
 /**
  * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
  * to produce req.body.parsedResponses
- *
- * @param  {Express.Request} req - Express request object
- * @param  {Express.Response} res - Express response object
- * @param  {Function} next - Express next middleware function
  */
 
 export const validateAndProcessEncryptSubmission: RequestHandler<
@@ -73,10 +69,6 @@ export const validateAndProcessEncryptSubmission: RequestHandler<
 
 /**
  * Verify structure of encrypted response
- *
- * @param  {Express.Request} req - Express request object
- * @param  {Express.Response} res - Express response object
- * @param  {Function} next - Express next middleware function
  */
 
 export const prepareEncryptSubmission: RequestHandler<
