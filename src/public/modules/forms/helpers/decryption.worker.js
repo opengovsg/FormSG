@@ -110,6 +110,14 @@ async function decryptIntoCsv(data) {
   let attachmentDownloadUrls = new Map()
   let downloadBlob
 
+  let downloadStatus = {
+    _id: '000000000000000000000000',
+    fieldType: 'textfield',
+    question: 'Attachment Download Status',
+    answer: 'Unknown',
+    questionNumber: 1000000,
+  }
+
   try {
     submission = JSON.parse(line)
 
@@ -132,8 +140,10 @@ async function decryptIntoCsv(data) {
           submissionId: submission._id,
           record: decryptedSubmission,
         }
+        downloadStatus.answer = 'OK'
       } else {
         csvRecord.status = 'UNVERIFIED'
+        downloadStatus.answer = 'Unverified'
       }
       if (downloadAttachments) {
         let questionCount = 0
@@ -152,14 +162,6 @@ async function decryptIntoCsv(data) {
           }
         })
 
-        let downloadStatus = {
-          _id: '000000000000000000000000',
-          fieldType: 'textfield',
-          question: 'Attachment Download Status',
-          answer: 'Unknown',
-          questionNumber: 1000000,
-        }
-
         try {
           downloadBlob = await queue.add(() =>
             downloadAndDecryptAttachmentsAsZip(
@@ -167,15 +169,23 @@ async function decryptIntoCsv(data) {
               secretKey,
             ),
           )
-          downloadStatus.answer = 'Success'
+          downloadStatus.answer = 'OK (Attachment Download Success)'
         } catch (error) {
+          downloadStatus.answer = 'Attachment Download Error'
           csvRecord.status = 'ATTACHMENT_ERROR'
-          downloadStatus.answer = 'Failed'
         }
-        csvRecord.submissionData.record.unshift(downloadStatus)
       }
+
+      // Add status field to the start of the submissionData (first field)
+      csvRecord.submissionData.record.unshift(downloadStatus)
     } catch (error) {
+      downloadStatus.answer = 'Decryption Error'
       csvRecord.status = 'ERROR'
+      csvRecord.submissionData = {
+        created: submission.created,
+        submissionId: submission._id,
+        record: [downloadStatus],
+      }
     }
   } catch (err) {
     csvRecord = {

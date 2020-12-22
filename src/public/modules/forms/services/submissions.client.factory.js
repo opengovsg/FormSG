@@ -305,14 +305,17 @@ function SubmissionsFactory(
               if (csvRecord.status === 'ATTACHMENT_ERROR') {
                 attachmentErrorCount++
                 errorCount++
-                // accumulate dataset anyway, since the download is otherwise OK
-                experimentalCsvGenerator.addRecord(csvRecord.submissionData)
               } else if (csvRecord.status === 'ERROR') {
                 errorCount++
               } else if (csvRecord.status === 'UNVERIFIED') {
                 unverifiedCount++
               } else {
                 // accumulate dataset
+                experimentalCsvGenerator.addRecord(csvRecord.submissionData)
+              }
+
+              if (csvRecord.submissionData) {
+                // accumulate dataset if it exists, since we may have status columns available
                 experimentalCsvGenerator.addRecord(csvRecord.submissionData)
               }
 
