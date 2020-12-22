@@ -275,25 +275,25 @@ const updateCurrentField = (
 /**
  * Private utility to insert given field in the existing form fields.
  * @param existingFormFields the existing form fields
- * @param newField the new field to insert into the back of current fields
- * @returns ok(new array with new field inserted) if newField does not already exist
+ * @param fieldToInsert the field to insert into the back of current fields
+ * @returns ok(new array with field inserted) if fieldToInsert does not already exist
  * @returns err(EditFieldError) if field to be inserted already exists in current fields
  */
-const insertNewField = (
+const insertField = (
   existingFormFields: IFieldSchema[],
-  newField: IFieldSchema,
+  fieldToInsert: IFieldSchema,
 ): EditFormFieldResult => {
   const doesFieldExist = existingFormFields.some(
-    (f) => f.globalId === newField.globalId,
+    (f) => f.globalId === fieldToInsert.globalId,
   )
 
   return doesFieldExist
     ? err(
         new EditFieldError(
-          `Field ${newField.globalId} to be created already exists`,
+          `Field ${fieldToInsert.globalId} to be inserted already exists`,
         ),
       )
-    : ok([...existingFormFields, newField])
+    : ok([...existingFormFields, fieldToInsert])
 }
 
 /**
@@ -314,30 +314,6 @@ const deleteField = (
   return updatedFormFields.length === existingFormFields.length
     ? err(new EditFieldError('Field to be deleted does not exist'))
     : ok(updatedFormFields)
-}
-
-/**
- * Private utility to insert a duplicate of given field into the end of the existing form fields.
- * @param existingFormFields the existing form fields
- * @param fieldToDupe the field to duplicate and insert into the existing form fields
- * @returns ok(new array with updated field) if fieldToDupe can be found in the current fields
- * @returns err(EditFieldError) if field to be duplicate does not exist
- */
-const insertDuplicatedField = (
-  existingFormFields: IFieldSchema[],
-  fieldToDupe: IFieldSchema,
-): EditFormFieldResult => {
-  const doesFieldExist = existingFormFields.some(
-    (f) => f.globalId === fieldToDupe.globalId,
-  )
-
-  return doesFieldExist
-    ? err(
-        new EditFieldError(
-          `Field ${fieldToDupe.globalId} to be duplicated already exists`,
-        ),
-      )
-    : ok([...existingFormFields, fieldToDupe])
 }
 
 /**
@@ -378,12 +354,12 @@ export const getUpdatedFormFields = (
   const { field: fieldToUpdate, action } = editFieldParams
 
   switch (action.name) {
+    // Duplicate is just an alias of create for the use case.
     case EditFieldActions.Create:
-      return insertNewField(currentFormFields, fieldToUpdate)
+    case EditFieldActions.Duplicate:
+      return insertField(currentFormFields, fieldToUpdate)
     case EditFieldActions.Delete:
       return deleteField(currentFormFields, fieldToUpdate)
-    case EditFieldActions.Duplicate:
-      return insertDuplicatedField(currentFormFields, fieldToUpdate)
     case EditFieldActions.Reorder:
       return reorderField(currentFormFields, fieldToUpdate, action.position)
     case EditFieldActions.Update:
