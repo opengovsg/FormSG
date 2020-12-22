@@ -1,9 +1,14 @@
-// This file contains mapping layers for verifiedContent in encrypted submission
-// data.
-// The mapping layers will translate certain keys such as SingPass login key
-// values to keys that our application has designated.
+/**
+ * This file contains mapping layers for `verifiedContent` in encrypted submission
+ * data.
+ * The mapping layers will translate certain keys such as SingPass login key
+ * values to keys that our application has designated.
+ */
 import pick from 'lodash/pick'
 import values from 'lodash/values'
+import { UnreachableCaseError } from 'ts-essentials'
+
+import { AuthType } from '../../types'
 
 // Centralised mapping layer for use in other files to get the mapped value.
 export enum VerifiedKeys {
@@ -16,28 +21,45 @@ interface ISpVerifiedKeys {
   uinFin: VerifiedKeys.SpUinFin
 }
 
-// Note: The same key in different contexts such as authType can be mapped to a
-// different key. This is why there exists different mapping layers instead of
-// just one.
-const SpVerifiedKeys: ISpVerifiedKeys = {
-  uinFin: VerifiedKeys.SpUinFin,
-}
-
 interface ICpVerifiedKeys {
   uinFin: VerifiedKeys.CpUen
   userInfo: VerifiedKeys.CpUid
 }
 
-const CpVerifiedKeys: ICpVerifiedKeys = {
+/**
+ * @note The same key in different contexts such as authType can be mapped to a
+ * different key. This is why there exists different mapping layers instead of
+ * just one.
+ *
+ * For example, `uinFin` key in AuthType.SP context maps to
+ * `VerifiedKeys.SpUinFin` for use in this application.
+ * Upstream also returns the `uinFin` key for the AuthType.CP context. To
+ * differentiate between the two contexts in this application, the mapping layer
+ * will map the `uinFin` key for CP upstream into the `VerifiedKeys.CpUen` key.
+ */
+
+/**
+ * Maps key given by SingPass JWT upstream to key that our application understands.
+ */
+const SP_KEYMAP_TO_NEW_KEY: ISpVerifiedKeys = {
+  uinFin: VerifiedKeys.SpUinFin,
+}
+
+/**
+ * Maps key given by CorpPass JWT upstream to key that our application understands.
+ */
+const CP_KEYMAP_TO_NEW_KEY: ICpVerifiedKeys = {
   uinFin: VerifiedKeys.CpUen,
   userInfo: VerifiedKeys.CpUid,
 }
 
-// Array determines the order to process and display the verified fields in both
-// the detailed responses page and the csv file.
+/**
+ * Array determines the order to process and display the verified fields in both
+ * the detailed responses page and the csv file.
+ */
 export const CURRENT_VERIFIED_FIELDS: VerifiedKeys[] = ([] as VerifiedKeys[])
-  .concat(values(SpVerifiedKeys))
-  .concat(values(CpVerifiedKeys))
+  .concat(values(SP_KEYMAP_TO_NEW_KEY))
+  .concat(values(CP_KEYMAP_TO_NEW_KEY))
 
 export type VerifiedKeyMap =
   | ISpVerifiedKeys
@@ -50,14 +72,16 @@ export type VerifiedKeyMap =
  * @param type Type of mapping layer to retrieve
  * @returns {Record<string, string} The mapping layer
  */
-const getVerifiedKeyMap = (type?: 'SP' | 'CP'): VerifiedKeyMap => {
+const getVerifiedKeyMap = (type: AuthType): VerifiedKeyMap => {
   switch (type) {
-    case 'SP':
-      return SpVerifiedKeys
-    case 'CP':
-      return CpVerifiedKeys
-    default:
+    case AuthType.SP:
+      return SP_KEYMAP_TO_NEW_KEY
+    case AuthType.CP:
+      return CP_KEYMAP_TO_NEW_KEY
+    case AuthType.NIL:
       return {}
+    default:
+      throw new UnreachableCaseError(type)
   }
 }
 
@@ -76,25 +100,27 @@ const renameKeys = (obj: Record<string, any>, newKeys: Record<string, any>) => {
   return Object.assign({}, ...keyValues)
 }
 
-interface IMappableData {
-  type?: 'SP' | 'CP'
-  data: Record<string, unknown>
-}
-
 /**
- *  Return new object with only the keys that exist in the field mapping,
- * with their new keys as mapped. For example,
- *    type = 'CP',
- *    data = { uinFin: '1234567', other: '123' }
- * will return
- *    { cpUen: '1234567' }
+ * Return new object with only the keys that exist in the field mapping,
+ * with their new keys as mapped.
+ * For example,
+ * ```
+ * { type: 'CP', data: { uinFin: '1234567', other: '123' } }
+ * ```
+ * will be mapped to
+ * ```
+ * { cpUen: '1234567' }
+ * ```
  * as `uinFin` is mapped to `cpUen`. `other` is removed
  * as the key does not map to anything.
  */
 export const mapDataToKey = ({
   type,
   data,
-}: IMappableData): Record<string, unknown> => {
+}: {
+  type: AuthType
+  data: Record<string, unknown>
+}): Record<string, unknown> => {
   const fieldMap = getVerifiedKeyMap(type)
   const subsetKeys = pick(data, Object.keys(fieldMap))
 
