@@ -6,11 +6,9 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   BasicField,
-  EmailAutoReplyField,
   EmailData,
   EmailDataForOneField,
   EmailFormField,
-  EmailJsonField,
   FieldResponse,
   IAttachmentInfo,
   IEmailFormSchema,
@@ -92,7 +90,7 @@ export const createEmailData = (
     parsedResponses
       .flatMap((response) => createEmailDataForOneField(response, hashedFields))
       // Then reshape such that autoReplyData, jsonData and formData are each arrays
-      .reduce(
+      .reduce<EmailData>(
         (acc, dataForOneField) => {
           if (dataForOneField.autoReplyData) {
             acc.autoReplyData.push(dataForOneField.autoReplyData)
@@ -104,9 +102,9 @@ export const createEmailData = (
           return acc
         },
         {
-          autoReplyData: [] as EmailAutoReplyField[],
-          jsonData: [] as EmailJsonField[],
-          formData: [] as EmailFormField[],
+          autoReplyData: [],
+          jsonData: [],
+          formData: [],
         },
       )
   )
@@ -276,10 +274,10 @@ export const sendSubmissionToAdmin = (
 export const extractEmailAnswers = (
   parsedResponses: ProcessedFieldResponse[],
 ): string[] => {
-  return parsedResponses.reduce((acc, response) => {
+  return parsedResponses.reduce<string[]>((acc, response) => {
     if (response.fieldType === BasicField.Email && response.answer) {
       acc.push(response.answer)
     }
     return acc
-  }, [] as string[])
+  }, [])
 }

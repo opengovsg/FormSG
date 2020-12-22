@@ -265,12 +265,12 @@ export const sendEmailConfirmations = ({
     })
     return new SendEmailConfirmationError()
   }).andThen((emailResults) => {
-    const errors = emailResults.reduce((acc, singleEmail) => {
+    const errors = emailResults.reduce<string[]>((acc, singleEmail) => {
       if (singleEmail.status === 'rejected') {
         acc.push(singleEmail.reason)
       }
       return acc
-    }, [] as string[])
+    }, [])
     if (errors.length > 0) {
       logger.error({
         message: 'Some email confirmations could not be sent',

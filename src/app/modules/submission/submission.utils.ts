@@ -48,7 +48,7 @@ export const extractEmailConfirmationData = (
   formFields: IFieldSchema[] | undefined,
 ): AutoReplyMailData[] => {
   const fieldsById = keyBy(formFields, '_id')
-  return parsedResponses.reduce((acc, response) => {
+  return parsedResponses.reduce<AutoReplyMailData[]>((acc, response) => {
     const field = fieldsById[response._id]
     if (
       field &&
@@ -68,5 +68,5 @@ export const extractEmailConfirmationData = (
       }
     }
     return acc
-  }, [] as AutoReplyMailData[])
+  }, [])
 }
