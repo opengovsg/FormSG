@@ -224,6 +224,8 @@ export const getFormSubmissionsCount = (
  * @param param0.parsedResponses Responses for each field
  * @param param0.autoReplyData Subset of responses to be included in email confirmation
  * @param param0.attachments Attachments to be included in email
+ * @returns ok(true) if all emails were sent successfully
+ * @returns err(SendEmailConfirmationError) if any email failed to be sent
  */
 export const sendEmailConfirmations = ({
   form,

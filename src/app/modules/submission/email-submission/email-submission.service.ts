@@ -1,5 +1,4 @@
 import crypto from 'crypto'
-import { sumBy } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -40,6 +39,7 @@ import {
 } from './email-submission.errors'
 import { SubmissionHash } from './email-submission.types'
 import {
+  areAttachmentsMoreThan7MB,
   concatAttachmentsAndResponses,
   getAnswerForCheckbox,
   getAnswerRowsForTable,
@@ -56,6 +56,7 @@ const logger = createLoggerWithLabel(module)
  * Helper function for createEmailData.
  * @param response Processed and validated response for one field
  * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
+ * @returns email data for one form field
  */
 const createEmailDataForOneField = (
   response: ProcessedFieldResponse,
@@ -77,6 +78,7 @@ const createEmailDataForOneField = (
  * Creates data to be included in the response and autoreply emails.
  * @param parsedResponses Processed and validated responses
  * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
+ * @returns email data for admin response and email confirmations
  */
 export const createEmailData = (
   parsedResponses: ProcessedFieldResponse[],
@@ -114,15 +116,16 @@ export const createEmailData = (
  * Validates that the attachments in a submission do not violate form-level
  * constraints e.g. form-wide attachment size limit.
  * @param parsedResponses Unprocessed responses
+ * @returns okAsync(true) if validation passes
+ * @returns errAsync(InvalidFileExtensionError) if invalid file extensions are found
+ * @returns errAsync(AttachmentTooLargeError) if total attachment size exceeds 7MB
  */
 export const validateAttachments = (
   parsedResponses: FieldResponse[],
 ): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
   const logMeta = { action: 'validateAttachments' }
   const attachments = mapAttachmentsFromResponses(parsedResponses)
-  // Check if total attachments size is < 7mb
-  const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
-  if (totalAttachmentSize > 7000000) {
+  if (areAttachmentsMoreThan7MB(attachments)) {
     logger.error({
       message: 'Attachment size is too large',
       meta: logMeta,
@@ -158,6 +161,9 @@ export const validateAttachments = (
  * Creates hash of a submission
  * @param formData Responses sent to admin
  * @param attachments Attachments in response
+ * @returns okAsync(hash and salt) if hashing was successful
+ * @returns errAsync(SubmissionHashError) if error occurred while hashing
+ * @returns errAsync(ConcatSubmissionError) if error occurred while concatenating attachments
  */
 export const hashSubmission = (
   formData: EmailFormField[],
@@ -213,6 +219,8 @@ export const hashSubmission = (
  * Saves an email submission to the database.
  * @param form
  * @param submissionHash Hash of submission and salt
+ * @returns okAsync(the saved document) if submission was saved successfully
+ * @returns errAsync(DatabaseError) if submission failed to be saved
  */
 export const saveSubmissionMetadata = (
   form: IEmailFormSchema,
@@ -246,6 +254,8 @@ export const saveSubmissionMetadata = (
 /**
  * Sends email mode response to admin
  * @param adminEmailParams Parameters to be passed on to mail service
+ * @returns okAsync(true) if response was sent successfully to all recipients
+ * @returns errAsync(SendAdminEmailError) if at least one email failed to be sent
  */
 export const sendSubmissionToAdmin = (
   adminEmailParams: Parameters<typeof MailService['sendSubmissionToAdmin']>[0],
@@ -270,6 +280,7 @@ export const sendSubmissionToAdmin = (
 /**
  * Extracts an array of answers to email fields
  * @param parsedResponses All form responses
+ * @returns an array of all email field responses
  */
 export const extractEmailAnswers = (
   parsedResponses: ProcessedFieldResponse[],
