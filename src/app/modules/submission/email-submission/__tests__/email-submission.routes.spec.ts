@@ -32,6 +32,11 @@ jest.mock('nodemailer', () => ({
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/email'
 const SUBMISSIONS_ENDPT = `${SUBMISSIONS_ENDPT_BASE}/:formId([a-fA-F0-9]{24})`
 
+const MOCK_SUBMISSION_BODY = {
+  responses: [],
+  isPreview: false,
+}
+
 const EmailSubmissionsRouter = Router()
 EmailSubmissionsRouter.post(
   SUBMISSIONS_ENDPT,
@@ -111,7 +116,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtSp=mockJwt'])
 
@@ -134,7 +139,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
 
         expect(response.status).toBe(401)
@@ -157,7 +162,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtCp=mockJwt'])
 
@@ -184,7 +189,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtSp=mockJwt'])
 
@@ -213,7 +218,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtSp=mockJwt'])
 
@@ -245,7 +250,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtCp=mockJwt'])
 
@@ -268,7 +273,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
 
         expect(response.status).toBe(401)
@@ -291,7 +296,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtSp=mockJwt'])
 
@@ -318,7 +323,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtCp=mockJwt'])
 
@@ -347,7 +352,7 @@ describe('email-submission.routes', () => {
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify({ isPreview: false, responses: [] }))
+          .field('body', JSON.stringify(MOCK_SUBMISSION_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtCp=mockJwt'])
 
