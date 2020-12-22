@@ -14,7 +14,17 @@ import {
   IAttachmentResponse,
   MapRouteError,
 } from '../../../../types'
-import { DatabaseError } from '../../core/core.errors'
+import {
+  CaptchaConnectionError,
+  MissingCaptchaError,
+  VerifyCaptchaError,
+} from '../../../services/captcha/captcha.errors'
+import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../../form/form.errors'
 import {
   ConflictError,
   ProcessingError,
@@ -309,6 +319,7 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case DatabaseError:
     case SubmissionHashError:
+    case MissingFeatureError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
@@ -319,6 +330,39 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: "Oops! We can't find the form you're looking for.",
+      }
+    case PrivateFormError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case FormDeletedError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case CaptchaConnectionError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not verify captcha. Please submit again in a few minutes.',
+      }
+    case VerifyCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was incorrect. Please submit again.',
+      }
+    case MissingCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was missing. Please refresh and submit again.',
       }
     default:
       return {
