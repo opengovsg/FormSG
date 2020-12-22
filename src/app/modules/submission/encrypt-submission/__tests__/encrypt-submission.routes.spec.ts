@@ -38,6 +38,7 @@ const MOCK_SUBMISSION_BODY = {
   version: 1,
 }
 
+// TODO (#149): Import router instead of creating it here
 const EncryptSubmissionsRouter = Router()
 EncryptSubmissionsRouter.post(
   SUBMISSIONS_ENDPT,
