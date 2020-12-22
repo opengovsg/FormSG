@@ -6,10 +6,10 @@ import { mocked } from 'ts-jest/utils'
 
 import * as FormController from 'src/app/controllers/forms.server.controller'
 import * as MyInfoController from 'src/app/controllers/myinfo.server.controller'
-import * as SubmissionsController from 'src/app/controllers/submissions.server.controller'
 import * as PublicFormMiddleware from 'src/app/modules/form/public-form/public-form.middlewares'
 import * as SpcpController from 'src/app/modules/spcp/spcp.controller'
 import * as EmailSubmissionsMiddleware from 'src/app/modules/submission/email-submission/email-submission.middleware'
+import * as SubmissionsMiddleware from 'src/app/modules/submission/submission.middleware'
 import { CaptchaFactory } from 'src/app/services/captcha/captcha.factory'
 import * as CaptchaMiddleware from 'src/app/services/captcha/captcha.middleware'
 import { AuthType, BasicField, Status } from 'src/types'
@@ -74,12 +74,11 @@ EmailSubmissionsRouter.post(
   }),
   EmailSubmissionsMiddleware.validateEmailSubmission,
   MyInfoController.verifyMyInfoVals as RequestHandler,
-  (SubmissionsController.injectAutoReplyInfo as unknown) as RequestHandler,
   SpcpController.appendVerifiedSPCPResponses as RequestHandler,
   EmailSubmissionsMiddleware.prepareEmailSubmission as RequestHandler,
   EmailSubmissionsMiddleware.saveMetadataToDb,
   EmailSubmissionsMiddleware.sendAdminEmail,
-  SubmissionsController.sendAutoReply,
+  SubmissionsMiddleware.sendEmailConfirmations as RequestHandler,
 )
 
 const EmailSubmissionsApp = setupApp('/', EmailSubmissionsRouter)
