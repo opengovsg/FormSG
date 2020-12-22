@@ -16,7 +16,7 @@ export interface IMyInfoSchema extends IMyInfo, Document {
 }
 
 export interface IField {
-  globalId: string
+  globalId?: string
   title: string
   description: string
   required: boolean
