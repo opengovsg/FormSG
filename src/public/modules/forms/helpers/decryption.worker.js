@@ -113,7 +113,7 @@ async function decryptIntoCsv(data) {
   let downloadStatus = {
     _id: '000000000000000000000000',
     fieldType: 'textfield',
-    question: 'Attachment Download Status',
+    question: 'Download Status',
     answer: 'Unknown',
     questionNumber: 1000000,
   }

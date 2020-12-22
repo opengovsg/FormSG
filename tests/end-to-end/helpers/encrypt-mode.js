@@ -131,7 +131,7 @@ async function checkDownloadCsv(t, formData, authData, formId) {
     `${getDownloadsFolder()}/${formOptions.title}-${formId}.csv`,
   )
   const records = parse(csvContent, { relax_column_count: true })
-  const headers = ['Reference number', 'Timestamp']
+  const headers = ['Reference number', 'Timestamp', 'Download Status']
   const answers = []
   formFields.forEach((field) => addExpectedCsvResponse(field, headers, answers))
   await t.expect(records[CSV_HEADER_ROW_INDEX]).eql(headers)
