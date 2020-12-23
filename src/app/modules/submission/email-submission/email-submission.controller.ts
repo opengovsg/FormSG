@@ -200,7 +200,7 @@ export const handleEmailSubmission: RequestHandler<
   )
   if (sendAdminEmailResult.isErr()) {
     logger.error({
-      message: 'Error while saving metadata to database',
+      message: 'Error sending submission to admin',
       meta: logMetaWithSubmission,
       error: sendAdminEmailResult.error,
     })
