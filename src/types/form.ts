@@ -197,6 +197,8 @@ export interface IEncryptedForm extends IForm {
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
 
+export type IPopulatedEncryptedForm = IPopulatedForm & IEncryptedForm
+
 export interface IEmailForm extends IForm {
   // string type is allowed due to a setter on the form schema that transforms
   // strings to string array.
@@ -205,6 +207,8 @@ export interface IEmailForm extends IForm {
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
+
+export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>

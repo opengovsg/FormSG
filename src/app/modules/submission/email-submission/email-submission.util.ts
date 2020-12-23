@@ -13,7 +13,10 @@ import {
   FieldResponse,
   IAttachmentInfo,
   IAttachmentResponse,
+  IPopulatedEmailForm,
+  IPopulatedForm,
   MapRouteError,
+  ResponseMode,
 } from '../../../../types'
 import {
   CaptchaConnectionError,
@@ -39,6 +42,7 @@ import {
 import {
   ConflictError,
   ProcessingError,
+  ResponseModeError,
   SendAdminEmailError,
   ValidateFieldError,
 } from '../submission.errors'
@@ -325,6 +329,7 @@ export const mapRouteError: MapRouteError = (error) => {
     case ProcessingError:
     case ValidateFieldError:
     case ConcatSubmissionError:
+    case ResponseModeError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
@@ -515,4 +520,14 @@ export const concatAttachmentsAndResponses = (
   }, '')
   response += attachments.reduce((acc, { content }) => acc + content, '')
   return response
+}
+
+/**
+ * Type guard for whether a populated form is email mode
+ * @param form Form document to check
+ */
+export const isEmailModeForm = (
+  form: IPopulatedForm,
+): form is IPopulatedEmailForm => {
+  return form.responseMode === ResponseMode.Email
 }

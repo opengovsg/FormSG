@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
@@ -10,8 +10,10 @@ import {
   EmailFormField,
   FieldResponse,
   IAttachmentInfo,
-  IEmailFormSchema,
   IEmailSubmissionSchema,
+  IPopulatedEmailForm,
+  IPopulatedForm,
+  ResponseMode,
   SubmissionType,
 } from '../../../../types'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
@@ -22,7 +24,7 @@ import {
 } from '../../../utils/field-validation/field-validation.guards'
 import { DatabaseError } from '../../core/core.errors'
 import { transformEmails } from '../../form/form.util'
-import { SendAdminEmailError } from '../submission.errors'
+import { ResponseModeError, SendAdminEmailError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import {
@@ -45,6 +47,7 @@ import {
   getAnswerRowsForTable,
   getFormattedResponse,
   getInvalidFileExtensions,
+  isEmailModeForm,
   mapAttachmentsFromResponses,
 } from './email-submission.util'
 
@@ -223,7 +226,7 @@ export const hashSubmission = (
  * @returns errAsync(DatabaseError) if submission failed to be saved
  */
 export const saveSubmissionMetadata = (
-  form: IEmailFormSchema,
+  form: IPopulatedEmailForm,
   submissionHash: SubmissionHash,
 ): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
   const params = {
@@ -291,4 +294,13 @@ export const extractEmailAnswers = (
     }
     return acc
   }, [])
+}
+
+export const checkFormIsEmailMode = (
+  form: IPopulatedForm,
+): Result<IPopulatedEmailForm, ResponseModeError> => {
+  if (isEmailModeForm(form)) {
+    return ok(form)
+  }
+  return err(new ResponseModeError(ResponseMode.Email, form.responseMode))
 }
