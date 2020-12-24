@@ -3,7 +3,6 @@ import { keyBy } from 'lodash'
 import { BasicField, IFieldSchema, ResponseMode } from '../../../types'
 import { isEmailField } from '../../../types/field/utils/guards'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
-import { assertUnreachable } from '../../utils/assert-unreachable'
 import { FIELDS_TO_REJECT } from '../../utils/field-validation/config'
 
 import { ProcessedFieldResponse } from './submission.types'
@@ -20,8 +19,6 @@ export const getModeFilter = (
       return emailModeFilter
     case ResponseMode.Encrypt:
       return encryptModeFilter
-    default:
-      return assertUnreachable(responseMode)
   }
 }
 
