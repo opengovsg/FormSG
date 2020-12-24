@@ -20,12 +20,15 @@ import {
   InvalidOOBParamsError,
   LoginPageValidationError,
   MissingAttributesError,
+  MissingJwtError,
   RetrieveAttributesError,
   VerifyJwtError,
 } from '../spcp.errors'
 import { SpcpService } from '../spcp.service'
+import { JwtName } from '../spcp.types'
 
 import {
+  MOCK_COOKIES,
   MOCK_CP_JWT_PAYLOAD,
   MOCK_CP_SAML,
   MOCK_DESTINATION,
@@ -797,6 +800,26 @@ describe('spcp.service', () => {
         omit(MOCK_PARAMS, 'spcpCookieDomain') as ISpcpMyInfo,
       )
       expect(spcpService.getCookieSettings()).toEqual({})
+    })
+  })
+
+  describe('extractJwt', () => {
+    it('should return SingPass JWT correctly', () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      const result = spcpService.extractJwt(MOCK_COOKIES, AuthType.SP)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_COOKIES[JwtName.SP])
+    })
+
+    it('should return CorpPass JWT correctly', () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      const result = spcpService.extractJwt(MOCK_COOKIES, AuthType.CP)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_COOKIES[JwtName.CP])
+    })
+
+    it('should return MissingJwtError if there is no JWT', () => {
+      const spcpService = new SpcpService(MOCK_PARAMS)
+      const result = spcpService.extractJwt({}, AuthType.CP)
+      expect(result._unsafeUnwrapErr()).toEqual(new MissingJwtError())
     })
   })
 })

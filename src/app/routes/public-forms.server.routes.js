@@ -4,10 +4,9 @@
  * Module dependencies.
  */
 const forms = require('../../app/controllers/forms.server.controller')
-const publicForms = require('../../app/controllers/public-forms.server.controller')
+const publicForms = require('../modules/form/public-form/public-form.middlewares')
 const submissions = require('../../app/controllers/submissions.server.controller')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
-const emailSubmissions = require('../../app/controllers/email-submissions.server.controller')
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
@@ -129,7 +128,7 @@ module.exports = function (app) {
     .route('/:formId([a-fA-F0-9]{24})/publicform')
     .get(
       forms.formById,
-      publicForms.isFormPublic,
+      publicForms.isFormPublicCheck,
       SpcpController.addSpcpSessionInfo,
       myInfoController.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
@@ -163,7 +162,7 @@ module.exports = function (app) {
     limitRate({ max: rateLimitConfig.submissions }),
     CaptchaFactory.validateCaptchaParams,
     forms.formById,
-    publicForms.isFormPublic,
+    publicForms.isFormPublicCheck,
     CaptchaMiddleware.checkCaptchaResponse,
     SpcpController.isSpcpAuthenticated,
     EmailSubmissionsMiddleware.receiveEmailSubmission,
@@ -198,8 +197,8 @@ module.exports = function (app) {
     submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
     EmailSubmissionsMiddleware.prepareEmailSubmission,
-    emailSubmissions.saveMetadataToDb,
-    emailSubmissions.sendAdminEmail,
+    EmailSubmissionsMiddleware.saveMetadataToDb,
+    EmailSubmissionsMiddleware.sendAdminEmail,
     submissions.sendAutoReply,
   )
 
@@ -270,7 +269,7 @@ module.exports = function (app) {
       }),
     }),
     forms.formById,
-    publicForms.isFormPublic,
+    publicForms.isFormPublicCheck,
     CaptchaMiddleware.checkCaptchaResponse,
     encryptSubmissions.validateEncryptSubmission,
     SpcpController.isSpcpAuthenticated,

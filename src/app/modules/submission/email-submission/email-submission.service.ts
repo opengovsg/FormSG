@@ -1,17 +1,37 @@
+import crypto from 'crypto'
 import { sumBy } from 'lodash'
+import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { FieldResponse } from '../../../../types'
+import {
+  FieldResponse,
+  IEmailFormSchema,
+  IEmailSubmissionSchema,
+  SubmissionType,
+} from '../../../../types'
+import { getEmailSubmissionModel } from '../../../models/submission.server.model'
+import MailService from '../../../services/mail/mail.service'
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
+import { DatabaseError } from '../../core/core.errors'
+import { transformEmails } from '../../form/form.util'
+import { SendAdminEmailError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import {
+  DIGEST_TYPE,
+  HASH_ITERATIONS,
+  KEY_LENGTH,
+  SALT_LENGTH,
+} from './email-submission.constants'
+import {
   AttachmentTooLargeError,
+  ConcatSubmissionError,
   InvalidFileExtensionError,
+  SubmissionHashError,
 } from './email-submission.errors'
 import {
   EmailAutoReplyField,
@@ -19,8 +39,11 @@ import {
   EmailDataForOneField,
   EmailFormField,
   EmailJsonField,
+  IAttachmentInfo,
+  SubmissionHash,
 } from './email-submission.types'
 import {
+  concatAttachmentsAndResponses,
   getAnswerForCheckbox,
   getAnswerRowsForTable,
   getFormattedResponse,
@@ -28,6 +51,7 @@ import {
   mapAttachmentsFromResponses,
 } from './email-submission.util'
 
+const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
 const logger = createLoggerWithLabel(module)
 
 /**
@@ -131,4 +155,113 @@ export const validateAttachments = (
     }
     return okAsync(true)
   })
+}
+
+/**
+ * Creates hash of a submission
+ * @param formData Responses sent to admin
+ * @param attachments Attachments in response
+ */
+export const hashSubmission = (
+  formData: EmailFormField[],
+  attachments: IAttachmentInfo[],
+): ResultAsync<SubmissionHash, SubmissionHashError | ConcatSubmissionError> => {
+  // TODO (#847): remove this try-catch when we are sure that the shape of formData is correct
+  let baseString: string
+  try {
+    baseString = concatAttachmentsAndResponses(formData, attachments)
+  } catch (error) {
+    logger.error({
+      message:
+        'Error while concatenating attachments and responses for hashing',
+      meta: {
+        action: 'hashSubmission',
+        questions: formData.map((field) => field.question),
+      },
+    })
+    return errAsync(new ConcatSubmissionError())
+  }
+  const salt = crypto.randomBytes(SALT_LENGTH).toString('base64')
+  const hashPromise = new Promise<SubmissionHash>((resolve, reject) => {
+    crypto.pbkdf2(
+      baseString,
+      salt,
+      HASH_ITERATIONS,
+      KEY_LENGTH,
+      DIGEST_TYPE,
+      (err, hash) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve({
+          hash: hash.toString('base64'),
+          salt,
+        })
+      },
+    )
+  })
+  return ResultAsync.fromPromise(hashPromise, (error) => {
+    logger.error({
+      message: 'Error while hashing submission',
+      meta: {
+        action: 'hashSubmission',
+      },
+      error,
+    })
+    return new SubmissionHashError()
+  })
+}
+
+/**
+ * Saves an email submission to the database.
+ * @param form
+ * @param submissionHash Hash of submission and salt
+ */
+export const saveSubmissionMetadata = (
+  form: IEmailFormSchema,
+  submissionHash: SubmissionHash,
+): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
+  const params = {
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    recipientEmails: transformEmails(form.emails),
+    responseHash: submissionHash.hash,
+    responseSalt: submissionHash.salt,
+    submissionType: SubmissionType.Email,
+  }
+  return ResultAsync.fromPromise(
+    EmailSubmissionModel.create(params),
+    (error) => {
+      logger.error({
+        message: 'Error while saving submission to database',
+        meta: {
+          action: 'saveSubmissionMetadata',
+          formId: form._id,
+        },
+        error,
+      })
+      return new DatabaseError('Error while saving submission to database')
+    },
+  )
+}
+
+export const sendSubmissionToAdmin = (
+  adminEmailParams: Parameters<typeof MailService['sendSubmissionToAdmin']>[0],
+): ResultAsync<true, SendAdminEmailError> => {
+  return ResultAsync.fromPromise(
+    MailService.sendSubmissionToAdmin(adminEmailParams),
+    (error) => {
+      logger.error({
+        message: 'Error sending submission to admin',
+        meta: {
+          action: 'sendSubmissionToAdmin',
+          submissionId: adminEmailParams.submission.id,
+          formId: adminEmailParams.form._id,
+        },
+        error,
+      })
+      return new SendAdminEmailError()
+    },
+  )
 }

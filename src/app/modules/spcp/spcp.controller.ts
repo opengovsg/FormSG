@@ -14,7 +14,6 @@ import { JwtName, LoginPageValidationResult } from './spcp.types'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
-  extractJwt,
   mapRouteError,
 } from './spcp.util'
 
@@ -100,10 +99,11 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
   const { authType } = (req as WithForm<typeof req>).form
   if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
 
-  const jwt = extractJwt(req.cookies, authType)
-  if (!jwt) return next()
+  const jwtResult = SpcpFactory.extractJwt(req.cookies, authType)
+  // No action needed if JWT is missing, just means user is not logged in
+  if (jwtResult.isErr()) return next()
 
-  return SpcpFactory.extractJwtPayload(jwt, authType)
+  return SpcpFactory.extractJwtPayload(jwtResult.value, authType)
     .map(({ userName }) => {
       res.locals.spcpSession = { userName }
       return next()
@@ -135,10 +135,8 @@ export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
   const { authType } = (req as WithForm<typeof req>).form
   if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
 
-  const jwt = extractJwt(req.cookies, authType)
-  if (!jwt) return next()
-
-  return SpcpFactory.extractJwtPayload(jwt, authType)
+  return SpcpFactory.extractJwt(req.cookies, authType)
+    .asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
     .map(({ userName, userInfo }) => {
       res.locals.uinFin = userName
       res.locals.userInfo = userInfo

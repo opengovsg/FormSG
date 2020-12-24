@@ -1,4 +1,10 @@
-import { BasicField, FieldResponse, IBaseResponse } from '../../../../types'
+import {
+  BasicField,
+  FieldResponse,
+  IBaseResponse,
+  IEmailFormSchema,
+  IEmailSubmissionSchema,
+} from '../../../../types'
 import { ProcessedResponse } from '../submission.types'
 
 export interface EmailAutoReplyField {
@@ -53,3 +59,22 @@ export interface IAttachmentInfo {
 }
 
 export type WithAttachments<T> = T & { attachments: IAttachmentInfo[] }
+
+export interface SubmissionHash {
+  hash: string
+  salt: string
+}
+
+export type WithEmailForm<T> = T & { form: IEmailFormSchema }
+
+export type WithFormMetadata<T> = WithEmailData<T> &
+  WithAttachments<T> &
+  WithEmailForm<T>
+
+export type WithSubmission<T> = T & { submission: IEmailSubmissionSchema }
+
+export type WithAutoReplyEmails<T> = T & { replyToEmails: string[] | undefined }
+
+export type WithAdminEmailData<T> = WithFormMetadata<T> &
+  WithSubmission<T> &
+  WithAutoReplyEmails<T>
