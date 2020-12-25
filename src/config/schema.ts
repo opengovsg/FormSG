@@ -62,7 +62,7 @@ const validateS3BucketUrl = (
   if (!isDev && !isRegionCorrect.test(val)) {
     throw new Error(`region should be ${region}`)
   }
-  /* eslint-enable typesafe/no-throw-sync-func*/
+  /* eslint-enable typesafe/no-throw-sync-func */
 }
 
 // If the default value does not match the format specified, the configuration built from this schema
