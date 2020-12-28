@@ -465,3 +465,24 @@ const removeAdminVerificationDoc = (userId: string) => {
     },
   )
 }
+
+export const findContactsForEmails = (
+  emails: string[],
+): ResultAsync<string[], DatabaseError> => {
+  return ResultAsync.fromPromise(
+    UserModel.findContactNumbersByEmails(emails),
+    (error) => {
+      logger.error({
+        message: 'Error while retrieving contacts for email addresses',
+        meta: {
+          action: 'findContactsForEmails',
+          emails,
+        },
+        error,
+      })
+      return new DatabaseError(
+        'Failed to retrieve contacts for email addresses',
+      )
+    },
+  )
+}
