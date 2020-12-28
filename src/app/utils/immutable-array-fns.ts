@@ -6,6 +6,9 @@
  * Pure function to reorders given array from given `fromIndex` to `toIndex`.
  * The new reordered array will be returned.
  *
+ * If initial `fromIndex` is out of bounds of the original array, no reordering
+ * will be performed and the initial array will be returned.
+ *
  * Function retrieved from
  * https://github.com/granteagon/move/blob/master/src/index.js and converted to
  * TypeScript and renamed for clarity.
@@ -20,7 +23,18 @@ export const reorder = <T>(
   fromIndex: number,
   toIndex: number,
 ): T[] => {
+  /**
+   * Invalid index, return array as is.
+   * The index is checked instead of definedness of element at the index as
+   * given array may contain undefined elements and will not be a comprehensive
+   * validity check.
+   */
+  if (fromIndex < 0 || fromIndex >= array.length) {
+    return array
+  }
+
   const elementToMove = array[fromIndex]
+
   const diff = fromIndex - toIndex
 
   if (diff > 0) {
