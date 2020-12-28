@@ -326,15 +326,17 @@ export const sendAdminContactOtp = (
   )
 }
 
-export const sendFormDeactivatedSms = ({
-  recipient,
-  recipientEmail,
-  adminId,
-  adminEmail,
-  formId,
-  formTitle,
-  defaultConfig,
-}: BounceNotificationSmsParams): ResultAsync<boolean, SmsSendError> => {
+export const sendFormDeactivatedSms = (
+  {
+    recipient,
+    recipientEmail,
+    adminId,
+    adminEmail,
+    formId,
+    formTitle,
+  }: BounceNotificationSmsParams,
+  defaultConfig: TwilioConfig,
+): ResultAsync<boolean, SmsSendError> => {
   logger.info({
     message: `Sending form deactivation notification for ${recipientEmail}`,
     meta: {
@@ -375,15 +377,17 @@ export const sendFormDeactivatedSms = ({
   )
 }
 
-export const sendBouncedSubmissionSms = ({
-  recipient,
-  recipientEmail,
-  adminId,
-  adminEmail,
-  formId,
-  formTitle,
-  defaultConfig,
-}: BounceNotificationSmsParams): ResultAsync<boolean, SmsSendError> => {
+export const sendBouncedSubmissionSms = (
+  {
+    recipient,
+    recipientEmail,
+    adminId,
+    adminEmail,
+    formId,
+    formTitle,
+  }: BounceNotificationSmsParams,
+  defaultConfig: TwilioConfig,
+): ResultAsync<boolean, SmsSendError> => {
   logger.info({
     message: `Sending bounced submission notification for ${recipientEmail}`,
     meta: {

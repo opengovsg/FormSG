@@ -1,3 +1,4 @@
+import { okAsync } from 'neverthrow'
 import Twilio from 'twilio'
 
 import FeatureManager, {
@@ -5,8 +6,13 @@ import FeatureManager, {
   RegisteredFeature,
 } from '../../../config/feature-manager'
 
-import { sendAdminContactOtp, sendVerificationOtp } from './sms.service'
-import { TwilioConfig } from './sms.types'
+import {
+  sendAdminContactOtp,
+  sendBouncedSubmissionSms,
+  sendFormDeactivatedSms,
+  sendVerificationOtp,
+} from './sms.service'
+import { BounceNotificationSmsParams, TwilioConfig } from './sms.types'
 
 interface ISmsFactory {
   sendVerificationOtp: (
@@ -19,6 +25,12 @@ interface ISmsFactory {
     otp: string,
     userId: string,
   ) => ReturnType<typeof sendAdminContactOtp>
+  sendFormDeactivatedSms: (
+    params: BounceNotificationSmsParams,
+  ) => ReturnType<typeof sendFormDeactivatedSms>
+  sendBouncedSubmissionSms: (
+    params: BounceNotificationSmsParams,
+  ) => ReturnType<typeof sendBouncedSubmissionSms>
 }
 
 const smsFeature = FeatureManager.get(FeatureNames.Sms)
@@ -36,6 +48,8 @@ export const createSmsFactory = (
       sendVerificationOtp: () => {
         throw new Error(`sendVerificationOtp: ${errorMessage}`)
       },
+      sendFormDeactivatedSms: () => okAsync(true),
+      sendBouncedSubmissionSms: () => okAsync(true),
     }
   }
 
@@ -59,6 +73,10 @@ export const createSmsFactory = (
       sendVerificationOtp(recipient, otp, formId, twilioConfig),
     sendAdminContactOtp: (recipient, otp, userId) =>
       sendAdminContactOtp(recipient, otp, userId, twilioConfig),
+    sendFormDeactivatedSms: (params) =>
+      sendFormDeactivatedSms(params, twilioConfig),
+    sendBouncedSubmissionSms: (params) =>
+      sendBouncedSubmissionSms(params, twilioConfig),
   }
 }
 

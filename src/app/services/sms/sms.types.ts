@@ -93,5 +93,4 @@ export interface BounceNotificationSmsParams {
   adminEmail: string
   formId: string
   formTitle: string
-  defaultConfig: TwilioConfig
 }
