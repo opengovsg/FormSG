@@ -50,11 +50,8 @@ export const handleSns: RequestHandler<
     }
     const form = formResult.value
 
-    const shouldDeactivate = bounceDoc.areAllPermanentBounces()
-    if (shouldDeactivate) {
-      await FormService.deactivateForm(bounceDoc.formId)
-    }
     if (bounceDoc.isCriticalBounce()) {
+      // Notify admin and collaborators
       let emailRecipients: string[] = []
       const smsRecipients: UserContactView[] = []
       if (!bounceDoc.hasNotified()) {
@@ -64,6 +61,14 @@ export const handleSns: RequestHandler<
         )
         bounceDoc.setNotificationState(emailRecipients, smsRecipients)
       }
+
+      // Deactivate if all bounces are permanent
+      const shouldDeactivate = bounceDoc.areAllPermanentBounces()
+      if (shouldDeactivate) {
+        await FormService.deactivateForm(bounceDoc.formId)
+      }
+
+      // Important log message for user follow-ups
       BounceService.logCriticalBounce(
         bounceDoc,
         notification,
