@@ -6,11 +6,14 @@ import {
   FormOtpData,
   IFormSchema,
   IUserSchema,
+  Permission,
 } from '../../../types'
 
 export enum SmsType {
   Verification = 'VERIFICATION',
   AdminContact = 'ADMIN_CONTACT',
+  DeactivatedForm = 'DEACTIVATED_FORM',
+  BouncedSubmission = 'BOUNCED_SUBMISSION',
 }
 
 export enum LogType {
@@ -18,8 +21,23 @@ export enum LogType {
   success = 'SUCCESS',
 }
 
+export type FormDeactivatedSmsData = {
+  form: IFormSchema['_id']
+  formAdmin: {
+    email: IUserSchema['email']
+    userId: IUserSchema['_id']
+  }
+  collaboratorEmail: Permission['email']
+}
+
+export type BouncedSubmissionSmsData = FormDeactivatedSmsData
+
 export type LogSmsParams = {
-  smsData: FormOtpData | AdminContactOtpData
+  smsData:
+    | FormOtpData
+    | AdminContactOtpData
+    | FormDeactivatedSmsData
+    | BouncedSubmissionSmsData
   msgSrvcSid: string
   smsType: SmsType
   logType: LogType
@@ -65,4 +83,14 @@ export type TwilioCredentials = {
 export type TwilioConfig = {
   client: Twilio
   msgSrvcSid: string
+}
+
+export interface BounceNotificationSmsParams {
+  recipient: string
+  recipientEmail: string
+  adminId: string
+  adminEmail: string
+  formId: string
+  formTitle: string
+  defaultConfig: TwilioConfig
 }

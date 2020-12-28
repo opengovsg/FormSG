@@ -13,12 +13,19 @@ import getFormModel from '../../models/form.server.model'
 
 import { SmsSendError } from './sms.errors'
 import {
+  BouncedSubmissionSmsData,
+  BounceNotificationSmsParams,
+  FormDeactivatedSmsData,
   LogSmsParams,
   LogType,
   SmsType,
   TwilioConfig,
   TwilioCredentials,
 } from './sms.types'
+import {
+  renderBouncedSubmissionSms,
+  renderFormDeactivatedSms,
+} from './sms.util'
 import getSmsCountModel from './sms_count.server.model'
 
 const logger = createLoggerWithLabel(module)
@@ -315,6 +322,101 @@ export const sendAdminContactOtp = (
       }
 
       return new SmsSendError(processedErrMsg)
+    },
+  )
+}
+
+export const sendFormDeactivatedSms = ({
+  recipient,
+  recipientEmail,
+  adminId,
+  adminEmail,
+  formId,
+  formTitle,
+  defaultConfig,
+}: BounceNotificationSmsParams): ResultAsync<boolean, SmsSendError> => {
+  logger.info({
+    message: `Sending form deactivation notification for ${recipientEmail}`,
+    meta: {
+      action: 'sendFormDeactivatedSms',
+      formId,
+    },
+  })
+
+  const message = renderFormDeactivatedSms(formTitle)
+
+  const smsData: FormDeactivatedSmsData = {
+    form: formId,
+    collaboratorEmail: recipientEmail,
+    formAdmin: {
+      email: adminEmail,
+      userId: adminId,
+    },
+  }
+
+  return ResultAsync.fromPromise(
+    send(defaultConfig, smsData, recipient, message, SmsType.DeactivatedForm),
+    (error) => {
+      logger.error({
+        message:
+          'Failed to send SMS notification for automatic form deactivation',
+        meta: {
+          action: 'sendFormDeactivatedSms',
+          recipient,
+        },
+        error,
+      })
+
+      return new SmsSendError(
+        'Failed to send SMS notification for automatic form deactivation',
+      )
+    },
+  )
+}
+
+export const sendBouncedSubmissionSms = ({
+  recipient,
+  recipientEmail,
+  adminId,
+  adminEmail,
+  formId,
+  formTitle,
+  defaultConfig,
+}: BounceNotificationSmsParams): ResultAsync<boolean, SmsSendError> => {
+  logger.info({
+    message: `Sending bounced submission notification for ${recipientEmail}`,
+    meta: {
+      action: 'sendBouncedSubmissionSms',
+      formId,
+    },
+  })
+
+  const message = renderBouncedSubmissionSms(formTitle)
+
+  const smsData: BouncedSubmissionSmsData = {
+    form: formId,
+    collaboratorEmail: recipientEmail,
+    formAdmin: {
+      email: adminEmail,
+      userId: adminId,
+    },
+  }
+
+  return ResultAsync.fromPromise(
+    send(defaultConfig, smsData, recipient, message, SmsType.BouncedSubmission),
+    (error) => {
+      logger.error({
+        message: 'Failed to send SMS notification for bounced submission',
+        meta: {
+          action: 'sendBouncedSubmissionSms',
+          recipient,
+        },
+        error,
+      })
+
+      return new SmsSendError(
+        'Failed to send SMS notification for bounced submission',
+      )
     },
   )
 }
