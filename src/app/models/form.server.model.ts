@@ -3,6 +3,8 @@ import { compact, pick, uniq } from 'lodash'
 import mongoose, { Mongoose, Query, Schema, SchemaOptions } from 'mongoose'
 import validator from 'validator'
 
+import { aws } from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 import {
   AuthType,
   BasicField,
@@ -10,6 +12,7 @@ import {
   FormLogoState,
   FormMetaView,
   FormOtpData,
+  ICustomFormLogo,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormModel,
@@ -59,6 +62,8 @@ import LogicSchema, {
 } from './form_logic.server.schema'
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
+
+const logger = createLoggerWithLabel(module)
 
 export const FORM_SCHEMA_ID = 'Form'
 
@@ -438,6 +443,36 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this.permissionList.push({ email: currentOwner.email, write: true })
 
     return this.save()
+  }
+
+  FormSchema.methods.syncCustomLogo = function (this: IFormDocument) {
+    const logo = this.startPage.logo
+
+    if (!logo) return this
+
+    switch (logo.state) {
+      case FormLogoState.None:
+        this.customLogo = ''
+        break
+      case FormLogoState.Default:
+        this.customLogo = undefined
+        break
+      case FormLogoState.Custom: {
+        const customLogo = logo as ICustomFormLogo
+        if (customLogo.fileId) {
+          this.customLogo = `${aws.logoBucketUrl}/${customLogo.fileId}`
+        } else {
+          logger.error({
+            message: `Logo is in an invalid state. fileId should always be defined for CUSTOM state but is ${customLogo.fileId} for form ${this._id}`,
+            meta: {
+              action: 'syncCustomLogo',
+            },
+          })
+        }
+      }
+    }
+
+    return this
   }
 
   // Statics

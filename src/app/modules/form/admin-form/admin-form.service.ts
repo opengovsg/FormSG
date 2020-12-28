@@ -484,6 +484,11 @@ export const updateForm = (
   // Updating some part of form, override original form with new updated form.
   assignIn(originalForm, scrubbedFormParams)
 
+  // Updates to logo should also update customLogo (to account for clients still
+  // referencing customLogo).
+  // TODO(#787) : Remove once all forms have logo key and customLogo is removed from schema
+  originalForm.syncCustomLogo()
+
   return ResultAsync.fromPromise(originalForm.save(), (error) => {
     logger.error({
       message: 'Error encountered while updating form',
