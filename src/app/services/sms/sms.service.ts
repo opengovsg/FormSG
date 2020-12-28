@@ -336,7 +336,7 @@ export const sendFormDeactivatedSms = (
     formTitle,
   }: BounceNotificationSmsParams,
   defaultConfig: TwilioConfig,
-): ResultAsync<boolean, SmsSendError> => {
+): Promise<boolean> => {
   logger.info({
     message: `Sending form deactivation notification for ${recipientEmail}`,
     meta: {
@@ -357,23 +357,12 @@ export const sendFormDeactivatedSms = (
     },
   }
 
-  return ResultAsync.fromPromise(
-    send(defaultConfig, smsData, recipient, message, SmsType.DeactivatedForm),
-    (error) => {
-      logger.error({
-        message:
-          'Failed to send SMS notification for automatic form deactivation',
-        meta: {
-          action: 'sendFormDeactivatedSms',
-          recipient,
-        },
-        error,
-      })
-
-      return new SmsSendError(
-        'Failed to send SMS notification for automatic form deactivation',
-      )
-    },
+  return send(
+    defaultConfig,
+    smsData,
+    recipient,
+    message,
+    SmsType.DeactivatedForm,
   )
 }
 

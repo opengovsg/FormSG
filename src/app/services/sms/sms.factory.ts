@@ -48,7 +48,7 @@ export const createSmsFactory = (
       sendVerificationOtp: () => {
         throw new Error(`sendVerificationOtp: ${errorMessage}`)
       },
-      sendFormDeactivatedSms: () => okAsync(true),
+      sendFormDeactivatedSms: () => Promise.resolve(true),
       sendBouncedSubmissionSms: () => okAsync(true),
     }
   }
