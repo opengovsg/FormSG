@@ -269,7 +269,7 @@ export const sendVerificationOtp = async (
 
   const message = `Use the OTP ${otp} to complete your submission on ${config.app.title}.`
 
-  return send(twilioData, otpData, recipient, message, SmsType.verification)
+  return send(twilioData, otpData, recipient, message, SmsType.Verification)
 }
 
 export const sendAdminContactOtp = (
@@ -293,7 +293,7 @@ export const sendAdminContactOtp = (
   }
 
   return ResultAsync.fromPromise(
-    send(defaultConfig, otpData, recipient, message, SmsType.adminContact),
+    send(defaultConfig, otpData, recipient, message, SmsType.AdminContact),
     (error) => {
       logger.error({
         message: 'Failed to send OTP for admin contact verification',

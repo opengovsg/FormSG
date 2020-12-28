@@ -114,7 +114,7 @@ describe('sms.service', () => {
       const expectedLogParams = {
         smsData: mockOtpData,
         msgSrvcSid: MOCK_MSG_SRVC_SID,
-        smsType: SmsType.verification,
+        smsType: SmsType.Verification,
         logType: LogType.success,
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
@@ -141,7 +141,7 @@ describe('sms.service', () => {
       const expectedLogParams = {
         smsData: mockOtpData,
         msgSrvcSid: MOCK_MSG_SRVC_SID,
-        smsType: SmsType.verification,
+        smsType: SmsType.Verification,
         logType: LogType.failure,
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
@@ -168,7 +168,7 @@ describe('sms.service', () => {
           admin: testUser._id,
         },
         msgSrvcSid: MOCK_MSG_SRVC_SID,
-        smsType: SmsType.adminContact,
+        smsType: SmsType.AdminContact,
         logType: LogType.success,
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
@@ -196,7 +196,7 @@ describe('sms.service', () => {
         admin: testUser._id,
       },
       msgSrvcSid: MOCK_MSG_SRVC_SID,
-      smsType: SmsType.adminContact,
+      smsType: SmsType.AdminContact,
       logType: LogType.failure,
     }
     expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)

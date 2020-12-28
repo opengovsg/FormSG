@@ -181,7 +181,7 @@ describe('SmsCount', () => {
 
         // Act
         const expectedLog = await logAndReturnExpectedLog({
-          smsType: SmsType.verification,
+          smsType: SmsType.Verification,
           logType: LogType.success,
         })
 
@@ -207,7 +207,7 @@ describe('SmsCount', () => {
 
         // Act
         const expectedLog = await logAndReturnExpectedLog({
-          smsType: SmsType.verification,
+          smsType: SmsType.Verification,
           logType: LogType.failure,
         })
 
@@ -240,7 +240,7 @@ describe('SmsCount', () => {
       it('should reject if logType is invalid', async () => {
         await expect(
           logAndReturnExpectedLog({
-            smsType: SmsType.verification,
+            smsType: SmsType.Verification,
             // @ts-ignore
             logType: 'INVALID',
           }),
@@ -252,7 +252,7 @@ describe('SmsCount', () => {
 
 const createVerificationSmsCountParams = ({
   logType = LogType.success,
-  smsType = SmsType.verification,
+  smsType = SmsType.Verification,
 }: {
   logType?: LogType
   smsType?: SmsType

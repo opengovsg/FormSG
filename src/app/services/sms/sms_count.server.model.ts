@@ -89,8 +89,8 @@ const compileSmsCountModel = (db: Mongoose) => {
   )
 
   // Adding Discriminators
-  SmsCountModel.discriminator(SmsType.verification, VerificationSmsCountSchema)
-  SmsCountModel.discriminator(SmsType.adminContact, AdminContactSmsCountSchema)
+  SmsCountModel.discriminator(SmsType.Verification, VerificationSmsCountSchema)
+  SmsCountModel.discriminator(SmsType.AdminContact, AdminContactSmsCountSchema)
 
   return SmsCountModel
 }

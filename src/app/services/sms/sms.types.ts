@@ -6,11 +6,11 @@ import {
   FormOtpData,
   IFormSchema,
   IUserSchema,
-} from 'src/types'
+} from '../../../types'
 
 export enum SmsType {
-  verification = 'VERIFICATION',
-  adminContact = 'ADMIN_CONTACT',
+  Verification = 'VERIFICATION',
+  AdminContact = 'ADMIN_CONTACT',
 }
 
 export enum LogType {
