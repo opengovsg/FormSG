@@ -89,7 +89,7 @@
     "await-to-js": "^2.1.1",
     "aws-info": "^1.1.0",
     "aws-sdk": "^2.805.0",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "bcrypt": "^5.0.0",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",
