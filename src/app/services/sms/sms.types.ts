@@ -28,6 +28,7 @@ export type FormDeactivatedSmsData = {
     userId: IUserSchema['_id']
   }
   collaboratorEmail: Permission['email']
+  recipientNumber: string
 }
 
 export type BouncedSubmissionSmsData = FormDeactivatedSmsData

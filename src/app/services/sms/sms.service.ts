@@ -348,6 +348,7 @@ export const sendFormDeactivatedSms = ({
   const smsData: FormDeactivatedSmsData = {
     form: formId,
     collaboratorEmail: recipientEmail,
+    recipientNumber: recipient,
     formAdmin: {
       email: adminEmail,
       userId: adminId,
@@ -396,6 +397,7 @@ export const sendBouncedSubmissionSms = ({
   const smsData: BouncedSubmissionSmsData = {
     form: formId,
     collaboratorEmail: recipientEmail,
+    recipientNumber: recipient,
     formAdmin: {
       email: adminEmail,
       userId: adminId,
