@@ -14,9 +14,8 @@ import {
   VerifiedContentResult,
 } from './verified-content.types'
 import {
-  assertCpVerifiedContentShape,
-  assertSpVerifiedContentShape,
-  mapDataToKey,
+  getCpVerifiedContent,
+  getSpVerifiedContent,
 } from './verified-content.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -27,12 +26,11 @@ export const getVerifiedContent = ({
 }: GetVerifiedContentParams): VerifiedContentResult<
   CpVerifiedContent | SpVerifiedContent
 > => {
-  const processedVerifiedContent = mapDataToKey({ type, data })
   switch (type) {
     case AuthType.SP:
-      return assertSpVerifiedContentShape(processedVerifiedContent)
+      return getSpVerifiedContent(data)
     case AuthType.CP:
-      return assertCpVerifiedContentShape(processedVerifiedContent)
+      return getCpVerifiedContent(data)
     default:
       throw new UnreachableCaseError(type)
   }
