@@ -1,9 +1,9 @@
 import { err, ok, Result } from 'neverthrow'
-import { UnreachableCaseError } from 'ts-essentials'
 
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
+import { assertUnreachable } from '../../utils/assert-unreachable'
 
 import { EncryptVerifiedContentError } from './verified-content.errors'
 import {
@@ -32,7 +32,7 @@ export const getVerifiedContent = ({
     case AuthType.CP:
       return getCpVerifiedContent(data)
     default:
-      throw new UnreachableCaseError(type)
+      return assertUnreachable(type)
   }
 }
 
