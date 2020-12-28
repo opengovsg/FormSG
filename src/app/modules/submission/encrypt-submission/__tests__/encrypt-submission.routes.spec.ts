@@ -12,6 +12,7 @@ import * as webhookVerifiedContentFactory from 'src/app/factories/webhook-verifi
 import * as PublicFormMiddleware from 'src/app/modules/form/public-form/public-form.middlewares'
 import * as SpcpController from 'src/app/modules/spcp/spcp.controller'
 import * as EncryptSubmissionsMiddleware from 'src/app/modules/submission/encrypt-submission/encrypt-submission.middleware'
+import * as VerifiedContentMiddleware from 'src/app/modules/verified-content/verified-content.middlewares'
 import { CaptchaFactory } from 'src/app/services/captcha/captcha.factory'
 import * as CaptchaMiddleware from 'src/app/services/captcha/captcha.middleware'
 import { AuthType, BasicField, Status } from 'src/types'
@@ -94,7 +95,7 @@ EncryptSubmissionsRouter.post(
   SpcpController.isSpcpAuthenticated,
   MyInfoController.verifyMyInfoVals as RequestHandler,
   (SubmissionsController.injectAutoReplyInfo as unknown) as RequestHandler,
-  webhookVerifiedContentFactory.encryptedVerifiedFields as RequestHandler,
+  VerifiedContentMiddleware.encryptVerifiedSpcpFields,
   EncryptSubmissionsMiddleware.prepareEncryptSubmission as RequestHandler,
   (encryptSubmissions.saveResponseToDb as unknown) as RequestHandler,
   webhookVerifiedContentFactory.post as RequestHandler,
