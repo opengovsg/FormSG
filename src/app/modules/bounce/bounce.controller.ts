@@ -39,6 +39,13 @@ export const handleSns: RequestHandler<
     const bounceDoc = await BounceService.getUpdatedBounceDoc(notification)
     // Missing headers in notification
     if (!bounceDoc) return res.sendStatus(StatusCodes.OK)
+
+    const formResult = await FormService.retrieveFullFormById(bounceDoc.formId)
+    if (formResult.isErr()) {
+      return res.sendStatus(StatusCodes.OK)
+    }
+    const form = formResult.value
+
     const shouldDeactivate = bounceDoc.areAllPermanentBounces()
     if (shouldDeactivate) {
       await FormService.deactivateForm(bounceDoc.formId)
@@ -46,7 +53,10 @@ export const handleSns: RequestHandler<
     if (bounceDoc.isCriticalBounce()) {
       let emailRecipients: string[] = []
       if (!bounceDoc.hasNotified()) {
-        emailRecipients = await BounceService.notifyAdminOfBounce(bounceDoc)
+        emailRecipients = await BounceService.notifyAdminOfBounce(
+          bounceDoc,
+          form,
+        )
         bounceDoc.setNotificationState(emailRecipients)
       }
       BounceService.logCriticalBounce(

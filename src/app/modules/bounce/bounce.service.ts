@@ -14,7 +14,6 @@ import {
   IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
-import getFormModel from '../../models/form.server.model'
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
 
@@ -24,7 +23,6 @@ import { extractHeader, isBounceNotification } from './bounce.util'
 const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
-const Form = getFormModel(mongoose)
 
 // Note that these need to be ordered in order to generate
 // the correct string to sign
@@ -161,18 +159,8 @@ const computeValidEmails = (
 
 export const notifyAdminOfBounce = async (
   bounceDoc: IBounceSchema,
+  form: IPopulatedForm,
 ): Promise<string[]> => {
-  const form = await Form.getFullFormById(bounceDoc.formId)
-  if (!form) {
-    logger.error({
-      message: 'Unable to retrieve form',
-      meta: {
-        action: 'notifyAdminOfBounce',
-        formId: bounceDoc.formId,
-      },
-    })
-    return []
-  }
   const emailRecipients = computeValidEmails(form, bounceDoc)
   if (emailRecipients.length > 0) {
     await MailService.sendBounceNotification({
