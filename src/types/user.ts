@@ -30,6 +30,13 @@ export interface IUserModel extends Model<IUserSchema> {
   upsertUser: (
     upsertParams: Pick<IUser, 'email' | 'agency' | 'lastAccessed'>,
   ) => Promise<IPopulatedUser>
+  /**
+   * Finds the contact numbers for all given email addresses which exist in the
+   * User collection.
+   * @param emails List of email addresses for which to find contact numbers
+   * @returns List of contact numbers
+   */
+  findContactNumbersByEmails: (emails: string[]) => Promise<string[]>
 }
 
 export interface IPopulatedUser extends IUserSchema {
