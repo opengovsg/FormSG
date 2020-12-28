@@ -1,6 +1,10 @@
 import { ObjectId } from 'bson-ext'
+import { cloneDeep, omit, tail } from 'lodash'
 
+import { EditFieldActions } from 'src/shared/constants'
 import {
+  BasicField,
+  IFieldSchema,
   IPopulatedForm,
   IPopulatedUser,
   Permission,
@@ -8,12 +12,19 @@ import {
   Status,
 } from 'src/types'
 
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
+
 import { ForbiddenFormError } from '../../form.errors'
-import { DuplicateFormBody, OverrideProps } from '../admin-form.types'
+import {
+  DuplicateFormBody,
+  EditFormFieldParams,
+  OverrideProps,
+} from '../admin-form.types'
 import {
   assertHasDeletePermissions,
   assertHasReadPermissions,
   assertHasWritePermissions,
+  getUpdatedFormFields,
   processDuplicateOverrideProps,
 } from '../admin-form.utils'
 
@@ -310,6 +321,125 @@ describe('admin-form.utils', () => {
         emails: params.emails,
       }
       expect(actual).toEqual(expected)
+    })
+  })
+
+  describe('getUpdatedFormFields', () => {
+    const INITIAL_FIELDS = [
+      generateDefaultField(BasicField.Mobile),
+      generateDefaultField(BasicField.Checkbox),
+      generateDefaultField(BasicField.Table),
+    ]
+
+    it('should return updated fields successfully on create action', async () => {
+      // Arrange
+      const newField = generateDefaultField(BasicField.Decimal)
+      const newFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Create },
+        field: newField,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(INITIAL_FIELDS, newFieldParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual([
+        ...INITIAL_FIELDS,
+        newField,
+      ])
+    })
+
+    it('should return updated fields successfully on delete action', async () => {
+      // Arrange
+      const fieldToDelete = cloneDeep(INITIAL_FIELDS[0])
+      const deleteFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Delete },
+        field: fieldToDelete,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        INITIAL_FIELDS,
+        deleteFieldParams,
+      )
+
+      // Assert
+      // First item should be removed.
+      expect(actualResult._unsafeUnwrap()).toEqual(INITIAL_FIELDS.slice(1))
+    })
+
+    it('should return updated fields successfully on duplicate action', async () => {
+      // Arrange
+      // Remove globalId from duplicate.
+      const duplicateField: IFieldSchema = omit(cloneDeep(INITIAL_FIELDS[1]), [
+        'globalId',
+      ])
+      const dupeFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Duplicate },
+        field: duplicateField,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(INITIAL_FIELDS, dupeFieldParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual([
+        ...INITIAL_FIELDS,
+        duplicateField,
+      ])
+    })
+
+    it('should return updated fields successfully on reorder action', async () => {
+      // Arrange
+      const firstField = cloneDeep(INITIAL_FIELDS[0])
+      const reorderFieldParams: EditFormFieldParams = {
+        action: {
+          name: EditFieldActions.Reorder,
+          position: INITIAL_FIELDS.length - 1,
+        },
+        field: firstField,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        INITIAL_FIELDS,
+        reorderFieldParams,
+      )
+
+      // Assert
+      // First element should be reordered to the last element.
+      expect(actualResult._unsafeUnwrap()).toEqual([
+        ...tail(INITIAL_FIELDS),
+        firstField,
+      ])
+    })
+
+    it('should return updated fields successfully on update action', async () => {
+      // Arrange
+      const fieldToUpdate = {
+        ...INITIAL_FIELDS[0],
+        title: 'some new title!!!',
+      } as IFieldSchema
+
+      const updateFieldParams: EditFormFieldParams = {
+        action: {
+          name: EditFieldActions.Update,
+        },
+        field: fieldToUpdate,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        INITIAL_FIELDS,
+        updateFieldParams,
+      )
+
+      // Assert
+      // First element should be updated.
+      expect(actualResult._unsafeUnwrap()).toEqual([
+        fieldToUpdate,
+        ...tail(INITIAL_FIELDS),
+      ])
     })
   })
 })
