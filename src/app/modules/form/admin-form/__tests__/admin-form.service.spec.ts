@@ -21,7 +21,7 @@ import {
   FormMetaView,
   ICustomFormLogo,
   IEmailFormSchema,
-  IEncryptedFormSchema,
+  IFormDocument,
   IFormSchema,
   IPopulatedForm,
   IPopulatedUser,
@@ -325,7 +325,7 @@ describe('admin-form.service', () => {
       const mockArchiveFn = jest.fn().mockResolvedValue(mockArchivedForm)
       const mockInitialForm = ({
         archive: mockArchiveFn,
-      } as unknown) as IEmailFormSchema
+      } as unknown) as IPopulatedForm
 
       // Act
       const actual = await archiveForm(mockInitialForm)
@@ -343,7 +343,7 @@ describe('admin-form.service', () => {
         .mockRejectedValue(new Error(mockErrorString))
       const mockInitialForm = ({
         archive: mockArchiveFn,
-      } as unknown) as IEncryptedFormSchema
+      } as unknown) as IPopulatedForm
 
       // Act
       const actual = await archiveForm(mockInitialForm)
@@ -372,7 +372,7 @@ describe('admin-form.service', () => {
           fileSizeInBytes: 10000,
         } as ICustomFormLogo,
       },
-    } as unknown) as IFormSchema
+    } as unknown) as IFormDocument
     const MOCK_EMAIL_OVERRIDE_PARAMS: DuplicateFormBody = {
       responseMode: ResponseMode.Email,
       title: 'mock new title',
@@ -387,7 +387,7 @@ describe('admin-form.service', () => {
     const createMockForm = (expectedParams: OverrideProps) =>
       merge({}, MOCK_VALID_FORM, {
         getDuplicateParams: jest.fn().mockReturnValue(expectedParams),
-      }) as IFormSchema
+      }) as IFormDocument
 
     it('should successfully duplicate form', async () => {
       // Arrange
@@ -406,7 +406,7 @@ describe('admin-form.service', () => {
       const expectedForm = createMockForm(expectedOverrideProps)
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        .mockResolvedValueOnce(expectedForm)
+        .mockResolvedValueOnce(expectedForm as never)
 
       // Act
       const actualResult = await duplicateForm(
@@ -443,7 +443,7 @@ describe('admin-form.service', () => {
           buttonLink: `#!/${MOCK_VALID_FORM._id}`,
         },
         getDuplicateParams: jest.fn().mockReturnValue(expectedParams),
-      }) as IFormSchema
+      }) as IFormDocument
 
       // Mock util return
       const expectedOverrideProps = {
@@ -455,7 +455,7 @@ describe('admin-form.service', () => {
       const expectedForm = createMockForm(expectedOverrideProps)
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        .mockResolvedValueOnce(expectedForm)
+        .mockResolvedValueOnce(expectedForm as never)
 
       // Act
       const actualResult = await duplicateForm(
@@ -491,7 +491,7 @@ describe('admin-form.service', () => {
       const mockErrorString = 'something went wrong!'
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        .mockRejectedValueOnce(new Error(mockErrorString))
+        .mockRejectedValueOnce(new Error(mockErrorString) as never)
       // Mock util return
       const expectedOverrideProps = { title: 'new title' } as OverrideProps
       jest
