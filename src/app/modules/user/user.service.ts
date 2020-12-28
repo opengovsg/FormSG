@@ -10,6 +10,7 @@ import {
   IPopulatedUser,
   IUserSchema,
   UpsertOtpParams,
+  UserContactView,
 } from '../../../types'
 import getAdminVerificationModel from '../../models/admin_verification.server.model'
 import { AGENCY_SCHEMA_ID } from '../../models/agency.server.model'
@@ -468,7 +469,7 @@ const removeAdminVerificationDoc = (userId: string) => {
 
 export const findContactsForEmails = (
   emails: string[],
-): ResultAsync<string[], DatabaseError> => {
+): ResultAsync<UserContactView[], DatabaseError> => {
   return ResultAsync.fromPromise(
     UserModel.findContactNumbersByEmails(emails),
     (error) => {

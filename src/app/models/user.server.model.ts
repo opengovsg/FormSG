@@ -130,7 +130,7 @@ const compileUserModel = (db: Mongoose) => {
     return this.find()
       .where('email')
       .in(emails)
-      .distinct('contact')
+      .select('email contact -_id')
       .lean()
       .exec()
   }
