@@ -16,6 +16,7 @@ import {
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
+import { getCollabEmailsWithPermission } from '../form/form.utils'
 
 import getBounceModel from './bounce.model'
 import { extractHeader, isBounceNotification } from './bounce.util'
@@ -150,9 +151,9 @@ const computeValidEmails = (
   populatedForm: IPopulatedForm,
   bounceDoc: IBounceSchema,
 ): string[] => {
-  const collabEmails = populatedForm.permissionList
-    ? populatedForm.permissionList.map((collab) => collab.email)
-    : []
+  const collabEmails = getCollabEmailsWithPermission(
+    populatedForm.permissionList,
+  )
   const possibleEmails = collabEmails.concat(populatedForm.admin.email)
   return difference(possibleEmails, bounceDoc.getEmails())
 }
