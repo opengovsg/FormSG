@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
-import { UnreachableCaseError } from 'ts-essentials'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { IPopulatedForm, ResponseMode, Status } from '../../../../types'
+import { assertUnreachable } from '../../../utils/assert-unreachable'
 import {
   ApplicationError,
   DatabaseConflictError,
@@ -206,7 +206,7 @@ export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
     case PermissionLevel.Delete:
       return assertHasDeletePermissions
     default:
-      throw new UnreachableCaseError(level)
+      return assertUnreachable(level)
   }
 }
 

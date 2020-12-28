@@ -1,6 +1,5 @@
-import { UnreachableCaseError } from 'ts-essentials'
-
 import { BasicField, ResponseMode } from '../../../types'
+import { assertUnreachable } from '../../utils/assert-unreachable'
 import { FIELDS_TO_REJECT } from '../../utils/field-validation/config'
 
 type ModeFilterParam = {
@@ -16,7 +15,7 @@ export const getModeFilter = (
     case ResponseMode.Encrypt:
       return encryptModeFilter
     default:
-      throw new UnreachableCaseError(responseMode)
+      return assertUnreachable(responseMode)
   }
 }
 
