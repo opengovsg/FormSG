@@ -1,4 +1,5 @@
 import { ObjectID } from 'bson'
+import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
 import mongoose, { Query } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
@@ -53,6 +54,40 @@ describe('user.service', () => {
     jest.restoreAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('findContactsForEmails', () => {
+    it('should call the correct model static method with the given emails', async () => {
+      const mockNumbers = ['+6581234567', '+6581234568']
+      const mockEmails = ['a@abc.com', 'b@def.com']
+      const mockContacts = zipWith(
+        mockEmails,
+        mockNumbers,
+        (email, contact) => ({ email, contact }),
+      )
+      const findContactsSpy = jest
+        .spyOn(UserModel, 'findContactNumbersByEmails')
+        .mockResolvedValueOnce(mockContacts)
+
+      const result = await UserService.findContactsForEmails(mockEmails)
+
+      expect(findContactsSpy).toHaveBeenCalledWith(mockEmails)
+      expect(result._unsafeUnwrap()).toEqual(mockContacts)
+    })
+
+    it('should return DatabaseError when database query fails', async () => {
+      const mockEmails = ['a@abc.com', 'b@def.com']
+      const findContactsSpy = jest
+        .spyOn(UserModel, 'findContactNumbersByEmails')
+        .mockRejectedValueOnce(new Error())
+
+      const result = await UserService.findContactsForEmails(mockEmails)
+
+      expect(findContactsSpy).toHaveBeenCalledWith(mockEmails)
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new DatabaseError('Failed to retrieve contacts for email addresses'),
+      )
+    })
+  })
 
   describe('createContactOtp', () => {
     it('should create a new AdminVerification document and return otp', async () => {
