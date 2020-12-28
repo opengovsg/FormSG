@@ -4,7 +4,11 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IEmailNotification, ISnsNotification } from '../../../types'
+import {
+  IEmailNotification,
+  ISnsNotification,
+  UserContactView,
+} from '../../../types'
 import { EmailType } from '../../services/mail/mail.constants'
 import * as FormService from '../form/form.service'
 
@@ -52,17 +56,19 @@ export const handleSns: RequestHandler<
     }
     if (bounceDoc.isCriticalBounce()) {
       let emailRecipients: string[] = []
+      const smsRecipients: UserContactView[] = []
       if (!bounceDoc.hasNotified()) {
         emailRecipients = await BounceService.notifyAdminOfBounce(
           bounceDoc,
           form,
         )
-        bounceDoc.setNotificationState(emailRecipients)
+        bounceDoc.setNotificationState(emailRecipients, smsRecipients)
       }
       BounceService.logCriticalBounce(
         bounceDoc,
         notification,
         emailRecipients,
+        smsRecipients,
         shouldDeactivate,
       )
     }

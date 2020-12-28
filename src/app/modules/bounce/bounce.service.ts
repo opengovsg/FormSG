@@ -13,6 +13,7 @@ import {
   IEmailNotification,
   IPopulatedForm,
   ISnsNotification,
+  UserContactView,
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
@@ -113,6 +114,7 @@ export const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   notification: IEmailNotification,
   autoEmailRecipients: string[],
+  autoSmsRecipients: UserContactView[],
   hasDeactivated: boolean,
 ): void => {
   const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
@@ -140,6 +142,7 @@ export const logCriticalBounce = (
       // Assume that this function is correctly only called when all recipients bounced
       numPermanent: bounceDoc.bounces.length - numTransient,
       autoEmailRecipients,
+      autoSmsRecipients,
       // We know for sure that critical bounces can only happen because of bounce
       // notifications, so we don't expect this to be undefined
       bounceInfo: bounceInfo,

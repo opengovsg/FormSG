@@ -8,6 +8,7 @@ import {
   IBounceSchema,
   IEmailNotification,
   ISingleBounce,
+  UserContactView,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
@@ -29,6 +30,10 @@ const BounceSchema = new Schema<IBounceSchema>({
     required: 'Form ID is required',
   },
   hasAutoEmailed: {
+    type: Boolean,
+    default: false,
+  },
+  hasAutoSmsed: {
     type: Boolean,
     default: false,
   },
@@ -169,9 +174,13 @@ BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
 BounceSchema.methods.setNotificationState = function (
   this: IBounceSchema,
   emailRecipients: string[],
+  smsRecipients: UserContactView[],
 ): void {
   if (emailRecipients.length > 0) {
     this.hasAutoEmailed = true
+  }
+  if (smsRecipients.length > 0) {
+    this.hasAutoSmsed = true
   }
 }
 
@@ -180,7 +189,7 @@ BounceSchema.methods.setNotificationState = function (
  * false otherwise.
  */
 BounceSchema.methods.hasNotified = function (this: IBounceSchema): boolean {
-  return this.hasAutoEmailed
+  return this.hasAutoEmailed || this.hasAutoSmsed
 }
 
 const getBounceModel = (db: Mongoose): IBounceModel => {
