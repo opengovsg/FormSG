@@ -69,10 +69,10 @@ const compileSmsCountModel = (db: Mongoose) => {
 
   SmsCountSchema.statics.logSms = async function (
     this: ISmsCountModel,
-    { otpData, msgSrvcSid, smsType, logType }: LogSmsParams,
+    { smsData, msgSrvcSid, smsType, logType }: LogSmsParams,
   ) {
     const schemaData: Omit<ISmsCount, '_id'> = {
-      ...otpData,
+      ...smsData,
       msgSrvcSid,
       smsType,
       logType,

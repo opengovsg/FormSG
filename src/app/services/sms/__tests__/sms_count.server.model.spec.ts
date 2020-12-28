@@ -275,7 +275,7 @@ const logAndReturnExpectedLog = async ({
   smsType: SmsType
 }) => {
   await SmsCount.logSms({
-    otpData: MOCK_SMSCOUNT_PARAMS,
+    smsData: MOCK_SMSCOUNT_PARAMS,
     msgSrvcSid: MOCK_MSG_SRVC_SID,
     smsType,
     logType,

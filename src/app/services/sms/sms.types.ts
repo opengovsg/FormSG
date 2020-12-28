@@ -19,7 +19,7 @@ export enum LogType {
 }
 
 export type LogSmsParams = {
-  otpData: FormOtpData | AdminContactOtpData
+  smsData: FormOtpData | AdminContactOtpData
   msgSrvcSid: string
   smsType: SmsType
   logType: LogType

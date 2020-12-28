@@ -112,7 +112,7 @@ describe('sms.service', () => {
       await expect(actualPromise).resolves.toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
-        otpData: mockOtpData,
+        smsData: mockOtpData,
         msgSrvcSid: MOCK_MSG_SRVC_SID,
         smsType: SmsType.verification,
         logType: LogType.success,
@@ -139,7 +139,7 @@ describe('sms.service', () => {
       await expect(actualPromise).rejects.toThrow(expectedError)
       // Logging should also have happened.
       const expectedLogParams = {
-        otpData: mockOtpData,
+        smsData: mockOtpData,
         msgSrvcSid: MOCK_MSG_SRVC_SID,
         smsType: SmsType.verification,
         logType: LogType.failure,
@@ -164,7 +164,7 @@ describe('sms.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
-        otpData: {
+        smsData: {
           admin: testUser._id,
         },
         msgSrvcSid: MOCK_MSG_SRVC_SID,
@@ -192,7 +192,7 @@ describe('sms.service', () => {
 
     // Logging should also have happened.
     const expectedLogParams = {
-      otpData: {
+      smsData: {
         admin: testUser._id,
       },
       msgSrvcSid: MOCK_MSG_SRVC_SID,

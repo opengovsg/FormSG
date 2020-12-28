@@ -132,13 +132,13 @@ const getTwilio = async (
  * @param twilioConfig The configuration used to send OTPs with
  * @param twilioData.client The client to use
  * @param twilioData.msgSrvcSid The message service sid to send from with.
- * @param otpData The data for logging smsCount
+ * @param smsData The data for logging smsCount
  * @param recipient The mobile number of the recipient
  * @param message The message to send
  */
 const send = async (
   twilioConfig: TwilioConfig,
-  otpData: FormOtpData | AdminContactOtpData,
+  smsData: FormOtpData | AdminContactOtpData,
   recipient: string,
   message: string,
   smsType: SmsType,
@@ -165,7 +165,7 @@ const send = async (
 
       // Log success
       const logParams: LogSmsParams = {
-        otpData,
+        smsData,
         smsType,
         msgSrvcSid,
         logType: LogType.success,
@@ -186,7 +186,7 @@ const send = async (
         message: 'Successfully sent sms',
         meta: {
           action: 'send',
-          otpData,
+          smsData,
         },
       })
 
@@ -203,7 +203,7 @@ const send = async (
 
       // Log failure
       const logParams: LogSmsParams = {
-        otpData,
+        smsData,
         smsType,
         msgSrvcSid,
         logType: LogType.failure,
