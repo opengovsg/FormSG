@@ -65,6 +65,16 @@ export type EditFormFieldParams = {
 
 export type FormUpdateParams = {
   editFormField?: EditFormFieldParams
+  authType?: IForm['authType']
+  emails?: IForm['emails']
+  esrvcId?: IForm['esrvcId']
+  form_logics?: IForm['form_logics']
+  hasCaptcha?: IForm['hasCaptcha']
+  inactiveMessage?: IForm['inactiveMessage']
+  permissionList?: IForm['permissionList']
+  status?: IForm['status']
+  title?: IForm['title']
+  webhook: IForm['webhook']
 }
 
 export type EditFormFieldResult = Result<IFieldSchema[], EditFieldError>
