@@ -3,6 +3,8 @@ import {
   IDeliveryNotification,
   IEmailNotification,
 } from '../../../types'
+
+import { UserWithContactNumber } from './bounce.types'
 /**
  * Extracts custom headers which we send with all emails, such as form ID, submission ID
  * and email type (admin response, email confirmation OTP etc).
@@ -62,3 +64,26 @@ export const isBounceNotification = (
 export const isDeliveryNotification = (
   body: IEmailNotification,
 ): body is IDeliveryNotification => body.notificationType === 'Delivery'
+
+export const extractSuccessfulSmsRecipients = (
+  smsResults: PromiseSettledResult<boolean>[],
+  smsRecipients: UserWithContactNumber[],
+): UserWithContactNumber[] => {
+  return smsResults.reduce<UserWithContactNumber[]>((acc, result, index) => {
+    if (result.status === 'fulfilled') {
+      acc.push(smsRecipients[index])
+    }
+    return acc
+  }, [])
+}
+
+export const extractSmsErrors = (
+  smsResults: PromiseSettledResult<boolean>[],
+): PromiseRejectedResult['reason'][] => {
+  return smsResults.reduce<PromiseRejectedResult['reason'][]>((acc, result) => {
+    if (result.status === 'rejected') {
+      acc.push(result.reason)
+    }
+    return acc
+  }, [])
+}

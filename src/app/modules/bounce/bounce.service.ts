@@ -17,10 +17,17 @@ import {
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
+import { SmsFactory } from '../../services/sms/sms.factory'
 import { getCollabEmailsWithPermission } from '../form/form.utils'
 
 import getBounceModel from './bounce.model'
-import { extractHeader, isBounceNotification } from './bounce.util'
+import { AdminNotificationResult, UserWithContactNumber } from './bounce.types'
+import {
+  extractHeader,
+  extractSmsErrors,
+  extractSuccessfulSmsRecipients,
+  isBounceNotification,
+} from './bounce.util'
 
 const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
@@ -114,7 +121,7 @@ export const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   notification: IEmailNotification,
   autoEmailRecipients: string[],
-  autoSmsRecipients: UserContactView[],
+  autoSmsRecipients: UserWithContactNumber[],
   hasDeactivated: boolean,
 ): void => {
   const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
@@ -133,6 +140,7 @@ export const logCriticalBounce = (
     meta: {
       action: 'logCriticalBounce',
       hasAutoEmailed: bounceDoc.hasAutoEmailed,
+      hasAutoSmsed: bounceDoc.hasAutoSmsed,
       hasDeactivated,
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
@@ -164,7 +172,9 @@ const computeValidEmails = (
 export const notifyAdminOfBounce = async (
   bounceDoc: IBounceSchema,
   form: IPopulatedForm,
-): Promise<string[]> => {
+  possibleSmsRecipients: UserContactView[],
+): Promise<AdminNotificationResult> => {
+  // Email all collaborators
   const emailRecipients = computeValidEmails(form, bounceDoc)
   if (emailRecipients.length > 0) {
     await MailService.sendBounceNotification({
@@ -177,7 +187,37 @@ export const notifyAdminOfBounce = async (
       formId: bounceDoc.formId,
     })
   }
-  return emailRecipients
+
+  // Sms given recipients
+  const smsRecipientsWithContacts = possibleSmsRecipients.filter(
+    (r) => !!r.contact,
+  ) as UserWithContactNumber[]
+  const smsPromises = smsRecipientsWithContacts.map((recipient) =>
+    SmsFactory.sendBouncedSubmissionSms({
+      adminEmail: form.admin.email,
+      adminId: form.admin._id,
+      formId: form._id,
+      formTitle: form.title,
+      recipient: recipient.contact,
+      recipientEmail: recipient.email,
+    }),
+  )
+  const smsResults = await Promise.allSettled(smsPromises)
+  const successfulSmsRecipients = extractSuccessfulSmsRecipients(
+    smsResults,
+    smsRecipientsWithContacts,
+  )
+  if (successfulSmsRecipients.length < smsRecipientsWithContacts.length) {
+    logger.warn({
+      message: 'Failed to send some bounce notification SMSes',
+      meta: {
+        action: 'notifyAdminOfBounce',
+        formId: form._id,
+        reasons: extractSmsErrors(smsResults),
+      },
+    })
+  }
+  return { emailRecipients, smsRecipients: successfulSmsRecipients }
 }
 
 /**

@@ -11,8 +11,11 @@ import {
 } from '../../../types'
 import { EmailType } from '../../services/mail/mail.constants'
 import * as FormService from '../form/form.service'
+import { getCollabEmailsWithPermission } from '../form/form.utils'
+import * as UserService from '../user/user.service'
 
 import * as BounceService from './bounce.service'
+import { AdminNotificationResult } from './bounce.types'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -51,15 +54,34 @@ export const handleSns: RequestHandler<
     const form = formResult.value
 
     if (bounceDoc.isCriticalBounce()) {
+      // Get contact numbers
+      let possibleSmsRecipients: UserContactView[] = []
+      const usersToSms = [
+        form.admin.email,
+        ...getCollabEmailsWithPermission(form.permissionList, true),
+      ]
+      const smsRecipientsResult = await UserService.findContactsForEmails(
+        usersToSms,
+      )
+      if (smsRecipientsResult.isOk()) {
+        possibleSmsRecipients = smsRecipientsResult.value
+      }
+
       // Notify admin and collaborators
-      let emailRecipients: string[] = []
-      const smsRecipients: UserContactView[] = []
+      let notificationRecipients: AdminNotificationResult = {
+        emailRecipients: [],
+        smsRecipients: [],
+      }
       if (!bounceDoc.hasNotified()) {
-        emailRecipients = await BounceService.notifyAdminOfBounce(
+        notificationRecipients = await BounceService.notifyAdminOfBounce(
           bounceDoc,
           form,
+          possibleSmsRecipients,
         )
-        bounceDoc.setNotificationState(emailRecipients, smsRecipients)
+        bounceDoc.setNotificationState(
+          notificationRecipients.emailRecipients,
+          notificationRecipients.smsRecipients,
+        )
       }
 
       // Deactivate if all bounces are permanent
@@ -72,8 +94,8 @@ export const handleSns: RequestHandler<
       BounceService.logCriticalBounce(
         bounceDoc,
         notification,
-        emailRecipients,
-        smsRecipients,
+        notificationRecipients.emailRecipients,
+        notificationRecipients.smsRecipients,
         shouldDeactivate,
       )
     }
