@@ -4,15 +4,9 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import {
-  IEmailNotification,
-  ISnsNotification,
-  UserContactView,
-} from '../../../types'
+import { IEmailNotification, ISnsNotification } from '../../../types'
 import { EmailType } from '../../services/mail/mail.constants'
 import * as FormService from '../form/form.service'
-import { getCollabEmailsWithPermission } from '../form/form.utils'
-import * as UserService from '../user/user.service'
 
 import * as BounceService from './bounce.service'
 import { AdminNotificationResult } from './bounce.types'
@@ -55,17 +49,9 @@ export const handleSns: RequestHandler<
 
     if (bounceDoc.isCriticalBounce()) {
       // Get contact numbers
-      let possibleSmsRecipients: UserContactView[] = []
-      const usersToSms = [
-        form.admin.email,
-        ...getCollabEmailsWithPermission(form.permissionList, true),
-      ]
-      const smsRecipientsResult = await UserService.findContactsForEmails(
-        usersToSms,
+      const possibleSmsRecipients = await BounceService.getEditorsWithContactNumbers(
+        form,
       )
-      if (smsRecipientsResult.isOk()) {
-        possibleSmsRecipients = smsRecipientsResult.value
-      }
 
       // Notify admin and collaborators
       let notificationRecipients: AdminNotificationResult = {

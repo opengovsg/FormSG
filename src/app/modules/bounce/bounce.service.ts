@@ -13,12 +13,12 @@ import {
   IEmailNotification,
   IPopulatedForm,
   ISnsNotification,
-  UserContactView,
 } from '../../../types'
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { getCollabEmailsWithPermission } from '../form/form.utils'
+import * as UserService from '../user/user.service'
 
 import getBounceModel from './bounce.model'
 import { AdminNotificationResult, UserWithContactNumber } from './bounce.types'
@@ -172,7 +172,7 @@ const computeValidEmails = (
 export const notifyAdminsOfBounce = async (
   bounceDoc: IBounceSchema,
   form: IPopulatedForm,
-  possibleSmsRecipients: UserContactView[],
+  possibleSmsRecipients: UserWithContactNumber[],
 ): Promise<AdminNotificationResult> => {
   // Email all collaborators
   const emailRecipients = computeValidEmails(form, bounceDoc)
@@ -189,10 +189,7 @@ export const notifyAdminsOfBounce = async (
   }
 
   // Sms given recipients
-  const smsRecipientsWithContacts = possibleSmsRecipients.filter(
-    (r) => !!r.contact,
-  ) as UserWithContactNumber[]
-  const smsPromises = smsRecipientsWithContacts.map((recipient) =>
+  const smsPromises = possibleSmsRecipients.map((recipient) =>
     SmsFactory.sendBouncedSubmissionSms({
       adminEmail: form.admin.email,
       adminId: form.admin._id,
@@ -205,9 +202,9 @@ export const notifyAdminsOfBounce = async (
   const smsResults = await Promise.allSettled(smsPromises)
   const successfulSmsRecipients = extractSuccessfulSmsRecipients(
     smsResults,
-    smsRecipientsWithContacts,
+    possibleSmsRecipients,
   )
-  if (successfulSmsRecipients.length < smsRecipientsWithContacts.length) {
+  if (successfulSmsRecipients.length < possibleSmsRecipients.length) {
     logger.warn({
       message: 'Failed to send some bounce notification SMSes',
       meta: {
@@ -274,4 +271,30 @@ export const extractEmailType = (
   notification: IEmailNotification,
 ): string | undefined => {
   return extractHeader(notification, EMAIL_HEADERS.emailType)
+}
+
+export const getEditorsWithContactNumbers = async (
+  form: IPopulatedForm,
+): Promise<UserWithContactNumber[]> => {
+  const possibleEditors = [
+    form.admin.email,
+    ...getCollabEmailsWithPermission(form.permissionList, true),
+  ]
+  const smsRecipientsResult = await UserService.findContactsForEmails(
+    possibleEditors,
+  )
+  if (smsRecipientsResult.isOk()) {
+    return smsRecipientsResult.value.filter(
+      (r) => !!r.contact,
+    ) as UserWithContactNumber[]
+  } else {
+    logger.warn({
+      message: 'Failed to retrieve contact numbers for form editors',
+      meta: {
+        action: 'getEditorsWithContactNumbers',
+        formId: form._id,
+      },
+    })
+    return []
+  }
 }
