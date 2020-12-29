@@ -82,7 +82,7 @@ describe('handleSns', () => {
       MOCK_REQ.body,
     )
     expect(MockBounceService.logEmailNotification).not.toHaveBeenCalled()
-    expect(MockBounceService.notifyAdminOfBounce).not.toHaveBeenCalled()
+    expect(MockBounceService.notifyAdminsOfBounce).not.toHaveBeenCalled()
     expect(MockBounceService.logCriticalBounce).not.toHaveBeenCalled()
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(403)
   })
@@ -96,7 +96,7 @@ describe('handleSns', () => {
       MOCK_REQ.body,
     )
     expect(MockBounceService.logEmailNotification).not.toHaveBeenCalled()
-    expect(MockBounceService.notifyAdminOfBounce).not.toHaveBeenCalled()
+    expect(MockBounceService.notifyAdminsOfBounce).not.toHaveBeenCalled()
     expect(MockBounceService.logCriticalBounce).not.toHaveBeenCalled()
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
   })
@@ -110,7 +110,7 @@ describe('handleSns', () => {
     mockBounceDoc.areAllPermanentBounces.mockReturnValueOnce(true)
     mockBounceDoc.isCriticalBounce.mockReturnValueOnce(true)
     mockBounceDoc.hasNotified.mockReturnValueOnce(false)
-    MockBounceService.notifyAdminOfBounce.mockResolvedValueOnce(
+    MockBounceService.notifyAdminsOfBounce.mockResolvedValueOnce(
       MOCK_EMAIL_RECIPIENTS,
     )
 
@@ -132,7 +132,7 @@ describe('handleSns', () => {
     expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
       mockBounceDoc.formId,
     )
-    expect(MockBounceService.notifyAdminOfBounce).toHaveBeenCalledWith(
+    expect(MockBounceService.notifyAdminsOfBounce).toHaveBeenCalledWith(
       mockBounceDoc,
     )
     expect(mockBounceDoc.setNotificationState).toHaveBeenCalledWith(
@@ -213,7 +213,7 @@ describe('handleSns', () => {
     mockBounceDoc.areAllPermanentBounces.mockReturnValueOnce(true)
     mockBounceDoc.isCriticalBounce.mockReturnValueOnce(true)
     mockBounceDoc.hasNotified.mockReturnValueOnce(false)
-    MockBounceService.notifyAdminOfBounce.mockImplementationOnce(() => {
+    MockBounceService.notifyAdminsOfBounce.mockImplementationOnce(() => {
       throw new Error()
     })
 
@@ -235,7 +235,7 @@ describe('handleSns', () => {
     expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
       mockBounceDoc.formId,
     )
-    expect(MockBounceService.notifyAdminOfBounce).toHaveBeenCalledWith(
+    expect(MockBounceService.notifyAdminsOfBounce).toHaveBeenCalledWith(
       mockBounceDoc,
     )
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(400)
@@ -250,7 +250,7 @@ describe('handleSns', () => {
     mockBounceDoc.areAllPermanentBounces.mockReturnValueOnce(true)
     mockBounceDoc.isCriticalBounce.mockReturnValueOnce(true)
     mockBounceDoc.hasNotified.mockReturnValueOnce(false)
-    MockBounceService.notifyAdminOfBounce.mockResolvedValue(
+    MockBounceService.notifyAdminsOfBounce.mockResolvedValue(
       MOCK_EMAIL_RECIPIENTS,
     )
     mockBounceDoc.save.mockImplementationOnce(() => {
@@ -275,7 +275,7 @@ describe('handleSns', () => {
     expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
       mockBounceDoc.formId,
     )
-    expect(MockBounceService.notifyAdminOfBounce).toHaveBeenCalledWith(
+    expect(MockBounceService.notifyAdminsOfBounce).toHaveBeenCalledWith(
       mockBounceDoc,
     )
     expect(mockBounceDoc.setNotificationState).toHaveBeenCalledWith(

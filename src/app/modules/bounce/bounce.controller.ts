@@ -73,7 +73,7 @@ export const handleSns: RequestHandler<
         smsRecipients: [],
       }
       if (!bounceDoc.hasNotified()) {
-        notificationRecipients = await BounceService.notifyAdminOfBounce(
+        notificationRecipients = await BounceService.notifyAdminsOfBounce(
           bounceDoc,
           form,
           possibleSmsRecipients,

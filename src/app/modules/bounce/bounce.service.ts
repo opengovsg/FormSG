@@ -169,7 +169,7 @@ const computeValidEmails = (
   return difference(possibleEmails, bounceDoc.getEmails())
 }
 
-export const notifyAdminOfBounce = async (
+export const notifyAdminsOfBounce = async (
   bounceDoc: IBounceSchema,
   form: IPopulatedForm,
   possibleSmsRecipients: UserContactView[],

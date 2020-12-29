@@ -39,7 +39,7 @@ import {
   isValidSnsRequest,
   logCriticalBounce,
   logEmailNotification,
-  notifyAdminOfBounce,
+  notifyAdminsOfBounce,
 } from 'src/app/modules/bounce/bounce.service'
 
 const Form = getFormModel(mongoose)
@@ -267,7 +267,7 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [testUser.email],
         bouncedRecipients: [MOCK_EMAIL],
@@ -292,7 +292,7 @@ describe('BounceService', () => {
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [collabEmail],
         bouncedRecipients: [testUser.email],
@@ -315,7 +315,7 @@ describe('BounceService', () => {
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(emailRecipients).toEqual([])
     })
@@ -335,7 +335,7 @@ describe('BounceService', () => {
           { email: collabEmail, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(emailRecipients).toEqual([])
     })
