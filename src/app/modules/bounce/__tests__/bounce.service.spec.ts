@@ -21,6 +21,8 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 
+import { UserWithContactNumber } from '../bounce.types'
+
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
 jest.mock('axios')
@@ -471,6 +473,7 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
         ],
         hasAutoEmailed: true,
+        hasAutoSmsed: true,
       })
       const snsInfo = makeBounceNotification({
         formId: MOCK_FORM_ID,
@@ -479,12 +482,20 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients = [MOCK_EMAIL, MOCK_EMAIL_2]
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, false)
+      const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
+      logCriticalBounce(
+        bounceDoc,
+        snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        false,
+      )
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasAutoSmsed: true,
           hasDeactivated: false,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
@@ -493,6 +504,7 @@ describe('BounceService', () => {
           numTransient: 2,
           numPermanent: 0,
           autoEmailRecipients,
+          autoSmsRecipients,
           bounceInfo: snsInfo.bounce,
         },
       })
@@ -506,6 +518,7 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Permanent' },
         ],
         hasAutoEmailed: true,
+        hasAutoSmsed: true,
       })
       const snsInfo = makeBounceNotification({
         formId: MOCK_FORM_ID,
@@ -514,12 +527,20 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients: string[] = []
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, true)
+      const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
+      logCriticalBounce(
+        bounceDoc,
+        snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        true,
+      )
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasAutoSmsed: true,
           hasDeactivated: true,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
@@ -528,6 +549,7 @@ describe('BounceService', () => {
           numTransient: 0,
           numPermanent: 2,
           autoEmailRecipients,
+          autoSmsRecipients,
           bounceInfo: snsInfo.bounce,
         },
       })
@@ -541,6 +563,7 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
         ],
         hasAutoEmailed: true,
+        hasAutoSmsed: true,
       })
       const snsInfo = makeBounceNotification({
         formId: MOCK_FORM_ID,
@@ -549,12 +572,20 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients: string[] = []
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, false)
+      const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
+      logCriticalBounce(
+        bounceDoc,
+        snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        false,
+      )
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasAutoSmsed: true,
           hasDeactivated: false,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
@@ -563,6 +594,91 @@ describe('BounceService', () => {
           numTransient: 1,
           numPermanent: 1,
           autoEmailRecipients,
+          autoSmsRecipients,
+          bounceInfo: snsInfo.bounce,
+        },
+      })
+    })
+
+    it('should log correctly when hasAutoEmailed is false', () => {
+      const bounceDoc = new Bounce({
+        formId: MOCK_FORM_ID,
+        bounces: [],
+        hasAutoEmailed: false,
+        hasAutoSmsed: true,
+      })
+      const snsInfo = makeBounceNotification({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+        recipientList: [MOCK_EMAIL, MOCK_EMAIL_2],
+        bouncedList: [],
+      })
+      const autoEmailRecipients: string[] = []
+      const autoSmsRecipients: UserWithContactNumber[] = []
+      logCriticalBounce(
+        bounceDoc,
+        snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        false,
+      )
+      expect(mockLogger.warn).toHaveBeenCalledWith({
+        message: 'Bounced submission',
+        meta: {
+          action: 'logCriticalBounce',
+          hasAutoEmailed: false,
+          hasAutoSmsed: true,
+          hasDeactivated: false,
+          formId: String(MOCK_FORM_ID),
+          submissionId: String(MOCK_SUBMISSION_ID),
+          recipients: [],
+          numRecipients: 0,
+          numTransient: 0,
+          numPermanent: 0,
+          autoEmailRecipients,
+          autoSmsRecipients,
+          bounceInfo: snsInfo.bounce,
+        },
+      })
+    })
+
+    it('should log correctly when hasAutoSmsed is false', () => {
+      const bounceDoc = new Bounce({
+        formId: MOCK_FORM_ID,
+        bounces: [],
+        hasAutoEmailed: true,
+        hasAutoSmsed: false,
+      })
+      const snsInfo = makeBounceNotification({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+        recipientList: [MOCK_EMAIL, MOCK_EMAIL_2],
+        bouncedList: [],
+      })
+      const autoEmailRecipients: string[] = []
+      const autoSmsRecipients: UserWithContactNumber[] = []
+      logCriticalBounce(
+        bounceDoc,
+        snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        false,
+      )
+      expect(mockLogger.warn).toHaveBeenCalledWith({
+        message: 'Bounced submission',
+        meta: {
+          action: 'logCriticalBounce',
+          hasAutoEmailed: true,
+          hasAutoSmsed: false,
+          hasDeactivated: false,
+          formId: String(MOCK_FORM_ID),
+          submissionId: String(MOCK_SUBMISSION_ID),
+          recipients: [],
+          numRecipients: 0,
+          numTransient: 0,
+          numPermanent: 0,
+          autoEmailRecipients,
+          autoSmsRecipients,
           bounceInfo: snsInfo.bounce,
         },
       })
