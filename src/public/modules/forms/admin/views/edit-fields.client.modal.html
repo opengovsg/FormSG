@@ -905,7 +905,10 @@
             Options
           </div>
           <div class="col-xs-12 field-input dropdown-options">
-            <div ng-if="vm.field.fieldType === 'dropdown'" class="optionFrom">
+            <div
+              ng-if="vm.field.fieldType === 'dropdown' || vm.field.fieldType === 'checkbox'"
+              class="optionFrom"
+            >
               <textarea
                 class="input-custom input-medium"
                 rows="4"
@@ -917,7 +920,7 @@
             </div>
           </div>
           <div
-            ng-if="vm.field.fieldType === 'checkbox' || vm.field.fieldType === 'radiobutton'"
+            ng-if="vm.field.fieldType === 'radiobutton'"
             class="option-panel col-md-12 col-xs-12"
           >
             <div

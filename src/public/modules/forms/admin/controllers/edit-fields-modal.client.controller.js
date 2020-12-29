@@ -57,9 +57,12 @@ function EditFieldsModalController(
   vm.myform = externalScope.myform
   vm.attachmentsMax = externalScope.attachmentsMax
 
-  if (vm.field.fieldType === 'dropdown' && vm.field.fieldOptions.length > 0) {
+  if (
+    ['dropdown', 'checkbox'].includes(vm.field.fieldType) &&
+    vm.field.fieldOptions.length > 0
+  ) {
     vm.field.fieldOptionsFromText = vm.field.fieldOptions.join('\n')
-  } else if (['radiobutton', 'checkbox'].includes(vm.field.fieldType)) {
+  } else if (['checkbox'].includes(vm.field.fieldType)) {
     vm.field.manualOptions = vm.field.fieldOptions
   }
 
