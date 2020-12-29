@@ -376,7 +376,7 @@ export const sendBouncedSubmissionSms = (
     formTitle,
   }: BounceNotificationSmsParams,
   defaultConfig: TwilioConfig,
-): ResultAsync<boolean, SmsSendError> => {
+): Promise<boolean> => {
   logger.info({
     message: `Sending bounced submission notification for ${recipientEmail}`,
     meta: {
@@ -397,21 +397,11 @@ export const sendBouncedSubmissionSms = (
     },
   }
 
-  return ResultAsync.fromPromise(
-    send(defaultConfig, smsData, recipient, message, SmsType.BouncedSubmission),
-    (error) => {
-      logger.error({
-        message: 'Failed to send SMS notification for bounced submission',
-        meta: {
-          action: 'sendBouncedSubmissionSms',
-          recipient,
-        },
-        error,
-      })
-
-      return new SmsSendError(
-        'Failed to send SMS notification for bounced submission',
-      )
-    },
+  return send(
+    defaultConfig,
+    smsData,
+    recipient,
+    message,
+    SmsType.BouncedSubmission,
   )
 }

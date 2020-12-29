@@ -1,4 +1,3 @@
-import { okAsync } from 'neverthrow'
 import Twilio from 'twilio'
 
 import FeatureManager, {
@@ -49,7 +48,7 @@ export const createSmsFactory = (
         throw new Error(`sendVerificationOtp: ${errorMessage}`)
       },
       sendFormDeactivatedSms: () => Promise.resolve(true),
-      sendBouncedSubmissionSms: () => okAsync(true),
+      sendBouncedSubmissionSms: () => Promise.resolve(true),
     }
   }
 
