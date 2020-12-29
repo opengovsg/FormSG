@@ -18,12 +18,216 @@ const MOCK_SMSCOUNT_PARAMS = {
   },
 }
 
+const MOCK_BOUNCED_SUBMISSION_PARAMS = {
+  form: new ObjectId(),
+  formAdmin: {
+    email: 'a@abc.com',
+    userId: new ObjectId(),
+  },
+  collaboratorEmail: 'b@def.com',
+  recipientNumber: '+6581234567',
+  msgSrvcSid: 'mockMsgSrvcSid',
+  smsType: SmsType.BouncedSubmission,
+  logType: LogType.success,
+}
+
+const MOCK_FORM_DEACTIVATED_PARAMS = {
+  form: new ObjectId(),
+  formAdmin: {
+    email: 'a@abc.com',
+    userId: new ObjectId(),
+  },
+  collaboratorEmail: 'b@def.com',
+  recipientNumber: '+6581234567',
+  msgSrvcSid: 'mockMsgSrvcSid',
+  smsType: SmsType.DeactivatedForm,
+  logType: LogType.success,
+}
+
 const MOCK_MSG_SRVC_SID = 'mockMsgSrvcSid'
 
 describe('SmsCount', () => {
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('FormDeactivatedSmsCountSchema', () => {
+    it('should create and save successfully', async () => {
+      const saved = await SmsCount.create(MOCK_FORM_DEACTIVATED_PARAMS)
+
+      expect(saved._id).toBeDefined()
+      expect(saved.createdAt).toBeInstanceOf(Date)
+      const actualSavedObject = omit(saved.toObject(), [
+        '_id',
+        'createdAt',
+        '__v',
+      ])
+      expect(actualSavedObject).toEqual(MOCK_FORM_DEACTIVATED_PARAMS)
+    })
+
+    it('should reject if form is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_FORM_DEACTIVATED_PARAMS, 'form'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if formAdmin.email is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_FORM_DEACTIVATED_PARAMS, 'formAdmin.email'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if formAdmin.userId is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_FORM_DEACTIVATED_PARAMS, 'formAdmin.userId'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if collaboratorEmail is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_FORM_DEACTIVATED_PARAMS, 'collaboratorEmail'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if collaboratorEmail is invalid', async () => {
+      const invalidSmsCount = new SmsCount(
+        merge({}, MOCK_FORM_DEACTIVATED_PARAMS, {
+          collaboratorEmail: 'invalid',
+        }),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if recipientNumber is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_FORM_DEACTIVATED_PARAMS, 'recipientNumber'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if recipientNumber is invalid', async () => {
+      const invalidSmsCount = new SmsCount(
+        merge({}, MOCK_FORM_DEACTIVATED_PARAMS, {
+          recipientNumber: 'invalid',
+        }),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+  })
+
+  describe('BouncedSubmissionSmsCountSchema', () => {
+    it('should create and save successfully', async () => {
+      const saved = await SmsCount.create(MOCK_BOUNCED_SUBMISSION_PARAMS)
+
+      expect(saved._id).toBeDefined()
+      expect(saved.createdAt).toBeInstanceOf(Date)
+      const actualSavedObject = omit(saved.toObject(), [
+        '_id',
+        'createdAt',
+        '__v',
+      ])
+      expect(actualSavedObject).toEqual(MOCK_BOUNCED_SUBMISSION_PARAMS)
+    })
+
+    it('should reject if form is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'form'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if formAdmin.email is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'formAdmin.email'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if formAdmin.userId is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'formAdmin.userId'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if collaboratorEmail is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'collaboratorEmail'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if collaboratorEmail is invalid', async () => {
+      const invalidSmsCount = new SmsCount(
+        merge({}, MOCK_BOUNCED_SUBMISSION_PARAMS, {
+          collaboratorEmail: 'invalid',
+        }),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if recipientNumber is missing', async () => {
+      const invalidSmsCount = new SmsCount(
+        omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'recipientNumber'),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject if recipientNumber is invalid', async () => {
+      const invalidSmsCount = new SmsCount(
+        merge({}, MOCK_BOUNCED_SUBMISSION_PARAMS, {
+          recipientNumber: 'invalid',
+        }),
+      )
+
+      await expect(invalidSmsCount.save()).rejects.toThrowError(
+        mongoose.Error.ValidationError,
+      )
+    })
+  })
 
   describe('VerificationCount Schema', () => {
     it('should create and save successfully', async () => {
@@ -174,6 +378,106 @@ describe('SmsCount', () => {
   describe('Statics', () => {
     describe('logSms', () => {
       const MOCK_FORM_ID = MOCK_SMSCOUNT_PARAMS.form
+
+      it('should correctly log bounced submission SMS successes', async () => {
+        const saved = await SmsCount.logSms({
+          logType: LogType.success,
+          smsType: SmsType.BouncedSubmission,
+          msgSrvcSid: MOCK_BOUNCED_SUBMISSION_PARAMS.msgSrvcSid,
+          smsData: omit(MOCK_BOUNCED_SUBMISSION_PARAMS, [
+            'msgSrvcSid',
+            'smsType',
+            'logType',
+          ]),
+        })
+
+        expect(saved._id).toBeDefined()
+        expect(saved.createdAt).toBeInstanceOf(Date)
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'createdAt',
+          '__v',
+        ])
+        expect(actualSavedObject).toEqual(
+          merge({}, MOCK_BOUNCED_SUBMISSION_PARAMS, {
+            logType: LogType.success,
+          }),
+        )
+      })
+
+      it('should correctly log bounced submission SMS failures', async () => {
+        const saved = await SmsCount.logSms({
+          logType: LogType.failure,
+          smsType: SmsType.BouncedSubmission,
+          msgSrvcSid: MOCK_BOUNCED_SUBMISSION_PARAMS.msgSrvcSid,
+          smsData: omit(MOCK_BOUNCED_SUBMISSION_PARAMS, [
+            'msgSrvcSid',
+            'smsType',
+            'logType',
+          ]),
+        })
+
+        expect(saved._id).toBeDefined()
+        expect(saved.createdAt).toBeInstanceOf(Date)
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'createdAt',
+          '__v',
+        ])
+        expect(actualSavedObject).toEqual(
+          merge({}, MOCK_BOUNCED_SUBMISSION_PARAMS, {
+            logType: LogType.failure,
+          }),
+        )
+      })
+
+      it('should correctly log form deactivated SMS successes', async () => {
+        const saved = await SmsCount.logSms({
+          logType: LogType.success,
+          smsType: SmsType.DeactivatedForm,
+          msgSrvcSid: MOCK_FORM_DEACTIVATED_PARAMS.msgSrvcSid,
+          smsData: omit(MOCK_FORM_DEACTIVATED_PARAMS, [
+            'msgSrvcSid',
+            'smsType',
+            'logType',
+          ]),
+        })
+
+        expect(saved._id).toBeDefined()
+        expect(saved.createdAt).toBeInstanceOf(Date)
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'createdAt',
+          '__v',
+        ])
+        expect(actualSavedObject).toEqual(
+          merge({}, MOCK_FORM_DEACTIVATED_PARAMS, { logType: LogType.success }),
+        )
+      })
+
+      it('should correctly log form deactivated SMS failures', async () => {
+        const saved = await SmsCount.logSms({
+          logType: LogType.failure,
+          smsType: SmsType.DeactivatedForm,
+          msgSrvcSid: MOCK_FORM_DEACTIVATED_PARAMS.msgSrvcSid,
+          smsData: omit(MOCK_FORM_DEACTIVATED_PARAMS, [
+            'msgSrvcSid',
+            'smsType',
+            'logType',
+          ]),
+        })
+
+        expect(saved._id).toBeDefined()
+        expect(saved.createdAt).toBeInstanceOf(Date)
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'createdAt',
+          '__v',
+        ])
+        expect(actualSavedObject).toEqual(
+          merge({}, MOCK_FORM_DEACTIVATED_PARAMS, { logType: LogType.failure }),
+        )
+      })
 
       it('should successfully log verification successes in the collection', async () => {
         // Arrange
