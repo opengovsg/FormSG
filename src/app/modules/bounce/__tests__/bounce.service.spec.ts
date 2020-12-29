@@ -9,6 +9,7 @@ import { mocked } from 'ts-jest/utils'
 import getFormModel from 'src/app/models/form.server.model'
 import { EMAIL_HEADERS, EmailType } from 'src/app/services/mail/mail.constants'
 import MailService from 'src/app/services/mail/mail.service'
+import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as LoggerModule from 'src/config/logger'
 import {
   BounceType,
@@ -28,6 +29,13 @@ jest.mock('src/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
+jest.mock('src/app/services/sms/sms.factory', () => ({
+  SmsFactory: {
+    sendFormDeactivatedSms: jest.fn(),
+    sendBouncedSubmissionSms: jest.fn(),
+  },
+}))
+const MockSmsFactory = mocked(SmsFactory, true)
 
 const mockShortTermLogger = getMockLogger()
 const mockLogger = getMockLogger()
@@ -52,6 +60,14 @@ const Bounce = getBounceModel(mongoose)
 
 const MOCK_EMAIL = 'email@example.com'
 const MOCK_EMAIL_2 = 'email2@example.com'
+const MOCK_CONTACT = {
+  email: MOCK_EMAIL,
+  contact: '+6581234567',
+}
+const MOCK_CONTACT_2 = {
+  email: MOCK_EMAIL_2,
+  contact: '+6581234568',
+}
 const MOCK_FORM_ID = new ObjectId()
 const MOCK_ADMIN_ID = new ObjectId()
 const MOCK_SUBMISSION_ID = new ObjectId()
@@ -59,10 +75,12 @@ const MOCK_SUBMISSION_ID = new ObjectId()
 describe('BounceService', () => {
   beforeAll(async () => await dbHandler.connect())
 
-  afterAll(async () => {
+  afterEach(async () => {
     await dbHandler.clearDatabase()
-    await dbHandler.closeDatabase()
+    jest.clearAllMocks()
   })
+
+  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('extractEmailType', () => {
     it('should extract the email type correctly', () => {
@@ -241,11 +259,11 @@ describe('BounceService', () => {
     })
   })
 
-  describe('notifyAdminOfBounce', () => {
+  describe('notifyAdminsOfBounce', () => {
     const MOCK_FORM_TITLE = 'FormTitle'
     let testUser: IUserSchema
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       const { user } = await dbHandler.insertFormCollectionReqs({
         userId: MOCK_ADMIN_ID,
       })
@@ -273,7 +291,9 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
+
       const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [testUser.email],
         bouncedRecipients: [MOCK_EMAIL],
@@ -299,7 +319,9 @@ describe('BounceService', () => {
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
+
       const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [collabEmail],
         bouncedRecipients: [testUser.email],
@@ -323,7 +345,9 @@ describe('BounceService', () => {
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
+
       const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(notifiedRecipients.emailRecipients).toEqual([])
     })
@@ -344,9 +368,93 @@ describe('BounceService', () => {
           { email: collabEmail, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
+
       const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
       expect(notifiedRecipients.emailRecipients).toEqual([])
+    })
+
+    it('should send text for all SMS recipients and return successful ones', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      const bounceDoc = new Bounce({
+        formId: form._id,
+        bounces: [],
+      })
+      MockSmsFactory.sendBouncedSubmissionSms.mockResolvedValue(true)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
+      expect(notifiedRecipients.smsRecipients).toEqual([
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+    })
+
+    it('should return only successfuly SMS recipients when some SMSes fail', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      const bounceDoc = new Bounce({
+        formId: form._id,
+        bounces: [],
+      })
+      const mockRejectedReason = 'reasons'
+      MockSmsFactory.sendBouncedSubmissionSms
+        .mockResolvedValueOnce(true)
+        .mockRejectedValueOnce(mockRejectedReason)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
+      expect(notifiedRecipients.smsRecipients).toEqual([MOCK_CONTACT])
     })
   })
 
