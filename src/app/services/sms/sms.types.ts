@@ -70,6 +70,22 @@ export interface IAdminContactSmsCount extends ISmsCount {
 
 export type IAdminContactSmsCountSchema = ISmsCountSchema
 
+export interface IFormDeactivatedSmsCount
+  extends ISmsCount,
+    FormDeactivatedSmsData {}
+
+export interface IFormDeactivatedSmsCountSchema
+  extends ISmsCountSchema,
+    FormDeactivatedSmsData {}
+
+export interface IBouncedSubmissionSmsCount
+  extends ISmsCount,
+    BouncedSubmissionSmsData {}
+
+export interface IBouncedSubmissionSmsCountSchema
+  extends ISmsCountSchema,
+    BouncedSubmissionSmsData {}
+
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
 }
