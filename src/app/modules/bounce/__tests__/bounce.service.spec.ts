@@ -10,7 +10,12 @@ import getFormModel from 'src/app/models/form.server.model'
 import { EMAIL_HEADERS, EmailType } from 'src/app/services/mail/mail.constants'
 import MailService from 'src/app/services/mail/mail.service'
 import * as LoggerModule from 'src/config/logger'
-import { BounceType, ISnsNotification, IUserSchema } from 'src/types'
+import {
+  BounceType,
+  IPopulatedForm,
+  ISnsNotification,
+  IUserSchema,
+} from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
@@ -256,88 +261,92 @@ describe('BounceService', () => {
     })
 
     it('should auto-email when admin is not email recipient', async () => {
-      const form = new Form({
-        admin: MOCK_ADMIN_ID,
+      const form = (await new Form({
+        admin: testUser._id,
         title: MOCK_FORM_TITLE,
       })
-      const testForm = await form.save()
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [testUser.email],
         bouncedRecipients: [MOCK_EMAIL],
         bounceType: BounceType.Permanent,
-        formTitle: testForm.title,
-        formId: testForm._id,
+        formTitle: form.title,
+        formId: form._id,
       })
-      expect(emailRecipients).toEqual([testUser.email])
+      expect(notifiedRecipients.emailRecipients).toEqual([testUser.email])
     })
 
     it('should auto-email when any collaborator is not email recipient', async () => {
-      const testForm = new Form({
-        admin: MOCK_ADMIN_ID,
-        title: MOCK_FORM_TITLE,
-      })
       const collabEmail = 'collaborator@test.gov.sg'
-      testForm.permissionList = [{ email: collabEmail, write: true }]
-      await testForm.save()
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [{ email: collabEmail, write: true }],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [collabEmail],
         bouncedRecipients: [testUser.email],
         bounceType: BounceType.Permanent,
-        formTitle: testForm.title,
-        formId: testForm._id,
+        formTitle: form.title,
+        formId: form._id,
       })
-      expect(emailRecipients).toEqual([collabEmail])
+      expect(notifiedRecipients.emailRecipients).toEqual([collabEmail])
     })
 
     it('should not auto-email when admin is email recipient', async () => {
-      const testForm = new Form({
-        admin: MOCK_ADMIN_ID,
+      const form = (await new Form({
+        admin: testUser._id,
         title: MOCK_FORM_TITLE,
       })
-      await testForm.save()
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
-      expect(emailRecipients).toEqual([])
+      expect(notifiedRecipients.emailRecipients).toEqual([])
     })
 
     it('should not auto-email when all collabs are email recipients', async () => {
-      const testForm = new Form({
-        admin: MOCK_ADMIN_ID,
-        title: MOCK_FORM_TITLE,
-      })
       const collabEmail = 'collaborator@test.gov.sg'
-      testForm.permissionList = [{ email: collabEmail, write: false }]
-      await testForm.save()
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [{ email: collabEmail, write: false }],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
           { email: collabEmail, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminsOfBounce(bounceDoc)
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
-      expect(emailRecipients).toEqual([])
+      expect(notifiedRecipients.emailRecipients).toEqual([])
     })
   })
 
