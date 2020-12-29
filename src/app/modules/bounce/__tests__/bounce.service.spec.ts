@@ -1,12 +1,15 @@
+/* eslint-disable import/first */
 import axios from 'axios'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import dedent from 'dedent'
 import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
+import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
+import * as UserService from 'src/app/modules/user/user.service'
 import { EMAIL_HEADERS, EmailType } from 'src/app/services/mail/mail.constants'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
@@ -21,6 +24,7 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 
+import { DatabaseError } from '../../core/core.errors'
 import { UserWithContactNumber } from '../bounce.types'
 
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
@@ -38,6 +42,8 @@ jest.mock('src/app/services/sms/sms.factory', () => ({
   },
 }))
 const MockSmsFactory = mocked(SmsFactory, true)
+jest.mock('src/app/modules/user/user.service')
+const MockUserService = mocked(UserService, true)
 
 const mockShortTermLogger = getMockLogger()
 const mockLogger = getMockLogger()
@@ -45,16 +51,16 @@ MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockShortTermLogger)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 // Import modules which depend on config last so that mocks get imported correctly
-// eslint-disable-next-line import/first
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
-// eslint-disable-next-line import/first
 import {
   extractEmailType,
+  getEditorsWithContactNumbers,
   getUpdatedBounceDoc,
   isValidSnsRequest,
   logCriticalBounce,
   logEmailNotification,
   notifyAdminsOfBounce,
+  notifyAdminsOfDeactivation,
 } from 'src/app/modules/bounce/bounce.service'
 
 const Form = getFormModel(mongoose)
@@ -270,10 +276,6 @@ describe('BounceService', () => {
         userId: MOCK_ADMIN_ID,
       })
       testUser = user
-    })
-
-    afterAll(async () => {
-      await dbHandler.clearDatabase()
     })
 
     beforeEach(async () => {
@@ -747,6 +749,180 @@ describe('BounceService', () => {
       signer.write(baseString)
       body.Signature = signer.sign(keys.privateKey, 'base64')
       return expect(isValidSnsRequest(body)).resolves.toBe(true)
+    })
+  })
+
+  describe('getEditorsWithContactNumbers', () => {
+    const MOCK_FORM_TITLE = 'FormTitle'
+    let testUser: IUserSchema
+
+    beforeEach(async () => {
+      const { user } = await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_ADMIN_ID,
+      })
+      testUser = user
+    })
+
+    beforeEach(async () => {
+      jest.resetAllMocks()
+    })
+
+    it('should call user service with emails of all write collaborators', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [
+          { email: MOCK_EMAIL, write: true },
+          { email: MOCK_EMAIL_2, write: false },
+        ],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+        okAsync([MOCK_CONTACT]),
+      )
+
+      const result = await getEditorsWithContactNumbers(form)
+
+      expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
+        form.admin.email,
+        MOCK_EMAIL,
+      ])
+      expect(result).toEqual([MOCK_CONTACT])
+    })
+
+    it('should filter out collaborators without contact numbers', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [
+          { email: MOCK_EMAIL, write: true },
+          { email: MOCK_EMAIL_2, write: false },
+        ],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+        okAsync([omit(MOCK_CONTACT, 'contact'), MOCK_CONTACT_2]),
+      )
+
+      const result = await getEditorsWithContactNumbers(form)
+
+      expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
+        form.admin.email,
+        MOCK_EMAIL,
+      ])
+      expect(result).toEqual([MOCK_CONTACT_2])
+    })
+
+    it('should return empty array when UserService returns error', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [
+          { email: MOCK_EMAIL, write: true },
+          { email: MOCK_EMAIL_2, write: false },
+        ],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+        errAsync(new DatabaseError()),
+      )
+
+      const result = await getEditorsWithContactNumbers(form)
+
+      expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
+        form.admin.email,
+        MOCK_EMAIL,
+      ])
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('notifyAdminsOfDeactivation', () => {
+    const MOCK_FORM_TITLE = 'FormTitle'
+    let testUser: IUserSchema
+
+    beforeEach(async () => {
+      const { user } = await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_ADMIN_ID,
+      })
+      testUser = user
+    })
+
+    beforeEach(async () => {
+      jest.resetAllMocks()
+    })
+
+    it('should send SMS for all given recipients', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockSmsFactory.sendFormDeactivatedSms.mockResolvedValue(true)
+
+      const result = await notifyAdminsOfDeactivation(form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(result).toEqual(true)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
+    })
+
+    it('should return true even when some SMSes fail', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockSmsFactory.sendFormDeactivatedSms
+        .mockResolvedValueOnce(true)
+        .mockRejectedValueOnce(new Error())
+
+      const result = await notifyAdminsOfDeactivation(form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(result).toEqual(true)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
     })
   })
 })
