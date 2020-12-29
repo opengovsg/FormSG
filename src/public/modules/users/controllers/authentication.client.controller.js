@@ -162,37 +162,43 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
     vm.signInMsg.isMsg = false
     vm.isOtpSending = true
     vm.buttonClicked = true
+    vm.showOtpDelayNotification = false
     const { email } = vm.credentials
-    Auth.sendOtp({ email }).then(
-      function (success) {
-        vm.isOtpSending = false
-        vm.buttonClicked = false
-        // Configure message to be show
-        vm.signInMsg = {
-          isMsg: true,
-          isError: false,
-          msg: success,
-        }
+    Auth.sendOtp({ email })
+      .then(
+        function (success) {
+          vm.isOtpSending = false
+          vm.buttonClicked = false
+          // Configure message to be show
+          vm.signInMsg = {
+            isMsg: true,
+            isError: false,
+            msg: success,
+          }
+          $timeout(function () {
+            angular.element('#otp-input').focus()
+            angular.element('#otp-input').select()
+          }, 100)
+        },
+        function (error) {
+          vm.isOtpSending = false
+          vm.buttonClicked = false
+          // Configure message to be shown
+          const msg =
+            (error && error.data && error.data.message) ||
+            'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
+          vm.signInMsg = {
+            isMsg: true,
+            isError: true,
+            msg,
+          }
+        },
+      )
+      .finally(function () {
         $timeout(function () {
-          angular.element('#otp-input').focus()
-          angular.element('#otp-input').select()
-        }, 100)
-      },
-      function (error) {
-        vm.isOtpSending = false
-        vm.buttonClicked = false
-        // Configure message to be shown
-        const msg =
-          (error && error.data && error.data.message) ||
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
-        vm.signInMsg = {
-          isMsg: true,
-          isError: true,
-          msg,
-        }
-        $timeout(function () {
+          vm.signInMsg.isMsg = false
           vm.showOtpDelayNotification = true
-        }, 45000)
+        }, 20000)
       })
   }
 
