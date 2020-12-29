@@ -298,3 +298,32 @@ export const getEditorsWithContactNumbers = async (
     return []
   }
 }
+
+export const notifyAdminsOfDeactivation = async (
+  form: IPopulatedForm,
+  possibleSmsRecipients: UserWithContactNumber[],
+): Promise<true> => {
+  const smsPromises = possibleSmsRecipients.map((recipient) =>
+    SmsFactory.sendFormDeactivatedSms({
+      adminEmail: form.admin.email,
+      adminId: form.admin._id,
+      formId: form._id,
+      formTitle: form.title,
+      recipient: recipient.contact,
+      recipientEmail: recipient.email,
+    }),
+  )
+  const smsResults = await Promise.allSettled(smsPromises)
+  const smsErrors = extractSmsErrors(smsResults)
+  if (smsErrors.length > 0) {
+    logger.warn({
+      message: 'Failed to send some form deactivation notification SMSes',
+      meta: {
+        action: 'notifyAdminsOfDeactivation',
+        formId: form._id,
+        reasons: smsErrors,
+      },
+    })
+  }
+  return true
+}

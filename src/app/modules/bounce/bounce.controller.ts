@@ -74,6 +74,10 @@ export const handleSns: RequestHandler<
       const shouldDeactivate = bounceDoc.areAllPermanentBounces()
       if (shouldDeactivate) {
         await FormService.deactivateForm(bounceDoc.formId)
+        await BounceService.notifyAdminsOfDeactivation(
+          form,
+          possibleSmsRecipients,
+        )
       }
 
       // Important log message for user follow-ups
