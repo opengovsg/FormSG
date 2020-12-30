@@ -61,6 +61,7 @@ export const removePrivateDetailsFromForm = (
  * write permission.
  * @param permissionList List of collaborators
  * @param writePermission Optional write permission to filter on
+ * @returns Array of emails
  */
 export const getCollabEmailsWithPermission = (
   permissionList?: Permission[],
