@@ -65,6 +65,14 @@ export const isDeliveryNotification = (
   body: IEmailNotification,
 ): body is IDeliveryNotification => body.notificationType === 'Delivery'
 
+/**
+ * Filters the given SMS recipients to only those which were sent succesfully
+ * @param smsResults Array of Promise.allSettled results
+ * @param smsRecipients Recipients who were SMSed. This array must correspond
+ * exactly to smsResults, i.e. the result at smsResults[i] corresponds
+ * to the result of the attempt to SMS smsRecipients[i]
+ * @returns the contact details of SMSes sent successfully
+ */
 export const extractSuccessfulSmsRecipients = (
   smsResults: PromiseSettledResult<boolean>[],
   smsRecipients: UserWithContactNumber[],
@@ -77,6 +85,11 @@ export const extractSuccessfulSmsRecipients = (
   }, [])
 }
 
+/**
+ * Extracts the errors from results of attempting to send SMSes
+ * @param smsResults Array of Promise.allSettled results
+ * @returns Array of errors
+ */
 export const extractSmsErrors = (
   smsResults: PromiseSettledResult<boolean>[],
 ): PromiseRejectedResult['reason'][] => {
