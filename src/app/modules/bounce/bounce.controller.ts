@@ -14,7 +14,8 @@ import { AdminNotificationResult } from './bounce.types'
 const logger = createLoggerWithLabel(module)
 /**
  * Validates that a request came from Amazon SNS, then updates the Bounce
- * collection.
+ * collection. Also informs form admins and collaborators if their form responses
+ * bounced.
  * @param req Express request object
  * @param res - Express response object
  */
@@ -43,7 +44,16 @@ export const handleSns: RequestHandler<
 
     const formResult = await FormService.retrieveFullFormById(bounceDoc.formId)
     if (formResult.isErr()) {
-      return res.sendStatus(StatusCodes.OK)
+      // Either database error occurred or the formId saved in the bounce collection
+      // doesn't exist, so something went wrong.
+      logger.error({
+        message: 'Failed to retrieve form corresponding to bounced formId',
+        meta: {
+          action: 'handleSns',
+          formId: bounceDoc.formId,
+        },
+      })
+      return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
     }
     const form = formResult.value
 
