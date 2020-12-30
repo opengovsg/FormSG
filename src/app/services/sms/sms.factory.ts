@@ -4,6 +4,7 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
+import { MissingFeatureError } from '../../modules/core/core.errors'
 
 import {
   sendAdminContactOtp,
@@ -47,8 +48,10 @@ export const createSmsFactory = (
       sendVerificationOtp: () => {
         throw new Error(`sendVerificationOtp: ${errorMessage}`)
       },
-      sendFormDeactivatedSms: () => Promise.resolve(true),
-      sendBouncedSubmissionSms: () => Promise.resolve(true),
+      sendFormDeactivatedSms: () =>
+        Promise.reject(new MissingFeatureError(FeatureNames.Sms)),
+      sendBouncedSubmissionSms: () =>
+        Promise.reject(new MissingFeatureError(FeatureNames.Sms)),
     }
   }
 
