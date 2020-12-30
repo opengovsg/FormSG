@@ -326,6 +326,17 @@ export const sendAdminContactOtp = (
   )
 }
 
+/**
+ * Informs recipient that the given form was deactivated.
+ * @param params Data for SMS to be sent
+ * @param params.recipient Mobile number to be SMSed
+ * @param params.recipientEmail The email address of the recipient being SMSed
+ * @param params.adminId User ID of the admin of the deactivated form
+ * @param params.adminEmail Email of the admin of the deactivated form
+ * @param params.formId Form ID of deactivated form
+ * @param params.formTitle Title of deactivated form
+ * @param defaultConfig Twilio configuration
+ */
 export const sendFormDeactivatedSms = (
   {
     recipient,
@@ -366,6 +377,17 @@ export const sendFormDeactivatedSms = (
   )
 }
 
+/**
+ * Informs recipient that a response for the given form was lost due to email bounces.
+ * @param params Data for SMS to be sent
+ * @param params.recipient Mobile number to be SMSed
+ * @param params.recipientEmail The email address of the recipient being SMSed
+ * @param params.adminId User ID of the admin of the form
+ * @param params.adminEmail Email of the admin of the form
+ * @param params.formId Form ID of form
+ * @param params.formTitle Title of form
+ * @param defaultConfig Twilio configuration
+ */
 export const sendBouncedSubmissionSms = (
   {
     recipient,
