@@ -51,7 +51,8 @@ const AWS_HOSTNAME = '.amazonaws.com'
 
 /**
  * Checks that a request body has all the required keys for a message from SNS.
- * @param {Object} body body from Express request object
+ * @param body body from Express request object
+ * @returns true if all required keys are present
  */
 const hasRequiredKeys = (body: any): body is ISnsNotification => {
   return !isEmpty(body) && snsKeys.every((keyObj) => body[keyObj.key])
@@ -59,7 +60,8 @@ const hasRequiredKeys = (body: any): body is ISnsNotification => {
 
 /**
  * Validates that a URL points to a certificate belonging to AWS.
- * @param {String} url URL to check
+ * @param url URL to check
+ * @returns true if URL is valid
  */
 const isValidCertUrl = (certUrl: string): boolean => {
   const parsed = new URL(certUrl)
@@ -72,6 +74,7 @@ const isValidCertUrl = (certUrl: string): boolean => {
 
 /**
  * Returns an ordered list of keys to include in SNS signing string.
+ * @returns array of keys
  */
 const getSnsKeysToSign = (): (keyof ISnsNotification)[] => {
   return snsKeys.filter((keyObj) => keyObj.toSign).map((keyObj) => keyObj.key)
@@ -79,7 +82,8 @@ const getSnsKeysToSign = (): (keyof ISnsNotification)[] => {
 
 /**
  * Generates the string to sign.
- * @param {Object} body body from Express request object
+ * @param body body from Express request object
+ * @returns the basestring to be signed
  */
 const getSnsBasestring = (body: ISnsNotification): string => {
   return getSnsKeysToSign().reduce((result, key) => {
@@ -89,7 +93,8 @@ const getSnsBasestring = (body: ISnsNotification): string => {
 
 /**
  * Verify signature for SNS request
- * @param {Object} body body from Express request object
+ * @param body body from Express request object
+ * @returns true if signature is valid
  */
 const isValidSnsSignature = async (
   body: ISnsNotification,
@@ -103,7 +108,8 @@ const isValidSnsSignature = async (
 /**
  * Verifies if a request object is correctly signed by Amazon SNS. More info:
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
- * @param {Object} body Body of Express request object
+ * @param body Body of Express request object
+ * @returns true if request shape and signature are valid
  */
 export const isValidSnsRequest = async (
   body: ISnsNotification,
@@ -116,7 +122,15 @@ export const isValidSnsRequest = async (
   return isValid
 }
 
-// Writes a log message if all recipients have bounced
+/**
+ * Logs all details of lost submission.
+ * @param bounceDoc Document from the Bounce collection
+ * @param notification Notification received from SNS
+ * @param autoEmailRecipients Recipients who were emailed
+ * @param autoSmsRecipients Recipients who were SMSed
+ * @param hasDeactivated Whether the form was deactivated
+ * @returns void
+ */
 export const logCriticalBounce = (
   bounceDoc: IBounceSchema,
   notification: IEmailNotification,
@@ -158,6 +172,13 @@ export const logCriticalBounce = (
   })
 }
 
+/**
+ * Gets the emails of form admin and collaborators who do not appear in the
+ * given Bounce document
+ * @param populatedForm Form whose admin and collaborators should be included
+ * @param bounceDoc Bounce document indicating which emails bounced
+ * @returns array of emails
+ */
 const computeValidEmails = (
   populatedForm: IPopulatedForm,
   bounceDoc: IBounceSchema,
@@ -169,6 +190,15 @@ const computeValidEmails = (
   return difference(possibleEmails, bounceDoc.getEmails())
 }
 
+/**
+ * Notifies admin and collaborators via email and SMS that response was lost.
+ * @param bounceDoc Document from Bounce collection
+ * @param form Form corresponding to the formId from bounceDoc
+ * @param possibleSmsRecipients Contact details of recipients to attempt to SMS
+ * @returns contact details for email and SMSes which were successfully sent. Note that
+ * this doesn't mean the emails and SMSes were received, only that they were delivered
+ * to the mail server/carrier.
+ */
 export const notifyAdminsOfBounce = async (
   bounceDoc: IBounceSchema,
   form: IPopulatedForm,
@@ -220,6 +250,7 @@ export const notifyAdminsOfBounce = async (
 /**
  * Logs the raw notification to the relevant log group.
  * @param notification The parsed SNS notification
+ * @returns void
  */
 export const logEmailNotification = (
   notification: IEmailNotification,
@@ -273,6 +304,13 @@ export const extractEmailType = (
   return extractHeader(notification, EMAIL_HEADERS.emailType)
 }
 
+/**
+ * Retrieves contact details for admin and collaborators for whom
+ * SMS notification should be attempted.
+ * @param form The form whose editors should be found
+ * @returns The contact details, filtered for the emails which have verified
+ * contact numbers in the database
+ */
 export const getEditorsWithContactNumbers = async (
   form: IPopulatedForm,
 ): Promise<UserWithContactNumber[]> => {
@@ -299,6 +337,13 @@ export const getEditorsWithContactNumbers = async (
   }
 }
 
+/**
+ * Sends SMS to the given recipients informing them that the given form
+ * was deactivated.
+ * @param form Form which was deactivated
+ * @param possibleSmsRecipients Recipients to attempt to notify
+ * @returns true regardless of the outcome
+ */
 export const notifyAdminsOfDeactivation = async (
   form: IPopulatedForm,
   possibleSmsRecipients: UserWithContactNumber[],
