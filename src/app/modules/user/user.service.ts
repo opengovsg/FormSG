@@ -467,6 +467,11 @@ const removeAdminVerificationDoc = (userId: string) => {
   )
 }
 
+/**
+ * Finds emergency contact numbers for a given list of emails.
+ * @param emails Emails for which contacts should be found
+ * @returns Array of email-contact pairings
+ */
 export const findContactsForEmails = (
   emails: string[],
 ): ResultAsync<UserContactView[], DatabaseError> => {
