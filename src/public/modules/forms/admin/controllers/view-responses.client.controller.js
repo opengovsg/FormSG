@@ -43,6 +43,7 @@ function ViewResponsesController(
   vm.isEncryptResponseMode = vm.myform.responseMode === responseModeEnum.ENCRYPT
   vm.encryptionKey = null // will be set to an instance of EncryptionKey when form is unlocked successfully
   vm.csvDownloading = false // whether CSV export is in progress
+  vm.attachmentsToDownload = -1 // how many attachments will be downloaded (-1 for no attachments)
 
   vm.attachmentDownloadUrls = new Map()
   vm.filterBySubmissionRefId = '' // whether to filter submissions by a specific ID
@@ -136,6 +137,7 @@ function ViewResponsesController(
     }
 
     vm.csvDownloading = true
+
     Submissions.downloadEncryptedResponses(
       params,
       downloadAttachments, // whether to download attachments
@@ -169,6 +171,7 @@ function ViewResponsesController(
       })
       .finally(function () {
         $timeout(function () {
+          vm.attachmentsToDownload = -1
           vm.csvDownloading = false
         })
       })
@@ -261,6 +264,7 @@ function ViewResponsesController(
       )
     }
     Submissions.count(params).then((responsesCount) => {
+      vm.attachmentsToDownload = responsesCount
       $uibModal
         .open({
           backdrop: 'static',
@@ -444,11 +448,21 @@ function ViewResponsesController(
         progressModal = null
       }
     } else {
+      let attachmentsToDownload = vm.attachmentsToDownload
       timeoutPromise = $timeout(function () {
         progressModal = $uibModal.open({
           animation: true,
           backdrop: 'static',
           keyboard: false,
+          resolve: { attachmentsToDownload },
+          controller: [
+            '$scope',
+            '$uibModalInstance',
+            'attachmentsToDownload',
+            function ($scope, $uibModalInstance, attachmentsToDownload) {
+              $scope.attachmentsToDownload = attachmentsToDownload
+            },
+          ],
           templateUrl:
             'modules/forms/admin/views/decrypt-progress.client.modal.html',
           windowClass: 'submit-progress-modal-window',

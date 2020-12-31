@@ -120,7 +120,7 @@
               <span class="caret"></span>
             </button>
             <ul
-              class="dropdown-menu"
+              class="dropdown-menu dropdown-menu-right"
               id="export-dropdown-options"
               uib-dropdown-menu
               role="menu"
@@ -131,14 +131,14 @@
                   id="btn-export-dropdown-responses"
                   ng-click="vm.exportCsv(false)"
                   style="cursor: pointer"
-                  >Responses</a
+                  >CSV only</a
                 >
               </li>
               <li role="menuitem">
                 <a
                   ng-click="vm.confirmSubmissionCountsBeforeDownload()"
                   style="cursor: pointer"
-                  >Attachments <span class="beta-icon">beta</span></a
+                  >CSV and attachments <span class="beta-icon">beta</span></a
                 >
               </li>
             </ul>
