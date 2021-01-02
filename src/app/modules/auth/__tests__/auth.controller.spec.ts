@@ -85,7 +85,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(`OTP sent to ${VALID_EMAIL}!`)
+      expect(mockRes.json).toBeCalledWith(`OTP sent to ${VALID_EMAIL}`)
       // Services should have been invoked.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)
