@@ -14,17 +14,24 @@ import {
   IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
-import getFormModel from '../../models/form.server.model'
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
+import { SmsFactory } from '../../services/sms/sms.factory'
+import { getCollabEmailsWithPermission } from '../form/form.utils'
+import * as UserService from '../user/user.service'
 
 import getBounceModel from './bounce.model'
-import { extractHeader, isBounceNotification } from './bounce.util'
+import { AdminNotificationResult, UserWithContactNumber } from './bounce.types'
+import {
+  extractHeader,
+  extractSmsErrors,
+  extractSuccessfulSmsRecipients,
+  isBounceNotification,
+} from './bounce.util'
 
 const logger = createLoggerWithLabel(module)
 const shortTermLogger = createCloudWatchLogger('email')
 const Bounce = getBounceModel(mongoose)
-const Form = getFormModel(mongoose)
 
 // Note that these need to be ordered in order to generate
 // the correct string to sign
@@ -44,7 +51,8 @@ const AWS_HOSTNAME = '.amazonaws.com'
 
 /**
  * Checks that a request body has all the required keys for a message from SNS.
- * @param {Object} body body from Express request object
+ * @param body body from Express request object
+ * @returns true if all required keys are present
  */
 const hasRequiredKeys = (body: any): body is ISnsNotification => {
   return !isEmpty(body) && snsKeys.every((keyObj) => body[keyObj.key])
@@ -52,7 +60,8 @@ const hasRequiredKeys = (body: any): body is ISnsNotification => {
 
 /**
  * Validates that a URL points to a certificate belonging to AWS.
- * @param {String} url URL to check
+ * @param url URL to check
+ * @returns true if URL is valid
  */
 const isValidCertUrl = (certUrl: string): boolean => {
   const parsed = new URL(certUrl)
@@ -65,6 +74,7 @@ const isValidCertUrl = (certUrl: string): boolean => {
 
 /**
  * Returns an ordered list of keys to include in SNS signing string.
+ * @returns array of keys
  */
 const getSnsKeysToSign = (): (keyof ISnsNotification)[] => {
   return snsKeys.filter((keyObj) => keyObj.toSign).map((keyObj) => keyObj.key)
@@ -72,7 +82,8 @@ const getSnsKeysToSign = (): (keyof ISnsNotification)[] => {
 
 /**
  * Generates the string to sign.
- * @param {Object} body body from Express request object
+ * @param body body from Express request object
+ * @returns the basestring to be signed
  */
 const getSnsBasestring = (body: ISnsNotification): string => {
   return getSnsKeysToSign().reduce((result, key) => {
@@ -82,7 +93,8 @@ const getSnsBasestring = (body: ISnsNotification): string => {
 
 /**
  * Verify signature for SNS request
- * @param {Object} body body from Express request object
+ * @param body body from Express request object
+ * @returns true if signature is valid
  */
 const isValidSnsSignature = async (
   body: ISnsNotification,
@@ -96,7 +108,8 @@ const isValidSnsSignature = async (
 /**
  * Verifies if a request object is correctly signed by Amazon SNS. More info:
  * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
- * @param {Object} body Body of Express request object
+ * @param body Body of Express request object
+ * @returns true if request shape and signature are valid
  */
 export const isValidSnsRequest = async (
   body: ISnsNotification,
@@ -109,13 +122,28 @@ export const isValidSnsRequest = async (
   return isValid
 }
 
-// Writes a log message if all recipients have bounced
-export const logCriticalBounce = (
-  bounceDoc: IBounceSchema,
-  notification: IEmailNotification,
-  autoEmailRecipients: string[],
-  hasDeactivated: boolean,
-): void => {
+/**
+ * Logs all details of lost submission.
+ * @param bounceDoc Document from the Bounce collection
+ * @param notification Notification received from SNS
+ * @param autoEmailRecipients Recipients who were emailed
+ * @param autoSmsRecipients Recipients who were SMSed
+ * @param hasDeactivated Whether the form was deactivated
+ * @returns void
+ */
+export const logCriticalBounce = ({
+  bounceDoc,
+  notification,
+  autoEmailRecipients,
+  autoSmsRecipients,
+  hasDeactivated,
+}: {
+  bounceDoc: IBounceSchema
+  notification: IEmailNotification
+  autoEmailRecipients: string[]
+  autoSmsRecipients: UserWithContactNumber[]
+  hasDeactivated: boolean
+}): void => {
   const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
   const bounceInfo = isBounceNotification(notification)
     ? notification.bounce
@@ -132,6 +160,7 @@ export const logCriticalBounce = (
     meta: {
       action: 'logCriticalBounce',
       hasAutoEmailed: bounceDoc.hasAutoEmailed,
+      hasAutoSmsed: bounceDoc.hasAutoSmsed,
       hasDeactivated,
       formId: String(bounceDoc.formId),
       submissionId: submissionId,
@@ -141,6 +170,7 @@ export const logCriticalBounce = (
       // Assume that this function is correctly only called when all recipients bounced
       numPermanent: bounceDoc.bounces.length - numTransient,
       autoEmailRecipients,
+      autoSmsRecipients,
       // We know for sure that critical bounces can only happen because of bounce
       // notifications, so we don't expect this to be undefined
       bounceInfo: bounceInfo,
@@ -148,31 +178,39 @@ export const logCriticalBounce = (
   })
 }
 
+/**
+ * Gets the emails of form admin and collaborators who do not appear in the
+ * given Bounce document
+ * @param populatedForm Form whose admin and collaborators should be included
+ * @param bounceDoc Bounce document indicating which emails bounced
+ * @returns array of emails
+ */
 const computeValidEmails = (
   populatedForm: IPopulatedForm,
   bounceDoc: IBounceSchema,
 ): string[] => {
-  const collabEmails = populatedForm.permissionList
-    ? populatedForm.permissionList.map((collab) => collab.email)
-    : []
+  const collabEmails = getCollabEmailsWithPermission(
+    populatedForm.permissionList,
+  )
   const possibleEmails = collabEmails.concat(populatedForm.admin.email)
   return difference(possibleEmails, bounceDoc.getEmails())
 }
 
-export const notifyAdminOfBounce = async (
+/**
+ * Notifies admin and collaborators via email and SMS that response was lost.
+ * @param bounceDoc Document from Bounce collection
+ * @param form Form corresponding to the formId from bounceDoc
+ * @param possibleSmsRecipients Contact details of recipients to attempt to SMS
+ * @returns contact details for email and SMSes which were successfully sent. Note that
+ * this doesn't mean the emails and SMSes were received, only that they were delivered
+ * to the mail server/carrier.
+ */
+export const notifyAdminsOfBounce = async (
   bounceDoc: IBounceSchema,
-): Promise<string[]> => {
-  const form = await Form.getFullFormById(bounceDoc.formId)
-  if (!form) {
-    logger.error({
-      message: 'Unable to retrieve form',
-      meta: {
-        action: 'notifyAdminOfBounce',
-        formId: bounceDoc.formId,
-      },
-    })
-    return []
-  }
+  form: IPopulatedForm,
+  possibleSmsRecipients: UserWithContactNumber[],
+): Promise<AdminNotificationResult> => {
+  // Email all collaborators
   const emailRecipients = computeValidEmails(form, bounceDoc)
   if (emailRecipients.length > 0) {
     await MailService.sendBounceNotification({
@@ -185,12 +223,40 @@ export const notifyAdminOfBounce = async (
       formId: bounceDoc.formId,
     })
   }
-  return emailRecipients
+
+  // Sms given recipients
+  const smsPromises = possibleSmsRecipients.map((recipient) =>
+    SmsFactory.sendBouncedSubmissionSms({
+      adminEmail: form.admin.email,
+      adminId: form.admin._id,
+      formId: form._id,
+      formTitle: form.title,
+      recipient: recipient.contact,
+      recipientEmail: recipient.email,
+    }),
+  )
+  const smsResults = await Promise.allSettled(smsPromises)
+  const successfulSmsRecipients = extractSuccessfulSmsRecipients(
+    smsResults,
+    possibleSmsRecipients,
+  )
+  if (successfulSmsRecipients.length < possibleSmsRecipients.length) {
+    logger.warn({
+      message: 'Failed to send some bounce notification SMSes',
+      meta: {
+        action: 'notifyAdminOfBounce',
+        formId: form._id,
+        reasons: extractSmsErrors(smsResults),
+      },
+    })
+  }
+  return { emailRecipients, smsRecipients: successfulSmsRecipients }
 }
 
 /**
  * Logs the raw notification to the relevant log group.
  * @param notification The parsed SNS notification
+ * @returns void
  */
 export const logEmailNotification = (
   notification: IEmailNotification,
@@ -242,4 +308,73 @@ export const extractEmailType = (
   notification: IEmailNotification,
 ): string | undefined => {
   return extractHeader(notification, EMAIL_HEADERS.emailType)
+}
+
+/**
+ * Retrieves contact details for admin and collaborators for whom
+ * SMS notification should be attempted.
+ * @param form The form whose editors should be found
+ * @returns The contact details, filtered for the emails which have verified
+ * contact numbers in the database
+ */
+export const getEditorsWithContactNumbers = async (
+  form: IPopulatedForm,
+): Promise<UserWithContactNumber[]> => {
+  const possibleEditors = [
+    form.admin.email,
+    ...getCollabEmailsWithPermission(form.permissionList, true),
+  ]
+  const smsRecipientsResult = await UserService.findContactsForEmails(
+    possibleEditors,
+  )
+  if (smsRecipientsResult.isOk()) {
+    return smsRecipientsResult.value.filter(
+      (r) => !!r.contact,
+    ) as UserWithContactNumber[]
+  } else {
+    logger.warn({
+      message: 'Failed to retrieve contact numbers for form editors',
+      meta: {
+        action: 'getEditorsWithContactNumbers',
+        formId: form._id,
+      },
+    })
+    return []
+  }
+}
+
+/**
+ * Sends SMS to the given recipients informing them that the given form
+ * was deactivated.
+ * @param form Form which was deactivated
+ * @param possibleSmsRecipients Recipients to attempt to notify
+ * @returns true regardless of the outcome
+ */
+export const notifyAdminsOfDeactivation = async (
+  form: IPopulatedForm,
+  possibleSmsRecipients: UserWithContactNumber[],
+): Promise<true> => {
+  const smsPromises = possibleSmsRecipients.map((recipient) =>
+    SmsFactory.sendFormDeactivatedSms({
+      adminEmail: form.admin.email,
+      adminId: form.admin._id,
+      formId: form._id,
+      formTitle: form.title,
+      recipient: recipient.contact,
+      recipientEmail: recipient.email,
+    }),
+  )
+  const smsResults = await Promise.allSettled(smsPromises)
+  const smsErrors = extractSmsErrors(smsResults)
+  if (smsErrors.length > 0) {
+    logger.warn({
+      message: 'Failed to send some form deactivation notification SMSes',
+      meta: {
+        action: 'notifyAdminsOfDeactivation',
+        formId: form._id,
+        reasons: smsErrors,
+      },
+    })
+  }
+  return true
 }

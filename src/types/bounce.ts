@@ -2,6 +2,7 @@ import { Document } from 'mongoose'
 
 import { IFormSchema } from './form'
 import { BounceType, IEmailNotification } from './sns'
+import { UserContactView } from './user'
 
 // Enforce that bounceType is present if hasBounced is true
 export type ISingleBounce =
@@ -19,6 +20,7 @@ export interface IBounce {
   formId: IFormSchema['_id']
   bounces: ISingleBounce[]
   hasAutoEmailed: boolean
+  hasAutoSmsed: boolean
   expireAt: Date
 }
 
@@ -27,6 +29,9 @@ export interface IBounceSchema extends IBounce, Document {
   isCriticalBounce: () => boolean
   areAllPermanentBounces: () => boolean
   getEmails: () => string[]
-  setNotificationState: (emailRecipients: string[]) => void
+  setNotificationState: (
+    emailRecipients: string[],
+    smsRecipients: UserContactView[],
+  ) => void
   hasNotified: () => boolean
 }
