@@ -91,13 +91,13 @@ export const handleSns: RequestHandler<
       }
 
       // Important log message for user follow-ups
-      BounceService.logCriticalBounce(
+      BounceService.logCriticalBounce({
         bounceDoc,
         notification,
-        notificationRecipients.emailRecipients,
-        notificationRecipients.smsRecipients,
-        shouldDeactivate,
-      )
+        autoEmailRecipients: notificationRecipients.emailRecipients,
+        autoSmsRecipients: notificationRecipients.smsRecipients,
+        hasDeactivated: shouldDeactivate,
+      })
     }
     await bounceDoc.save()
     return res.sendStatus(StatusCodes.OK)

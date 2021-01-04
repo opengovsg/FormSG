@@ -485,13 +485,13 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients = [MOCK_EMAIL, MOCK_EMAIL_2]
       const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
-      logCriticalBounce(
+      logCriticalBounce({
         bounceDoc,
-        snsInfo,
+        notification: snsInfo,
         autoEmailRecipients,
         autoSmsRecipients,
-        false,
-      )
+        hasDeactivated: false,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
@@ -530,13 +530,13 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
-      logCriticalBounce(
+      logCriticalBounce({
         bounceDoc,
-        snsInfo,
+        notification: snsInfo,
         autoEmailRecipients,
         autoSmsRecipients,
-        true,
-      )
+        hasDeactivated: true,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
@@ -575,13 +575,13 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
-      logCriticalBounce(
+      logCriticalBounce({
         bounceDoc,
-        snsInfo,
+        notification: snsInfo,
         autoEmailRecipients,
         autoSmsRecipients,
-        false,
-      )
+        hasDeactivated: false,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
@@ -617,13 +617,13 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients: UserWithContactNumber[] = []
-      logCriticalBounce(
+      logCriticalBounce({
         bounceDoc,
-        snsInfo,
+        notification: snsInfo,
         autoEmailRecipients,
         autoSmsRecipients,
-        false,
-      )
+        hasDeactivated: false,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
@@ -659,13 +659,13 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients: UserWithContactNumber[] = []
-      logCriticalBounce(
+      logCriticalBounce({
         bounceDoc,
-        snsInfo,
+        notification: snsInfo,
         autoEmailRecipients,
         autoSmsRecipients,
-        false,
-      )
+        hasDeactivated: false,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {

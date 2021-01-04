@@ -131,13 +131,19 @@ export const isValidSnsRequest = async (
  * @param hasDeactivated Whether the form was deactivated
  * @returns void
  */
-export const logCriticalBounce = (
-  bounceDoc: IBounceSchema,
-  notification: IEmailNotification,
-  autoEmailRecipients: string[],
-  autoSmsRecipients: UserWithContactNumber[],
-  hasDeactivated: boolean,
-): void => {
+export const logCriticalBounce = ({
+  bounceDoc,
+  notification,
+  autoEmailRecipients,
+  autoSmsRecipients,
+  hasDeactivated,
+}: {
+  bounceDoc: IBounceSchema
+  notification: IEmailNotification
+  autoEmailRecipients: string[]
+  autoSmsRecipients: UserWithContactNumber[]
+  hasDeactivated: boolean
+}): void => {
   const submissionId = extractHeader(notification, EMAIL_HEADERS.submissionId)
   const bounceInfo = isBounceNotification(notification)
     ? notification.bounce

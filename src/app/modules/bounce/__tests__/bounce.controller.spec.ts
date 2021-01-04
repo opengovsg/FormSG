@@ -198,13 +198,13 @@ describe('handleSns', () => {
       mockForm,
       MOCK_CONTACTS,
     )
-    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith(
-      mockBounceDoc,
-      MOCK_NOTIFICATION,
-      MOCK_EMAIL_RECIPIENTS,
-      MOCK_CONTACTS,
-      true,
-    )
+    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith({
+      bounceDoc: mockBounceDoc,
+      notification: MOCK_NOTIFICATION,
+      autoEmailRecipients: MOCK_EMAIL_RECIPIENTS,
+      autoSmsRecipients: MOCK_CONTACTS,
+      hasDeactivated: true,
+    })
     expect(mockBounceDoc.save).toHaveBeenCalled()
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
@@ -247,13 +247,13 @@ describe('handleSns', () => {
     // Deactivation functions are not called
     expect(MockFormService.deactivateForm).not.toHaveBeenCalled()
     expect(MockBounceService.notifyAdminsOfDeactivation).not.toHaveBeenCalled()
-    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith(
-      mockBounceDoc,
-      MOCK_NOTIFICATION,
-      MOCK_EMAIL_RECIPIENTS,
-      MOCK_CONTACTS,
-      false,
-    )
+    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith({
+      bounceDoc: mockBounceDoc,
+      notification: MOCK_NOTIFICATION,
+      autoEmailRecipients: MOCK_EMAIL_RECIPIENTS,
+      autoSmsRecipients: MOCK_CONTACTS,
+      hasDeactivated: false,
+    })
     expect(mockBounceDoc.save).toHaveBeenCalled()
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
@@ -414,13 +414,13 @@ describe('handleSns', () => {
       MOCK_EMAIL_RECIPIENTS,
       MOCK_CONTACTS,
     )
-    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith(
-      mockBounceDoc,
-      MOCK_NOTIFICATION,
-      MOCK_EMAIL_RECIPIENTS,
-      MOCK_CONTACTS,
-      true,
-    )
+    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith({
+      bounceDoc: mockBounceDoc,
+      notification: MOCK_NOTIFICATION,
+      autoEmailRecipients: MOCK_EMAIL_RECIPIENTS,
+      autoSmsRecipients: MOCK_CONTACTS,
+      hasDeactivated: true,
+    })
     expect(mockBounceDoc.save).toHaveBeenCalled()
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
