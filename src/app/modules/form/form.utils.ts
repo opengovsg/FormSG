@@ -71,9 +71,10 @@ export const getCollabEmailsWithPermission = (
     return []
   }
   return permissionList.reduce<string[]>((acc, collaborator) => {
-    if (writePermission === undefined) {
-      acc.push(collaborator.email)
-    } else if (collaborator.write === writePermission) {
+    if (
+      writePermission === undefined ||
+      writePermission === collaborator.write
+    ) {
       acc.push(collaborator.email)
     }
     return acc
