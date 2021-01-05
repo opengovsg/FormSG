@@ -5,6 +5,7 @@ const HttpStatus = require('http-status-codes')
 angular
   .module('users')
   .controller('AuthenticationController', [
+    '$scope',
     '$state',
     '$timeout',
     '$window',
@@ -13,7 +14,14 @@ angular
     AuthenticationController,
   ])
 
-function AuthenticationController($state, $timeout, $window, Auth, GTag) {
+function AuthenticationController(
+  $scope,
+  $state,
+  $timeout,
+  $window,
+  Auth,
+  GTag,
+) {
   const vm = this
 
   vm.credentials = {}
@@ -195,7 +203,7 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
         },
       )
       .finally(function () {
-        $timeout(function () {
+        vm.notifDelayTimeout = $timeout(function () {
           vm.signInMsg.isMsg = false
           vm.showOtpDelayNotification = true
         }, 20000)
@@ -250,4 +258,10 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
       },
     )
   }
+
+  $scope.$on('$destroy', function () {
+    if (vm.notifDelayTimeout) {
+      $timeout.cancel(vm.notifDelayTimeout)
+    }
+  })
 }
