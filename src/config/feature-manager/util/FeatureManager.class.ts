@@ -14,6 +14,10 @@ const logger = createLoggerWithLabel(module)
 convict.addFormat(validator.url)
 
 export default class FeatureManager {
+  /* eslint-disable typesafe/no-throw-sync-func
+    --------
+    This class bootstraps the application and should
+    cause a crash in case of errors. */
   public states: Partial<Record<FeatureNames, boolean>>
   // Map some feature names to some env vars
   private properties: Partial<IFeatureManager>
@@ -115,4 +119,5 @@ export default class FeatureManager {
       props: this.props<K>(name),
     }
   }
+  /* eslint-enable typesafe/no-throw-sync-func */
 }

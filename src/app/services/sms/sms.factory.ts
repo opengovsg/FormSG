@@ -65,9 +65,11 @@ export const createSmsFactory = (
     const errorMessage = 'SMS feature must be enabled in Feature Manager first'
     return {
       sendAdminContactOtp: () => {
+        //eslint-disable-next-line
         throw new Error(`sendAdminContactOtp: ${errorMessage}`)
       },
       sendVerificationOtp: () => {
+        //eslint-disable-next-line
         throw new Error(`sendVerificationOtp: ${errorMessage}`)
       },
       sendFormDeactivatedSms: () =>
