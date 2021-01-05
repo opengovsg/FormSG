@@ -6,10 +6,12 @@ const {
 } = require('../../../../shared/util/verification')
 const JSZip = require('jszip')
 const { decode: decodeBase64 } = require('@stablelib/base64')
+const { default: PQueue } = require('p-queue')
 require('core-js/stable/promise')
 require('regenerator-runtime/runtime')
 
 let formsgSdk
+const queue = new PQueue({ concurrency: 1 })
 
 function initFormSg(formsgSdkMode) {
   if (!formsgSdkMode) {
@@ -108,6 +110,14 @@ async function decryptIntoCsv(data) {
   let attachmentDownloadUrls = new Map()
   let downloadBlob
 
+  let downloadStatus = {
+    _id: '000000000000000000000000',
+    fieldType: 'textfield',
+    question: 'Download Status',
+    answer: 'Unknown',
+    questionNumber: 1000000,
+  }
+
   try {
     submission = JSON.parse(line)
 
@@ -116,6 +126,7 @@ async function decryptIntoCsv(data) {
       id: submission._id,
     }
     try {
+      csvRecord.submissionData = { record: [] }
       const decryptedSubmission = processDecryptedContent(
         formsgSdk.crypto.decrypt(secretKey, {
           encryptedContent: submission.encryptedContent,
@@ -130,8 +141,10 @@ async function decryptIntoCsv(data) {
           submissionId: submission._id,
           record: decryptedSubmission,
         }
+        downloadStatus.answer = 'Success'
       } else {
         csvRecord.status = 'UNVERIFIED'
+        downloadStatus.answer = 'Unverified'
       }
       if (downloadAttachments) {
         let questionCount = 0
@@ -150,13 +163,30 @@ async function decryptIntoCsv(data) {
           }
         })
 
-        downloadBlob = await downloadAndDecryptAttachmentsAsZip(
-          attachmentDownloadUrls,
-          secretKey,
-        )
+        try {
+          downloadBlob = await queue.add(() =>
+            downloadAndDecryptAttachmentsAsZip(
+              attachmentDownloadUrls,
+              secretKey,
+            ),
+          )
+          downloadStatus.answer = 'Success (with Downloaded Attachment)'
+        } catch (error) {
+          downloadStatus.answer = 'Attachment Download Error'
+          csvRecord.status = 'ATTACHMENT_ERROR'
+        }
       }
+
+      // Add status field to the start of the submissionData (first field)
+      csvRecord.submissionData.record.unshift(downloadStatus)
     } catch (error) {
+      downloadStatus.answer = 'Decryption Error'
       csvRecord.status = 'ERROR'
+      csvRecord.submissionData = {
+        created: submission.created,
+        submissionId: submission._id,
+        record: [downloadStatus],
+      }
     }
   } catch (err) {
     csvRecord = {

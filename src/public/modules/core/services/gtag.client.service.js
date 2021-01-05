@@ -464,6 +464,7 @@ function GTag(Auth, $rootScope, $window) {
    * @param {number} numWorkers The number of decryption workers
    * @param {number} expectedNumSubmissions The expected number of submissions
    * @param {number} errorCount The number of submissions that failed to decrypt
+   * @param {number} attachmentErrorCount The number of submissions attachments that failed to download (if any were requested)
    * @param  {number} duration The duration taken by the download
    * @return {Void}
    */
@@ -472,6 +473,7 @@ function GTag(Auth, $rootScope, $window) {
     numWorkers,
     expectedNumSubmissions,
     errorCount,
+    attachmentErrorCount,
     duration,
   ) => {
     _gtagEvents('storage', {
@@ -483,6 +485,7 @@ function GTag(Auth, $rootScope, $window) {
       num_workers: numWorkers,
       num_submissions: expectedNumSubmissions,
       err_count: errorCount,
+      attachment_err_count: attachmentErrorCount,
     })
   }
 
