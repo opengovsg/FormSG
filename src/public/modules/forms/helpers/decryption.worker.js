@@ -141,7 +141,7 @@ async function decryptIntoCsv(data) {
           submissionId: submission._id,
           record: decryptedSubmission,
         }
-        downloadStatus.answer = 'OK'
+        downloadStatus.answer = 'Success'
       } else {
         csvRecord.status = 'UNVERIFIED'
         downloadStatus.answer = 'Unverified'
@@ -170,7 +170,7 @@ async function decryptIntoCsv(data) {
               secretKey,
             ),
           )
-          downloadStatus.answer = 'OK (Attachment Download Success)'
+          downloadStatus.answer = 'Success (with Downloaded Attachment)'
         } catch (error) {
           downloadStatus.answer = 'Attachment Download Error'
           csvRecord.status = 'ATTACHMENT_ERROR'
