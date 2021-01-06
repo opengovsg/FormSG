@@ -201,8 +201,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         logo: FormLogoSchema,
       },
 
-      logo: FormLogoSchema,
-
       endPage: {
         title: {
           type: String,
