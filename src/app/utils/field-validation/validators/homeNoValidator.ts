@@ -1,9 +1,9 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
+import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { IHomenoField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
-import { ISingleAnswerResponse } from 'src/types/response'
 
 import {
   isHomePhoneNumber,
@@ -12,7 +12,7 @@ import {
 
 import { notEmptySingleAnswerResponse } from './common'
 
-type HomeNoValidator = ResponseValidator<ISingleAnswerResponse>
+type HomeNoValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type HomeNoValidatorConstructor = (
   homeNumberField: IHomenoField,
 ) => HomeNoValidator

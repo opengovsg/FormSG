@@ -18,7 +18,7 @@ const PublicFormController = require('../modules/form/public-form/public-form.co
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
-
+const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 module.exports = function (app) {
   /**
    * Redirect a form to the main index, with the specified path
@@ -116,6 +116,11 @@ module.exports = function (app) {
    * Returns the specified form to the user, along with any
    * identity information obtained from SingPass/CorpPass,
    * and MyInfo details, if any.
+   *
+   * WARNING: TemperatureSG batch jobs rely on this endpoint to
+   * retrieve the master list of personnel for daily reporting.
+   * Please strictly ensure backwards compatibility.
+   *
    * @route GET /{formId}/publicform
    * @group forms - endpoints to serve forms
    * @param {string} formId.path.required - the form id
@@ -271,12 +276,12 @@ module.exports = function (app) {
     forms.formById,
     publicForms.isFormPublicCheck,
     CaptchaMiddleware.checkCaptchaResponse,
-    encryptSubmissions.validateEncryptSubmission,
+    EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,
     submissions.injectAutoReplyInfo,
     webhookVerifiedContentFactory.encryptedVerifiedFields,
-    encryptSubmissions.prepareEncryptSubmission,
+    EncryptSubmissionMiddleware.prepareEncryptSubmission,
     encryptSubmissions.saveResponseToDb,
     webhookVerifiedContentFactory.post,
     submissions.sendAutoReply,

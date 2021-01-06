@@ -39,8 +39,8 @@ import {
 import {
   archiveForm,
   createForm,
-  createPresignedPostForImages,
-  createPresignedPostForLogos,
+  createPresignedPostUrlForImages,
+  createPresignedPostUrlForLogos,
   duplicateForm,
   getDashboardForms,
   transferFormOwnership,
@@ -134,10 +134,10 @@ describe('admin-form.service', () => {
     })
   })
 
-  describe('createPresignedPostForImages', () => {
+  describe('createPresignedPostUrlForImages', () => {
     it('should successfully create presigned POST URL', async () => {
       // Arrange
-      const expectedPresignedPost: PresignedPost = {
+      const expectedPresignedPostUrl: PresignedPost = {
         fields: {
           'X-Amz-Signature': 'some-amz-signature',
           Policy: 'some policy',
@@ -150,11 +150,11 @@ describe('admin-form.service', () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         .mockImplementationOnce((_obj, cb) => {
-          cb(null, expectedPresignedPost)
+          cb(null, expectedPresignedPostUrl)
         })
 
       // Act
-      const actualResult = await createPresignedPostForImages({
+      const actualResult = await createPresignedPostUrlForImages({
         fileId: 'any id',
         fileMd5Hash: 'any hash',
         fileType: VALID_UPLOAD_FILE_TYPES[0],
@@ -169,7 +169,7 @@ describe('admin-form.service', () => {
         expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPost)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPostUrl)
     })
 
     it('should return InvalidFileTypeError when given file type is not supported', async () => {
@@ -178,7 +178,7 @@ describe('admin-form.service', () => {
       expect(VALID_UPLOAD_FILE_TYPES.includes(invalidFileType)).toEqual(false)
 
       // Act
-      const actualResult = await createPresignedPostForImages({
+      const actualResult = await createPresignedPostUrlForImages({
         fileId: 'any id',
         fileMd5Hash: 'any hash',
         fileType: invalidFileType,
@@ -203,7 +203,7 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await createPresignedPostForImages({
+      const actualResult = await createPresignedPostUrlForImages({
         fileId: 'any id',
         fileMd5Hash: 'any hash',
         fileType: VALID_UPLOAD_FILE_TYPES[0],
@@ -224,10 +224,10 @@ describe('admin-form.service', () => {
     })
   })
 
-  describe('createPresignedPostForLogos', () => {
+  describe('createPresignedPostUrlForLogos', () => {
     it('should successfully create presigned POST URL', async () => {
       // Arrange
-      const expectedPresignedPost: PresignedPost = {
+      const expectedPresignedPostUrl: PresignedPost = {
         fields: {
           'X-Amz-Signature': 'some-amz-signature',
           Policy: 'some policy',
@@ -240,11 +240,11 @@ describe('admin-form.service', () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         .mockImplementationOnce((_obj, cb) => {
-          cb(null, expectedPresignedPost)
+          cb(null, expectedPresignedPostUrl)
         })
 
       // Act
-      const actualResult = await createPresignedPostForLogos({
+      const actualResult = await createPresignedPostUrlForLogos({
         fileId: 'any id',
         fileMd5Hash: 'any hash',
         fileType: VALID_UPLOAD_FILE_TYPES[0],
@@ -259,7 +259,7 @@ describe('admin-form.service', () => {
         expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPost)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPostUrl)
     })
 
     it('should return InvalidFileTypeError when given file type is not supported', async () => {
@@ -268,7 +268,7 @@ describe('admin-form.service', () => {
       expect(VALID_UPLOAD_FILE_TYPES.includes(invalidFileType)).toEqual(false)
 
       // Act
-      const actualResult = await createPresignedPostForLogos({
+      const actualResult = await createPresignedPostUrlForLogos({
         fileId: 'any id',
         fileMd5Hash: 'any hash',
         fileType: invalidFileType,
@@ -293,7 +293,7 @@ describe('admin-form.service', () => {
         })
 
       // Act
-      const actualResult = await createPresignedPostForLogos({
+      const actualResult = await createPresignedPostUrlForLogos({
         fileId: 'any id',
         fileMd5Hash: 'any hash',
         fileType: VALID_UPLOAD_FILE_TYPES[0],

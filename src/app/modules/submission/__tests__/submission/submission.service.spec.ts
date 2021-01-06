@@ -26,6 +26,7 @@ import {
 
 import {
   generateDefaultField,
+  generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -59,6 +60,15 @@ describe('submission.service', () => {
         'test@example.com',
       )
 
+      const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      const emailProcessedResponse = generateProcessedSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
+
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
         ({
@@ -70,8 +80,8 @@ describe('submission.service', () => {
 
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
-        { ...mobileResponse, isVisible: true },
-        { ...emailResponse, isVisible: true },
+        { ...mobileProcessedResponse, isVisible: true },
+        { ...emailProcessedResponse, isVisible: true },
       ]
       // Should only have email and mobile fields for encrypted forms.
       expect(actualResult.isOk()).toEqual(true)
@@ -94,6 +104,15 @@ describe('submission.service', () => {
         '3.142',
       )
 
+      const shortTextProcessedResponse = generateProcessedSingleAnswerResponse(
+        shortTextField,
+        'the quick brown fox jumps over the lazy dog',
+      )
+      const decimalProcessedResponse = generateProcessedSingleAnswerResponse(
+        decimalField,
+        '3.142',
+      )
+
       // Act
       const actualResult = SubmissionService.getProcessedResponses(
         ({
@@ -105,8 +124,8 @@ describe('submission.service', () => {
 
       // Assert
       const expectedParsed: ProcessedFieldResponse[] = [
-        { ...shortTextResponse, isVisible: true },
-        { ...decimalResponse, isVisible: true },
+        { ...shortTextProcessedResponse, isVisible: true },
+        { ...decimalProcessedResponse, isVisible: true },
       ]
 
       expect(actualResult.isOk()).toEqual(true)
@@ -151,6 +170,53 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new ConflictError('Some form fields are missing'),
       )
+    })
+    it('should allow responses for encrypt mode hidden fields', async () => {
+      // Arrange
+      // Only check for mobile and email fields, since the other fields are
+      // e2e encrypted from the browser.
+      const mobileField = generateDefaultField(BasicField.Mobile)
+      const emailField = generateDefaultField(BasicField.Email)
+      // Add answers to both mobile and email fields
+      const mobileResponse = generateSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+
+      const emailResponse = generateSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
+
+      const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
+        mobileField,
+        '+6587654321',
+      )
+      mobileProcessedResponse.isVisible = false
+
+      const emailProcessedResponse = generateProcessedSingleAnswerResponse(
+        emailField,
+        'test@example.com',
+      )
+      emailProcessedResponse.isVisible = false
+
+      // Act
+      const actualResult = SubmissionService.getProcessedResponses(
+        ({
+          responseMode: ResponseMode.Encrypt,
+          form_fields: [mobileField, emailField],
+        } as unknown) as IFormSchema,
+        [mobileResponse, emailResponse],
+      )
+
+      // Assert
+      const expectedParsed: ProcessedFieldResponse[] = [
+        { ...mobileProcessedResponse, isVisible: true }, //getProcessedResponses sets isVisible to be true for encrypt mode
+        { ...emailProcessedResponse, isVisible: true },
+      ]
+      // Should only have email and mobile fields for encrypted forms.
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedParsed)
     })
 
     it('should return error when any responses are not valid for encrypted form submission', async () => {

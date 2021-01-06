@@ -7,6 +7,7 @@ import {
   IPopulatedForm,
   ISubmissionSchema,
 } from '../../../types'
+import { EmailFormField } from '../../modules/submission/email-submission/email-submission.types'
 
 export type SendMailOptions = {
   mailId?: string
@@ -26,7 +27,7 @@ export type SendAutoReplyEmailsArgs = {
   form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
   submission: Pick<ISubmissionSchema, 'id' | 'created'>
   attachments?: Mail.Attachment[]
-  responsesData: { question: string; answerTemplate: string[] }[]
+  responsesData: Pick<EmailFormField, 'question' | 'answerTemplate'>[]
   autoReplyMailDatas: AutoReplyMailData[]
 }
 
@@ -50,8 +51,7 @@ export type AutoreplySummaryRenderData = {
   refNo: ISubmissionSchema['_id']
   formTitle: IFormSchema['title']
   submissionTime: string
-  // TODO (#42): Add proper types once the type is determined.
-  formData: any
+  formData: Pick<EmailFormField, 'question' | 'answerTemplate'>[]
   formUrl: string
 }
 
@@ -63,8 +63,7 @@ export type SubmissionToAdminHtmlData = {
   refNo: string
   formTitle: string
   submissionTime: string
-  // TODO (#42): Add proper types once the type is determined.
-  formData: any[]
+  formData: EmailFormField[]
   jsonData: {
     question: string
     answer: string | number

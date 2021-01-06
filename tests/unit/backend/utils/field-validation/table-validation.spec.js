@@ -230,4 +230,15 @@ describe('Table validation', () => {
       )
     })
   })
+  it('should disallow responses submitted for hidden fields', () => {
+    const columns = [makeTextFieldColumn()]
+    const formField = makeTableField(fieldId, columns)
+    const response = makeTableResponse(fieldId, Array(4).fill(['hello']))
+    response.isVisible = false
+    const validateResult = validateField(formId, formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
 })

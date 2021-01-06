@@ -6,13 +6,14 @@ import {
   ProcessedSingleAnswerResponse,
 } from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IField } from '../../../types/field/baseField'
+import { IFieldSchema } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
 import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import {
+  isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
@@ -35,7 +36,7 @@ const isValidResponseFieldType = (response: ProcessedFieldResponse): boolean =>
  * @param response The submitted response
  */
 const doFieldTypesMatch = (
-  formField: IField,
+  formField: IFieldSchema,
   response: ProcessedFieldResponse,
 ): Either<string, undefined> => {
   return response.fieldType !== formField.fieldType
@@ -46,6 +47,37 @@ const doFieldTypesMatch = (
 }
 
 /**
+ * Returns true if response appears on a hidden field.
+ * This may happen if a submission is made programatically to try and bypass form logic.
+ * @param response The submitted response
+ */
+const isResponsePresentOnHiddenField = (
+  response: ProcessedFieldResponse,
+): boolean => {
+  if (response.isVisible) return false
+  if (isProcessedSingleAnswerResponse(response)) {
+    if (response.answer.trim() !== '') {
+      return true
+    }
+  } else if (isProcessedCheckboxResponse(response)) {
+    if (response.answerArray.length > 0) {
+      return true
+    }
+  } else if (isProcessedTableResponse(response)) {
+    if (
+      !response.answerArray.every((row) => row.every((elem) => elem === ''))
+    ) {
+      return true
+    }
+  } else if (isProcessedAttachmentResponse(response)) {
+    if (response.filename.trim() !== '') {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Determines whether a response requires validation. A required field
  * may not require an answer if it is not visible due to logic. However,
  * if an answer is presented, it should be validated.
@@ -53,7 +85,7 @@ const doFieldTypesMatch = (
  * @param response The submitted response
  */
 const singleAnswerRequiresValidation = (
-  formField: IField,
+  formField: IFieldSchema,
   response: ProcessedSingleAnswerResponse,
 ) => (formField.required && response.isVisible) || response.answer.trim() !== ''
 
@@ -67,7 +99,7 @@ const singleAnswerRequiresValidation = (
  */
 const logInvalidAnswer = (
   formId: string,
-  formField: IField,
+  formField: IFieldSchema,
   message: string,
 ) => {
   logger.error({
@@ -91,7 +123,7 @@ const logInvalidAnswer = (
  */
 export const validateField = (
   formId: string,
-  formField: IField,
+  formField: IFieldSchema,
   response: ProcessedFieldResponse,
 ): Result<true, ValidateFieldError> => {
   if (!isValidResponseFieldType(response)) {
@@ -104,6 +136,12 @@ export const validateField = (
 
   if (isLeft(fieldTypeEither)) {
     return err(new ValidateFieldError(fieldTypeEither.left))
+  }
+
+  if (isResponsePresentOnHiddenField(response)) {
+    return err(
+      new ValidateFieldError(`Attempted to submit response on a hidden field`),
+    )
   }
 
   if (isProcessedSingleAnswerResponse(response)) {
@@ -154,7 +192,7 @@ export const validateField = (
  */
 const classBasedValidation = (
   formId: string,
-  formField: IField,
+  formField: IFieldSchema,
   response: FieldResponse,
 ): Result<true, ValidateFieldError> => {
   const fieldValidator = fieldValidatorFactory.createFieldValidator(
