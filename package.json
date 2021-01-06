@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "4.51.0",
+  "version": "4.52.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -141,8 +141,6 @@
     "nodemailer": "^6.4.17",
     "nodemailer-direct-transport": "~3.3.2",
     "opossum": "^5.1.1",
-    "opossum": "^5.0.2",
-    "p-queue": "^6.6.2",
     "promise-retry": "^2.0.1",
     "puppeteer-core": "^5.3.1",
     "selectize": "0.12.6",

@@ -43,7 +43,6 @@ function ViewResponsesController(
   vm.isEncryptResponseMode = vm.myform.responseMode === responseModeEnum.ENCRYPT
   vm.encryptionKey = null // will be set to an instance of EncryptionKey when form is unlocked successfully
   vm.csvDownloading = false // whether CSV export is in progress
-  vm.attachmentsToDownload = -1 // how many attachments will be downloaded (-1 for no attachments)
 
   vm.attachmentDownloadUrls = new Map()
   vm.filterBySubmissionRefId = '' // whether to filter submissions by a specific ID
@@ -122,7 +121,7 @@ function ViewResponsesController(
   }
 
   // Trigger for export CSV
-  vm.exportCsv = function (downloadAttachments) {
+  vm.exportCsv = function () {
     let params = {
       formId: vm.myform._id,
       formTitle: vm.myform.title,
@@ -137,10 +136,9 @@ function ViewResponsesController(
     }
 
     vm.csvDownloading = true
-
     Submissions.downloadEncryptedResponses(
       params,
-      downloadAttachments, // whether to download attachments
+      false, // whether to download attachments
       vm.encryptionKey.secretKey,
     )
       .then(function (result) {
@@ -171,7 +169,6 @@ function ViewResponsesController(
       })
       .finally(function () {
         $timeout(function () {
-          vm.attachmentsToDownload = -1
           vm.csvDownloading = false
         })
       })
@@ -247,41 +244,6 @@ function ViewResponsesController(
       }
 
       vm.loading = false
-    })
-  }
-
-  vm.confirmSubmissionCountsBeforeDownload = function () {
-    let params = {
-      formId: vm.myform._id,
-      formTitle: vm.myform.title,
-    }
-    if (vm.datePicker.date.startDate && vm.datePicker.date.endDate) {
-      params.startDate = moment(new Date(vm.datePicker.date.startDate)).format(
-        'YYYY-MM-DD',
-      )
-      params.endDate = moment(new Date(vm.datePicker.date.endDate)).format(
-        'YYYY-MM-DD',
-      )
-    }
-    Submissions.count(params).then((responsesCount) => {
-      vm.attachmentsToDownload = responsesCount
-      $uibModal
-        .open({
-          backdrop: 'static',
-          resolve: { responsesCount },
-          controller: [
-            '$scope',
-            '$uibModalInstance',
-            'responsesCount',
-            function ($scope, $uibModalInstance, responsesCount) {
-              $scope.responsesCount = responsesCount
-            },
-          ],
-          windowClass: 'pop-up-modal-window',
-          templateUrl:
-            'modules/forms/admin/views/download-all-attachments.client.modal.html',
-        })
-        .result.then(() => vm.exportCsv(true))
     })
   }
 
@@ -448,21 +410,11 @@ function ViewResponsesController(
         progressModal = null
       }
     } else {
-      let attachmentsToDownload = vm.attachmentsToDownload
       timeoutPromise = $timeout(function () {
         progressModal = $uibModal.open({
           animation: true,
           backdrop: 'static',
           keyboard: false,
-          resolve: { attachmentsToDownload },
-          controller: [
-            '$scope',
-            '$uibModalInstance',
-            'attachmentsToDownload',
-            function ($scope, $uibModalInstance, attachmentsToDownload) {
-              $scope.attachmentsToDownload = attachmentsToDownload
-            },
-          ],
           templateUrl:
             'modules/forms/admin/views/decrypt-progress.client.modal.html',
           windowClass: 'submit-progress-modal-window',

@@ -21,10 +21,10 @@ const ngrok = require('ngrok')
 
 // Index of the column headers in the exported CSV. The first 4 rows are
 // metadata about the number of responses decrypted.
-const CSV_HEADER_ROW_INDEX = 5
+const CSV_HEADER_ROW_INDEX = 4
 // The first two columns are "Reference number" and "Timestamp", so the
 // fields to check only start from the third column.
-const CSV_ANSWER_COL_INDEX = 3
+const CSV_ANSWER_COL_INDEX = 2
 
 const WEBHOOK_PORT = process.env.MOCK_WEBHOOK_PORT
 const WEBHOOK_CONFIG_FILE = process.env.MOCK_WEBHOOK_CONFIG_FILE
@@ -125,13 +125,12 @@ async function checkDownloadCsv(t, formData, authData, formId) {
   let { formFields, formOptions } = formData
   formFields = formFields.concat(getAuthFields(formOptions.authType, authData))
   await t.click(dataTab.exportBtn)
-  await t.click(dataTab.exportBtnDropdownResponses)
   await t.wait(2000)
   const csvContent = await fs.promises.readFile(
     `${getDownloadsFolder()}/${formOptions.title}-${formId}.csv`,
   )
   const records = parse(csvContent, { relax_column_count: true })
-  const headers = ['Reference number', 'Timestamp', 'Download Status']
+  const headers = ['Reference number', 'Timestamp']
   const answers = []
   formFields.forEach((field) => addExpectedCsvResponse(field, headers, answers))
   await t.expect(records[CSV_HEADER_ROW_INDEX]).eql(headers)
