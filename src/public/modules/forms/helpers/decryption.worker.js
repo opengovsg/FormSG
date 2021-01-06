@@ -1,14 +1,16 @@
-const moment = require('moment-timezone')
+require('core-js/stable')
+require('regenerator-runtime/runtime')
+
 const formsgPackage = require('@opengovsg/formsg-sdk')
+const { decode: decodeBase64 } = require('@stablelib/base64')
+const JSZip = require('jszip')
+const moment = require('moment-timezone')
+const { default: PQueue } = require('p-queue')
+
 const processDecryptedContent = require('../helpers/process-decrypted-content')
 const {
   TRANSACTION_EXPIRE_AFTER_SECONDS,
 } = require('../../../../shared/util/verification')
-const JSZip = require('jszip')
-const { decode: decodeBase64 } = require('@stablelib/base64')
-const { default: PQueue } = require('p-queue')
-require('core-js/stable/promise')
-require('regenerator-runtime/runtime')
 
 let formsgSdk
 const queue = new PQueue({ concurrency: 1 })

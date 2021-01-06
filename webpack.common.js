@@ -30,10 +30,15 @@ module.exports = [
         },
         {
           test: /\.worker\.js$/,
-          use: {
-            loader: 'worker-loader',
-            options: { publicPath: '/public/' },
-          },
+          use: [
+            {
+              loader: 'worker-loader',
+              options: { publicPath: '/public/' },
+            },
+            {
+              loader: 'babel-loader',
+            },
+          ],
         },
       ],
     },
