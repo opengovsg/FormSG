@@ -50,3 +50,12 @@ export class SendAdminEmailError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Error while sending confirmation email to recipients.
+ */
+export class SendEmailConfirmationError extends ApplicationError {
+  constructor(message = 'Error while sending confirmation emails') {
+    super(message)
+  }
+}

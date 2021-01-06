@@ -393,6 +393,7 @@ declare module 'bson-ext' {
   }
 
   export default class BSON {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(types: any[]) {}
 
     // BSON MAX VALUES

@@ -197,6 +197,7 @@ const createCustomLogger = (logger: Logger) => {
         const { message, meta } = params
         // Not the expected shape, throw to catch block.
         if (!message || isEmpty(meta)) {
+          //eslint-disable-next-line
           throw new Error('Wrong shape')
         }
         return logger.info(message, { meta })
@@ -209,6 +210,7 @@ const createCustomLogger = (logger: Logger) => {
         const { message, meta, error } = params
         // Not the expected shape, throw to catch block.
         if (!message || isEmpty(meta)) {
+          //eslint-disable-next-line
           throw new Error('Wrong shape')
         }
         if (error) {
@@ -224,6 +226,7 @@ const createCustomLogger = (logger: Logger) => {
         const { message, meta, error } = params
         // Not the expected shape, throw to catch block.
         if (!message || isEmpty(meta)) {
+          //eslint-disable-next-line
           throw new Error('Wrong shape')
         }
         if (error) {

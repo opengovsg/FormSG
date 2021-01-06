@@ -86,7 +86,7 @@ export const handleLoginSendOtp: RequestHandler<
           meta: logMeta,
         })
 
-        return res.status(StatusCodes.OK).json(`OTP sent to ${email}!`)
+        return res.status(StatusCodes.OK).json(`OTP sent to ${email}`)
       })
       // Step 4b: Error occurred whilst sending otp.
       .mapErr((error) => {

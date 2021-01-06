@@ -247,7 +247,7 @@ describe('auth.routes', () => {
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}!`)
+      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}`)
     })
   })
 
@@ -545,7 +545,7 @@ describe('auth.routes', () => {
     jest.spyOn(MailService, 'sendLoginOtp').mockReturnValue(okAsync(true))
 
     const response = await request.post('/auth/sendotp').send({ email })
-    expect(response.body).toEqual(`OTP sent to ${email}!`)
+    expect(response.body).toEqual(`OTP sent to ${email}`)
   }
 
   const signInUser = async (email: string, otp: string) => {

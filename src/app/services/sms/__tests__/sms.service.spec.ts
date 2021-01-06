@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -8,6 +9,10 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'
+import {
+  renderBouncedSubmissionSms,
+  renderFormDeactivatedSms,
+} from '../sms.util'
 import getSmsCountModel from '../sms_count.server.model'
 
 const FormModel = getFormModel(mongoose)
@@ -16,30 +21,38 @@ const SmsCountModel = getSmsCountModel(mongoose)
 // Test numbers provided by Twilio:
 // https://www.twilio.com/docs/iam/test-credentials
 const TWILIO_TEST_NUMBER = '+15005550006'
-
 const MOCK_MSG_SRVC_SID = 'mockMsgSrvcSid'
+const MOCK_RECIPIENT_EMAIL = 'recipientEmail@email.com'
+const MOCK_ADMIN_EMAIL = 'adminEmail@email.com'
+const MOCK_ADMIN_ID = new ObjectId().toHexString()
+const MOCK_FORM_ID = new ObjectId().toHexString()
+const MOCK_FORM_TITLE = 'formTitle'
+
+const twilioSuccessSpy = jest.fn().mockResolvedValue({
+  status: 'testStatus',
+  sid: 'testSid',
+})
 
 const MOCK_VALID_CONFIG = ({
   msgSrvcSid: MOCK_MSG_SRVC_SID,
   client: {
     messages: {
-      create: jest.fn().mockResolvedValue({
-        status: 'testStatus',
-        sid: 'testSid',
-      }),
+      create: twilioSuccessSpy,
     },
   },
 } as unknown) as TwilioConfig
+
+const twilioFailureSpy = jest.fn().mockResolvedValue({
+  status: 'testStatus',
+  sid: undefined,
+  errorCode: 21211,
+})
 
 const MOCK_INVALID_CONFIG = ({
   msgSrvcSid: MOCK_MSG_SRVC_SID,
   client: {
     messages: {
-      create: jest.fn().mockResolvedValue({
-        status: 'testStatus',
-        sid: undefined,
-        errorCode: 21211,
-      }),
+      create: twilioFailureSpy,
     },
   },
 } as unknown) as TwilioConfig
@@ -53,10 +66,168 @@ describe('sms.service', () => {
   beforeEach(async () => {
     const { user } = await dbHandler.insertFormCollectionReqs()
     testUser = user
-    smsCountSpy.mockClear()
+    jest.clearAllMocks()
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('sendFormDeactivatedSms', () => {
+    it('should send SMS and log success when sending is successful', async () => {
+      const expectedMessage = renderFormDeactivatedSms(MOCK_FORM_TITLE)
+
+      await SmsService.sendFormDeactivatedSms(
+        {
+          recipient: TWILIO_TEST_NUMBER,
+          adminEmail: MOCK_ADMIN_EMAIL,
+          adminId: MOCK_ADMIN_ID,
+          formId: MOCK_FORM_ID,
+          formTitle: MOCK_FORM_TITLE,
+          recipientEmail: MOCK_RECIPIENT_EMAIL,
+        },
+        MOCK_VALID_CONFIG,
+      )
+
+      expect(twilioSuccessSpy).toHaveBeenCalledWith({
+        to: TWILIO_TEST_NUMBER,
+        body: expectedMessage,
+        from: MOCK_VALID_CONFIG.msgSrvcSid,
+        forceDelivery: true,
+      })
+      expect(smsCountSpy).toHaveBeenCalledWith({
+        smsData: {
+          form: MOCK_FORM_ID,
+          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
+          recipientNumber: TWILIO_TEST_NUMBER,
+          formAdmin: {
+            email: MOCK_ADMIN_EMAIL,
+            userId: MOCK_ADMIN_ID,
+          },
+        },
+        smsType: SmsType.DeactivatedForm,
+        msgSrvcSid: MOCK_VALID_CONFIG.msgSrvcSid,
+        logType: LogType.success,
+      })
+    })
+
+    it('should log failure when sending fails', async () => {
+      const expectedMessage = renderFormDeactivatedSms(MOCK_FORM_TITLE)
+      const expectedError = new Error(VfnErrors.InvalidMobileNumber)
+      expectedError.name = VfnErrors.SendOtpFailed
+
+      const resultPromise = SmsService.sendFormDeactivatedSms(
+        {
+          recipient: TWILIO_TEST_NUMBER,
+          adminEmail: MOCK_ADMIN_EMAIL,
+          adminId: MOCK_ADMIN_ID,
+          formId: MOCK_FORM_ID,
+          formTitle: MOCK_FORM_TITLE,
+          recipientEmail: MOCK_RECIPIENT_EMAIL,
+        },
+        MOCK_INVALID_CONFIG,
+      )
+
+      await expect(resultPromise).rejects.toThrowError(expectedError)
+      expect(twilioFailureSpy).toHaveBeenCalledWith({
+        to: TWILIO_TEST_NUMBER,
+        body: expectedMessage,
+        from: MOCK_INVALID_CONFIG.msgSrvcSid,
+        forceDelivery: true,
+      })
+      expect(smsCountSpy).toHaveBeenCalledWith({
+        smsData: {
+          form: MOCK_FORM_ID,
+          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
+          recipientNumber: TWILIO_TEST_NUMBER,
+          formAdmin: {
+            email: MOCK_ADMIN_EMAIL,
+            userId: MOCK_ADMIN_ID,
+          },
+        },
+        smsType: SmsType.DeactivatedForm,
+        msgSrvcSid: MOCK_INVALID_CONFIG.msgSrvcSid,
+        logType: LogType.failure,
+      })
+    })
+  })
+
+  describe('sendBouncedSubmissionSms', () => {
+    it('should send SMS and log success when sending is successful', async () => {
+      const expectedMessage = renderBouncedSubmissionSms(MOCK_FORM_TITLE)
+
+      await SmsService.sendBouncedSubmissionSms(
+        {
+          recipient: TWILIO_TEST_NUMBER,
+          adminEmail: MOCK_ADMIN_EMAIL,
+          adminId: MOCK_ADMIN_ID,
+          formId: MOCK_FORM_ID,
+          formTitle: MOCK_FORM_TITLE,
+          recipientEmail: MOCK_RECIPIENT_EMAIL,
+        },
+        MOCK_VALID_CONFIG,
+      )
+
+      expect(twilioSuccessSpy).toHaveBeenCalledWith({
+        to: TWILIO_TEST_NUMBER,
+        body: expectedMessage,
+        from: MOCK_VALID_CONFIG.msgSrvcSid,
+        forceDelivery: true,
+      })
+      expect(smsCountSpy).toHaveBeenCalledWith({
+        smsData: {
+          form: MOCK_FORM_ID,
+          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
+          recipientNumber: TWILIO_TEST_NUMBER,
+          formAdmin: {
+            email: MOCK_ADMIN_EMAIL,
+            userId: MOCK_ADMIN_ID,
+          },
+        },
+        smsType: SmsType.BouncedSubmission,
+        msgSrvcSid: MOCK_VALID_CONFIG.msgSrvcSid,
+        logType: LogType.success,
+      })
+    })
+
+    it('should log failure when sending fails', async () => {
+      const expectedMessage = renderBouncedSubmissionSms(MOCK_FORM_TITLE)
+      const expectedError = new Error(VfnErrors.InvalidMobileNumber)
+      expectedError.name = VfnErrors.SendOtpFailed
+
+      const resultPromise = SmsService.sendBouncedSubmissionSms(
+        {
+          recipient: TWILIO_TEST_NUMBER,
+          adminEmail: MOCK_ADMIN_EMAIL,
+          adminId: MOCK_ADMIN_ID,
+          formId: MOCK_FORM_ID,
+          formTitle: MOCK_FORM_TITLE,
+          recipientEmail: MOCK_RECIPIENT_EMAIL,
+        },
+        MOCK_INVALID_CONFIG,
+      )
+
+      await expect(resultPromise).rejects.toThrowError(expectedError)
+      expect(twilioFailureSpy).toHaveBeenCalledWith({
+        to: TWILIO_TEST_NUMBER,
+        body: expectedMessage,
+        from: MOCK_INVALID_CONFIG.msgSrvcSid,
+        forceDelivery: true,
+      })
+      expect(smsCountSpy).toHaveBeenCalledWith({
+        smsData: {
+          form: MOCK_FORM_ID,
+          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
+          recipientNumber: TWILIO_TEST_NUMBER,
+          formAdmin: {
+            email: MOCK_ADMIN_EMAIL,
+            userId: MOCK_ADMIN_ID,
+          },
+        },
+        smsType: SmsType.BouncedSubmission,
+        msgSrvcSid: MOCK_INVALID_CONFIG.msgSrvcSid,
+        logType: LogType.failure,
+      })
+    })
+  })
 
   describe('sendVerificationOtp', () => {
     let mockOtpData: FormOtpData
@@ -112,9 +283,9 @@ describe('sms.service', () => {
       await expect(actualPromise).resolves.toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
-        otpData: mockOtpData,
+        smsData: mockOtpData,
         msgSrvcSid: MOCK_MSG_SRVC_SID,
-        smsType: SmsType.verification,
+        smsType: SmsType.Verification,
         logType: LogType.success,
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
@@ -139,9 +310,9 @@ describe('sms.service', () => {
       await expect(actualPromise).rejects.toThrow(expectedError)
       // Logging should also have happened.
       const expectedLogParams = {
-        otpData: mockOtpData,
+        smsData: mockOtpData,
         msgSrvcSid: MOCK_MSG_SRVC_SID,
-        smsType: SmsType.verification,
+        smsType: SmsType.Verification,
         logType: LogType.failure,
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
@@ -164,11 +335,11 @@ describe('sms.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
-        otpData: {
+        smsData: {
           admin: testUser._id,
         },
         msgSrvcSid: MOCK_MSG_SRVC_SID,
-        smsType: SmsType.adminContact,
+        smsType: SmsType.AdminContact,
         logType: LogType.success,
       }
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
@@ -192,11 +363,11 @@ describe('sms.service', () => {
 
     // Logging should also have happened.
     const expectedLogParams = {
-      otpData: {
+      smsData: {
         admin: testUser._id,
       },
       msgSrvcSid: MOCK_MSG_SRVC_SID,
-      smsType: SmsType.adminContact,
+      smsType: SmsType.AdminContact,
       logType: LogType.failure,
     }
     expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
