@@ -5,6 +5,7 @@ const HttpStatus = require('http-status-codes')
 angular
   .module('users')
   .controller('AuthenticationController', [
+    '$scope',
     '$state',
     '$timeout',
     '$window',
@@ -13,8 +14,17 @@ angular
     AuthenticationController,
   ])
 
-function AuthenticationController($state, $timeout, $window, Auth, GTag) {
+function AuthenticationController(
+  $scope,
+  $state,
+  $timeout,
+  $window,
+  Auth,
+  GTag,
+) {
   const vm = this
+
+  let notifDelayTimeout
 
   vm.credentials = {}
   vm.buttonClicked = false
@@ -164,42 +174,42 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
     vm.buttonClicked = true
     vm.showOtpDelayNotification = false
     const { email } = vm.credentials
-    Auth.sendOtp({ email })
-      .then(
-        function (success) {
-          vm.isOtpSending = false
-          vm.buttonClicked = false
-          // Configure message to be show
-          vm.signInMsg = {
-            isMsg: true,
-            isError: false,
-            msg: success,
-          }
-          $timeout(function () {
-            angular.element('#otp-input').focus()
-            angular.element('#otp-input').select()
-          }, 100)
-        },
-        function (error) {
-          vm.isOtpSending = false
-          vm.buttonClicked = false
-          // Configure message to be shown
-          const msg =
-            (error && error.data && error.data.message) ||
-            'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
-          vm.signInMsg = {
-            isMsg: true,
-            isError: true,
-            msg,
-          }
-        },
-      )
-      .finally(function () {
+    Auth.sendOtp({ email }).then(
+      function (success) {
+        vm.isOtpSending = false
+        vm.buttonClicked = false
+        // Configure message to be show
+        vm.signInMsg = {
+          isMsg: true,
+          isError: false,
+          msg: success,
+        }
         $timeout(function () {
+          angular.element('#otp-input').focus()
+          angular.element('#otp-input').select()
+        }, 100)
+
+        // Cancel existing timeout and set new one.
+        cancelNotifDelayTimeout()
+        notifDelayTimeout = $timeout(function () {
           vm.signInMsg.isMsg = false
           vm.showOtpDelayNotification = true
         }, 20000)
-      })
+      },
+      function (error) {
+        vm.isOtpSending = false
+        vm.buttonClicked = false
+        // Configure message to be shown
+        const msg =
+          (error && error.data && error.data.message) ||
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.'
+        vm.signInMsg = {
+          isMsg: true,
+          isError: true,
+          msg,
+        }
+      },
+    )
   }
 
   /**
@@ -250,4 +260,14 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
       },
     )
   }
+
+  const cancelNotifDelayTimeout = () => {
+    if (notifDelayTimeout) {
+      $timeout.cancel(notifDelayTimeout)
+    }
+  }
+
+  $scope.$on('$destroy', function () {
+    cancelNotifDelayTimeout()
+  })
 }
