@@ -513,10 +513,6 @@ app.run([
       require('./modules/forms/admin/views/decrypt-progress.client.modal.html'),
     )
     $templateCache.put(
-      'modules/forms/admin/views/download-all-attachments.client.modal.html',
-      require('./modules/forms/admin/views/download-all-attachments.client.modal.html'),
-    )
-    $templateCache.put(
       'modules/forms/admin/views/create-form-template.client.modal.html',
       require('./modules/forms/admin/views/create-form-template.client.modal.html'),
     )

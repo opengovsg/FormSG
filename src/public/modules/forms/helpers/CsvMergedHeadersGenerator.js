@@ -132,10 +132,9 @@ class CsvMergedHeadersGenerator extends CsvGenerator {
   addMetaDataFromSubmission(errorCount, unverifiedCount) {
     let metaDataRows = [
       ['Expected total responses', this.expectedNumberOfRecords],
-      ['Success count', this.length()],
+      ['Total decrypted responses', this.length()],
       ['Error count', errorCount],
       ['Unverified response count', unverifiedCount],
-      ['See download status column for download errors'],
     ]
     this.addMetaData(metaDataRows)
   }
