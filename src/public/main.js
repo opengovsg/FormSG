@@ -2,6 +2,7 @@
 
 require('core-js/stable')
 require('regenerator-runtime/runtime')
+require('./polyfills')
 
 const textEncoding = require('text-encoding')
 const Sentry = require('@sentry/browser')

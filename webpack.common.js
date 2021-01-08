@@ -6,12 +6,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 module.exports = [
   // Javascript / HTML config
   {
-    entry: [
-      'core-js/stable',
-      'regenerator-runtime/runtime',
-      path.resolve(__dirname, 'src/public/polyfills.js'),
-      path.resolve(__dirname, 'src/public/main.js'),
-    ],
+    entry: [path.resolve(__dirname, 'src/public/main.js')],
     module: {
       rules: [
         {
