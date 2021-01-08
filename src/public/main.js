@@ -1,5 +1,8 @@
 'use strict'
 
+require('core-js/stable')
+require('regenerator-runtime/runtime')
+
 const textEncoding = require('text-encoding')
 const Sentry = require('@sentry/browser')
 const { Angular: AngularIntegration } = require('@sentry/integrations')
