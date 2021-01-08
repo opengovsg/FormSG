@@ -25,7 +25,6 @@ const moduleDependencies = [
   'users',
   'ngFileUpload',
   'ng-sortable',
-  'angular-input-stars',
   'ngclipboard',
   'ngCookies',
   'core',
