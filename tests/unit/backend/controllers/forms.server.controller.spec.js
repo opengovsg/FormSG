@@ -80,7 +80,6 @@ describe('Form Controller', () => {
       expectedForm = _.pick(expectedForm, [
         'admin',
         'authType',
-        'customLogo',
         'endPage',
         'esrvcId',
         'form_fields',

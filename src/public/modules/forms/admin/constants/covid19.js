@@ -24,7 +24,6 @@ const templates = [
       },
     },
     authType: 'NIL',
-    customLogo: '',
     endPage: {
       title: 'We appreciate your feedback!',
       buttonText: 'Submit another form',
@@ -539,7 +538,6 @@ const templates = [
       },
     },
     authType: 'NIL',
-    customLogo: '',
     endPage: {
       title: 'Thank you for filling out the form.',
       buttonText: 'Submit another form',
