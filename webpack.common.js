@@ -30,6 +30,7 @@ module.exports = [
         },
         {
           test: /\.worker\.js$/,
+          exclude: /@babel(?:\/|\\{1,2})runtime|core-js/,
           use: [
             {
               loader: 'worker-loader',
