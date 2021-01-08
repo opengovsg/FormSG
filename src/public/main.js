@@ -131,9 +131,12 @@ angular.module(appName).config([
 angular.module('core', [])
 angular.module('forms', [])
 angular.module('users', [])
+angular.module('ngIntlTelInput', [])
+
 app.requires.push('core')
 app.requires.push('forms')
 app.requires.push('users')
+app.requires.push('ngIntlTelInput')
 
 /**
  * Core module
