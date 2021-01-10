@@ -2,6 +2,7 @@ require('core-js/stable')
 require('regenerator-runtime/runtime')
 
 const formsgPackage = require('@opengovsg/formsg-sdk')
+const { cloneDeep } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
 const moment = require('moment-timezone')
@@ -84,13 +85,51 @@ function verifySignature(decryptedSubmission, created) {
   return verified.every((v) => v)
 }
 
-/** @typedef {{
- *    created: string,
- *    id: string,
- *    status?: string
- *    submissionData?: Object
- * }}
- * CsvRecord */
+class CsvRecord {
+  constructor(id, created, status) {
+    this.id = id
+    this.created = created
+    this.status = status
+
+    this._statusMessage = status
+    this._record = []
+
+    this.updateSubmissionData()
+  }
+
+  setStatus(status, msg) {
+    this.status = status
+    this._statusMessage = msg
+    this.updateSubmissionData()
+  }
+
+  setDownloadBlob(blob) {
+    this.downloadBlob = blob
+  }
+
+  setRecord(record) {
+    this._record = record
+    this.updateSubmissionData()
+  }
+
+  updateSubmissionData() {
+    let downloadStatus = {
+      _id: '000000000000000000000000',
+      fieldType: 'textfield',
+      question: 'Download Status',
+      answer: this._statusMessage,
+      questionNumber: 1000000,
+    }
+    let output = cloneDeep(this._record)
+    output.unshift(downloadStatus)
+
+    this.submissionData = {
+      created: this.created,
+      submissionId: this.id,
+      record: output,
+    }
+  }
+}
 
 /**
  * Decrypts given data into a {@link CsvRecord} and posts the result back to the
@@ -107,28 +146,14 @@ async function decryptIntoCsv(data) {
   const { line, secretKey, downloadAttachments } = data
 
   let submission
-  /** @type {CsvRecord} */
   let csvRecord
   let attachmentDownloadUrls = new Map()
   let downloadBlob
 
-  let downloadStatus = {
-    _id: '000000000000000000000000',
-    fieldType: 'textfield',
-    question: 'Download Status',
-    answer: 'Unknown',
-    questionNumber: 1000000,
-  }
-
   try {
     submission = JSON.parse(line)
-
-    csvRecord = {
-      created: submission.created,
-      id: submission._id,
-    }
+    csvRecord = new CsvRecord(submission._id, submission.created, 'UNKNOWN')
     try {
-      csvRecord.submissionData = { record: [] }
       const decryptedSubmission = processDecryptedContent(
         formsgSdk.crypto.decrypt(secretKey, {
           encryptedContent: submission.encryptedContent,
@@ -137,16 +162,10 @@ async function decryptIntoCsv(data) {
       )
 
       if (verifySignature(decryptedSubmission, submission.created)) {
-        csvRecord.status = 'OK'
-        csvRecord.submissionData = {
-          created: submission.created,
-          submissionId: submission._id,
-          record: decryptedSubmission,
-        }
-        downloadStatus.answer = 'Success'
+        csvRecord.setStatus('OK', 'Success')
+        csvRecord.setRecord(decryptedSubmission)
       } else {
-        csvRecord.status = 'UNVERIFIED'
-        downloadStatus.answer = 'Unverified'
+        csvRecord.setStatus('UNVERIFIED', 'Unverified')
       }
       if (downloadAttachments) {
         let questionCount = 0
@@ -172,32 +191,24 @@ async function decryptIntoCsv(data) {
               secretKey,
             ),
           )
-          downloadStatus.answer = 'Success (with Downloaded Attachment)'
+          csvRecord.setStatus('OK', 'Success (with Downloaded Attachment)')
+          csvRecord.setDownloadBlob(downloadBlob)
         } catch (error) {
-          downloadStatus.answer = 'Attachment Download Error'
-          csvRecord.status = 'ATTACHMENT_ERROR'
+          csvRecord.setStatus('ATTACHMENT_ERROR', 'Attachment Download Error')
         }
       }
-
-      // Add status field to the start of the submissionData (first field)
-      csvRecord.submissionData.record.unshift(downloadStatus)
     } catch (error) {
-      downloadStatus.answer = 'Decryption Error'
-      csvRecord.status = 'ERROR'
-      csvRecord.submissionData = {
-        created: submission.created,
-        submissionId: submission._id,
-        record: [downloadStatus],
-      }
+      csvRecord.setStatus('ERROR', 'Decryption Error')
     }
   } catch (err) {
-    csvRecord = {
-      created: moment().tz('Asia/Singapore').format('DD MMM YYYY hh:mm:ss A'),
-      id: 'ERROR',
-      status: 'ERROR',
-    }
+    csvRecord = new CsvRecord(
+      'ERROR',
+      moment().tz('Asia/Singapore').format('DD MMM YYYY hh:mm:ss A'),
+      'ERROR',
+    )
+    csvRecord.setStatus('ERROR', 'Error')
   }
-  self.postMessage({ csvRecord, downloadBlob })
+  self.postMessage({ csvRecord })
 }
 
 self.addEventListener('message', ({ data }) => {
