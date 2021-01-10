@@ -9,10 +9,9 @@ module.exports = [
       rules: [
         {
           test: /\.js$/,
-          loader: 'babel-loader',
-          exclude: /node_modules/,
-          query: {
-            compact: false,
+          exclude: [/node_modules/, /@babel(?:\/|\\{1,2})runtime|core-js/],
+          use: {
+            loader: 'babel-loader',
           },
         },
       ],

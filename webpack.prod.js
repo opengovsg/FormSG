@@ -35,9 +35,9 @@ module.exports = [
       rules: [
         {
           test: /\.js$/,
-          loader: 'babel-loader',
-          query: {
-            compact: false,
+          exclude: /@babel(?:\/|\\{1,2})runtime|core-js/,
+          use: {
+            loader: 'babel-loader',
           },
         },
       ],
