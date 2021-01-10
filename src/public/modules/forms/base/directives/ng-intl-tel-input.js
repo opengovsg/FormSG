@@ -9,7 +9,6 @@ const {
   startsWithSgPrefix,
 } = require('../../../../../shared/util/phone-num-validation')
 
-angular.module('ngIntlTelInput', [])
 angular
   .module('ngIntlTelInput')
   .provider('ngIntlTelInput', ngIntlTelInputProvider)

@@ -104,7 +104,8 @@ const dataTab = {
   getNthFieldTitle: (n) => Selector('.response-title-container').nth(n),
   getNthFieldAnswer: (n) => Selector('.response-answer').nth(n),
   getNthFieldDownloadLink: (n) => Selector('.response-answer').nth(n).find('a'),
-  exportBtn: Selector('#btn-export'),
+  exportBtn: Selector('#btn-export-dropdown'),
+  exportBtnDropdownResponses: Selector('#btn-export-dropdown-responses'),
   getNthFieldTableCell: (n, row, col) =>
     Selector('.response-answer')
       .nth(n)

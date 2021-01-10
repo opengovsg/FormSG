@@ -735,3 +735,12 @@
   display: flex;
   min-width: 240px;
 }
+
+#export-dropdown-options a {
+  font-size: 18px;
+  color: #484848;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 20px;
+  padding-right: 65px;
+}
