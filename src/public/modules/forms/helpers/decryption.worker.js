@@ -85,34 +85,66 @@ function verifySignature(decryptedSubmission, created) {
   return verified.every((v) => v)
 }
 
+/** @class CsvRecord represents the CSV data to be passed back, along with helper functions */
 class CsvRecord {
+  /**
+   * Creates an instance of CsvRecord
+   *
+   * @constructor
+   * @param {string} id The ID of the submission
+   * @param {Moment} created The time of submission
+   * @param {string} status The status of the submission decryption/download process
+   */
   constructor(id, created, status) {
     this.id = id
     this.created = created
     this.status = status
 
-    this._statusMessage = status
-    this._record = []
-
-    this.updateSubmissionData()
+    /** @private */ this._statusMessage = status
+    /** @private */ this._record = []
   }
 
+  /**
+   * Sets the decryption/download status
+   *
+   * @param {string} status A status code indicating the decryption success to be consumed by submissions.client.factory.js
+   * @param {string} msg A human readable status message to be presented as part of the CSV download
+   */
   setStatus(status, msg) {
     this.status = status
     this._statusMessage = msg
-    this.updateSubmissionData()
   }
 
+  /**
+   * Sets the ZIP attachment blob to be downloaded
+   *
+   * @param {Blob} blob A blob containing a ZIP file of all the submission attachments downloaded
+   */
   setDownloadBlob(blob) {
     this.downloadBlob = blob
   }
 
+  /**
+   * Sets the decrypted CSV record
+   *
+   * @param {Array} record The decrypted submission record
+   */
   setRecord(record) {
     this._record = record
-    this.updateSubmissionData()
   }
 
-  updateSubmissionData() {
+  /**
+   * Materializes the `submissionData` field
+   *
+   * This function should be called before the CsvRecord is passed back using `postMessage`.
+   * Since `postMessage` does not support code being passed back to the main thread, the
+   * `CsvRecord` received will only contain simple fields (e.g. `created`, `status`, etc...).
+   *
+   * This function creates a `submissionData` field in the object containing the final
+   * answers to be added to the CSV file. This `submissionData` field will be passed back
+   * using `postMessage` since it does not contain code.
+   */
+  materializeSubmissionData() {
     let downloadStatus = {
       _id: '000000000000000000000000',
       fieldType: 'textfield',
@@ -208,6 +240,7 @@ async function decryptIntoCsv(data) {
     )
     csvRecord.setStatus('ERROR', 'Error')
   }
+  csvRecord.materializeSubmissionData()
   self.postMessage({ csvRecord })
 }
 
