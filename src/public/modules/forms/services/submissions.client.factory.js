@@ -300,7 +300,7 @@ function SubmissionsFactory(
             // When worker returns a decrypted message
             worker.onmessage = (event) => {
               const { data } = event
-              const { csvRecord, downloadBlob } = data
+              const { csvRecord } = data
 
               if (csvRecord.status === 'ATTACHMENT_ERROR') {
                 attachmentErrorCount++
@@ -316,9 +316,9 @@ function SubmissionsFactory(
                 experimentalCsvGenerator.addRecord(csvRecord.submissionData)
               }
 
-              if (downloadAttachments) {
+              if (downloadAttachments && csvRecord.downloadBlob) {
                 triggerFileDownload(
-                  downloadBlob,
+                  csvRecord.downloadBlob,
                   'RefNo ' + csvRecord.id + '.zip',
                 )
               }
