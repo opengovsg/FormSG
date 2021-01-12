@@ -58,7 +58,14 @@
         "typesafe/no-throw-sync-func": "error"
       }
     },
-    { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] }
+    { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] },
+    {
+      "files": ["*.ts", "*.js"],
+      "excludedFiles": ["**/*.spec.ts", "**/.spec.js"],
+      "rules": {
+        "typesafe/no-await-without-trycatch": "warn"
+      }
+    }
   ],
   "rules": {
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
