@@ -5,7 +5,12 @@ import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
   BasicField,
+  EmailAutoReplyField,
+  EmailDataForOneField,
+  EmailFormField,
+  EmailJsonField,
   FieldResponse,
+  IAttachmentInfo,
   IAttachmentResponse,
   MapRouteError,
 } from '../../../../types'
@@ -35,20 +40,14 @@ import {
   MultipartError,
   SubmissionHashError,
 } from './email-submission.errors'
-import {
-  EmailAutoReplyField,
-  EmailDataForOneField,
-  EmailFormField,
-  EmailJsonField,
-  IAttachmentInfo,
-  ResponseFormattedForEmail,
-} from './email-submission.types'
+import { ResponseFormattedForEmail } from './email-submission.types'
 
 /**
  * Determines the prefix for a question based on whether it is verified
  * by MyInfo.
  * @param response
  * @param hashedFields Hash for verifying MyInfo fields
+ * @returns the prefix
  */
 const getMyInfoPrefix = (
   response: ResponseFormattedForEmail,
@@ -89,6 +88,7 @@ const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
  * Transforms a question for inclusion in the JSON data used by the
  * data collation tool.
  * @param response
+ * @returns the prefixed question for this response
  */
 export const getJsonPrefixedQuestion = (
   response: ResponseFormattedForEmail,
@@ -101,6 +101,7 @@ export const getJsonPrefixedQuestion = (
  * Transforms a question for inclusion in the admin email table.
  * @param response
  * @param hashedFields
+ * @returns the joined prefixes for the question in the given response
  */
 export const getFormDataPrefixedQuestion = (
   response: ResponseFormattedForEmail,
@@ -210,7 +211,7 @@ export const getFormattedResponse = (
  * zip files are checked recursively.
  *
  * @param attachments - Array of file objects
- * @return Whether all attachments are valid
+ * @returns Whether all attachments are valid
  */
 export const getInvalidFileExtensions = (
   attachments: IAttachmentInfo[],
@@ -232,6 +233,11 @@ export const getInvalidFileExtensions = (
   return Promise.all(promises).then((results) => flattenDeep(results))
 }
 
+/**
+ * Checks whether the total size of attachments exceeds 7MB
+ * @param attachments List of attachments
+ * @returns true if total attachment size exceeds 7MB
+ */
 export const areAttachmentsMoreThan7MB = (
   attachments: IAttachmentInfo[],
 ): boolean => {
@@ -249,6 +255,10 @@ const isAttachmentResponse = (
   )
 }
 
+/**
+ * Extracts attachment fields from form responses
+ * @param responses Form responses
+ */
 export const mapAttachmentsFromResponses = (
   responses: FieldResponse[],
 ): IAttachmentInfo[] => {
@@ -318,6 +328,12 @@ export const mapRouteError: MapRouteError = (error) => {
   }
 }
 
+/**
+ * Checks whether attachmentMap contains the given response
+ * @param attachmentMap Map of field IDs to attachments
+ * @param response The response to check
+ * @returns true if response is in map, false otherwise
+ */
 const isAttachmentResponseFromMap = (
   attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
   response: FieldResponse,
@@ -332,6 +348,7 @@ const isAttachmentResponseFromMap = (
  *
  * @param responses - Array of responses received
  * @param attachments - Array of file objects
+ * @returns void. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
   responses: FieldResponse[],
@@ -365,6 +382,7 @@ export const addAttachmentToResponses = (
  * One of the duplicated files will not have its name changed.
  * Two abc.txt will become 1-abc.txt and abc.txt
  * @param attachments - Array of file objects
+ * @returns void. Modifies array in-place.
  */
 export const handleDuplicatesInAttachments = (
   attachments: IAttachmentInfo[],
@@ -394,7 +412,7 @@ export const handleDuplicatesInAttachments = (
  * Concatenate response into a string for hashing
  * @param formData Field-value tuples for admin email
  * @param attachments Array of attachments as buffers
- * @return concatenated response to hash
+ * @returns concatenated response to hash
  */
 export const concatAttachmentsAndResponses = (
   formData: EmailFormField[],

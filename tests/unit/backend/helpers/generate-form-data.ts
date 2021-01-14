@@ -10,7 +10,9 @@ import {
   AttachmentSize,
   BasicField,
   IAttachmentFieldSchema,
+  IAttachmentResponse,
   ICheckboxFieldSchema,
+  ICheckboxResponse,
   IDecimalFieldSchema,
   IDropdownField,
   IField,
@@ -54,6 +56,13 @@ export const generateDefaultField = (
         ...defaultParams,
         ...customParams,
       } as ITableFieldSchema
+    case BasicField.Checkbox:
+      return {
+        ...defaultParams,
+        fieldOptions: ['Option 1', 'Option 2'],
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as ICheckboxFieldSchema
     case BasicField.Attachment:
       return {
         ...defaultParams,
@@ -126,7 +135,7 @@ export const generateProcessedSingleAnswerResponse = (
 
 export const generateSingleAnswerResponse = (
   field: IFieldSchema,
-  answer = 'answer',
+  answer = field.fieldType === BasicField.Section ? '' : 'answer',
 ): ISingleAnswerResponse => {
   if (
     [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
@@ -166,7 +175,7 @@ export const generateNewSingleAnswerResponse = (
     answer: `${fieldType} answer`,
     fieldType: fieldType as Exclude<
       BasicField,
-      BasicField.Table | BasicField.Checkbox
+      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
     >,
     isVisible: true,
     ...customParams,
@@ -177,14 +186,12 @@ export const generateAttachmentResponse = (
   field: IAttachmentFieldSchema,
   filename = 'filename',
   content = Buffer.from('content'),
-): ProcessedAttachmentResponse => ({
+): IAttachmentResponse => ({
   _id: field._id,
-  question: field.title,
   answer: 'answer',
   fieldType: BasicField.Attachment,
   filename,
   content,
-  isVisible: true,
 })
 
 export const generateNewAttachmentResponse = (
@@ -203,12 +210,10 @@ export const generateNewAttachmentResponse = (
 export const generateCheckboxResponse = (
   field: ICheckboxFieldSchema,
   answerArray?: string[],
-): ProcessedCheckboxResponse => ({
+): ICheckboxResponse => ({
   _id: field._id,
-  question: field.title,
   answerArray: answerArray ?? [field.fieldOptions[0]],
   fieldType: BasicField.Checkbox,
-  isVisible: true,
 })
 
 export const generateNewCheckboxResponse = (

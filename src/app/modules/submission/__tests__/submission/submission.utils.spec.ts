@@ -44,14 +44,5 @@ describe('submission.utils', () => {
       )
       expect(actual.length).toEqual(2)
     })
-
-    it('should throw error if called with invalid responseMode', async () => {
-      // Arrange
-      const invalidResponseMode = 'something' as ResponseMode
-      // Act + Assert
-      expect(() => getModeFilter(invalidResponseMode)).toThrowError(
-        `This should never be reached in TypeScript: "${invalidResponseMode}"`,
-      )
-    })
   })
 })

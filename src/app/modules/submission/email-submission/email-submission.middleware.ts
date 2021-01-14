@@ -4,7 +4,16 @@ import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { FieldResponse, ResWithHashedFields, WithForm } from '../../../../types'
+import {
+  EmailData,
+  FieldResponse,
+  ResWithHashedFields,
+  WithAttachments,
+  WithEmailData,
+  WithEmailModeMetadata,
+  WithForm,
+  WithSubmission,
+} from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
 import {
@@ -15,14 +24,7 @@ import {
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
-import {
-  EmailData,
-  WithAdminEmailData,
-  WithAttachments,
-  WithEmailData,
-  WithFormMetadata,
-  WithSubmission,
-} from './email-submission.types'
+import { WithAdminEmailData } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
@@ -191,7 +193,9 @@ export const saveMetadataToDb: RequestHandler<
   ParamsDictionary,
   { message: string; spcpSubmissionFailure: boolean }
 > = async (req, res, next) => {
-  const { form, attachments, formData } = req as WithFormMetadata<typeof req>
+  const { form, attachments, formData } = req as WithEmailModeMetadata<
+    typeof req
+  >
   const logMeta = {
     action: 'saveMetadataToDb',
     formId: form._id,
@@ -228,12 +232,25 @@ export const saveMetadataToDb: RequestHandler<
     })
 }
 
+/**
+ * Sends response email to admin
+ * @param req - Express request object
+ * @param req.form - form object from req
+ * @param req.formData - the submission for the form
+ * @param req.jsonData - data to be included in JSON section of email
+ * @param req.submission - submission which was saved to database
+ * @param req.attachments - submitted attachments, parsed by
+ * exports.receiveSubmission
+ * @param res - Express response object
+ * @param next - the next expressjs callback, invoked once attachments
+ * are processed
+ */
 export const sendAdminEmail: RequestHandler<
   ParamsDictionary,
-  { message: string; spcpSubmissionFailure: boolean }
+  { message: string; spcpSubmissionFailure: boolean },
+  { parsedResponses: ProcessedFieldResponse[] }
 > = async (req, res, next) => {
   const {
-    replyToEmails,
     form,
     formData,
     jsonData,
@@ -252,7 +269,9 @@ export const sendAdminEmail: RequestHandler<
     meta: logMeta,
   })
   return EmailSubmissionService.sendSubmissionToAdmin({
-    replyToEmails,
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(
+      req.body.parsedResponses,
+    ),
     form,
     submission,
     attachments,

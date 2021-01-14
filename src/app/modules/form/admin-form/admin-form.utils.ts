@@ -3,7 +3,6 @@ import { err, ok, Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { IPopulatedForm, ResponseMode, Status } from '../../../../types'
-import { assertUnreachable } from '../../../utils/assert-unreachable'
 import {
   ApplicationError,
   DatabaseConflictError,
@@ -205,8 +204,6 @@ export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
       return assertHasWritePermissions
     case PermissionLevel.Delete:
       return assertHasDeletePermissions
-    default:
-      return assertUnreachable(level)
   }
 }
 
