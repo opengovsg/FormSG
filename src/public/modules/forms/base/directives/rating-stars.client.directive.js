@@ -42,9 +42,7 @@ function getIconClassName(shapeType, outline) {
   else return shapeData.full
 }
 
-angular
-  .module('angular-input-stars', [])
-  .directive('inputStars', ['$timeout', inputStars])
+angular.module('forms').directive('inputStars', ['$timeout', inputStars])
 
 function inputStars($timeout) {
   let directive = {

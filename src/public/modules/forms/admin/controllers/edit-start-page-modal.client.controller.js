@@ -1,6 +1,5 @@
 'use strict'
 
-const get = require('lodash/get')
 const {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -76,39 +75,6 @@ function EditStartPageController(
       enum: FormLogoState.Custom,
     },
   ]
-
-  /**
-   * Pre-fill in radio button selected for logo state if logo is undefined
-   * So that new admin clients can automatically show the logo state, mapped based on customLogo state
-   * TODO: Remove once all forms have logo key and customLogo is removed from schema
-   */
-  vm.setFormLogoIfUndefined = () => {
-    const logo = get(vm.myform, 'startPage.logo', null)
-    const customLogo = get(vm.myform, 'customLogo', null)
-    const defaultLogo = get(vm.myform, 'admin.agency.logo', null)
-    if (!logo) {
-      switch (customLogo) {
-        case undefined:
-        case null:
-        case defaultLogo:
-          vm.myform.startPage.logo = {
-            state: FormLogoState.Default,
-          }
-          break
-        case '':
-          vm.myform.startPage.logo = {
-            state: FormLogoState.None,
-          }
-          break
-        default:
-          // Old custom logo should still be shown
-          vm.myform.startPage.logo = {
-            state: FormLogoState.Custom,
-            oldCustomLogo: customLogo,
-          }
-      }
-    }
-  }
 
   /**
    * Show loading icon before resizing logo

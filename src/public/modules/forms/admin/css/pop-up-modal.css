@@ -57,6 +57,11 @@
   border-width: 0;
 }
 
+.pop-up-modal-window .modal-content-spacing {
+  margin-top: 20px;
+  margin-bottom: 50px;
+}
+
 .create-form-template-modal-window .modal-content {
   background: rgba(0, 0, 0, 0);
   min-height: 100%;

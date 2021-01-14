@@ -98,7 +98,6 @@ export interface IForm {
   hasCaptcha?: boolean
   authType?: AuthType
 
-  customLogo?: string
   status?: Status
 
   inactiveMessage?: string
