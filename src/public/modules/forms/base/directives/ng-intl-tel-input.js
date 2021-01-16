@@ -176,9 +176,14 @@ function ngIntlTelInput(ngIntlTelInput, $log, $window, $parse) {
         ngIntlTelInput.set({ initialCountry: attr.initialCountry })
       }
 
+      // Set correct placeholder for home number and mobile number
       if (scope.isHomeNumber) {
         ngIntlTelInput.set({
           placeholderNumberType: 'FIXED_LINE',
+        })
+      } else {
+        ngIntlTelInput.set({
+          placeholderNumberType: 'MOBILE',
         })
       }
 
