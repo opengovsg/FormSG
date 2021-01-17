@@ -9,6 +9,7 @@ const fetchStream = require('fetch-readablestream')
 const { forOwn } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
+require('abortcontroller-polyfill/dist/polyfill-patch-fetch')
 
 const NUM_OF_METADATA_ROWS = 5
 
@@ -24,6 +25,9 @@ angular
     'FormSgSdk',
     SubmissionsFactory,
   ])
+
+let downloadAbortController
+let workerPool = []
 
 function SubmissionsFactory(
   $q,
@@ -233,6 +237,14 @@ function SubmissionsFactory(
       })
     },
     /**
+     * Cancels an existing on-going download
+     */
+    cancelDownloadEncryptedResponses: function () {
+      downloadAbortController.abort()
+      workerPool.forEach((worker) => worker.terminate())
+      workerPool.length = 0 // resets the array
+    },
+    /**
      * Triggers a download of file responses when called
      * @param {String} params.formId ID of the form
      * @param {String} params.formTitle The title of the form
@@ -248,9 +260,12 @@ function SubmissionsFactory(
       secretKey,
     ) {
       // Helper function to kill an array of EncryptionWorkers
-      const killWorkers = (workerPool) => {
-        workerPool.forEach((worker) => worker.terminate())
+      const killWorkers = (pool) => {
+        pool.forEach((worker) => worker.terminate())
       }
+
+      // Creates a new AbortController for every request
+      downloadAbortController = new AbortController()
 
       return this.count(params).then((expectedNumResponses) => {
         return new Promise(function (resolve, reject) {
@@ -290,7 +305,6 @@ function SubmissionsFactory(
           // Trigger analytics here before starting decryption worker.
           GTag.downloadResponseStart(params, expectedNumResponses, numWorkers)
 
-          const workerPool = []
           for (let i = 0; i < numWorkers; i++) {
             workerPool.push(new DecryptionWorker())
           }
@@ -338,7 +352,7 @@ function SubmissionsFactory(
           })
 
           let downloadStartTime
-          fetchStream(resUrl)
+          fetchStream(resUrl, { signal: downloadAbortController.signal })
             .then((response) => ndjsonStream(response.body))
             .then((stream) => {
               downloadStartTime = performance.now()
