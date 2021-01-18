@@ -3,14 +3,10 @@ import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
-import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import getUserModel from '../../models/user.server.model'
 import { DatabaseError } from '../core/core.errors'
 
-import { MIN_SUB_COUNT } from './analytics.constants'
-
-const FormStatisticsModel = getFormStatisticsTotalModel(mongoose)
 const FormModel = getFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 const UserModel = getUserModel(mongoose)
@@ -80,70 +76,4 @@ export const getFormCount = (): ResultAsync<number, DatabaseError> => {
       return new DatabaseError()
     },
   )
-}
-
-/**
- * !!! This function should only be called by {@link AnalyticsFactory} !!!
- *
- * ! Access to this function should be determined by whether the `aggregate-stats` feature is enabled.
- *
- * Retrieves the number of forms that has more than MIN_SUB_COUNT responses
- * using the form statistics collection.
- * @private
- * @returns ok(form count) on success
- * @returns err(DatabaseError) on query failure
- */
-export const getFormCountWithStatsCollection = (): ResultAsync<
-  number,
-  DatabaseError
-> => {
-  return ResultAsync.fromPromise(
-    FormStatisticsModel.aggregateFormCount(MIN_SUB_COUNT),
-    (error) => {
-      logger.error({
-        message:
-          'Database error when retrieving form count from FormStatisticsTotal collection',
-        meta: {
-          action: 'getFormCountWithStatsCollection',
-        },
-        error,
-      })
-
-      return new DatabaseError()
-    },
-  ).map(([result]) => {
-    return result?.numActiveForms ?? 0
-  })
-}
-
-/**
- * !!! This function should only be called by {@link AnalyticsFactory} !!!
- *
- * ! Access to this function should be determined by whether the `aggregate-stats` feature is enabled.
- *
- * Retrieves the number of forms that has more than MIN_SUB_COUNT responses
- * using the submissions collection.
- * @private
- * @returns ok(form count) on success
- * @returns err(DatabaseError) on query failure
- */
-export const getFormCountWithSubmissionCollection = (): ResultAsync<
-  number,
-  DatabaseError
-> => {
-  return ResultAsync.fromPromise(
-    SubmissionModel.findFormsWithSubsAbove(MIN_SUB_COUNT),
-    (error) => {
-      logger.error({
-        message:
-          'Database error when retrieving form count from submissions collection',
-        meta: {
-          action: 'getFormCountWithSubmissionCollection',
-        },
-        error,
-      })
-
-      return new DatabaseError()
-    },
-  ).map((forms) => forms.length)
 }
