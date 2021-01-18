@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import getFormModel from '../../models/form.server.model'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import getUserModel from '../../models/user.server.model'
@@ -10,6 +11,7 @@ import { DatabaseError } from '../core/core.errors'
 import { MIN_SUB_COUNT } from './analytics.constants'
 
 const FormStatisticsModel = getFormStatisticsTotalModel(mongoose)
+const FormModel = getFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 const UserModel = getUserModel(mongoose)
 const logger = createLoggerWithLabel(module)
@@ -49,6 +51,28 @@ export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
         message: 'Database error when retrieving submission collection count',
         meta: {
           action: 'getSubmissionCount',
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  )
+}
+
+/**
+ * Retrieves the number of form documents in the database.
+ * @returns ok(forms count) on success
+ * @returns err(DatabaseError) on query failure
+ */
+export const getFormCount = (): ResultAsync<number, DatabaseError> => {
+  return ResultAsync.fromPromise(
+    FormModel.estimatedDocumentCount().exec(),
+    (error) => {
+      logger.error({
+        message: 'Database error when retrieving form collection count',
+        meta: {
+          action: 'getFormCount',
         },
         error,
       })
