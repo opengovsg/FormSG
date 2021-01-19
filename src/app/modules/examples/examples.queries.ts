@@ -151,7 +151,7 @@ export const sortByRelevance: Record<string, unknown>[] = [
  */
 export const sortByCreated = [
   {
-    $sort: { created: 1 },
+    $sort: { 'formInfo.created': -1 },
   },
 ]
 
