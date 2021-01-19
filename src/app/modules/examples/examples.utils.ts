@@ -111,8 +111,6 @@ export const createGeneralQueryPipeline = (
   agencyId?: string,
 ): Record<string, unknown>[] => {
   return searchForms().concat(
-    // More recently created forms appear higher on the examples page.
-    sortByCreated,
     // Filter out all inactive/unlisted forms.
     filterInactiveAndUnlistedForms,
     // Retrieve agency infos of forms in this stage.
@@ -121,6 +119,8 @@ export const createGeneralQueryPipeline = (
     agencyId ? filterByAgencyId(agencyId) : [],
     // Retrieve form feedback from the forms that reach this step.
     lookupFormFeedback,
+    // More recently created forms appear higher on the examples page.
+    sortByCreated,
   )
 }
 
