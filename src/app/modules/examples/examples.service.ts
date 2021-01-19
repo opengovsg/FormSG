@@ -23,7 +23,6 @@ import {
   createFormIdInfoPipeline,
   createGeneralQueryPipeline,
   createSearchQueryPipeline,
-  formatToRelativeString,
 } from './examples.utils'
 
 const FormModel = getFormModel(mongoose)
@@ -86,12 +85,8 @@ const execExamplesQueryWithTotal = (
     },
   ).andThen((result) => {
     const [{ pageResults, totalCount }] = result as QueryExecResultWithTotal
-    const formattedResults = pageResults.map((x) => ({
-      ...x,
-      timeText: formatToRelativeString(x.lastSubmission),
-    }))
     const totalNumResults: number = get(totalCount, '[0].count', 0)
-    return okAsync({ forms: formattedResults, totalNumResults })
+    return okAsync({ forms: pageResults, totalNumResults })
   })
 }
 
@@ -126,14 +121,7 @@ const execExamplesQuery = (
 
       return new DatabaseError()
     },
-  ).andThen((results) => {
-    const formattedResults = results.map((x) => ({
-      ...x,
-      timeText: formatToRelativeString(x.lastSubmission),
-    }))
-
-    return okAsync({ forms: formattedResults })
-  })
+  ).andThen((results) => okAsync({ forms: results }))
 }
 
 /**
