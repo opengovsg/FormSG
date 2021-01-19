@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
-import { ExamplesFactory } from './examples.factory'
+import * as ExamplesService from './examples.service'
 import { ExamplesQueryParams } from './examples.types'
 import { mapRouteError } from './examples.utils'
 
@@ -24,7 +24,7 @@ export const handleGetExamples: RequestHandler<
   unknown,
   Query & ExamplesQueryParams
 > = (req, res) => {
-  return ExamplesFactory.getExampleForms(req.query)
+  return ExamplesService.getExampleForms(req.query)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
@@ -54,7 +54,7 @@ export const handleGetExampleByFormId: RequestHandler<{
 }> = (req, res) => {
   const { formId } = req.params
 
-  return ExamplesFactory.getSingleExampleForm(formId)
+  return ExamplesService.getSingleExampleForm(formId)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({

@@ -4,29 +4,18 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
-import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
-import getSubmissionModel from '../../models/submission.server.model'
 import { DatabaseError } from '../core/core.errors'
 
 import { PAGE_SIZE } from './examples.constants'
 import { ResultsNotFoundError } from './examples.errors'
-import {
-  groupSubmissionsByFormId,
-  lookupFormStatisticsInfo,
-  lookupSubmissionInfo,
-  projectSubmissionInfo,
-  selectAndProjectCardInfo,
-} from './examples.queries'
+import { selectAndProjectCardInfo } from './examples.queries'
 import {
   ExamplesQueryParams,
   FormInfo,
-  QueryData,
   QueryExecResult,
   QueryExecResultWithTotal,
   QueryPageResult,
   QueryPageResultWithTotal,
-  RetrievalType,
-  RetrieveSubmissionsExecResult,
   SingleFormInfoQueryResult,
   SingleFormResult,
 } from './examples.types'
@@ -34,35 +23,12 @@ import {
   createFormIdInfoPipeline,
   createGeneralQueryPipeline,
   createSearchQueryPipeline,
-  createSingleSearchStatsPipeline,
-  createSingleSearchSubmissionPipeline,
   formatToRelativeString,
 } from './examples.utils'
 
 const FormModel = getFormModel(mongoose)
-const FormStatisticsModel = getFormStatisticsTotalModel(mongoose)
-const SubmissionModel = getSubmissionModel(mongoose)
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Maps retrieval type to the middlewares and query model used for general
- * queries to use when creating the aggregation pipeline
- */
-const RETRIEVAL_TO_QUERY_DATA_MAP: QueryData = {
-  [RetrievalType.Stats]: {
-    generalQueryModel: FormStatisticsModel,
-    lookUpMiddleware: lookupFormStatisticsInfo,
-    groupByMiddleware: projectSubmissionInfo,
-    singleSearchPipeline: createSingleSearchStatsPipeline,
-  },
-  [RetrievalType.Submissions]: {
-    generalQueryModel: SubmissionModel,
-    lookUpMiddleware: lookupSubmissionInfo,
-    groupByMiddleware: groupSubmissionsByFormId,
-    singleSearchPipeline: createSingleSearchSubmissionPipeline,
-  },
-}
 
 /**
  * Creates and returns the query builder to execute some example fetch query.
@@ -250,63 +216,8 @@ export const getExampleForms = (
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  * @returns err(ResultsNotFoundError) if form info cannot be retrieved with the given form id
  */
-export const getSingleExampleForm = (type: RetrievalType) => (
+export const getSingleExampleForm = (
   formId: string,
 ): ResultAsync<SingleFormResult, DatabaseError | ResultsNotFoundError> => {
-  const {
-    singleSearchPipeline,
-    generalQueryModel,
-  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
-
-  return (
-    // Step 1: Retrieve base form info to augment.
-    getFormInfo(formId)
-      // Step 2a: Execute aggregate query with relevant single search pipeline.
-      .andThen((formInfo) =>
-        ResultAsync.fromPromise(
-          generalQueryModel
-            .aggregate(singleSearchPipeline(formId))
-            .read('secondary')
-            .exec() as Promise<RetrieveSubmissionsExecResult>,
-          (error) => {
-            logger.error({
-              message: 'Failed to retrieve a single example form',
-              meta: {
-                action: 'getSingleExampleForm',
-              },
-              error,
-            })
-
-            return new DatabaseError()
-          },
-          // Step 2b: Augment the initial base form info with the retrieved
-          // statistics from the aggregate pipeline.
-        ).map((queryResult) => {
-          // Process result depending on whether search pipeline returned
-          // results.
-          // If the statistics cannot be found, add default "null" fields.
-          if (!queryResult || queryResult.length === 0) {
-            const emptyStatsExampleInfo: FormInfo = {
-              ...formInfo,
-              count: 0,
-              lastSubmission: null,
-              timeText: '-',
-              avgFeedback: null,
-            }
-            return { form: emptyStatsExampleInfo }
-          }
-
-          // Statistics can be found.
-          const [statistics] = queryResult
-          const processedExampleInfo: FormInfo = {
-            ...formInfo,
-            count: statistics.count,
-            lastSubmission: statistics.lastSubmission,
-            avgFeedback: statistics.avgFeedback,
-            timeText: formatToRelativeString(statistics.lastSubmission),
-          }
-          return { form: processedExampleInfo }
-        }),
-      )
-  )
+  return getFormInfo(formId).map((formInfo) => ({ form: formInfo }))
 }

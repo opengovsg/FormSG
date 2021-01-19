@@ -147,6 +147,11 @@ export const createFormIdInfoPipeline = (
     lookupAgencyInfo,
     // Project form information without submission/feedback information.
     projectFormDetails,
+    // Retrieve form feedbacks for the submissions.
+    lookupFormFeedback,
+    // Project submissions by form id, get submission count, get the last
+    // submission date, along with the average feedback of the submissions.
+    addAvgFeedback,
   )
 }
 
