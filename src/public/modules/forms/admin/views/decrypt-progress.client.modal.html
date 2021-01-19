@@ -20,7 +20,7 @@
     <div class="field-description">
       <p>
         Up to {{ attachmentsToDownload }} files are being downloaded into your
-        destination folder. Closing this page will stop the download.
+        destination folder.
       </p>
       <p>
         After download is complete, you can refer to the
@@ -30,5 +30,10 @@
       <p><strong>Estimated time:</strong> 30-50 minutes per 1,000 responses.</p>
     </div>
     <div class="loader"><i class="bx bx-loader bx-spin"></i></div>
+    <div class="action-buttons">
+      <center>
+        <a ng-click="$dismiss()" class="modal-add-btn">Cancel Download</a>
+      </center>
+    </div>
   </div>
 </div>
