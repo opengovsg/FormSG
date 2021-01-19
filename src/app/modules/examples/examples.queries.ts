@@ -231,14 +231,24 @@ export const selectAndProjectCardInfo = (
  * Precondition: `formFeedbackInfo` must have been retrieved in a previous step,
  * which can be done using lookupFormFeedback.
  *
- * Aggregation step to add the average feedback field.
+ * Aggregation step to replace the array of feedback info with its average.
  */
-export const addAvgFeedback = [
+export const replaceFeedbackWithAvg = [
   {
     $addFields: {
       avgFeedback: {
         $avg: '$formFeedbackInfo.rating',
       },
+    },
+  },
+  {
+    $project: {
+      agency: 1,
+      avgFeedback: 1,
+      colorTheme: 1,
+      form_fields: 1,
+      logo: 1,
+      title: 1,
     },
   },
 ]

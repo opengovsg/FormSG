@@ -6,12 +6,12 @@ import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
 import {
-  addAvgFeedback,
   filterByAgencyId,
   filterInactiveAndUnlistedForms,
   lookupAgencyInfo,
   lookupFormFeedback,
   projectFormDetails,
+  replaceFeedbackWithAvg,
   searchForms,
   searchFormsById,
   searchFormsWithText,
@@ -145,6 +145,6 @@ export const createFormIdInfoPipeline = (
     lookupFormFeedback,
     // Project submissions by form id, get submission count, get the last
     // submission date, along with the average feedback of the submissions.
-    addAvgFeedback,
+    replaceFeedbackWithAvg,
   )
 }
