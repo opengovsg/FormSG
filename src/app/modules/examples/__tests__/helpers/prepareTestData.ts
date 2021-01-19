@@ -199,13 +199,8 @@ const prepareTestData = async (
         ? testData.first.feedbacks[i].rating
         : testData.second.feedbacks[i].rating,
       colorTheme: form.startPage!.colorTheme,
-      count: isFirst
-        ? testData.first.submissionCount
-        : testData.second.submissionCount,
       form_fields: [],
       logo: agency.logo,
-      timeText: 'less than 1 day ago',
-      lastSubmission: expect.anything(),
       title: form.title,
     }))
   }
