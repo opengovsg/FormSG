@@ -98,11 +98,8 @@ describe('examples.controller', () => {
           agency: 'mock agencyId',
           avgFeedback: 5,
           colorTheme: Colors.Blue,
-          count: 20,
           form_fields: [],
-          lastSubmission: new Date(),
           logo: 'logo',
-          timeText: 'now',
           title: 'mockTitle',
         },
       }
