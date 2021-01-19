@@ -129,29 +129,6 @@ export const filterByAgencyId = (
 ]
 
 /**
- * Precondition: A group stage that produced a count field must be executed
- * beforehand, which can be done with groupSubmissionsByFormId or
- * lookupSubmissionInfo.
-
- * Aggregation step to filter forms with less than the minimum number of
- * submissions for the examples page. 
- * 
- * @param minSubmissionCount The minimum submission count of each form to allow past this aggragate step
-  * @returns aggregate step to return submissions with at least minSubmissionCount
- */
-export const filterBySubmissionCount = (
-  minSubmissionCount: number,
-): Record<string, unknown>[] => [
-  {
-    $match: {
-      count: {
-        $gt: minSubmissionCount,
-      },
-    },
-  },
-]
-
-/**
  * Precondition: A match by text was called earlier, which can be done with
  * searchFormsWithText.
  *
@@ -163,18 +140,6 @@ export const sortByRelevance: Record<string, unknown>[] = [
     $sort: {
       textScore: -1,
     },
-  },
-]
-
-/**
- * Precondition: `lastSubmission` field must have been generated beforehand,
- * which can be done using `groupSubmissionsByFormId`.
- *
- * Aggregation step to sort forms by the last submitted date.
- */
-export const sortByLastSubmitted: Record<string, unknown>[] = [
-  {
-    $sort: { lastSubmission: -1 },
   },
 ]
 
@@ -205,157 +170,6 @@ export const lookupFormFeedback: Record<string, unknown>[] = [
       localField: '_id',
       foreignField: 'formId',
       as: 'formFeedbackInfo',
-    },
-  },
-]
-
-/**
- * Precondition: `_id` field corresponding to the forms' ids must be retrieved
- * beforehand, which can be done by grouping submissions using
- * groupSubmissionsByFormId.
- *
- * Aggregation step to retrieve `formInfo` from the forms collection for each
- * form's form id.
- */
-export const lookupFormInfo: Record<string, unknown>[] = [
-  {
-    $lookup: {
-      from: 'forms',
-      localField: '_id',
-      foreignField: '_id',
-      as: 'formInfo',
-    },
-  },
-  // There should only be one form with this _id
-  {
-    $unwind: '$formInfo',
-  },
-]
-
-/**
- * Precondition: `_id` field corresponding to the forms' ids must be retrieved
- * beforehand, which can be done using groupSubmissionsByFormId or
- * searchFormsForText.
- *
- * Aggregation step to retrieve `submissionInfo` by looking up, sorting and
- * grouping submissions with the form ids specified.
- */
-export const lookupFormStatisticsInfo: Record<string, unknown>[] = [
-  {
-    $lookup: {
-      from: 'formStatisticsTotal',
-      localField: '_id',
-      foreignField: 'formId',
-      as: 'submissionInfo',
-    },
-  },
-  // Unwind results in multiple copies of each form, where each copy has its own
-  // submissionInfo.
-  {
-    $unwind: '$submissionInfo',
-  },
-  {
-    $project: {
-      _id: '$_id',
-      count: '$submissionInfo.totalCount',
-      formInfo: 1,
-      agencyInfo: 1,
-      lastSubmission: '$submissionInfo.lastSubmission',
-      textScore: { $meta: 'textScore' }, // Used to sort by relevance
-    },
-  },
-]
-
-/**
- * Precondition: `_id` field corresponding to forms' ids must be retrieved
- * beforehand, which can be done using groupSubmissionsByFormId or
- * searchFormsForText.
- *
- * Aggregation step to retrieve submissionInfo by looking up, sorting and
- * grouping submissions with form ids specified.
- *
- */
-export const lookupSubmissionInfo = [
-  {
-    $lookup: {
-      from: 'submissions',
-      localField: '_id',
-      foreignField: 'form',
-      as: 'submissionInfo',
-    },
-  },
-  // Unwind results in multiple copies of each form, where each copy has its own submissionInfo
-  {
-    $unwind: '$submissionInfo',
-  },
-  {
-    $sort: { 'submissionInfo.created': 1 },
-  },
-  // Retrieve only the necessary information from the submissionInfo
-  {
-    $group: {
-      _id: '$_id',
-      count: { $sum: 1 },
-      formInfo: { $first: '$formInfo' },
-      agencyInfo: { $first: '$agencyInfo' },
-      lastSubmission: { $last: '$submissionInfo.created' },
-      textScore: { $first: { $meta: 'textScore' } }, // Used to sort by relevance
-    },
-  },
-]
-
-/**
- * Precondition: `_id` field corresponding to forms' ids must be retrieved
- * beforehand.
- *
- * !Note: Can only used on pipelines working with the Submissions collection.
- *
- * Aggregation step to group submissions by form id, count the number of
- * submissions, and get the last submission date.
- */
-export const groupSubmissionsByFormId = [
-  {
-    $group: {
-      _id: '$form',
-      count: { $sum: 1 },
-      lastSubmission: { $last: '$created' },
-    },
-  },
-]
-
-/**
- * Precondition: `_id` field corresponding to forms' ids must be retrieved
- * beforehand.
- *
- * !Note: Can only used on pipelines working with the FormStatisticsTotal collection.
- *
- * Aggregation step to project submissions by form id, get submission count, and
- * get the last submission date.
- */
-export const projectSubmissionInfo: Record<string, unknown>[] = [
-  {
-    $project: {
-      _id: '$formId',
-      count: '$totalCount',
-      lastSubmission: 1,
-    },
-  },
-]
-
-/**
- * Precondition: `formFeedbackInfo` must have been retrieved in a previous step,
- * which can be done using lookupFormFeedback.
- *
- * Aggregation step to project submissions by form id, get submission count, get
- * the last submission date, along with the average feedback of the submissions.
- */
-export const projectAvgFeedback: Record<string, unknown>[] = [
-  {
-    $project: {
-      _id: '$formId',
-      count: 1,
-      lastSubmission: 1,
-      avgFeedback: { $avg: '$formFeedbackInfo.rating' },
     },
   },
 ]
@@ -409,30 +223,6 @@ export const selectAndProjectCardInfo = (
       agency: '$agencyInfo.shortName',
       colorTheme: '$formInfo.startPage.colorTheme',
       avgFeedback: { $avg: '$formFeedbackInfo.rating' },
-    },
-  },
-]
-
-/**
- * Produces an aggregation step to retrieve submissions for the form with the
- * specified formId.
- *
- * If this aggregation step is used by the Submission collection, the key value
- * would be `form`. \
- * If used with the FormStatisticsTotal collection, the key
- * value would be `formId`. See ISubmission['form'] and
- * IFormStatisticsTotal['formId'].
- *
- * @param key The key of the formId to be retrieved from.
- * @param formId The _id field of the form to be retrieved
- */
-export const searchSubmissionsForForm = (
-  key: 'form' | 'formId',
-  formId: string,
-): Record<string, unknown>[] => [
-  {
-    $match: {
-      [key]: mongoose.Types.ObjectId(formId),
     },
   },
 ]
