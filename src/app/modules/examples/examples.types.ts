@@ -25,8 +25,6 @@ export type QueryData = {
 
 export type QueryExecResult = {
   _id: string
-  count: number
-  lastSubmission: Date | null
   title: IForm['title']
   form_fields: IForm['form_fields']
   logo: IAgency['logo']
@@ -55,16 +53,12 @@ export type QueryExecResultWithTotal = {
   }[]
 }[]
 
-export type FormattedQueryExecResult = QueryExecResult & {
-  timeText: string
-}
-
 export type QueryPageResult = {
-  forms: FormattedQueryExecResult[]
+  forms: QueryExecResult[]
 }
 
 export type QueryPageResultWithTotal = {
-  forms: FormattedQueryExecResult[]
+  forms: QueryExecResult[]
   totalNumResults: number
 }
 
@@ -75,9 +69,7 @@ export type ExamplesQueryParams = {
   shouldGetTotalNumResults?: boolean
 }
 
-export type FormInfo = QueryExecResult & {
-  timeText: string
-}
+export type FormInfo = QueryExecResult
 
 export type SingleFormResult = {
   form: FormInfo
