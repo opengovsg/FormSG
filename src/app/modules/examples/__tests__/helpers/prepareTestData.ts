@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
-import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import {
   IAgencySchema,
@@ -17,7 +16,6 @@ import {
 
 import { FormInfo } from '../../examples.types'
 
-const FormStatsModel = getFormStatisticsTotalModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 const FormModel = getFormModel(mongoose)
 const FeedbackModel = getFormFeedbackModel(mongoose)
@@ -138,26 +136,6 @@ const prepareTestData = async (
   // Assign all forms in test data.
   testData.total.forms = testData.first.forms.concat(testData.second.forms)
 
-  // Add form statistics for "submissions" for both form prefixes.
-  const formStatsPromises = testData.first.forms
-    .map((form) =>
-      // Using mongodb native function to bypass collection presave hook.
-      FormStatsModel.collection.insertOne({
-        lastSubmission: new Date(),
-        totalCount: testData.first.submissionCount,
-        formId: form._id,
-      }),
-    )
-    .concat(
-      testData.second.forms.map((form) =>
-        FormStatsModel.collection.insertOne({
-          lastSubmission: new Date(),
-          totalCount: testData.second.submissionCount,
-          formId: form._id,
-        }),
-      ),
-    )
-
   // Function to generate random number between min and max.
   const randomNumber = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min
@@ -177,7 +155,6 @@ const prepareTestData = async (
   })
 
   await Promise.all(firstSubmissionPromises.concat(secondSubmissionPromises))
-  await Promise.all(formStatsPromises)
   const feedbacks = await Promise.all(feedbackPromises)
 
   // Assign all feedbacks into test data.
@@ -218,7 +195,6 @@ const prepareTestData = async (
   testData.total.expectedFormInfo = testData.first.expectedFormInfo.concat(
     testData.second.expectedFormInfo,
   )
-
   return testData
 }
 

@@ -1,7 +1,4 @@
 import { ObjectId } from 'bson-ext'
-import mongoose from 'mongoose'
-
-import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -10,8 +7,6 @@ import { ResultsNotFoundError } from '../examples.errors'
 import * as ExamplesService from '../examples.service'
 
 import prepareTestData, { TestData } from './helpers/prepareTestData'
-
-const FormStatsModel = getFormStatisticsTotalModel(mongoose)
 
 // Mock min sub count so anything above 0 submissions will be counted.
 jest.mock('../examples.constants', () => ({
@@ -118,8 +113,7 @@ describe('examples.service', () => {
 
         it('should return empty list with number of forms with submissions when offset is more than number of documents in collection', async () => {
           // Arrange
-          const overOffset =
-            (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1
+          const overOffset = testData.total.formCount / PAGE_SIZE + 1
           // Act
           const actualResults = await ExamplesService.getExampleForms({
             pageNo: overOffset,
@@ -152,8 +146,7 @@ describe('examples.service', () => {
 
         it('should return empty list when offset is more than number of documents', async () => {
           // Arrange
-          const overOffset =
-            (await FormStatsModel.estimatedDocumentCount()) / PAGE_SIZE + 1
+          const overOffset = testData.total.formCount / PAGE_SIZE + 1
           // Act
           const actualResults = await ExamplesService.getExampleForms({
             pageNo: overOffset,
