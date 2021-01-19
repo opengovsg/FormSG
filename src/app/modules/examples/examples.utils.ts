@@ -9,15 +9,14 @@ import { ResultsNotFoundError } from './examples.errors'
 import {
   addAvgFeedback,
   filterByAgencyId,
-  filterBySubmissionCount,
   filterInactiveAndUnlistedForms,
   groupSubmissionsByFormId,
   lookupAgencyInfo,
   lookupFormFeedback,
-  lookupFormInfo,
   projectAvgFeedback,
   projectFormDetails,
   projectSubmissionInfo,
+  searchForms,
   searchFormsById,
   searchFormsWithText,
   searchSubmissionsForForm,
@@ -84,13 +83,9 @@ export const mapRouteError: MapRouteError = (error) => {
 export const createSearchQueryPipeline = ({
   agencyId,
   searchTerm,
-  minSubmissionCount,
-  lookUpMiddleware,
 }: {
   agencyId?: string
   searchTerm: string
-  minSubmissionCount: number
-  lookUpMiddleware: Record<string, unknown>[]
 }): Record<string, unknown>[] => {
   // Get formId and formInfo of forms containing the search term.
   return searchFormsWithText(searchTerm).concat(
@@ -100,10 +95,6 @@ export const createSearchQueryPipeline = ({
     lookupAgencyInfo,
     // Filter by agency id if parameter given.
     agencyId ? filterByAgencyId(agencyId) : [],
-    // Any other look ups to insert before performing filtering.
-    lookUpMiddleware,
-    // Only display forms with more than minSubmissionCount submissions.
-    filterBySubmissionCount(minSubmissionCount),
     // Sort by how well search terms were matched.
     sortByRelevance,
     // Retrieve form feedback from the forms that reach this step.
@@ -122,22 +113,12 @@ export const createSearchQueryPipeline = ({
  * @param agencyId Optional. The id of the agency to filter forms listed by. If no id is given, all matched forms will be returned
  * @param minSubmissionCount The minimum submission count returned forms must have to be returned by the aggregation pipeline
  */
-export const createGeneralQueryPipeline = ({
-  groupByMiddleware,
-  agencyId,
-  minSubmissionCount,
-}: {
-  groupByMiddleware: Record<string, unknown>[]
-  agencyId?: string
-  minSubmissionCount: number
-}): Record<string, unknown>[] => {
-  return groupByMiddleware.concat(
-    // Only display forms with more than minSubmissionCount submissions.
-    filterBySubmissionCount(minSubmissionCount),
-    // More recently submitted forms appear higher on the examples page.
-    sortByLastSubmitted,
-    // Retrieve form info from the forms that reach this step.
-    lookupFormInfo,
+export const createGeneralQueryPipeline = (
+  agencyId?: string,
+): Record<string, unknown>[] => {
+  return searchForms().concat(
+    // More recently created forms appear higher on the examples page.
+    sortByCreated,
     // Filter out all inactive/unlisted forms.
     filterInactiveAndUnlistedForms,
     // Retrieve agency infos of forms in this stage.

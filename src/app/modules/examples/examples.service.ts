@@ -1,7 +1,6 @@
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { Except, Merge } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
@@ -9,7 +8,7 @@ import getFormStatisticsTotalModel from '../../models/form_statistics_total.serv
 import getSubmissionModel from '../../models/submission.server.model'
 import { DatabaseError } from '../core/core.errors'
 
-import { MIN_SUB_COUNT, PAGE_SIZE } from './examples.constants'
+import { PAGE_SIZE } from './examples.constants'
 import { ResultsNotFoundError } from './examples.errors'
 import {
   groupSubmissionsByFormId,
@@ -22,7 +21,6 @@ import {
   ExamplesQueryParams,
   FormInfo,
   QueryData,
-  QueryDataMap,
   QueryExecResult,
   QueryExecResultWithTotal,
   QueryPageResult,
@@ -69,33 +67,19 @@ const RETRIEVAL_TO_QUERY_DATA_MAP: QueryData = {
 /**
  * Creates and returns the query builder to execute some example fetch query.
  */
-const getExamplesQueryBuilder = ({
-  lookUpMiddleware,
-  groupByMiddleware,
-  generalQueryModel,
-  query,
-}: Merge<
-  Except<QueryDataMap, 'singleSearchPipeline'>,
-  { query: ExamplesQueryParams }
->): mongoose.Aggregate<unknown[]> => {
+const getExamplesQueryBuilder = (
+  query: ExamplesQueryParams,
+): mongoose.Aggregate<unknown[]> => {
   const { agency, searchTerm } = query
 
-  const modelToUse = searchTerm ? FormModel : generalQueryModel
   const pipeline = searchTerm
     ? createSearchQueryPipeline({
-        minSubmissionCount: MIN_SUB_COUNT,
         searchTerm,
         agencyId: agency,
-        lookUpMiddleware,
       })
-    : createGeneralQueryPipeline({
-        groupByMiddleware,
-        minSubmissionCount: MIN_SUB_COUNT,
-        agencyId: agency,
-      })
+    : createGeneralQueryPipeline(agency)
 
-  const queryBuilder = modelToUse
-    .aggregate(pipeline)
+  const queryBuilder = FormModel.aggregate(pipeline)
     .read('secondary')
     // Prevent out-of-memory for large search results (max 100MB).
     .allowDiskUse(true)
@@ -243,21 +227,10 @@ const getFormInfo = (
  * @returns ok(list of retrieved example forms) if `shouldGetTotalNumResults` is not of string `"true"`
  * @returns err(DatabaseError) if any errors occurs whilst running the pipeline on the database
  */
-export const getExampleForms = (type: RetrievalType) => (
+export const getExampleForms = (
   query: ExamplesQueryParams,
 ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
-  const {
-    lookUpMiddleware,
-    groupByMiddleware,
-    generalQueryModel,
-  } = RETRIEVAL_TO_QUERY_DATA_MAP[type]
-
-  const queryBuilder = getExamplesQueryBuilder({
-    query,
-    lookUpMiddleware,
-    groupByMiddleware,
-    generalQueryModel,
-  })
+  const queryBuilder = getExamplesQueryBuilder(query)
 
   const { pageNo, shouldGetTotalNumResults } = query
   const offset = pageNo * PAGE_SIZE || 0

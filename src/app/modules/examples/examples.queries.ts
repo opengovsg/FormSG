@@ -27,6 +27,22 @@ export const searchFormsWithText = (
 ]
 
 /**
+ * Precondition: Must be called as the **first** step in the aggregation
+ * pipeline (requirement for MongoDB match text).
+ *
+ * Aggregation step to retrieve `_id` and `formInfo` of forms, without filtering
+ * for search terms.
+ * @returns aggregate step to search forms
+ */
+export const searchForms = (): Record<string, unknown>[] => [
+  {
+    $project: {
+      formInfo: '$$ROOT',
+    },
+  },
+]
+
+/**
  * Produces an aggregation step to retrieve form with the specified formId.
  * @param formId The _id field of the form to be retrieved
  */
