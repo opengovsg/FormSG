@@ -2,4 +2,6 @@
 
 User-agent: *
 
+Disallow: /public/bundle.js
+
 Sitemap: https://form.gov.sg/public/sitemap.xml
