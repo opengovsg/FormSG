@@ -1,10 +1,5 @@
 import { IAgency, IForm, StartPage } from 'src/types'
 
-export enum RetrievalType {
-  Stats = 'statistics',
-  Submissions = 'submissions',
-}
-
 export type QueryExecResult = {
   _id: string
   title: IForm['title']
