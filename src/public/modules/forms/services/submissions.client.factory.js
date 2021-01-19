@@ -9,7 +9,6 @@ const fetchStream = require('fetch-readablestream')
 const { forOwn } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
-require('abortcontroller-polyfill/dist/polyfill-patch-fetch')
 
 const NUM_OF_METADATA_ROWS = 5
 
@@ -28,6 +27,11 @@ angular
 
 let downloadAbortController
 let workerPool = []
+
+// Helper function to kill an array of EncryptionWorkers
+function killWorkers(pool) {
+  pool.forEach((worker) => worker.terminate())
+}
 
 function SubmissionsFactory(
   $q,
@@ -241,8 +245,8 @@ function SubmissionsFactory(
      */
     cancelDownloadEncryptedResponses: function () {
       downloadAbortController.abort()
-      workerPool.forEach((worker) => worker.terminate())
-      workerPool.length = 0 // resets the array
+      killWorkers(workerPool)
+      workerPool = []
     },
     /**
      * Triggers a download of file responses when called
@@ -259,11 +263,6 @@ function SubmissionsFactory(
       downloadAttachments,
       secretKey,
     ) {
-      // Helper function to kill an array of EncryptionWorkers
-      const killWorkers = (pool) => {
-        pool.forEach((worker) => worker.terminate())
-      }
-
       // Creates a new AbortController for every request
       downloadAbortController = new AbortController()
 
