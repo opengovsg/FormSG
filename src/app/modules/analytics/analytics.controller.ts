@@ -5,8 +5,11 @@ import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
-import { AnalyticsFactory } from './analytics.factory'
-import { getSubmissionCount, getUserCount } from './analytics.service'
+import {
+  getFormCount,
+  getSubmissionCount,
+  getUserCount,
+} from './analytics.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -74,7 +77,7 @@ export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
  * @returns 500 when database error occurs whilst retrieving form count
  */
 export const handleGetFormCount: RequestHandler = async (req, res) => {
-  const countResult = await AnalyticsFactory.getFormCount()
+  const countResult = await getFormCount()
 
   if (countResult.isErr()) {
     logger.error({
