@@ -2,17 +2,20 @@
  * Runtime logic to inject polyfills into the global namespace based on browser detection.
  */
 
+// core-js polyfills crucial, commonly used functions expected to be in the standard library
+// e.g. Promises, Object.values, Array.prototype.includes
+// The stable option includes ES and web standards.
+// See link for more info:
+// https://github.com/zloirock/core-js/blob/master/docs/2019-03-19-core-js-3-babel-and-a-look-into-the-future.md
+require('core-js/stable')
+
+// Runtime library for async and generator functions. Babel transpilation expects this to be in
+// the target namespace, and it also relies on core-js, so this cannot be optimised away
+// until IE11 support is dropped.
+require('regenerator-runtime/runtime')
+
+// IE-specific polyfills
 if (isInternetExplorer()) {
-  // Polyfills crucial, commonly used functions expected to be in the standard library
-  // e.g. Promises, Object.values, Array.prototype.includes
-  // The stable option includes ES and web standards.
-  // See link for more info:
-  // https://github.com/zloirock/core-js/blob/master/docs/2019-03-19-core-js-3-babel-and-a-look-into-the-future.md
-  require('core-js/stable')
-
-  // Runtime library for async and generator functions
-  require('regenerator-runtime/runtime')
-
   require('web-streams-polyfill') // Web Streams API
   require('whatwg-fetch') // fetch API
   require('abortcontroller-polyfill/dist/polyfill-patch-fetch') // AbortController
