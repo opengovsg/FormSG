@@ -30,8 +30,11 @@ if (isInternetExplorer()) {
 }
 
 /**
- * Detects if the runtime browser is Internet Explorer. Works for IE5 and upwards.
- * Should be pretty safe since even IE 10 is considered ancient.
+ * Detects if the runtime browser is Internet Explorer. Works for IE5 and upwards, so
+ * should be considered pretty safe since even IE 10 is ancient.
+ *
+ * This function is not safe to call from WebWorkers as those do not have access to the
+ * window object.
  * See https://www.w3schools.com/jsref/prop_doc_documentmode.asp
  */
 function isInternetExplorer() {
