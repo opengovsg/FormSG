@@ -1,6 +1,3 @@
-// Roundabout way to detect IE, since WebWorkers do not run in the
-// same context as the main thread.
-
 require('core-js/stable')
 require('regenerator-runtime/runtime')
 
