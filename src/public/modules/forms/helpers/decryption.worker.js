@@ -1,5 +1,9 @@
-require('core-js/stable')
-require('regenerator-runtime/runtime')
+// Roundabout way to detect IE, since WebWorkers do not run in the
+// same context as the main thread.
+if (!window.Promise) {
+  require('core-js/stable')
+  require('regenerator-runtime/runtime')
+}
 
 const formsgPackage = require('@opengovsg/formsg-sdk')
 const { cloneDeep } = require('lodash')
