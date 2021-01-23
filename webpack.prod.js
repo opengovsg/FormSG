@@ -35,7 +35,8 @@ module.exports = [
       rules: [
         {
           test: /\.js$/,
-          exclude: /@babel(?:\/|\\{1,2})runtime|core-js/,
+          // Don't transpile polyfills
+          exclude: /@babel(?:\/|\\{1,2})runtime|core-js|web-streams-polyfill|whatwg-fetch|abortcontroller-polyfill|text-encoding/,
           use: {
             loader: 'babel-loader',
           },
