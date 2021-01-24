@@ -7,26 +7,26 @@
 }
 
 #settings-form .settings-input label,
-#settings-form #enable-webhooks label {
+#settings-form .enable-features label {
   margin-bottom: 0;
 }
 
-#settings-form #enable-webhooks .beta-icon {
+#settings-form .enable-features .beta-icon {
   margin: 0;
 }
 
-#settings-form #enable-webhooks .field-optional {
+#settings-form .enable-features .field-optional {
   font-size: 15px;
   font-weight: normal;
   color: #b8b8b8;
   margin-left: 10px;
 }
 
-#settings-form .webhook-divider {
+#settings-form .feature-divider {
   margin-top: 40px;
 }
 
-#settings-form #enable-webhooks .glyphicon {
+#settings-form .enable-features .glyphicon {
   margin-left: 40px !important;
 }
 
@@ -152,20 +152,16 @@
   padding-bottom: 30px;
 }
 
-#settings-form #enable-webhooks {
+#settings-form .enable-features {
   display: flex;
   align-items: center;
   padding-top: 45px;
   padding-bottom: 10px;
 }
 
-#settings-form #url-webhooks {
+#settings-form .feature-container {
   padding-top: 20px;
   padding-bottom: 45px;
-}
-
-#settings-form #url-webhooks input:disabled {
-  opacity: 0.5;
 }
 
 #settings-form #enable-auth {
@@ -207,6 +203,7 @@
   background-color: initial;
   border: solid 1px rgb(184, 184, 184);
   pointer-events: none;
+  opacity: 0.5;
 }
 
 #settings-form .settings-save.input-disabled {
