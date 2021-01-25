@@ -278,9 +278,8 @@ function submitFormDirective(
        * and handle any errors.
        */
       scope.submitForm = () => {
-        let form = cloneDeep(scope.form)
         try {
-          submitFormMain(form)
+          submitFormMain(scope.form)
         } catch (error) {
           handleSubmitFailure(error, 'Please try again later.')
         }
@@ -294,8 +293,9 @@ function submitFormDirective(
         // Disable UI and optionally open progress modal while processing
         setFormState(FORM_STATES.SUBMITTING)
 
+        let attachments
         try {
-          form.attachments = await form.getAttachments()
+          attachments = await form.getAttachments()
         } catch (err) {
           return handleSubmitFailure(
             err,
@@ -307,7 +307,7 @@ function submitFormDirective(
 
         // submissionContent is the POST body to backend when we submit the form
         let submissionContent = {
-          attachments: form.attachments,
+          attachments,
           captchaResponse: captchaService.response,
           isPreview: form.isPreview,
           responses,

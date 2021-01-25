@@ -47,6 +47,8 @@ class Form {
 
   /**
    * Creates a map of field ID to attachment file.
+   * The values of the map are encrypted for Storage Mode
+   * forms.
    * @returns {Object} Map of { id: file }
    */
   getAttachments() {
