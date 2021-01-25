@@ -9,6 +9,11 @@ const {
 } = require('../helpers/attachments-map')
 const { NoAnswerField } = require('./Fields')
 
+// The current encrypt version to assign to the encrypted submission.
+// This is needed if we ever break backwards compatibility with
+// end-to-end encryption
+const ENCRYPT_VERSION = 1
+
 /**
  * Deserialises raw form object returned by backend and
  * manages form-wide operations.
@@ -98,6 +103,23 @@ class Form {
             .value()
         })
     } else return this._getResponses()
+  }
+
+  /**
+   * Method to determine what to POST to the backend submission endpoint.
+   * Does not include captcha verification.
+   */
+  async getSubmissionContent() {
+    const submissionContent = {
+      attachments: await this.getAttachments(),
+      isPreview: this.isPreview,
+      responses: this.getResponsesForSubmission(),
+    }
+    if (this.responseMode === 'encrypt') {
+      submissionContent.encryptedContent = this.getEncryptedContent()
+      submissionContent.version = ENCRYPT_VERSION
+    }
+    return submissionContent
   }
 }
 

@@ -6,8 +6,6 @@ const {
   getLogicUnitPreventingSubmit,
 } = require('../../../../../shared/util/logic')
 
-// The current encrypt version to assign to the encrypted submission.
-const ENCRYPT_VERSION = 1
 /**
  * @typedef {number} FormState
  */
@@ -293,35 +291,19 @@ function submitFormDirective(
         // Disable UI and optionally open progress modal while processing
         setFormState(FORM_STATES.SUBMITTING)
 
-        let attachments
+        // submissionContent is the POST body to backend when we submit the form
+        let submissionContent
+
         try {
-          attachments = await form.getAttachments()
+          submissionContent = Object.assign(
+            { captchaResponse: captchaService.response },
+            await form.getSubmissionContent(),
+          )
         } catch (err) {
           return handleSubmitFailure(
             err,
-            'Could not encrypt your attachments. Please contact the form administrator.',
+            'Could not prepare your submission. Please contact the form administrator.',
           )
-        }
-
-        // submissionContent is the POST body to backend when we submit the form
-        let submissionContent = {
-          attachments,
-          captchaResponse: captchaService.response,
-          isPreview: form.isPreview,
-          responses: form.getResponsesForSubmission(),
-        }
-
-        if (form.responseMode === responseModeEnum.ENCRYPT && form.publicKey) {
-          try {
-            submissionContent.encryptedContent = form.getEncryptedContent()
-            // Version the data in case of any backwards incompatibility
-            submissionContent.version = ENCRYPT_VERSION
-          } catch (err) {
-            return handleSubmitFailure(
-              err,
-              'Could not encrypt your submission. Please contact the form administrator.',
-            )
-          }
         }
 
         Submissions.post(
