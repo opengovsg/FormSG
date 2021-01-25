@@ -1,3 +1,5 @@
+const formsg = require('@opengovsg/formsg-sdk')()
+
 const FieldFactory = require('../helpers/field-factory')
 const {
   getEncryptedAttachmentsMap,
@@ -66,6 +68,16 @@ class Form {
    */
   hasAttachments() {
     return this.form_fields.some(fieldHasAttachment)
+  }
+
+  /**
+   * Gets the encrypted responses
+   */
+  getEncryptedContent() {
+    if (this.responseMode === 'encrypt') {
+      return formsg.crypto.encrypt(this.getResponses(), this.publicKey)
+    }
+    return null
   }
 }
 

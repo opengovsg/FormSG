@@ -314,10 +314,7 @@ function submitFormDirective(
         }
         if (form.responseMode === responseModeEnum.ENCRYPT && form.publicKey) {
           try {
-            submissionContent.encryptedContent = FormSgSdk.crypto.encrypt(
-              submissionContent.responses,
-              form.publicKey,
-            )
+            submissionContent.encryptedContent = form.getEncryptedContent()
 
             // Edge case: We still send mobile and email fields in the plaintext for
             // end-to-end encryption because of SMS and email autoreplies
