@@ -83,9 +83,11 @@ function submitFormDirective(
         progressModal: null,
         submitPrevented: false,
       }
+
       // Also used to store a backup of the form state during submission, the state
       // of the progress modal
-      const controllerState = {}
+      scope.controllerState = {}
+
       scope.hasMyInfoFields = FormFields.containsMyInfoFields(scope.form)
       scope.formLogin = function (authType, rememberMe) {
         // Fire GA tracking event
@@ -211,7 +213,7 @@ function submitFormDirective(
             }
             break
           case FORM_STATES.SUBMITTING:
-            controllerState.savedForm = cloneDeep(scope.form)
+            scope.controllerState.savedForm = cloneDeep(scope.form)
             scope.form.lockFields()
             scope.uiState.submitButtonClicked = true
             if (scope.form.hasAttachments()) {
@@ -231,7 +233,7 @@ function submitFormDirective(
             }
             break
           case FORM_STATES.SUBMISSION_ERROR:
-            scope.form = controllerState.savedForm
+            scope.form = scope.controllerState.savedForm
             setFormState(FORM_STATES.DEFAULT)
             break
           case FORM_STATES.SUBMIT_PREVENTED:
@@ -251,7 +253,7 @@ function submitFormDirective(
        * Opens the submission progress modal.
        */
       const openProgressModal = function () {
-        controllerState.progressModal = $uibModal.open({
+        scope.controllerState.progressModal = $uibModal.open({
           animation: true,
           backdrop: 'static',
           keyboard: false,
@@ -265,9 +267,9 @@ function submitFormDirective(
        * Closes the submission progress modal if it is currently open.
        */
       const closeProgressModal = () => {
-        if (controllerState.progressModal) {
-          controllerState.progressModal.close()
-          controllerState.progressModal = null
+        if (scope.controllerState.progressModal) {
+          scope.controllerState.progressModal.close()
+          scope.controllerState.progressModal = null
         }
       }
 
