@@ -55,12 +55,12 @@ class Form {
   }
 
   /**
-   * Creates a map of field ID to attachment file.
-   * The values of the map are encrypted for Storage Mode
+   * Internal helper function that creates a map of field ID to attachment file.
+   * The values of the map are encrypted for Storage Mode.
    * forms.
    * @returns {Object} Map of { id: file }
    */
-  getAttachments() {
+  _getAttachments() {
     const attachmentsMap = getAttachmentsMap(this.form_fields)
     if (this.responseMode === 'encrypt') {
       return getEncryptedAttachmentsMap(attachmentsMap, this.publicKey)
@@ -78,9 +78,10 @@ class Form {
   }
 
   /**
-   * Gets the encrypted responses
+   * Gets the encrypted values of the responses. Only applicable to
+   * Storage Mode forms.
    */
-  getEncryptedContent() {
+  _getEncryptedContent() {
     if (this.responseMode === 'encrypt') {
       return formsg.crypto.encrypt(this._getResponses(), this.publicKey)
     }
@@ -90,7 +91,7 @@ class Form {
   /**
    * Method to abstract away edge cases for submission responses in email vs encrypt mode
    */
-  getResponsesForSubmission() {
+  _getResponsesForSubmission() {
     if (this.responseMode === 'encrypt') {
       // Edge case: We still send mobile and email fields to the server in plaintext
       // even with end-to-end encryption in order to support SMS and email autoreplies
@@ -111,12 +112,12 @@ class Form {
    */
   async getSubmissionContent() {
     const submissionContent = {
-      attachments: await this.getAttachments(),
+      attachments: await this._getAttachments(),
       isPreview: this.isPreview,
-      responses: this.getResponsesForSubmission(),
+      responses: this._getResponsesForSubmission(),
     }
     if (this.responseMode === 'encrypt') {
-      submissionContent.encryptedContent = this.getEncryptedContent()
+      submissionContent.encryptedContent = this._getEncryptedContent()
       submissionContent.version = ENCRYPT_VERSION
     }
     return submissionContent
