@@ -10,7 +10,7 @@ const { forOwn } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
 
-const NUM_OF_METADATA_ROWS = 4
+const NUM_OF_METADATA_ROWS = 5
 
 angular
   .module('forms')
@@ -275,12 +275,17 @@ function SubmissionsFactory(
             expectedNumResponses,
             NUM_OF_METADATA_ROWS,
           )
+          let attachmentErrorCount = 0
           let errorCount = 0
           let unverifiedCount = 0
           let receivedRecordCount = 0
 
           // Create a pool of decryption workers
-          const numWorkers = $window.navigator.hardwareConcurrency || 4
+          // If we are downloading attachments, we restrict the number of threads
+          // to one to limit resource usage on the client's browser.
+          const numWorkers = downloadAttachments
+            ? 1
+            : $window.navigator.hardwareConcurrency || 4
 
           // Trigger analytics here before starting decryption worker.
           GTag.downloadResponseStart(params, expectedNumResponses, numWorkers)
@@ -295,20 +300,25 @@ function SubmissionsFactory(
             // When worker returns a decrypted message
             worker.onmessage = (event) => {
               const { data } = event
-              const { csvRecord, downloadBlob } = data
+              const { csvRecord } = data
 
-              if (csvRecord.status === 'ERROR') {
+              if (csvRecord.status === 'ATTACHMENT_ERROR') {
+                attachmentErrorCount++
+                errorCount++
+              } else if (csvRecord.status === 'ERROR') {
                 errorCount++
               } else if (csvRecord.status === 'UNVERIFIED') {
                 unverifiedCount++
-              } else {
-                // accumulate dataset
+              }
+
+              if (csvRecord.submissionData) {
+                // accumulate dataset if it exists, since we may have status columns available
                 experimentalCsvGenerator.addRecord(csvRecord.submissionData)
               }
 
-              if (downloadAttachments) {
+              if (downloadAttachments && csvRecord.downloadBlob) {
                 triggerFileDownload(
-                  downloadBlob,
+                  csvRecord.downloadBlob,
                   'RefNo ' + csvRecord.id + '.zip',
                 )
               }
@@ -392,6 +402,7 @@ function SubmissionsFactory(
                         numWorkers,
                         experimentalCsvGenerator.length(),
                         errorCount,
+                        attachmentErrorCount,
                         timeDifference,
                       )
                       killWorkers(workerPool)

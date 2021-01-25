@@ -1,5 +1,9 @@
 'use strict'
 
+require('core-js/stable')
+require('regenerator-runtime/runtime')
+require('./polyfills')
+
 const textEncoding = require('text-encoding')
 const Sentry = require('@sentry/browser')
 const { Angular: AngularIntegration } = require('@sentry/integrations')
@@ -25,7 +29,6 @@ const moduleDependencies = [
   'users',
   'ngFileUpload',
   'ng-sortable',
-  'angular-input-stars',
   'ngclipboard',
   'ngCookies',
   'core',
@@ -132,9 +135,12 @@ angular.module(appName).config([
 angular.module('core', [])
 angular.module('forms', [])
 angular.module('users', [])
+angular.module('ngIntlTelInput', [])
+
 app.requires.push('core')
 app.requires.push('forms')
 app.requires.push('users')
+app.requires.push('ngIntlTelInput')
 
 /**
  * Core module
@@ -511,6 +517,10 @@ app.run([
     $templateCache.put(
       'modules/forms/admin/views/decrypt-progress.client.modal.html',
       require('./modules/forms/admin/views/decrypt-progress.client.modal.html'),
+    )
+    $templateCache.put(
+      'modules/forms/admin/views/download-all-attachments.client.modal.html',
+      require('./modules/forms/admin/views/download-all-attachments.client.modal.html'),
     )
     $templateCache.put(
       'modules/forms/admin/views/create-form-template.client.modal.html',
