@@ -303,29 +303,17 @@ function submitFormDirective(
           )
         }
 
-        const responses = form.getResponses()
-
         // submissionContent is the POST body to backend when we submit the form
         let submissionContent = {
           attachments,
           captchaResponse: captchaService.response,
           isPreview: form.isPreview,
-          responses,
+          responses: form.getResponsesForSubmission(),
         }
+
         if (form.responseMode === responseModeEnum.ENCRYPT && form.publicKey) {
           try {
             submissionContent.encryptedContent = form.getEncryptedContent()
-
-            // Edge case: We still send mobile and email fields in the plaintext for
-            // end-to-end encryption because of SMS and email autoreplies
-            submissionContent.responses = submissionContent.responses
-              .filter((item) => ['mobile', 'email'].includes(item.fieldType))
-              .map((item) => {
-                return _(item)
-                  .pick(['fieldType', '_id', 'answer', 'signature'])
-                  .omitBy(_.isNull)
-                  .value()
-              })
             // Version the data in case of any backwards incompatibility
             submissionContent.version = ENCRYPT_VERSION
           } catch (err) {

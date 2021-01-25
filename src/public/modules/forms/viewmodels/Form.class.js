@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const formsg = require('@opengovsg/formsg-sdk')()
 
 const FieldFactory = require('../helpers/field-factory')
@@ -33,10 +34,11 @@ class Form {
   }
 
   /**
-   * Gets the submitted values of all fields.
+   * Internal helper function to get the submitted values of all fields
+   * that are supposed to have answers.
    * @returns {Array} Array of response objects.
    */
-  getResponses() {
+  _getResponses() {
     return this.form_fields
       .filter((field) => !(field instanceof NoAnswerField))
       .map((field) => {
@@ -75,9 +77,27 @@ class Form {
    */
   getEncryptedContent() {
     if (this.responseMode === 'encrypt') {
-      return formsg.crypto.encrypt(this.getResponses(), this.publicKey)
+      return formsg.crypto.encrypt(this._getResponses(), this.publicKey)
     }
     return null
+  }
+
+  /**
+   * Method to abstract away edge cases for submission responses in email vs encrypt mode
+   */
+  getResponsesForSubmission() {
+    if (this.responseMode === 'encrypt') {
+      // Edge case: We still send mobile and email fields to the server in plaintext
+      // even with end-to-end encryption in order to support SMS and email autoreplies
+      return this._getResponses()
+        .filter((item) => ['mobile', 'email'].includes(item.fieldType))
+        .map((item) => {
+          return _(item)
+            .pick(['fieldType', '_id', 'answer', 'signature'])
+            .omitBy(_.isNull)
+            .value()
+        })
+    } else return this._getResponses()
   }
 }
 
