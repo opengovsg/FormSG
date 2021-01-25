@@ -314,7 +314,22 @@ function submitFormDirective(
         }
         if (form.responseMode === responseModeEnum.ENCRYPT && form.publicKey) {
           try {
-            encryptSubmissionContent(submissionContent, form.publicKey)
+            submissionContent.encryptedContent = FormSgSdk.crypto.encrypt(
+              submissionContent.responses,
+              form.publicKey,
+            )
+
+            // Edge case: We still send mobile and email fields in the plaintext for
+            // end-to-end encryption because of SMS and email autoreplies
+            submissionContent.responses = submissionContent.responses
+              .filter((item) => ['mobile', 'email'].includes(item.fieldType))
+              .map((item) => {
+                return _(item)
+                  .pick(['fieldType', '_id', 'answer', 'signature'])
+                  .omitBy(_.isNull)
+                  .value()
+              })
+            // Version the data in case of any backwards incompatibility
             submissionContent.version = ENCRYPT_VERSION
           } catch (err) {
             return handleSubmitFailure(
@@ -331,26 +346,6 @@ function submitFormDirective(
           },
           submissionContent, // POST body
         ).then(handleSubmitSuccess, handleSubmitFailure)
-      }
-
-      /**
-       * Encrypts submission content for end-to-end encryption.
-       * @param {Object} submissionContent Content to encrypt
-       * @param {String} publicKey Encryption public key
-       */
-      const encryptSubmissionContent = (submissionContent, publicKey) => {
-        submissionContent.encryptedContent = FormSgSdk.crypto.encrypt(
-          submissionContent.responses,
-          publicKey,
-        )
-        submissionContent.responses = submissionContent.responses
-          .filter((item) => ['mobile', 'email'].includes(item.fieldType))
-          .map((item) => {
-            return _(item)
-              .pick(['fieldType', '_id', 'answer', 'signature'])
-              .omitBy(_.isNull)
-              .value()
-          })
       }
 
       /**
