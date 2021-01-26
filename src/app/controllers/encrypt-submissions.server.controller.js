@@ -66,6 +66,11 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
  */
 exports.saveResponseToDb = function (req, res, next) {
   const { form, formData, attachmentData } = req
+  const logMeta = {
+    action: 'saveResponseToDb',
+    formId: form._id,
+    ...createReqMeta(req),
+  }
   const { verified } = res.locals
   let attachmentMetadata = new Map()
   let attachmentUploadPromises = []
@@ -95,10 +100,7 @@ exports.saveResponseToDb = function (req, res, next) {
         .catch((err) => {
           logger.error({
             message: 'Attachment upload error',
-            meta: {
-              action: 'saveResponseToDb',
-              ...createReqMeta(req),
-            },
+            meta: logMeta,
             error: err,
           })
           return onEncryptSubmissionFailure(err, req, res, submission)
@@ -121,6 +123,13 @@ exports.saveResponseToDb = function (req, res, next) {
       return submission.save()
     })
     .then((savedSubmission) => {
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        meta: {
+          ...logMeta,
+          submissionId: savedSubmission._id,
+        },
+      })
       req.submission = savedSubmission
       return next()
     })
