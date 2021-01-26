@@ -1,20 +1,9 @@
 'use strict'
 
-require('core-js/stable')
-require('regenerator-runtime/runtime')
 require('./polyfills')
 
-const textEncoding = require('text-encoding')
 const Sentry = require('@sentry/browser')
 const { Angular: AngularIntegration } = require('@sentry/integrations')
-
-if (!window['TextDecoder']) {
-  window['TextDecoder'] = textEncoding.TextDecoder
-}
-
-if (!window['TextEncoder']) {
-  window['TextEncoder'] = textEncoding.TextEncoder
-}
 
 // Define module dependencies (without ngSentry)
 const moduleDependencies = [

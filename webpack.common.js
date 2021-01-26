@@ -25,6 +25,7 @@ module.exports = [
         },
         {
           test: /\.worker\.js$/,
+          // Don't transpile polyfills
           exclude: /@babel(?:\/|\\{1,2})runtime|core-js/,
           use: [
             {

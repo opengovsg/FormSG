@@ -1,26 +1,17 @@
 /* eslint-disable camelcase */
 'use strict'
 
-// Polyfills
-const streams = require('web-streams-polyfill')
-const textEncoding = require('text-encoding')
+// Modified fork of https://github.com/canjs/can-ndjson-stream to enqueue
+// the string immediately without a JSON.parse() step, as the stream payload
+// is to be decrypted by the decryption worker.
 
-// Use polyfill if it does not exist
-if (!window['TextDecoder']) {
-  window['TextDecoder'] = textEncoding.TextDecoder
-}
-
-// Modified fork of https://github.com/canjs/can-ndjson-stream to use polyfilled
-// ReadableStream so it works in ie11.
-
-// Also modified to return the string immediately instead of parsing since the
-// string is to be passed into a decryption worker.
+// Note that this code assumes a polyfill of TextDecoder is available to run in IE11.
 
 const ndjsonStream = function (response) {
   // For cancellation
   var is_reader
   var cancellationRequest = false
-  return new streams.ReadableStream({
+  return new ReadableStream({
     start: function (controller) {
       var reader = response.getReader()
       is_reader = reader
