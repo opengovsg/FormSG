@@ -25,6 +25,14 @@ angular
     SubmissionsFactory,
   ])
 
+let downloadAbortController
+let workerPool = []
+
+// Helper function to kill an array of EncryptionWorkers
+function killWorkers(pool) {
+  pool.forEach((worker) => worker.terminate())
+}
+
 function SubmissionsFactory(
   $q,
   $http,
@@ -233,6 +241,14 @@ function SubmissionsFactory(
       })
     },
     /**
+     * Cancels an existing on-going download
+     */
+    cancelDownloadEncryptedResponses: function () {
+      downloadAbortController.abort()
+      killWorkers(workerPool)
+      workerPool = []
+    },
+    /**
      * Triggers a download of file responses when called
      * @param {String} params.formId ID of the form
      * @param {String} params.formTitle The title of the form
@@ -247,10 +263,8 @@ function SubmissionsFactory(
       downloadAttachments,
       secretKey,
     ) {
-      // Helper function to kill an array of EncryptionWorkers
-      const killWorkers = (workerPool) => {
-        workerPool.forEach((worker) => worker.terminate())
-      }
+      // Creates a new AbortController for every request
+      downloadAbortController = new AbortController()
 
       return this.count(params).then((expectedNumResponses) => {
         return new Promise(function (resolve, reject) {
@@ -290,7 +304,6 @@ function SubmissionsFactory(
           // Trigger analytics here before starting decryption worker.
           GTag.downloadResponseStart(params, expectedNumResponses, numWorkers)
 
-          const workerPool = []
           for (let i = 0; i < numWorkers; i++) {
             workerPool.push(new DecryptionWorker())
           }
@@ -338,7 +351,7 @@ function SubmissionsFactory(
           })
 
           let downloadStartTime
-          fetchStream(resUrl)
+          fetchStream(resUrl, { signal: downloadAbortController.signal })
             .then((response) => ndjsonStream(response.body))
             .then((stream) => {
               downloadStartTime = performance.now()

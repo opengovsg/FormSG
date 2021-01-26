@@ -1,5 +1,7 @@
 # robotstxt.org/
 
-User-agent: *
+User-agent: NLB_archive_bot
 
-Sitemap: https://form.gov.sg/public/sitemap.xml
+Allow: /
+Allow: /public/
+Disallow: *

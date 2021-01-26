@@ -461,6 +461,14 @@ function ViewResponsesController(
             'attachmentsToDownload',
             function ($scope, $uibModalInstance, attachmentsToDownload) {
               $scope.attachmentsToDownload = attachmentsToDownload
+              $scope.$on('modal.closing', function (event, reason, closed) {
+                if (!closed) {
+                  // If modal is dismissed, we cancel the current download
+                  Submissions.cancelDownloadEncryptedResponses()
+                  vm.csvDownloading = false
+                  vm.attachmentsToDownload = -1
+                }
+              })
             },
           ],
           templateUrl:
