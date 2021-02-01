@@ -13,10 +13,7 @@ import {
   FieldResponse,
   IAttachmentInfo,
   IAttachmentResponse,
-  IPopulatedEmailForm,
-  IPopulatedForm,
   MapRouteError,
-  ResponseMode,
 } from '../../../../types'
 import {
   CaptchaConnectionError,
@@ -520,14 +517,4 @@ export const concatAttachmentsAndResponses = (
   }, '')
   response += attachments.reduce((acc, { content }) => acc + content, '')
   return response
-}
-
-/**
- * Type guard for whether a populated form is email mode
- * @param form Form document to check
- */
-export const isEmailModeForm = (
-  form: IPopulatedForm,
-): form is IPopulatedEmailForm => {
-  return form.responseMode === ResponseMode.Email
 }

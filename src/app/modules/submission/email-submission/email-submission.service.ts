@@ -13,6 +13,7 @@ import {
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
+  isEmailModeForm,
   ResponseMode,
   SubmissionType,
 } from '../../../../types'
@@ -47,7 +48,6 @@ import {
   getAnswerRowsForTable,
   getFormattedResponse,
   getInvalidFileExtensions,
-  isEmailModeForm,
   mapAttachmentsFromResponses,
 } from './email-submission.util'
 
