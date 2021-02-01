@@ -4,7 +4,7 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType, FieldResponse } from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { MyInfoFactory } from '../../../services/myinfo/myinfo.factory'
-import { createReqMeta } from '../../../utils/request'
+import { createReqMeta, getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import {
@@ -64,7 +64,7 @@ export const handleEmailSubmission: RequestHandler<
   if (form.hasCaptcha) {
     const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
       req.query.captchaResponse,
-      req.connection.remoteAddress,
+      getRequestIp(req as Request),
     )
     if (captchaResult.isErr()) {
       logger.error({
