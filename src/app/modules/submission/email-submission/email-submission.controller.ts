@@ -35,7 +35,7 @@ export const handleEmailSubmission: RequestHandler<
   }
   // Retrieve form
   const formResult = await FormService.retrieveFullFormById(
-    req.params.formId,
+    formId,
   ).andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
   if (formResult.isErr()) {
     logger.error({
