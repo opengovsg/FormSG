@@ -21,9 +21,9 @@ import {
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
 import {
-  HashDidNotMatchError,
-  HashingError,
-  MissingHashError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
 } from '../../../services/myinfo/myinfo.errors'
 import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
 import {
@@ -387,18 +387,18 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage:
           'Something went wrong with your login. Please try logging in and submitting again.',
       }
-    case MissingHashError:
+    case MyInfoMissingHashError:
       return {
         statusCode: StatusCodes.GONE,
         errorMessage:
           'MyInfo verification expired, please refresh and try again.',
       }
-    case HashDidNotMatchError:
+    case MyInfoHashDidNotMatchError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: 'MyInfo verification failed.',
       }
-    case HashingError:
+    case MyInfoHashingError:
       return {
         statusCode: StatusCodes.SERVICE_UNAVAILABLE,
         errorMessage:
