@@ -238,6 +238,9 @@ export const sendAdminEmail: RequestHandler<
     })
 }
 
+/**
+ * Celebrate validation for the email submissions endpoint.
+ */
 export const validateResponseParams = celebrate({
   body: Joi.object({
     responses: Joi.array()
