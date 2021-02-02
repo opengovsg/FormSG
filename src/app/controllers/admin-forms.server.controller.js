@@ -233,7 +233,7 @@ function makeModule(connection) {
         }
       }
 
-      _.extend(form, updatedForm)
+      _.merge(form, updatedForm)
 
       // Can't just do updatedForm.save() because updatedForm has some String values
       form.save(function (err, savedForm) {
