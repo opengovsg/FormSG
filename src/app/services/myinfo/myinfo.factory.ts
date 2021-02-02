@@ -16,11 +16,11 @@ import {
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 import {
-  CircuitBreakerError,
-  FetchMyInfoError,
-  HashDidNotMatchError,
-  HashingError,
-  MissingHashError,
+  MyInfoCircuitBreakerError,
+  MyInfoFetchError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
 import { IPossiblyPrefilledField } from './myinfo.types'
@@ -30,7 +30,7 @@ interface IMyInfoFactory {
     params: IPersonBasicRequest,
   ) => ResultAsync<
     IPersonBasic,
-    CircuitBreakerError | FetchMyInfoError | MissingFeatureError
+    MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
   >
   prefillMyInfoFields: (
     myInfoData: IPersonBasic,
@@ -42,21 +42,21 @@ interface IMyInfoFactory {
     prefilledFormFields: IPossiblyPrefilledField[],
   ) => ResultAsync<
     IMyInfoHashSchema | null,
-    HashingError | DatabaseError | MissingFeatureError
+    MyInfoHashingError | DatabaseError | MissingFeatureError
   >
   fetchMyInfoHashes: (
     uinFin: string,
     formId: string,
   ) => ResultAsync<
     IHashes,
-    DatabaseError | MissingHashError | MissingFeatureError
+    DatabaseError | MyInfoMissingHashError | MissingFeatureError
   >
   checkMyInfoHashes: (
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
   ) => ResultAsync<
     Set<string>,
-    HashingError | HashDidNotMatchError | MissingFeatureError
+    MyInfoHashingError | MyInfoHashDidNotMatchError | MissingFeatureError
   >
 }
 

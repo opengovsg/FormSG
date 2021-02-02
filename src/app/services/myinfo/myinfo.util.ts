@@ -22,9 +22,9 @@ import {
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 import {
-  HashDidNotMatchError,
-  HashingError,
-  MissingHashError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
 } from './myinfo.errors'
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
 import {
@@ -205,20 +205,20 @@ export const compareHashedValues = (
 export const mapVerifyMyInfoError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
-    case HashingError:
+    case MyInfoHashingError:
     case DatabaseError:
       return {
         statusCode: StatusCodes.SERVICE_UNAVAILABLE,
         errorMessage:
           'MyInfo verification unavailable, please try again later.',
       }
-    case MissingHashError:
+    case MyInfoMissingHashError:
       return {
         statusCode: StatusCodes.GONE,
         errorMessage:
           'MyInfo verification expired, please refresh and try again.',
       }
-    case HashDidNotMatchError:
+    case MyInfoHashDidNotMatchError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: 'MyInfo verification failed.',

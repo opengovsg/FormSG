@@ -17,7 +17,6 @@ const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
-const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
 const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 module.exports = function (app) {
   /**
@@ -138,73 +137,6 @@ module.exports = function (app) {
       myInfoController.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
     )
-
-  /**
-   * @typedef SubmissionResponse
-   * @property {string} message.required - a human-readable message
-   * @property {string} submissionId - the id of the submission made
-   * @property {boolean} spcpSubmissionFailure - indicates if there was a failure relating to SingPass/CorpPass
-   */
-
-  /**
-   * Submit a form response, processing it as an email to be sent to
-   * the public servant who created the form. Optionally send a PDF
-   * containing the submission back to the user, if an email address
-   * was given. SMS autoreplies for mobile number fields are also sent if feature
-   * is enabled.
-   * Note that v2 endpoint no longer accepts body.captchaResponse
-   * @route POST /v2/submissions/email/{formId}
-   * @group forms - endpoints to serve forms
-   * @param {string} formId.path.required - the form id
-   * @param {string} response.body.required - contains the entire form submission
-   * @param {string} captchaResponse.query - contains the reCAPTCHA response artifact, if any
-   * @consumes multipart/form-data
-   * @produces application/json
-   * @returns {SubmissionResponse.model} 200 - submission made
-   * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
-   */
-  app.route('/v2/submissions/email/:formId([a-fA-F0-9]{24})').post(
-    limitRate({ max: rateLimitConfig.submissions }),
-    CaptchaFactory.validateCaptchaParams,
-    forms.formById,
-    publicForms.isFormPublicCheck,
-    CaptchaMiddleware.checkCaptchaResponse,
-    SpcpController.isSpcpAuthenticated,
-    EmailSubmissionsMiddleware.receiveEmailSubmission,
-    celebrate({
-      body: Joi.object({
-        responses: Joi.array()
-          .items(
-            Joi.object()
-              .keys({
-                _id: Joi.string().required(),
-                question: Joi.string().required(),
-                fieldType: Joi.string()
-                  .required()
-                  .valid(...Object.values(BasicField)),
-                answer: Joi.string().allow(''),
-                answerArray: Joi.array(),
-                filename: Joi.string(),
-                content: Joi.binary(),
-                isHeader: Joi.boolean(),
-                myInfo: Joi.object(),
-                signature: Joi.string().allow(''),
-              })
-              .xor('answer', 'answerArray') // only answer or answerArray can be present at once
-              .with('filename', 'content'), // if filename is present, content must be present
-          )
-          .required(),
-        isPreview: Joi.boolean().required(),
-      }),
-    }),
-    EmailSubmissionsMiddleware.validateEmailSubmission,
-    myInfoController.verifyMyInfoVals,
-    SpcpController.appendVerifiedSPCPResponses,
-    EmailSubmissionsMiddleware.prepareEmailSubmission,
-    EmailSubmissionsMiddleware.saveMetadataToDb,
-    EmailSubmissionsMiddleware.sendAdminEmail,
-    SubmissionsMiddleware.sendEmailConfirmations,
-  )
 
   /**
    * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply

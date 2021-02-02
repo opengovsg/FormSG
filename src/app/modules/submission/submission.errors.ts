@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
+import { ResponseMode } from '../../../types'
 import { ApplicationError } from '../core/core.errors'
 
 /**
@@ -57,5 +58,19 @@ export class SendAdminEmailError extends ApplicationError {
 export class SendEmailConfirmationError extends ApplicationError {
   constructor(message = 'Error while sending confirmation emails') {
     super(message)
+  }
+}
+
+/**
+ * Attempt to submit form to wrong endpoint
+ */
+export class ResponseModeError extends ApplicationError {
+  constructor(
+    formResponseMode: ResponseMode,
+    attemptedResponseMode: ResponseMode,
+  ) {
+    super(
+      `Attempted to submit ${formResponseMode} form to ${attemptedResponseMode} endpoint`,
+    )
   }
 }
