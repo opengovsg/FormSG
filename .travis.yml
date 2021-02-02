@@ -36,6 +36,10 @@ jobs:
           name: build
           paths: .
     - stage: Tests
+      install: npm ci
+      cache:
+        - npm
+        - pip
       name: Javascript tests
       workspaces:
         use: build
@@ -43,6 +47,10 @@ jobs:
         - npm run test-backend-jasmine
         - npm run test-frontend
     - name: Typescript tests
+      install: npm ci
+      cache:
+        - npm
+        - pip
       workspaces:
         use: build
       script:
@@ -50,6 +58,10 @@ jobs:
       after_success:
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - name: End-to-end tests
+      install: npm ci
+      cache:
+        - npm
+        - pip
       workspaces:
         use: build
       addons:
@@ -57,6 +69,10 @@ jobs:
       script:
         - npm run test-e2e-ci
     - stage: Deploy
+      install: npm ci
+      cache:
+        - npm
+        - pip
       services:
         - docker
       workspaces:
