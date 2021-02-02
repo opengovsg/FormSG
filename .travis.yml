@@ -31,18 +31,12 @@ jobs:
         - npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
         - npm run lint-ci
         - npm run build
-      workspaces:
-        create:
-          name: build
-          paths: .
     - stage: Tests
       install: npm ci
       cache:
         - npm
         - pip
       name: Javascript tests
-      workspaces:
-        use: build
       script:
         - npm run test-backend-jasmine
         - npm run test-frontend
@@ -51,8 +45,6 @@ jobs:
       cache:
         - npm
         - pip
-      workspaces:
-        use: build
       script:
         - npm run test-backend-jest
       after_success:
@@ -62,8 +54,6 @@ jobs:
       cache:
         - npm
         - pip
-      workspaces:
-        use: build
       addons:
         chrome: stable
       script:
@@ -75,8 +65,6 @@ jobs:
         - pip
       services:
         - docker
-      workspaces:
-        use: build
       script: skip
       before_deploy:
         # Workaround to run before_deploy only once
