@@ -7,16 +7,6 @@ const newFields = new Set() // Adding a fieldTypes will add a "new" label.
 
 angular.module('forms').directive('editFormDirective', editFormDirective)
 
-// TODO (private #110): remove this variable
-const DEPRECATED_MYINFO_ATTRS = [
-  'homeno',
-  'billadd',
-  'mailadd',
-  'edulevel',
-  'schoolname',
-  'gradyear',
-]
-
 function editFormDirective() {
   return {
     templateUrl:
@@ -463,10 +453,5 @@ function editFormController(
   // Populate AddField with all available form field types
   $scope.addField = {}
   $scope.addField.types = FormFields.basicTypes
-
-  // TODO (private #110): remove this filtering once the deprecated fields
-  // are deleted from shared/resources/myinfo
-  $scope.addField.myInfoTypes = FormFields.myInfoTypes.filter(
-    (type) => !DEPRECATED_MYINFO_ATTRS.includes(type.name),
-  )
+  $scope.addField.myInfoTypes = FormFields.myInfoTypes
 }
