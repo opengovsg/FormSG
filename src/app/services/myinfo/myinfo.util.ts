@@ -9,9 +9,11 @@ import { get } from 'lodash'
 import moment from 'moment'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { types as myInfoTypes } from '../../../shared/resources/myinfo'
 import {
   BasicField,
   IHashes,
+  IMyInfo,
   MapRouteError,
   MyInfoAttribute,
 } from '../../../types'
@@ -236,4 +238,11 @@ export const mapVerifyMyInfoError: MapRouteError = (error) => {
         errorMessage: 'Something went wrong. Please try again.',
       }
   }
+}
+
+export const getMyInfoFieldOptions = (
+  myInfoAttr: IMyInfo['attr'],
+): string[] => {
+  const [myInfoField] = myInfoTypes.filter((type) => type.name === myInfoAttr)
+  return myInfoField?.fieldOptions || []
 }
