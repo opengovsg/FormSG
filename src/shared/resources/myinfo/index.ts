@@ -5,7 +5,6 @@ import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
 import OCCUPATIONS from './myinfo-occupations'
 import RACES from './myinfo-races'
-import SCHOOLS from './myinfo-schools'
 
 type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
 interface IMyInfoFieldType {
@@ -20,14 +19,7 @@ interface IMyInfoFieldType {
   ValidationOptions?: Record<string, unknown>
 }
 
-// TODO: Enable more MyInfo fields.
 export const types: IMyInfoFieldType[] = [
-  // Email fieldType
-  // {
-  //   name: 'email',
-  //   value: 'Email',
-  //   fieldType: 'email'
-  // },
   {
     name: MyInfoAttribute.Name,
     value: 'Name',
@@ -92,12 +84,6 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Dropdown,
     fieldOptions: COUNTRIES,
   },
-  // {
-  //   name: 'secondaryrace',
-  //   value: 'Race (Secondary)',
-  //   category: "personal",
-  //   fieldType: BasicField.Dropdown
-  // },
   {
     name: MyInfoAttribute.ResidentialStatus,
     value: 'Residential Status',
@@ -184,28 +170,6 @@ export const types: IMyInfoFieldType[] = [
     fieldOptions: ['SINGLE', 'MARRIED', 'WIDOWED', 'DIVORCED'],
   },
   {
-    name: MyInfoAttribute.EducationLevel,
-    value: 'Highest education',
-    category: 'employment_education',
-    verified: [],
-    source: 'User-provided',
-    description: 'Highest education level of form-filler.',
-    fieldType: BasicField.Dropdown,
-    fieldOptions: [
-      'NO FORMAL QUALIFICATION / PRE-PRIMARY / LOWER PRIMARY',
-      'PRIMARY',
-      'LOWER SECONDARY',
-      'SECONDARY',
-      'POST-SECONDARY (NON-TERTIARY): GENERAL & VOCATION',
-      'POLYTECHNIC DIPLOMA',
-      'PROFESSIONAL QUALIFICATION AND OTHER DIPLOMA',
-      "BACHELOR'S OR EQUIVALENT",
-      "POSTGRADUATE DIPLOMA / CERTIFICATE (EXCLUDING MASTER'S AND DOCTORATE)",
-      "MASTER'S AND DOCTORATE OR EQUIVALENT",
-      'MODULAR CERTIFICATION (NON-AWARD COURSES / NON-FULL QUALIFICATIONS)',
-    ],
-  },
-  {
     name: MyInfoAttribute.CountryOfMarriage,
     value: 'Country of marriage',
     category: 'family',
@@ -216,39 +180,6 @@ export const types: IMyInfoFieldType[] = [
     fieldType: BasicField.Dropdown,
     fieldOptions: COUNTRIES,
   },
-  // {
-  //   name: 'householdincome',
-  //   value: 'Household Income',
-  //   category: "employment_education",
-  //   verified: [],
-  //   source: "User-provided"
-  //   description: "",
-  //   fieldType: BasicField.Dropdown,
-  // },
-  // {
-  //   name: 'marriedname',
-  //   value: 'Married Name',
-  //   category: "family",
-  //   fieldType: 'textfield'
-  // },
-  // {
-  //   name: 'hanyupinyinname',
-  //   value: 'Hanyu Pinyin Name',
-  //   category: "personal",
-  //   fieldType: 'textfield'
-  // },
-  // {
-  //   name: 'aliasname',
-  //   value: 'Alias Name',
-  //   category: "personal",
-  //   fieldType: 'textfield'
-  // },
-  // {
-  //   name: 'hanyupinyinaliasname',
-  //   value: 'Hanyu Pinyin Alias Name',
-  //   category: "personal",
-  //   fieldType: 'textfield'
-  // },
   {
     name: MyInfoAttribute.RegisteredAddress,
     value: 'Registered address',
@@ -257,35 +188,6 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'The registered address of the form-filler.',
     fieldType: BasicField.ShortText,
-  },
-  {
-    name: MyInfoAttribute.MailingAddress,
-    value: 'Mailing address',
-    category: 'contact',
-    verified: [],
-    source: 'User-provided',
-    description: 'The mailing address of the form-filler.',
-    fieldType: BasicField.ShortText,
-  },
-  {
-    name: MyInfoAttribute.BillingAddress,
-    value: 'Billing address',
-    category: 'contact',
-    verified: [],
-    source: 'User-provided',
-    description: 'The billing address of the form-filler.',
-    fieldType: BasicField.ShortText,
-  },
-  {
-    name: MyInfoAttribute.SchoolName,
-    value: 'School name',
-    category: 'employment_education',
-    verified: [],
-    source: 'User-provided',
-    description:
-      'List of primary, secondary and tertiary educational institutions in Singapore. Does not include private or international educational institutions.',
-    fieldType: BasicField.Dropdown,
-    fieldOptions: SCHOOLS,
   },
   {
     name: MyInfoAttribute.Occupation,
@@ -374,30 +276,5 @@ export const types: IMyInfoFieldType[] = [
     source: 'User-provided',
     description: 'Mobile telephone number of form-filler.',
     fieldType: BasicField.Mobile,
-  },
-  {
-    name: MyInfoAttribute.HomeNo,
-    value: 'Home number',
-    category: 'contact',
-    verified: [],
-    source: 'User-provided',
-    description: 'Home telephone number of form-filler.',
-    fieldType: BasicField.HomeNo,
-  },
-  {
-    name: MyInfoAttribute.GraduationYear,
-    value: 'Year of graduation',
-    category: 'employment_education',
-    verified: [],
-    source: 'User-provided',
-    description:
-      "Graduation year of form filler's last attended educational institution.",
-    fieldType: BasicField.Number,
-    ValidationOptions: {
-      selectedValidation: 'Exact',
-      customVal: 4,
-      customMin: 4,
-      customMax: 4,
-    },
   },
 ]
