@@ -274,7 +274,7 @@ export const sendVerificationOtp = async (
   }
   const twilioData = await getTwilio(otpData.msgSrvcName, defaultConfig)
 
-  const message = `Use the OTP ${otp} to complete your submission on ${config.app.title}.`
+  const message = `Use the OTP ${otp} to complete your submission on form.gov.sg.\n\nIf you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`
 
   return send(twilioData, otpData, recipient, message, SmsType.Verification)
 }
