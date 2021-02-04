@@ -163,7 +163,7 @@
     "winston-cloudwatch": "^2.5.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.10",
+    "@babel/core": "^7.12.13",
     "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
     "@opengovsg/mockpass": "^2.6.1",
