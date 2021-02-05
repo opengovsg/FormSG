@@ -164,7 +164,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.13",
-    "@babel/plugin-transform-runtime": "^7.12.10",
+    "@babel/plugin-transform-runtime": "^7.12.15",
     "@babel/preset-env": "^7.12.11",
     "@opengovsg/mockpass": "^2.6.1",
     "@types/bcrypt": "^3.0.0",
