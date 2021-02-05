@@ -302,7 +302,7 @@ function submitFormDirective(
         } catch (err) {
           return handleSubmitFailure(
             err,
-            'Could not prepare your submission. Please contact the form administrator.',
+            'There was an error while processing your submission. Please refresh and try again.',
           )
         }
 

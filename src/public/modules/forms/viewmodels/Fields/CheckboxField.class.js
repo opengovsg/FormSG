@@ -17,6 +17,12 @@ class CheckboxField extends MixIns.RangeValidation(ArrayAnswerField) {
 
   getResponse() {
     const response = super.getResponse()
+    // Throw error if field value is missing
+    if (this.isVisible && this.required && this.fieldValue.every((v) => !v)) {
+      throw new Error(
+        `Missing answer for required field, fieldType ${this.fieldType}.`,
+      )
+    }
     // The backend will look for answerArray instead of answer for checkbox
     response.answerArray = this.fieldOptions.filter(
       (_, i) => this.fieldValue[i],
