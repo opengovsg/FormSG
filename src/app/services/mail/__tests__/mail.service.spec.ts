@@ -11,12 +11,7 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
-import {
-  BounceType,
-  IPopulatedForm,
-  ISubmissionSchema,
-  SPCPValidatedFields,
-} from 'src/types'
+import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -845,63 +840,6 @@ describe('mail.service', () => {
           },
         ],
       }
-      const expectedResponse = await Promise.allSettled([Promise.resolve(true)])
-
-      // Act
-      const pendingSend = mailService.sendAutoReplyEmails(customDataParams)
-
-      // Assert
-      await expect(pendingSend).resolves.toEqual(expectedResponse)
-      // Check arguments passed to sendNodeMail
-      expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
-    })
-
-    it('should mask CorpPass Validated UID and only display last 4 characters if the field is present', async () => {
-      // Arrange
-      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
-
-      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
-      customDataParams.responsesData.push({
-        question: SPCPValidatedFields.CpUid,
-        answerTemplate: ['S1234567A'],
-      })
-      customDataParams.autoReplyMailDatas[0].includeFormSummary = true
-
-      const expectedRenderDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
-      expectedRenderDataParams.responsesData.push({
-        question: SPCPValidatedFields.CpUid,
-        answerTemplate: ['*****567A'],
-      })
-
-      const expectedRenderData: AutoreplySummaryRenderData = {
-        formData: expectedRenderDataParams.responsesData,
-        formTitle: expectedRenderDataParams.form.title,
-        formUrl: `${MOCK_APP_URL}/${expectedRenderDataParams.form._id}`,
-        refNo: expectedRenderDataParams.submission.id,
-        submissionTime: moment(expectedRenderDataParams.submission.created)
-          .tz('Asia/Singapore')
-          .format('ddd, DD MMM YYYY hh:mm:ss A'),
-      }
-
-      const expectedMailBody = await MailUtils.generateAutoreplyHtml({
-        autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
-        ...expectedRenderData,
-      })
-
-      const expectedArg = {
-        ...defaultExpectedArg,
-        html: expectedMailBody,
-        // Attachments should be concatted with mock pdf response
-        attachments: [
-          ...(expectedRenderDataParams.attachments ?? []),
-          {
-            content: MOCK_PDF,
-            filename: 'response.pdf',
-          },
-        ],
-      }
-
       const expectedResponse = await Promise.allSettled([Promise.resolve(true)])
 
       // Act

@@ -13,7 +13,6 @@ import {
   EmailFormField,
   IEmailFormSchema,
   ISubmissionSchema,
-  SPCPValidatedFields,
 } from '../../../types'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
@@ -460,18 +459,6 @@ export class MailService {
     attachments = [],
   }: SendAutoReplyEmailsArgs): Promise<PromiseSettledResult<true>[]> => {
     // Data to render both the submission details mail HTML body and PDF.
-
-    // Mask corppass UID and show only last 4 chars in autoreply to form filler
-    // This does not affect response email to form admin
-    responsesData.forEach((qaPair) => {
-      if (qaPair.question === SPCPValidatedFields.CpUid) {
-        qaPair.answerTemplate = qaPair.answerTemplate.map((answer) => {
-          return answer.length >= 4 // defensive, in case UID length is less than 4
-            ? '*'.repeat(answer.length - 4) + answer.substr(-4)
-            : answer
-        })
-      }
-    })
 
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,

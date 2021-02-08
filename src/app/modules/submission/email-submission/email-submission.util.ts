@@ -14,6 +14,7 @@ import {
   IAttachmentInfo,
   IAttachmentResponse,
   MapRouteError,
+  SPCPValidatedFields,
 } from '../../../../types'
 import {
   CaptchaConnectionError,
@@ -517,4 +518,32 @@ export const concatAttachmentsAndResponses = (
   }, '')
   response += attachments.reduce((acc, { content }) => acc + content, '')
   return response
+}
+
+// Class to encapsulate maskedData method
+// which returns autoReplyData with masked Corppass UID
+
+export class autoReplyDataObj {
+  data: EmailAutoReplyField[]
+  constructor(autoReplyData: EmailAutoReplyField[]) {
+    this.data = autoReplyData
+  }
+  get maskedData(): EmailAutoReplyField[] {
+    const maskField = (field: EmailAutoReplyField) => {
+      const maskedAnswerTemplate = field.answerTemplate.map((answer) => {
+        return answer.length >= 4 // defensive, in case UID length is less than 4
+          ? '*'.repeat(answer.length - 4) + answer.substr(-4)
+          : answer
+      })
+      return {
+        question: field.question,
+        answerTemplate: maskedAnswerTemplate,
+      }
+    }
+    return this.data.map((autoReplyField) => {
+      return autoReplyField.question === SPCPValidatedFields.CpUid
+        ? maskField(autoReplyField)
+        : autoReplyField
+    })
+  }
 }
