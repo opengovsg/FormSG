@@ -548,12 +548,8 @@ export class EmailDataWithMaskedAutoReply {
   }
 
   get maskedAutoReplyData(): EmailAutoReplyField[] {
-    return this.autoReplyData.map((autoReplyField, index) => {
-      return index === this.autoReplyData.length - 1 &&
-        // In appendVerifiedSPCPResponses, CpUid is pushed to req.body.parsedResponses
-        // Therefore check if the field is last in index before applying mask
-        // This prevents incorrectly masking other user-created fields which happen to have the same name
-        autoReplyField.question === SPCPFieldTitle.CpUid
+    return this.autoReplyData.map((autoReplyField) => {
+      return autoReplyField.question === SPCPFieldTitle.CpUid
         ? this.maskField(autoReplyField)
         : autoReplyField
     })
