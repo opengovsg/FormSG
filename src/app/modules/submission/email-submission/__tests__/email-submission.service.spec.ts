@@ -13,7 +13,7 @@ import {
   AuthType,
   BasicField,
   IEmailFormSchema,
-  IEmailSubmissionSchema,
+  IPopulatedEmailForm,
   MyInfoAttribute,
   SubmissionType,
 } from 'src/types'
@@ -31,6 +31,7 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { SendAdminEmailError } from '../../submission.errors'
+import { ProcessedSingleAnswerResponse } from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,
   DIGEST_TYPE,
@@ -525,7 +526,9 @@ describe('email-submission.service', () => {
             cb(null, MOCK_HASH),
         )
       const response = generateNewAttachmentResponse()
-      const responseAsEmailField = generateSingleAnswerFormData(response)
+      const responseAsEmailField = generateSingleAnswerFormData(
+        (response as unknown) as ProcessedSingleAnswerResponse,
+      )
       const expectedBaseString = `${response.question} ${response.answer}; ${response.content}`
 
       const result = await EmailSubmissionService.hashSubmission(
@@ -569,7 +572,9 @@ describe('email-submission.service', () => {
         answer: 'answer1',
         content: Buffer.from('content1'),
       })
-      const responseAsEmailField1 = generateSingleAnswerFormData(response1)
+      const responseAsEmailField1 = generateSingleAnswerFormData(
+        (response1 as unknown) as ProcessedSingleAnswerResponse,
+      )
 
       const response2 = generateNewAttachmentResponse({
         question: 'question2',
@@ -577,7 +582,9 @@ describe('email-submission.service', () => {
         content: Buffer.from('content2'),
       })
       const expectedBaseString = `${response1.question} ${response1.answer}; ${response2.question} ${response2.answer}; ${response1.content}${response2.content}`
-      const responseAsEmailField2 = generateSingleAnswerFormData(response2)
+      const responseAsEmailField2 = generateSingleAnswerFormData(
+        (response2 as unknown) as ProcessedSingleAnswerResponse,
+      )
 
       const result = await EmailSubmissionService.hashSubmission(
         [responseAsEmailField1, responseAsEmailField2],
@@ -625,11 +632,9 @@ describe('email-submission.service', () => {
       const mockSubmission = 'mockSubmission'
       const createEmailSubmissionSpy = jest
         .spyOn(EmailSubmissionModel, 'create')
-        .mockResolvedValueOnce(
-          (mockSubmission as unknown) as IEmailSubmissionSchema,
-        )
+        .mockResolvedValueOnce((mockSubmission as unknown) as never)
       const result = await EmailSubmissionService.saveSubmissionMetadata(
-        MOCK_EMAIL_FORM,
+        (MOCK_EMAIL_FORM as unknown) as IPopulatedEmailForm,
         { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
       )
       expect(createEmailSubmissionSpy).toHaveBeenCalledWith({
@@ -649,7 +654,7 @@ describe('email-submission.service', () => {
         .spyOn(EmailSubmissionModel, 'create')
         .mockImplementationOnce(() => Promise.reject(new Error()))
       const result = await EmailSubmissionService.saveSubmissionMetadata(
-        MOCK_EMAIL_FORM,
+        (MOCK_EMAIL_FORM as unknown) as IPopulatedEmailForm,
         { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
       )
       expect(createEmailSubmissionSpy).toHaveBeenCalledWith({
@@ -685,7 +690,9 @@ describe('email-submission.service', () => {
       MockMailService.sendSubmissionToAdmin.mockResolvedValueOnce(true)
 
       const result = await EmailSubmissionService.sendSubmissionToAdmin(
-        MOCK_PARAMS,
+        (MOCK_PARAMS as unknown) as Parameters<
+          typeof MailService['sendSubmissionToAdmin']
+        >[0],
       )
       expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
         MOCK_PARAMS,
@@ -697,7 +704,9 @@ describe('email-submission.service', () => {
       MockMailService.sendSubmissionToAdmin.mockRejectedValueOnce(true)
 
       const result = await EmailSubmissionService.sendSubmissionToAdmin(
-        MOCK_PARAMS,
+        (MOCK_PARAMS as unknown) as Parameters<
+          typeof MailService['sendSubmissionToAdmin']
+        >[0],
       )
       expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
         MOCK_PARAMS,
