@@ -458,7 +458,20 @@ export class MailService {
     autoReplyMailDatas,
     attachments = [],
   }: SendAutoReplyEmailsArgs): Promise<PromiseSettledResult<true>[]> => {
-    // Data to render both the submission details mail HTML body PDF.
+    // Data to render both the submission details mail HTML body and PDF.
+
+    // Mask corppass UID and show only last 4 chars in autoreply to form filler
+    // This does not affect response email to form admin
+    responsesData.forEach((qaPair) => {
+      if (qaPair.question === 'CorpPass Validated UID') {
+        qaPair.answerTemplate = qaPair.answerTemplate.map((answer) => {
+          return answer.length >= 4 // defensive, in case UID length is less than 4
+            ? '*'.repeat(answer.length - 4) + answer.substr(-4)
+            : answer
+        })
+      }
+    })
+
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
       formTitle: form.title,
