@@ -139,6 +139,9 @@ function submitFormDirective(
       }
 
       const isAnyFieldInvalid = () => {
+        // Check the validity of each individual field. We do this due to
+        // a possible bug in WebKit where form submission may not be correctly
+        // prevented when the form is invalid.
         return (
           scope.forms.myForm.$invalid ||
           scope.form.form_fields.some(
