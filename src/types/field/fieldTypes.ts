@@ -52,3 +52,9 @@ export enum MyInfoAttribute {
   WorkpassExpiryDate = 'workpassexpirydate',
   GraduationYear = 'gradyear',
 }
+
+export enum SPCPValidatedFields {
+  SpNric = 'SingPass Validated NRIC',
+  CpUid = 'CorpPass Validated UID',
+  CpUen = 'CorpPass Validated UEN',
+}

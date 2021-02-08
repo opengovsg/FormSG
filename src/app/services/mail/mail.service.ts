@@ -13,6 +13,7 @@ import {
   EmailFormField,
   IEmailFormSchema,
   ISubmissionSchema,
+  SPCPValidatedFields,
 } from '../../../types'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
@@ -463,7 +464,7 @@ export class MailService {
     // Mask corppass UID and show only last 4 chars in autoreply to form filler
     // This does not affect response email to form admin
     responsesData.forEach((qaPair) => {
-      if (qaPair.question === 'CorpPass Validated UID') {
+      if (qaPair.question === SPCPValidatedFields.CpUid) {
         qaPair.answerTemplate = qaPair.answerTemplate.map((answer) => {
           return answer.length >= 4 // defensive, in case UID length is less than 4
             ? '*'.repeat(answer.length - 4) + answer.substr(-4)

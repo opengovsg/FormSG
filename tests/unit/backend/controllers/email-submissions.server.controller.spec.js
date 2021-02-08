@@ -20,6 +20,10 @@ const Verification = dbHandler.makeModel(
 )
 const vfnConstants = require('../../../../dist/backend/shared/util/verification')
 
+const {
+  SPCPValidatedFields,
+} = require('../../../../dist/backend/types/field/fieldTypes')
+
 describe('Email Submissions Controller', () => {
   // Declare global variables
   let sendSubmissionMailSpy
@@ -646,7 +650,7 @@ describe('Email Submissions Controller', () => {
       reqFixtures.form.authType = 'SP'
       const expectedFormData = [
         {
-          question: 'SingPass Validated NRIC',
+          question: SPCPValidatedFields.SpNric,
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
           fieldType: 'nric',
@@ -654,13 +658,13 @@ describe('Email Submissions Controller', () => {
       ]
       const expectedAutoReplyData = [
         {
-          question: 'SingPass Validated NRIC',
+          question: SPCPValidatedFields.SpNric,
           answerTemplate: [resLocalFixtures.uinFin],
         },
       ]
       const expectedJsonData = [
         {
-          question: 'SingPass Validated NRIC',
+          question: SPCPValidatedFields.SpNric,
           answer: resLocalFixtures.uinFin,
         },
       ]
@@ -678,13 +682,13 @@ describe('Email Submissions Controller', () => {
       reqFixtures.form.authType = 'CP'
       const expectedFormData = [
         {
-          question: 'CorpPass Validated UEN',
+          question: SPCPValidatedFields.CpUen,
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
           fieldType: 'textfield',
         },
         {
-          question: 'CorpPass Validated UID',
+          question: SPCPValidatedFields.CpUid,
           answerTemplate: [resLocalFixtures.userInfo],
           answer: resLocalFixtures.userInfo,
           fieldType: 'nric',
@@ -692,21 +696,21 @@ describe('Email Submissions Controller', () => {
       ]
       const expectedAutoReplyData = [
         {
-          question: 'CorpPass Validated UEN',
+          question: SPCPValidatedFields.CpUen,
           answerTemplate: [resLocalFixtures.uinFin],
         },
         {
-          question: 'CorpPass Validated UID',
+          question: SPCPValidatedFields.CpUid,
           answerTemplate: [resLocalFixtures.userInfo],
         },
       ]
       const expectedJsonData = [
         {
-          question: 'CorpPass Validated UEN',
+          question: SPCPValidatedFields.CpUen,
           answer: resLocalFixtures.uinFin,
         },
         {
-          question: 'CorpPass Validated UID',
+          question: SPCPValidatedFields.CpUid,
           answer: resLocalFixtures.userInfo,
         },
       ]

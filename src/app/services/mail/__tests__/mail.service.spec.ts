@@ -11,7 +11,12 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
-import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
+import {
+  BounceType,
+  IPopulatedForm,
+  ISubmissionSchema,
+  SPCPValidatedFields,
+} from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -858,14 +863,14 @@ describe('mail.service', () => {
 
       const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
       customDataParams.responsesData.push({
-        question: 'CorpPass Validated UID',
+        question: SPCPValidatedFields.CpUid,
         answerTemplate: ['S1234567A'],
       })
       customDataParams.autoReplyMailDatas[0].includeFormSummary = true
 
       const expectedRenderDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
       expectedRenderDataParams.responsesData.push({
-        question: 'CorpPass Validated UID',
+        question: SPCPValidatedFields.CpUid,
         answerTemplate: ['*****567A'],
       })
 
