@@ -7,6 +7,7 @@ import * as FileValidation from '../../../../shared/util/file-validation'
 import {
   BasicField,
   EmailAutoReplyField,
+  EmailData,
   EmailDataForOneField,
   EmailFormField,
   EmailJsonField,
@@ -520,29 +521,36 @@ export const concatAttachmentsAndResponses = (
   return response
 }
 
-// Class to encapsulate maskedData method
-// which returns autoReplyData with masked Corppass UID
+// Class which encapsulates maskedAutoReplyData method
+// So that autoReplyData can have masked NRICs for Corppass UID
 
-export class autoReplyDataObj {
-  data: EmailAutoReplyField[]
-  constructor(autoReplyData: EmailAutoReplyField[]) {
-    this.data = autoReplyData
+export class EmailDataWithMaskedAutoReply {
+  autoReplyData: EmailAutoReplyField[]
+  jsonData: EmailJsonField[]
+  formData: EmailFormField[]
+
+  constructor(emailData: EmailData) {
+    this.autoReplyData = emailData.autoReplyData
+    this.jsonData = emailData.jsonData
+    this.formData = emailData.formData
   }
-  get maskedData(): EmailAutoReplyField[] {
-    const maskField = (field: EmailAutoReplyField) => {
-      const maskedAnswerTemplate = field.answerTemplate.map((answer) => {
-        return answer.length >= 4 // defensive, in case UID length is less than 4
-          ? '*'.repeat(answer.length - 4) + answer.substr(-4)
-          : answer
-      })
-      return {
-        question: field.question,
-        answerTemplate: maskedAnswerTemplate,
-      }
+
+  maskField = (field: EmailAutoReplyField): EmailAutoReplyField => {
+    const maskedAnswerTemplate = field.answerTemplate.map((answer) => {
+      return answer.length >= 4 // defensive, in case UID length is less than 4
+        ? '*'.repeat(answer.length - 4) + answer.substr(-4)
+        : answer
+    })
+    return {
+      question: field.question,
+      answerTemplate: maskedAnswerTemplate,
     }
-    return this.data.map((autoReplyField) => {
+  }
+
+  get maskedAutoReplyData(): EmailAutoReplyField[] {
+    return this.autoReplyData.map((autoReplyField) => {
       return autoReplyField.question === SPCPFieldTitle.CpUid
-        ? maskField(autoReplyField)
+        ? this.maskField(autoReplyField)
         : autoReplyField
     })
   }

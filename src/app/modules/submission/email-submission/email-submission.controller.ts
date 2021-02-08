@@ -15,7 +15,6 @@ import * as SubmissionService from '../submission.service'
 
 import * as EmailSubmissionService from './email-submission.service'
 import {
-  autoReplyDataObj,
   mapAttachmentsFromResponses,
   mapRouteError,
 } from './email-submission.util'
@@ -222,15 +221,13 @@ export const handleEmailSubmission: RequestHandler<
     submissionId: submission.id,
   })
 
-  const autoReplyData = new autoReplyDataObj(emailData.autoReplyData)
-
   // Send email confirmations
   return SubmissionService.sendEmailConfirmations({
     form,
     parsedResponses,
     submission,
     attachments,
-    autoReplyData: autoReplyData.maskedData,
+    autoReplyData: emailData.maskedAutoReplyData,
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',

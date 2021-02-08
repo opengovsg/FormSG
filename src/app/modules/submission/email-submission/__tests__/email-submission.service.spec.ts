@@ -15,6 +15,7 @@ import {
   IEmailFormSchema,
   IPopulatedEmailForm,
   MyInfoAttribute,
+  SPCPFieldTitle,
   SubmissionType,
 } from 'src/types'
 
@@ -31,7 +32,10 @@ import {
 } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { SendAdminEmailError } from '../../submission.errors'
-import { ProcessedSingleAnswerResponse } from '../../submission.types'
+import {
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,
   DIGEST_TYPE,
@@ -97,11 +101,13 @@ describe('email-submission.service', () => {
         new Set(),
       )
 
-      expect(emailData).toEqual({
-        jsonData: [],
-        autoReplyData: [generateSingleAnswerAutoreply(response)],
-        formData: [generateSingleAnswerFormData(response)],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [],
+          autoReplyData: [generateSingleAnswerAutoreply(response)],
+          formData: [generateSingleAnswerFormData(response)],
+        }),
+      )
     })
 
     it('should exclude non-visible fields from autoreply data', () => {
@@ -114,11 +120,13 @@ describe('email-submission.service', () => {
         new Set(),
       )
 
-      expect(emailData).toEqual({
-        jsonData: [generateSingleAnswerJson(response)],
-        autoReplyData: [],
-        formData: [generateSingleAnswerFormData(response)],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [generateSingleAnswerJson(response)],
+          autoReplyData: [],
+          formData: [generateSingleAnswerFormData(response)],
+        }),
+      )
     })
 
     it('should generate table answers with [table] prefix in form and JSON data', () => {
@@ -133,30 +141,32 @@ describe('email-submission.service', () => {
       const firstRow = response.answerArray[0].join(',')
       const secondRow = response.answerArray[1].join(',')
 
-      expect(emailData).toEqual({
-        jsonData: [
-          { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
-          { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
-        ],
-        autoReplyData: [
-          { question, answerTemplate: [firstRow] },
-          { question, answerTemplate: [secondRow] },
-        ],
-        formData: [
-          {
-            question: `${TABLE_PREFIX}${question}`,
-            answer: firstRow,
-            answerTemplate: [firstRow],
-            fieldType: BasicField.Table,
-          },
-          {
-            question: `${TABLE_PREFIX}${question}`,
-            answer: secondRow,
-            answerTemplate: [secondRow],
-            fieldType: BasicField.Table,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [
+            { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
+            { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
+          ],
+          autoReplyData: [
+            { question, answerTemplate: [firstRow] },
+            { question, answerTemplate: [secondRow] },
+          ],
+          formData: [
+            {
+              question: `${TABLE_PREFIX}${question}`,
+              answer: firstRow,
+              answerTemplate: [firstRow],
+              fieldType: BasicField.Table,
+            },
+            {
+              question: `${TABLE_PREFIX}${question}`,
+              answer: secondRow,
+              answerTemplate: [secondRow],
+              fieldType: BasicField.Table,
+            },
+          ],
+        }),
+      )
     })
 
     it('should generate checkbox answers correctly', () => {
@@ -170,18 +180,20 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = response.answerArray.join(', ')
 
-      expect(emailData).toEqual({
-        jsonData: [{ question, answer }],
-        autoReplyData: [{ question, answerTemplate: [answer] }],
-        formData: [
-          {
-            question,
-            answer,
-            answerTemplate: [answer],
-            fieldType: BasicField.Checkbox,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [{ question, answer }],
+          autoReplyData: [{ question, answerTemplate: [answer] }],
+          formData: [
+            {
+              question,
+              answer,
+              answerTemplate: [answer],
+              fieldType: BasicField.Checkbox,
+            },
+          ],
+        }),
+      )
     })
 
     it('should generate attachment answers with [attachment] prefix in form and JSON data', () => {
@@ -195,18 +207,20 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = response.answer
 
-      expect(emailData).toEqual({
-        jsonData: [{ question: `${ATTACHMENT_PREFIX}${question}`, answer }],
-        autoReplyData: [{ question, answerTemplate: [answer] }],
-        formData: [
-          {
-            question: `${ATTACHMENT_PREFIX}${question}`,
-            answer,
-            answerTemplate: [answer],
-            fieldType: BasicField.Attachment,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [{ question: `${ATTACHMENT_PREFIX}${question}`, answer }],
+          autoReplyData: [{ question, answerTemplate: [answer] }],
+          formData: [
+            {
+              question: `${ATTACHMENT_PREFIX}${question}`,
+              answer,
+              answerTemplate: [answer],
+              fieldType: BasicField.Attachment,
+            },
+          ],
+        }),
+      )
     })
 
     it('should split single answer fields by newline', () => {
@@ -222,18 +236,20 @@ describe('email-submission.service', () => {
 
       const question = response.question
 
-      expect(emailData).toEqual({
-        jsonData: [{ question, answer }],
-        autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
-        formData: [
-          {
-            question,
-            answer,
-            answerTemplate: answer.split('\n'),
-            fieldType: BasicField.ShortText,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [{ question, answer }],
+          autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
+          formData: [
+            {
+              question,
+              answer,
+              answerTemplate: answer.split('\n'),
+              fieldType: BasicField.ShortText,
+            },
+          ],
+        }),
+      )
     })
 
     it('should split table answers by newline', () => {
@@ -248,18 +264,20 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = answerArray[0].join(',')
 
-      expect(emailData).toEqual({
-        jsonData: [{ question: `${TABLE_PREFIX}${question}`, answer }],
-        autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
-        formData: [
-          {
-            question: `${TABLE_PREFIX}${question}`,
-            answer,
-            answerTemplate: answer.split('\n'),
-            fieldType: BasicField.Table,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [{ question: `${TABLE_PREFIX}${question}`, answer }],
+          autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
+          formData: [
+            {
+              question: `${TABLE_PREFIX}${question}`,
+              answer,
+              answerTemplate: answer.split('\n'),
+              fieldType: BasicField.Table,
+            },
+          ],
+        }),
+      )
     })
 
     it('should split checkbox answers by newline', () => {
@@ -274,18 +292,20 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = answerArray.join(', ')
 
-      expect(emailData).toEqual({
-        jsonData: [{ question, answer }],
-        autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
-        formData: [
-          {
-            question,
-            answer,
-            answerTemplate: answer.split('\n'),
-            fieldType: BasicField.Checkbox,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [{ question, answer }],
+          autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
+          formData: [
+            {
+              question,
+              answer,
+              answerTemplate: answer.split('\n'),
+              fieldType: BasicField.Checkbox,
+            },
+          ],
+        }),
+      )
     })
 
     it('should prefix verified fields with [verified] only in form data', () => {
@@ -301,18 +321,20 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = response.answer
 
-      expect(emailData).toEqual({
-        jsonData: [{ question, answer }],
-        autoReplyData: [{ question, answerTemplate: [answer] }],
-        formData: [
-          {
-            question: `${VERIFIED_PREFIX}${question}`,
-            answer,
-            answerTemplate: [answer],
-            fieldType: BasicField.Email,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [{ question, answer }],
+          autoReplyData: [{ question, answerTemplate: [answer] }],
+          formData: [
+            {
+              question: `${VERIFIED_PREFIX}${question}`,
+              answer,
+              answerTemplate: [answer],
+              fieldType: BasicField.Email,
+            },
+          ],
+        }),
+      )
     })
 
     it('should prefix MyInfo-verified fields with [MyInfo] only in form data', () => {
@@ -339,41 +361,66 @@ describe('email-submission.service', () => {
         new Set([nameResponse._id]),
       )
 
-      expect(emailData).toEqual({
-        jsonData: [
-          { question: nameResponse.question, answer: nameResponse.answer },
-          {
-            question: vehicleResponse.question,
-            answer: vehicleResponse.answer,
-          },
-        ],
-        autoReplyData: [
-          {
-            question: nameResponse.question,
-            answerTemplate: [nameResponse.answer],
-          },
-          {
-            question: vehicleResponse.question,
-            answerTemplate: [vehicleResponse.answer],
-          },
-        ],
-        formData: [
-          {
-            // Prefixed because its ID was in the Set
-            question: `${MYINFO_PREFIX}${nameResponse.question}`,
-            answer: nameResponse.answer,
-            answerTemplate: [nameResponse.answer],
-            fieldType: BasicField.ShortText,
-          },
-          {
-            // Not prefixed because ID not in Set
-            question: vehicleResponse.question,
-            answer: vehicleResponse.answer,
-            answerTemplate: [vehicleResponse.answer],
-            fieldType: BasicField.ShortText,
-          },
-        ],
-      })
+      expect(emailData).toEqual(
+        expect.objectContaining({
+          jsonData: [
+            { question: nameResponse.question, answer: nameResponse.answer },
+            {
+              question: vehicleResponse.question,
+              answer: vehicleResponse.answer,
+            },
+          ],
+          autoReplyData: [
+            {
+              question: nameResponse.question,
+              answerTemplate: [nameResponse.answer],
+            },
+            {
+              question: vehicleResponse.question,
+              answerTemplate: [vehicleResponse.answer],
+            },
+          ],
+          formData: [
+            {
+              // Prefixed because its ID was in the Set
+              question: `${MYINFO_PREFIX}${nameResponse.question}`,
+              answer: nameResponse.answer,
+              answerTemplate: [nameResponse.answer],
+              fieldType: BasicField.ShortText,
+            },
+            {
+              // Not prefixed because ID not in Set
+              question: vehicleResponse.question,
+              answer: vehicleResponse.answer,
+              answerTemplate: [vehicleResponse.answer],
+              fieldType: BasicField.ShortText,
+            },
+          ],
+        }),
+      )
+    })
+
+    it('should have a maskedAutoReplyData property which returns autoreplydata with masked Corppass UID', () => {
+      // MyInfo-verified Corppass UID
+      const corppassUIDResponse: ProcessedFieldResponse = {
+        _id: '',
+        question: SPCPFieldTitle.CpUid,
+        fieldType: BasicField.Nric,
+        isVisible: true,
+        answer: 'S1234567A',
+      }
+
+      const emailData = EmailSubmissionService.createEmailData(
+        [corppassUIDResponse],
+        new Set([corppassUIDResponse._id]),
+      )
+
+      expect(emailData.maskedAutoReplyData).toEqual([
+        {
+          question: SPCPFieldTitle.CpUid,
+          answerTemplate: ['*****567A'],
+        },
+      ])
     })
   })
 

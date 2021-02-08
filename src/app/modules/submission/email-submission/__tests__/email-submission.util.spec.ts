@@ -4,17 +4,14 @@ import { cloneDeep, merge } from 'lodash'
 
 import {
   BasicField,
-  EmailAutoReplyField,
   FieldResponse,
   IAttachmentResponse,
   ISingleAnswerResponse,
-  SPCPFieldTitle,
 } from 'src/types'
 
 import {
   addAttachmentToResponses,
   areAttachmentsMoreThan7MB,
-  autoReplyDataObj,
   getInvalidFileExtensions,
   handleDuplicatesInAttachments,
   mapAttachmentsFromResponses,
@@ -302,20 +299,6 @@ describe('email-submission.util', () => {
         filename: secondAttachment.filename,
         content: secondAttachment.content,
       })
-    })
-  })
-  describe('autoReplyObj', () => {
-    it('should have a getMasked method which returns masked Corppass UID', () => {
-      const mockAutoReplyData: EmailAutoReplyField[] = [
-        { question: 'Question1', answerTemplate: ['Answer1'] },
-        { question: SPCPFieldTitle.CpUid, answerTemplate: ['S1234567A'] },
-      ]
-      const maskedAutoReplyData: EmailAutoReplyField[] = [
-        { question: 'Question1', answerTemplate: ['Answer1'] },
-        { question: SPCPFieldTitle.CpUid, answerTemplate: ['*****567A'] },
-      ]
-      const autoReplyData = new autoReplyDataObj(mockAutoReplyData)
-      expect(autoReplyData.maskedData).toEqual(maskedAutoReplyData)
     })
   })
 })

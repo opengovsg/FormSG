@@ -44,6 +44,7 @@ import { SubmissionHash } from './email-submission.types'
 import {
   areAttachmentsMoreThan7MB,
   concatAttachmentsAndResponses,
+  EmailDataWithMaskedAutoReply,
   getAnswerForCheckbox,
   getAnswerRowsForTable,
   getFormattedResponse,
@@ -86,33 +87,35 @@ const createEmailDataForOneField = (
 export const createEmailData = (
   parsedResponses: ProcessedFieldResponse[],
   hashedFields: Set<string>,
-): EmailData => {
+): EmailDataWithMaskedAutoReply => {
   // First, get an array of email data for each response
   // Each field has an array of email data to accommodate table fields,
   // which have multiple rows of data per field. Hence flatten and maintain
   // the order of responses.
-  return (
-    parsedResponses
-      .flatMap((response) => createEmailDataForOneField(response, hashedFields))
-      // Then reshape such that autoReplyData, jsonData and formData are each arrays
-      .reduce<EmailData>(
-        (acc, dataForOneField) => {
-          if (dataForOneField.autoReplyData) {
-            acc.autoReplyData.push(dataForOneField.autoReplyData)
-          }
-          if (dataForOneField.jsonData) {
-            acc.jsonData.push(dataForOneField.jsonData)
-          }
-          acc.formData.push(dataForOneField.formData)
-          return acc
-        },
-        {
-          autoReplyData: [],
-          jsonData: [],
-          formData: [],
-        },
-      )
-  )
+  const emailData: EmailData = parsedResponses
+    .flatMap((response) => createEmailDataForOneField(response, hashedFields))
+    // Then reshape such that autoReplyData, jsonData and formData are each arrays
+    .reduce<EmailData>(
+      (acc, dataForOneField) => {
+        if (dataForOneField.autoReplyData) {
+          acc.autoReplyData.push(dataForOneField.autoReplyData)
+        }
+        if (dataForOneField.jsonData) {
+          acc.jsonData.push(dataForOneField.jsonData)
+        }
+        acc.formData.push(dataForOneField.formData)
+        return acc
+      },
+      {
+        autoReplyData: [],
+        jsonData: [],
+        formData: [],
+      },
+    )
+  // Encapsulate emailData in EmailDataWithMaskedAutoReply class
+  // which has maskedAutoReplyData method
+  const emailDataWithMasked = new EmailDataWithMaskedAutoReply(emailData)
+  return emailDataWithMasked
 }
 
 /**
