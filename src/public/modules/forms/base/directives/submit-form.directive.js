@@ -315,7 +315,8 @@ function submitFormDirective(
         } catch (err) {
           return handleSubmitFailure(
             err,
-            'There was an error while processing your submission. Please refresh and try again.',
+            'There was an error while processing your submission. Please refresh and try again. ' +
+              'If the problem persists, try using a different browser.',
           )
         }
 
