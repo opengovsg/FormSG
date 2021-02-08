@@ -267,6 +267,8 @@ export const appendVerifiedSPCPResponses: RequestHandler<
       req.body.parsedResponses.push(...createSingpassParsedResponses(uinFin))
       break
     case AuthType.CP:
+      // Note that maskedAutoReplyData() in EmailDataWithMaskedAutoReply class relies
+      // on the fact that userInfo is the last field in req.body.parsedResponses array
       req.body.parsedResponses.push(
         ...createCorppassParsedResponses(uinFin, userInfo),
       )
