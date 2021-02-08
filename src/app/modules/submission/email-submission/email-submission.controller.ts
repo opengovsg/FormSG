@@ -227,7 +227,10 @@ export const handleEmailSubmission: RequestHandler<
     parsedResponses,
     submission,
     attachments,
-    autoReplyData: emailData.maskedAutoReplyData,
+    autoReplyData:
+      authType === AuthType.CP
+        ? emailData.maskedAutoReplyData
+        : emailData.autoReplyData,
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',
