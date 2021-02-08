@@ -1,4 +1,4 @@
-const { SPCPValidatedFields } = require('src/types')
+const { SPCPValidatedFields } = require('../../../../types')
 const {
   CURRENT_VERIFIED_FIELDS,
   VerifiedKeys,
