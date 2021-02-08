@@ -7,7 +7,7 @@ import {
   AuthType,
   BasicField,
   MapRouteError,
-  SPCPValidatedFields,
+  SPCPFieldTitle,
 } from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
@@ -171,7 +171,7 @@ export const createSingpassParsedResponses = (
   return [
     {
       _id: '',
-      question: SPCPValidatedFields.SpNric,
+      question: SPCPFieldTitle.SpNric,
       fieldType: BasicField.Nric,
       isVisible: true,
       answer: uinFin,
@@ -191,14 +191,14 @@ export const createCorppassParsedResponses = (
   return [
     {
       _id: '',
-      question: SPCPValidatedFields.CpUen,
+      question: SPCPFieldTitle.CpUen,
       fieldType: BasicField.ShortText,
       isVisible: true,
       answer: uinFin,
     },
     {
       _id: '',
-      question: SPCPValidatedFields.CpUid,
+      question: SPCPFieldTitle.CpUid,
       fieldType: BasicField.Nric,
       isVisible: true,
       answer: userInfo,

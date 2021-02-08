@@ -14,7 +14,7 @@ import {
   IAttachmentInfo,
   IAttachmentResponse,
   MapRouteError,
-  SPCPValidatedFields,
+  SPCPFieldTitle,
 } from '../../../../types'
 import {
   CaptchaConnectionError,
@@ -541,7 +541,7 @@ export class autoReplyDataObj {
       }
     }
     return this.data.map((autoReplyField) => {
-      return autoReplyField.question === SPCPValidatedFields.CpUid
+      return autoReplyField.question === SPCPFieldTitle.CpUid
         ? maskField(autoReplyField)
         : autoReplyField
     })
