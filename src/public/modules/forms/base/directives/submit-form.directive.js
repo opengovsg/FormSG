@@ -138,8 +138,18 @@ function submitFormDirective(
         }
       }
 
+      const isAnyFieldInvalid = () => {
+        return (
+          scope.forms.myForm.$invalid ||
+          scope.form.form_fields.some(
+            ({ _id }) =>
+              scope.forms.myForm[_id] && scope.forms.myForm[_id].$invalid,
+          )
+        )
+      }
+
       scope.checkCaptchaAndSubmit = () => {
-        if (scope.forms.myForm.$invalid) {
+        if (isAnyFieldInvalid()) {
           displayInvalidSubmit()
           return
         }
