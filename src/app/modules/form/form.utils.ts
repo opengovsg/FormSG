@@ -2,10 +2,10 @@ import { pick } from 'lodash'
 import { Merge } from 'type-fest'
 
 import {
-  IPopulatedForm,
-  Permission,
   IEncryptedFormSchema,
   IFormSchema,
+  IPopulatedForm,
+  Permission,
   ResponseMode,
 } from '../../../types'
 
