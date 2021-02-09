@@ -210,7 +210,7 @@
     "css-loader": "^2.1.1",
     "csv-parse": "^4.15.1",
     "env-cmd": "^10.1.0",
-    "eslint": "^7.17.0",
+    "eslint": "^7.19.0",
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-import": "^2.22.1",
