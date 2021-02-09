@@ -45,6 +45,7 @@
 @import './modules/forms/base/css/form.css';
 @import './modules/forms/base/css/datepicker.css';
 @import './modules/forms/base/css/verifiable-field.css';
+@import './modules/forms/base/css/end-page.css';
 @import './modules/users/css/sign-in.css';
 @import './modules/users/css/examples-list.css';
 @import './modules/users/css/examples-card.css';

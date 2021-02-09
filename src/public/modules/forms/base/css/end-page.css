@@ -1,0 +1,7 @@
+#end-page-header {
+  text-transform: uppercase;
+}
+
+#end-page-header#end-page-timestamp {
+  font-weight: bold;
+}
