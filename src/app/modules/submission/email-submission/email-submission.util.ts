@@ -14,6 +14,7 @@ import {
   IAttachmentInfo,
   IAttachmentResponse,
   MapRouteError,
+  SPCPFieldTitle,
 } from '../../../../types'
 import {
   CaptchaConnectionError,
@@ -517,4 +518,35 @@ export const concatAttachmentsAndResponses = (
   }, '')
   response += attachments.reduce((acc, { content }) => acc + content, '')
   return response
+}
+
+export const maskUidOnLastField = (
+  autoReplyData: EmailAutoReplyField[],
+): EmailAutoReplyField[] => {
+  // Mask corppass UID and show only last 4 chars in autoreply to form filler
+  // This does not affect response email to form admin
+  // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
+  // TODO #1104: Refactor to move validation and construction of parsedResponses in class constructor (https://github.com/opengovsg/FormSG/issues/1104)
+  // This will allow for proper tagging of corppass UID field instead of checking field title and position
+
+  const maskedAutoReplyData = autoReplyData.map(
+    (autoReplyField: EmailAutoReplyField, index) => {
+      if (
+        autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
+        index === autoReplyData.length - 1 // Check field position
+      ) {
+        return {
+          question: autoReplyField.question,
+          answerTemplate: autoReplyField.answerTemplate.map((answer) => {
+            return answer.length >= 4 // defensive, in case UID length is less than 4
+              ? '*'.repeat(answer.length - 4) + answer.substr(-4)
+              : answer
+          }),
+        }
+      } else {
+        return autoReplyField
+      }
+    },
+  )
+  return maskedAutoReplyData
 }
