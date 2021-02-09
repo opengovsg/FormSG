@@ -3,7 +3,6 @@ import { err, ok, Result } from 'neverthrow'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
-import { assertUnreachable } from '../../utils/assert-unreachable'
 
 import { EncryptVerifiedContentError } from './verified-content.errors'
 import {
@@ -31,8 +30,6 @@ export const getVerifiedContent = ({
       return getSpVerifiedContent(data)
     case AuthType.CP:
       return getCpVerifiedContent(data)
-    default:
-      return assertUnreachable(type)
   }
 }
 
