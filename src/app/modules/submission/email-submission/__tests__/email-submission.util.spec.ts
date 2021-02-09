@@ -4,9 +4,11 @@ import { cloneDeep, merge } from 'lodash'
 
 import {
   BasicField,
+  EmailAutoReplyField,
   FieldResponse,
   IAttachmentResponse,
   ISingleAnswerResponse,
+  SPCPFieldTitle,
 } from 'src/types'
 
 import {
@@ -15,6 +17,7 @@ import {
   getInvalidFileExtensions,
   handleDuplicatesInAttachments,
   mapAttachmentsFromResponses,
+  maskUidOnLastField,
 } from '../email-submission.util'
 
 const validSingleFile = {
@@ -299,6 +302,33 @@ describe('email-submission.util', () => {
         filename: secondAttachment.filename,
         content: secondAttachment.content,
       })
+    })
+  })
+
+  describe('maskUidOnLastField', () => {
+    it('should mask UID on SPCPFieldTitle.CpUid if it is the last field of autoReplyData', () => {
+      const autoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['S1234567A'] },
+      ]
+      const maskedAutoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['*****567A'] },
+      ]
+      expect(maskUidOnLastField(autoReplyData)).toEqual(maskedAutoReplyData)
+    })
+    it('should not mask UID on form field with same name as SPCPFieldTitle.CpUid if it is not the last field of autoReplyData', () => {
+      const autoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: 'CorpPass Validated UID', answerTemplate: ['S9999999Z'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['S1234567A'] },
+      ]
+      const maskedAutoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: 'CorpPass Validated UID', answerTemplate: ['S9999999Z'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['*****567A'] },
+      ]
+      expect(maskUidOnLastField(autoReplyData)).toEqual(maskedAutoReplyData)
     })
   })
 })
