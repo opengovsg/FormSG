@@ -21,17 +21,17 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
-import {
-  MyInfoHashDidNotMatchError,
-  MyInfoHashingError,
-  MyInfoMissingHashError,
-} from '../../../services/myinfo/myinfo.errors'
 import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
 import {
   FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import {
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
+} from '../../myinfo/myinfo.errors'
 import {
   InvalidJwtError,
   MissingJwtError,

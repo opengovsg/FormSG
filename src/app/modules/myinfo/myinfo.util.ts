@@ -17,11 +17,8 @@ import {
   MapRouteError,
   MyInfoAttribute,
 } from '../../../types'
-import {
-  DatabaseError,
-  MissingFeatureError,
-} from '../../modules/core/core.errors'
-import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
+import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import {
   MyInfoHashDidNotMatchError,

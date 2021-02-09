@@ -19,8 +19,8 @@ import {
   IHashes,
   IMyInfoHashSchema,
 } from '../../../types'
-import { DatabaseError } from '../../modules/core/core.errors'
-import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
+import { DatabaseError } from '../core/core.errors'
+import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import {
   MyInfoCircuitBreakerError,

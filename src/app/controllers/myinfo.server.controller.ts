@@ -16,8 +16,8 @@ import {
   WithForm,
   WithJsonForm,
 } from '../../types'
-import { MyInfoFactory } from '../services/myinfo/myinfo.factory'
-import { mapVerifyMyInfoError } from '../services/myinfo/myinfo.util'
+import { MyInfoFactory } from '../modules/myinfo/myinfo.factory'
+import { mapVerifyMyInfoError } from '../modules/myinfo/myinfo.util'
 import { createReqMeta } from '../utils/request'
 
 const logger = createLoggerWithLabel(module)

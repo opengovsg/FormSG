@@ -9,11 +9,8 @@ import FeatureManager, {
   RegisteredFeature,
 } from '../../../config/feature-manager'
 import { IFieldSchema, IHashes, IMyInfoHashSchema } from '../../../types'
-import {
-  DatabaseError,
-  MissingFeatureError,
-} from '../../modules/core/core.errors'
-import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
+import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import {
   MyInfoCircuitBreakerError,

@@ -1,4 +1,4 @@
-import { ApplicationError } from '../../modules/core/core.errors'
+import { ApplicationError } from '../core/core.errors'
 
 /**
  * Circuit breaker is open
