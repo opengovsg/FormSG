@@ -526,7 +526,7 @@ export const maskUidOnLastField = (
   // Mask corppass UID and show only last 4 chars in autoreply to form filler
   // This does not affect response email to form admin
   // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
-  // TODO #1104: Refactor to move validation and construction of parsedResponses in class constructor (https://github.com/opengovsg/FormSG/issues/1104)
+  // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
   // This will allow for proper tagging of corppass UID field instead of checking field title and position
 
   const maskedAutoReplyData = autoReplyData.map(

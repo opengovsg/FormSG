@@ -268,7 +268,7 @@ export const appendVerifiedSPCPResponses: RequestHandler<
       break
     case AuthType.CP:
       // Note that maskUidOnLastField() relies on the fact that userInfo is pushed in last to parsedResponses
-      // TODO: Remove this after refactor in #1104 (https://github.com/opengovsg/FormSG/issues/1104)
+      // TODO(#1104): Remove this comment after refactoring
       req.body.parsedResponses.push(
         ...createCorppassParsedResponses(uinFin, userInfo),
       )
