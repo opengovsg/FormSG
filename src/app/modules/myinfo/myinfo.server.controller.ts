@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 
-import { createLoggerWithLabel } from '../../config/logger'
+import { createLoggerWithLabel } from '../../../config/logger'
 import {
   AuthType,
   ResWithHashedFields,
@@ -15,10 +15,11 @@ import {
   ResWithUinFin,
   WithForm,
   WithJsonForm,
-} from '../../types'
-import { MyInfoFactory } from '../modules/myinfo/myinfo.factory'
-import { mapVerifyMyInfoError } from '../modules/myinfo/myinfo.util'
-import { createReqMeta } from '../utils/request'
+} from '../../../types'
+import { createReqMeta } from '../../utils/request'
+
+import { MyInfoFactory } from './myinfo.factory'
+import { mapVerifyMyInfoError } from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
