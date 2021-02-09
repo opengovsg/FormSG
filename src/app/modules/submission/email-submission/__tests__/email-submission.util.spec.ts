@@ -4,9 +4,11 @@ import { cloneDeep, merge } from 'lodash'
 
 import {
   BasicField,
+  EmailAutoReplyField,
   FieldResponse,
   IAttachmentResponse,
   ISingleAnswerResponse,
+  SPCPFieldTitle,
 } from 'src/types'
 
 import {
@@ -15,6 +17,7 @@ import {
   getInvalidFileExtensions,
   handleDuplicatesInAttachments,
   mapAttachmentsFromResponses,
+  maskUidOnLastField,
 } from '../email-submission.util'
 
 const validSingleFile = {
@@ -61,12 +64,20 @@ const zipOnlyValid = {
 
 const MOCK_ANSWER = 'mockAnswer'
 
-const getResponse = (_id: string, answer: string): ISingleAnswerResponse => ({
-  _id,
-  fieldType: BasicField.Attachment,
-  question: 'mockQuestion',
-  answer,
-})
+type WithQuestion<T> = T & {
+  answer: string
+}
+
+const getResponse = (
+  _id: string,
+  answer: string,
+): WithQuestion<ISingleAnswerResponse> =>
+  (({
+    _id,
+    fieldType: BasicField.Attachment,
+    question: 'mockQuestion',
+    answer,
+  } as unknown) as WithQuestion<ISingleAnswerResponse>)
 
 describe('email-submission.util', () => {
   describe('getInvalidFileExtensions', () => {
@@ -171,19 +182,19 @@ describe('email-submission.util', () => {
         [firstAttachment, secondAttachment],
       )
       expect(firstResponse.answer).toBe(firstAttachment.filename)
-      expect((firstResponse as IAttachmentResponse).filename).toBe(
+      expect(((firstResponse as unknown) as IAttachmentResponse).filename).toBe(
         firstAttachment.filename,
       )
-      expect((firstResponse as IAttachmentResponse).content).toEqual(
-        firstAttachment.content,
-      )
+      expect(
+        ((firstResponse as unknown) as IAttachmentResponse).content,
+      ).toEqual(firstAttachment.content)
       expect(secondResponse.answer).toBe(secondAttachment.filename)
-      expect((secondResponse as IAttachmentResponse).filename).toBe(
-        secondAttachment.filename,
-      )
-      expect((secondResponse as IAttachmentResponse).content).toEqual(
-        secondAttachment.content,
-      )
+      expect(
+        ((secondResponse as unknown) as IAttachmentResponse).filename,
+      ).toBe(secondAttachment.filename)
+      expect(
+        ((secondResponse as unknown) as IAttachmentResponse).content,
+      ).toEqual(secondAttachment.content)
     })
 
     it('should overwrite answer with filename when they are different', () => {
@@ -191,10 +202,10 @@ describe('email-submission.util', () => {
       const response = getResponse(attachment.fieldId, MOCK_ANSWER)
       addAttachmentToResponses([response], [attachment])
       expect(response.answer).toBe(attachment.filename)
-      expect((response as IAttachmentResponse).filename).toBe(
+      expect(((response as unknown) as IAttachmentResponse).filename).toBe(
         attachment.filename,
       )
-      expect((response as IAttachmentResponse).content).toEqual(
+      expect(((response as unknown) as IAttachmentResponse).content).toEqual(
         attachment.content,
       )
     })
@@ -291,6 +302,33 @@ describe('email-submission.util', () => {
         filename: secondAttachment.filename,
         content: secondAttachment.content,
       })
+    })
+  })
+
+  describe('maskUidOnLastField', () => {
+    it('should mask UID on SPCPFieldTitle.CpUid if it is the last field of autoReplyData', () => {
+      const autoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['S1234567A'] },
+      ]
+      const maskedAutoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['*****567A'] },
+      ]
+      expect(maskUidOnLastField(autoReplyData)).toEqual(maskedAutoReplyData)
+    })
+    it('should not mask UID on form field with same name as SPCPFieldTitle.CpUid if it is not the last field of autoReplyData', () => {
+      const autoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: 'CorpPass Validated UID', answerTemplate: ['S9999999Z'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['S1234567A'] },
+      ]
+      const maskedAutoReplyData: EmailAutoReplyField[] = [
+        { question: 'question 1', answerTemplate: ['answer1'] },
+        { question: 'CorpPass Validated UID', answerTemplate: ['S9999999Z'] },
+        { question: SPCPFieldTitle.CpUid, answerTemplate: ['*****567A'] },
+      ]
+      expect(maskUidOnLastField(autoReplyData)).toEqual(maskedAutoReplyData)
     })
   })
 })

@@ -3,7 +3,12 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, BasicField, MapRouteError } from '../../../types'
+import {
+  AuthType,
+  BasicField,
+  MapRouteError,
+  SPCPFieldTitle,
+} from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
@@ -166,7 +171,7 @@ export const createSingpassParsedResponses = (
   return [
     {
       _id: '',
-      question: 'SingPass Validated NRIC',
+      question: SPCPFieldTitle.SpNric,
       fieldType: BasicField.Nric,
       isVisible: true,
       answer: uinFin,
@@ -186,14 +191,14 @@ export const createCorppassParsedResponses = (
   return [
     {
       _id: '',
-      question: 'CorpPass Validated UEN',
+      question: SPCPFieldTitle.CpUen,
       fieldType: BasicField.ShortText,
       isVisible: true,
       answer: uinFin,
     },
     {
       _id: '',
-      question: 'CorpPass Validated UID',
+      question: SPCPFieldTitle.CpUid,
       fieldType: BasicField.Nric,
       isVisible: true,
       answer: userInfo,
