@@ -53,7 +53,7 @@ export enum MyInfoAttribute {
   GraduationYear = 'gradyear',
 }
 
-export enum SPCPValidatedFields {
+export enum SPCPFieldTitle {
   SpNric = 'SingPass Validated NRIC',
   CpUid = 'CorpPass Validated UID',
   CpUen = 'CorpPass Validated UEN',

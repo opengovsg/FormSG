@@ -29,7 +29,7 @@ const {
 const { types } = require('../../../dist/backend/shared/resources/basic')
 
 const {
-  SPCPValidatedFields,
+  SPCPFieldTitle,
 } = require('../../../dist/backend/types/field/fieldTypes')
 
 const NON_SUBMITTED_FIELDS = types
@@ -1162,15 +1162,15 @@ const getAuthFields = (authType, authData) => {
     case 'SP':
       return [
         makeField({
-          title: SPCPValidatedFields.SpNric,
+          title: SPCPFieldTitle.SpNric,
           val: authData.testSpNric,
         }),
       ]
     case 'CP':
       return [
-        { title: SPCPValidatedFields.CpUen, val: authData.testCpUen },
+        { title: SPCPFieldTitle.CpUen, val: authData.testCpUen },
         {
-          title: SPCPValidatedFields.CpUid,
+          title: SPCPFieldTitle.CpUid,
           val: authData.testCpNric,
         },
       ].map(makeField)

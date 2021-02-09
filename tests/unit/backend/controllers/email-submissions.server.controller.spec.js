@@ -21,7 +21,7 @@ const Verification = dbHandler.makeModel(
 const vfnConstants = require('../../../../dist/backend/shared/util/verification')
 
 const {
-  SPCPValidatedFields,
+  SPCPFieldTitle,
 } = require('../../../../dist/backend/types/field/fieldTypes')
 
 describe('Email Submissions Controller', () => {
@@ -650,7 +650,7 @@ describe('Email Submissions Controller', () => {
       reqFixtures.form.authType = 'SP'
       const expectedFormData = [
         {
-          question: SPCPValidatedFields.SpNric,
+          question: SPCPFieldTitle.SpNric,
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
           fieldType: 'nric',
@@ -658,13 +658,13 @@ describe('Email Submissions Controller', () => {
       ]
       const expectedAutoReplyData = [
         {
-          question: SPCPValidatedFields.SpNric,
+          question: SPCPFieldTitle.SpNric,
           answerTemplate: [resLocalFixtures.uinFin],
         },
       ]
       const expectedJsonData = [
         {
-          question: SPCPValidatedFields.SpNric,
+          question: SPCPFieldTitle.SpNric,
           answer: resLocalFixtures.uinFin,
         },
       ]
@@ -682,13 +682,13 @@ describe('Email Submissions Controller', () => {
       reqFixtures.form.authType = 'CP'
       const expectedFormData = [
         {
-          question: SPCPValidatedFields.CpUen,
+          question: SPCPFieldTitle.CpUen,
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
           fieldType: 'textfield',
         },
         {
-          question: SPCPValidatedFields.CpUid,
+          question: SPCPFieldTitle.CpUid,
           answerTemplate: [resLocalFixtures.userInfo],
           answer: resLocalFixtures.userInfo,
           fieldType: 'nric',
@@ -696,21 +696,21 @@ describe('Email Submissions Controller', () => {
       ]
       const expectedAutoReplyData = [
         {
-          question: SPCPValidatedFields.CpUen,
+          question: SPCPFieldTitle.CpUen,
           answerTemplate: [resLocalFixtures.uinFin],
         },
         {
-          question: SPCPValidatedFields.CpUid,
+          question: SPCPFieldTitle.CpUid,
           answerTemplate: [resLocalFixtures.userInfo],
         },
       ]
       const expectedJsonData = [
         {
-          question: SPCPValidatedFields.CpUen,
+          question: SPCPFieldTitle.CpUen,
           answer: resLocalFixtures.uinFin,
         },
         {
-          question: SPCPValidatedFields.CpUid,
+          question: SPCPFieldTitle.CpUid,
           answer: resLocalFixtures.userInfo,
         },
       ]
