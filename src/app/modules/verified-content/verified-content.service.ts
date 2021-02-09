@@ -19,6 +19,11 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Extracts and returns verified content from given type and data.
+ * @returns ok(CpVerifiedContent | SpVerifiedContent) if extracted content is valid and confirms to expected shape.
+ * @returns err(MalformedVerifiedContentError) if extracted shape mismatches.
+ */
 export const getVerifiedContent = ({
   type,
   data,
