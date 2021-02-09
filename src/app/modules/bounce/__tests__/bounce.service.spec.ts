@@ -1,19 +1,31 @@
+/* eslint-disable import/first */
 import axios from 'axios'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import dedent from 'dedent'
 import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
+import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
+import * as UserService from 'src/app/modules/user/user.service'
 import { EMAIL_HEADERS, EmailType } from 'src/app/services/mail/mail.constants'
 import MailService from 'src/app/services/mail/mail.service'
+import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as LoggerModule from 'src/config/logger'
-import { BounceType, ISnsNotification, IUserSchema } from 'src/types'
+import {
+  BounceType,
+  IPopulatedForm,
+  ISnsNotification,
+  IUserSchema,
+} from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
+
+import { DatabaseError } from '../../core/core.errors'
+import { UserWithContactNumber } from '../bounce.types'
 
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
@@ -23,6 +35,15 @@ jest.mock('src/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
+jest.mock('src/app/services/sms/sms.factory', () => ({
+  SmsFactory: {
+    sendFormDeactivatedSms: jest.fn(),
+    sendBouncedSubmissionSms: jest.fn(),
+  },
+}))
+const MockSmsFactory = mocked(SmsFactory, true)
+jest.mock('src/app/modules/user/user.service')
+const MockUserService = mocked(UserService, true)
 
 const mockShortTermLogger = getMockLogger()
 const mockLogger = getMockLogger()
@@ -30,16 +51,16 @@ MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockShortTermLogger)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 // Import modules which depend on config last so that mocks get imported correctly
-// eslint-disable-next-line import/first
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
-// eslint-disable-next-line import/first
 import {
   extractEmailType,
+  getEditorsWithContactNumbers,
   getUpdatedBounceDoc,
   isValidSnsRequest,
   logCriticalBounce,
   logEmailNotification,
-  notifyAdminOfBounce,
+  notifyAdminsOfBounce,
+  notifyAdminsOfDeactivation,
 } from 'src/app/modules/bounce/bounce.service'
 
 const Form = getFormModel(mongoose)
@@ -47,6 +68,14 @@ const Bounce = getBounceModel(mongoose)
 
 const MOCK_EMAIL = 'email@example.com'
 const MOCK_EMAIL_2 = 'email2@example.com'
+const MOCK_CONTACT = {
+  email: MOCK_EMAIL,
+  contact: '+6581234567',
+}
+const MOCK_CONTACT_2 = {
+  email: MOCK_EMAIL_2,
+  contact: '+6581234568',
+}
 const MOCK_FORM_ID = new ObjectId()
 const MOCK_ADMIN_ID = new ObjectId()
 const MOCK_SUBMISSION_ID = new ObjectId()
@@ -54,10 +83,12 @@ const MOCK_SUBMISSION_ID = new ObjectId()
 describe('BounceService', () => {
   beforeAll(async () => await dbHandler.connect())
 
-  afterAll(async () => {
+  afterEach(async () => {
     await dbHandler.clearDatabase()
-    await dbHandler.closeDatabase()
+    jest.clearAllMocks()
   })
+
+  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('extractEmailType', () => {
     it('should extract the email type correctly', () => {
@@ -236,19 +267,15 @@ describe('BounceService', () => {
     })
   })
 
-  describe('notifyAdminOfBounce', () => {
+  describe('notifyAdminsOfBounce', () => {
     const MOCK_FORM_TITLE = 'FormTitle'
     let testUser: IUserSchema
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       const { user } = await dbHandler.insertFormCollectionReqs({
         userId: MOCK_ADMIN_ID,
       })
       testUser = user
-    })
-
-    afterAll(async () => {
-      await dbHandler.clearDatabase()
     })
 
     beforeEach(async () => {
@@ -256,88 +283,182 @@ describe('BounceService', () => {
     })
 
     it('should auto-email when admin is not email recipient', async () => {
-      const form = new Form({
-        admin: MOCK_ADMIN_ID,
+      const form = (await new Form({
+        admin: testUser._id,
         title: MOCK_FORM_TITLE,
       })
-      const testForm = await form.save()
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [testUser.email],
         bouncedRecipients: [MOCK_EMAIL],
         bounceType: BounceType.Permanent,
-        formTitle: testForm.title,
-        formId: testForm._id,
+        formTitle: form.title,
+        formId: form._id,
       })
-      expect(emailRecipients).toEqual([testUser.email])
+      expect(notifiedRecipients.emailRecipients).toEqual([testUser.email])
     })
 
     it('should auto-email when any collaborator is not email recipient', async () => {
-      const testForm = new Form({
-        admin: MOCK_ADMIN_ID,
-        title: MOCK_FORM_TITLE,
-      })
       const collabEmail = 'collaborator@test.gov.sg'
-      testForm.permissionList = [{ email: collabEmail, write: true }]
-      await testForm.save()
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [{ email: collabEmail, write: true }],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [collabEmail],
         bouncedRecipients: [testUser.email],
         bounceType: BounceType.Permanent,
-        formTitle: testForm.title,
-        formId: testForm._id,
+        formTitle: form.title,
+        formId: form._id,
       })
-      expect(emailRecipients).toEqual([collabEmail])
+      expect(notifiedRecipients.emailRecipients).toEqual([collabEmail])
     })
 
     it('should not auto-email when admin is email recipient', async () => {
-      const testForm = new Form({
-        admin: MOCK_ADMIN_ID,
+      const form = (await new Form({
+        admin: testUser._id,
         title: MOCK_FORM_TITLE,
       })
-      await testForm.save()
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
-      expect(emailRecipients).toEqual([])
+      expect(notifiedRecipients.emailRecipients).toEqual([])
     })
 
     it('should not auto-email when all collabs are email recipients', async () => {
-      const testForm = new Form({
-        admin: MOCK_ADMIN_ID,
-        title: MOCK_FORM_TITLE,
-      })
       const collabEmail = 'collaborator@test.gov.sg'
-      testForm.permissionList = [{ email: collabEmail, write: false }]
-      await testForm.save()
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [{ email: collabEmail, write: false }],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
       const bounceDoc = new Bounce({
-        formId: testForm._id,
+        formId: form._id,
         bounces: [
           { email: testUser.email, hasBounced: true, bounceType: 'Permanent' },
           { email: collabEmail, hasBounced: true, bounceType: 'Permanent' },
         ],
       })
-      const emailRecipients = await notifyAdminOfBounce(bounceDoc)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
-      expect(emailRecipients).toEqual([])
+      expect(notifiedRecipients.emailRecipients).toEqual([])
+    })
+
+    it('should send text for all SMS recipients and return successful ones', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      const bounceDoc = new Bounce({
+        formId: form._id,
+        bounces: [],
+      })
+      MockSmsFactory.sendBouncedSubmissionSms.mockResolvedValue(true)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
+      expect(notifiedRecipients.smsRecipients).toEqual([
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+    })
+
+    it('should return only successfuly SMS recipients when some SMSes fail', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      const bounceDoc = new Bounce({
+        formId: form._id,
+        bounces: [],
+      })
+      const mockRejectedReason = 'reasons'
+      MockSmsFactory.sendBouncedSubmissionSms
+        .mockResolvedValueOnce(true)
+        .mockRejectedValueOnce(mockRejectedReason)
+
+      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
+        adminEmail: testUser.email,
+        adminId: testUser._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
+      expect(notifiedRecipients.smsRecipients).toEqual([MOCK_CONTACT])
     })
   })
 
@@ -354,6 +475,7 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
         ],
         hasAutoEmailed: true,
+        hasAutoSmsed: true,
       })
       const snsInfo = makeBounceNotification({
         formId: MOCK_FORM_ID,
@@ -362,12 +484,20 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients = [MOCK_EMAIL, MOCK_EMAIL_2]
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, false)
+      const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
+      logCriticalBounce({
+        bounceDoc,
+        notification: snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        hasDeactivated: false,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasAutoSmsed: true,
           hasDeactivated: false,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
@@ -376,6 +506,7 @@ describe('BounceService', () => {
           numTransient: 2,
           numPermanent: 0,
           autoEmailRecipients,
+          autoSmsRecipients,
           bounceInfo: snsInfo.bounce,
         },
       })
@@ -389,6 +520,7 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Permanent' },
         ],
         hasAutoEmailed: true,
+        hasAutoSmsed: true,
       })
       const snsInfo = makeBounceNotification({
         formId: MOCK_FORM_ID,
@@ -397,12 +529,20 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients: string[] = []
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, true)
+      const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
+      logCriticalBounce({
+        bounceDoc,
+        notification: snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        hasDeactivated: true,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasAutoSmsed: true,
           hasDeactivated: true,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
@@ -411,6 +551,7 @@ describe('BounceService', () => {
           numTransient: 0,
           numPermanent: 2,
           autoEmailRecipients,
+          autoSmsRecipients,
           bounceInfo: snsInfo.bounce,
         },
       })
@@ -424,6 +565,7 @@ describe('BounceService', () => {
           { email: MOCK_EMAIL_2, hasBounced: true, bounceType: 'Transient' },
         ],
         hasAutoEmailed: true,
+        hasAutoSmsed: true,
       })
       const snsInfo = makeBounceNotification({
         formId: MOCK_FORM_ID,
@@ -432,12 +574,20 @@ describe('BounceService', () => {
         bouncedList: [MOCK_EMAIL],
       })
       const autoEmailRecipients: string[] = []
-      logCriticalBounce(bounceDoc, snsInfo, autoEmailRecipients, false)
+      const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
+      logCriticalBounce({
+        bounceDoc,
+        notification: snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        hasDeactivated: false,
+      })
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message: 'Bounced submission',
         meta: {
           action: 'logCriticalBounce',
           hasAutoEmailed: true,
+          hasAutoSmsed: true,
           hasDeactivated: false,
           formId: String(MOCK_FORM_ID),
           submissionId: String(MOCK_SUBMISSION_ID),
@@ -446,6 +596,91 @@ describe('BounceService', () => {
           numTransient: 1,
           numPermanent: 1,
           autoEmailRecipients,
+          autoSmsRecipients,
+          bounceInfo: snsInfo.bounce,
+        },
+      })
+    })
+
+    it('should log correctly when hasAutoEmailed is false', () => {
+      const bounceDoc = new Bounce({
+        formId: MOCK_FORM_ID,
+        bounces: [],
+        hasAutoEmailed: false,
+        hasAutoSmsed: true,
+      })
+      const snsInfo = makeBounceNotification({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+        recipientList: [MOCK_EMAIL, MOCK_EMAIL_2],
+        bouncedList: [],
+      })
+      const autoEmailRecipients: string[] = []
+      const autoSmsRecipients: UserWithContactNumber[] = []
+      logCriticalBounce({
+        bounceDoc,
+        notification: snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        hasDeactivated: false,
+      })
+      expect(mockLogger.warn).toHaveBeenCalledWith({
+        message: 'Bounced submission',
+        meta: {
+          action: 'logCriticalBounce',
+          hasAutoEmailed: false,
+          hasAutoSmsed: true,
+          hasDeactivated: false,
+          formId: String(MOCK_FORM_ID),
+          submissionId: String(MOCK_SUBMISSION_ID),
+          recipients: [],
+          numRecipients: 0,
+          numTransient: 0,
+          numPermanent: 0,
+          autoEmailRecipients,
+          autoSmsRecipients,
+          bounceInfo: snsInfo.bounce,
+        },
+      })
+    })
+
+    it('should log correctly when hasAutoSmsed is false', () => {
+      const bounceDoc = new Bounce({
+        formId: MOCK_FORM_ID,
+        bounces: [],
+        hasAutoEmailed: true,
+        hasAutoSmsed: false,
+      })
+      const snsInfo = makeBounceNotification({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+        recipientList: [MOCK_EMAIL, MOCK_EMAIL_2],
+        bouncedList: [],
+      })
+      const autoEmailRecipients: string[] = []
+      const autoSmsRecipients: UserWithContactNumber[] = []
+      logCriticalBounce({
+        bounceDoc,
+        notification: snsInfo,
+        autoEmailRecipients,
+        autoSmsRecipients,
+        hasDeactivated: false,
+      })
+      expect(mockLogger.warn).toHaveBeenCalledWith({
+        message: 'Bounced submission',
+        meta: {
+          action: 'logCriticalBounce',
+          hasAutoEmailed: true,
+          hasAutoSmsed: false,
+          hasDeactivated: false,
+          formId: String(MOCK_FORM_ID),
+          submissionId: String(MOCK_SUBMISSION_ID),
+          recipients: [],
+          numRecipients: 0,
+          numTransient: 0,
+          numPermanent: 0,
+          autoEmailRecipients,
+          autoSmsRecipients,
           bounceInfo: snsInfo.bounce,
         },
       })
@@ -514,6 +749,180 @@ describe('BounceService', () => {
       signer.write(baseString)
       body.Signature = signer.sign(keys.privateKey, 'base64')
       return expect(isValidSnsRequest(body)).resolves.toBe(true)
+    })
+  })
+
+  describe('getEditorsWithContactNumbers', () => {
+    const MOCK_FORM_TITLE = 'FormTitle'
+    let testUser: IUserSchema
+
+    beforeEach(async () => {
+      const { user } = await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_ADMIN_ID,
+      })
+      testUser = user
+    })
+
+    beforeEach(async () => {
+      jest.resetAllMocks()
+    })
+
+    it('should call user service with emails of all write collaborators', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [
+          { email: MOCK_EMAIL, write: true },
+          { email: MOCK_EMAIL_2, write: false },
+        ],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+        okAsync([MOCK_CONTACT]),
+      )
+
+      const result = await getEditorsWithContactNumbers(form)
+
+      expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
+        form.admin.email,
+        MOCK_EMAIL,
+      ])
+      expect(result).toEqual([MOCK_CONTACT])
+    })
+
+    it('should filter out collaborators without contact numbers', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [
+          { email: MOCK_EMAIL, write: true },
+          { email: MOCK_EMAIL_2, write: false },
+        ],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+        okAsync([omit(MOCK_CONTACT, 'contact'), MOCK_CONTACT_2]),
+      )
+
+      const result = await getEditorsWithContactNumbers(form)
+
+      expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
+        form.admin.email,
+        MOCK_EMAIL,
+      ])
+      expect(result).toEqual([MOCK_CONTACT_2])
+    })
+
+    it('should return empty array when UserService returns error', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+        permissionList: [
+          { email: MOCK_EMAIL, write: true },
+          { email: MOCK_EMAIL_2, write: false },
+        ],
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+        errAsync(new DatabaseError()),
+      )
+
+      const result = await getEditorsWithContactNumbers(form)
+
+      expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
+        form.admin.email,
+        MOCK_EMAIL,
+      ])
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('notifyAdminsOfDeactivation', () => {
+    const MOCK_FORM_TITLE = 'FormTitle'
+    let testUser: IUserSchema
+
+    beforeEach(async () => {
+      const { user } = await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_ADMIN_ID,
+      })
+      testUser = user
+    })
+
+    beforeEach(async () => {
+      jest.resetAllMocks()
+    })
+
+    it('should send SMS for all given recipients', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockSmsFactory.sendFormDeactivatedSms.mockResolvedValue(true)
+
+      const result = await notifyAdminsOfDeactivation(form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(result).toEqual(true)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
+    })
+
+    it('should return true even when some SMSes fail', async () => {
+      const form = (await new Form({
+        admin: testUser._id,
+        title: MOCK_FORM_TITLE,
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedForm
+      MockSmsFactory.sendFormDeactivatedSms
+        .mockResolvedValueOnce(true)
+        .mockRejectedValueOnce(new Error())
+
+      const result = await notifyAdminsOfDeactivation(form, [
+        MOCK_CONTACT,
+        MOCK_CONTACT_2,
+      ])
+
+      expect(result).toEqual(true)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledTimes(2)
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT.contact,
+        recipientEmail: MOCK_CONTACT.email,
+      })
+      expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
+        adminEmail: form.admin.email,
+        adminId: form.admin._id,
+        formId: form._id,
+        formTitle: form.title,
+        recipient: MOCK_CONTACT_2.contact,
+        recipientEmail: MOCK_CONTACT_2.email,
+      })
     })
   })
 })

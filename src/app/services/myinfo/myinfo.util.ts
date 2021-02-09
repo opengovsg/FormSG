@@ -9,9 +9,11 @@ import { get } from 'lodash'
 import moment from 'moment'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { types as myInfoTypes } from '../../../shared/resources/myinfo'
 import {
   BasicField,
   IHashes,
+  IMyInfo,
   MapRouteError,
   MyInfoAttribute,
 } from '../../../types'
@@ -22,9 +24,9 @@ import {
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 import {
-  HashDidNotMatchError,
-  HashingError,
-  MissingHashError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
 } from './myinfo.errors'
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
 import {
@@ -205,20 +207,20 @@ export const compareHashedValues = (
 export const mapVerifyMyInfoError: MapRouteError = (error) => {
   switch (error.constructor) {
     case MissingFeatureError:
-    case HashingError:
+    case MyInfoHashingError:
     case DatabaseError:
       return {
         statusCode: StatusCodes.SERVICE_UNAVAILABLE,
         errorMessage:
           'MyInfo verification unavailable, please try again later.',
       }
-    case MissingHashError:
+    case MyInfoMissingHashError:
       return {
         statusCode: StatusCodes.GONE,
         errorMessage:
           'MyInfo verification expired, please refresh and try again.',
       }
-    case HashDidNotMatchError:
+    case MyInfoHashDidNotMatchError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: 'MyInfo verification failed.',
@@ -236,4 +238,11 @@ export const mapVerifyMyInfoError: MapRouteError = (error) => {
         errorMessage: 'Something went wrong. Please try again.',
       }
   }
+}
+
+export const getMyInfoFieldOptions = (
+  myInfoAttr: IMyInfo['attr'],
+): string[] => {
+  const [myInfoField] = myInfoTypes.filter((type) => type.name === myInfoAttr)
+  return myInfoField?.fieldOptions || []
 }

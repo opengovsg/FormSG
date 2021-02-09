@@ -3,7 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { WithForm } from '../../../types'
-import { createReqMeta } from '../../utils/request'
+import { createReqMeta, getRequestIp } from '../../utils/request'
 
 import { CaptchaFactory } from './captcha.factory'
 import { mapRouteError } from './captcha.util'
@@ -28,7 +28,7 @@ export const checkCaptchaResponse: RequestHandler<
   }
   return CaptchaFactory.verifyCaptchaResponse(
     req.query.captchaResponse,
-    req.connection.remoteAddress,
+    getRequestIp(req as Request),
   )
     .map(() => next())
     .mapErr((error) => {

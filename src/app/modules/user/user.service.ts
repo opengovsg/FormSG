@@ -10,6 +10,7 @@ import {
   IPopulatedUser,
   IUserSchema,
   UpsertOtpParams,
+  UserContactView,
 } from '../../../types'
 import getAdminVerificationModel from '../../models/admin_verification.server.model'
 import { AGENCY_SCHEMA_ID } from '../../models/agency.server.model'
@@ -462,6 +463,32 @@ const removeAdminVerificationDoc = (userId: string) => {
       })
 
       return new DatabaseError()
+    },
+  )
+}
+
+/**
+ * Finds emergency contact numbers for a given list of emails.
+ * @param emails Emails for which contacts should be found
+ * @returns Array of email-contact pairings
+ */
+export const findContactsForEmails = (
+  emails: string[],
+): ResultAsync<UserContactView[], DatabaseError> => {
+  return ResultAsync.fromPromise(
+    UserModel.findContactNumbersByEmails(emails),
+    (error) => {
+      logger.error({
+        message: 'Error while retrieving contacts for email addresses',
+        meta: {
+          action: 'findContactsForEmails',
+          emails,
+        },
+        error,
+      })
+      return new DatabaseError(
+        'Failed to retrieve contacts for email addresses',
+      )
     },
   )
 }

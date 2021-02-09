@@ -92,9 +92,22 @@
           ></i>
           <span class="alert-msg">{{vm.signInMsg.msg}}</span>
         </div>
-        <div ng-if="vm.isOtpSending" class="alert-custom alert-info">
+        <div
+          ng-if="!vm.signInMsg.isMsg && !vm.showOtpDelayNotification && vm.isOtpSending"
+          class="alert-custom alert-info"
+        >
           <i class="bx bx-loader bx-spin bx-md icon-spacing"></i>
           <span class="alert-msg">Sending OTP...</span>
+        </div>
+        <div
+          ng-if="!vm.signInMsg.isMsg && vm.showOtpDelayNotification"
+          class="alert-custom alert-info"
+        >
+          <i class="bx bx-info-circle bx-md icon-spacing"></i>
+          <span class="alert-msg">
+            OTP might be delayed due to government email traffic. If you are
+            unable to sign in, please try again later, or contact us.
+          </span>
         </div>
         <div class="btn-grp">
           <button

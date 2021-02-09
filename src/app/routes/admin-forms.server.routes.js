@@ -8,8 +8,8 @@ const { celebrate, Joi, Segments } = require('celebrate')
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
-let submissions = require('../../app/controllers/submissions.server.controller')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
+const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
@@ -447,12 +447,11 @@ module.exports = function (app) {
     }),
     EmailSubmissionsMiddleware.validateEmailSubmission,
     AdminFormController.passThroughSpcp,
-    submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
     EmailSubmissionsMiddleware.prepareEmailSubmission,
     adminForms.passThroughSaveMetadataToDb,
     EmailSubmissionsMiddleware.sendAdminEmail,
-    submissions.sendAutoReply,
+    SubmissionsMiddleware.sendEmailConfirmations,
   )
 
   /**
@@ -523,11 +522,10 @@ module.exports = function (app) {
     authActiveForm(PermissionLevel.Read),
     EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     AdminFormController.passThroughSpcp,
-    submissions.injectAutoReplyInfo,
     VerifiedContentMiddleware.encryptVerifiedSpcpFields,
     EncryptSubmissionMiddleware.prepareEncryptSubmission,
     adminForms.passThroughSaveMetadataToDb,
-    submissions.sendAutoReply,
+    SubmissionsMiddleware.sendEmailConfirmations,
   )
 
   /**

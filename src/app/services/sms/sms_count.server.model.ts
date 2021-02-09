@@ -1,10 +1,14 @@
+import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { Mongoose, Schema } from 'mongoose'
+import validator from 'validator'
 
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 import { USER_SCHEMA_ID } from '../../models/user.server.model'
 
 import {
   IAdminContactSmsCountSchema,
+  IBouncedSubmissionSmsCountSchema,
+  IFormDeactivatedSmsCountSchema,
   ISmsCount,
   ISmsCountModel,
   ISmsCountSchema,
@@ -40,6 +44,44 @@ const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
   },
 })
 
+const bounceSmsCountSchema = {
+  form: {
+    type: Schema.Types.ObjectId,
+    ref: FORM_SCHEMA_ID,
+    required: true,
+  },
+  formAdmin: {
+    email: { type: String, required: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: USER_SCHEMA_ID,
+      required: true,
+    },
+  },
+  collaboratorEmail: {
+    type: String,
+    validate: validator.isEmail,
+    required: true,
+  },
+  recipientNumber: {
+    type: String,
+    validate: (value: string) => {
+      const phoneNumber = parsePhoneNumberFromString(value)
+      if (!phoneNumber) return false
+      return phoneNumber.isValid()
+    },
+    required: true,
+  },
+}
+
+const FormDeactivatedSmsCountSchema = new Schema<IFormDeactivatedSmsCountSchema>(
+  bounceSmsCountSchema,
+)
+
+const BouncedSubmissionSmsCountSchema = new Schema<IBouncedSubmissionSmsCountSchema>(
+  bounceSmsCountSchema,
+)
+
 const compileSmsCountModel = (db: Mongoose) => {
   const SmsCountSchema = new Schema<ISmsCountSchema>(
     {
@@ -69,10 +111,10 @@ const compileSmsCountModel = (db: Mongoose) => {
 
   SmsCountSchema.statics.logSms = async function (
     this: ISmsCountModel,
-    { otpData, msgSrvcSid, smsType, logType }: LogSmsParams,
+    { smsData, msgSrvcSid, smsType, logType }: LogSmsParams,
   ) {
     const schemaData: Omit<ISmsCount, '_id'> = {
-      ...otpData,
+      ...smsData,
       msgSrvcSid,
       smsType,
       logType,
@@ -89,8 +131,16 @@ const compileSmsCountModel = (db: Mongoose) => {
   )
 
   // Adding Discriminators
-  SmsCountModel.discriminator(SmsType.verification, VerificationSmsCountSchema)
-  SmsCountModel.discriminator(SmsType.adminContact, AdminContactSmsCountSchema)
+  SmsCountModel.discriminator(SmsType.Verification, VerificationSmsCountSchema)
+  SmsCountModel.discriminator(SmsType.AdminContact, AdminContactSmsCountSchema)
+  SmsCountModel.discriminator(
+    SmsType.DeactivatedForm,
+    FormDeactivatedSmsCountSchema,
+  )
+  SmsCountModel.discriminator(
+    SmsType.BouncedSubmission,
+    BouncedSubmissionSmsCountSchema,
+  )
 
   return SmsCountModel
 }

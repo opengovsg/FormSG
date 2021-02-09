@@ -2,9 +2,10 @@ import { pick } from 'lodash'
 import { Merge } from 'type-fest'
 
 import {
+  IPopulatedForm,
+  Permission,
   IEncryptedFormSchema,
   IFormSchema,
-  IPopulatedForm,
   ResponseMode,
 } from '../../../types'
 
@@ -70,4 +71,29 @@ export const isFormEncryptMode = (
   form: IFormSchema | IPopulatedForm,
 ): form is IEncryptedFormSchema => {
   return form.responseMode === ResponseMode.Encrypt
+}
+
+/**
+ * Extracts emails of collaborators, optionally filtering for a specific
+ * write permission.
+ * @param permissionList List of collaborators
+ * @param writePermission Optional write permission to filter on
+ * @returns Array of emails
+ */
+export const getCollabEmailsWithPermission = (
+  permissionList?: Permission[],
+  writePermission?: boolean,
+): string[] => {
+  if (!permissionList) {
+    return []
+  }
+  return permissionList.reduce<string[]>((acc, collaborator) => {
+    if (
+      writePermission === undefined ||
+      writePermission === collaborator.write
+    ) {
+      acc.push(collaborator.email)
+    }
+    return acc
+  }, [])
 }

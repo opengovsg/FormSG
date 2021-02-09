@@ -6,8 +6,6 @@ const {
   getLogicUnitPreventingSubmit,
 } = require('../../../../../shared/util/logic')
 
-// The current encrypt version to assign to the encrypted submission.
-const ENCRYPT_VERSION = 1
 /**
  * @typedef {number} FormState
  */
@@ -83,9 +81,11 @@ function submitFormDirective(
         progressModal: null,
         submitPrevented: false,
       }
+
       // Also used to store a backup of the form state during submission, the state
       // of the progress modal
-      const controllerState = {}
+      scope.controllerState = {}
+
       scope.hasMyInfoFields = FormFields.containsMyInfoFields(scope.form)
       scope.formLogin = function (authType, rememberMe) {
         // Fire GA tracking event
@@ -138,8 +138,21 @@ function submitFormDirective(
         }
       }
 
+      const isAnyFieldInvalid = () => {
+        // Check the validity of each individual field. We do this due to
+        // a possible bug in WebKit where form submission may not be correctly
+        // prevented when the form is invalid.
+        return (
+          scope.forms.myForm.$invalid ||
+          scope.form.form_fields.some(
+            ({ _id }) =>
+              scope.forms.myForm[_id] && scope.forms.myForm[_id].$invalid,
+          )
+        )
+      }
+
       scope.checkCaptchaAndSubmit = () => {
-        if (scope.forms.myForm.$invalid) {
+        if (isAnyFieldInvalid()) {
           displayInvalidSubmit()
           return
         }
@@ -211,7 +224,7 @@ function submitFormDirective(
             }
             break
           case FORM_STATES.SUBMITTING:
-            controllerState.savedForm = cloneDeep(scope.form)
+            scope.controllerState.savedForm = cloneDeep(scope.form)
             scope.form.lockFields()
             scope.uiState.submitButtonClicked = true
             if (scope.form.hasAttachments()) {
@@ -231,7 +244,7 @@ function submitFormDirective(
             }
             break
           case FORM_STATES.SUBMISSION_ERROR:
-            scope.form = controllerState.savedForm
+            scope.form = scope.controllerState.savedForm
             setFormState(FORM_STATES.DEFAULT)
             break
           case FORM_STATES.SUBMIT_PREVENTED:
@@ -251,7 +264,7 @@ function submitFormDirective(
        * Opens the submission progress modal.
        */
       const openProgressModal = function () {
-        controllerState.progressModal = $uibModal.open({
+        scope.controllerState.progressModal = $uibModal.open({
           animation: true,
           backdrop: 'static',
           keyboard: false,
@@ -265,9 +278,9 @@ function submitFormDirective(
        * Closes the submission progress modal if it is currently open.
        */
       const closeProgressModal = () => {
-        if (controllerState.progressModal) {
-          controllerState.progressModal.close()
-          controllerState.progressModal = null
+        if (scope.controllerState.progressModal) {
+          scope.controllerState.progressModal.close()
+          scope.controllerState.progressModal = null
         }
       }
 
@@ -276,9 +289,8 @@ function submitFormDirective(
        * and handle any errors.
        */
       scope.submitForm = () => {
-        let form = cloneDeep(scope.form)
         try {
-          submitFormMain(form)
+          submitFormMain(scope.form)
         } catch (error) {
           handleSubmitFailure(error, 'Please try again later.')
         }
@@ -292,34 +304,20 @@ function submitFormDirective(
         // Disable UI and optionally open progress modal while processing
         setFormState(FORM_STATES.SUBMITTING)
 
+        // submissionContent is the POST body to backend when we submit the form
+        let submissionContent
+
         try {
-          form.attachments = await form.getAttachments()
+          submissionContent = Object.assign(
+            { captchaResponse: captchaService.response },
+            await form.getSubmissionContent(),
+          )
         } catch (err) {
           return handleSubmitFailure(
             err,
-            'Could not encrypt your attachments. Please contact the form administrator.',
+            'There was an error while processing your submission. Please refresh and try again. ' +
+              'If the problem persists, try using a different browser.',
           )
-        }
-
-        const responses = form.getResponses()
-
-        // submissionContent is the POST body to backend when we submit the form
-        let submissionContent = {
-          attachments: form.attachments,
-          captchaResponse: captchaService.response,
-          isPreview: form.isPreview,
-          responses,
-        }
-        if (form.responseMode === responseModeEnum.ENCRYPT && form.publicKey) {
-          try {
-            encryptSubmissionContent(submissionContent, form.publicKey)
-            submissionContent.version = ENCRYPT_VERSION
-          } catch (err) {
-            return handleSubmitFailure(
-              err,
-              'Could not encrypt your submission. Please contact the form administrator.',
-            )
-          }
         }
 
         Submissions.post(
@@ -329,26 +327,6 @@ function submitFormDirective(
           },
           submissionContent, // POST body
         ).then(handleSubmitSuccess, handleSubmitFailure)
-      }
-
-      /**
-       * Encrypts submission content for end-to-end encryption.
-       * @param {Object} submissionContent Content to encrypt
-       * @param {String} publicKey Encryption public key
-       */
-      const encryptSubmissionContent = (submissionContent, publicKey) => {
-        submissionContent.encryptedContent = FormSgSdk.crypto.encrypt(
-          submissionContent.responses,
-          publicKey,
-        )
-        submissionContent.responses = submissionContent.responses
-          .filter((item) => ['mobile', 'email'].includes(item.fieldType))
-          .map((item) => {
-            return _(item)
-              .pick(['fieldType', '_id', 'answer', 'signature'])
-              .omitBy(_.isNull)
-              .value()
-          })
       }
 
       /**

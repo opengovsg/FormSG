@@ -98,7 +98,6 @@ export interface IForm {
   hasCaptcha?: boolean
   authType?: AuthType
 
-  customLogo?: string
   status?: Status
 
   inactiveMessage?: string
@@ -198,6 +197,8 @@ export interface IEncryptedForm extends IForm {
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
 
+export type IPopulatedEncryptedForm = IPopulatedForm & IEncryptedForm
+
 export interface IEmailForm extends IForm {
   // string type is allowed due to a setter on the form schema that transforms
   // strings to string array.
@@ -206,6 +207,8 @@ export interface IEmailForm extends IForm {
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
+
+export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
@@ -226,4 +229,14 @@ export type FormMetaView = Pick<
   'title' | 'lastModified' | 'status' | '_id' | 'responseMode'
 > & {
   admin: IPopulatedUser
+}
+
+/**
+ * Type guard for whether a populated form is email mode
+ * @param form Form document to check
+ */
+export const isEmailModeForm = (
+  form: IPopulatedForm,
+): form is IPopulatedEmailForm => {
+  return form.responseMode === ResponseMode.Email
 }

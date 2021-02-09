@@ -6,11 +6,14 @@ import {
   FormOtpData,
   IFormSchema,
   IUserSchema,
-} from 'src/types'
+  Permission,
+} from '../../../types'
 
 export enum SmsType {
-  verification = 'VERIFICATION',
-  adminContact = 'ADMIN_CONTACT',
+  Verification = 'VERIFICATION',
+  AdminContact = 'ADMIN_CONTACT',
+  DeactivatedForm = 'DEACTIVATED_FORM',
+  BouncedSubmission = 'BOUNCED_SUBMISSION',
 }
 
 export enum LogType {
@@ -18,8 +21,24 @@ export enum LogType {
   success = 'SUCCESS',
 }
 
+export type FormDeactivatedSmsData = {
+  form: IFormSchema['_id']
+  formAdmin: {
+    email: IUserSchema['email']
+    userId: IUserSchema['_id']
+  }
+  collaboratorEmail: Permission['email']
+  recipientNumber: string
+}
+
+export type BouncedSubmissionSmsData = FormDeactivatedSmsData
+
 export type LogSmsParams = {
-  otpData: FormOtpData | AdminContactOtpData
+  smsData:
+    | FormOtpData
+    | AdminContactOtpData
+    | FormDeactivatedSmsData
+    | BouncedSubmissionSmsData
   msgSrvcSid: string
   smsType: SmsType
   logType: LogType
@@ -51,6 +70,22 @@ export interface IAdminContactSmsCount extends ISmsCount {
 
 export type IAdminContactSmsCountSchema = ISmsCountSchema
 
+export interface IFormDeactivatedSmsCount
+  extends ISmsCount,
+    FormDeactivatedSmsData {}
+
+export interface IFormDeactivatedSmsCountSchema
+  extends ISmsCountSchema,
+    FormDeactivatedSmsData {}
+
+export interface IBouncedSubmissionSmsCount
+  extends ISmsCount,
+    BouncedSubmissionSmsData {}
+
+export interface IBouncedSubmissionSmsCountSchema
+  extends ISmsCountSchema,
+    BouncedSubmissionSmsData {}
+
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>
 }
@@ -65,4 +100,13 @@ export type TwilioCredentials = {
 export type TwilioConfig = {
   client: Twilio
   msgSrvcSid: string
+}
+
+export interface BounceNotificationSmsParams {
+  recipient: string
+  recipientEmail: string
+  adminId: string
+  adminEmail: string
+  formId: string
+  formTitle: string
 }

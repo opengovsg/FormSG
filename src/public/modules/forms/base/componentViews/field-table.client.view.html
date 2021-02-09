@@ -16,9 +16,10 @@
 
   <!-- Input -->
   <div>
-    <!-- View for screen width >= 768px. Either this or the next div is shown. -->
-    <div class="table-scrollable table-desktop">
-      <!-- Labels to be shown in desktop mode but not mobile mode -->
+    <div
+      class="table-scrollable table-desktop"
+      ng-class="{ 'dropdownPadding': vm.hasEndPadding }"
+    >
       <div class="table-row table-labels-desktop">
         <!-- ng-class in ng-repeat below sets whether the column is col-xs-6, col-xs-12 or max-width -->
         <div
@@ -38,10 +39,7 @@
         ng-repeat="n in vm.generateTableRowIndexes()"
         ng-init="$evenRow = $even; $oddRow = $odd"
       >
-        <div
-          class="table-row"
-          ng-class="{ 'dropdownPadding': vm.hasEndPadding && vm.isLastRow(n) }"
-        >
+        <div class="table-row">
           <!-- ng-class in ng-repeat below sets a couple of things:
 							=> whether a row is blue or white
 							=> whether the column is col-xs-6, col-xs-12 or max-width

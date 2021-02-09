@@ -332,5 +332,7 @@ const getFieldFromTransaction = (
 const throwError = (message: string, name?: string): never => {
   const error = new Error(message)
   error.name = name || message
+  // TODO(#941) Convert this service to use neverthrow, and re-examine type assertions made
+  // eslint-disable-next-line
   throw error
 }

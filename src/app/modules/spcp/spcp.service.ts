@@ -219,7 +219,7 @@ export class SpcpService {
   extractJwtPayload(
     jwt: string,
     authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<JwtPayload, VerifyJwtError> {
+  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidJwtError> {
     const logMeta = {
       action: 'extractJwtPayload',
       authType,

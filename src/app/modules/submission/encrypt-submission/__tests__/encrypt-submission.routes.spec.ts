@@ -7,12 +7,12 @@ import { mocked } from 'ts-jest/utils'
 import * as encryptSubmissions from 'src/app/controllers/encrypt-submissions.server.controller'
 import * as FormController from 'src/app/controllers/forms.server.controller'
 import * as MyInfoController from 'src/app/controllers/myinfo.server.controller'
-import * as SubmissionsController from 'src/app/controllers/submissions.server.controller'
 import * as webhookVerifiedContentFactory from 'src/app/factories/webhook-verified-content.factory'
 import * as PublicFormMiddleware from 'src/app/modules/form/public-form/public-form.middlewares'
 import * as SpcpController from 'src/app/modules/spcp/spcp.controller'
 import * as EncryptSubmissionsMiddleware from 'src/app/modules/submission/encrypt-submission/encrypt-submission.middleware'
 import * as VerifiedContentMiddleware from 'src/app/modules/verified-content/verified-content.middlewares'
+import * as SubmissionsMiddleware from 'src/app/modules/submission/submission.middleware'
 import { CaptchaFactory } from 'src/app/services/captcha/captcha.factory'
 import * as CaptchaMiddleware from 'src/app/services/captcha/captcha.middleware'
 import { AuthType, BasicField, Status } from 'src/types'
@@ -94,12 +94,11 @@ EncryptSubmissionsRouter.post(
   EncryptSubmissionsMiddleware.validateAndProcessEncryptSubmission,
   SpcpController.isSpcpAuthenticated,
   MyInfoController.verifyMyInfoVals as RequestHandler,
-  (SubmissionsController.injectAutoReplyInfo as unknown) as RequestHandler,
   VerifiedContentMiddleware.encryptVerifiedSpcpFields,
   EncryptSubmissionsMiddleware.prepareEncryptSubmission as RequestHandler,
   (encryptSubmissions.saveResponseToDb as unknown) as RequestHandler,
   webhookVerifiedContentFactory.post as RequestHandler,
-  SubmissionsController.sendAutoReply,
+  SubmissionsMiddleware.sendEmailConfirmations as RequestHandler,
 )
 
 const EncryptSubmissionsApp = setupApp('/', EncryptSubmissionsRouter)

@@ -33,7 +33,6 @@ export type DuplicateFormBody = {
 )
 
 export type OverrideProps = {
-  customLogo?: undefined
   endPage?: IForm['endPage']
   startPage?: IForm['startPage']
   admin: string

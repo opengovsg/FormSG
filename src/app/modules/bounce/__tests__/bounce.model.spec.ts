@@ -18,6 +18,11 @@ const Bounce = getBounceModel(mongoose)
 const MOCK_EMAIL = 'email@email.com'
 const MOCK_EMAIL_2 = 'email2@email.com'
 
+const MOCK_CONTACT_1 = {
+  email: MOCK_EMAIL,
+  contact: '+6581234567',
+}
+
 describe('Bounce Model', () => {
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => await dbHandler.clearDatabase())
@@ -35,6 +40,7 @@ describe('Bounce Model', () => {
         formId,
         bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
         hasAutoEmailed: false,
+        hasAutoSmsed: false,
       })
     })
 
@@ -46,6 +52,7 @@ describe('Bounce Model', () => {
         ],
         expireAt: new Date(Date.now()),
         hasAutoEmailed: true,
+        hasAutoSmsed: true,
       }
       const savedBounce = await new Bounce(params).save()
       const savedBounceObject = extractBounceObject(savedBounce)
@@ -68,7 +75,7 @@ describe('Bounce Model', () => {
 
   describe('methods', () => {
     describe('hasNotified', () => {
-      it('should return hasAutoEmailed if it is true', () => {
+      it('should return true if hasAutoEmailed is true', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
@@ -77,24 +84,74 @@ describe('Bounce Model', () => {
         expect(bounce.hasNotified()).toBe(true)
       })
 
-      it('should return hasAutoEmailed if it is false', () => {
+      it('should return true if hasAutoSmsed is true', () => {
+        const bounce = new Bounce({
+          formId: new ObjectId(),
+          bounces: [],
+          hasAutoSmsed: true,
+        })
+        expect(bounce.hasNotified()).toBe(true)
+      })
+
+      it('should return false if both hasAutoEmailed and hasAutoSmsed are false', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
           hasAutoEmailed: false,
+          hasAutoSmsed: false,
         })
         expect(bounce.hasNotified()).toBe(false)
       })
     })
 
     describe('setNotificationState', () => {
+      it('should set hasAutoSmsed from false to true when there are SMS recipients', () => {
+        const bounce = new Bounce({
+          formId: new ObjectId(),
+          bounces: [],
+          hasAutoSmsed: false,
+        })
+        bounce.setNotificationState([], [MOCK_CONTACT_1])
+        expect(bounce.hasAutoSmsed).toBe(true)
+      })
+
+      it('should keep hasAutoSmsed as true when there are SMS recipients', () => {
+        const bounce = new Bounce({
+          formId: new ObjectId(),
+          bounces: [],
+          hasAutoSmsed: true,
+        })
+        bounce.setNotificationState([], [MOCK_CONTACT_1])
+        expect(bounce.hasAutoSmsed).toBe(true)
+      })
+
+      it('should keep original hasAutoSmsed as true when there are no SMS recipients', () => {
+        const bounce = new Bounce({
+          formId: new ObjectId(),
+          bounces: [],
+          hasAutoSmsed: true,
+        })
+        bounce.setNotificationState([], [])
+        expect(bounce.hasAutoSmsed).toBe(true)
+      })
+
+      it('should keep original hasAutoSmsed as false when there are no SMS recipients', () => {
+        const bounce = new Bounce({
+          formId: new ObjectId(),
+          bounces: [],
+          hasAutoEmailed: false,
+        })
+        bounce.setNotificationState([], [])
+        expect(bounce.hasAutoEmailed).toBe(false)
+      })
+
       it('should set hasAutoEmailed from false to true when there are email recipients', () => {
         const bounce = new Bounce({
           formId: new ObjectId(),
           bounces: [],
           hasAutoEmailed: false,
         })
-        bounce.setNotificationState([MOCK_EMAIL])
+        bounce.setNotificationState([MOCK_EMAIL], [])
         expect(bounce.hasAutoEmailed).toBe(true)
       })
 
@@ -104,7 +161,7 @@ describe('Bounce Model', () => {
           bounces: [],
           hasAutoEmailed: true,
         })
-        bounce.setNotificationState([MOCK_EMAIL])
+        bounce.setNotificationState([MOCK_EMAIL], [])
         expect(bounce.hasAutoEmailed).toBe(true)
       })
 
@@ -114,7 +171,7 @@ describe('Bounce Model', () => {
           bounces: [],
           hasAutoEmailed: true,
         })
-        bounce.setNotificationState([])
+        bounce.setNotificationState([], [])
         expect(bounce.hasAutoEmailed).toBe(true)
       })
 
@@ -124,7 +181,7 @@ describe('Bounce Model', () => {
           bounces: [],
           hasAutoEmailed: false,
         })
-        bounce.setNotificationState([])
+        bounce.setNotificationState([], [])
         expect(bounce.hasAutoEmailed).toBe(false)
       })
     })
@@ -542,6 +599,7 @@ describe('Bounce Model', () => {
           formId,
           bounces: [{ email: MOCK_EMAIL, hasBounced: false }],
           hasAutoEmailed: false,
+          hasAutoSmsed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
@@ -564,6 +622,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Transient' },
           ],
           hasAutoEmailed: false,
+          hasAutoSmsed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
@@ -586,6 +645,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
           ],
           hasAutoEmailed: false,
+          hasAutoSmsed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
@@ -609,6 +669,7 @@ describe('Bounce Model', () => {
             { email: MOCK_EMAIL_2, hasBounced: false },
           ],
           hasAutoEmailed: false,
+          hasAutoSmsed: false,
         })
         expect(actual!.expireAt).toBeInstanceOf(Date)
       })
