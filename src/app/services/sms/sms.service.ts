@@ -1,4 +1,5 @@
 import { SecretsManager } from 'aws-sdk'
+import dedent from 'dedent-js'
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
@@ -274,7 +275,11 @@ export const sendVerificationOtp = async (
   }
   const twilioData = await getTwilio(otpData.msgSrvcName, defaultConfig)
 
-  const message = `Use the OTP ${otp} to complete your submission on form.gov.sg.\n\nIf you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`
+  const message = dedent`Use the OTP ${otp} to complete your submission on ${
+    new URL(config.app.appUrl).host
+  }.
+
+  If you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`
 
   return send(twilioData, otpData, recipient, message, SmsType.Verification)
 }
