@@ -19,7 +19,7 @@ angular.module('forms').component('endPageComponent', {
 function endPageController(SpcpSession, $window, moment) {
   const vm = this
 
-  vm.timestamp = moment().format('DD MM YYYY, HH:mm')
+  vm.timestamp = moment().format('D MMM YYYY, HH:mm')
   vm.userName = SpcpSession.userName
   vm.formLogout = SpcpSession.logout
 
