@@ -1,5 +1,6 @@
 import { AuthType } from '../../../types'
 import { ApplicationError } from '../../modules/core/core.errors'
+
 /**
  * Error while creating redirect URL
  */
@@ -36,7 +37,7 @@ export class VerifyJwtError extends ApplicationError {
   }
 }
 
-/*
+/**
  * Invalid OOB params passed to login endpoint.
  */
 export class InvalidOOBParamsError extends ApplicationError {
