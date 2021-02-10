@@ -46,6 +46,17 @@ function SubmissionsFactory(
   const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
   const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
 
+  const generateDownloadUrl = (params, downloadAttachments) => {
+    let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
+    if (params.startDate && params.endDate) {
+      resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
+    }
+    if (downloadAttachments) {
+      resUrl += `downloadAttachments=true&`
+    }
+    return resUrl
+  }
+
   /**
    * Creates form data and submits as multi-part
    * @param {String} resUrl
@@ -277,14 +288,7 @@ function SubmissionsFactory(
             })
           }
 
-          let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
-          if (params.startDate && params.endDate) {
-            resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
-          }
-          if (downloadAttachments) {
-            resUrl += `downloadAttachments=true&`
-          }
-
+          let resUrl = generateDownloadUrl(params, downloadAttachments)
           let experimentalCsvGenerator = new CsvMHGenerator(
             expectedNumResponses,
             NUM_OF_METADATA_ROWS,
@@ -399,7 +403,7 @@ function SubmissionsFactory(
                     'Failed to download data, is there a network issue?',
                     err,
                   )
-                  workerPool.forEach((worker) => worker.terminate())
+                  killWorkers(workerPool)
                   reject(err)
                 })
                 .finally(() => {
