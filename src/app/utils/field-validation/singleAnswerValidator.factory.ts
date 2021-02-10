@@ -4,6 +4,7 @@ import { IField } from '../../../types/field/baseField'
 import {
   isDateField,
   isDecimalField,
+  isDropdownField,
   isHomeNumberField,
   isLongTextField,
   isMobileNumberField,
@@ -18,6 +19,7 @@ import { ProcessedSingleAnswerResponse } from '../../modules/submission/submissi
 
 import { constructDateValidator } from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
+import { constructDropdownValidator } from './validators/dropdownValidator'
 import { constructHomeNoValidator } from './validators/homeNoValidator'
 import { constructMobileNoValidator } from './validators/mobileNoValidator'
 import { constructNricValidator } from './validators/nricValidator'
@@ -51,6 +53,8 @@ export const constructSingleAnswerValidator = (
     return constructDateValidator(formField)
   } else if (isDecimalField(formField)) {
     return constructDecimalValidator(formField)
+  } else if (isDropdownField(formField)) {
+    return constructDropdownValidator(formField)
   }
   return () => left('Unsupported field type')
 }

@@ -3,6 +3,7 @@ import {
   BasicField,
   IDateField,
   IDecimalField,
+  IDropdownField,
   IEmailFieldSchema,
   IField,
   IFieldSchema,
@@ -74,4 +75,10 @@ export const isEmailField = (
   formField: IFieldSchema,
 ): formField is IEmailFieldSchema => {
   return formField.fieldType === BasicField.Email
+}
+
+export const isDropdownField = (
+  formField: IField,
+): formField is IDropdownField => {
+  return formField.fieldType === BasicField.Dropdown
 }

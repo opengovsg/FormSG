@@ -1,3 +1,4 @@
+import { celebrate, Joi } from 'celebrate'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
@@ -5,14 +6,13 @@ import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
+  BasicField,
   EmailData,
   FieldResponse,
   ResWithHashedFields,
   WithAttachments,
   WithEmailData,
-  WithEmailModeMetadata,
   WithForm,
-  WithSubmission,
 } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
@@ -104,7 +104,6 @@ export const receiveEmailSubmission: RequestHandler<
 > = async (req, res, next) => {
   const logMeta = {
     action: 'receiveEmailSubmission',
-    formId: (req as WithForm<typeof req>).form._id,
     ...createReqMeta(req),
   }
   return EmailSubmissionReceiver.createMultipartReceiver(req.headers)
@@ -179,60 +178,6 @@ export const validateEmailSubmission: RequestHandler<
 }
 
 /**
- * Saves new Submission object to db when form.responseMode is email
- * @param req - Express request object
- * @param req.form - form object from req
- * @param req.formData - the submission for the form
- * @param req.attachments - submitted attachments, parsed by
- * exports.receiveSubmission
- * @param res - Express response object
- * @param next - the next expressjs callback, invoked once attachments
- * are processed
- */
-export const saveMetadataToDb: RequestHandler<
-  ParamsDictionary,
-  { message: string; spcpSubmissionFailure: boolean }
-> = async (req, res, next) => {
-  const { form, attachments, formData } = req as WithEmailModeMetadata<
-    typeof req
-  >
-  const logMeta = {
-    action: 'saveMetadataToDb',
-    formId: form._id,
-    ...createReqMeta(req),
-  }
-  return EmailSubmissionService.hashSubmission(formData, attachments)
-    .andThen((submissionHash) =>
-      EmailSubmissionService.saveSubmissionMetadata(form, submissionHash),
-    )
-    .map((submission) => {
-      // Important log message which links IP address to submission ID for investigation purposes
-      logger.info({
-        message: 'Saved submission to MongoDB',
-        meta: {
-          ...logMeta,
-          submissionId: submission.id,
-          responseHash: submission.responseHash,
-        },
-      })
-      ;(req as WithSubmission<typeof req>).submission = submission
-      return next()
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while saving metadata to database',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-        spcpSubmissionFailure: false,
-      })
-    })
-}
-
-/**
  * Sends response email to admin
  * @param req - Express request object
  * @param req.form - form object from req
@@ -292,3 +237,33 @@ export const sendAdminEmail: RequestHandler<
       })
     })
 }
+
+/**
+ * Celebrate validation for the email submissions endpoint.
+ */
+export const validateResponseParams = celebrate({
+  body: Joi.object({
+    responses: Joi.array()
+      .items(
+        Joi.object()
+          .keys({
+            _id: Joi.string().required(),
+            question: Joi.string(),
+            fieldType: Joi.string()
+              .required()
+              .valid(...Object.values(BasicField)),
+            answer: Joi.string().allow(''),
+            answerArray: Joi.array(),
+            filename: Joi.string(),
+            content: Joi.binary(),
+            isHeader: Joi.boolean(),
+            myInfo: Joi.object(),
+            signature: Joi.string().allow(''),
+          })
+          .xor('answer', 'answerArray') // only answer or answerArray can be present at once
+          .with('filename', 'content'), // if filename is present, content must be present
+      )
+      .required(),
+    isPreview: Joi.boolean().required(),
+  }),
+})

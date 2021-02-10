@@ -267,6 +267,8 @@ export const appendVerifiedSPCPResponses: RequestHandler<
       req.body.parsedResponses.push(...createSingpassParsedResponses(uinFin))
       break
     case AuthType.CP:
+      // Note that maskUidOnLastField() relies on the fact that userInfo is pushed in last to parsedResponses
+      // TODO(#1104): Remove this comment after refactoring
       req.body.parsedResponses.push(
         ...createCorppassParsedResponses(uinFin, userInfo),
       )

@@ -23,11 +23,11 @@ import { DatabaseError } from '../../modules/core/core.errors'
 import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
 
 import {
-  CircuitBreakerError,
-  FetchMyInfoError,
-  HashDidNotMatchError,
-  HashingError,
-  MissingHashError,
+  MyInfoCircuitBreakerError,
+  MyInfoFetchError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
 } from './myinfo.errors'
 import { IPossiblyPrefilledField } from './myinfo.types'
 import {
@@ -128,7 +128,7 @@ export class MyInfoService {
    */
   fetchMyInfoPersonData(
     params: IPersonBasicRequest,
-  ): ResultAsync<IPersonBasic, CircuitBreakerError | FetchMyInfoError> {
+  ): ResultAsync<IPersonBasic, MyInfoCircuitBreakerError | MyInfoFetchError> {
     return ResultAsync.fromPromise(
       this.#myInfoClientBreaker.fire(params),
       (error) => {
@@ -143,14 +143,14 @@ export class MyInfoService {
             meta: logMeta,
             error,
           })
-          return new CircuitBreakerError()
+          return new MyInfoCircuitBreakerError()
         } else {
           logger.error({
             message: 'Error retrieving data from MyInfo',
             meta: logMeta,
             error,
           })
-          return new FetchMyInfoError()
+          return new MyInfoFetchError()
         }
       },
     )
@@ -194,7 +194,7 @@ export class MyInfoService {
     uinFin: string,
     formId: string,
     prefilledFormFields: IPossiblyPrefilledField[],
-  ): ResultAsync<IMyInfoHashSchema | null, HashingError | DatabaseError> {
+  ): ResultAsync<IMyInfoHashSchema | null, MyInfoHashingError | DatabaseError> {
     const readOnlyHashPromises = hashFieldValues(prefilledFormFields)
     return ResultAsync.fromPromise(
       Bluebird.props<IHashes>(readOnlyHashPromises),
@@ -207,7 +207,7 @@ export class MyInfoService {
           },
           error,
         })
-        return new HashingError()
+        return new MyInfoHashingError()
       },
     ).andThen((readOnlyHashes: IHashes) => {
       return ResultAsync.fromPromise(
@@ -243,7 +243,7 @@ export class MyInfoService {
   fetchMyInfoHashes(
     uinFin: string,
     formId: string,
-  ): ResultAsync<IHashes, DatabaseError | MissingHashError> {
+  ): ResultAsync<IHashes, DatabaseError | MyInfoMissingHashError> {
     return ResultAsync.fromPromise(
       MyInfoHash.findHashes(uinFin, formId),
       (error) => {
@@ -269,7 +269,7 @@ export class MyInfoService {
           },
         })
       }
-      return errAsync(new MissingHashError())
+      return errAsync(new MyInfoMissingHashError())
     })
   }
 
@@ -284,7 +284,7 @@ export class MyInfoService {
   checkMyInfoHashes(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ): ResultAsync<Set<string>, HashingError | HashDidNotMatchError> {
+  ): ResultAsync<Set<string>, MyInfoHashingError | MyInfoHashDidNotMatchError> {
     const comparisonPromises = compareHashedValues(responses, hashes)
     return ResultAsync.fromPromise(
       Bluebird.props(comparisonPromises),
@@ -296,7 +296,7 @@ export class MyInfoService {
           },
           error,
         })
-        return new HashingError()
+        return new MyInfoHashingError()
       },
     ).andThen((comparisonResults) => {
       const comparedFieldIds = Array.from(comparisonResults.keys())
@@ -312,7 +312,7 @@ export class MyInfoService {
             failedFields: failedFieldIds,
           },
         })
-        return errAsync(new HashDidNotMatchError())
+        return errAsync(new MyInfoHashDidNotMatchError())
       }
       return okAsync(new Set(comparedFieldIds))
     })
