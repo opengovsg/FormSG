@@ -8,7 +8,6 @@ import { DatabaseError } from '../core/core.errors'
 import { ResultsNotFoundError } from './examples.errors'
 import {
   filterByAgencyId,
-  lookupAgencyInfo,
   lookupFormFeedback,
   projectFormDetails,
   replaceFeedbackWithAvg,
@@ -98,9 +97,37 @@ export const createSearchQueryPipeline = ({
         'formInfo.isListed': true,
       },
     },
+    // Retrieve agency info of forms in this stage.
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'formInfo.admin',
+        foreignField: '_id',
+        as: 'userInfo',
+      },
+    },
+    // There should only be one user with this _id
+    {
+      $unwind: '$userInfo',
+    },
+    {
+      $lookup: {
+        from: 'agencies',
+        localField: 'userInfo.agency',
+        foreignField: '_id',
+        as: 'agencyInfo',
+      },
+    },
+    // There should only be one agency with this _id
+    {
+      $unwind: '$agencyInfo',
+    },
+    {
+      $project: {
+        userInfo: 0,
+      },
+    },
   ].concat(
-    // Retrieve agency infos of forms in this stage.
-    lookupAgencyInfo,
     // Filter by agency id if parameter given.
     agencyId ? filterByAgencyId(agencyId) : [],
     // Sort by how well search terms were matched.
@@ -137,9 +164,37 @@ export const createGeneralQueryPipeline = (
         'formInfo.isListed': true,
       },
     },
-  ].concat(
     // Retrieve agency infos of forms in this stage.
-    lookupAgencyInfo,
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'formInfo.admin',
+        foreignField: '_id',
+        as: 'userInfo',
+      },
+    },
+    // There should only be one user with this _id
+    {
+      $unwind: '$userInfo',
+    },
+    {
+      $lookup: {
+        from: 'agencies',
+        localField: 'userInfo.agency',
+        foreignField: '_id',
+        as: 'agencyInfo',
+      },
+    },
+    // There should only be one agency with this _id
+    {
+      $unwind: '$agencyInfo',
+    },
+    {
+      $project: {
+        userInfo: 0,
+      },
+    },
+  ].concat(
     // Filter by agency id if parameter given.
     agencyId ? filterByAgencyId(agencyId) : [],
     // Retrieve form feedback from the forms that reach this step.
@@ -170,7 +225,35 @@ export const createFormIdInfoPipeline = (
       },
     ],
     // Retrieve agency infos of forms in this stage.
-    lookupAgencyInfo,
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'formInfo.admin',
+        foreignField: '_id',
+        as: 'userInfo',
+      },
+    },
+    // There should only be one user with this _id
+    {
+      $unwind: '$userInfo',
+    },
+    {
+      $lookup: {
+        from: 'agencies',
+        localField: 'userInfo.agency',
+        foreignField: '_id',
+        as: 'agencyInfo',
+      },
+    },
+    // There should only be one agency with this _id
+    {
+      $unwind: '$agencyInfo',
+    },
+    {
+      $project: {
+        userInfo: 0,
+      },
+    },
     // Project form information without submission/feedback information.
     projectFormDetails,
     // Retrieve form feedbacks for the submissions.

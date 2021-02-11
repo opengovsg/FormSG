@@ -18,42 +18,6 @@ export const searchFormsById = (formId: string): Record<string, unknown>[] => [
 ]
 
 /**
- * Aggregation step to retrieve `agencyInfo` from agencies collection for each
- * form's admin agency data.
- */
-export const lookupAgencyInfo: Record<string, unknown>[] = [
-  {
-    $lookup: {
-      from: 'users',
-      localField: 'formInfo.admin',
-      foreignField: '_id',
-      as: 'userInfo',
-    },
-  },
-  // There should only be one user with this _id
-  {
-    $unwind: '$userInfo',
-  },
-  {
-    $lookup: {
-      from: 'agencies',
-      localField: 'userInfo.agency',
-      foreignField: '_id',
-      as: 'agencyInfo',
-    },
-  },
-  // There should only be one agency with this _id
-  {
-    $unwind: '$agencyInfo',
-  },
-  {
-    $project: {
-      userInfo: 0,
-    },
-  },
-]
-
-/**
  * Precondition: `agencyInfo` must be retrieved beforehand, which can be done
  * with lookupAgencyInfo.
  *
