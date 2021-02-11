@@ -54,11 +54,8 @@ export const getMyInfoValue = (
   switch (myInfoAttr) {
     // Phone numbers
     case MyInfoAttribute.MobileNo:
-    case MyInfoAttribute.HomeNo:
       return formatPhoneNumber(myInfoData[myInfoAttr])
     case MyInfoAttribute.RegisteredAddress:
-    case MyInfoAttribute.BillingAddress:
-    case MyInfoAttribute.MailingAddress:
       return formatAddress(myInfoData[myInfoAttr])
     default:
       // Categorical data lookup

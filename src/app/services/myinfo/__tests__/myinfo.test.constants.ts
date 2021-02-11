@@ -18,7 +18,7 @@ export const MOCK_MYINFO_DATA = {
     classification: 'C',
     nbr: '97324992',
   },
-  mailadd: {
+  regadd: {
     country: 'US',
     unit: '',
     street: '5TH AVENUE',
@@ -39,14 +39,6 @@ export const MOCK_MYINFO_DATA = {
 }
 
 export const MOCK_MYINFO_FORMAT_DATA = {
-  homeno: {
-    code: '65',
-    prefix: '+',
-    lastupdated: '2017-11-20',
-    source: '2',
-    classification: 'C',
-    nbr: '66132665',
-  },
   mobileno: {
     code: '65',
     prefix: '+',
@@ -65,30 +57,6 @@ export const MOCK_MYINFO_FORMAT_DATA = {
     postal: '460548',
     classification: 'C',
     floor: '09',
-    building: '',
-  },
-  mailadd: {
-    country: 'US',
-    unit: '',
-    street: '5TH AVENUE',
-    lastupdated: '2016-03-11',
-    block: '725',
-    source: '2',
-    postal: 'NY 10022',
-    classification: 'C',
-    floor: '',
-    building: 'TRUMP TOWER',
-  },
-  billadd: {
-    country: 'SG',
-    street: 'SERANGOON AVE 3',
-    lastupdated: '2016-03-11',
-    block: '329',
-    source: '1',
-    postal: '550329',
-    classification: 'C',
-    floor: '09',
-    unit: '360',
     building: '',
   },
   workpassexpirydate: {
@@ -116,13 +84,7 @@ export const MOCK_FORM_FIELDS = [
   {
     fieldType: 'textfield',
     isVisible: true,
-    myInfo: { attr: 'homeno' },
-    _id: new ObjectId().toHexString(),
-  },
-  {
-    fieldType: 'textfield',
-    isVisible: true,
-    myInfo: { attr: 'mailadd' },
+    myInfo: { attr: 'regadd' },
     _id: new ObjectId().toHexString(),
   },
   // Some non-MyInfo fields
@@ -133,7 +95,7 @@ export const MOCK_FORM_FIELDS = [
 export const MOCK_HASHES = {
   name: 'name',
   mobileno: 'mobileno',
-  mailadd: 'mailadd',
+  regadd: 'regadd',
 }
 
 // Based on MOCK_FORM_FIELDS and MOCK_HASHES, only expect these attributes to
@@ -141,14 +103,13 @@ export const MOCK_HASHES = {
 // and homeno does not match because it does not have a hash.
 export const MOCK_HASHED_FIELD_IDS = new Set(
   MOCK_FORM_FIELDS.filter(
-    (field) => field.myInfo && ['name', 'mailadd'].includes(field.myInfo?.attr),
+    (field) => field.myInfo && ['name', 'regadd'].includes(field.myInfo?.attr),
   ).map((field) => field._id),
 )
 
 const populatedValues = [
   { fieldValue: 'TAN XIAO HUI', disabled: true },
   { fieldValue: '+65 97324992', disabled: false },
-  { fieldValue: '', disabled: false },
   {
     fieldValue: 'TRUMP TOWER, 725 5TH AVENUE, UNITED STATES NY 10022',
     disabled: false,
