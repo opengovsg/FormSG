@@ -9,7 +9,6 @@ import { DatabaseError } from '../core/core.errors'
 import { ResultsNotFoundError } from './examples.errors'
 import {
   lookupFormFeedback,
-  projectFormDetails,
   replaceFeedbackWithAvg,
   sortByCreated,
   sortByRelevance,
@@ -277,9 +276,18 @@ export const createFormIdInfoPipeline = (
         userInfo: 0,
       },
     },
-  ].concat(
     // Project form information without submission/feedback information.
-    projectFormDetails,
+    {
+      $project: {
+        _id: 1,
+        title: '$formInfo.title',
+        form_fields: '$formInfo.form_fields',
+        logo: '$agencyInfo.logo',
+        agency: '$agencyInfo.shortName',
+        colorTheme: '$formInfo.startPage.colorTheme',
+      },
+    },
+  ].concat(
     // Retrieve form feedbacks for the submissions.
     lookupFormFeedback,
     // Project submissions by form id, get submission count, get the last

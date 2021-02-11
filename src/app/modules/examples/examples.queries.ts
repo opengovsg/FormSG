@@ -45,26 +45,6 @@ export const lookupFormFeedback: Record<string, unknown>[] = [
 ]
 
 /**
- * Precondition: `formInfo` must be retrieved beforehand, which can be done with
- * lookupFormInfo, searchFormsWithText or searchFormsById.
- *
- * Aggregation step to project form information without submission/feedback
- * information.
- */
-export const projectFormDetails: Record<string, unknown>[] = [
-  {
-    $project: {
-      _id: 1,
-      title: '$formInfo.title',
-      form_fields: '$formInfo.form_fields',
-      logo: '$agencyInfo.logo',
-      agency: '$agencyInfo.shortName',
-      colorTheme: '$formInfo.startPage.colorTheme',
-    },
-  },
-]
-
-/**
  * Aggregation step to produce an object containing the pageResults and
  * totalCount.
  * pageResults will only contain condensed information to be displayed on an
