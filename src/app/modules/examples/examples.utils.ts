@@ -70,7 +70,7 @@ export const createSearchQueryPipeline = ({
   agencyId?: string
   searchTerm: string
 }): Record<string, unknown>[] => {
-  return [
+  return ([
     // Get formId and formInfo of forms containing the search term.
     {
       $match: {
@@ -119,7 +119,7 @@ export const createSearchQueryPipeline = ({
         userInfo: 0,
       },
     },
-  ].concat(
+  ] as Record<string, unknown>[]).concat(
     // Filter by agency id if parameter given.
     agencyId
       ? [
@@ -162,7 +162,7 @@ export const createSearchQueryPipeline = ({
 export const createGeneralQueryPipeline = (
   agencyId?: string,
 ): Record<string, unknown>[] => {
-  return [
+  return ([
     {
       $project: {
         formInfo: '$$ROOT',
@@ -205,7 +205,7 @@ export const createGeneralQueryPipeline = (
         userInfo: 0,
       },
     },
-  ].concat(
+  ] as Record<string, unknown>[]).concat(
     // Filter by agency id if parameter given.
     agencyId
       ? [
