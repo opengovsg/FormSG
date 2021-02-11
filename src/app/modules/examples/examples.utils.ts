@@ -8,7 +8,6 @@ import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
 import {
-  filterByAgencyId,
   lookupFormFeedback,
   projectFormDetails,
   replaceFeedbackWithAvg,
@@ -129,7 +128,15 @@ export const createSearchQueryPipeline = ({
     },
   ].concat(
     // Filter by agency id if parameter given.
-    agencyId ? filterByAgencyId(agencyId) : [],
+    agencyId
+      ? [
+          {
+            $match: {
+              'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
+            },
+          },
+        ]
+      : [],
     // Sort by how well search terms were matched.
     sortByRelevance,
     // Retrieve form feedback from the forms that reach this step.
@@ -196,7 +203,15 @@ export const createGeneralQueryPipeline = (
     },
   ].concat(
     // Filter by agency id if parameter given.
-    agencyId ? filterByAgencyId(agencyId) : [],
+    agencyId
+      ? [
+          {
+            $match: {
+              'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
+            },
+          },
+        ]
+      : [],
     // Retrieve form feedback from the forms that reach this step.
     lookupFormFeedback,
     // More recently created forms appear higher on the examples page.

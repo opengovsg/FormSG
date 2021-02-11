@@ -1,22 +1,3 @@
-import mongoose from 'mongoose'
-
-/**
- * Precondition: `agencyInfo` must be retrieved beforehand, which can be done
- * with lookupAgencyInfo.
- *
- * Aggregation step to only allow forms from a specific agency from passing.
- * @returns aggregate step to filter pipeline by given agency id
- */
-export const filterByAgencyId = (
-  agencyId: string,
-): Record<string, unknown>[] => [
-  {
-    $match: {
-      'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
-    },
-  },
-]
-
 /**
  * Precondition: A match by text was called earlier, which can be done with
  * searchFormsWithText.
