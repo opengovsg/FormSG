@@ -7,11 +7,7 @@ import { MapRouteError } from '../../../types/routing'
 import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
-import {
-  replaceFeedbackWithAvg,
-  sortByCreated,
-  sortByRelevance,
-} from './examples.queries'
+import { sortByCreated, sortByRelevance } from './examples.queries'
 
 const logger = createLoggerWithLabel(module)
 
@@ -309,9 +305,24 @@ export const createFormIdInfoPipeline = (
         as: 'formFeedbackInfo',
       },
     },
-  ].concat(
+    {
+      $addFields: {
+        avgFeedback: {
+          $avg: '$formFeedbackInfo.rating',
+        },
+      },
+    },
     // Project submissions by form id, get submission count, get the last
     // submission date, along with the average feedback of the submissions.
-    replaceFeedbackWithAvg,
-  )
+    {
+      $project: {
+        agency: 1,
+        avgFeedback: 1,
+        colorTheme: 1,
+        form_fields: 1,
+        logo: 1,
+        title: 1,
+      },
+    },
+  ]
 }
