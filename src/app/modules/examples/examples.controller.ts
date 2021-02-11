@@ -24,7 +24,13 @@ export const handleGetExamples: RequestHandler<
   unknown,
   Query & ExamplesQueryParams
 > = (req, res) => {
-  return ExamplesService.getExampleForms(req.query)
+  const { pageNo, agency, searchTerm, shouldGetTotalNumResults } = req.query
+  return ExamplesService.getExampleForms({
+    pageNo,
+    agency,
+    searchTerm,
+    shouldGetTotalNumResults,
+  })
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
