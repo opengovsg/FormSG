@@ -14,18 +14,6 @@ export const sortByRelevance: Record<string, unknown>[] = [
 ]
 
 /**
- * Precondition: `created` field must have already been retrieved from the
- * submissions collection via searchSubmissionsForForm.
- *
- * Aggregation step to sort forms by the creation date.
- */
-export const sortByCreated = [
-  {
-    $sort: { 'formInfo.created': -1 },
-  },
-]
-
-/**
  * Aggregation step to produce an object containing the pageResults and
  * totalCount.
  * pageResults will only contain condensed information to be displayed on an

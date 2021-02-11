@@ -7,7 +7,7 @@ import { MapRouteError } from '../../../types/routing'
 import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
-import { sortByCreated, sortByRelevance } from './examples.queries'
+import { sortByRelevance } from './examples.queries'
 
 const logger = createLoggerWithLabel(module)
 
@@ -223,7 +223,9 @@ export const createGeneralQueryPipeline = (
       },
     },
     // More recently created forms appear higher on the examples page.
-    sortByCreated,
+    {
+      $sort: { 'formInfo.created': -1 },
+    },
   )
 }
 
