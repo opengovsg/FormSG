@@ -129,7 +129,7 @@
     "jwt-decode": "^3.1.2",
     "libphonenumber-js": "^1.9.8",
     "lodash": "^4.17.20",
-    "moment-timezone": "0.5.32",
+    "moment-timezone": "0.5.33",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^5.11.10",
     "multiparty": ">=4.2.2",
