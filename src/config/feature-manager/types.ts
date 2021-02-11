@@ -65,6 +65,9 @@ export interface ISpcpConfig {
 export interface IMyInfoConfig {
   myInfoClientMode: MyInfoClientMode
   myInfoKeyPath: string
+  myInfoCertPath: string
+  myInfoClientId: string
+  myInfoClientSecret: string
 }
 
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
