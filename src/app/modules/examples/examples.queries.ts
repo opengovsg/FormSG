@@ -26,25 +26,6 @@ export const sortByCreated = [
 ]
 
 /**
- * Precondition: `_id` field corresponding to the forms' ids must be retrieved
- * beforehand, which can be done using groupSubmissionsByFormId or
- * searchFormsForText.
- *
- * Aggregation step to retrieve `formFeedbackInfo` from the formfeedback
- * collection for each of the `formId`s specified.
- */
-export const lookupFormFeedback: Record<string, unknown>[] = [
-  {
-    $lookup: {
-      from: 'formfeedback',
-      localField: '_id',
-      foreignField: 'formId',
-      as: 'formFeedbackInfo',
-    },
-  },
-]
-
-/**
  * Aggregation step to produce an object containing the pageResults and
  * totalCount.
  * pageResults will only contain condensed information to be displayed on an

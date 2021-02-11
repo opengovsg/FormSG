@@ -8,7 +8,6 @@ import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
 import {
-  lookupFormFeedback,
   replaceFeedbackWithAvg,
   sortByCreated,
   sortByRelevance,
@@ -139,7 +138,14 @@ export const createSearchQueryPipeline = ({
     // Sort by how well search terms were matched.
     sortByRelevance,
     // Retrieve form feedback from the forms that reach this step.
-    lookupFormFeedback,
+    {
+      $lookup: {
+        from: 'formfeedback',
+        localField: '_id',
+        foreignField: 'formId',
+        as: 'formFeedbackInfo',
+      },
+    },
   )
 }
 
@@ -212,7 +218,14 @@ export const createGeneralQueryPipeline = (
         ]
       : [],
     // Retrieve form feedback from the forms that reach this step.
-    lookupFormFeedback,
+    {
+      $lookup: {
+        from: 'formfeedback',
+        localField: '_id',
+        foreignField: 'formId',
+        as: 'formFeedbackInfo',
+      },
+    },
     // More recently created forms appear higher on the examples page.
     sortByCreated,
   )
@@ -287,9 +300,16 @@ export const createFormIdInfoPipeline = (
         colorTheme: '$formInfo.startPage.colorTheme',
       },
     },
-  ].concat(
     // Retrieve form feedbacks for the submissions.
-    lookupFormFeedback,
+    {
+      $lookup: {
+        from: 'formfeedback',
+        localField: '_id',
+        foreignField: 'formId',
+        as: 'formFeedbackInfo',
+      },
+    },
+  ].concat(
     // Project submissions by form id, get submission count, get the last
     // submission date, along with the average feedback of the submissions.
     replaceFeedbackWithAvg,
