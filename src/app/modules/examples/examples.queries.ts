@@ -1,7 +1,5 @@
 import mongoose from 'mongoose'
 
-import { Status } from '../../../types'
-
 /**
  * Precondition: Must be called as the **first** step in the aggregation
  * pipeline (requirement for MongoDB match text).
@@ -31,22 +29,6 @@ export const searchFormsById = (formId: string): Record<string, unknown>[] => [
   {
     $project: {
       formInfo: '$$ROOT',
-    },
-  },
-]
-
-/**
- * Precondition: `formInfo` must be retrieved beforehand, which can be done with
- * lookupFormInfo or searchFormsWithText.
- *
- * Aggregation step to only allow public and listed forms to pass to the next
- * step in the pipeline.
- */
-export const filterInactiveAndUnlistedForms: Record<string, unknown>[] = [
-  {
-    $match: {
-      'formInfo.status': Status.Public,
-      'formInfo.isListed': true,
     },
   },
 ]

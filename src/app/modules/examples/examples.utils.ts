@@ -1,13 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { Status } from '../../../types'
 import { MapRouteError } from '../../../types/routing'
 import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
 import {
   filterByAgencyId,
-  filterInactiveAndUnlistedForms,
   lookupAgencyInfo,
   lookupFormFeedback,
   projectFormDetails,
@@ -92,9 +92,14 @@ export const createSearchQueryPipeline = ({
         formInfo: '$$ROOT',
       },
     },
-  ].concat(
     // Filter out all inactive/unlisted forms.
-    filterInactiveAndUnlistedForms,
+    {
+      $match: {
+        'formInfo.status': Status.Public,
+        'formInfo.isListed': true,
+      },
+    },
+  ].concat(
     // Retrieve agency infos of forms in this stage.
     lookupAgencyInfo,
     // Filter by agency id if parameter given.
@@ -122,7 +127,14 @@ export const createGeneralQueryPipeline = (
 ): Record<string, unknown>[] => {
   return searchForms().concat(
     // Filter out all inactive/unlisted forms.
-    filterInactiveAndUnlistedForms,
+    [
+      {
+        $match: {
+          'formInfo.status': Status.Public,
+          'formInfo.isListed': true,
+        },
+      },
+    ],
     // Retrieve agency infos of forms in this stage.
     lookupAgencyInfo,
     // Filter by agency id if parameter given.
@@ -146,7 +158,14 @@ export const createFormIdInfoPipeline = (
   // Retrieve all forms with the specified formId.
   return searchFormsById(formId).concat(
     // Filter out all inactive/unlisted forms.
-    filterInactiveAndUnlistedForms,
+    [
+      {
+        $match: {
+          'formInfo.status': Status.Public,
+          'formInfo.isListed': true,
+        },
+      },
+    ],
     // Retrieve agency infos of forms in this stage.
     lookupAgencyInfo,
     // Project form information without submission/feedback information.
