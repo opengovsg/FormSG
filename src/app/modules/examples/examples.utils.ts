@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
+import mongoose from 'mongoose'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { Status } from '../../../types'
@@ -11,7 +12,6 @@ import {
   lookupFormFeedback,
   projectFormDetails,
   replaceFeedbackWithAvg,
-  searchFormsById,
   sortByCreated,
   sortByRelevance,
 } from './examples.queries'
@@ -214,16 +214,24 @@ export const createFormIdInfoPipeline = (
   formId: string,
 ): Record<string, unknown>[] => {
   // Retrieve all forms with the specified formId.
-  return searchFormsById(formId).concat(
-    // Filter out all inactive/unlisted forms.
-    [
-      {
-        $match: {
-          'formInfo.status': Status.Public,
-          'formInfo.isListed': true,
-        },
+  return [
+    {
+      $match: {
+        _id: mongoose.Types.ObjectId(formId),
       },
-    ],
+    },
+    {
+      $project: {
+        formInfo: '$$ROOT',
+      },
+    },
+    // Filter out all inactive/unlisted forms.
+    {
+      $match: {
+        'formInfo.status': Status.Public,
+        'formInfo.isListed': true,
+      },
+    },
     // Retrieve agency infos of forms in this stage.
     {
       $lookup: {
@@ -254,6 +262,7 @@ export const createFormIdInfoPipeline = (
         userInfo: 0,
       },
     },
+  ].concat(
     // Project form information without submission/feedback information.
     projectFormDetails,
     // Retrieve form feedbacks for the submissions.

@@ -1,23 +1,6 @@
 import mongoose from 'mongoose'
 
 /**
- * Produces an aggregation step to retrieve form with the specified formId.
- * @param formId The _id field of the form to be retrieved
- */
-export const searchFormsById = (formId: string): Record<string, unknown>[] => [
-  {
-    $match: {
-      _id: mongoose.Types.ObjectId(formId),
-    },
-  },
-  {
-    $project: {
-      formInfo: '$$ROOT',
-    },
-  },
-]
-
-/**
  * Precondition: `agencyInfo` must be retrieved beforehand, which can be done
  * with lookupAgencyInfo.
  *
