@@ -241,7 +241,7 @@
     "regenerator": "^0.14.4",
     "rimraf": "^3.0.2",
     "sinon": "^9.2.4",
-    "stylelint": "^13.8.0",
+    "stylelint": "^13.9.0",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-standard": "^20.0.0",
     "stylelint-prettier": "^1.1.2",
