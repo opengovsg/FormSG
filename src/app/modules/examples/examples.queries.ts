@@ -6,30 +6,6 @@ import { Status } from '../../../types'
  * Precondition: Must be called as the **first** step in the aggregation
  * pipeline (requirement for MongoDB match text).
  *
- * Aggregation step to retrieve `_id` and `formInfo` of forms that contain words
- * that match given search term.
- * @param searchTerm The word that must appear in the form to be retrieved.
- * @returns aggregate step to search forms with text
- */
-export const searchFormsWithText = (
-  searchTerm: string,
-): Record<string, unknown>[] => [
-  {
-    $match: {
-      $text: { $search: searchTerm },
-    },
-  },
-  {
-    $project: {
-      formInfo: '$$ROOT',
-    },
-  },
-]
-
-/**
- * Precondition: Must be called as the **first** step in the aggregation
- * pipeline (requirement for MongoDB match text).
- *
  * Aggregation step to retrieve `_id` and `formInfo` of forms, without filtering
  * for search terms.
  * @returns aggregate step to search forms

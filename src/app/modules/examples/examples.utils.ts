@@ -14,7 +14,6 @@ import {
   replaceFeedbackWithAvg,
   searchForms,
   searchFormsById,
-  searchFormsWithText,
   sortByCreated,
   sortByRelevance,
 } from './examples.queries'
@@ -82,7 +81,18 @@ export const createSearchQueryPipeline = ({
   searchTerm: string
 }): Record<string, unknown>[] => {
   // Get formId and formInfo of forms containing the search term.
-  return searchFormsWithText(searchTerm).concat(
+  return [
+    {
+      $match: {
+        $text: { $search: searchTerm },
+      },
+    },
+    {
+      $project: {
+        formInfo: '$$ROOT',
+      },
+    },
+  ].concat(
     // Filter out all inactive/unlisted forms.
     filterInactiveAndUnlistedForms,
     // Retrieve agency infos of forms in this stage.
