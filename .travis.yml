@@ -19,7 +19,7 @@ notifications:
 
 jobs:
   include:
-    - stage: Lint application code
+    - stage: Build application
       install: npm ci
       cache:
         - npm
@@ -30,45 +30,38 @@ jobs:
         - set -e
         - npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
         - npm run lint-ci
-    - stage: Tests
-      install: npm ci
-      cache:
-        - npm
-        - pip
-      name: Javascript tests
-      script:
         - npm run build
+      workspaces:
+        create:
+          name: build
+          paths: .
+    - stage: Tests
+      name: Javascript tests
+      workspaces:
+        use: build
+      script:
         - npm run test-backend-jasmine
         - npm run test-frontend
     - name: Typescript tests
-      install: npm ci
-      cache:
-        - npm
-        - pip
+      workspaces:
+        use: build
       script:
-        - npm run build
         - npm run test-backend-jest
       after_success:
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
     - name: End-to-end tests
-      install: npm ci
-      cache:
-        - npm
-        - pip
+      workspaces:
+        use: build
       addons:
         chrome: stable
       script:
-        - npm run build
         - npm run test-e2e-ci
-    - stage: Build and deploy
-      install: npm ci
-      cache:
-        - npm
-        - pip
+    - stage: Deploy
       services:
         - docker
-      script:
-        - npm run build
+      workspaces:
+        use: build
+      script: skip
       before_deploy:
         # Workaround to run before_deploy only once
         - >
