@@ -7,7 +7,6 @@ import { MapRouteError } from '../../../types/routing'
 import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
-import { sortByRelevance } from './examples.queries'
 
 const logger = createLoggerWithLabel(module)
 
@@ -132,7 +131,11 @@ export const createSearchQueryPipeline = ({
         ]
       : [],
     // Sort by how well search terms were matched.
-    sortByRelevance,
+    {
+      $sort: {
+        textScore: -1,
+      },
+    },
     // Retrieve form feedback from the forms that reach this step.
     {
       $lookup: {

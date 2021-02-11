@@ -1,19 +1,4 @@
 /**
- * Precondition: A match by text was called earlier, which can be done with
- * searchFormsWithText.
- *
- * Aggregation step to sort forms by their textScore relevance; i.e. how well
- * the search terms were matched.
- */
-export const sortByRelevance: Record<string, unknown>[] = [
-  {
-    $sort: {
-      textScore: -1,
-    },
-  },
-]
-
-/**
  * Aggregation step to produce an object containing the pageResults and
  * totalCount.
  * pageResults will only contain condensed information to be displayed on an
