@@ -12,7 +12,6 @@ import {
   lookupFormFeedback,
   projectFormDetails,
   replaceFeedbackWithAvg,
-  searchForms,
   searchFormsById,
   sortByCreated,
   sortByRelevance,
@@ -80,8 +79,8 @@ export const createSearchQueryPipeline = ({
   agencyId?: string
   searchTerm: string
 }): Record<string, unknown>[] => {
-  // Get formId and formInfo of forms containing the search term.
   return [
+    // Get formId and formInfo of forms containing the search term.
     {
       $match: {
         $text: { $search: searchTerm },
@@ -125,16 +124,20 @@ export const createSearchQueryPipeline = ({
 export const createGeneralQueryPipeline = (
   agencyId?: string,
 ): Record<string, unknown>[] => {
-  return searchForms().concat(
-    // Filter out all inactive/unlisted forms.
-    [
-      {
-        $match: {
-          'formInfo.status': Status.Public,
-          'formInfo.isListed': true,
-        },
+  return [
+    {
+      $project: {
+        formInfo: '$$ROOT',
       },
-    ],
+    },
+    // Filter out all inactive/unlisted forms.
+    {
+      $match: {
+        'formInfo.status': Status.Public,
+        'formInfo.isListed': true,
+      },
+    },
+  ].concat(
     // Retrieve agency infos of forms in this stage.
     lookupAgencyInfo,
     // Filter by agency id if parameter given.
