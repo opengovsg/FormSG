@@ -126,14 +126,22 @@ export const getMyInfoValue = (
 export const isFieldReadOnly = (
   myInfoAttr: MyInfoAttribute,
   myInfoValue: string | undefined,
-  myInfoData: IPersonBasic,
+  myInfoData: IPerson,
 ): boolean => {
-  if (!myInfoAttr || !myInfoValue || !myInfoData || !myInfoData[myInfoAttr]) {
-    return false
+  // Edge case: data is in array format
+  if (myInfoAttr === MyInfoAttribute.VehicleNo) {
+    return (
+      !!myInfoValue &&
+      !!myInfoData[myInfoAttr] &&
+      myInfoData[myInfoAttr]!.every(
+        (vehicle) => vehicle.source === MyInfoSource.GovtVerified,
+      )
+    )
   }
   return (
     !!myInfoValue &&
-    myInfoData[myInfoAttr].source === MyInfoSource.GovtVerified &&
+    !myInfoData[myInfoAttr]?.unavailable &&
+    myInfoData[myInfoAttr]?.source === MyInfoSource.GovtVerified &&
     ![
       MyInfoAttribute.Marital,
       MyInfoAttribute.MarriageDate,
