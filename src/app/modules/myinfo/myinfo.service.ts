@@ -1,4 +1,5 @@
 import {
+  IPerson,
   IPersonResponse,
   MyInfoAttributeString,
   MyInfoGovClient,
@@ -191,7 +192,7 @@ export class MyInfoService {
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
    */
   prefillMyInfoFields(
-    myInfoData: IPersonBasic,
+    myInfoData: IPerson,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): Result<IPossiblyPrefilledField[], never> {
     const prefilledFields = currFormFields.map((field) => {
