@@ -11,8 +11,9 @@ import * as FormService from '../form/form.service'
 import { SpcpFactory } from '../spcp/spcp.factory'
 import { LoginPageValidationResult } from '../spcp/spcp.types'
 
+import { MYINFO_COOKIE_NAME } from './myinfo.constants'
 import { MyInfoFactory } from './myinfo.factory'
-import { MyInfoCookieName, MyInfoCookiePayload } from './myinfo.types'
+import { MyInfoCookiePayload, MyInfoCookieState } from './myinfo.types'
 import {
   mapEServiceIdCheckError,
   mapRedirectURLError,
@@ -145,8 +146,9 @@ const loginToMyInfo: RequestHandler<
       const cookiePayload: MyInfoCookiePayload = {
         accessToken,
         usedCount: 0,
+        state: MyInfoCookieState.Success,
       }
-      res.cookie(MyInfoCookieName.MyInfoAccessToken, cookiePayload, {
+      res.cookie(MYINFO_COOKIE_NAME, cookiePayload, {
         maxAge: cookieDuration,
         // Important for security - access token cannot be read by client-side JS
         httpOnly: true,
@@ -161,7 +163,10 @@ const loginToMyInfo: RequestHandler<
         meta: logMeta,
         error,
       })
-      res.cookie(MyInfoCookieName.MyInfoError, true)
+      const cookiePayload: MyInfoCookiePayload = {
+        state: MyInfoCookieState.RetrieveAccessTokenError,
+      }
+      res.cookie(MYINFO_COOKIE_NAME, cookiePayload)
       return res.redirect(redirectDestination)
     })
 }
