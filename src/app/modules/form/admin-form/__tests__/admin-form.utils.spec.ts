@@ -15,6 +15,7 @@ import {
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { ForbiddenFormError } from '../../form.errors'
+import { EditFieldError } from '../admin-form.errors'
 import {
   DuplicateFormBody,
   EditFormFieldParams,
@@ -440,6 +441,90 @@ describe('admin-form.utils', () => {
         fieldToUpdate,
         ...tail(INITIAL_FIELDS),
       ])
+    })
+
+    it('should return EditFieldError when field to be created already exists', async () => {
+      // Arrange
+      const existingField = cloneDeep(INITIAL_FIELDS[0])
+      const newFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Create },
+        field: existingField,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(INITIAL_FIELDS, newFieldParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+    })
+
+    it('should return EditFieldError when field to be duplicated already exists', async () => {
+      // Arrange
+      const existingField = cloneDeep(INITIAL_FIELDS[1])
+      const dupeFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Duplicate },
+        field: existingField,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(INITIAL_FIELDS, dupeFieldParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+    })
+
+    it('should return EditFieldError when field to be deleted does not exist', async () => {
+      // Arrange
+      const newFieldToDelete = generateDefaultField(BasicField.Decimal)
+      const deleteFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Delete },
+        field: newFieldToDelete,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        INITIAL_FIELDS,
+        deleteFieldParams,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+    })
+
+    it('should return EditFieldError when field to be reordered does not exist', async () => {
+      // Arrange
+      const newFieldToReorder = generateDefaultField(BasicField.Dropdown)
+      const reorderFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Reorder, position: 2 },
+        field: newFieldToReorder,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        INITIAL_FIELDS,
+        reorderFieldParams,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+    })
+
+    it('should return EditFieldError when field to be updated does not exist', async () => {
+      // Arrange
+      const newFieldToUpdate = generateDefaultField(BasicField.Email)
+      const updateFieldParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Update },
+        field: newFieldToUpdate,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        INITIAL_FIELDS,
+        updateFieldParams,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
     })
   })
 })
