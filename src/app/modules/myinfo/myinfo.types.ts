@@ -44,21 +44,18 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
 export type MyInfoComparePromises = Map<string, Promise<boolean>>
 
 export enum MyInfoCookieState {
-  Success = 'Success',
+  AccessTokenRetrieved = 'AccessTokenRetrieved',
   RetrieveAccessTokenError = 'RetrieveAccessTokenError',
-  RetrievePersonDataError = 'RetrievePersonDataError',
 }
 
 export type MyInfoCookiePayload =
   | {
       accessToken: string
       usedCount: number
-      state: MyInfoCookieState.Success
+      state: MyInfoCookieState.AccessTokenRetrieved
     }
   | {
-      state:
-        | MyInfoCookieState.RetrieveAccessTokenError
-        | MyInfoCookieState.RetrievePersonDataError
+      state: MyInfoCookieState.RetrieveAccessTokenError
     }
 
 export interface ParsedRelayState {

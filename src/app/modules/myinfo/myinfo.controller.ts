@@ -3,7 +3,6 @@ import { Request } from 'express'
 import { Query, RequestHandler } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
 import { createReqMeta } from '../../utils/request'
@@ -11,7 +10,7 @@ import * as FormService from '../form/form.service'
 import { SpcpFactory } from '../spcp/spcp.factory'
 import { LoginPageValidationResult } from '../spcp/spcp.types'
 
-import { MYINFO_COOKIE_NAME } from './myinfo.constants'
+import { MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS } from './myinfo.constants'
 import { MyInfoFactory } from './myinfo.factory'
 import { MyInfoCookiePayload, MyInfoCookieState } from './myinfo.types'
 import {
@@ -146,14 +145,11 @@ const loginToMyInfo: RequestHandler<
       const cookiePayload: MyInfoCookiePayload = {
         accessToken,
         usedCount: 0,
-        state: MyInfoCookieState.Success,
+        state: MyInfoCookieState.AccessTokenRetrieved,
       }
       res.cookie(MYINFO_COOKIE_NAME, cookiePayload, {
         maxAge: cookieDuration,
-        // Important for security - access token cannot be read by client-side JS
-        httpOnly: true,
-        sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-        secure: !config.isDev,
+        ...MYINFO_COOKIE_OPTIONS,
       })
       return res.redirect(redirectDestination)
     })
