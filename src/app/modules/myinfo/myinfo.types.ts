@@ -3,8 +3,10 @@ import { LeanDocument } from 'mongoose'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import {
+  AuthType,
   Environment,
   IFieldSchema,
+  IFormSchema,
   IMyInfo,
   MyInfoAttribute,
 } from '../../../types'
@@ -19,6 +21,7 @@ export interface IMyInfoServiceConfig {
 export interface IMyInfoRedirectURLArgs {
   formId: string
   rememberMe: boolean
+  isPreview?: true
   formTitle: string
   formEsrvcId: string
   requestedAttributes: MyInfoAttributeString[]
@@ -54,5 +57,11 @@ export interface ParsedRelayState {
   uuid: string
   formId: string
   rememberMe: boolean
+  isPreview: boolean
   cookieDuration: number
+}
+
+export interface IMyInfoForm extends IFormSchema {
+  authType: AuthType.MyInfo
+  esrvcId: string
 }

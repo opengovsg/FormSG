@@ -2,8 +2,8 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Request } from 'express'
 import { Query, RequestHandler } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
-import { err, errAsync } from 'neverthrow'
 
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
 import { createReqMeta } from '../../utils/request'
@@ -11,9 +11,13 @@ import * as FormService from '../form/form.service'
 import { SpcpFactory } from '../spcp/spcp.factory'
 import { LoginPageValidationResult } from '../spcp/spcp.types'
 
-import { MyInfoAuthTypeError, MyInfoNoESrvcIdError } from './myinfo.errors'
 import { MyInfoFactory } from './myinfo.factory'
-import { mapEServiceIdCheckError, mapRedirectURLError } from './myinfo.util'
+import { MyInfoCookieName, MyInfoCookiePayload } from './myinfo.types'
+import {
+  mapEServiceIdCheckError,
+  mapRedirectURLError,
+  validateMyInfoForm,
+} from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -34,18 +38,17 @@ const respondWithRedirectURL: RequestHandler<
 > = async (req, res) => {
   const { formId, rememberMe } = req.query
   return FormService.retrieveFormById(formId)
-    .andThen((form) => {
-      if (form.authType !== AuthType.MyInfo || !form.esrvcId) {
-        return errAsync(new MyInfoAuthTypeError())
-      }
-      return MyInfoFactory.createRedirectURL({
+    .andThen((form) => validateMyInfoForm(form))
+    .andThen((form) =>
+      MyInfoFactory.createRedirectURL({
         formEsrvcId: form.esrvcId,
         formId,
         formTitle: form.title,
         rememberMe,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
-      }).map((redirectURL) => res.json({ redirectURL }))
-    })
+      }),
+    )
+    .map((redirectURL) => res.json({ redirectURL }))
     .mapErr((error) => {
       logger.error({
         message: 'Error while creating MyInfo redirect URL',
@@ -78,23 +81,17 @@ const checkMyInfoEServiceId: RequestHandler<
   unknown,
   LoginPageValidationResult | { message: string },
   unknown,
-  { formId: string }
+  Query & { formId: string }
 > = async (req, res) => {
   const { formId } = req.query
   return FormService.retrieveFormById(formId)
-    .andThen((form) => {
-      if (!form.esrvcId) {
-        return err(new MyInfoNoESrvcIdError())
-      }
-      if (form.authType !== AuthType.MyInfo) {
-        return err(new MyInfoAuthTypeError())
-      }
-      // Borrow SingPass e-service ID validation flow
-      return SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId)
-        .asyncAndThen(SpcpFactory.fetchLoginPage)
-        .andThen(SpcpFactory.validateLoginPage)
-        .map((result) => res.status(StatusCodes.OK).json(result))
-    })
+    .andThen((form) => validateMyInfoForm(form))
+    .andThen((form) =>
+      SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+    )
+    .andThen(SpcpFactory.fetchLoginPage)
+    .andThen(SpcpFactory.validateLoginPage)
+    .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
       logger.error({
         message: 'Error while validating MyInfo e-service ID',
@@ -113,4 +110,63 @@ const checkMyInfoEServiceId: RequestHandler<
 export const handleEServiceIdCheck = [
   validateEServiceIdCheck,
   checkMyInfoEServiceId,
+] as RequestHandler[]
+
+const validateMyInfoLogin = celebrate({
+  [Segments.QUERY]: {
+    code: Joi.string().required(),
+    state: Joi.string().required(),
+  },
+})
+
+const loginToMyInfo: RequestHandler<
+  unknown,
+  unknown,
+  unknown,
+  Query & { code: string; state: string }
+> = async (req, res) => {
+  const { code, state } = req.query
+  const logMeta = {
+    action: 'loginToMyInfo',
+    state,
+  }
+  const parseStateResult = MyInfoFactory.parseMyInfoRelayState(state)
+  if (parseStateResult.isErr()) {
+    logger.error({
+      message: 'Invalid MyInfo login query parameters',
+      meta: logMeta,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+  const { formId, cookieDuration, isPreview } = parseStateResult.value
+  const redirectDestination = `/${formId}${isPreview ? '/preview' : ''}`
+  return MyInfoFactory.retrieveAccessToken(code)
+    .map((accessToken) => {
+      const cookiePayload: MyInfoCookiePayload = {
+        accessToken,
+        usedCount: 0,
+      }
+      res.cookie(MyInfoCookieName.MyInfoAccessToken, cookiePayload, {
+        maxAge: cookieDuration,
+        // Important for security - access token cannot be read by client-side JS
+        httpOnly: true,
+        sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+        secure: !config.isDev,
+      })
+      return res.redirect(redirectDestination)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while retrieving MyInfo access token',
+        meta: logMeta,
+        error,
+      })
+      res.cookie(MyInfoCookieName.MyInfoError, true)
+      return res.redirect(redirectDestination)
+    })
+}
+
+export const handleMyInfoLogin = [
+  validateMyInfoLogin,
+  loginToMyInfo,
 ] as RequestHandler[]

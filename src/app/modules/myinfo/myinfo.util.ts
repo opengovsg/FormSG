@@ -2,12 +2,15 @@ import { IPerson, MyInfoSource } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
+import { err, ok, Result } from 'neverthrow'
 import uuid from 'uuid'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
 import {
+  AuthType,
   BasicField,
+  IFormSchema,
   IHashes,
   IMyInfo,
   MapRouteError,
@@ -38,6 +41,7 @@ import {
   formatVehicleNumbers,
 } from './myinfo.format'
 import {
+  IMyInfoForm,
   IPossiblyPrefilledField,
   MyInfoComparePromises,
   MyInfoHashPromises,
@@ -372,5 +376,20 @@ export const getMyInfoFieldOptions = (
 export const createConsentPagePurpose = (formTitle: string): string =>
   `The form "${formTitle}" is requesting to pre-fill your MyInfo data.`
 
-export const createRelayState = (formId: string, rememberMe: boolean): string =>
-  `${uuid.v4()},${formId},${rememberMe}`
+export const createRelayState = (
+  formId: string,
+  rememberMe: boolean,
+  isPreview?: true,
+): string => `${uuid.v4()},${formId},${rememberMe},${isPreview ?? 'false'}`
+
+export const validateMyInfoForm = (
+  form: IFormSchema,
+): Result<IMyInfoForm, MyInfoNoESrvcIdError | MyInfoAuthTypeError> => {
+  if (!form.esrvcId) {
+    return err(new MyInfoNoESrvcIdError())
+  }
+  if (form.authType !== AuthType.MyInfo) {
+    return err(new MyInfoAuthTypeError())
+  }
+  return ok(form as IMyInfoForm)
+}
