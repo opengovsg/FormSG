@@ -1,5 +1,8 @@
-import { IPersonBasic, IPersonBasicRequest } from '@opengovsg/myinfo-gov-client'
-import { pick } from 'lodash'
+import {
+  IPerson,
+  IPersonResponse,
+  MyInfoAttributeString,
+} from '@opengovsg/myinfo-gov-client'
 import { LeanDocument } from 'mongoose'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -20,17 +23,21 @@ import {
   MyInfoMissingHashError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
-import { IPossiblyPrefilledField } from './myinfo.types'
+import { IMyInfoRedirectURLArgs, IPossiblyPrefilledField } from './myinfo.types'
 
 interface IMyInfoFactory {
+  createRedirectURL: (
+    params: IMyInfoRedirectURLArgs,
+  ) => Result<string, MissingFeatureError>
   fetchMyInfoPersonData: (
-    params: IPersonBasicRequest,
+    authCode: string,
+    requestedAttributes: MyInfoAttributeString[],
   ) => ResultAsync<
-    IPersonBasic,
+    IPersonResponse,
     MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
   >
   prefillMyInfoFields: (
-    myInfoData: IPersonBasic,
+    myInfoData: IPerson,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ) => Result<IPossiblyPrefilledField[], MissingFeatureError>
   saveMyInfoHashes: (
@@ -69,15 +76,15 @@ export const createMyInfoFactory = ({
       saveMyInfoHashes: () => errAsync(error),
       fetchMyInfoHashes: () => errAsync(error),
       checkMyInfoHashes: () => errAsync(error),
+      createRedirectURL: () => err(error),
     }
   }
-  const myInfoConfig = pick(props, ['myInfoClientMode', 'myInfoKeyPath'])
   return new MyInfoService({
-    myInfoConfig,
+    myInfoConfig: props,
     nodeEnv: config.nodeEnv,
-    realm: config.app.title,
     singpassEserviceId: props.spEsrvcId,
     spCookieMaxAge: props.spCookieMaxAge,
+    appUrl: config.app.appUrl,
   })
 }
 
