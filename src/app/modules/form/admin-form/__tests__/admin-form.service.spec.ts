@@ -1,8 +1,8 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import { merge, omit } from 'lodash'
+import { cloneDeep, merge, omit } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -15,8 +15,9 @@ import {
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { aws } from 'src/config/config'
-import { VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
+import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
+  BasicField,
   FormLogoState,
   FormMetaView,
   ICustomFormLogo,
@@ -31,9 +32,12 @@ import {
   Status,
 } from 'src/types'
 
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
+
 import { TransferOwnershipError } from '../../form.errors'
 import {
   CreatePresignedUrlError,
+  EditFieldError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import {
@@ -42,10 +46,15 @@ import {
   createPresignedPostUrlForImages,
   createPresignedPostUrlForLogos,
   duplicateForm,
+  editFormFields,
   getDashboardForms,
   transferFormOwnership,
 } from '../admin-form.service'
-import { DuplicateFormBody, OverrideProps } from '../admin-form.types'
+import {
+  DuplicateFormBody,
+  EditFormFieldParams,
+  OverrideProps,
+} from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
 
 const FormModel = getFormModel(mongoose)
@@ -883,6 +892,100 @@ describe('admin-form.service', () => {
         new DatabaseError(mockErrorString),
       )
       expect(createSpy).toHaveBeenCalledWith(formParams)
+    })
+  })
+
+  describe('editFormFields', () => {
+    const MOCK_UPDATED_FORM = ({
+      _id: new ObjectId(),
+      admin: new ObjectId(),
+      form_fields: [
+        generateDefaultField(BasicField.Email),
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Dropdown),
+      ],
+    } as unknown) as IPopulatedForm
+
+    const MOCK_INTIAL_FORM = mocked(({
+      _id: MOCK_UPDATED_FORM._id,
+      admin: MOCK_UPDATED_FORM.admin,
+      form_fields: [
+        generateDefaultField(BasicField.Email),
+        generateDefaultField(BasicField.Mobile),
+      ],
+      save: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
+    } as unknown) as IPopulatedForm)
+
+    it('should return updated form', async () => {
+      // Arrange
+      const newField = generateDefaultField(BasicField.Dropdown)
+      const mockUpdatedFields = [...MOCK_INTIAL_FORM.form_fields, newField]
+      const updateSpy = jest
+        .spyOn(AdminFormUtils, 'getUpdatedFormFields')
+        .mockReturnValueOnce(ok(mockUpdatedFields))
+
+      const createParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Create },
+        field: newField,
+      }
+
+      // Act
+      const actualResult = await editFormFields(MOCK_INTIAL_FORM, createParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_FORM)
+      expect(updateSpy).toHaveBeenCalledTimes(1)
+      expect(MOCK_INTIAL_FORM.save).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return EditFieldError without updating when invalid updates are being formed on form fields', async () => {
+      // Arrange
+      // Update service function should return error.
+      const mockError = new EditFieldError('invalid update to field')
+      const updateSpy = jest
+        .spyOn(AdminFormUtils, 'getUpdatedFormFields')
+        .mockReturnValueOnce(err(mockError))
+
+      const reorderParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Reorder, position: 2 },
+        field: cloneDeep(MOCK_INTIAL_FORM.form_fields[1]),
+      }
+
+      // Act
+      const actualResult = await editFormFields(MOCK_INTIAL_FORM, reorderParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(mockError)
+      expect(updateSpy).toHaveBeenCalledTimes(1)
+      expect(MOCK_INTIAL_FORM.save).not.toHaveBeenCalled()
+    })
+
+    it('should return DatabaseError when error occurs during saving of form', async () => {
+      // Arrange
+      const [, ...mockUpdatedFields] = MOCK_INTIAL_FORM.form_fields
+      const updateSpy = jest
+        .spyOn(AdminFormUtils, 'getUpdatedFormFields')
+        .mockReturnValueOnce(ok(mockUpdatedFields))
+      // Mock database save error.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const mockError = new mongoose.Error.VersionError({}, 1, ['none'])
+      MOCK_INTIAL_FORM.save.mockRejectedValueOnce(mockError as never)
+
+      const deleteParams: EditFormFieldParams = {
+        action: { name: EditFieldActions.Delete },
+        field: cloneDeep(MOCK_INTIAL_FORM.form_fields[0]),
+      }
+
+      // Act
+      const actualResult = await editFormFields(MOCK_INTIAL_FORM, deleteParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        DatabaseConflictError,
+      )
+      expect(updateSpy).toHaveBeenCalledTimes(1)
+      expect(MOCK_INTIAL_FORM.save).toHaveBeenCalledTimes(1)
     })
   })
 })
