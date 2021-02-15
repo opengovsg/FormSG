@@ -21,7 +21,7 @@ import {
 import { DatabaseError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
-import { MYINFO_REDIRECT_PATH } from './myinfo.constants'
+import { MYINFO_REDIRECT_PATH, MYINFO_ROUTER_PREFIX } from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
@@ -103,7 +103,7 @@ export class MyInfoService {
       myInfoPublicKey: fs.readFileSync(myInfoConfig.myInfoCertPath),
       clientId: myInfoConfig.myInfoClientId,
       clientSecret: myInfoConfig.myInfoClientSecret,
-      redirectEndpoint: `${appUrl}${MYINFO_REDIRECT_PATH}`,
+      redirectEndpoint: `${appUrl}${MYINFO_ROUTER_PREFIX}${MYINFO_REDIRECT_PATH}`,
       mode: myInfoConfig.myInfoClientMode,
     })
     if (nodeEnv !== Environment.Prod) {
