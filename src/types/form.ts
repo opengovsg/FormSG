@@ -151,12 +151,6 @@ export interface IFormSchema extends IForm, Document {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
-
-  /**
-   * @deprecated
-   * Syncs form.customLogo state with current form.startPage.logo value.
-   */
-  syncCustomLogo(): IFormDocument
 }
 
 /**
