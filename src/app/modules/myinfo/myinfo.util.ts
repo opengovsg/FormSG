@@ -16,9 +16,11 @@ import {
   MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { FormNotFoundError } from '../form/form.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import {
+  MyInfoAuthTypeError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoMissingHashError,
@@ -265,6 +267,44 @@ export const mapVerifyMyInfoError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
+}
+
+export const mapRedirectURLError: MapRouteError = (
+  error,
+  coreErrorMessage = 'Something went wrong. Please refresh and try again.',
+) => {
+  switch (error.constructor) {
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'Could not find the form requested. Please refresh and try again.',
+      }
+    case MyInfoAuthTypeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This form does not have MyInfo enabled. Please refresh and try again.',
+      }
+    case DatabaseError:
+    case MissingFeatureError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRedirectURLError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
       }
   }
 }

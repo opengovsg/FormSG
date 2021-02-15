@@ -52,3 +52,11 @@ export class MyInfoParseRelayStateError extends ApplicationError {
     super(message)
   }
 }
+
+export class MyInfoAuthTypeError extends ApplicationError {
+  constructor(
+    message = 'MyInfo function called on form without MyInfo authentication type',
+  ) {
+    super(message)
+  }
+}
