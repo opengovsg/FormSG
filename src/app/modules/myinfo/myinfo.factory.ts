@@ -34,8 +34,11 @@ interface IMyInfoFactory {
   createRedirectURL: (
     params: IMyInfoRedirectURLArgs,
   ) => Result<string, MissingFeatureError>
-  fetchMyInfoPersonData: (
+  retrieveAccessToken: (
     authCode: string,
+  ) => ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError>
+  fetchMyInfoPersonData: (
+    accessToken: string,
     requestedAttributes: MyInfoAttributeString[],
   ) => ResultAsync<
     IPersonResponse,
@@ -82,6 +85,7 @@ export const createMyInfoFactory = ({
   if (!isEnabled || !props) {
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     return {
+      retrieveAccessToken: () => errAsync(error),
       fetchMyInfoPersonData: () => errAsync(error),
       prefillMyInfoFields: () => err(error),
       saveMyInfoHashes: () => errAsync(error),

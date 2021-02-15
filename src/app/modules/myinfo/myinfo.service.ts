@@ -160,12 +160,32 @@ export class MyInfoService {
     })
   }
 
-  async _fetchMyInfoDataUnsafe(
+  retrieveAccessToken(
     authCode: string,
-    requestedAttributes: MyInfoAttributeString[],
-  ): Promise<IPersonResponse> {
-    const accessToken = await this.#myInfoTokenBreaker.fire(authCode)
-    return this.#myInfoPersonBreaker.fire(accessToken, requestedAttributes)
+  ): ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError> {
+    return ResultAsync.fromPromise(
+      this.#myInfoTokenBreaker.fire(authCode),
+      (error) => {
+        const logMeta = {
+          action: 'retrieveAccessToken',
+        }
+        if (CircuitBreaker.isOurError(error)) {
+          logger.error({
+            message: 'Circuit breaker tripped',
+            meta: logMeta,
+            error,
+          })
+          return new MyInfoCircuitBreakerError()
+        } else {
+          logger.error({
+            message: 'Error retrieving data from MyInfo',
+            meta: logMeta,
+            error,
+          })
+          return new MyInfoFetchError()
+        }
+      },
+    )
   }
 
   /**
@@ -180,14 +200,14 @@ export class MyInfoService {
    * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
    */
   fetchMyInfoPersonData(
-    authCode: string,
+    accessToken: string,
     requestedAttributes: MyInfoAttributeString[],
   ): ResultAsync<
     IPersonResponse,
     MyInfoCircuitBreakerError | MyInfoFetchError
   > {
     return ResultAsync.fromPromise(
-      this._fetchMyInfoDataUnsafe(authCode, requestedAttributes),
+      this.#myInfoPersonBreaker.fire(accessToken, requestedAttributes),
       (error) => {
         const logMeta = {
           action: 'fetchMyInfoPersonData',
