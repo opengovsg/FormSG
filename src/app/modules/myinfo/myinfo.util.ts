@@ -17,6 +17,11 @@ import {
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
+import {
+  CreateRedirectUrlError,
+  FetchLoginPageError,
+  LoginPageValidationError,
+} from '../spcp/spcp.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import {
@@ -24,6 +29,7 @@ import {
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoMissingHashError,
+  MyInfoNoESrvcIdError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
@@ -290,6 +296,56 @@ export const mapRedirectURLError: MapRouteError = (
       }
     case DatabaseError:
     case MissingFeatureError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRedirectURLError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
+      }
+  }
+}
+
+export const mapEServiceIdCheckError: MapRouteError = (
+  error,
+  coreErrorMessage = 'Something went wrong. Please refresh and try again.',
+) => {
+  switch (error.constructor) {
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'Could not find the form requested. Please refresh and try again.',
+      }
+    case MyInfoAuthTypeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This form does not have MyInfo enabled. Please refresh and try again.',
+      }
+    case MyInfoNoESrvcIdError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: 'This form does not have a valid e-service ID.',
+      }
+    case FetchLoginPageError:
+    case LoginPageValidationError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage: 'Failed to contact SingPass. Please try again.',
+      }
+    case DatabaseError:
+    case MissingFeatureError:
+    case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,

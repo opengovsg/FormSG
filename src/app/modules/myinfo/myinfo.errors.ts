@@ -60,3 +60,9 @@ export class MyInfoAuthTypeError extends ApplicationError {
     super(message)
   }
 }
+
+export class MyInfoNoESrvcIdError extends ApplicationError {
+  constructor(message = 'Form does not have e-service ID') {
+    super(message)
+  }
+}
