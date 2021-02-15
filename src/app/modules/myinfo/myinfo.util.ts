@@ -1,12 +1,14 @@
 import {
   CATEGORICAL_DATA_DICT,
-  IPersonBasic,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import { get } from 'lodash'
 import moment from 'moment'
+import mongoose from 'mongoose'
+import { err, ok, Result } from 'neverthrow'
+import uuid from 'uuid'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
@@ -24,6 +26,7 @@ import {
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoMissingHashError,
+  MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import { formatAddress, formatPhoneNumber } from './myinfo.format'
 import {
@@ -239,4 +242,32 @@ export const getMyInfoFieldOptions = (
 ): string[] => {
   const [myInfoField] = myInfoTypes.filter((type) => type.name === myInfoAttr)
   return myInfoField?.fieldOptions || []
+}
+
+export const createConsentPagePurpose = (formTitle: string): string =>
+  `The form "${formTitle}" is requesting to pre-fill your MyInfo data.`
+
+export const createRelayState = (formId: string, rememberMe: boolean): string =>
+  `${uuid.v4()},${formId},${rememberMe}`
+
+export const parseRelayState = (
+  relayState: string,
+): Result<
+  { uuid: string; formId: string; rememberMe: boolean },
+  MyInfoParseRelayStateError
+> => {
+  const components = relayState.split(',')
+  if (
+    components.length !== 3 ||
+    !uuid.validate(components[0]) ||
+    !mongoose.Types.ObjectId.isValid(components[1]) ||
+    !['true', 'false'].includes(components[2])
+  ) {
+    return err(new MyInfoParseRelayStateError())
+  }
+  return ok({
+    uuid: components[0],
+    formId: components[1],
+    rememberMe: components[2] === 'true',
+  })
 }

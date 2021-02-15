@@ -1,7 +1,6 @@
 import {
-  IPersonBasic,
-  IPersonBasicRequest,
-  Mode as MyInfoClientMode,
+  IPersonResponse,
+  MyInfoAttributeString,
   MyInfoGovClient,
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
@@ -11,7 +10,6 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import { IMyInfoConfig } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   Environment,
@@ -22,6 +20,7 @@ import {
 import { DatabaseError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
+import { MYINFO_REDIRECT_PATH } from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
@@ -29,9 +28,15 @@ import {
   MyInfoHashingError,
   MyInfoMissingHashError,
 } from './myinfo.errors'
-import { IPossiblyPrefilledField } from './myinfo.types'
+import {
+  IMyInfoRedirectURLArgs,
+  IMyInfoServiceConfig,
+  IPossiblyPrefilledField,
+} from './myinfo.types'
 import {
   compareHashedValues,
+  createConsentPagePurpose,
+  createRelayState,
   getMyInfoValue,
   hashFieldValues,
   isFieldReadOnly,
@@ -41,16 +46,34 @@ import getMyInfoHashModel from './myinfo_hash.model'
 const logger = createLoggerWithLabel(module)
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
-const MYINFO_STG_PREFIX = 'STG2-'
-const MYINFO_PROD_PREFIX = 'PROD2-'
 const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v2/'
+const BREAKER_PARAMS = {
+  errorThresholdPercentage: 80, // % of errors before breaker trips
+  timeout: 5000, // max time before individual request fails, ms
+  rollingCountTimeout: 30000, // width of statistical window, ms
+  volumeThreshold: 5, // min number of requests within statistical window before breaker trips
+}
 
 export class MyInfoService {
   /**
-   * Circuit breaker which fires requests to the MyInfo PersonBasic endpoint
+   * Instance of MyInfoGovClient configured with Form credentials.
+   */
+  #myInfoGovClient: MyInfoGovClient
+  /**
+   * Circuit breaker which fires requests to the MyInfo Token endpoint
    * and limits the rate of requests in case the receiving server returns errors.
    */
-  #myInfoClientBreaker: CircuitBreaker<[IPersonBasicRequest], IPersonBasic>
+  #myInfoTokenBreaker: CircuitBreaker<[string], string>
+
+  /**
+   * Circuit breaker which fires requests to the MyInfo Person endpoint
+   * and limits the rate of requests in case the receiving server returns errors.
+   */
+  #myInfoPersonBreaker: CircuitBreaker<
+    [string, MyInfoAttributeString[]],
+    IPersonResponse
+  >
+
   /**
    * TTL of SingPass cookie in milliseconds.
    */
@@ -67,52 +90,54 @@ export class MyInfoService {
   constructor({
     myInfoConfig,
     nodeEnv,
-    realm,
     singpassEserviceId,
     spCookieMaxAge,
-  }: {
-    myInfoConfig: IMyInfoConfig
-    nodeEnv: Environment
-    realm: string
-    singpassEserviceId: string
-    spCookieMaxAge: number
-  }) {
+    appUrl,
+  }: IMyInfoServiceConfig) {
     this.#spCookieMaxAge = spCookieMaxAge
 
-    const { myInfoClientMode, myInfoKeyPath } = myInfoConfig
-    let myInfoGovClient: MyInfoGovClient
-    const myInfoPrefix =
-      myInfoClientMode === MyInfoClientMode.Staging
-        ? MYINFO_STG_PREFIX
-        : MYINFO_PROD_PREFIX
-    if (nodeEnv === Environment.Prod) {
-      myInfoGovClient = new MyInfoGovClient({
-        realm,
-        singpassEserviceId,
-        privateKey: fs.readFileSync(myInfoKeyPath),
-        appId: myInfoPrefix + singpassEserviceId,
-        mode: myInfoClientMode,
-      })
-    } else {
-      myInfoGovClient = new MyInfoGovClient({
-        realm,
-        singpassEserviceId,
-        privateKey: fs.readFileSync(myInfoKeyPath),
-        appId: myInfoPrefix + singpassEserviceId,
-        mode: MyInfoClientMode.Dev,
-      })
-      myInfoGovClient.baseUrl = MYINFO_DEV_BASE_URL
+    this.#myInfoGovClient = new MyInfoGovClient({
+      singpassEserviceId,
+      clientPrivateKey: fs.readFileSync(myInfoConfig.myInfoKeyPath),
+      myInfoPublicKey: fs.readFileSync(myInfoConfig.myInfoCertPath),
+      clientId: myInfoConfig.myInfoClientId,
+      clientSecret: myInfoConfig.myInfoClientSecret,
+      redirectEndpoint: `${appUrl}${MYINFO_REDIRECT_PATH}`,
+      mode: myInfoConfig.myInfoClientMode,
+    })
+    if (nodeEnv !== Environment.Prod) {
+      this.#myInfoGovClient.baseAPIUrl = MYINFO_DEV_BASE_URL
     }
-
-    this.#myInfoClientBreaker = new CircuitBreaker(
-      (params) => myInfoGovClient.getPersonBasic(params),
-      {
-        errorThresholdPercentage: 80, // % of errors before breaker trips
-        timeout: 5000, // max time before individual request fails, ms
-        rollingCountTimeout: 30000, // width of statistical window, ms
-        volumeThreshold: 5, // min number of requests within statistical window before breaker trips
-      },
+    this.#myInfoTokenBreaker = new CircuitBreaker(
+      (authCode) => this.#myInfoGovClient.getAccessToken(authCode),
+      BREAKER_PARAMS,
     )
+    this.#myInfoPersonBreaker = new CircuitBreaker((accessToken, attributes) =>
+      this.#myInfoGovClient.getPerson(accessToken, attributes),
+    )
+  }
+
+  createRedirectURL({
+    formId,
+    rememberMe,
+    formTitle,
+    formEsrvcId,
+    requestedAttributes,
+  }: IMyInfoRedirectURLArgs): string {
+    return this.#myInfoGovClient.createRedirectURL({
+      purpose: createConsentPagePurpose(formTitle),
+      relayState: createRelayState(formId, rememberMe),
+      requestedAttributes,
+      singpassEserviceId: formEsrvcId,
+    })
+  }
+
+  async _fetchMyInfoDataUnsafe(
+    authCode: string,
+    requestedAttributes: MyInfoAttributeString[],
+  ): Promise<IPersonResponse> {
+    const accessToken = await this.#myInfoTokenBreaker.fire(authCode)
+    return this.#myInfoPersonBreaker.fire(accessToken, requestedAttributes)
   }
 
   /**
@@ -127,15 +152,18 @@ export class MyInfoService {
    * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
    */
   fetchMyInfoPersonData(
-    params: IPersonBasicRequest,
-  ): ResultAsync<IPersonBasic, MyInfoCircuitBreakerError | MyInfoFetchError> {
+    authCode: string,
+    requestedAttributes: MyInfoAttributeString[],
+  ): ResultAsync<
+    IPersonResponse,
+    MyInfoCircuitBreakerError | MyInfoFetchError
+  > {
     return ResultAsync.fromPromise(
-      this.#myInfoClientBreaker.fire(params),
+      this._fetchMyInfoDataUnsafe(authCode, requestedAttributes),
       (error) => {
         const logMeta = {
           action: 'fetchMyInfoPersonData',
-          requestedAttributes: params.requestedAttributes,
-          eServiceId: params.singpassEserviceId,
+          requestedAttributes,
         }
         if (CircuitBreaker.isOurError(error)) {
           logger.error({

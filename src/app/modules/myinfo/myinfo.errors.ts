@@ -44,3 +44,11 @@ export class MyInfoHashDidNotMatchError extends ApplicationError {
     super(message)
   }
 }
+
+export class MyInfoParseRelayStateError extends ApplicationError {
+  constructor(
+    message = 'Relay state received from MyInfo had incorrect format',
+  ) {
+    super(message)
+  }
+}

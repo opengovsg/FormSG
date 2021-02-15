@@ -1,7 +1,30 @@
+import { MyInfoAttributeString } from '@opengovsg/myinfo-gov-client'
 import { LeanDocument } from 'mongoose'
 
-import { IFieldSchema, IMyInfo, MyInfoAttribute } from '../../../types'
+import { IMyInfoConfig } from '../../../config/feature-manager'
+import {
+  Environment,
+  IFieldSchema,
+  IMyInfo,
+  MyInfoAttribute,
+} from '../../../types'
 import { ProcessedFieldResponse } from '../submission/submission.types'
+
+export interface IMyInfoServiceConfig {
+  myInfoConfig: IMyInfoConfig
+  nodeEnv: Environment
+  singpassEserviceId: string
+  spCookieMaxAge: number
+  appUrl: string
+}
+
+export interface IMyInfoRedirectURLArgs {
+  formId: string
+  rememberMe: boolean
+  formTitle: string
+  formEsrvcId: string
+  requestedAttributes: MyInfoAttributeString[]
+}
 
 export interface IPossiblyPrefilledField extends LeanDocument<IFieldSchema> {
   fieldValue?: string
