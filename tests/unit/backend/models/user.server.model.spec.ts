@@ -15,6 +15,9 @@ const AGENCY_DOMAIN = 'example.com'
 const VALID_USER_EMAIL = `test@${AGENCY_DOMAIN}`
 const VALID_CONTACT = '+6581234567'
 
+const VALID_USER_EMAIL_2 = `test2@${AGENCY_DOMAIN}`
+const VALID_CONTACT_2 = '+6581234568'
+
 describe('User Model', () => {
   let agency: IAgencySchema
 
@@ -147,6 +150,79 @@ describe('User Model', () => {
   })
 
   describe('Statics', () => {
+    describe('findContactNumbersByEmails', () => {
+      it('should find contact number when a single email is given', async () => {
+        await User.create({
+          email: VALID_USER_EMAIL,
+          agency: agency._id,
+          contact: VALID_CONTACT,
+        })
+
+        const contacts = await User.findContactNumbersByEmails([
+          VALID_USER_EMAIL,
+        ])
+        expect(contacts).toEqual([
+          { email: VALID_USER_EMAIL, contact: VALID_CONTACT },
+        ])
+      })
+
+      it('should find contact numbers when multiple emails are given', async () => {
+        await User.create({
+          email: VALID_USER_EMAIL,
+          agency: agency._id,
+          contact: VALID_CONTACT,
+        })
+        await User.create({
+          email: VALID_USER_EMAIL_2,
+          agency: agency._id,
+          contact: VALID_CONTACT_2,
+        })
+
+        const contacts = await User.findContactNumbersByEmails([
+          VALID_USER_EMAIL,
+          VALID_USER_EMAIL_2,
+        ])
+        expect(contacts.length).toBe(2)
+        expect(contacts).toContainEqual({
+          email: VALID_USER_EMAIL,
+          contact: VALID_CONTACT,
+        })
+        expect(contacts).toContainEqual({
+          email: VALID_USER_EMAIL_2,
+          contact: VALID_CONTACT_2,
+        })
+      })
+
+      it('should ignore email addresses which do not exist in the collection', async () => {
+        await User.create({
+          email: VALID_USER_EMAIL,
+          agency: agency._id,
+          contact: VALID_CONTACT,
+        })
+
+        const contacts = await User.findContactNumbersByEmails([
+          VALID_USER_EMAIL,
+          'invalid@email.com',
+        ])
+        expect(contacts).toEqual([
+          { email: VALID_USER_EMAIL, contact: VALID_CONTACT },
+        ])
+      })
+
+      it('should return empty array when no given email addresses exist in the collection', async () => {
+        await User.create({
+          email: VALID_USER_EMAIL,
+          agency: agency._id,
+          contact: VALID_CONTACT,
+        })
+
+        const contacts = await User.findContactNumbersByEmails([
+          'invalid@email.com',
+        ])
+        expect(contacts).toEqual([])
+      })
+    })
+
     describe('upsertUser', () => {
       it('should create new User document when user does not yet exist in the collection', async () => {
         // Arrange

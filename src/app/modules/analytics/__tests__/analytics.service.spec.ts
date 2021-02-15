@@ -1,28 +1,26 @@
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'
 
-import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
+import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
   IAgencySchema,
-  IFormStatisticsTotalSchema,
-  ISubmissionSchema,
+  IUserSchema,
+  ResponseMode,
   SubmissionType,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { DatabaseError } from '../../core/core.errors'
-import { MIN_SUB_COUNT } from '../analytics.constants'
 import {
-  getFormCountWithStatsCollection,
-  getFormCountWithSubmissionCollection,
+  getFormCount,
   getSubmissionCount,
   getUserCount,
 } from '../analytics.service'
 
-const FormStatsModel = getFormStatisticsTotalModel(mongoose)
+const FormModel = getFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 const UserModel = getUserModel(mongoose)
 
@@ -34,143 +32,65 @@ describe('analytics.service', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('getFormCountWithStatsCollection', () => {
-    it('should return the number of forms with more than 10 submissions when such forms exists', async () => {
-      // Arrange
-      // Number of submissions per form
-      const formCounts = [12, 10, 4]
-      const submissionPromises: Promise<IFormStatisticsTotalSchema>[] = []
-      formCounts.forEach((count) => {
-        submissionPromises.push(
-          (FormStatsModel.collection.insertOne({
-            formId: mongoose.Types.ObjectId(),
-            totalCount: count,
-            lastSubmission: new Date(),
-          }) as unknown) as Promise<IFormStatisticsTotalSchema>,
-        )
+  describe('getFormCount', () => {
+    const VALID_DOMAIN = 'example.com'
+    let testUser: IUserSchema
+
+    beforeEach(async () => {
+      const { user } = await dbHandler.insertFormCollectionReqs({
+        mailDomain: VALID_DOMAIN,
       })
-      await Promise.all(submissionPromises)
-
-      // Act
-      const actualResult = await getFormCountWithStatsCollection()
-
-      // Assert
-      const expectedResult = formCounts.filter((fc) => fc > MIN_SUB_COUNT)
-        .length
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+      testUser = user
     })
 
-    it('should return 0 when no forms have above 10 submissions', async () => {
+    it('should return 0 when there are no forms in the database', async () => {
       // Arrange
-      // Number of submissions per form
-      const formCounts = [1, 2]
-      const submissionPromises: Promise<IFormStatisticsTotalSchema>[] = []
-      formCounts.forEach((count) => {
-        submissionPromises.push(
-          (FormStatsModel.collection.insertOne({
-            formId: mongoose.Types.ObjectId(),
-            totalCount: count,
-            lastSubmission: new Date(),
-          }) as unknown) as Promise<IFormStatisticsTotalSchema>,
-        )
-      })
-      await Promise.all(submissionPromises)
+      const initialCount = await FormModel.estimatedDocumentCount()
+      expect(initialCount).toEqual(0)
 
       // Act
-      const actualResult = await getFormCountWithStatsCollection()
+      const actualResult = await getFormCount()
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(0)
     })
 
-    it('should return DatabaseError when error occurs whilst querying database', async () => {
+    it('should return number of forms in the database', async () => {
       // Arrange
-      const aggregateSpy = jest
-        .spyOn(FormStatsModel, 'aggregateFormCount')
-        .mockRejectedValueOnce(new Error('some error'))
+      const expectedNum = 10
+      const formPromises = times(expectedNum, () =>
+        FormModel.create({
+          admin: testUser._id,
+          title: 'Test form',
+          responseMode: ResponseMode.Email,
+          emails: ['a@abc.com'],
+        }),
+      )
+      await Promise.all(formPromises)
+      const initialCount = await FormModel.estimatedDocumentCount()
+      expect(initialCount).toEqual(expectedNum)
 
       // Act
-      const actualResult = await getFormCountWithStatsCollection()
-
-      // Assert
-      expect(aggregateSpy).toHaveBeenCalled()
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
-    })
-  })
-
-  describe('getFormCountWithSubmissionCollection', () => {
-    it('should return the number of forms with more than 10 submissions when such forms exists', async () => {
-      // Arrange
-      const formCounts = [12, 10, 4]
-      const submissionPromises: Promise<ISubmissionSchema>[] = []
-      formCounts.forEach((count) => {
-        const formId = mongoose.Types.ObjectId()
-        times(count, () =>
-          submissionPromises.push(
-            SubmissionModel.create({
-              form: formId,
-              myInfoFields: [],
-              submissionType: SubmissionType.Email,
-              responseHash: 'hash',
-              responseSalt: 'salt',
-            }),
-          ),
-        )
-      })
-      await Promise.all(submissionPromises)
-
-      // Act
-      const actualResult = await getFormCountWithSubmissionCollection()
-
-      // Assert
-      const expectedResult = formCounts.filter((fc) => fc > MIN_SUB_COUNT)
-        .length
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
-    })
-
-    it('should return 0 when no forms have above 10 submissions', async () => {
-      // Arrange
-      const formCounts = [1, 2]
-      const submissionPromises: Promise<ISubmissionSchema>[] = []
-      formCounts.forEach((count) => {
-        const formId = mongoose.Types.ObjectId()
-        times(count, () =>
-          submissionPromises.push(
-            SubmissionModel.create({
-              form: formId,
-              myInfoFields: [],
-              submissionType: SubmissionType.Email,
-              responseHash: 'hash',
-              responseSalt: 'salt',
-            }),
-          ),
-        )
-      })
-      await Promise.all(submissionPromises)
-
-      // Act
-      const actualResult = await getFormCountWithSubmissionCollection()
+      const actualResult = await getFormCount()
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(0)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedNum)
     })
 
-    it('should return DatabaseError when error occurs whilst querying database', async () => {
+    it('should return DatabaseError when error occurs whilst retrieving form count', async () => {
       // Arrange
-      const aggregateSpy = jest
-        .spyOn(SubmissionModel, 'findFormsWithSubsAbove')
-        .mockRejectedValueOnce(new Error('some error'))
+      const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
+      jest.spyOn(FormModel, 'estimatedDocumentCount').mockReturnValueOnce(({
+        exec: execSpy,
+      } as unknown) as Query<number>)
 
       // Act
-      const actualResult = await getFormCountWithSubmissionCollection()
+      const actualResult = await getFormCount()
 
       // Assert
-      expect(aggregateSpy).toHaveBeenCalled()
+      expect(execSpy).toHaveBeenCalledTimes(1)
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
     })

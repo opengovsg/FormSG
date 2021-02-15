@@ -4,7 +4,6 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IFormSchema, IPopulatedForm, Status } from '../../../types'
 import getFormModel from '../../models/form.server.model'
-import { assertUnreachable } from '../../utils/assert-unreachable'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
@@ -116,7 +115,5 @@ export const isFormPublic = (
       return err(new FormDeletedError())
     case Status.Private:
       return err(new PrivateFormError(form.inactiveMessage, form.title))
-    default:
-      return assertUnreachable(form.status)
   }
 }

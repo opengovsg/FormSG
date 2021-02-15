@@ -6,10 +6,7 @@
           <h2 class="modal-title">Edit Welcome</h2>
         </div>
 
-        <div
-          class="row question logo-options"
-          ng-init="vm.setFormLogoIfUndefined()"
-        >
+        <div class="row question logo-options">
           <div class="col-md-12 label-custom label-medium label-bottom">
             Logo
           </div>
@@ -113,19 +110,6 @@
         >
           <i class="bx bx-exclamation bx-md icon-spacing"></i>
           <span class="alert-msg">Please upload a logo</span>
-        </div>
-
-        <div
-          ng-if="vm.myform.startPage.logo.state === vm.FormLogoState.Custom && !vm.myform.startPage.logo.fileId && vm.myform.startPage.logo.oldCustomLogo"
-        >
-          <div class="alert-custom alert-info alert-margin">
-            <i class="bx bx-info-circle bx-md icon-spacing"></i>
-            <span class="alert-msg">
-              Your link is not hosted with us.
-              <a ng-href="{{vm.myform.customLogo}}" target="_blank">Visit it </a
-              >, save it and upload here!
-            </span>
-          </div>
         </div>
 
         <div class="row"><br /></div>

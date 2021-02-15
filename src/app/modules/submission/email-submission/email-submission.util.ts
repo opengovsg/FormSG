@@ -1,18 +1,46 @@
 import { StatusCodes } from 'http-status-codes'
 import { flattenDeep, sumBy } from 'lodash'
 
+import { createLoggerWithLabel } from '../../../../config/logger'
 import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
   BasicField,
+  EmailAutoReplyField,
+  EmailDataForOneField,
+  EmailFormField,
+  EmailJsonField,
   FieldResponse,
+  IAttachmentInfo,
   IAttachmentResponse,
   MapRouteError,
+  SPCPFieldTitle,
 } from '../../../../types'
-import { DatabaseError } from '../../core/core.errors'
+import {
+  CaptchaConnectionError,
+  MissingCaptchaError,
+  VerifyCaptchaError,
+} from '../../../services/captcha/captcha.errors'
+import {
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
+} from '../../../services/myinfo/myinfo.errors'
+import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../../form/form.errors'
+import {
+  InvalidJwtError,
+  MissingJwtError,
+  VerifyJwtError,
+} from '../../spcp/spcp.errors'
 import {
   ConflictError,
   ProcessingError,
+  ResponseModeError,
   SendAdminEmailError,
   ValidateFieldError,
 } from '../submission.errors'
@@ -35,20 +63,16 @@ import {
   MultipartError,
   SubmissionHashError,
 } from './email-submission.errors'
-import {
-  EmailAutoReplyField,
-  EmailDataForOneField,
-  EmailFormField,
-  EmailJsonField,
-  IAttachmentInfo,
-  ResponseFormattedForEmail,
-} from './email-submission.types'
+import { ResponseFormattedForEmail } from './email-submission.types'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Determines the prefix for a question based on whether it is verified
  * by MyInfo.
  * @param response
  * @param hashedFields Hash for verifying MyInfo fields
+ * @returns the prefix
  */
 const getMyInfoPrefix = (
   response: ResponseFormattedForEmail,
@@ -89,6 +113,7 @@ const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
  * Transforms a question for inclusion in the JSON data used by the
  * data collation tool.
  * @param response
+ * @returns the prefixed question for this response
  */
 export const getJsonPrefixedQuestion = (
   response: ResponseFormattedForEmail,
@@ -101,6 +126,7 @@ export const getJsonPrefixedQuestion = (
  * Transforms a question for inclusion in the admin email table.
  * @param response
  * @param hashedFields
+ * @returns the joined prefixes for the question in the given response
  */
 export const getFormDataPrefixedQuestion = (
   response: ResponseFormattedForEmail,
@@ -210,7 +236,7 @@ export const getFormattedResponse = (
  * zip files are checked recursively.
  *
  * @param attachments - Array of file objects
- * @return Whether all attachments are valid
+ * @returns Whether all attachments are valid
  */
 export const getInvalidFileExtensions = (
   attachments: IAttachmentInfo[],
@@ -232,6 +258,11 @@ export const getInvalidFileExtensions = (
   return Promise.all(promises).then((results) => flattenDeep(results))
 }
 
+/**
+ * Checks whether the total size of attachments exceeds 7MB
+ * @param attachments List of attachments
+ * @returns true if total attachment size exceeds 7MB
+ */
 export const areAttachmentsMoreThan7MB = (
   attachments: IAttachmentInfo[],
 ): boolean => {
@@ -249,6 +280,10 @@ const isAttachmentResponse = (
   )
 }
 
+/**
+ * Extracts attachment fields from form responses
+ * @param responses Form responses
+ */
 export const mapAttachmentsFromResponses = (
   responses: FieldResponse[],
 ): IAttachmentInfo[] => {
@@ -292,6 +327,7 @@ export const mapRouteError: MapRouteError = (error) => {
     case ProcessingError:
     case ValidateFieldError:
     case ConcatSubmissionError:
+    case ResponseModeError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
@@ -299,6 +335,7 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case DatabaseError:
     case SubmissionHashError:
+    case MissingFeatureError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
@@ -310,7 +347,72 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage:
           'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       }
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: "Oops! We can't find the form you're looking for.",
+      }
+    case PrivateFormError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case FormDeletedError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case CaptchaConnectionError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not verify captcha. Please submit again in a few minutes.',
+      }
+    case VerifyCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was incorrect. Please submit again.',
+      }
+    case MissingCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was missing. Please refresh and submit again.',
+      }
+    case MissingJwtError:
+    case VerifyJwtError:
+    case InvalidJwtError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage:
+          'Something went wrong with your login. Please try logging in and submitting again.',
+      }
+    case MyInfoMissingHashError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'MyInfo verification expired, please refresh and try again.',
+      }
+    case MyInfoHashDidNotMatchError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'MyInfo verification failed.',
+      }
+    case MyInfoHashingError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage:
+          'MyInfo verification unavailable, please try again later.',
+      }
     default:
+      logger.error({
+        message: 'mapRouteError called with unknown error type',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please refresh and try again.',
@@ -318,6 +420,12 @@ export const mapRouteError: MapRouteError = (error) => {
   }
 }
 
+/**
+ * Checks whether attachmentMap contains the given response
+ * @param attachmentMap Map of field IDs to attachments
+ * @param response The response to check
+ * @returns true if response is in map, false otherwise
+ */
 const isAttachmentResponseFromMap = (
   attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
   response: FieldResponse,
@@ -332,6 +440,7 @@ const isAttachmentResponseFromMap = (
  *
  * @param responses - Array of responses received
  * @param attachments - Array of file objects
+ * @returns void. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
   responses: FieldResponse[],
@@ -365,6 +474,7 @@ export const addAttachmentToResponses = (
  * One of the duplicated files will not have its name changed.
  * Two abc.txt will become 1-abc.txt and abc.txt
  * @param attachments - Array of file objects
+ * @returns void. Modifies array in-place.
  */
 export const handleDuplicatesInAttachments = (
   attachments: IAttachmentInfo[],
@@ -394,7 +504,7 @@ export const handleDuplicatesInAttachments = (
  * Concatenate response into a string for hashing
  * @param formData Field-value tuples for admin email
  * @param attachments Array of attachments as buffers
- * @return concatenated response to hash
+ * @returns concatenated response to hash
  */
 export const concatAttachmentsAndResponses = (
   formData: EmailFormField[],
@@ -408,4 +518,35 @@ export const concatAttachmentsAndResponses = (
   }, '')
   response += attachments.reduce((acc, { content }) => acc + content, '')
   return response
+}
+
+export const maskUidOnLastField = (
+  autoReplyData: EmailAutoReplyField[],
+): EmailAutoReplyField[] => {
+  // Mask corppass UID and show only last 4 chars in autoreply to form filler
+  // This does not affect response email to form admin
+  // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
+  // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
+  // This will allow for proper tagging of corppass UID field instead of checking field title and position
+
+  const maskedAutoReplyData = autoReplyData.map(
+    (autoReplyField: EmailAutoReplyField, index) => {
+      if (
+        autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
+        index === autoReplyData.length - 1 // Check field position
+      ) {
+        return {
+          question: autoReplyField.question,
+          answerTemplate: autoReplyField.answerTemplate.map((answer) => {
+            return answer.length >= 4 // defensive, in case UID length is less than 4
+              ? '*'.repeat(answer.length - 4) + answer.substr(-4)
+              : answer
+          }),
+        }
+      } else {
+        return autoReplyField
+      }
+    },
+  )
+  return maskedAutoReplyData
 }

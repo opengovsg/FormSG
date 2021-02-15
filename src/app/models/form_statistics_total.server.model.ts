@@ -41,8 +41,8 @@ const compileFormStatisticsTotalModel = (db: Mongoose) => {
   // Hooks
   FormStatisticsTotalSchema.pre<IFormStatisticsTotalSchema>(
     'save',
-    function () {
-      throw new Error('FormStatisticsTotal schema is read only')
+    function (next) {
+      next(new Error('FormStatisticsTotal schema is read only'))
     },
   )
 

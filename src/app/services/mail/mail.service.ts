@@ -8,8 +8,12 @@ import validator from 'validator'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
-import { BounceType, IEmailFormSchema, ISubmissionSchema } from '../../../types'
-import { EmailFormField } from '../../modules/submission/email-submission/email-submission.types'
+import {
+  BounceType,
+  EmailFormField,
+  IEmailFormSchema,
+  ISubmissionSchema,
+} from '../../../types'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailSendError } from './mail.errors'
@@ -454,7 +458,8 @@ export class MailService {
     autoReplyMailDatas,
     attachments = [],
   }: SendAutoReplyEmailsArgs): Promise<PromiseSettledResult<true>[]> => {
-    // Data to render both the submission details mail HTML body PDF.
+    // Data to render both the submission details mail HTML body and PDF.
+
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
       formTitle: form.title,

@@ -9,7 +9,6 @@ import {
   ResponseMode,
   Status,
 } from '../../../../types'
-import { assertUnreachable } from '../../../utils/assert-unreachable'
 import { reorder, replaceAt } from '../../../utils/immutable-array-fns'
 import {
   ApplicationError,
@@ -216,8 +215,6 @@ export const getAssertPermissionFn = (level: PermissionLevel): AssertFormFn => {
       return assertHasWritePermissions
     case PermissionLevel.Delete:
       return assertHasDeletePermissions
-    default:
-      return assertUnreachable(level)
   }
 }
 

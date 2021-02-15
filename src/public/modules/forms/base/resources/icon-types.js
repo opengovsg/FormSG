@@ -29,7 +29,6 @@ const iconTypeMap = {
   housingtype: 'bx bx-home-alt',
   hdbtype: 'bx bx-home',
   marital: 'bx bx-diamond',
-  edulevel: 'bx bx-book-bookmark',
   countryofmarriage: 'bx bx-globe-alt',
   workpassstatus: 'bx bx-task',
   // householdincome: "",
@@ -40,9 +39,6 @@ const iconTypeMap = {
   // secondaryrace: "",
   passportnumber: 'bx bx-world',
   regadd: 'bx bx-building',
-  mailadd: 'bx bx-newsletter',
-  billadd: 'bx bx-wallet',
-  schoolname: 'bx bx-book-open',
   occupation: 'bx bx-briefcase',
   employment: 'bx bx-contact',
   vehno: 'bx bx-car',
@@ -51,10 +47,8 @@ const iconTypeMap = {
   marriagedate: 'bx bx-calendar-check',
   divorcedate: 'bx bx-calendar-x',
   workpassexpirydate: 'bx bx-calendar-alt',
-  homeno: 'bx bx-phone',
   mobileno: 'bx bx-mobile-alt',
   marriagecertno: 'bx bx-award',
-  gradyear: 'bx bx-calendar',
 }
 
 module.exports = {

@@ -24,7 +24,7 @@
         },
         "project": "./tsconfig.json"
       },
-      "plugins": ["@typescript-eslint", "import", "simple-import-sort"],
+      "plugins": ["@typescript-eslint", "import", "simple-import-sort", "typesafe"],
       "extends": ["plugin:@typescript-eslint/recommended"],
       "rules": {
         // Rules for auto sort of imports
@@ -54,10 +54,18 @@
         "import/newline-after-import": "error",
         "import/no-duplicates": "error",
         "@typescript-eslint/no-floating-promises": 2,
-        "@typescript-eslint/no-unused-vars": 2
+        "@typescript-eslint/no-unused-vars": 2,
+        "typesafe/no-throw-sync-func": "error"
       }
     },
-    { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] }
+    { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] },
+    {
+      "files": ["*.ts", "*.js"],
+      "excludedFiles": ["**/*.spec.ts", "**/.spec.js"],
+      "rules": {
+        "typesafe/no-await-without-trycatch": "warn"
+      }
+    }
   ],
   "rules": {
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],

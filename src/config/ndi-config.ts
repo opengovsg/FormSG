@@ -12,11 +12,9 @@ export const FIELD_MAPPING = {
     'housingtype',
     'hdbtype',
     'marital',
-    'edulevel',
     'countryofmarriage',
     'workpassstatus',
     'householdincome',
-    'schoolname',
     'occupation',
   ],
   textfield: [
@@ -27,14 +25,11 @@ export const FIELD_MAPPING = {
     'hanyupinyinaliasname',
     'passportnumber',
     'regadd',
-    'mailadd',
-    'billadd',
     'employment',
     'vehno',
     'marriagecertno',
   ],
   mobile: ['mobileno'],
-  homeno: ['homeno'],
   date: [
     'dob',
     'passportexpirydate',
@@ -42,5 +37,4 @@ export const FIELD_MAPPING = {
     'divorcedate',
     'workpassexpirydate',
   ],
-  number: ['gradyear'],
 }

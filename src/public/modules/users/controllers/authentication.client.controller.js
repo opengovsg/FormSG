@@ -5,6 +5,7 @@ const HttpStatus = require('http-status-codes')
 angular
   .module('users')
   .controller('AuthenticationController', [
+    '$scope',
     '$state',
     '$timeout',
     '$window',
@@ -13,11 +14,21 @@ angular
     AuthenticationController,
   ])
 
-function AuthenticationController($state, $timeout, $window, Auth, GTag) {
+function AuthenticationController(
+  $scope,
+  $state,
+  $timeout,
+  $window,
+  Auth,
+  GTag,
+) {
   const vm = this
+
+  let notifDelayTimeout
 
   vm.credentials = {}
   vm.buttonClicked = false
+  vm.showOtpDelayNotification = false
 
   // logic/booleans to show sign in process sequentially. 2 possible values.
   // 'email' - email input
@@ -161,6 +172,7 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
     vm.signInMsg.isMsg = false
     vm.isOtpSending = true
     vm.buttonClicked = true
+    vm.showOtpDelayNotification = false
     const { email } = vm.credentials
     Auth.sendOtp({ email }).then(
       function (success) {
@@ -176,6 +188,13 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
           angular.element('#otp-input').focus()
           angular.element('#otp-input').select()
         }, 100)
+
+        // Cancel existing timeout and set new one.
+        cancelNotifDelayTimeout()
+        notifDelayTimeout = $timeout(function () {
+          vm.signInMsg.isMsg = false
+          vm.showOtpDelayNotification = true
+        }, 20000)
       },
       function (error) {
         vm.isOtpSending = false
@@ -189,10 +208,6 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
           isError: true,
           msg,
         }
-        $timeout(function () {
-          angular.element('#otp-input').focus()
-          angular.element('#otp-input').select()
-        }, 100)
       },
     )
   }
@@ -245,4 +260,14 @@ function AuthenticationController($state, $timeout, $window, Auth, GTag) {
       },
     )
   }
+
+  const cancelNotifDelayTimeout = () => {
+    if (notifDelayTimeout) {
+      $timeout.cancel(notifDelayTimeout)
+    }
+  }
+
+  $scope.$on('$destroy', function () {
+    cancelNotifDelayTimeout()
+  })
 }

@@ -1,5 +1,5 @@
 const { StatusCodes } = require('http-status-codes')
-const { times } = require('lodash')
+const { times, omit } = require('lodash')
 const ejs = require('ejs')
 const express = require('express')
 const request = require('supertest')
@@ -18,37 +18,24 @@ const Verification = dbHandler.makeModel(
   'verification.server.model',
   'Verification',
 )
-const EmailForm = mongoose.model('email')
 const vfnConstants = require('../../../../dist/backend/shared/util/verification')
 
-describe('Email Submissions Controller', () => {
-  const SESSION_SECRET = 'secret'
+const {
+  SPCPFieldTitle,
+} = require('../../../../dist/backend/types/field/fieldTypes')
 
+describe('Email Submissions Controller', () => {
   // Declare global variables
-  let spyRequest
   let sendSubmissionMailSpy
 
   // spec out controller such that calls to request are
   // directed through a callback to the request spy,
   // which will be destroyed and re-created for every test
-  const submissionsController = spec(
-    'dist/backend/app/controllers/submissions.server.controller',
-    {
-      mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      request: (url, callback) => spyRequest(url, callback),
-      '../../config/config': {
-        sessionSecret: SESSION_SECRET,
-      },
-    },
-  )
   const spcpController = spec('dist/backend/app/modules/spcp/spcp.controller', {
     mongoose: Object.assign(mongoose, { '@noCallThru': true }),
   })
 
   beforeAll(async () => await dbHandler.connect())
-  beforeEach(() => {
-    spyRequest = jasmine.createSpy('request')
-  })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -93,6 +80,9 @@ describe('Email Submissions Controller', () => {
 
     beforeEach(() => {
       fixtures = {
+        body: {
+          parsedResponses: [],
+        },
         replyToEmails: [],
         attachments: [
           {
@@ -141,7 +131,7 @@ describe('Email Submissions Controller', () => {
         .expect(StatusCodes.OK)
         .then(() => {
           const mailOptions = sendSubmissionMailSpy.calls.mostRecent().args[0]
-          expect(mailOptions).toEqual(fixtures)
+          expect(mailOptions).toEqual(omit(fixtures, 'body'))
         })
         .then(done)
         .catch(done)
@@ -456,220 +446,6 @@ describe('Email Submissions Controller', () => {
     })
   })
 
-  // Called by saveSubmissionToDb when responseMode === 'email'
-  describe('saveMetadataToDb', () => {
-    const crypto = require('crypto')
-    let testForm
-    let testAgency
-    let testUser
-    let formData = []
-    let attachments = []
-    const app = express()
-    const endpointPath = '/save-submission'
-
-    const originalConsoleError = console.error
-
-    beforeAll(() => {
-      // Stubbing console error to prevent appearing in stdout
-      console.error = jasmine.createSpy()
-
-      app.route(endpointPath).get(
-        (req, res, next) => {
-          req.form = testForm
-          req.formData = formData
-          req.attachments = attachments
-          return next()
-        },
-        EmailSubmissionsMiddleware.saveMetadataToDb,
-        (req, res) => res.status(200).send(req.submission),
-      )
-    })
-
-    beforeEach((done) => {
-      // Clear mock db and insert test form before each test
-      dbHandler
-        .clearDatabase()
-        .then(() => {
-          testAgency = new Agency({
-            shortName: 'test',
-            fullName: 'Test Agency',
-            emailDomain: 'test.gov.sg',
-            logo: 'test.png',
-          })
-          return testAgency.save()
-        })
-        .then(() => {
-          testUser = new User({
-            email: 'user@test.gov.sg',
-            agency: testAgency._id,
-          })
-          return testUser.save()
-        })
-        .then(() => {
-          testForm = new EmailForm({
-            title: 'Test Form',
-            emails: 'test@test.gov.sg',
-            admin: testUser._id,
-          })
-          return testForm.save()
-        })
-        .then(() => done())
-    })
-
-    afterAll((done) => {
-      console.error = originalConsoleError
-      dbHandler.clearDatabase().then(done)
-    })
-
-    /* it('saves MyInfo submissions', done => {
-      const attr = 'sex'
-      // Need to run populate as agency information is needed to update authType
-      Form.findById(testForm._id)
-        .populate({
-          path: 'admin',
-          populate: {
-            path: 'agency',
-            model: 'Agency',
-          },
-        })
-        .then((form) => {
-          form.form_fields.push({
-            fieldType: 'dropdown',
-            title: 'foo',
-            myInfo: { attr },
-          })
-          form.authType = 'SP'
-          return form.save()
-        }).then((val) => {
-          testForm = val
-          return request(app)
-            .get(endpointPath)
-            .expect(StatusCodes.OK)
-            .then(({ body: submission }) => {
-              console.info()
-              expect(submission.form).toEqual(testForm._id.toString())
-              expect(submission.recipientEmails).toEqual(
-                testForm.emails.map(e => e.toString())
-              )
-              expect(submission.authType).toEqual('SP')
-              expect(submission.hasBounced).toEqual(false)
-              expect(submission.myInfoFields).toEqual([attr])
-            })
-        })
-        .then(done)
-        .catch(err => {
-          if (err) {
-            console.error(err)
-          }
-          done(err)
-        })
-    }) */
-
-    it('saves non-MyInfo submissions', (done) => {
-      request(app)
-        .get(endpointPath)
-        .expect(StatusCodes.OK)
-        .then(({ body: submission }) => {
-          expect(submission.form).toEqual(testForm._id.toString())
-          expect(submission.recipientEmails).toEqual(
-            testForm.emails.map((e) => e.toString()),
-          )
-          expect(submission.authType).toEqual('NIL')
-          expect(submission.hasBounced).toEqual(false)
-          expect(submission.myInfoFields).toEqual([])
-        })
-        .then(done)
-        .catch(done)
-    })
-
-    it('saves response hash with short text, checkbox and number', (done) => {
-      formData = [
-        {
-          question: 'foo',
-          answer: 'bar',
-        },
-        {
-          question: 'checkbox',
-          answer: 'option 1, option 2',
-        },
-        {
-          question: 'number',
-          answer: 1,
-        },
-      ]
-      let concatResponse = 'foo bar; checkbox option 1, option 2; number 1; '
-      request(app)
-        .get(endpointPath)
-        .expect(StatusCodes.OK)
-        .then(({ body: submission }) => {
-          expect(submission.form).toEqual(testForm._id.toString())
-          expect(submission.recipientEmails).toEqual(
-            testForm.emails.map((e) => e.toString()),
-          )
-          expect(submission.authType).toEqual('NIL')
-          expect(submission.hasBounced).toEqual(false)
-          expect(submission.myInfoFields).toEqual([])
-          let expectedHash = crypto
-            .pbkdf2Sync(
-              concatResponse,
-              submission.responseSalt,
-              10000,
-              64,
-              'sha512',
-            )
-            .toString('base64')
-          expect(submission.responseHash).toEqual(expectedHash)
-        })
-        .then(done)
-        .catch(done)
-    })
-
-    it('saves response hash with attachments', (done) => {
-      formData = [
-        {
-          question: 'foo',
-          answer: 'bar',
-        },
-        {
-          question: '[attachment] Text File',
-          answer: 'file.text',
-        },
-      ]
-      attachments = [
-        {
-          filename: 'file.txt',
-          content: Buffer.alloc(5),
-        },
-      ]
-      let concatResponse =
-        'foo bar; [attachment] Text File file.text; \u0000\u0000\u0000\u0000\u0000'
-      request(app)
-        .get(endpointPath)
-        .expect(StatusCodes.OK)
-        .then(({ body: submission }) => {
-          expect(submission.form).toEqual(testForm._id.toString())
-          expect(submission.recipientEmails).toEqual(
-            testForm.emails.map((e) => e.toString()),
-          )
-          expect(submission.authType).toEqual('NIL')
-          expect(submission.hasBounced).toEqual(false)
-          expect(submission.myInfoFields).toEqual([])
-          let expectedHash = crypto
-            .pbkdf2Sync(
-              concatResponse,
-              submission.responseSalt,
-              10000,
-              64,
-              'sha512',
-            )
-            .toString('base64')
-          expect(submission.responseHash).toEqual(expectedHash)
-        })
-        .then(done)
-        .catch(done)
-    })
-  })
-
   describe('prepareSubmissionForEmail', () => {
     let reqFixtures
     let resLocalFixtures
@@ -705,7 +481,6 @@ describe('Email Submissions Controller', () => {
           b.content = b.content.toString('base64')
           return b
         }),
-        replyToEmails: req.replyToEmails,
       })
     }
 
@@ -717,7 +492,6 @@ describe('Email Submissions Controller', () => {
         .get(
           injectFixtures,
           EmailSubmissionsMiddleware.validateEmailSubmission,
-          submissionsController.injectAutoReplyInfo,
           spcpController.appendVerifiedSPCPResponses,
           EmailSubmissionsMiddleware.prepareEmailSubmission,
           sendSubmissionBack,
@@ -728,18 +502,13 @@ describe('Email Submissions Controller', () => {
       request(app)
         .get(endpointPath)
         .expect(StatusCodes.OK)
-        .then(
-          ({ body: { formData, autoReplyData, jsonData, replyToEmails } }) => {
-            expect(formData).withContext('Form Data').toEqual(expected.formData)
-            expect(autoReplyData)
-              .withContext('autoReplyData')
-              .toEqual(expected.autoReplyData)
-            expect(jsonData).withContext('jsonData').toEqual(expected.jsonData)
-            expect(replyToEmails)
-              .withContext('replyToEmails')
-              .toEqual(expected.replyToEmails)
-          },
-        )
+        .then(({ body: { formData, autoReplyData, jsonData } }) => {
+          expect(formData).withContext('Form Data').toEqual(expected.formData)
+          expect(autoReplyData)
+            .withContext('autoReplyData')
+            .toEqual(expected.autoReplyData)
+          expect(jsonData).withContext('jsonData').toEqual(expected.jsonData)
+        })
         .then(done)
         .catch(done)
     }
@@ -805,7 +574,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: [],
         formData: [],
         jsonData: [],
-        replyToEmails: [],
       }
       for (let answer of answerArray) {
         answer = String(answer)
@@ -835,14 +603,13 @@ describe('Email Submissions Controller', () => {
      *  Generate expected output
      * @param {Array} fields
      * @param {Array} responses
-     * @returns {Object} { autoReplyData: Array, formData: Array, jsonData: Array, replyToEmails: Array }
+     * @returns {Object} { autoReplyData: Array, formData: Array, jsonData: Array }
      */
     const getExpectedOutput = (fields, responses) => {
       let expected = {
         autoReplyData: [],
         formData: [],
         jsonData: [],
-        replyToEmails: [],
       }
       for (let i = 0; i < fields.length; i++) {
         const answer = String(responses[i].answer)
@@ -852,7 +619,6 @@ describe('Email Submissions Controller', () => {
           expected.autoReplyData.push(...expectedTable.autoReplyData)
           expected.jsonData.push(...expectedTable.jsonData)
           expected.formData.push(...expectedTable.formData)
-          expected.replyToEmails.push(...expectedTable.replyToEmails)
         } else {
           let question = fields[i].title
           if (responses[i].isExpectedToBeVisible) {
@@ -874,9 +640,6 @@ describe('Email Submissions Controller', () => {
             answer,
             fieldType: fields[i].fieldType,
           })
-          if (fields[i].fieldType === 'email') {
-            expected.replyToEmails.push(answer)
-          }
         }
       }
       return expected
@@ -887,7 +650,7 @@ describe('Email Submissions Controller', () => {
       reqFixtures.form.authType = 'SP'
       const expectedFormData = [
         {
-          question: 'SingPass Validated NRIC',
+          question: SPCPFieldTitle.SpNric,
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
           fieldType: 'nric',
@@ -895,13 +658,13 @@ describe('Email Submissions Controller', () => {
       ]
       const expectedAutoReplyData = [
         {
-          question: 'SingPass Validated NRIC',
+          question: SPCPFieldTitle.SpNric,
           answerTemplate: [resLocalFixtures.uinFin],
         },
       ]
       const expectedJsonData = [
         {
-          question: 'SingPass Validated NRIC',
+          question: SPCPFieldTitle.SpNric,
           answer: resLocalFixtures.uinFin,
         },
       ]
@@ -909,7 +672,6 @@ describe('Email Submissions Controller', () => {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -920,13 +682,13 @@ describe('Email Submissions Controller', () => {
       reqFixtures.form.authType = 'CP'
       const expectedFormData = [
         {
-          question: 'CorpPass Validated UEN',
+          question: SPCPFieldTitle.CpUen,
           answerTemplate: [resLocalFixtures.uinFin],
           answer: resLocalFixtures.uinFin,
           fieldType: 'textfield',
         },
         {
-          question: 'CorpPass Validated UID',
+          question: SPCPFieldTitle.CpUid,
           answerTemplate: [resLocalFixtures.userInfo],
           answer: resLocalFixtures.userInfo,
           fieldType: 'nric',
@@ -934,21 +696,21 @@ describe('Email Submissions Controller', () => {
       ]
       const expectedAutoReplyData = [
         {
-          question: 'CorpPass Validated UEN',
+          question: SPCPFieldTitle.CpUen,
           answerTemplate: [resLocalFixtures.uinFin],
         },
         {
-          question: 'CorpPass Validated UID',
+          question: SPCPFieldTitle.CpUid,
           answerTemplate: [resLocalFixtures.userInfo],
         },
       ]
       const expectedJsonData = [
         {
-          question: 'CorpPass Validated UEN',
+          question: SPCPFieldTitle.CpUen,
           answer: resLocalFixtures.uinFin,
         },
         {
-          question: 'CorpPass Validated UID',
+          question: SPCPFieldTitle.CpUid,
           answer: resLocalFixtures.userInfo,
         },
       ]
@@ -956,7 +718,6 @@ describe('Email Submissions Controller', () => {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1006,7 +767,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1049,7 +809,6 @@ describe('Email Submissions Controller', () => {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1070,7 +829,7 @@ describe('Email Submissions Controller', () => {
         question: nonVisibleField.title,
         fieldType: nonVisibleField.fieldType,
         isHeader: false,
-        answer: 'abc',
+        answer: '',
       }
       const yesNoResponse = {
         _id: String(yesNoField._id),
@@ -1132,7 +891,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1179,7 +937,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -1227,59 +984,7 @@ describe('Email Submissions Controller', () => {
         autoReplyData: expectedAutoReplyData,
         jsonData: expectedJsonData,
         formData: expectedFormData,
-        replyToEmails: [],
       }
-      prepareSubmissionThenCompare(expected, done)
-    })
-
-    it('maps replyToEmails', (done) => {
-      const emails = ['email@test.com', 'email@mymail.com']
-      let expected = {
-        autoReplyData: [],
-        formData: [],
-        jsonData: [],
-        replyToEmails: [],
-      }
-      for (let i = 0; i < emails.length; i++) {
-        const fieldId = new ObjectID()
-        const field = {
-          _id: fieldId,
-          fieldType: 'email',
-          title: `Send a reply to this email ${i}`,
-          autoReplyOptions: {
-            hasAutoReply: false,
-            autoReplySubject: '',
-            autoReplySender: '',
-            autoReplyMessage: '',
-            includeFormSummary: false,
-          },
-        }
-        const response = {
-          _id: String(fieldId),
-          question: 'Some question',
-          fieldType: 'email',
-          isHeader: false,
-          answer: emails[i],
-        }
-        reqFixtures.form.form_fields.push(field)
-        reqFixtures.body.responses.push(response)
-        expected.autoReplyData.push({
-          question: field.title,
-          answerTemplate: [emails[i]],
-        })
-        expected.jsonData.push({
-          question: field.title,
-          answer: emails[i],
-        })
-        expected.formData.push({
-          question: field.title,
-          answerTemplate: [emails[i]],
-          answer: emails[i],
-          fieldType: field.fieldType,
-        })
-        expected.replyToEmails.push(emails[i])
-      }
-
       prepareSubmissionThenCompare(expected, done)
     })
 
@@ -1505,7 +1210,6 @@ describe('Email Submissions Controller', () => {
         autoReplyData: [],
         formData: [],
         jsonData: [],
-        replyToEmails: [],
       }
       for (let i = 0; i < fields.length; i++) {
         let { fieldType, title } = fields[i]
@@ -1604,7 +1308,7 @@ describe('Email Submissions Controller', () => {
               logicField._id,
               logicField.fieldType,
               logicField.title,
-              'lorem',
+              expectLogicFieldVisible ? 'lorem' : '',
               null,
               expectLogicFieldVisible,
             ),
@@ -1711,7 +1415,7 @@ describe('Email Submissions Controller', () => {
               logicField._id,
               logicField.fieldType,
               logicField.title,
-              'lorem',
+              expectLogicFieldVisible ? 'lorem' : '',
               null,
               expectLogicFieldVisible,
             ),
@@ -1818,7 +1522,7 @@ describe('Email Submissions Controller', () => {
               logicField._id,
               logicField.fieldType,
               logicField.title,
-              'lorem',
+              expectLogicFieldVisible ? 'lorem' : '',
               null,
               expectLogicFieldVisible,
             ),
@@ -1941,7 +1645,7 @@ describe('Email Submissions Controller', () => {
               logicField._id,
               logicField.fieldType,
               logicField.title,
-              'lorem',
+              expectLogicFieldVisible ? 'lorem' : '',
               null,
               expectLogicFieldVisible,
             ),
@@ -2104,7 +1808,7 @@ describe('Email Submissions Controller', () => {
               logicField._id,
               logicField.fieldType,
               logicField.title,
-              'lorem',
+              expectLogicFieldVisible ? 'lorem' : '',
               null,
               expectLogicFieldVisible,
             ),
@@ -2191,7 +1895,7 @@ describe('Email Submissions Controller', () => {
               logicField1._id,
               logicField1.fieldType,
               logicField1.title,
-              'lorem',
+              '',
               null,
               false,
             ), // This field should be hidden
@@ -2199,7 +1903,7 @@ describe('Email Submissions Controller', () => {
               logicField2._id,
               logicField2.fieldType,
               logicField2.title,
-              'ipsum',
+              '',
               null,
               false,
             ), // This field should be hidden
@@ -2259,7 +1963,7 @@ describe('Email Submissions Controller', () => {
               logicField1._id,
               logicField1.fieldType,
               logicField1.title,
-              'lorem',
+              '',
               null,
               false,
             ), // This field should be hidden
@@ -2401,7 +2105,7 @@ describe('Email Submissions Controller', () => {
               conditionField2._id,
               conditionField2.fieldType,
               conditionField2.title,
-              conditionField2Val,
+              expectedField2Visible ? conditionField2Val : '',
               null,
               expectedField2Visible,
             ),
@@ -2409,7 +2113,7 @@ describe('Email Submissions Controller', () => {
               logicField._id,
               logicField.fieldType,
               logicField.title,
-              '12 Dec 2019',
+              expectLogicFieldVisible ? '12 Dec 2019' : '',
               null,
               expectLogicFieldVisible,
             ),
@@ -2643,7 +2347,7 @@ describe('Email Submissions Controller', () => {
               conditionField1._id,
               conditionField1.fieldType,
               conditionField1.title,
-              'Yes',
+              '',
               null,
               false,
             ), // Circular, never shown
@@ -2651,7 +2355,7 @@ describe('Email Submissions Controller', () => {
               conditionField2._id,
               conditionField2.fieldType,
               conditionField2.title,
-              'Yes',
+              '',
               null,
               false,
             ), // Circular, never shown
@@ -2659,7 +2363,7 @@ describe('Email Submissions Controller', () => {
               conditionField3._id,
               conditionField3.fieldType,
               conditionField3.title,
-              'Yes',
+              '',
               null,
               false,
             ), // Circular, never shown
@@ -2683,7 +2387,7 @@ describe('Email Submissions Controller', () => {
               conditionField1._id,
               conditionField1.fieldType,
               conditionField1.title,
-              'Yes',
+              '',
               null,
               false,
             ), // Circular, never shown
@@ -2691,7 +2395,7 @@ describe('Email Submissions Controller', () => {
               conditionField2._id,
               conditionField2.fieldType,
               conditionField2.title,
-              'Yes',
+              '',
               null,
               false,
             ), // Circular, never shown
@@ -2699,7 +2403,7 @@ describe('Email Submissions Controller', () => {
               conditionField3._id,
               conditionField3.fieldType,
               conditionField3.title,
-              'Yes',
+              '',
               null,
               false,
             ), // Circular, never shown

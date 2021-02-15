@@ -176,7 +176,7 @@ const cookieSettings: SessionOptions['cookie'] = {
 const configureAws = async () => {
   if (!isDev) {
     const getCredentials = () => {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         aws.config.getCredentials((err) => {
           if (err) {
             reject(err)

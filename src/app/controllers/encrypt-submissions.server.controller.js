@@ -8,90 +8,11 @@ const {
 } = require('../models/submission.server.model')
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
-const { checkIsEncryptedEncoding } = require('../utils/encryption')
-const { ConflictError } = require('../modules/submission/submission.errors')
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const {
   aws: { attachmentS3Bucket, s3 },
 } = require('../../config/config')
-const {
-  getProcessedResponses,
-} = require('../modules/submission/submission.service')
-
-/**
- * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
- * to produce req.body.parsedResponses
- *
- * @param  {Express.Request} req - Express request object
- * @param  {Express.Response} res - Express response object
- * @param  {Function} next - Express next middleware function
- */
-exports.validateEncryptSubmission = function (req, res, next) {
-  const { form } = req
-
-  const isEncryptedResult = checkIsEncryptedEncoding(req.body.encryptedContent)
-  if (isEncryptedResult.isErr()) {
-    logger.error({
-      message: 'Invalid encryption',
-      meta: {
-        action: 'validateEncryptSubmission',
-        ...createReqMeta(req),
-        formId: form._id,
-      },
-      error: isEncryptedResult.error,
-    })
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: 'Invalid data was found. Please submit again.' })
-  }
-
-  if (!req.body.responses) {
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
-  }
-
-  const getProcessedResponsesResult = getProcessedResponses(
-    form,
-    req.body.responses,
-  )
-  if (getProcessedResponsesResult.isErr()) {
-    const err = getProcessedResponsesResult.error
-    logger.error({
-      message: 'Error processing responses',
-      meta: {
-        action: 'validateEncryptSubmission',
-        ...createReqMeta(req),
-        formId: form._id,
-      },
-      error: err,
-    })
-    if (err instanceof ConflictError) {
-      return res.status(err.status).json({
-        message: 'The form has been updated. Please refresh and submit again.',
-      })
-    }
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
-    })
-  }
-  req.body.parsedResponses = getProcessedResponsesResult.value
-  delete req.body.responses // Prevent downstream functions from using responses by deleting it
-  return next()
-}
-
-/**
- * Verify structure of encrypted response
- *
- * @param  {Express.Request} req - Express request object
- * @param  {Express.Response} res - Express response object
- * @param  {Function} next - Express next middleware function
- */
-exports.prepareEncryptSubmission = (req, res, next) => {
-  req.formData = req.body.encryptedContent
-  req.attachmentData = req.body.attachments || {}
-  return next()
-}
 
 /**
  * @param {Error} err - the Error to report
@@ -145,6 +66,11 @@ function onEncryptSubmissionFailure(err, req, res, submission) {
  */
 exports.saveResponseToDb = function (req, res, next) {
   const { form, formData, attachmentData } = req
+  const logMeta = {
+    action: 'saveResponseToDb',
+    formId: form._id,
+    ...createReqMeta(req),
+  }
   const { verified } = res.locals
   let attachmentMetadata = new Map()
   let attachmentUploadPromises = []
@@ -174,10 +100,7 @@ exports.saveResponseToDb = function (req, res, next) {
         .catch((err) => {
           logger.error({
             message: 'Attachment upload error',
-            meta: {
-              action: 'saveResponseToDb',
-              ...createReqMeta(req),
-            },
+            meta: logMeta,
             error: err,
           })
           return onEncryptSubmissionFailure(err, req, res, submission)
@@ -200,6 +123,13 @@ exports.saveResponseToDb = function (req, res, next) {
       return submission.save()
     })
     .then((savedSubmission) => {
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        meta: {
+          ...logMeta,
+          submissionId: savedSubmission._id,
+        },
+      })
       req.submission = savedSubmission
       return next()
     })

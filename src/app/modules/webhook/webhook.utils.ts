@@ -12,7 +12,7 @@ import { WebhookValidationError } from './webhook.errors'
  * @returns Resolves if URL is valid, otherwise rejects.
  * @throws {WebhookValidationError} If URL is invalid so webhook should not be attempted.
  */
-export const validateWebhookUrl = (webhookUrl: string): Promise<any> => {
+export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (!isValidHttpsUrl(webhookUrl)) {
       return reject(

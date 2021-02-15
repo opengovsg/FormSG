@@ -281,7 +281,7 @@
         </div>
       </div>
 
-      <div class="settings-divider webhook-divider"></div>
+      <div class="settings-divider feature-divider"></div>
 
       <!-- Webhooks for encrypted forms -->
       <div
@@ -289,7 +289,7 @@
         feature-toggle
         feature-name="webhook-verified-content"
       >
-        <div class="row" id="enable-webhooks">
+        <div class="row enable-features">
           <label
             for="settings-webhook-url"
             class="col-xs-9 label-custom label-large"
@@ -322,7 +322,7 @@
             >Webhook is not available for forms with attachment fields.</span
           >
         </div>
-        <div class="row" id="url-webhooks">
+        <div class="row feature-container">
           <div
             class="settings-save col-xs-12"
             ng-class="(settingsForm.webhookUrl.$invalid) ? 'input-disabled' : ''"

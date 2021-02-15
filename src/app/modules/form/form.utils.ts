@@ -1,7 +1,13 @@
 import { pick } from 'lodash'
 import { Merge } from 'type-fest'
 
-import { IPopulatedForm } from 'src/types'
+import {
+  IEncryptedFormSchema,
+  IFormSchema,
+  IPopulatedForm,
+  Permission,
+  ResponseMode,
+} from '../../../types'
 
 // Kept in this file instead of form.types.ts so that this can be kept in sync
 // with FORM_PUBLIC_FIELDS more easily.
@@ -54,4 +60,40 @@ export const removePrivateDetailsFromForm = (
     ...(pick(form, FORM_PUBLIC_FIELDS) as PublicFormValues),
     admin: pick(form.admin, 'agency'),
   }
+}
+
+/**
+ * Typeguard to check if given form is an encrypt mode form.
+ * @param form the form to check
+ * @returns true if form is encrypt mode form, false otherwise.
+ */
+export const isFormEncryptMode = (
+  form: IFormSchema | IPopulatedForm,
+): form is IEncryptedFormSchema => {
+  return form.responseMode === ResponseMode.Encrypt
+}
+
+/**
+ * Extracts emails of collaborators, optionally filtering for a specific
+ * write permission.
+ * @param permissionList List of collaborators
+ * @param writePermission Optional write permission to filter on
+ * @returns Array of emails
+ */
+export const getCollabEmailsWithPermission = (
+  permissionList?: Permission[],
+  writePermission?: boolean,
+): string[] => {
+  if (!permissionList) {
+    return []
+  }
+  return permissionList.reduce<string[]>((acc, collaborator) => {
+    if (
+      writePermission === undefined ||
+      writePermission === collaborator.write
+    ) {
+      acc.push(collaborator.email)
+    }
+    return acc
+  }, [])
 }

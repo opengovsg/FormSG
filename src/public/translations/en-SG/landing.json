@@ -4,6 +4,10 @@
     "TEXT": "User Guide",
     "HREF": "@:LINKS.GUIDE.ROOT"
   },
+  "GITHUB": {
+    "TEXT": "GitHub",
+    "HREF": "@:LINKS.GITHUB"
+  },
   "HERO": {
     "TAG_LINE": {
       "LINE_1": "Build government",

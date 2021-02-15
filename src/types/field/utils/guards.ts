@@ -1,7 +1,12 @@
 /* Type guards */
 import {
+  BasicField,
   IDateField,
   IDecimalField,
+  IDropdownField,
+  IEmailFieldSchema,
+  IField,
+  IFieldSchema,
   IHomenoField,
   ILongTextField,
   IMobileField,
@@ -10,10 +15,7 @@ import {
   IRatingField,
   ISectionFieldSchema,
   IShortTextField,
-} from 'src/types/field'
-import { IField } from 'src/types/field/baseField'
-
-import { BasicField } from '../../../types/field/fieldTypes'
+} from '..'
 
 export const isSectionField = (
   formField: IField,
@@ -67,4 +69,16 @@ export const isDecimalField = (
   formField: IField,
 ): formField is IDecimalField => {
   return formField.fieldType === BasicField.Decimal
+}
+
+export const isEmailField = (
+  formField: IFieldSchema,
+): formField is IEmailFieldSchema => {
+  return formField.fieldType === BasicField.Email
+}
+
+export const isDropdownField = (
+  formField: IField,
+): formField is IDropdownField => {
+  return formField.fieldType === BasicField.Dropdown
 }

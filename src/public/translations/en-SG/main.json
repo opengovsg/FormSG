@@ -7,6 +7,7 @@
       "STORAGE_MODE": "https://guide.form.gov.sg/AdvancedGuide.html#storage-mode",
       "SECRET_KEY_SAFEKEEPING": "https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-make-sure-i-dont-lose-my-secret-key"
     },
+    "GITHUB": "https://github.com/opengovsg/FormSG",
     "APP": {
       "ROOT": "https://form.gov.sg"
     },

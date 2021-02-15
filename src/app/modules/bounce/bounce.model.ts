@@ -8,6 +8,7 @@ import {
   IBounceSchema,
   IEmailNotification,
   ISingleBounce,
+  UserContactView,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
@@ -29,6 +30,10 @@ const BounceSchema = new Schema<IBounceSchema>({
     required: 'Form ID is required',
   },
   hasAutoEmailed: {
+    type: Boolean,
+    default: false,
+  },
+  hasAutoSmsed: {
     type: Boolean,
     default: false,
   },
@@ -95,6 +100,7 @@ BounceSchema.statics.fromSnsNotification = function (
 /**
  * Updates an old bounce document with info from an SNS notification.
  * @param snsInfo the notification information to merge
+ * @returns the updated document
  */
 BounceSchema.methods.updateBounceInfo = function (
   this: IBounceSchema,
@@ -133,6 +139,7 @@ BounceSchema.methods.updateBounceInfo = function (
 /**
  * Returns true if the document indicates a critical bounce (all recipients
  * bounced), false otherwise.
+ * @returns true if all recipients bounced
  */
 BounceSchema.methods.isCriticalBounce = function (
   this: IBounceSchema,
@@ -143,6 +150,7 @@ BounceSchema.methods.isCriticalBounce = function (
 /**
  * Returns true if the document indicates that all recipients bounced and
  * all bounces were permanent, false otherwise.
+ * @returns true if all bounecs were permanent
  */
 BounceSchema.methods.areAllPermanentBounces = function (
   this: IBounceSchema,
@@ -155,6 +163,7 @@ BounceSchema.methods.areAllPermanentBounces = function (
 
 /**
  * Returns the list of email recipients for this form
+ * @returns Array of email addresses
  */
 BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
   // Return a regular array to prevent unexpected bugs with mongoose
@@ -165,22 +174,28 @@ BounceSchema.methods.getEmails = function (this: IBounceSchema): string[] {
 /**
  * Sets hasAutoEmailed to true if at least one person has been emailed.
  * @param emailRecipients Array of recipients who were emailed.
+ * @returns void. Modifies document in place.
  */
 BounceSchema.methods.setNotificationState = function (
   this: IBounceSchema,
   emailRecipients: string[],
+  smsRecipients: UserContactView[],
 ): void {
   if (emailRecipients.length > 0) {
     this.hasAutoEmailed = true
   }
+  if (smsRecipients.length > 0) {
+    this.hasAutoSmsed = true
+  }
 }
 
 /**
- * Returns true if an automated email has been sent for this form,
+ * Returns true if an automated email or SMS has been sent for this form,
  * false otherwise.
+ * @returns true if at least one admin or collaborator has been notified
  */
 BounceSchema.methods.hasNotified = function (this: IBounceSchema): boolean {
-  return this.hasAutoEmailed
+  return this.hasAutoEmailed || this.hasAutoSmsed
 }
 
 const getBounceModel = (db: Mongoose): IBounceModel => {

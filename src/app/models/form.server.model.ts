@@ -201,8 +201,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         logo: FormLogoSchema,
       },
 
-      logo: FormLogoSchema,
-
       endPage: {
         title: {
           type: String,
@@ -233,14 +231,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             return v
           }
         },
-      },
-
-      customLogo: {
-        type: String,
-        match: [
-          /$^|\.(gif|jpeg|jpg|png|svg)(\?|$|#)/i,
-          'Please fill a valid image URL',
-        ],
       },
 
       status: {

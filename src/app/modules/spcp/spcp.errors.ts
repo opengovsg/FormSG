@@ -1,5 +1,6 @@
 import { AuthType } from '../../../types'
 import { ApplicationError } from '../../modules/core/core.errors'
+
 /**
  * Error while creating redirect URL
  */
@@ -28,7 +29,7 @@ export class LoginPageValidationError extends ApplicationError {
 }
 
 /**
- * Invalid JWT.
+ * JWT could not be decoded.
  */
 export class VerifyJwtError extends ApplicationError {
   constructor(message = 'Invalid JWT') {
@@ -36,7 +37,7 @@ export class VerifyJwtError extends ApplicationError {
   }
 }
 
-/*
+/**
  * Invalid OOB params passed to login endpoint.
  */
 export class InvalidOOBParamsError extends ApplicationError {
@@ -77,12 +78,21 @@ export class MissingAttributesError extends ApplicationError {
 }
 
 /**
- * JWT has the wrong shape
+ * JWT could be decoded but has the wrong shape
  */
 export class InvalidJwtError extends ApplicationError {
   constructor(
     message = 'Decoded JWT did not contain the correct SPCP attributes',
   ) {
+    super(message)
+  }
+}
+
+/**
+ * JWT not present in cookies
+ */
+export class MissingJwtError extends ApplicationError {
+  constructor(message = 'No JWT present in cookies') {
     super(message)
   }
 }

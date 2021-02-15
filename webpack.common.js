@@ -6,12 +6,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 module.exports = [
   // Javascript / HTML config
   {
-    entry: [
-      'core-js/stable',
-      'regenerator-runtime/runtime',
-      path.resolve(__dirname, 'src/public/polyfills.js'),
-      path.resolve(__dirname, 'src/public/main.js'),
-    ],
+    entry: [path.resolve(__dirname, 'src/public/main.js')],
     module: {
       rules: [
         {
@@ -30,10 +25,17 @@ module.exports = [
         },
         {
           test: /\.worker\.js$/,
-          use: {
-            loader: 'worker-loader',
-            options: { publicPath: '/public/' },
-          },
+          // Don't transpile polyfills
+          exclude: /@babel(?:\/|\\{1,2})runtime|core-js/,
+          use: [
+            {
+              loader: 'worker-loader',
+              options: { publicPath: '/public/' },
+            },
+            {
+              loader: 'babel-loader',
+            },
+          ],
         },
       ],
     },

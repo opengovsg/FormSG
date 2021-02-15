@@ -5,6 +5,7 @@ const request = require('supertest')
 
 const dbHandler = require('../helpers/db-handler')
 const EncryptSubmissionsMiddleware = require('../../../../dist/backend/app/modules/submission/encrypt-submission/encrypt-submission.middleware')
+const VerifiedContentMiddleware = require('../../../../dist/backend/app/modules/verified-content/verified-content.middlewares')
 
 const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
@@ -20,13 +21,6 @@ describe('Encrypt Submissions Controller', () => {
     'dist/backend/app/controllers/encrypt-submissions.server.controller',
     {
       mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-    },
-  )
-  const SpcpController = spec(
-    'dist/backend/app/controllers/spcp.server.controller',
-    {
-      mongoose: Object.assign(mongoose, { '@noCallThru': true }),
-      '../../config/ndi-config': {},
     },
   )
 
@@ -228,15 +222,14 @@ describe('Encrypt Submissions Controller', () => {
       }
 
       const app = express()
-      const secretSigningKey = process.env.SIGNING_SECRET_KEY
 
       beforeAll(() => {
         app
           .route(endpointPath)
           .post(
             injectFixtures,
-            SpcpController.encryptedVerifiedFields(secretSigningKey),
-            Controller.prepareEncryptSubmission,
+            VerifiedContentMiddleware.encryptVerifiedSpcpFields,
+            EncryptSubmissionsMiddleware.prepareEncryptSubmission,
             sendSubmissionBack,
           )
       })
@@ -247,6 +240,13 @@ describe('Encrypt Submissions Controller', () => {
             body: {
               encryptedContent: correctlyEncryptedContent,
             },
+            form: new Form({
+              title: 'Test Form',
+              authType: 'NIL',
+              responseMode: 'encrypt',
+              publicKey: publicKey,
+              form_fields: [],
+            }).toObject(),
           },
         }
         request(app)
@@ -316,7 +316,7 @@ describe('Encrypt Submissions Controller', () => {
           res: {
             locals: {
               uinFin: 'ABCDEFG',
-              userData: 'SXXXXXXYZ',
+              userInfo: 'SXXXXXXYZ',
             },
           },
         }

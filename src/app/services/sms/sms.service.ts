@@ -1,4 +1,5 @@
 import { SecretsManager } from 'aws-sdk'
+import dedent from 'dedent-js'
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
@@ -13,12 +14,19 @@ import getFormModel from '../../models/form.server.model'
 
 import { SmsSendError } from './sms.errors'
 import {
+  BouncedSubmissionSmsData,
+  BounceNotificationSmsParams,
+  FormDeactivatedSmsData,
   LogSmsParams,
   LogType,
   SmsType,
   TwilioConfig,
   TwilioCredentials,
 } from './sms.types'
+import {
+  renderBouncedSubmissionSms,
+  renderFormDeactivatedSms,
+} from './sms.util'
 import getSmsCountModel from './sms_count.server.model'
 
 const logger = createLoggerWithLabel(module)
@@ -132,13 +140,13 @@ const getTwilio = async (
  * @param twilioConfig The configuration used to send OTPs with
  * @param twilioData.client The client to use
  * @param twilioData.msgSrvcSid The message service sid to send from with.
- * @param otpData The data for logging smsCount
+ * @param smsData The data for logging smsCount
  * @param recipient The mobile number of the recipient
  * @param message The message to send
  */
 const send = async (
   twilioConfig: TwilioConfig,
-  otpData: FormOtpData | AdminContactOtpData,
+  smsData: FormOtpData | AdminContactOtpData,
   recipient: string,
   message: string,
   smsType: SmsType,
@@ -165,7 +173,7 @@ const send = async (
 
       // Log success
       const logParams: LogSmsParams = {
-        otpData,
+        smsData,
         smsType,
         msgSrvcSid,
         logType: LogType.success,
@@ -186,7 +194,7 @@ const send = async (
         message: 'Successfully sent sms',
         meta: {
           action: 'send',
-          otpData,
+          smsData,
         },
       })
 
@@ -203,7 +211,7 @@ const send = async (
 
       // Log failure
       const logParams: LogSmsParams = {
-        otpData,
+        smsData,
         smsType,
         msgSrvcSid,
         logType: LogType.failure,
@@ -267,9 +275,13 @@ export const sendVerificationOtp = async (
   }
   const twilioData = await getTwilio(otpData.msgSrvcName, defaultConfig)
 
-  const message = `Use the OTP ${otp} to complete your submission on ${config.app.title}.`
+  const message = dedent`Use the OTP ${otp} to complete your submission on ${
+    new URL(config.app.appUrl).host
+  }.
 
-  return send(twilioData, otpData, recipient, message, SmsType.verification)
+  If you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`
+
+  return send(twilioData, otpData, recipient, message, SmsType.Verification)
 }
 
 export const sendAdminContactOtp = (
@@ -293,7 +305,7 @@ export const sendAdminContactOtp = (
   }
 
   return ResultAsync.fromPromise(
-    send(defaultConfig, otpData, recipient, message, SmsType.adminContact),
+    send(defaultConfig, otpData, recipient, message, SmsType.AdminContact),
     (error) => {
       logger.error({
         message: 'Failed to send OTP for admin contact verification',
@@ -316,5 +328,107 @@ export const sendAdminContactOtp = (
 
       return new SmsSendError(processedErrMsg)
     },
+  )
+}
+
+/**
+ * Informs recipient that the given form was deactivated.
+ * @param params Data for SMS to be sent
+ * @param params.recipient Mobile number to be SMSed
+ * @param params.recipientEmail The email address of the recipient being SMSed
+ * @param params.adminId User ID of the admin of the deactivated form
+ * @param params.adminEmail Email of the admin of the deactivated form
+ * @param params.formId Form ID of deactivated form
+ * @param params.formTitle Title of deactivated form
+ * @param defaultConfig Twilio configuration
+ */
+export const sendFormDeactivatedSms = (
+  {
+    recipient,
+    recipientEmail,
+    adminId,
+    adminEmail,
+    formId,
+    formTitle,
+  }: BounceNotificationSmsParams,
+  defaultConfig: TwilioConfig,
+): Promise<boolean> => {
+  logger.info({
+    message: `Sending form deactivation notification for ${recipientEmail}`,
+    meta: {
+      action: 'sendFormDeactivatedSms',
+      formId,
+    },
+  })
+
+  const message = renderFormDeactivatedSms(formTitle)
+
+  const smsData: FormDeactivatedSmsData = {
+    form: formId,
+    collaboratorEmail: recipientEmail,
+    recipientNumber: recipient,
+    formAdmin: {
+      email: adminEmail,
+      userId: adminId,
+    },
+  }
+
+  return send(
+    defaultConfig,
+    smsData,
+    recipient,
+    message,
+    SmsType.DeactivatedForm,
+  )
+}
+
+/**
+ * Informs recipient that a response for the given form was lost due to email bounces.
+ * @param params Data for SMS to be sent
+ * @param params.recipient Mobile number to be SMSed
+ * @param params.recipientEmail The email address of the recipient being SMSed
+ * @param params.adminId User ID of the admin of the form
+ * @param params.adminEmail Email of the admin of the form
+ * @param params.formId Form ID of form
+ * @param params.formTitle Title of form
+ * @param defaultConfig Twilio configuration
+ */
+export const sendBouncedSubmissionSms = (
+  {
+    recipient,
+    recipientEmail,
+    adminId,
+    adminEmail,
+    formId,
+    formTitle,
+  }: BounceNotificationSmsParams,
+  defaultConfig: TwilioConfig,
+): Promise<boolean> => {
+  logger.info({
+    message: `Sending bounced submission notification for ${recipientEmail}`,
+    meta: {
+      action: 'sendBouncedSubmissionSms',
+      formId,
+    },
+  })
+
+  const message = renderBouncedSubmissionSms(formTitle)
+
+  const smsData: BouncedSubmissionSmsData = {
+    form: formId,
+    collaboratorEmail: recipientEmail,
+    recipientNumber: recipient,
+    formAdmin: {
+      email: adminEmail,
+      userId: adminId,
+    },
+  }
+
+  return send(
+    defaultConfig,
+    smsData,
+    recipient,
+    message,
+    SmsType.BouncedSubmission,
   )
 }
