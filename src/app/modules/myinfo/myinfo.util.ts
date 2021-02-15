@@ -13,6 +13,7 @@ import {
   IFormSchema,
   IHashes,
   IMyInfo,
+  IPopulatedForm,
   MapRouteError,
   MyInfoAttribute,
 } from '../../../types'
@@ -25,6 +26,7 @@ import {
 } from '../spcp/spcp.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
+import { MYINFO_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoAuthTypeError,
   MyInfoHashDidNotMatchError,
@@ -44,6 +46,8 @@ import {
   IMyInfoForm,
   IPossiblyPrefilledField,
   MyInfoComparePromises,
+  MyInfoCookiePayload,
+  MyInfoCookieState,
   MyInfoHashPromises,
   VisibleMyInfoResponse,
 } from './myinfo.types'
@@ -383,7 +387,7 @@ export const createRelayState = (
 ): string => `${uuid.v4()},${formId},${rememberMe},${isPreview ?? 'false'}`
 
 export const validateMyInfoForm = (
-  form: IFormSchema,
+  form: IFormSchema | IPopulatedForm,
 ): Result<IMyInfoForm, MyInfoNoESrvcIdError | MyInfoAuthTypeError> => {
   if (!form.esrvcId) {
     return err(new MyInfoNoESrvcIdError())
@@ -392,4 +396,32 @@ export const validateMyInfoForm = (
     return err(new MyInfoAuthTypeError())
   }
   return ok(form as IMyInfoForm)
+}
+
+const hasProp = <K extends string>(
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  obj: object | Record<string, unknown>,
+  prop: K,
+): obj is Record<K, unknown> => {
+  return prop in obj
+}
+
+export const extractMyInfoCookie = (
+  cookies: Record<string, unknown>,
+): MyInfoCookiePayload | null => {
+  const cookie = cookies[MYINFO_COOKIE_NAME]
+  if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
+    if (
+      cookie.state === MyInfoCookieState.AccessTokenRetrieved &&
+      hasProp(cookie, 'accessToken') &&
+      typeof cookie.accessToken === 'string' &&
+      hasProp(cookie, 'usedCount') &&
+      typeof cookie.usedCount === 'number'
+    ) {
+      return cookie as MyInfoCookiePayload
+    } else if (cookie.state === MyInfoCookieState.RetrieveAccessTokenError) {
+      return cookie as MyInfoCookiePayload
+    }
+  }
+  return null
 }

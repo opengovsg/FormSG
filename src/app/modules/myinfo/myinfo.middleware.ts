@@ -5,21 +5,25 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
-
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   AuthType,
   ResWithHashedFields,
-  ResWithSpcpSession,
   ResWithUinFin,
   WithForm,
   WithJsonForm,
 } from '../../../types'
 import { createReqMeta } from '../../utils/request'
+import { ProcessedFieldResponse } from '../submission/submission.types'
 
+import { MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS } from './myinfo.constants'
 import { MyInfoFactory } from './myinfo.factory'
-import { mapVerifyMyInfoError } from './myinfo.util'
+import { MyInfoCookiePayload, MyInfoCookieState } from './myinfo.types'
+import {
+  extractMyInfoCookie,
+  mapVerifyMyInfoError,
+  validateMyInfoForm,
+} from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -33,52 +37,75 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   next,
 ) => {
   // TODO (#42): add proper types here when migrating away from middleware pattern
-  const form = (req as WithForm<typeof req>).form.toJSON()
-  const uinFin = (res as ResWithSpcpSession<typeof res>).locals.spcpSession
-    ?.userName
-  const { esrvcId, authType, form_fields: formFields, _id: formId } = form
+  const formDocument = (req as WithForm<typeof req>).form
+  const formJson = formDocument.toJSON()
+  const myInfoCookie = extractMyInfoCookie(req.cookies)
 
-  // Early return if nothing needs to be done.
-  const requestedAttributes = (req as WithForm<
-    typeof req
-  >).form.getUniqueMyInfoAttrs()
-  if (!uinFin || authType !== AuthType.SP || requestedAttributes.length === 0) {
+  // No action needed if no cookie is present, this just means user is not signed in
+  if (formDocument.authType !== AuthType.MyInfo || !myInfoCookie) return next()
+
+  // Error occurred while retrieving access token
+  if (myInfoCookie.state !== MyInfoCookieState.AccessTokenRetrieved) {
+    res.locals.myInfoError = true
     return next()
   }
 
-  return (
-    // Step 1: Fetch the data from MyInfo server.
-    MyInfoFactory.fetchMyInfoPersonData({
-      uinFin,
-      requestedAttributes,
-      singpassEserviceId: esrvcId,
+  // Access token is already used
+  if (myInfoCookie.usedCount > 0) {
+    res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+    return next()
+  }
+
+  const requestedAttributes = (req as WithForm<
+    typeof req
+  >).form.getUniqueMyInfoAttrs()
+  return validateMyInfoForm(formDocument)
+    .asyncAndThen((form) =>
+      MyInfoFactory.fetchMyInfoPersonData(
+        myInfoCookie.accessToken,
+        requestedAttributes,
+        form.esrvcId,
+      ),
+    )
+    .andThen(({ data: myInfoData, uinFin }) => {
+      // Increment count in cookie
+      const cookiePayload: MyInfoCookiePayload = {
+        ...myInfoCookie,
+        usedCount: myInfoCookie.usedCount + 1,
+      }
+      res.cookie(MYINFO_COOKIE_NAME, cookiePayload, {
+        ...MYINFO_COOKIE_OPTIONS,
+      })
+      return MyInfoFactory.prefillMyInfoFields(
+        myInfoData,
+        formJson.form_fields,
+      ).asyncAndThen((prefilledFields) => {
+        formJson.form_fields = prefilledFields
+        ;(req as WithJsonForm<typeof req>).form = formJson
+        res.locals.uinFin = uinFin
+        return MyInfoFactory.saveMyInfoHashes(
+          uinFin,
+          formDocument._id,
+          prefilledFields,
+        )
+      })
     })
-      // Step 2: Prefill the fields
-      .andThen((myInfoData) =>
-        MyInfoFactory.prefillMyInfoFields(myInfoData, formFields),
-      )
-      // Step 3: Hash the values and save them
-      .andThen((prefilledFields) => {
-        form.form_fields = prefilledFields
-        ;(req as WithJsonForm<typeof req>).form = form
-        return MyInfoFactory.saveMyInfoHashes(uinFin, formId, prefilledFields)
+    .map(() => next())
+    .mapErr((error) => {
+      logger.error({
+        message: error.message,
+        meta: {
+          action: 'addMyInfo',
+          ...createReqMeta(req),
+          formId: formDocument._id,
+          esrvcId: formDocument.esrvcId,
+          requestedAttributes,
+        },
+        error,
       })
-      .map(() => next())
-      .mapErr((error) => {
-        logger.error({
-          message: error.message,
-          meta: {
-            action: 'addMyInfo',
-            ...createReqMeta(req),
-            formId,
-            esrvcId,
-          },
-          error,
-        })
-        res.locals.myInfoError = true
-        return next()
-      })
-  )
+      res.locals.myInfoError = true
+      return next()
+    })
 }
 
 /**
