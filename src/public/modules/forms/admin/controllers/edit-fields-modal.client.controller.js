@@ -62,7 +62,7 @@ function EditFieldsModalController(
     vm.field.fieldOptions.length > 0
   ) {
     vm.field.fieldOptionsFromText = vm.field.fieldOptions.join('\n')
-  } else if (['checkbox'].includes(vm.field.fieldType)) {
+  } else if (['radiobutton'].includes(vm.field.fieldType)) {
     vm.field.manualOptions = vm.field.fieldOptions
   }
 
