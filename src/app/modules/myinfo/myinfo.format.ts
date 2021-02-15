@@ -1,9 +1,8 @@
 import {
-  CATEGORICAL_DATA_DICT,
-  IMyInfoAddr,
-  IMyInfoPhoneNo,
+  AddressType,
+  MyInfoAddress,
+  MyInfoPhoneNumber,
 } from '@opengovsg/myinfo-gov-client'
-import { get } from 'lodash'
 
 /**
  * Formats MyInfo attribute as phone number
@@ -11,12 +10,14 @@ import { get } from 'lodash'
  * @example +65 98654321
  * @returns Phone number if phone.nbr exists. Else return empty string.
  */
-export const formatPhoneNumber = (phone: IMyInfoPhoneNo): string => {
-  if (!phone || !phone.nbr) return ''
+export const formatPhoneNumber = (
+  phone: MyInfoPhoneNumber | undefined,
+): string => {
+  if (!phone || phone.unavailable || !phone.nbr.value) return ''
 
-  return phone.prefix && phone.code
-    ? `${phone.prefix}${phone.code} ${phone.nbr}`
-    : phone.nbr
+  return phone.prefix.value && phone.areacode.value
+    ? `${phone.prefix.value}${phone.areacode.value} ${phone.nbr.value}`
+    : phone.nbr.value
 }
 
 /**
@@ -25,12 +26,24 @@ export const formatPhoneNumber = (phone: IMyInfoPhoneNo): string => {
  * @example '411 CHUA CHU KANG AVE 3, #12-3, SINGAPORE 238823'
  * @returns Formatted address if minimally the `block`, `street`, `country`,and `postal` values are not empty in {@link addr}. Else return empty string.
  */
-export const formatAddress = (addr: IMyInfoAddr): string => {
+export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   // Early return if missing required props in address.
-  if (!addr || !(addr.block && addr.street && addr.country && addr.postal)) {
+  if (!addr || addr.unavailable) {
     return ''
   }
 
+  if (addr.type === AddressType.Unformatted) {
+    let result = ''
+    if (addr.line1.value) {
+      result += addr.line1.value
+    }
+    if (addr.line2.value) {
+      result += ', ' + addr.line2.value
+    }
+    return result
+  }
+
+  // Structured Singapore address
   const { building, block, street, floor, unit, country, postal } = addr
 
   // Create an array of data in the order:
@@ -42,26 +55,19 @@ export const formatAddress = (addr: IMyInfoAddr): string => {
   // 6. postal
   const buildingBlocks = []
 
-  if (building) {
-    buildingBlocks.push(`${building},`)
+  if (building.value) {
+    buildingBlocks.push(`${building.value},`)
   }
-  buildingBlocks.push(block)
-  buildingBlocks.push(`${street},`)
+  buildingBlocks.push(block.value)
+  buildingBlocks.push(`${street.value},`)
 
-  if (floor && unit) {
-    buildingBlocks.push(`#${floor}-${unit},`)
+  if (floor.value && unit.value) {
+    buildingBlocks.push(`#${floor.value}-${unit.value},`)
   }
 
-  buildingBlocks.push(
-    get(
-      CATEGORICAL_DATA_DICT,
-      ['birthcountry', country, 'description'],
-      // Return country as default value if it is not in the dictionary.
-      country,
-    ),
-  )
+  buildingBlocks.push(country.desc)
 
-  buildingBlocks.push(postal)
+  buildingBlocks.push(postal.value)
 
   // Return string form with each block being separated by a space.
   return buildingBlocks.join(' ')
