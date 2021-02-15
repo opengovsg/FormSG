@@ -2,8 +2,6 @@ import { IPerson, MyInfoSource } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
-import mongoose from 'mongoose'
-import { err, ok, Result } from 'neverthrow'
 import uuid from 'uuid'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -30,7 +28,6 @@ import {
   MyInfoHashingError,
   MyInfoMissingHashError,
   MyInfoNoESrvcIdError,
-  MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
   formatAddress,
@@ -377,25 +374,3 @@ export const createConsentPagePurpose = (formTitle: string): string =>
 
 export const createRelayState = (formId: string, rememberMe: boolean): string =>
   `${uuid.v4()},${formId},${rememberMe}`
-
-export const parseRelayState = (
-  relayState: string,
-): Result<
-  { uuid: string; formId: string; rememberMe: boolean },
-  MyInfoParseRelayStateError
-> => {
-  const components = relayState.split(',')
-  if (
-    components.length !== 3 ||
-    !uuid.validate(components[0]) ||
-    !mongoose.Types.ObjectId.isValid(components[1]) ||
-    !['true', 'false'].includes(components[2])
-  ) {
-    return err(new MyInfoParseRelayStateError())
-  }
-  return ok({
-    uuid: components[0],
-    formId: components[1],
-    rememberMe: components[2] === 'true',
-  })
-}

@@ -1,7 +1,7 @@
 import { MyInfoAttributeString } from '@opengovsg/myinfo-gov-client'
 import { LeanDocument } from 'mongoose'
 
-import { IMyInfoConfig } from '../../../config/feature-manager'
+import { ISpcpMyInfo } from '../../../config/feature-manager'
 import {
   Environment,
   IFieldSchema,
@@ -11,10 +11,8 @@ import {
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 export interface IMyInfoServiceConfig {
-  myInfoConfig: IMyInfoConfig
+  spcpMyInfoConfig: ISpcpMyInfo
   nodeEnv: Environment
-  singpassEserviceId: string
-  spCookieMaxAge: number
   appUrl: string
 }
 
@@ -41,3 +39,20 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
 }
 
 export type MyInfoComparePromises = Map<string, Promise<boolean>>
+
+export enum MyInfoCookieName {
+  MyInfoError = 'MyInfoError',
+  MyInfoAccessToken = 'MyInfoAccessToken',
+}
+
+export interface MyInfoCookiePayload {
+  accessToken: string
+  usedCount: number
+}
+
+export interface ParsedRelayState {
+  uuid: string
+  formId: string
+  rememberMe: boolean
+  cookieDuration: number
+}

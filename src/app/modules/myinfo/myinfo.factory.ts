@@ -21,9 +21,14 @@ import {
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoMissingHashError,
+  MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
-import { IMyInfoRedirectURLArgs, IPossiblyPrefilledField } from './myinfo.types'
+import {
+  IMyInfoRedirectURLArgs,
+  IPossiblyPrefilledField,
+  ParsedRelayState,
+} from './myinfo.types'
 
 interface IMyInfoFactory {
   createRedirectURL: (
@@ -35,6 +40,12 @@ interface IMyInfoFactory {
   ) => ResultAsync<
     IPersonResponse,
     MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
+  >
+  parseMyInfoRelayState: (
+    relayState: string,
+  ) => Result<
+    ParsedRelayState,
+    MyInfoParseRelayStateError | MissingFeatureError
   >
   prefillMyInfoFields: (
     myInfoData: IPerson,
@@ -77,13 +88,12 @@ export const createMyInfoFactory = ({
       fetchMyInfoHashes: () => errAsync(error),
       checkMyInfoHashes: () => errAsync(error),
       createRedirectURL: () => err(error),
+      parseMyInfoRelayState: () => err(error),
     }
   }
   return new MyInfoService({
-    myInfoConfig: props,
+    spcpMyInfoConfig: props,
     nodeEnv: config.nodeEnv,
-    singpassEserviceId: props.spEsrvcId,
-    spCookieMaxAge: props.spCookieMaxAge,
     appUrl: config.app.appUrl,
   })
 }

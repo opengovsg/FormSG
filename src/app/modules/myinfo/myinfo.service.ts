@@ -9,8 +9,9 @@ import Bluebird from 'bluebird'
 import fs from 'fs'
 import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
-import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
+import uuid from 'uuid'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -29,11 +30,13 @@ import {
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoMissingHashError,
+  MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
   IPossiblyPrefilledField,
+  ParsedRelayState,
 } from './myinfo.types'
 import {
   compareHashedValues,
@@ -80,6 +83,7 @@ export class MyInfoService {
    * TTL of SingPass cookie in milliseconds.
    */
   #spCookieMaxAge: number
+  #spCookieMaxAgePreserved: number
 
   /**
    *
@@ -89,23 +93,18 @@ export class MyInfoService {
    * @param singpassEserviceId
    * @param spCookieMaxAge Validity duration of the SingPass cookie
    */
-  constructor({
-    myInfoConfig,
-    nodeEnv,
-    singpassEserviceId,
-    spCookieMaxAge,
-    appUrl,
-  }: IMyInfoServiceConfig) {
-    this.#spCookieMaxAge = spCookieMaxAge
+  constructor({ spcpMyInfoConfig, nodeEnv, appUrl }: IMyInfoServiceConfig) {
+    this.#spCookieMaxAge = spcpMyInfoConfig.spCookieMaxAge
+    this.#spCookieMaxAgePreserved = spcpMyInfoConfig.spCookieMaxAgePreserved
 
     this.#myInfoGovClient = new MyInfoGovClient({
-      singpassEserviceId,
-      clientPrivateKey: fs.readFileSync(myInfoConfig.myInfoKeyPath),
-      myInfoPublicKey: fs.readFileSync(myInfoConfig.myInfoCertPath),
-      clientId: myInfoConfig.myInfoClientId,
-      clientSecret: myInfoConfig.myInfoClientSecret,
+      singpassEserviceId: spcpMyInfoConfig.spEsrvcId,
+      clientPrivateKey: fs.readFileSync(spcpMyInfoConfig.myInfoKeyPath),
+      myInfoPublicKey: fs.readFileSync(spcpMyInfoConfig.myInfoCertPath),
+      clientId: spcpMyInfoConfig.myInfoClientId,
+      clientSecret: spcpMyInfoConfig.myInfoClientSecret,
       redirectEndpoint: `${appUrl}${MYINFO_ROUTER_PREFIX}${MYINFO_REDIRECT_PATH}`,
-      mode: myInfoConfig.myInfoClientMode,
+      mode: spcpMyInfoConfig.myInfoClientMode,
     })
     if (nodeEnv !== Environment.Prod) {
       this.#myInfoGovClient.baseAPIUrl = MYINFO_DEV_BASE_URL
@@ -136,6 +135,29 @@ export class MyInfoService {
       singpassEserviceId: formEsrvcId,
     })
     return ok(redirectURL)
+  }
+
+  parseMyInfoRelayState(
+    relayState: string,
+  ): Result<ParsedRelayState, MyInfoParseRelayStateError> {
+    const components = relayState.split(',')
+    if (
+      components.length !== 3 ||
+      !uuid.validate(components[0]) ||
+      !mongoose.Types.ObjectId.isValid(components[1]) ||
+      !['true', 'false'].includes(components[2])
+    ) {
+      return err(new MyInfoParseRelayStateError())
+    }
+    const rememberMe = components[2] === 'true'
+    return ok({
+      uuid: components[0],
+      formId: components[1],
+      rememberMe,
+      cookieDuration: rememberMe
+        ? this.#spCookieMaxAgePreserved
+        : this.#spCookieMaxAge,
+    })
   }
 
   async _fetchMyInfoDataUnsafe(
