@@ -75,7 +75,7 @@ export class MyInfoService {
    * and limits the rate of requests in case the receiving server returns errors.
    */
   #myInfoPersonBreaker: CircuitBreaker<
-    [string, MyInfoAttributeString[]],
+    [string, MyInfoAttributeString[], string],
     IPersonResponse
   >
 
@@ -113,8 +113,9 @@ export class MyInfoService {
       (authCode) => this.#myInfoGovClient.getAccessToken(authCode),
       BREAKER_PARAMS,
     )
-    this.#myInfoPersonBreaker = new CircuitBreaker((accessToken, attributes) =>
-      this.#myInfoGovClient.getPerson(accessToken, attributes),
+    this.#myInfoPersonBreaker = new CircuitBreaker(
+      (accessToken, attributes, eSrvcId) =>
+        this.#myInfoGovClient.getPerson(accessToken, attributes, eSrvcId),
     )
   }
 
@@ -205,12 +206,17 @@ export class MyInfoService {
   fetchMyInfoPersonData(
     accessToken: string,
     requestedAttributes: MyInfoAttributeString[],
+    singpassEserviceId: string,
   ): ResultAsync<
     IPersonResponse,
     MyInfoCircuitBreakerError | MyInfoFetchError
   > {
     return ResultAsync.fromPromise(
-      this.#myInfoPersonBreaker.fire(accessToken, requestedAttributes),
+      this.#myInfoPersonBreaker.fire(
+        accessToken,
+        requestedAttributes,
+        singpassEserviceId,
+      ),
       (error) => {
         const logMeta = {
           action: 'fetchMyInfoPersonData',

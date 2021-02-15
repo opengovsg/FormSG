@@ -40,6 +40,7 @@ interface IMyInfoFactory {
   fetchMyInfoPersonData: (
     accessToken: string,
     requestedAttributes: MyInfoAttributeString[],
+    singpassEserviceId: string,
   ) => ResultAsync<
     IPersonResponse,
     MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
