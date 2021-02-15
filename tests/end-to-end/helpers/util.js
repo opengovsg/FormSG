@@ -483,9 +483,18 @@ async function createBasicField(t, field) {
       }
       break
     case 'checkbox':
+      await t.selectText(editFieldModal.optionTextArea).pressKey('delete')
+      // The wait(500) is necessary because of the debounce time in reloadDropdownField
+      await t
+        .typeText(editFieldModal.optionTextArea, field.fieldOptions.join('\n'))
+        .wait(500)
+      if (field.othersRadioButton) {
+        await t.click(editFieldModal.getToggle('Others option'))
+      }
+      break
     case 'dropdown':
       await t.selectText(editFieldModal.optionTextArea).pressKey('delete')
-      // The wait(500) is necessary because of the debounce time in reloadFieldOptions
+      // The wait(500) is necessary because of the debounce time in reloadDropdownField
       await t
         .typeText(editFieldModal.optionTextArea, field.fieldOptions.join('\n'))
         .wait(500)
