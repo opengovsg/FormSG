@@ -1,7 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { merge, omit } from 'lodash'
-import mongoose, { Document } from 'mongoose'
+import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
@@ -555,7 +555,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IFormSchema
+      } as unknown) as IPopulatedForm
 
       MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
@@ -593,7 +593,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IFormSchema
+      } as unknown) as IPopulatedForm
 
       // Act
       const actualResult = await transferFormOwnership(
@@ -618,7 +618,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IFormSchema
+      } as unknown) as IPopulatedForm
       MockUserService.findUserById.mockReturnValueOnce(
         errAsync(new MissingUserError()),
       )
@@ -642,7 +642,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IFormSchema
+      } as unknown) as IPopulatedForm
       MockUserService.findUserById.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
@@ -672,7 +672,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IFormSchema
+      } as unknown) as IPopulatedForm
 
       // Act
       const actualResult = await transferFormOwnership(
@@ -696,7 +696,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn(),
-      } as unknown) as IFormSchema
+      } as unknown) as IPopulatedForm
 
       // Act
       const actualResult = await transferFormOwnership(
@@ -735,7 +735,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         admin: MOCK_CURRENT_OWNER,
         transferOwner: jest.fn().mockResolvedValue(mockUpdatedForm),
-      } as unknown) as IFormSchema
+      } as unknown) as IPopulatedForm
 
       MockUserService.findUserById.mockReturnValueOnce(
         okAsync(MOCK_CURRENT_OWNER),
@@ -778,7 +778,7 @@ describe('admin-form.service', () => {
       } as IFormSchema
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        .mockResolvedValueOnce(expectedForm)
+        .mockResolvedValueOnce(expectedForm as never)
 
       // Act
       const actualResult = await createForm(formParams)
@@ -798,7 +798,9 @@ describe('admin-form.service', () => {
       }
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        .mockRejectedValueOnce(new mongoose.Error.ValidationError())
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockRejectedValueOnce(new mongoose.Error.ValidationError() as never)
 
       // Act
       const actualResult = await createForm(formParams)
@@ -818,11 +820,11 @@ describe('admin-form.service', () => {
         responseMode: ResponseMode.Encrypt,
         publicKey: 'some key',
       }
-      const createSpy = jest
-        .spyOn(FormModel, 'create')
-        .mockRejectedValueOnce(
-          new mongoose.Error.VersionError({} as Document, 1, ['none']),
-        )
+      const createSpy = jest.spyOn(FormModel, 'create').mockRejectedValueOnce(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        new mongoose.Error.VersionError({}, 1, ['none']) as never,
+      )
 
       // Act
       const actualResult = await createForm(formParams)
@@ -848,7 +850,7 @@ describe('admin-form.service', () => {
       })
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        .mockRejectedValueOnce(expectedError)
+        .mockRejectedValueOnce(expectedError as never)
 
       // Act
       const actualResult = await createForm(formParams)
@@ -871,7 +873,7 @@ describe('admin-form.service', () => {
       const mockErrorString = 'no'
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        .mockRejectedValueOnce(new Error(mockErrorString))
+        .mockRejectedValueOnce(new Error(mockErrorString) as never)
 
       // Act
       const actualResult = await createForm(formParams)
