@@ -4,7 +4,6 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
 import * as AnalyticsController from '../analytics.controller'
-import { AnalyticsFactory } from '../analytics.factory'
 import * as AnalyticsService from '../analytics.service'
 
 describe('analytics.controller', () => {
@@ -98,7 +97,7 @@ describe('analytics.controller', () => {
       const mockFormCount = 99543
       const mockRes = expressHandler.mockResponse()
       const getFormSpy = jest
-        .spyOn(AnalyticsFactory, 'getFormCount')
+        .spyOn(AnalyticsService, 'getFormCount')
         .mockReturnValueOnce(okAsync(mockFormCount))
 
       // Act
@@ -114,7 +113,7 @@ describe('analytics.controller', () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const getFormSpy = jest
-        .spyOn(AnalyticsFactory, 'getFormCount')
+        .spyOn(AnalyticsService, 'getFormCount')
         .mockReturnValueOnce(errAsync(new DatabaseError()))
 
       // Act

@@ -135,6 +135,22 @@ const compileUserModel = (db: Mongoose) => {
     })
   }
 
+  /**
+   * Finds the contact numbers for all given email addresses which exist in the
+   * User collection.
+   */
+  UserSchema.statics.findContactNumbersByEmails = async function (
+    this: IUserModel,
+    emails: string[],
+  ) {
+    return this.find()
+      .where('email')
+      .in(emails)
+      .select('email contact -_id')
+      .lean()
+      .exec()
+  }
+
   return db.model<IUserSchema, IUserModel>(USER_SCHEMA_ID, UserSchema)
 }
 

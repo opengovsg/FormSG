@@ -3,6 +3,7 @@ import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { IAttachmentInfo } from '../../../../types'
 import { MB } from '../../../constants/filesize'
 
 import {
@@ -11,7 +12,7 @@ import {
   MultipartContentParsingError,
   MultipartError,
 } from './email-submission.errors'
-import { IAttachmentInfo, ParsedMultipartForm } from './email-submission.types'
+import { ParsedMultipartForm } from './email-submission.types'
 import {
   addAttachmentToResponses,
   handleDuplicatesInAttachments,

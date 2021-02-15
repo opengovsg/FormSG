@@ -27,6 +27,11 @@ const {
 } = require('./selectors')
 
 const { types } = require('../../../dist/backend/shared/resources/basic')
+
+const {
+  SPCPFieldTitle,
+} = require('../../../dist/backend/types/field/fieldTypes')
+
 const NON_SUBMITTED_FIELDS = types
   .filter((field) => !field.submitted)
   .map((field) => field.name)
@@ -1157,15 +1162,15 @@ const getAuthFields = (authType, authData) => {
     case 'SP':
       return [
         makeField({
-          title: 'SingPass Validated NRIC',
+          title: SPCPFieldTitle.SpNric,
           val: authData.testSpNric,
         }),
       ]
     case 'CP':
       return [
-        { title: 'CorpPass Validated UEN', val: authData.testCpUen },
+        { title: SPCPFieldTitle.CpUen, val: authData.testCpUen },
         {
-          title: 'CorpPass Validated UID',
+          title: SPCPFieldTitle.CpUid,
           val: authData.testCpNric,
         },
       ].map(makeField)

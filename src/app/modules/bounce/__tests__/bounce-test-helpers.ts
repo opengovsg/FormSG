@@ -138,6 +138,7 @@ export const extractBounceObject = (
   const extracted = pick(bounce.toObject(), [
     'formId',
     'hasAutoEmailed',
+    'hasAutoSmsed',
     'expireAt',
     'bounces',
   ])

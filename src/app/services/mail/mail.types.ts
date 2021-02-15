@@ -3,11 +3,11 @@ import { OperationOptions } from 'retry'
 
 import {
   AutoReplyOptions,
+  EmailFormField,
   IFormSchema,
   IPopulatedForm,
   ISubmissionSchema,
 } from '../../../types'
-import { EmailFormField } from '../../modules/submission/email-submission/email-submission.types'
 
 export type SendMailOptions = {
   mailId?: string

@@ -34,7 +34,7 @@ convict.addFormat({
 /**
  * Verifies that S3 bucket url is a valid url with or without trailing slash
  */
-const validateBucketUrl = (
+const validateS3BucketUrl = (
   val: string,
   {
     isDev,
@@ -42,6 +42,9 @@ const validateBucketUrl = (
     region,
   }: { isDev: boolean; hasTrailingSlash: boolean; region: string },
 ) => {
+  /* eslint-disable typesafe/no-throw-sync-func
+    --------
+    The convict package expects format validation functions to throw Errors */
   if (!validator.isURL(val, { require_tld: !isDev })) {
     throw new Error('must be a url')
   }
@@ -59,6 +62,7 @@ const validateBucketUrl = (
   if (!isDev && !isRegionCorrect.test(val)) {
     throw new Error(`region should be ${region}`)
   }
+  /* eslint-enable typesafe/no-throw-sync-func */
 }
 
 // If the default value does not match the format specified, the configuration built from this schema
@@ -268,9 +272,10 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   },
   rateLimit: {
     submissions: {
-      doc: 'Per-minute, per-IP request limit for submissions endpoints',
+      doc:
+        'Per-minute, per-IP, per-instance request limit for submissions endpoints',
       format: 'int',
-      default: 200,
+      default: 80,
       env: 'SUBMISSIONS_RATE_LIMIT',
     },
     sendAuthOtp: {
@@ -351,7 +356,7 @@ export const loadS3BucketUrlSchema = ({
     endPoint: {
       doc: 'Endpoint for S3 buckets',
       format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: 'https://s3.ap-southeast-1.amazonaws.com', // NOTE NO TRAILING / AT THE END OF THIS URL!
       env: 'AWS_ENDPOINT',
     },
@@ -359,19 +364,19 @@ export const loadS3BucketUrlSchema = ({
       doc:
         'Url of attachment S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: true, region }),
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: true, region }),
       default: null,
     },
     logoBucketUrl: {
       doc: 'Url of logo S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,
     },
     imageBucketUrl: {
       doc: 'Url of images S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
-        validateBucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,
     },
   }

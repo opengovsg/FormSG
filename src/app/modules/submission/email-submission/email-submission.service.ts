@@ -1,13 +1,20 @@
 import crypto from 'crypto'
-import { sumBy } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
+  BasicField,
+  EmailData,
+  EmailDataForOneField,
+  EmailFormField,
   FieldResponse,
-  IEmailFormSchema,
+  IAttachmentInfo,
   IEmailSubmissionSchema,
+  IPopulatedEmailForm,
+  IPopulatedForm,
+  isEmailModeForm,
+  ResponseMode,
   SubmissionType,
 } from '../../../../types'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
@@ -18,7 +25,7 @@ import {
 } from '../../../utils/field-validation/field-validation.guards'
 import { DatabaseError } from '../../core/core.errors'
 import { transformEmails } from '../../form/form.utils'
-import { SendAdminEmailError } from '../submission.errors'
+import { ResponseModeError, SendAdminEmailError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
 
 import {
@@ -33,16 +40,9 @@ import {
   InvalidFileExtensionError,
   SubmissionHashError,
 } from './email-submission.errors'
+import { SubmissionHash } from './email-submission.types'
 import {
-  EmailAutoReplyField,
-  EmailData,
-  EmailDataForOneField,
-  EmailFormField,
-  EmailJsonField,
-  IAttachmentInfo,
-  SubmissionHash,
-} from './email-submission.types'
-import {
+  areAttachmentsMoreThan7MB,
   concatAttachmentsAndResponses,
   getAnswerForCheckbox,
   getAnswerRowsForTable,
@@ -59,6 +59,7 @@ const logger = createLoggerWithLabel(module)
  * Helper function for createEmailData.
  * @param response Processed and validated response for one field
  * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
+ * @returns email data for one form field
  */
 const createEmailDataForOneField = (
   response: ProcessedFieldResponse,
@@ -80,6 +81,7 @@ const createEmailDataForOneField = (
  * Creates data to be included in the response and autoreply emails.
  * @param parsedResponses Processed and validated responses
  * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
+ * @returns email data for admin response and email confirmations
  */
 export const createEmailData = (
   parsedResponses: ProcessedFieldResponse[],
@@ -93,7 +95,7 @@ export const createEmailData = (
     parsedResponses
       .flatMap((response) => createEmailDataForOneField(response, hashedFields))
       // Then reshape such that autoReplyData, jsonData and formData are each arrays
-      .reduce(
+      .reduce<EmailData>(
         (acc, dataForOneField) => {
           if (dataForOneField.autoReplyData) {
             acc.autoReplyData.push(dataForOneField.autoReplyData)
@@ -105,9 +107,9 @@ export const createEmailData = (
           return acc
         },
         {
-          autoReplyData: [] as EmailAutoReplyField[],
-          jsonData: [] as EmailJsonField[],
-          formData: [] as EmailFormField[],
+          autoReplyData: [],
+          jsonData: [],
+          formData: [],
         },
       )
   )
@@ -117,15 +119,16 @@ export const createEmailData = (
  * Validates that the attachments in a submission do not violate form-level
  * constraints e.g. form-wide attachment size limit.
  * @param parsedResponses Unprocessed responses
+ * @returns okAsync(true) if validation passes
+ * @returns errAsync(InvalidFileExtensionError) if invalid file extensions are found
+ * @returns errAsync(AttachmentTooLargeError) if total attachment size exceeds 7MB
  */
 export const validateAttachments = (
   parsedResponses: FieldResponse[],
 ): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
   const logMeta = { action: 'validateAttachments' }
   const attachments = mapAttachmentsFromResponses(parsedResponses)
-  // Check if total attachments size is < 7mb
-  const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
-  if (totalAttachmentSize > 7000000) {
+  if (areAttachmentsMoreThan7MB(attachments)) {
     logger.error({
       message: 'Attachment size is too large',
       meta: logMeta,
@@ -161,6 +164,9 @@ export const validateAttachments = (
  * Creates hash of a submission
  * @param formData Responses sent to admin
  * @param attachments Attachments in response
+ * @returns okAsync(hash and salt) if hashing was successful
+ * @returns errAsync(SubmissionHashError) if error occurred while hashing
+ * @returns errAsync(ConcatSubmissionError) if error occurred while concatenating attachments
  */
 export const hashSubmission = (
   formData: EmailFormField[],
@@ -216,9 +222,11 @@ export const hashSubmission = (
  * Saves an email submission to the database.
  * @param form
  * @param submissionHash Hash of submission and salt
+ * @returns okAsync(the saved document) if submission was saved successfully
+ * @returns errAsync(DatabaseError) if submission failed to be saved
  */
 export const saveSubmissionMetadata = (
-  form: IEmailFormSchema,
+  form: IPopulatedEmailForm,
   submissionHash: SubmissionHash,
 ): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
   const params = {
@@ -246,6 +254,12 @@ export const saveSubmissionMetadata = (
   )
 }
 
+/**
+ * Sends email mode response to admin
+ * @param adminEmailParams Parameters to be passed on to mail service
+ * @returns okAsync(true) if response was sent successfully to all recipients
+ * @returns errAsync(SendAdminEmailError) if at least one email failed to be sent
+ */
 export const sendSubmissionToAdmin = (
   adminEmailParams: Parameters<typeof MailService['sendSubmissionToAdmin']>[0],
 ): ResultAsync<true, SendAdminEmailError> => {
@@ -264,4 +278,29 @@ export const sendSubmissionToAdmin = (
       return new SendAdminEmailError()
     },
   )
+}
+
+/**
+ * Extracts an array of answers to email fields
+ * @param parsedResponses All form responses
+ * @returns an array of all email field responses
+ */
+export const extractEmailAnswers = (
+  parsedResponses: ProcessedFieldResponse[],
+): string[] => {
+  return parsedResponses.reduce<string[]>((acc, response) => {
+    if (response.fieldType === BasicField.Email && response.answer) {
+      acc.push(response.answer)
+    }
+    return acc
+  }, [])
+}
+
+export const checkFormIsEmailMode = (
+  form: IPopulatedForm,
+): Result<IPopulatedEmailForm, ResponseModeError> => {
+  if (isEmailModeForm(form)) {
+    return ok(form)
+  }
+  return err(new ResponseModeError(ResponseMode.Email, form.responseMode))
 }

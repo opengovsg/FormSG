@@ -139,9 +139,6 @@ function ExamplesController(
         /* Form Properties
             ------------------
             _id: form id
-            count: 10000
-            lastSub: time
-            timeText: 1 JAN 2018
             avgFeedback: 4.5
             title: form title
             logo: form logo url

@@ -1,16 +1,9 @@
 'use strict'
 
-const textEncoding = require('text-encoding')
+require('./polyfills')
+
 const Sentry = require('@sentry/browser')
 const { Angular: AngularIntegration } = require('@sentry/integrations')
-
-if (!window['TextDecoder']) {
-  window['TextDecoder'] = textEncoding.TextDecoder
-}
-
-if (!window['TextEncoder']) {
-  window['TextEncoder'] = textEncoding.TextEncoder
-}
 
 // Define module dependencies (without ngSentry)
 const moduleDependencies = [
@@ -25,7 +18,6 @@ const moduleDependencies = [
   'users',
   'ngFileUpload',
   'ng-sortable',
-  'angular-input-stars',
   'ngclipboard',
   'ngCookies',
   'core',
@@ -132,9 +124,12 @@ angular.module(appName).config([
 angular.module('core', [])
 angular.module('forms', [])
 angular.module('users', [])
+angular.module('ngIntlTelInput', [])
+
 app.requires.push('core')
 app.requires.push('forms')
 app.requires.push('users')
+app.requires.push('ngIntlTelInput')
 
 /**
  * Core module
@@ -511,6 +506,10 @@ app.run([
     $templateCache.put(
       'modules/forms/admin/views/decrypt-progress.client.modal.html',
       require('./modules/forms/admin/views/decrypt-progress.client.modal.html'),
+    )
+    $templateCache.put(
+      'modules/forms/admin/views/download-all-attachments.client.modal.html',
+      require('./modules/forms/admin/views/download-all-attachments.client.modal.html'),
     )
     $templateCache.put(
       'modules/forms/admin/views/create-form-template.client.modal.html',

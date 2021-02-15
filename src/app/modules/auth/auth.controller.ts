@@ -54,7 +54,7 @@ export const handleCheckUser: RequestHandler<
  */
 export const handleLoginSendOtp: RequestHandler<
   ParamsDictionary,
-  string,
+  { message: string } | string,
   { email: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -86,7 +86,7 @@ export const handleLoginSendOtp: RequestHandler<
           meta: logMeta,
         })
 
-        return res.status(StatusCodes.OK).json(`OTP sent to ${email}!`)
+        return res.status(StatusCodes.OK).json(`OTP sent to ${email}`)
       })
       // Step 4b: Error occurred whilst sending otp.
       .mapErr((error) => {
@@ -99,7 +99,7 @@ export const handleLoginSendOtp: RequestHandler<
           error,
           /* coreErrorMessage=*/ 'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
         )
-        return res.status(statusCode).json(errorMessage)
+        return res.status(statusCode).json({ message: errorMessage })
       })
   )
 }

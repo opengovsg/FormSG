@@ -8,10 +8,8 @@ const { celebrate, Joi, Segments } = require('celebrate')
 let forms = require('../../app/controllers/forms.server.controller')
 let adminForms = require('../../app/controllers/admin-forms.server.controller')
 let auth = require('../../app/controllers/authentication.server.controller')
-let submissions = require('../../app/controllers/submissions.server.controller')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
-let encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
-const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
+const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
@@ -21,6 +19,7 @@ const {
 const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField, ResponseMode } = require('../../types')
+const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
 
 const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
 
@@ -445,12 +444,11 @@ module.exports = function (app) {
     }),
     EmailSubmissionsMiddleware.validateEmailSubmission,
     AdminFormController.passThroughSpcp,
-    submissions.injectAutoReplyInfo,
     SpcpController.appendVerifiedSPCPResponses,
     EmailSubmissionsMiddleware.prepareEmailSubmission,
     adminForms.passThroughSaveMetadataToDb,
     EmailSubmissionsMiddleware.sendAdminEmail,
-    submissions.sendAutoReply,
+    SubmissionsMiddleware.sendEmailConfirmations,
   )
 
   /**
@@ -521,11 +519,10 @@ module.exports = function (app) {
     authActiveForm(PermissionLevel.Read),
     EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     AdminFormController.passThroughSpcp,
-    submissions.injectAutoReplyInfo,
-    webhookVerifiedContentFactory.encryptedVerifiedFields,
-    encryptSubmissions.prepareEncryptSubmission,
+    VerifiedContentMiddleware.encryptVerifiedSpcpFields,
+    EncryptSubmissionMiddleware.prepareEncryptSubmission,
     adminForms.passThroughSaveMetadataToDb,
-    submissions.sendAutoReply,
+    SubmissionsMiddleware.sendEmailConfirmations,
   )
 
   /**

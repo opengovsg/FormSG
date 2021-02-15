@@ -31,7 +31,6 @@ const adminPrivateFields = ['email', 'betaFlags']
 const formPublicFields = [
   'admin',
   'authType',
-  'customLogo',
   'endPage',
   'esrvcId',
   'form_fields',

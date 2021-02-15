@@ -1,15 +1,20 @@
-const moment = require('moment-timezone')
+require('core-js/stable')
+require('regenerator-runtime/runtime')
+
 const formsgPackage = require('@opengovsg/formsg-sdk')
+const { cloneDeep } = require('lodash')
+const { decode: decodeBase64 } = require('@stablelib/base64')
+const JSZip = require('jszip')
+const moment = require('moment-timezone')
+const { default: PQueue } = require('p-queue')
+
 const processDecryptedContent = require('../helpers/process-decrypted-content')
 const {
   TRANSACTION_EXPIRE_AFTER_SECONDS,
 } = require('../../../../shared/util/verification')
-const JSZip = require('jszip')
-const { decode: decodeBase64 } = require('@stablelib/base64')
-require('core-js/stable/promise')
-require('regenerator-runtime/runtime')
 
 let formsgSdk
+const queue = new PQueue({ concurrency: 1 })
 
 function initFormSg(formsgSdkMode) {
   if (!formsgSdkMode) {
@@ -80,13 +85,83 @@ function verifySignature(decryptedSubmission, created) {
   return verified.every((v) => v)
 }
 
-/** @typedef {{
- *    created: string,
- *    id: string,
- *    status?: string
- *    submissionData?: Object
- * }}
- * CsvRecord */
+/** @class CsvRecord represents the CSV data to be passed back, along with helper functions */
+class CsvRecord {
+  /**
+   * Creates an instance of CsvRecord
+   *
+   * @constructor
+   * @param {string} id The ID of the submission
+   * @param {Moment} created The time of submission
+   * @param {string} status The status of the submission decryption/download process
+   */
+  constructor(id, created, status) {
+    this.id = id
+    this.created = created
+    this.status = status
+
+    /** @private */ this._statusMessage = status
+    /** @private */ this._record = []
+  }
+
+  /**
+   * Sets the decryption/download status
+   *
+   * @param {string} status A status code indicating the decryption success to be consumed by submissions.client.factory.js
+   * @param {string} msg A human readable status message to be presented as part of the CSV download
+   */
+  setStatus(status, msg) {
+    this.status = status
+    this._statusMessage = msg
+  }
+
+  /**
+   * Sets the ZIP attachment blob to be downloaded
+   *
+   * @param {Blob} blob A blob containing a ZIP file of all the submission attachments downloaded
+   */
+  setDownloadBlob(blob) {
+    this.downloadBlob = blob
+  }
+
+  /**
+   * Sets the decrypted CSV record
+   *
+   * @param {Array} record The decrypted submission record
+   */
+  setRecord(record) {
+    this._record = record
+  }
+
+  /**
+   * Materializes the `submissionData` field
+   *
+   * This function should be called before the CsvRecord is passed back using `postMessage`.
+   * Since `postMessage` does not support code being passed back to the main thread, the
+   * `CsvRecord` received will only contain simple fields (e.g. `created`, `status`, etc...).
+   *
+   * This function creates a `submissionData` field in the object containing the final
+   * answers to be added to the CSV file. This `submissionData` field will be passed back
+   * using `postMessage` since it does not contain code.
+   */
+  materializeSubmissionData() {
+    let downloadStatus = {
+      _id: '000000000000000000000000',
+      fieldType: 'textfield',
+      question: 'Download Status',
+      answer: this._statusMessage,
+      questionNumber: 1000000,
+    }
+    let output = cloneDeep(this._record)
+    output.unshift(downloadStatus)
+
+    this.submissionData = {
+      created: this.created,
+      submissionId: this.id,
+      record: output,
+    }
+  }
+}
 
 /**
  * Decrypts given data into a {@link CsvRecord} and posts the result back to the
@@ -103,18 +178,13 @@ async function decryptIntoCsv(data) {
   const { line, secretKey, downloadAttachments } = data
 
   let submission
-  /** @type {CsvRecord} */
   let csvRecord
   let attachmentDownloadUrls = new Map()
   let downloadBlob
 
   try {
     submission = JSON.parse(line)
-
-    csvRecord = {
-      created: submission.created,
-      id: submission._id,
-    }
+    csvRecord = new CsvRecord(submission._id, submission.created, 'UNKNOWN')
     try {
       const decryptedSubmission = processDecryptedContent(
         formsgSdk.crypto.decrypt(secretKey, {
@@ -124,14 +194,10 @@ async function decryptIntoCsv(data) {
       )
 
       if (verifySignature(decryptedSubmission, submission.created)) {
-        csvRecord.status = 'OK'
-        csvRecord.submissionData = {
-          created: submission.created,
-          submissionId: submission._id,
-          record: decryptedSubmission,
-        }
+        csvRecord.setStatus('OK', 'Success')
+        csvRecord.setRecord(decryptedSubmission)
       } else {
-        csvRecord.status = 'UNVERIFIED'
+        csvRecord.setStatus('UNVERIFIED', 'Unverified')
       }
       if (downloadAttachments) {
         let questionCount = 0
@@ -150,22 +216,32 @@ async function decryptIntoCsv(data) {
           }
         })
 
-        downloadBlob = await downloadAndDecryptAttachmentsAsZip(
-          attachmentDownloadUrls,
-          secretKey,
-        )
+        try {
+          downloadBlob = await queue.add(() =>
+            downloadAndDecryptAttachmentsAsZip(
+              attachmentDownloadUrls,
+              secretKey,
+            ),
+          )
+          csvRecord.setStatus('OK', 'Success (with Downloaded Attachment)')
+          csvRecord.setDownloadBlob(downloadBlob)
+        } catch (error) {
+          csvRecord.setStatus('ATTACHMENT_ERROR', 'Attachment Download Error')
+        }
       }
     } catch (error) {
-      csvRecord.status = 'ERROR'
+      csvRecord.setStatus('ERROR', 'Decryption Error')
     }
   } catch (err) {
-    csvRecord = {
-      created: moment().tz('Asia/Singapore').format('DD MMM YYYY hh:mm:ss A'),
-      id: 'ERROR',
-      status: 'ERROR',
-    }
+    csvRecord = new CsvRecord(
+      'ERROR',
+      moment().tz('Asia/Singapore').format('DD MMM YYYY hh:mm:ss A'),
+      'ERROR',
+    )
+    csvRecord.setStatus('ERROR', 'Error')
   }
-  self.postMessage({ csvRecord, downloadBlob })
+  csvRecord.materializeSubmissionData()
+  self.postMessage({ csvRecord })
 }
 
 self.addEventListener('message', ({ data }) => {

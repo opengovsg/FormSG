@@ -3,27 +3,24 @@ import { SetOptional } from 'type-fest'
 
 import { createReqMeta } from '../../../../app/utils/request'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { FieldResponse, WithForm, WithParsedResponses } from '../../../../types'
+import { WithForm, WithParsedResponses } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { getProcessedResponses } from '../submission.service'
 
+import {
+  EncryptSubmissionBody,
+  EncryptSubmissionBodyAfterProcess,
+  WithAttachmentsData,
+  WithFormData,
+} from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
-type EncryptSubmissionBody = {
-  responses: FieldResponse[]
-  encryptedContent: string
-  attachments?: {
-    encryptedFile?: {
-      binary: string
-      nonce: string
-      submissionPublicKey: string
-    }
-  }
-  isPreview: boolean
-  version: number
-}
+/**
+ * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
+ * to produce req.body.parsedResponses
+ */
 
 export const validateAndProcessEncryptSubmission: RequestHandler<
   { formId: string },
@@ -52,9 +49,10 @@ export const validateAndProcessEncryptSubmission: RequestHandler<
       // If error, log and return res error.
       .mapErr((error) => {
         logger.error({
-          message: 'Error validating encrypt submission responses',
+          message:
+            'Error validating and processing encrypt submission responses',
           meta: {
-            action: 'validateEncryptSubmission',
+            action: 'validateAndProcessEncryptSubmission',
             ...createReqMeta(req),
             formId: form._id,
           },
@@ -67,4 +65,22 @@ export const validateAndProcessEncryptSubmission: RequestHandler<
         })
       })
   )
+}
+
+/**
+ * Verify structure of encrypted response
+ */
+
+export const prepareEncryptSubmission: RequestHandler<
+  { formId: string },
+  unknown,
+  EncryptSubmissionBodyAfterProcess
+> = (req, res, next) => {
+  // Step 1: Add req.body.encryptedContent to req.formData
+  // eslint-disable-next-line @typescript-eslint/no-extra-semi
+  ;(req as WithFormData<typeof req>).formData = req.body.encryptedContent
+  // Step 2: Add req.body.attachments to req.attachmentData
+  ;(req as WithAttachmentsData<typeof req>).attachmentData =
+    req.body.attachments || {}
+  return next()
 }

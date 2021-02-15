@@ -1,5 +1,4 @@
 const {
-  DropdownValidator,
   CheckboxValidator,
   EmailValidator,
   TableValidator,
@@ -42,9 +41,8 @@ class FieldValidatorFactory {
       case 'date':
       case 'decimal':
       case 'radiobutton':
-        throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'dropdown':
-        return new DropdownValidator(...arguments)
+        throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'checkbox':
         return new CheckboxValidator(...arguments)
       case 'email':

@@ -24,8 +24,6 @@ export enum MyInfoAttribute {
   Name = 'name',
   PassportNumber = 'passportnumber',
   RegisteredAddress = 'regadd',
-  MailingAddress = 'mailadd',
-  BillingAddress = 'billadd',
   Employment = 'employment',
   VehicleNo = 'vehno',
   MarriageCertNo = 'marriagecertno',
@@ -38,17 +36,19 @@ export enum MyInfoAttribute {
   HousingType = 'housingtype',
   HdbType = 'hdbtype',
   Marital = 'marital',
-  EducationLevel = 'edulevel',
   CountryOfMarriage = 'countryofmarriage',
   WorkpassStatus = 'workpassstatus',
-  SchoolName = 'schoolname',
   Occupation = 'occupation',
   MobileNo = 'mobileno',
-  HomeNo = 'homeno',
   DateOfBirth = 'dob',
   PassportExpiryDate = 'passportexpirydate',
   MarriageDate = 'marriagedate',
   DivorceDate = 'divorcedate',
   WorkpassExpiryDate = 'workpassexpirydate',
-  GraduationYear = 'gradyear',
+}
+
+export enum SPCPFieldTitle {
+  SpNric = 'SingPass Validated NRIC',
+  CpUid = 'CorpPass Validated UID',
+  CpUen = 'CorpPass Validated UEN',
 }

@@ -10,7 +10,7 @@ const { forOwn } = require('lodash')
 const { decode: decodeBase64 } = require('@stablelib/base64')
 const JSZip = require('jszip')
 
-const NUM_OF_METADATA_ROWS = 4
+const NUM_OF_METADATA_ROWS = 5
 
 angular
   .module('forms')
@@ -25,6 +25,14 @@ angular
     SubmissionsFactory,
   ])
 
+let downloadAbortController
+let workerPool = []
+
+// Helper function to kill an array of EncryptionWorkers
+function killWorkers(pool) {
+  pool.forEach((worker) => worker.terminate())
+}
+
 function SubmissionsFactory(
   $q,
   $http,
@@ -37,6 +45,17 @@ function SubmissionsFactory(
   const submitAdminUrl = '/:formId/adminform/submissions'
   const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
   const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
+
+  const generateDownloadUrl = (params, downloadAttachments) => {
+    let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
+    if (params.startDate && params.endDate) {
+      resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
+    }
+    if (downloadAttachments) {
+      resUrl += `downloadAttachments=true&`
+    }
+    return resUrl
+  }
 
   /**
    * Creates form data and submits as multi-part
@@ -233,6 +252,14 @@ function SubmissionsFactory(
       })
     },
     /**
+     * Cancels an existing on-going download
+     */
+    cancelDownloadEncryptedResponses: function () {
+      downloadAbortController.abort()
+      killWorkers(workerPool)
+      workerPool = []
+    },
+    /**
      * Triggers a download of file responses when called
      * @param {String} params.formId ID of the form
      * @param {String} params.formTitle The title of the form
@@ -247,10 +274,8 @@ function SubmissionsFactory(
       downloadAttachments,
       secretKey,
     ) {
-      // Helper function to kill an array of EncryptionWorkers
-      const killWorkers = (workerPool) => {
-        workerPool.forEach((worker) => worker.terminate())
-      }
+      // Creates a new AbortController for every request
+      downloadAbortController = new AbortController()
 
       return this.count(params).then((expectedNumResponses) => {
         return new Promise(function (resolve, reject) {
@@ -263,29 +288,26 @@ function SubmissionsFactory(
             })
           }
 
-          let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
-          if (params.startDate && params.endDate) {
-            resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
-          }
-          if (downloadAttachments) {
-            resUrl += `downloadAttachments=true&`
-          }
-
+          let resUrl = generateDownloadUrl(params, downloadAttachments)
           let experimentalCsvGenerator = new CsvMHGenerator(
             expectedNumResponses,
             NUM_OF_METADATA_ROWS,
           )
+          let attachmentErrorCount = 0
           let errorCount = 0
           let unverifiedCount = 0
           let receivedRecordCount = 0
 
           // Create a pool of decryption workers
-          const numWorkers = $window.navigator.hardwareConcurrency || 4
+          // If we are downloading attachments, we restrict the number of threads
+          // to one to limit resource usage on the client's browser.
+          const numWorkers = downloadAttachments
+            ? 1
+            : $window.navigator.hardwareConcurrency || 4
 
           // Trigger analytics here before starting decryption worker.
           GTag.downloadResponseStart(params, expectedNumResponses, numWorkers)
 
-          const workerPool = []
           for (let i = 0; i < numWorkers; i++) {
             workerPool.push(new DecryptionWorker())
           }
@@ -295,20 +317,25 @@ function SubmissionsFactory(
             // When worker returns a decrypted message
             worker.onmessage = (event) => {
               const { data } = event
-              const { csvRecord, downloadBlob } = data
+              const { csvRecord } = data
 
-              if (csvRecord.status === 'ERROR') {
+              if (csvRecord.status === 'ATTACHMENT_ERROR') {
+                attachmentErrorCount++
+                errorCount++
+              } else if (csvRecord.status === 'ERROR') {
                 errorCount++
               } else if (csvRecord.status === 'UNVERIFIED') {
                 unverifiedCount++
-              } else {
-                // accumulate dataset
+              }
+
+              if (csvRecord.submissionData) {
+                // accumulate dataset if it exists, since we may have status columns available
                 experimentalCsvGenerator.addRecord(csvRecord.submissionData)
               }
 
-              if (downloadAttachments) {
+              if (downloadAttachments && csvRecord.downloadBlob) {
                 triggerFileDownload(
-                  downloadBlob,
+                  csvRecord.downloadBlob,
                   'RefNo ' + csvRecord.id + '.zip',
                 )
               }
@@ -328,7 +355,7 @@ function SubmissionsFactory(
           })
 
           let downloadStartTime
-          fetchStream(resUrl)
+          fetchStream(resUrl, { signal: downloadAbortController.signal })
             .then((response) => ndjsonStream(response.body))
             .then((stream) => {
               downloadStartTime = performance.now()
@@ -376,7 +403,7 @@ function SubmissionsFactory(
                     'Failed to download data, is there a network issue?',
                     err,
                   )
-                  workerPool.forEach((worker) => worker.terminate())
+                  killWorkers(workerPool)
                   reject(err)
                 })
                 .finally(() => {
@@ -392,6 +419,7 @@ function SubmissionsFactory(
                         numWorkers,
                         experimentalCsvGenerator.length(),
                         errorCount,
+                        attachmentErrorCount,
                         timeDifference,
                       )
                       killWorkers(workerPool)

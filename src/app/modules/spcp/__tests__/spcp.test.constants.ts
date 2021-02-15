@@ -5,6 +5,8 @@ import crypto from 'crypto'
 import { ISpcpMyInfo } from 'src/config/feature-manager'
 import { ILoginSchema, IPopulatedForm } from 'src/types'
 
+import { JwtName } from '../spcp.types'
+
 export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   isSPMaintenance: 'isSPMaintenance',
   isCPMaintenance: 'isCPMaintenance',
@@ -132,4 +134,9 @@ export const MOCK_LOGIN_DOC = {
 export const MOCK_COOKIE_SETTINGS = {
   domain: 'domain',
   path: 'path',
+}
+
+export const MOCK_COOKIES = {
+  [JwtName.SP]: 'mockSpJwt',
+  [JwtName.CP]: 'mockCpJwt',
 }

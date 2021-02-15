@@ -35,9 +35,10 @@ module.exports = [
       rules: [
         {
           test: /\.js$/,
-          loader: 'babel-loader',
-          query: {
-            compact: false,
+          // Don't transpile polyfills
+          exclude: /@babel(?:\/|\\{1,2})runtime|core-js|web-streams-polyfill|whatwg-fetch|abortcontroller-polyfill|text-encoding/,
+          use: {
+            loader: 'babel-loader',
           },
         },
       ],

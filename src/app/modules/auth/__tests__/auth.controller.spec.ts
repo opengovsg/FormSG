@@ -85,7 +85,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(`OTP sent to ${VALID_EMAIL}!`)
+      expect(mockRes.json).toBeCalledWith(`OTP sent to ${VALID_EMAIL}`)
       // Services should have been invoked.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)
@@ -104,7 +104,7 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(expectedError.status)
-      expect(mockRes.json).toBeCalledWith(expectedError.message)
+      expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
     })
 
     it('should return 500 when there is an error generating login OTP', async () => {
@@ -123,9 +123,10 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-      )
+      expect(mockRes.json).toBeCalledWith({
+        message:
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+      })
       // Sending login OTP should not have been called.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockMailService.sendLoginOtp).not.toHaveBeenCalled()
@@ -148,9 +149,10 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-      )
+      expect(mockRes.json).toBeCalledWith({
+        message:
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+      })
       // Services should have been invoked.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)

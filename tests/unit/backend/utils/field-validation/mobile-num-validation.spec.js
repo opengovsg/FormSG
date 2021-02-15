@@ -34,7 +34,7 @@ describe('Mobile number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'mobile',
-      isVisible: false,
+      isVisible: true,
       answer: '',
     }
     const validateResult = validateField('formId', formField, response)
@@ -72,7 +72,7 @@ describe('Mobile number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'mobile',
-      isVisible: false,
+      isVisible: true,
       answer: '+6598765432',
     }
     const validateResult = validateField('formId', formField, response)
@@ -90,7 +90,7 @@ describe('Mobile number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'mobile',
-      isVisible: false,
+      isVisible: true,
       answer: '6598765432',
     }
     const validateResult = validateField('formId', formField, response)
@@ -110,7 +110,7 @@ describe('Mobile number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'mobile',
-      isVisible: false,
+      isVisible: true,
       answer: '+6565656565',
     }
     const validateResult = validateField('formId', formField, response)
@@ -130,7 +130,7 @@ describe('Mobile number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'mobile',
-      isVisible: false,
+      isVisible: true,
       answer: '+447851315617',
     }
     const validateResult = validateField('formId', formField, response)
@@ -150,11 +150,30 @@ describe('Mobile number validation tests', () => {
     const response = {
       _id: 'abc123',
       fieldType: 'mobile',
-      isVisible: false,
+      isVisible: true,
       answer: '+447851315617',
     }
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: 'mobile',
+      required: true,
+      allowIntlNumbers: true,
+    }
+    const response = {
+      _id: 'abc123',
+      fieldType: 'mobile',
+      isVisible: false,
+      answer: '+447851315617',
+    }
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
   })
 })

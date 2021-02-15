@@ -3,7 +3,12 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, BasicField, MapRouteError } from '../../../types'
+import {
+  AuthType,
+  BasicField,
+  MapRouteError,
+  SPCPFieldTitle,
+} from '../../../types'
 import { MissingFeatureError } from '../core/core.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
@@ -12,9 +17,10 @@ import {
   FetchLoginPageError,
   InvalidJwtError,
   LoginPageValidationError,
+  MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
-import { JwtName, JwtPayload, SpcpCookies } from './spcp.types'
+import { JwtPayload } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -156,25 +162,6 @@ export const isJwtPayload = (
 }
 
 /**
- * Extracts the SP or CP JWT from an object containing cookies
- * @param cookies Object containing cookies
- * @param authType 'SP' or 'CP'
- */
-export const extractJwt = (
-  cookies: SpcpCookies,
-  authType: AuthType,
-): string | undefined => {
-  switch (authType) {
-    case AuthType.SP:
-      return cookies[JwtName.SP]
-    case AuthType.CP:
-      return cookies[JwtName.CP]
-    default:
-      return undefined
-  }
-}
-
-/**
  * Wraps SingPass data in the form of parsed form fields.
  * @param uinFin UIN or FIN
  */
@@ -184,7 +171,7 @@ export const createSingpassParsedResponses = (
   return [
     {
       _id: '',
-      question: 'SingPass Validated NRIC',
+      question: SPCPFieldTitle.SpNric,
       fieldType: BasicField.Nric,
       isVisible: true,
       answer: uinFin,
@@ -204,14 +191,14 @@ export const createCorppassParsedResponses = (
   return [
     {
       _id: '',
-      question: 'CorpPass Validated UEN',
+      question: SPCPFieldTitle.CpUen,
       fieldType: BasicField.ShortText,
       isVisible: true,
       answer: uinFin,
     },
     {
       _id: '',
-      question: 'CorpPass Validated UID',
+      question: SPCPFieldTitle.CpUid,
       fieldType: BasicField.Nric,
       isVisible: true,
       answer: userInfo,
@@ -241,16 +228,13 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: 'Error while contacting SingPass. Please try again.',
       }
+    case MissingJwtError:
     case VerifyJwtError:
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        errorMessage: 'User is not SPCP authenticated',
-      }
     case InvalidJwtError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
-          'Sorry, something went wrong with your login. Please refresh and try again.',
+          'Something went wrong with your login. Please try logging in and submitting again.',
       }
     default:
       logger.error({

@@ -5,20 +5,20 @@
  */
 const forms = require('../../app/controllers/forms.server.controller')
 const publicForms = require('../modules/form/public-form/public-form.middlewares')
-const submissions = require('../../app/controllers/submissions.server.controller')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const myInfoController = require('../../app/controllers/myinfo.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../services/captcha/captcha.factory')
 const CaptchaMiddleware = require('../services/captcha/captcha.middleware')
+const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
-const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
-
+const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
+const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
 module.exports = function (app) {
   /**
    * Redirect a form to the main index, with the specified path
@@ -116,6 +116,11 @@ module.exports = function (app) {
    * Returns the specified form to the user, along with any
    * identity information obtained from SingPass/CorpPass,
    * and MyInfo details, if any.
+   *
+   * WARNING: TemperatureSG batch jobs rely on this endpoint to
+   * retrieve the master list of personnel for daily reporting.
+   * Please strictly ensure backwards compatibility.
+   *
    * @route GET /{formId}/publicform
    * @group forms - endpoints to serve forms
    * @param {string} formId.path.required - the form id
@@ -133,74 +138,6 @@ module.exports = function (app) {
       myInfoController.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
     )
-
-  /**
-   * @typedef SubmissionResponse
-   * @property {string} message.required - a human-readable message
-   * @property {string} submissionId - the id of the submission made
-   * @property {boolean} spcpSubmissionFailure - indicates if there was a failure relating to SingPass/CorpPass
-   */
-
-  /**
-   * Submit a form response, processing it as an email to be sent to
-   * the public servant who created the form. Optionally send a PDF
-   * containing the submission back to the user, if an email address
-   * was given. SMS autoreplies for mobile number fields are also sent if feature
-   * is enabled.
-   * Note that v2 endpoint no longer accepts body.captchaResponse
-   * @route POST /v2/submissions/email/{formId}
-   * @group forms - endpoints to serve forms
-   * @param {string} formId.path.required - the form id
-   * @param {string} response.body.required - contains the entire form submission
-   * @param {string} captchaResponse.query - contains the reCAPTCHA response artifact, if any
-   * @consumes multipart/form-data
-   * @produces application/json
-   * @returns {SubmissionResponse.model} 200 - submission made
-   * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
-   */
-  app.route('/v2/submissions/email/:formId([a-fA-F0-9]{24})').post(
-    limitRate({ max: rateLimitConfig.submissions }),
-    CaptchaFactory.validateCaptchaParams,
-    forms.formById,
-    publicForms.isFormPublicCheck,
-    CaptchaMiddleware.checkCaptchaResponse,
-    SpcpController.isSpcpAuthenticated,
-    EmailSubmissionsMiddleware.receiveEmailSubmission,
-    celebrate({
-      body: Joi.object({
-        responses: Joi.array()
-          .items(
-            Joi.object()
-              .keys({
-                _id: Joi.string().required(),
-                question: Joi.string().required(),
-                fieldType: Joi.string()
-                  .required()
-                  .valid(...Object.values(BasicField)),
-                answer: Joi.string().allow(''),
-                answerArray: Joi.array(),
-                filename: Joi.string(),
-                content: Joi.binary(),
-                isHeader: Joi.boolean(),
-                myInfo: Joi.object(),
-                signature: Joi.string().allow(''),
-              })
-              .xor('answer', 'answerArray') // only answer or answerArray can be present at once
-              .with('filename', 'content'), // if filename is present, content must be present
-          )
-          .required(),
-        isPreview: Joi.boolean().required(),
-      }),
-    }),
-    EmailSubmissionsMiddleware.validateEmailSubmission,
-    myInfoController.verifyMyInfoVals,
-    submissions.injectAutoReplyInfo,
-    SpcpController.appendVerifiedSPCPResponses,
-    EmailSubmissionsMiddleware.prepareEmailSubmission,
-    EmailSubmissionsMiddleware.saveMetadataToDb,
-    EmailSubmissionsMiddleware.sendAdminEmail,
-    submissions.sendAutoReply,
-  )
 
   /**
    * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply
@@ -271,14 +208,13 @@ module.exports = function (app) {
     forms.formById,
     publicForms.isFormPublicCheck,
     CaptchaMiddleware.checkCaptchaResponse,
-    encryptSubmissions.validateEncryptSubmission,
+    EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,
-    submissions.injectAutoReplyInfo,
-    webhookVerifiedContentFactory.encryptedVerifiedFields,
-    encryptSubmissions.prepareEncryptSubmission,
+    VerifiedContentMiddleware.encryptVerifiedSpcpFields,
+    EncryptSubmissionMiddleware.prepareEncryptSubmission,
     encryptSubmissions.saveResponseToDb,
     webhookVerifiedContentFactory.post,
-    submissions.sendAutoReply,
+    SubmissionsMiddleware.sendEmailConfirmations,
   )
 }

@@ -105,11 +105,44 @@
             class="datepicker-container"
             ng-model="vm.datePicker.date"
           ></date-range-picker-directive>
-          <export-button-component
-            on-click="vm.exportCsv(vm.myform)"
-            is-disabled="vm.csvDownloading"
-            is-loading="vm.csvDownloading"
-          ></export-button-component>
+          <div class="btn-group" uib-dropdown>
+            <button
+              class="btn-custom btn-small"
+              aria-haspopup="true"
+              aria-expanded="false"
+              uib-dropdown-toggle
+              id="btn-export-dropdown"
+            >
+              <span class="hidden-xs" ng-hide="vm.csvDownloading">Export</span>
+              <span class="hidden-xs" ng-show="vm.csvDownloading"
+                >Downloading</span
+              >
+              <span class="caret"></span>
+            </button>
+            <ul
+              class="dropdown-menu dropdown-menu-right"
+              id="export-dropdown-options"
+              uib-dropdown-menu
+              role="menu"
+              aria-labelledby="btn-export-dropdown"
+            >
+              <li role="menuitem">
+                <a
+                  id="btn-export-dropdown-responses"
+                  ng-click="vm.exportCsv(false)"
+                  style="cursor: pointer"
+                  >CSV only</a
+                >
+              </li>
+              <li role="menuitem">
+                <a
+                  ng-click="vm.confirmSubmissionCountsBeforeDownload()"
+                  style="cursor: pointer"
+                  >CSV and attachments <span class="beta-icon">beta</span></a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="flex-row" ng-show="vm.filterBySubmissionShowFilterBox">

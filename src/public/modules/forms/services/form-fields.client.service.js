@@ -181,23 +181,13 @@ function FormFields() {
       case 'passportnumber':
         return 'E1234567X'
       case 'regadd':
-      case 'mailadd':
-      case 'billadd':
         return '411 CHUA CHU KANG AVE 3, #12-3, SINGAPORE 238823'
       case 'mobileno':
         return '+65 98765432'
-      case 'homeno':
-        return '+65 65123456'
-      case 'edulevel':
-        return 'PRIMARY'
-      case 'schoolname':
-        return 'TECK WHYE PRIMARY SCHOOL'
       case 'occupation':
         return 'MANAGING DIRECTOR/CHIEF EXECUTIVE OFFICER'
       case 'employment':
         return 'PCK PTE LTD'
-      case 'gradyear':
-        return 1977
       case 'marital':
         return 'MARRIED'
       case 'dob':

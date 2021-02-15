@@ -10,13 +10,16 @@ import {
   AttachmentSize,
   BasicField,
   IAttachmentFieldSchema,
+  IAttachmentResponse,
   ICheckboxFieldSchema,
+  ICheckboxResponse,
   IDecimalFieldSchema,
   IDropdownField,
   IField,
   IFieldSchema,
   IImageFieldSchema,
   IShortTextFieldSchema,
+  ISingleAnswerResponse,
   ITableFieldSchema,
 } from 'src/types'
 
@@ -53,6 +56,13 @@ export const generateDefaultField = (
         ...defaultParams,
         ...customParams,
       } as ITableFieldSchema
+    case BasicField.Checkbox:
+      return {
+        ...defaultParams,
+        fieldOptions: ['Option 1', 'Option 2'],
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as ICheckboxFieldSchema
     case BasicField.Attachment:
       return {
         ...defaultParams,
@@ -98,7 +108,7 @@ export const generateDefaultField = (
   }
 }
 
-export const generateSingleAnswerResponse = (
+export const generateProcessedSingleAnswerResponse = (
   field: IFieldSchema,
   answer = 'answer',
 ): ProcessedSingleAnswerResponse => {
@@ -117,9 +127,32 @@ export const generateSingleAnswerResponse = (
     answer,
     fieldType: field.fieldType as Exclude<
       BasicField,
-      BasicField.Table | BasicField.Checkbox
+      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
     >,
     isVisible: true,
+  }
+}
+
+export const generateSingleAnswerResponse = (
+  field: IFieldSchema,
+  answer = field.fieldType === BasicField.Section ? '' : 'answer',
+): ISingleAnswerResponse => {
+  if (
+    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
+      field.fieldType,
+    )
+  ) {
+    throw new Error(
+      'Call the custom response generator functions for attachment, table and checkbox.',
+    )
+  }
+  return {
+    _id: field._id,
+    answer,
+    fieldType: field.fieldType as Exclude<
+      BasicField,
+      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
+    >,
   }
 }
 
@@ -142,7 +175,7 @@ export const generateNewSingleAnswerResponse = (
     answer: `${fieldType} answer`,
     fieldType: fieldType as Exclude<
       BasicField,
-      BasicField.Table | BasicField.Checkbox
+      BasicField.Table | BasicField.Checkbox | BasicField.Attachment
     >,
     isVisible: true,
     ...customParams,
@@ -153,14 +186,12 @@ export const generateAttachmentResponse = (
   field: IAttachmentFieldSchema,
   filename = 'filename',
   content = Buffer.from('content'),
-): ProcessedAttachmentResponse => ({
+): IAttachmentResponse => ({
   _id: field._id,
-  question: field.title,
   answer: 'answer',
   fieldType: BasicField.Attachment,
   filename,
   content,
-  isVisible: true,
 })
 
 export const generateNewAttachmentResponse = (
@@ -179,12 +210,10 @@ export const generateNewAttachmentResponse = (
 export const generateCheckboxResponse = (
   field: ICheckboxFieldSchema,
   answerArray?: string[],
-): ProcessedCheckboxResponse => ({
+): ICheckboxResponse => ({
   _id: field._id,
-  question: field.title,
   answerArray: answerArray ?? [field.fieldOptions[0]],
   fieldType: BasicField.Checkbox,
-  isVisible: true,
 })
 
 export const generateNewCheckboxResponse = (

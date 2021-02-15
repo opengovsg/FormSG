@@ -1,14 +1,24 @@
 import _ from 'lodash'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
-import { FieldResponse, IFieldSchema, IFormDocument } from '../../../types'
+import {
+  EmailAutoReplyField,
+  FieldResponse,
+  IAttachmentInfo,
+  IFieldSchema,
+  IFormDocument,
+  IPopulatedForm,
+  ISubmissionSchema,
+  ResponseMode,
+} from '../../../types'
 import getSubmissionModel from '../../models/submission.server.model'
+import MailService from '../../services/mail/mail.service'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import { validateField } from '../../utils/field-validation'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
@@ -16,10 +26,11 @@ import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 import {
   ConflictError,
   ProcessingError,
+  SendEmailConfirmationError,
   ValidateFieldError,
 } from './submission.errors'
 import { ProcessedFieldResponse } from './submission.types'
-import { getModeFilter } from './submission.utils'
+import { extractEmailConfirmationData, getModeFilter } from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -121,7 +132,18 @@ export const getProcessedResponses = (
 
     const processingResponse: ProcessedFieldResponse = {
       ...response,
-      isVisible: visibleFieldIds.has(responseId),
+      isVisible:
+        // Set isVisible as true for Encrypt mode if there is a response for mobile and email field
+        // Because we cannot tell if the field is unhidden by logic
+        // This prevents downstream validateField from incorrectly preventing
+        // encrypt mode submissions with responses on unhidden fields
+        // TODO(#780): Remove this once submission service is separated into
+        // Email and Encrypted services
+        form.responseMode === ResponseMode.Encrypt
+          ? 'answer' in response &&
+            typeof response.answer === 'string' &&
+            response.answer.trim() !== ''
+          : visibleFieldIds.has(responseId),
       question: formField.getQuestion(),
     }
 
@@ -191,4 +213,73 @@ export const getFormSubmissionsCount = (
       return new DatabaseError()
     },
   )
+}
+
+/**
+ * Sends email confirmation to form-fillers, for email fields with email confirmation
+ * enabled.
+ * @param param0 Data to include in email confirmations
+ * @param param0.form Form object
+ * @param param0.submission Submission object which was saved to database
+ * @param param0.parsedResponses Responses for each field
+ * @param param0.autoReplyData Subset of responses to be included in email confirmation
+ * @param param0.attachments Attachments to be included in email
+ * @returns ok(true) if all emails were sent successfully
+ * @returns err(SendEmailConfirmationError) if any email failed to be sent
+ */
+export const sendEmailConfirmations = ({
+  form,
+  submission,
+  parsedResponses,
+  autoReplyData,
+  attachments,
+}: {
+  form: IPopulatedForm
+  submission: ISubmissionSchema
+  parsedResponses: ProcessedFieldResponse[]
+  autoReplyData?: EmailAutoReplyField[]
+  attachments?: IAttachmentInfo[]
+}): ResultAsync<true, SendEmailConfirmationError> => {
+  const logMeta = {
+    action: 'sendEmailConfirmations',
+    formId: form._id,
+    submissionid: submission._id,
+  }
+  const confirmationData = extractEmailConfirmationData(
+    parsedResponses,
+    form.form_fields,
+  )
+  if (confirmationData.length === 0) {
+    return okAsync(true)
+  }
+  const sentEmailsPromise = MailService.sendAutoReplyEmails({
+    form,
+    submission,
+    attachments,
+    responsesData: autoReplyData ?? [],
+    autoReplyMailDatas: confirmationData,
+  })
+  return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
+    logger.error({
+      message: 'Error while attempting to send email confirmations',
+      meta: logMeta,
+      error,
+    })
+    return new SendEmailConfirmationError()
+  }).andThen((emailResults) => {
+    const errors = emailResults.reduce<string[]>((acc, singleEmail) => {
+      if (singleEmail.status === 'rejected') {
+        acc.push(singleEmail.reason)
+      }
+      return acc
+    }, [])
+    if (errors.length > 0) {
+      logger.error({
+        message: 'Some email confirmations could not be sent',
+        meta: { ...logMeta, errors },
+      })
+      return errAsync(new SendEmailConfirmationError())
+    }
+    return okAsync(true)
+  })
 }

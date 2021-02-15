@@ -10,11 +10,7 @@ const { StatusCodes } = require('http-status-codes')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const errorHandler = require('../utils/handle-mongo-error')
 const { createReqMeta } = require('../utils/request')
-const { FormLogoState } = require('../../types')
 
-const {
-  aws: { logoBucketUrl },
-} = require('../../config/config')
 const { EditFieldActions } = require('../../shared/constants')
 const getSubmissionModel = require('../models/submission.server.model').default
 
@@ -73,45 +69,7 @@ function makeModule(connection) {
       })
     }
   }
-  /**
-   *
-   * Mutates customLogo in form to keep it in sync with changes to logo
-   *
-   * @param {Object} form object to be saved to form collection
-   * @returns {Object} form
-   */
-  function updateCustomLogoInForm(form) {
-    const logo = _.get(form, 'startPage.logo', null)
-    if (logo) {
-      switch (logo.state) {
-        case FormLogoState.None:
-          form.customLogo = ''
-          break
-        case FormLogoState.Default:
-          form.customLogo = undefined
-          break
-        case FormLogoState.Custom:
-          if (logo.fileId) {
-            form.customLogo = `${logoBucketUrl}/${logo.fileId}`
-          } else {
-            logger.error({
-              message: `Logo is in an invalid state. fileId should always be defined for CUSTOM state but is ${logo.fileId} for form ${form._id}`,
-              meta: {
-                action: 'updateCustomLogoInForm',
-              },
-            })
-          }
-          break
-        default:
-          logger.error({
-            message: `logo is in an invalid state. Only NONE, DEFAULT and CUSTOM are allowed but state is ${logo.state} for form ${form._id}`,
-            meta: {
-              action: 'updateCustomLogoInForm',
-            },
-          })
-      }
-    }
-  }
+
   /**
    *
    * Add, delete, update or reorder a form field at a particular position.
@@ -275,24 +233,7 @@ function makeModule(connection) {
         }
       }
 
-      // Log updates to customLogo so that we know when admin clients are no longer updating customLogo
-      if (
-        updatedForm.customLogo !== undefined &&
-        form.customLogo !== updatedForm.customLogo
-      ) {
-        logger.info({
-          message: `Custom logo being updated for form ${form._id}`,
-          meta: {
-            action: 'makeModule.update',
-          },
-        })
-      }
-
       _.extend(form, updatedForm)
-
-      // Updates to logo should also update customLogo (to account for clients still referencing customLogo)
-      // TODO: Remove once all forms have logo key and customLogo is removed from schema
-      updateCustomLogoInForm(form)
 
       // Can't just do updatedForm.save() because updatedForm has some String values
       form.save(function (err, savedForm) {

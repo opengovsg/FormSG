@@ -1,3 +1,4 @@
+const { SPCPFieldTitle } = require('../../../../types')
 const {
   CURRENT_VERIFIED_FIELDS,
   VerifiedKeys,
@@ -12,25 +13,25 @@ const getResponseFromVerifiedField = (type, value) => {
   switch (type) {
     case VerifiedKeys.SpUinFin:
       return {
-        question: 'SingPass Validated NRIC',
+        question: SPCPFieldTitle.SpNric,
         fieldType: 'nric',
         answer: value,
         // Just a unique identifier for CSV header uniqueness
-        _id: 'SingPass Validated NRIC',
+        _id: SPCPFieldTitle.SpNric,
       }
     case VerifiedKeys.CpUen:
       return {
-        question: 'CorpPass Validated UEN',
+        question: SPCPFieldTitle.CpUen,
         fieldType: 'textfield',
         answer: value,
-        _id: 'CorpPass Validated UEN',
+        _id: SPCPFieldTitle.CpUen,
       }
     case VerifiedKeys.CpUid:
       return {
-        question: 'CorpPass Validated UID',
+        question: SPCPFieldTitle.CpUid,
         fieldType: 'nric',
         answer: value,
-        _id: 'CorpPass Validated UID',
+        _id: SPCPFieldTitle.CpUid,
       }
     default:
       return null

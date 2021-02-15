@@ -7,6 +7,13 @@ const {
 } = require('../../../../../dist/backend/app/modules/submission/submission.errors')
 
 describe('Date field validation', () => {
+  beforeAll(() => {
+    jasmine.clock().install()
+    jasmine.clock().mockDate(new Date('2020-01-01'))
+  })
+  afterAll(() => {
+    jasmine.clock().uninstall()
+  })
   it('should allow valid date <DD MMM YYYY>', () => {
     const formField = {
       _id: 'abc123',
@@ -287,9 +294,6 @@ describe('Date field validation', () => {
   })
 
   it('should allow past dates for normal date fields', () => {
-    jasmine.clock().install()
-    jasmine.clock().mockDate(new Date('2020-01-01'))
-
     const formField = {
       _id: 'abc123',
       fieldType: 'date',
@@ -305,14 +309,9 @@ describe('Date field validation', () => {
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
-
-    jasmine.clock().uninstall()
   })
 
   it('should allow past dates if disallow past dates is not set', () => {
-    jasmine.clock().install()
-    jasmine.clock().mockDate(new Date('2020-01-01'))
-
     const formField = {
       _id: 'abc123',
       fieldType: 'date',
@@ -328,14 +327,9 @@ describe('Date field validation', () => {
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
-
-    jasmine.clock().uninstall()
   })
 
   it('should disallow past dates if disallow past dates is set', () => {
-    jasmine.clock().install()
-    jasmine.clock().mockDate(new Date('2020-01-01'))
-
     const formField = {
       _id: 'abc123',
       fieldType: 'date',
@@ -354,14 +348,9 @@ describe('Date field validation', () => {
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
     )
-
-    jasmine.clock().uninstall()
   })
 
   it('should allow future dates if disallow future dates is not set', () => {
-    jasmine.clock().install()
-    jasmine.clock().mockDate(new Date('2020-01-01'))
-
     const formField = {
       _id: 'abc123',
       fieldType: 'date',
@@ -377,14 +366,9 @@ describe('Date field validation', () => {
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
-
-    jasmine.clock().uninstall()
   })
 
   it('should disallow future dates if disallow future dates is set', () => {
-    jasmine.clock().install()
-    jasmine.clock().mockDate(new Date('2020-01-01'))
-
     const formField = {
       _id: 'abc123',
       fieldType: 'date',
@@ -403,14 +387,9 @@ describe('Date field validation', () => {
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
     )
-
-    jasmine.clock().uninstall()
   })
 
   it('should allow dates inside of Custom Date Range if set', () => {
-    jasmine.clock().install()
-    jasmine.clock().mockDate(new Date('2020-01-01'))
-
     const formField = {
       _id: 'abc123',
       fieldType: 'date',
@@ -431,14 +410,9 @@ describe('Date field validation', () => {
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
-
-    jasmine.clock().uninstall()
   })
 
   it('should disallow dates outside of Custom Date Range if set', () => {
-    jasmine.clock().install()
-    jasmine.clock().mockDate(new Date('2020-01-01'))
-
     const formField = {
       _id: 'abc123',
       fieldType: 'date',
@@ -461,7 +435,30 @@ describe('Date field validation', () => {
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
     )
+  })
 
-    jasmine.clock().uninstall()
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: 'date',
+      dateValidation: {
+        customMinDate: '2020-06-25',
+        customMaxDate: '2020-06-28',
+      },
+      required: true,
+    }
+
+    const response = {
+      _id: 'abc123',
+      fieldType: 'date',
+      isVisible: false,
+      answer: '22 Jun 2020',
+    }
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
   })
 })

@@ -167,9 +167,10 @@ describe('auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(401)
-      expect(response.body).toEqual(
-        'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
-      )
+      expect(response.body).toEqual({
+        message:
+          'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
+      })
     })
 
     it('should return 500 when error occurs whilst creating OTP', async () => {
@@ -186,9 +187,10 @@ describe('auth.routes', () => {
       // Assert
       expect(createLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
-      expect(response.body).toEqual(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-      )
+      expect(response.body).toEqual({
+        message:
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+      })
     })
 
     it('should return 500 when error occurs whilst sending login OTP', async () => {
@@ -205,9 +207,10 @@ describe('auth.routes', () => {
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
-      expect(response.body).toEqual(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-      )
+      expect(response.body).toEqual({
+        message:
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+      })
     })
 
     it('should return 500 when validating domain returns a database error', async () => {
@@ -224,9 +227,10 @@ describe('auth.routes', () => {
       // Assert
       expect(getAgencySpy).toBeCalled()
       expect(response.status).toEqual(500)
-      expect(response.body).toEqual(
-        'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-      )
+      expect(response.body).toEqual({
+        message:
+          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+      })
     })
 
     it('should return 200 when otp is sent successfully', async () => {
@@ -243,7 +247,7 @@ describe('auth.routes', () => {
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}!`)
+      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}`)
     })
   })
 
@@ -541,7 +545,7 @@ describe('auth.routes', () => {
     jest.spyOn(MailService, 'sendLoginOtp').mockReturnValue(okAsync(true))
 
     const response = await request.post('/auth/sendotp').send({ email })
-    expect(response.body).toEqual(`OTP sent to ${email}!`)
+    expect(response.body).toEqual(`OTP sent to ${email}`)
   }
 
   const signInUser = async (email: string, otp: string) => {
