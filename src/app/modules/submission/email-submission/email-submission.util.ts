@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { flattenDeep, sumBy } from 'lodash'
+import { compact, flattenDeep, sumBy } from 'lodash'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { FilePlatforms } from '../../../../shared/constants'
@@ -568,14 +568,6 @@ export const maskUidOnLastField = (
 }
 
 /**
- * Type guard to check that values are not undefined
- * Used in filter in EmailDataObj methods
- */
-const notUndefined = <T>(value: T | undefined): value is T => {
-  return value !== undefined
-}
-
-/**
  * Function to generate email data
  * for a single field
  */
@@ -686,11 +678,13 @@ export class EmailDataObj {
    */
   get jsonData(): EmailJsonField[] {
     return this.parsedResponses.flatMap((response) =>
-      createFormattedDataForOneField(
-        response,
-        this.hashedFields,
-        getJsonFormattedResponse,
-      ).filter(notUndefined),
+      compact(
+        createFormattedDataForOneField(
+          response,
+          this.hashedFields,
+          getJsonFormattedResponse,
+        ),
+      ),
     )
   }
 
@@ -699,11 +693,13 @@ export class EmailDataObj {
    */
   get autoReplyData(): EmailAutoReplyField[] {
     return this.parsedResponses.flatMap((response) =>
-      createFormattedDataForOneField(
-        response,
-        this.hashedFields,
-        getAutoReplyFormattedResponse,
-      ).filter(notUndefined),
+      compact(
+        createFormattedDataForOneField(
+          response,
+          this.hashedFields,
+          getAutoReplyFormattedResponse,
+        ),
+      ),
     )
   }
 
@@ -724,11 +720,13 @@ export class EmailDataObj {
    */
   get formData(): EmailFormField[] {
     return this.parsedResponses.flatMap((response) =>
-      createFormattedDataForOneField(
-        response,
-        this.hashedFields,
-        getFormFormattedResponse,
-      ).filter(notUndefined),
+      compact(
+        createFormattedDataForOneField(
+          response,
+          this.hashedFields,
+          getFormFormattedResponse,
+        ),
+      ),
     )
   }
 }
