@@ -679,6 +679,7 @@ describe('Email Submissions Controller', () => {
     it('maps CorpPass attributes', (done) => {
       resLocalFixtures.uinFin = '123456789K'
       resLocalFixtures.userInfo = 'S1234567A'
+      const maskedCpUid = '*****567A'
       reqFixtures.form.authType = 'CP'
       const expectedFormData = [
         {
@@ -701,7 +702,7 @@ describe('Email Submissions Controller', () => {
         },
         {
           question: SPCPFieldTitle.CpUid,
-          answerTemplate: [resLocalFixtures.userInfo],
+          answerTemplate: [maskedCpUid],
         },
       ]
       const expectedJsonData = [
