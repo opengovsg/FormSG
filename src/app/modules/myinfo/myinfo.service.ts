@@ -1,6 +1,7 @@
 import {
   IPerson,
   IPersonResponse,
+  MyInfoAttribute as AllMyInfoAttributes,
   MyInfoAttributeString,
   MyInfoGovClient,
 } from '@opengovsg/myinfo-gov-client'
@@ -128,7 +129,10 @@ export class MyInfoService {
     const redirectURL = this.#myInfoGovClient.createRedirectURL({
       purpose: createConsentPagePurpose(formTitle),
       relayState: createRelayState(formId, rememberMe),
-      requestedAttributes,
+      // Always request consent for NRIC/FIN
+      requestedAttributes: requestedAttributes.concat([
+        AllMyInfoAttributes.UinFin,
+      ]),
       singpassEserviceId: formEsrvcId,
     })
     return ok(redirectURL)
