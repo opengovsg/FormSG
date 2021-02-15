@@ -5,6 +5,7 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
+  AuthType,
   BasicField,
   EmailAutoReplyField,
   EmailDataForOneField,
@@ -536,7 +537,7 @@ export const concatAttachmentsAndResponses = (
   return response
 }
 
-export const maskUidOnLastField = (
+const maskUidOnLastField = (
   autoReplyData: EmailAutoReplyField[],
 ): EmailAutoReplyField[] => {
   // Mask corppass UID and show only last 4 chars in autoreply to form filler
@@ -551,14 +552,7 @@ export const maskUidOnLastField = (
         autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
         index === autoReplyData.length - 1 // Check field position
       ) {
-        return {
-          question: autoReplyField.question,
-          answerTemplate: autoReplyField.answerTemplate.map((answer) => {
-            return answer.length >= 4 // defensive, in case UID length is less than 4
-              ? '*'.repeat(answer.length - 4) + answer.substr(-4)
-              : answer
-          }),
-        }
+        return maskField(autoReplyField)
       } else {
         return autoReplyField
       }
@@ -667,13 +661,16 @@ const getAutoReplyFormattedResponse = (
 export class EmailDataObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<string>
+  authType: AuthType
 
   constructor(
     parsedResponses: ProcessedFieldResponse[],
     hashedFields: Set<string>,
+    authType: AuthType,
   ) {
     this.parsedResponses = parsedResponses
     this.hashedFields = hashedFields
+    this.authType = authType
   }
 
   /**
@@ -693,9 +690,10 @@ export class EmailDataObj {
 
   /**
    * Getter function to return autoReplyData for confirmation emails to respondent
+   * If AuthType is CP, return a masked version
    */
   get autoReplyData(): EmailAutoReplyField[] {
-    return this.parsedResponses.flatMap((response) =>
+    const unmaskedAutoReplyData = this.parsedResponses.flatMap((response) =>
       compact(
         createFormattedDataForOneField(
           response,
@@ -704,20 +702,10 @@ export class EmailDataObj {
         ),
       ),
     )
+    return this.authType === AuthType.CP
+      ? maskUidOnLastField(unmaskedAutoReplyData)
+      : unmaskedAutoReplyData
   }
-
-  /**
-   * Getter function to return maskedAutoReplyData
-   * Returns a masked version of autoReplyData
-   */
-  get maskedAutoReplyData(): EmailAutoReplyField[] {
-    return this.autoReplyData.map((autoReplyField) => {
-      return autoReplyField.question === SPCPFieldTitle.CpUid
-        ? maskField(autoReplyField)
-        : autoReplyField
-    })
-  }
-
   /**
    * Getter function to return formData which is used to send responses to admin
    */

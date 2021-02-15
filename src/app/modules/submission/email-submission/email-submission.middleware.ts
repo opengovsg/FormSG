@@ -48,10 +48,12 @@ export const prepareEmailSubmission: RequestHandler<
     (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
   let emailData: EmailData
   // TODO (#847): remove when we are sure of the shape of responses
+  const { form } = req as WithForm<typeof req>
   try {
     emailData = EmailSubmissionService.createEmailData(
       req.body.parsedResponses,
       hashedFields,
+      form.authType,
     )
   } catch (error) {
     logger.error({
