@@ -608,6 +608,7 @@ const maskField = (field: EmailAutoReplyField): EmailAutoReplyField => {
 
 /**
  * Function to extract information for email json field from response
+ * Json field is used for data collation tool
  */
 const getJsonFormattedResponse = (
   response: ResponseFormattedForEmail,
@@ -626,6 +627,7 @@ const getJsonFormattedResponse = (
 
 /**
  * Function to extract information for email form field from response
+ * Form field is used to send responses to admin
  */
 const getFormFormattedResponse = (
   response: ResponseFormattedForEmail,
@@ -644,6 +646,7 @@ const getFormFormattedResponse = (
 
 /**
  * Function to extract information for email autoreply field from response
+ * Autoreply field is used to send confirmation emails
  */
 const getAutoReplyFormattedResponse = (
   response: ResponseFormattedForEmail,
@@ -674,7 +677,7 @@ export class EmailDataObj {
   }
 
   /**
-   * Getter function to return jsonData
+   * Getter function to return jsonData which is used for data collation tool
    */
   get jsonData(): EmailJsonField[] {
     return this.parsedResponses.flatMap((response) =>
@@ -689,7 +692,7 @@ export class EmailDataObj {
   }
 
   /**
-   * Getter function to return autoReplyData
+   * Getter function to return autoReplyData for confirmation emails to respondent
    */
   get autoReplyData(): EmailAutoReplyField[] {
     return this.parsedResponses.flatMap((response) =>
@@ -716,7 +719,7 @@ export class EmailDataObj {
   }
 
   /**
-   * Getter function to return formData
+   * Getter function to return formData which is used to send responses to admin
    */
   get formData(): EmailFormField[] {
     return this.parsedResponses.flatMap((response) =>
