@@ -1,7 +1,11 @@
 import {
   AddressType,
+  BasicField as MyInfoBasicField,
+  FieldWithCodeAndDesc,
   MyInfoAddress,
+  MyInfoOccupation,
   MyInfoPhoneNumber,
+  MyInfoVehicle,
 } from '@opengovsg/myinfo-gov-client'
 
 /**
@@ -71,4 +75,41 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
 
   // Return string form with each block being separated by a space.
   return buildingBlocks.join(' ')
+}
+
+export const formatDescriptionField = (
+  field: FieldWithCodeAndDesc | undefined,
+): string => {
+  if (!field || field.unavailable) return ''
+  return field.desc
+}
+
+export const formatBasicField = (
+  field: MyInfoBasicField | undefined,
+): string => {
+  if (!field || field.unavailable) return ''
+  return field.value
+}
+
+export const formatVehicleNumbers = (
+  field: MyInfoVehicle[] | undefined,
+): string => {
+  if (!field) return ''
+  const vehicleNumbers: string[] = []
+  field.forEach((vehicle) => {
+    if (vehicle.unavailable) return
+    if (vehicle.vehicleno.value) {
+      vehicleNumbers.push(vehicle.vehicleno.value)
+    }
+  })
+  return vehicleNumbers.join(', ')
+}
+
+export const formatOccupation = (
+  field: MyInfoOccupation | undefined,
+): string => {
+  if (!field || field.unavailable) return ''
+  // Occupation can either contain value or (code and description)
+  if ('value' in field) return field.value
+  return field.desc
 }

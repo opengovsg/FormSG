@@ -1,10 +1,6 @@
-import {
-  CATEGORICAL_DATA_DICT,
-  MyInfoSource,
-} from '@opengovsg/myinfo-gov-client'
+import { IPerson, MyInfoSource } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
-import { get } from 'lodash'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
@@ -28,7 +24,14 @@ import {
   MyInfoMissingHashError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
-import { formatAddress, formatPhoneNumber } from './myinfo.format'
+import {
+  formatAddress,
+  formatBasicField,
+  formatDescriptionField,
+  formatOccupation,
+  formatPhoneNumber,
+  formatVehicleNumbers,
+} from './myinfo.format'
 import {
   IPossiblyPrefilledField,
   MyInfoComparePromises,
@@ -49,7 +52,7 @@ const HASH_SALT_ROUNDS = 10
  */
 export const getMyInfoValue = (
   myInfoAttr: MyInfoAttribute,
-  myInfoData: IPersonBasic,
+  myInfoData: IPerson,
 ): string | undefined => {
   switch (myInfoAttr) {
     // Phone numbers
@@ -57,17 +60,38 @@ export const getMyInfoValue = (
       return formatPhoneNumber(myInfoData[myInfoAttr])
     case MyInfoAttribute.RegisteredAddress:
       return formatAddress(myInfoData[myInfoAttr])
+    case MyInfoAttribute.VehicleNo:
+      return formatVehicleNumbers(myInfoData[myInfoAttr])
+    case MyInfoAttribute.Occupation:
+      return formatOccupation(myInfoData[myInfoAttr])
+    // Where field has code and description, return description
+    case MyInfoAttribute.Sex:
+    case MyInfoAttribute.Race:
+    case MyInfoAttribute.Dialect:
+    case MyInfoAttribute.Nationality:
+    case MyInfoAttribute.BirthCountry:
+    case MyInfoAttribute.ResidentialStatus:
+    case MyInfoAttribute.HousingType:
+    case MyInfoAttribute.HdbType:
+    case MyInfoAttribute.Marital:
+    case MyInfoAttribute.CountryOfMarriage:
+      return formatDescriptionField(myInfoData[myInfoAttr])
+    // Remaining fields should only have 'value' key
+    case MyInfoAttribute.Name:
+    case MyInfoAttribute.PassportNumber:
+    case MyInfoAttribute.Employment:
+    case MyInfoAttribute.MarriageCertNo:
+    case MyInfoAttribute.PassStatus:
+    case MyInfoAttribute.DateOfBirth:
+    case MyInfoAttribute.PassportExpiryDate:
+    case MyInfoAttribute.MarriageDate:
+    case MyInfoAttribute.DivorceDate:
+    case MyInfoAttribute.PassExpiryDate:
+      return formatBasicField(myInfoData[myInfoAttr])
+    // Above cases should be exhaustive. Fall back to empty string
+    // as data shape is unknown.
     default:
-      // Categorical data lookup
-      if (CATEGORICAL_DATA_DICT[myInfoAttr]) {
-        return get(
-          CATEGORICAL_DATA_DICT,
-          [myInfoAttr, myInfoData[myInfoAttr].value!, 'description'],
-          '',
-        )
-      } else {
-        return get(myInfoData[myInfoAttr], 'value', '')
-      }
+      return ''
   }
 }
 
