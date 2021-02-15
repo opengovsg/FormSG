@@ -163,7 +163,7 @@
     "winston-cloudwatch": "^2.5.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.13",
+    "@babel/core": "^7.12.16",
     "@babel/plugin-transform-runtime": "^7.12.15",
     "@babel/preset-env": "^7.12.13",
     "@opengovsg/mockpass": "^2.6.2",
@@ -241,7 +241,7 @@
     "regenerator": "^0.14.4",
     "rimraf": "^3.0.2",
     "sinon": "^9.2.4",
-    "stylelint": "^13.8.0",
+    "stylelint": "^13.10.0",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-standard": "^20.0.0",
     "stylelint-prettier": "^1.1.2",
