@@ -124,13 +124,14 @@ export class MyInfoService {
     formTitle,
     formEsrvcId,
     requestedAttributes,
-  }: IMyInfoRedirectURLArgs): string {
-    return this.#myInfoGovClient.createRedirectURL({
+  }: IMyInfoRedirectURLArgs): Result<string, never> {
+    const redirectURL = this.#myInfoGovClient.createRedirectURL({
       purpose: createConsentPagePurpose(formTitle),
       relayState: createRelayState(formId, rememberMe),
       requestedAttributes,
       singpassEserviceId: formEsrvcId,
     })
+    return ok(redirectURL)
   }
 
   async _fetchMyInfoDataUnsafe(
