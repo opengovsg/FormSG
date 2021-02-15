@@ -21,6 +21,15 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
+import {
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
+} from '../../../services/myinfo/myinfo.errors'
+import {
+  isProcessedCheckboxResponse,
+  isProcessedTableResponse,
+} from '../../../utils/field-validation/field-validation.guards'
 import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
 import {
   FormDeletedError,
@@ -49,6 +58,7 @@ import {
 } from '../submission.errors'
 import {
   ProcessedCheckboxResponse,
+  ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 
@@ -555,4 +565,170 @@ export const maskUidOnLastField = (
     },
   )
   return maskedAutoReplyData
+}
+
+/**
+ * Type guard to check that values are not undefined
+ * Used in filter in EmailDataObj methods
+ */
+const notUndefined = <T>(value: T | undefined): value is T => {
+  return value !== undefined
+}
+
+/**
+ * Function to generate email data
+ * for a single field
+ */
+const createFormattedDataForOneField = <T>(
+  response: ProcessedFieldResponse,
+  hashedFields: Set<string>,
+  getFormattedFunction: (
+    response: ResponseFormattedForEmail,
+    hashedFields: Set<string>,
+  ) => T,
+): T[] => {
+  if (isProcessedTableResponse(response)) {
+    return getAnswerRowsForTable(response).map((row) =>
+      getFormattedFunction(row, hashedFields),
+    )
+  } else if (isProcessedCheckboxResponse(response)) {
+    const checkbox = getAnswerForCheckbox(response)
+    return [getFormattedFunction(checkbox, hashedFields)]
+  } else {
+    return [getFormattedFunction(response, hashedFields)]
+  }
+}
+
+/**
+ * Helper function to mask NRICs in Corppass Validated UID
+ */
+const maskField = (field: EmailAutoReplyField): EmailAutoReplyField => {
+  const maskedAnswerTemplate = field.answerTemplate.map((answer) => {
+    return answer.length >= 4 // defensive, in case UID length is less than 4
+      ? '*'.repeat(answer.length - 4) + answer.substr(-4)
+      : answer
+  })
+  return {
+    question: field.question,
+    answerTemplate: maskedAnswerTemplate,
+  }
+}
+
+/**
+ * Function to extract information for email json field from response
+ */
+const getJsonFormattedResponse = (
+  response: ResponseFormattedForEmail,
+): EmailJsonField | undefined => {
+  const { answer, fieldType } = response
+  // Headers are excluded from JSON data
+  if (fieldType !== BasicField.Section) {
+    const jsonData = {
+      question: getJsonPrefixedQuestion(response),
+      answer,
+    }
+    return jsonData
+  }
+  return undefined
+}
+
+/**
+ * Function to extract information for email form field from response
+ */
+const getFormFormattedResponse = (
+  response: ResponseFormattedForEmail,
+  hashedFields: Set<string>,
+): EmailFormField => {
+  const { answer, fieldType } = response
+  const answerSplitByNewLine = answer.split('\n')
+  const formData = {
+    question: getFormDataPrefixedQuestion(response, hashedFields),
+    answerTemplate: answerSplitByNewLine,
+    answer,
+    fieldType,
+  }
+  return formData
+}
+
+/**
+ * Function to extract information for email autoreply field from response
+ */
+const getAutoReplyFormattedResponse = (
+  response: ResponseFormattedForEmail,
+): EmailAutoReplyField | undefined => {
+  const { question, answer, isVisible } = response
+  const answerSplitByNewLine = answer.split('\n')
+  // Auto reply email will contain only visible fields
+  if (isVisible) {
+    const autoReplyData = {
+      question, // No prefixes for autoreply
+      answerTemplate: answerSplitByNewLine,
+    }
+    return autoReplyData
+  }
+  return undefined
+}
+
+export class EmailDataObj {
+  parsedResponses: ProcessedFieldResponse[]
+  hashedFields: Set<string>
+
+  constructor(
+    parsedResponses: ProcessedFieldResponse[],
+    hashedFields: Set<string>,
+  ) {
+    this.parsedResponses = parsedResponses
+    this.hashedFields = hashedFields
+  }
+
+  /**
+   * Getter function to return jsonData
+   */
+  get jsonData(): EmailJsonField[] {
+    return this.parsedResponses.flatMap((response) =>
+      createFormattedDataForOneField(
+        response,
+        this.hashedFields,
+        getJsonFormattedResponse,
+      ).filter(notUndefined),
+    )
+  }
+
+  /**
+   * Getter function to return autoReplyData
+   */
+  get autoReplyData(): EmailAutoReplyField[] {
+    return this.parsedResponses.flatMap((response) =>
+      createFormattedDataForOneField(
+        response,
+        this.hashedFields,
+        getAutoReplyFormattedResponse,
+      ).filter(notUndefined),
+    )
+  }
+
+  /**
+   * Getter function to return maskedAutoReplyData
+   * Returns a masked version of autoReplyData
+   */
+  get maskedAutoReplyData(): EmailAutoReplyField[] {
+    return this.autoReplyData.map((autoReplyField) => {
+      return autoReplyField.question === SPCPFieldTitle.CpUid
+        ? maskField(autoReplyField)
+        : autoReplyField
+    })
+  }
+
+  /**
+   * Getter function to return formData
+   */
+  get formData(): EmailFormField[] {
+    return this.parsedResponses.flatMap((response) =>
+      createFormattedDataForOneField(
+        response,
+        this.hashedFields,
+        getFormFormattedResponse,
+      ).filter(notUndefined),
+    )
+  }
 }
