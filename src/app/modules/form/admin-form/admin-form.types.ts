@@ -73,7 +73,7 @@ export type FormUpdateParams = {
   permissionList?: IForm['permissionList']
   status?: IForm['status']
   title?: IForm['title']
-  webhook: IForm['webhook']
+  webhook?: IForm['webhook']
 }
 
 export type EditFormFieldResult = Result<IFieldSchema[], EditFieldError>

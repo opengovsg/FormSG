@@ -1,6 +1,6 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import { cloneDeep, merge, omit } from 'lodash'
+import { assignIn, cloneDeep, merge, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -49,6 +49,7 @@ import {
   editFormFields,
   getDashboardForms,
   transferFormOwnership,
+  updateForm,
 } from '../admin-form.service'
 import {
   DuplicateFormBody,
@@ -986,6 +987,66 @@ describe('admin-form.service', () => {
       )
       expect(updateSpy).toHaveBeenCalledTimes(1)
       expect(MOCK_INTIAL_FORM.save).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('updateForm', () => {
+    const MOCK_UPDATED_FORM = ({
+      _id: new ObjectId(),
+      admin: new ObjectId(),
+      status: Status.Private,
+      form_fields: [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Dropdown),
+      ],
+    } as unknown) as IPopulatedForm
+
+    const MOCK_INITIAL_FORM = mocked(({
+      _id: MOCK_UPDATED_FORM._id,
+      admin: MOCK_UPDATED_FORM.admin,
+      status: Status.Public,
+      form_fields: MOCK_UPDATED_FORM.form_fields,
+      save: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
+    } as unknown) as IPopulatedForm)
+
+    it('should successfully update given form keys', async () => {
+      // Arrange
+      const formUpdateParams: Parameters<typeof updateForm>[1] = {
+        status: Status.Private,
+      }
+
+      // Act
+      const actualResult = await updateForm(MOCK_INITIAL_FORM, formUpdateParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_FORM)
+      // .save should have been called with updated form.
+      expect(MOCK_INITIAL_FORM.save.mock.instances[0]).toEqual(
+        assignIn(cloneDeep(MOCK_INITIAL_FORM), formUpdateParams),
+      )
+      expect(MOCK_INITIAL_FORM.save).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return DatabaseError when error occurs whilst updating form', async () => {
+      // Arrange
+      const formUpdateParams: Parameters<typeof updateForm>[1] = {
+        esrvcId: 'MOCK-ESRVCID',
+      }
+      // Mock database failure.
+      MOCK_INITIAL_FORM.save.mockRejectedValueOnce(
+        new Error('some error') as never,
+      )
+
+      // Act
+      const actualResult = await updateForm(MOCK_INITIAL_FORM, formUpdateParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      // .save should have been called with updated form.
+      expect(MOCK_INITIAL_FORM.save.mock.instances[0]).toEqual(
+        assignIn(cloneDeep(MOCK_INITIAL_FORM), formUpdateParams),
+      )
+      expect(MOCK_INITIAL_FORM.save).toHaveBeenCalledTimes(1)
     })
   })
 })
