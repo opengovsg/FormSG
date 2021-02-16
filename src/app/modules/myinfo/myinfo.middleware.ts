@@ -84,7 +84,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
       ).asyncAndThen((prefilledFields) => {
         formJson.form_fields = prefilledFields
         ;(req as WithJsonForm<typeof req>).form = formJson
-        res.locals.uinFin = uinFin
+        res.locals.spcpSession = { userName: uinFin }
         return MyInfoFactory.saveMyInfoHashes(
           uinFin,
           formDocument._id,
