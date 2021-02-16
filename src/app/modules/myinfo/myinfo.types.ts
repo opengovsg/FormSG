@@ -1,4 +1,3 @@
-import { MyInfoAttributeString } from '@opengovsg/myinfo-gov-client'
 import { LeanDocument } from 'mongoose'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
@@ -24,7 +23,7 @@ export interface IMyInfoRedirectURLArgs {
   isPreview?: true
   formTitle: string
   formEsrvcId: string
-  requestedAttributes: MyInfoAttributeString[]
+  requestedAttributes: MyInfoAttribute[]
 }
 
 export interface IPossiblyPrefilledField extends LeanDocument<IFieldSchema> {

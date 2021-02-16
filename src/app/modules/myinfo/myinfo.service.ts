@@ -1,7 +1,5 @@
 import {
-  IPerson,
   IPersonResponse,
-  MyInfoAttribute as AllMyInfoAttributes,
   MyInfoAttributeString,
   MyInfoGovClient,
 } from '@opengovsg/myinfo-gov-client'
@@ -19,10 +17,12 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
+import { internalAttrListToExternal, MyInfoData } from './myinfo.adapter'
 import { MYINFO_REDIRECT_PATH, MYINFO_ROUTER_PREFIX } from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
@@ -43,9 +43,7 @@ import {
   compareHashedValues,
   createConsentPagePurpose,
   createRelayState,
-  getMyInfoValue,
   hashFieldValues,
-  isFieldReadOnly,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -132,9 +130,7 @@ export class MyInfoService {
       purpose: createConsentPagePurpose(formTitle),
       relayState: createRelayState(formId, rememberMe, isPreview),
       // Always request consent for NRIC/FIN
-      requestedAttributes: requestedAttributes.concat([
-        AllMyInfoAttributes.UinFin,
-      ]),
+      requestedAttributes: internalAttrListToExternal(requestedAttributes),
       singpassEserviceId: formEsrvcId,
     })
     return ok(redirectURL)
@@ -206,19 +202,17 @@ export class MyInfoService {
    */
   fetchMyInfoPersonData(
     accessToken: string,
-    requestedAttributes: MyInfoAttributeString[],
+    requestedAttributes: MyInfoAttribute[],
     singpassEserviceId: string,
-  ): ResultAsync<
-    IPersonResponse,
-    MyInfoCircuitBreakerError | MyInfoFetchError
-  > {
+  ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
     return ResultAsync.fromPromise(
-      this.#myInfoPersonBreaker.fire(
-        accessToken,
-        // Always request consent for NRIC/FIN
-        requestedAttributes.concat(AllMyInfoAttributes.UinFin),
-        singpassEserviceId,
-      ),
+      this.#myInfoPersonBreaker
+        .fire(
+          accessToken,
+          internalAttrListToExternal(requestedAttributes),
+          singpassEserviceId,
+        )
+        .then((response) => new MyInfoData(response)),
       (error) => {
         const logMeta = {
           action: 'fetchMyInfoPersonData',
@@ -250,17 +244,18 @@ export class MyInfoService {
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
    */
   prefillMyInfoFields(
-    myInfoData: IPerson,
+    myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): Result<IPossiblyPrefilledField[], never> {
     const prefilledFields = currFormFields.map((field) => {
       if (!field.myInfo?.attr) return field
 
       const myInfoAttr = field.myInfo.attr
-      const myInfoValue = getMyInfoValue(myInfoAttr, myInfoData)
-      const isReadOnly = isFieldReadOnly(myInfoAttr, myInfoValue, myInfoData)
+      const { fieldValue, isReadOnly } = myInfoData.getFieldValueForAttr(
+        myInfoAttr,
+      )
       const prefilledField = cloneDeep(field) as IPossiblyPrefilledField
-      prefilledField.fieldValue = myInfoValue
+      prefilledField.fieldValue = fieldValue
 
       // Disable field
       prefilledField.disabled = isReadOnly

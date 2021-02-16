@@ -69,7 +69,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
         form.esrvcId,
       ),
     )
-    .andThen(({ data: myInfoData, uinFin }) => {
+    .andThen((myInfoData) => {
       // Increment count in cookie
       const cookiePayload: MyInfoCookiePayload = {
         ...myInfoCookie,
@@ -84,9 +84,9 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
       ).asyncAndThen((prefilledFields) => {
         formJson.form_fields = prefilledFields
         ;(req as WithJsonForm<typeof req>).form = formJson
-        res.locals.spcpSession = { userName: uinFin }
+        res.locals.spcpSession = { userName: myInfoData.getUinFin() }
         return MyInfoFactory.saveMyInfoHashes(
-          uinFin,
+          myInfoData.getUinFin(),
           formDocument._id,
           prefilledFields,
         )

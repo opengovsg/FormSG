@@ -1,8 +1,3 @@
-import {
-  IPerson,
-  IPersonResponse,
-  MyInfoAttributeString,
-} from '@opengovsg/myinfo-gov-client'
 import { LeanDocument } from 'mongoose'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -11,10 +6,16 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import { IFieldSchema, IHashes, IMyInfoHashSchema } from '../../../types'
+import {
+  IFieldSchema,
+  IHashes,
+  IMyInfoHashSchema,
+  MyInfoAttribute,
+} from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
+import { MyInfoData } from './myinfo.adapter'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
@@ -40,10 +41,10 @@ interface IMyInfoFactory {
   ) => ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError>
   fetchMyInfoPersonData: (
     accessToken: string,
-    requestedAttributes: MyInfoAttributeString[],
+    requestedAttributes: MyInfoAttribute[],
     singpassEserviceId: string,
   ) => ResultAsync<
-    IPersonResponse,
+    MyInfoData,
     MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
   >
   parseMyInfoRelayState: (
@@ -53,7 +54,7 @@ interface IMyInfoFactory {
     MyInfoParseRelayStateError | MissingFeatureError
   >
   prefillMyInfoFields: (
-    myInfoData: IPerson,
+    myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ) => Result<IPossiblyPrefilledField[], MissingFeatureError>
   saveMyInfoHashes: (

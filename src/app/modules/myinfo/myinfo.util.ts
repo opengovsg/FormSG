@@ -1,4 +1,3 @@
-import { IPerson, MyInfoSource } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
@@ -15,7 +14,6 @@ import {
   IMyInfo,
   IPopulatedForm,
   MapRouteError,
-  MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
@@ -37,14 +35,6 @@ import {
   MyInfoNoESrvcIdError,
 } from './myinfo.errors'
 import {
-  formatAddress,
-  formatBasicField,
-  formatDescriptionField,
-  formatOccupation,
-  formatPhoneNumber,
-  formatVehicleNumbers,
-} from './myinfo.format'
-import {
   IMyInfoForm,
   IPossiblyPrefilledField,
   MyInfoComparePromises,
@@ -56,116 +46,6 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const HASH_SALT_ROUNDS = 10
-
-/**
- * Retrieves the full MyInfo field value. If field is categorical, the
- * returned value is retrieved from MyInfo data dictionary. Otherwise, it is
- * parsed accordingly to construct the returned string.
- * @param myInfoAttr The MyInfo attribute
- * @param myInfoData MyInfo person data object returned from MyInfoGovAuthClient
- * @return The full formatted values, if it exists, otherwise the myInfoKey is returned.
- */
-export const getMyInfoValue = (
-  myInfoAttr: MyInfoAttribute,
-  myInfoData: IPerson,
-): string | undefined => {
-  switch (myInfoAttr) {
-    // Phone numbers
-    case MyInfoAttribute.MobileNo:
-      return formatPhoneNumber(myInfoData[myInfoAttr])
-    case MyInfoAttribute.RegisteredAddress:
-      return formatAddress(myInfoData[myInfoAttr])
-    case MyInfoAttribute.VehicleNo:
-      return formatVehicleNumbers(myInfoData[myInfoAttr])
-    case MyInfoAttribute.Occupation:
-      return formatOccupation(myInfoData[myInfoAttr])
-    // Where field has code and description, return description
-    case MyInfoAttribute.Sex:
-    case MyInfoAttribute.Race:
-    case MyInfoAttribute.Dialect:
-    case MyInfoAttribute.Nationality:
-    case MyInfoAttribute.BirthCountry:
-    case MyInfoAttribute.ResidentialStatus:
-    case MyInfoAttribute.HousingType:
-    case MyInfoAttribute.HdbType:
-    case MyInfoAttribute.Marital:
-    case MyInfoAttribute.CountryOfMarriage:
-      return formatDescriptionField(myInfoData[myInfoAttr])
-    // Remaining fields should only have 'value' key
-    case MyInfoAttribute.Name:
-    case MyInfoAttribute.PassportNumber:
-    case MyInfoAttribute.Employment:
-    case MyInfoAttribute.MarriageCertNo:
-    case MyInfoAttribute.PassStatus:
-    case MyInfoAttribute.DateOfBirth:
-    case MyInfoAttribute.PassportExpiryDate:
-    case MyInfoAttribute.MarriageDate:
-    case MyInfoAttribute.DivorceDate:
-    case MyInfoAttribute.PassExpiryDate:
-      return formatBasicField(myInfoData[myInfoAttr])
-    // Above cases should be exhaustive. Fall back to empty string
-    // as data shape is unknown.
-    default:
-      return ''
-  }
-}
-
-/**
- * Determine if frontend should lock the field to prevent it from being
- * editable. The field is locked if it is government-verified and if it
- * does not contain marriage-related information (decision by SNDGO & MSF due to
- * overseas unregistered marriages). An empty myInfo field will always evaluate
- * to false so that the field can be filled by form-filler.
- *
- * The affected marriage fields are:
- * - marital
- * - marriagedate
- * - divorcedate
- * - countryofmarriage
- * - marriagecertno
- *
- * The function also uses the provided "source" flag within each MyInfo field to
- * determine whether data is government verified.
- *
- * The mapping for "source" field is:
- *
- * 1 - Government-verified Data
- * 2 - User Provided Data
- * 3 - Not Applicable (e.g. CPF data for foreigners)
- * 4 - Data retrieved from SingPass (e.g. email, mobileno)
- * @param myInfoAttr The MyInfo attribute
- * @param myInfoValue myInfoValue returned by getMyInfoValue
- * @param myInfoData MyInfo person data object returned from MyInfoGovAuthClient
- * @returns Whether the field is readonly.
- */
-export const isFieldReadOnly = (
-  myInfoAttr: MyInfoAttribute,
-  myInfoValue: string | undefined,
-  myInfoData: IPerson,
-): boolean => {
-  // Edge case: data is in array format
-  if (myInfoAttr === MyInfoAttribute.VehicleNo) {
-    return (
-      !!myInfoValue &&
-      !!myInfoData[myInfoAttr] &&
-      myInfoData[myInfoAttr]!.every(
-        (vehicle) => vehicle.source === MyInfoSource.GovtVerified,
-      )
-    )
-  }
-  return (
-    !!myInfoValue &&
-    !myInfoData[myInfoAttr]?.unavailable &&
-    myInfoData[myInfoAttr]?.source === MyInfoSource.GovtVerified &&
-    ![
-      MyInfoAttribute.Marital,
-      MyInfoAttribute.MarriageDate,
-      MyInfoAttribute.DivorceDate,
-      MyInfoAttribute.CountryOfMarriage,
-      MyInfoAttribute.MarriageCertNo,
-    ].includes(myInfoAttr)
-  )
-}
 
 /**
  * Hashes field values which are prefilled and MyInfo-verified.
