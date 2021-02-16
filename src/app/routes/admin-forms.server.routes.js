@@ -59,6 +59,87 @@ const authEncryptedResponseAccess = [
   adminForms.isFormEncryptMode,
 ]
 
+/**
+ * Joi validator for PUT /:formId/adminform route.
+ */
+const updateFormValidator = celebrate({
+  [Segments.BODY]: {
+    form: Joi.object({
+      editFormField: Joi.object({
+        action: {
+          name: Joi.string().valid(...Object.values(EditFieldActions)),
+          position: Joi.when('form.editFormField.action.name', {
+            is: EditFieldActions.Reorder,
+            then: Joi.number().required(),
+          }),
+        },
+        field: Joi.object({
+          fieldType: Joi.string()
+            .valid(...Object.values(BasicField))
+            .required(),
+        })
+          .unknown(true)
+          .required(),
+      }),
+      authType: Joi.string().valid(...Object.values(AuthType)),
+      emails: Joi.alternatives().try(
+        Joi.array().items(Joi.string()),
+        Joi.string(),
+      ),
+      esrvcId: Joi.string().allow(''),
+      form_logics: Joi.array().items(
+        Joi.object({
+          conditions: Joi.array().items(
+            Joi.object({
+              field: Joi.string().required(),
+              ifValueType: Joi.string().valid(...Object.values(LogicIfValue)),
+              state: Joi.string()
+                .valid(...Object.values(LogicConditionState))
+                .required(),
+              value: Joi.alternatives()
+                .try(
+                  Joi.string(),
+                  Joi.number(),
+                  Joi.array().items(Joi.string()),
+                  Joi.array().items(Joi.number()),
+                )
+                .required(),
+            }).unknown(true),
+          ),
+          logicType: Joi.string()
+            .valid(...Object.values(LogicType))
+            .required(),
+        }).unknown(true),
+      ),
+      hasCaptcha: Joi.boolean(),
+      inactiveMessage: Joi.string(),
+      permissionList: Joi.array().items({
+        email: Joi.string().email().required(),
+        write: Joi.boolean(),
+      }),
+      status: Joi.string().valid(...Object.values(Status)),
+      title: Joi.string(),
+      webhook: Joi.object({
+        url: Joi.string().uri().required().allow(''),
+      }),
+    })
+      .required()
+      // editFormField should not consist of any other key when it exists.
+      .without('editFormField', [
+        'authType',
+        'emails',
+        'esrvcId',
+        'form_logics',
+        'hasCaptcha',
+        'inactiveMessage',
+        'permissionList',
+        'status',
+        'title',
+        'webhook',
+      ]),
+  },
+})
+
 module.exports = function (app) {
   /**
    * @typedef ErrorMessage
@@ -200,85 +281,7 @@ module.exports = function (app) {
     .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
     .put(
       withUserAuthentication,
-      celebrate({
-        [Segments.BODY]: {
-          form: Joi.object({
-            editFormField: Joi.object({
-              action: {
-                name: Joi.string().valid(...Object.values(EditFieldActions)),
-                position: Joi.when('form.editFormField.action.name', {
-                  is: EditFieldActions.Reorder,
-                  then: Joi.number().required(),
-                }),
-              },
-              field: Joi.object({
-                fieldType: Joi.string()
-                  .valid(...Object.values(BasicField))
-                  .required(),
-              })
-                .unknown(true)
-                .required(),
-            }),
-            authType: Joi.string().valid(...Object.values(AuthType)),
-            emails: Joi.alternatives().try(
-              Joi.array().items(Joi.string()),
-              Joi.string(),
-            ),
-            esrvcId: Joi.string().allow(''),
-            form_logics: Joi.array().items(
-              Joi.object({
-                conditions: Joi.array().items(
-                  Joi.object({
-                    field: Joi.string().required(),
-                    ifValueType: Joi.string().valid(
-                      ...Object.values(LogicIfValue),
-                    ),
-                    state: Joi.string()
-                      .valid(...Object.values(LogicConditionState))
-                      .required(),
-                    value: Joi.alternatives()
-                      .try(
-                        Joi.string(),
-                        Joi.number(),
-                        Joi.array().items(Joi.string()),
-                        Joi.array().items(Joi.number()),
-                      )
-                      .required(),
-                  }).unknown(true),
-                ),
-                logicType: Joi.string()
-                  .valid(...Object.values(LogicType))
-                  .required(),
-              }).unknown(true),
-            ),
-            hasCaptcha: Joi.boolean(),
-            inactiveMessage: Joi.string(),
-            permissionList: Joi.array().items({
-              email: Joi.string().email().required(),
-              write: Joi.boolean(),
-            }),
-            status: Joi.string().valid(...Object.values(Status)),
-            title: Joi.string(),
-            webhook: Joi.object({
-              url: Joi.string().uri().required().allow(''),
-            }),
-          })
-            .required()
-            // editFormField should not consist of any other key when it exists.
-            .without('editFormField', [
-              'authType',
-              'emails',
-              'esrvcId',
-              'form_logics',
-              'hasCaptcha',
-              'inactiveMessage',
-              'permissionList',
-              'status',
-              'title',
-              'webhook',
-            ]),
-        },
-      }),
+      updateFormValidator,
       AdminFormController.handleUpdateForm,
     )
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
