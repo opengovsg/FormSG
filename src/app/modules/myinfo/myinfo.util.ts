@@ -29,6 +29,7 @@ import { ProcessedFieldResponse } from '../submission/submission.types'
 import { MYINFO_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoAuthTypeError,
+  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoMissingAccessTokenError,
@@ -425,4 +426,13 @@ export const extractMyInfoCookie = (
     }
   }
   return err(new MyInfoMissingAccessTokenError())
+}
+
+export const extractAccessTokenFromCookie = (
+  cookie: MyInfoCookiePayload,
+): Result<string, MyInfoCookieStateError> => {
+  if (cookie.state !== MyInfoCookieState.AccessTokenRetrieved) {
+    return err(new MyInfoCookieStateError())
+  }
+  return ok(cookie.accessToken)
 }

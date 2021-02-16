@@ -78,3 +78,9 @@ export class MyInfoInvalidAccessTokenError extends ApplicationError {
     super(message)
   }
 }
+
+export class MyInfoCookieStateError extends ApplicationError {
+  constructor(message = 'MyInfo cookie is in error state') {
+    super(message)
+  }
+}

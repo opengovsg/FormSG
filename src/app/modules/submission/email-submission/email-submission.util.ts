@@ -28,8 +28,11 @@ import {
   PrivateFormError,
 } from '../../form/form.errors'
 import {
+  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoInvalidAccessTokenError,
+  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
 } from '../../myinfo/myinfo.errors'
 import {
@@ -383,6 +386,9 @@ export const mapRouteError: MapRouteError = (error) => {
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
+    case MyInfoMissingAccessTokenError:
+    case MyInfoCookieStateError:
+    case MyInfoInvalidAccessTokenError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:

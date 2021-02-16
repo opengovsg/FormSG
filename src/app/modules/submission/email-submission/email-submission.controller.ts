@@ -6,6 +6,7 @@ import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import {
   createCorppassParsedResponses,
@@ -122,31 +123,6 @@ export const handleEmailSubmission: RequestHandler<
     }
     const { userName: uinFin, userInfo } = jwtPayloadResult.value
 
-    // Verify MyInfo hashes if relevant
-    const requestedMyInfoAttrs = form.getUniqueMyInfoAttrs()
-    if (authType === AuthType.SP && requestedMyInfoAttrs.length > 0) {
-      const verifyMyInfoResult = await MyInfoFactory.fetchMyInfoHashes(
-        uinFin,
-        formId,
-      ).andThen((hashes) =>
-        MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
-      )
-      if (verifyMyInfoResult.isErr()) {
-        logger.error({
-          message: 'Error verifying MyInfo hashes',
-          meta: logMeta,
-          error: verifyMyInfoResult.error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(
-          verifyMyInfoResult.error,
-        )
-        return res
-          .status(statusCode)
-          .json({ message: errorMessage, spcpSubmissionFailure: true })
-      }
-      hashedFields = verifyMyInfoResult.value
-    }
-
     // Append SingPass/CorpPass info to responses
     if (authType === AuthType.SP) {
       parsedResponses.push(...createSingpassParsedResponses(uinFin))
@@ -154,6 +130,38 @@ export const handleEmailSubmission: RequestHandler<
       // TODO (#317): remove usage of non-null assertion with better typing of JWT payload
       parsedResponses.push(...createCorppassParsedResponses(uinFin, userInfo!))
     }
+  } else if (authType === AuthType.MyInfo) {
+    const uinFinResult = MyInfoUtil.extractMyInfoCookie(req.cookies)
+      .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+      .andThen(MyInfoFactory.extractUinFin)
+    if (uinFinResult.isErr()) {
+      const { errorMessage, statusCode } = mapRouteError(uinFinResult.error)
+      return res
+        .status(statusCode)
+        .json({ message: errorMessage, spcpSubmissionFailure: true })
+    }
+    const uinFin = uinFinResult.value
+    const verifyMyInfoResult = await MyInfoFactory.fetchMyInfoHashes(
+      uinFin,
+      formId,
+    ).andThen((hashes) =>
+      MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+    )
+    if (verifyMyInfoResult.isErr()) {
+      logger.error({
+        message: 'Error verifying MyInfo hashes',
+        meta: logMeta,
+        error: verifyMyInfoResult.error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(
+        verifyMyInfoResult.error,
+      )
+      return res
+        .status(statusCode)
+        .json({ message: errorMessage, spcpSubmissionFailure: true })
+    }
+    hashedFields = verifyMyInfoResult.value
+    parsedResponses.push(...createSingpassParsedResponses(uinFin))
   }
 
   // Create data for response email as well as email confirmation
