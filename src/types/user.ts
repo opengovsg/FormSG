@@ -1,6 +1,7 @@
 import { Document, Model, ObjectId } from 'mongoose'
 
 import { IAgencySchema, PublicAgency } from './agency'
+import { PublicView } from './database'
 
 export type PublicUser = {
   agency: PublicAgency | ObjectId
@@ -21,13 +22,8 @@ export interface IUser {
 
 export type UserContactView = Pick<IUser, 'email' | 'contact'>
 
-export interface IUserSchema extends IUser, Document {
+export interface IUserSchema extends IUser, Document, PublicView<PublicUser> {
   created?: Date
-
-  /**
-   * Returns the public view of the user document.
-   */
-  getPublicView(): PublicUser
 }
 
 export interface IUserModel extends Model<IUserSchema> {

@@ -3,6 +3,7 @@ import { Merge, SetRequired } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
+import { PublicView } from './database'
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
@@ -143,7 +144,7 @@ export interface IForm {
   emails?: string[] | string
 }
 
-export interface IFormSchema extends IForm, Document {
+export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Returns the dashboard form view of the form.
    * @param admin the admin to inject into the returned object
@@ -175,11 +176,6 @@ export interface IFormSchema extends IForm, Document {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
-
-  /**
-   * Returns the public view of the form document.
-   */
-  getPublicView(): PublicForm
 }
 
 /**

@@ -1,5 +1,7 @@
 import { Document, Model } from 'mongoose'
 
+import { PublicView } from './database'
+
 export interface IAgency {
   shortName: string
   fullName: string
@@ -15,11 +17,9 @@ export type PublicAgency = Pick<
   'shortName' | 'fullName' | 'emailDomain' | 'logo'
 >
 
-export interface IAgencySchema extends IAgency, Document {
-  /**
-   * Returns the public view of the agency document.
-   */
-  getPublicView(): PublicAgency
-}
+export interface IAgencySchema
+  extends IAgency,
+    Document,
+    PublicView<PublicAgency> {}
 
 export type IAgencyModel = Model<IAgencySchema>
