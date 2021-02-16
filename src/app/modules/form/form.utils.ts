@@ -24,7 +24,7 @@ export const transformEmails = (v: string | string[]): string[] => {
   // ['test@hotmail.com, test@gmail.com', 'test@yahoo.com'] => ['test@hotmail.com', 'test@gmail.com', 'test@yahoo.com']
   // 'test@hotmail.com, test@gmail.com' => ['test@hotmail.com', 'test@gmail.com']
   if (Array.isArray(v)) {
-    return transformEmailString(v.join(','))
+    return v.flatMap(transformEmailString)
   } else {
     return transformEmailString(v)
   }
