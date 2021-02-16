@@ -215,7 +215,8 @@ export class MyInfoService {
     return ResultAsync.fromPromise(
       this.#myInfoPersonBreaker.fire(
         accessToken,
-        requestedAttributes,
+        // Always request consent for NRIC/FIN
+        requestedAttributes.concat(AllMyInfoAttributes.UinFin),
         singpassEserviceId,
       ),
       (error) => {
