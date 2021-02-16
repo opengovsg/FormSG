@@ -70,7 +70,7 @@ export const createSearchQueryPipeline = ({
   agencyId?: string
   searchTerm: string
 }): Record<string, unknown>[] => {
-  return ([
+  const query: Record<string, unknown>[] = [
     // Get formId and formInfo of forms containing the search term.
     {
       $match: {
@@ -119,18 +119,18 @@ export const createSearchQueryPipeline = ({
         userInfo: 0,
       },
     },
-  ] as Record<string, unknown>[]).concat(
-    // Filter by agency id if parameter given.
-    agencyId
-      ? [
-          {
-            $match: {
-              'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
-            },
-          },
-        ]
-      : [],
-    // Sort by how well search terms were matched.
+  ]
+
+  // Filter by agency id if parameter given.
+  if (agencyId) {
+    query.push({
+      $match: {
+        'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
+      },
+    })
+  }
+  // Sort by how well search terms were matched.
+  query.push(
     {
       $sort: {
         textScore: -1,
@@ -146,6 +146,8 @@ export const createSearchQueryPipeline = ({
       },
     },
   )
+
+  return query
 }
 
 /**
