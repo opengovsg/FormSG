@@ -39,10 +39,12 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   // TODO (#42): add proper types here when migrating away from middleware pattern
   const formDocument = (req as WithForm<typeof req>).form
   const formJson = formDocument.toJSON()
-  const myInfoCookie = extractMyInfoCookie(req.cookies)
+  const myInfoCookieResult = extractMyInfoCookie(req.cookies)
 
   // No action needed if no cookie is present, this just means user is not signed in
-  if (formDocument.authType !== AuthType.MyInfo || !myInfoCookie) return next()
+  if (formDocument.authType !== AuthType.MyInfo || myInfoCookieResult.isErr())
+    return next()
+  const myInfoCookie = myInfoCookieResult.value
 
   // Error occurred while retrieving access token
   if (myInfoCookie.state !== MyInfoCookieState.AccessTokenRetrieved) {

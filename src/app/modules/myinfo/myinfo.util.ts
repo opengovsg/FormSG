@@ -31,6 +31,7 @@ import {
   MyInfoAuthTypeError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
   MyInfoNoESrvcIdError,
 } from './myinfo.errors'
@@ -408,7 +409,7 @@ const hasProp = <K extends string>(
 
 export const extractMyInfoCookie = (
   cookies: Record<string, unknown>,
-): MyInfoCookiePayload | null => {
+): Result<MyInfoCookiePayload, MyInfoMissingAccessTokenError> => {
   const cookie = cookies[MYINFO_COOKIE_NAME]
   if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
     if (
@@ -418,10 +419,10 @@ export const extractMyInfoCookie = (
       hasProp(cookie, 'usedCount') &&
       typeof cookie.usedCount === 'number'
     ) {
-      return cookie as MyInfoCookiePayload
+      return ok(cookie as MyInfoCookiePayload)
     } else if (cookie.state === MyInfoCookieState.RetrieveAccessTokenError) {
-      return cookie as MyInfoCookiePayload
+      return ok(cookie as MyInfoCookiePayload)
     }
   }
-  return null
+  return err(new MyInfoMissingAccessTokenError())
 }
