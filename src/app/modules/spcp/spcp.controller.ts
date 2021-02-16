@@ -122,10 +122,16 @@ export const handleValidate: RequestHandler<
   ParamsDictionary,
   LoginPageValidationResult | { message: string },
   unknown,
-  { authType: AuthType.SP | AuthType.CP; target: string; esrvcId: string }
+  {
+    authType: AuthType.SP | AuthType.CP | AuthType.MyInfo
+    target: string
+    esrvcId: string
+  }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
-  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
+  // TODO (#1116): remove code accommodating AuthType.MyInfo
+  const finalAuthType = authType === AuthType.MyInfo ? AuthType.SP : authType
+  return SpcpFactory.createRedirectUrl(finalAuthType, target, esrvcId)
     .asyncAndThen(SpcpFactory.fetchLoginPage)
     .andThen(SpcpFactory.validateLoginPage)
     .map((result) => res.status(StatusCodes.OK).json(result))
