@@ -164,7 +164,7 @@ export const createSearchQueryPipeline = ({
 export const createGeneralQueryPipeline = (
   agencyId?: string,
 ): Record<string, unknown>[] => {
-  return ([
+  const query: Record<string, unknown>[] = [
     {
       $project: {
         formInfo: '$$ROOT',
@@ -207,17 +207,17 @@ export const createGeneralQueryPipeline = (
         userInfo: 0,
       },
     },
-  ] as Record<string, unknown>[]).concat(
-    // Filter by agency id if parameter given.
-    agencyId
-      ? [
-          {
-            $match: {
-              'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
-            },
-          },
-        ]
-      : [],
+  ]
+  // Filter by agency id if parameter given.
+  if (agencyId) {
+    query.push({
+      $match: {
+        'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
+      },
+    })
+  }
+
+  query.push(
     // Retrieve form feedback from the forms that reach this step.
     {
       $lookup: {
@@ -232,6 +232,7 @@ export const createGeneralQueryPipeline = (
       $sort: { 'formInfo.created': -1 },
     },
   )
+  return query
 }
 
 /**
