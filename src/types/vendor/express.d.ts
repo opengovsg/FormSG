@@ -1,13 +1,17 @@
 import { IUserSchema } from 'src/types'
 
-declare module 'express' {
-  interface Request {
-    id?: string
-  }
-}
+declare global {
+  namespace Express {
+    export interface Request {
+      id?: string
+    }
 
-declare module 'express-session' {
-  interface SessionData {
-    user: IUserSchema
+    export interface Session {
+      user?: IUserSchema
+    }
+
+    export interface AuthedSession extends Session {
+      user: IUserSchema
+    }
   }
 }

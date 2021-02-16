@@ -50,7 +50,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 500 when database errors occur
  */
 export const handleListDashboardForms: RequestHandler = async (req, res) => {
-  const authedUserId = req.session.user!._id
+  const authedUserId = (req.session as Express.AuthedSession).user._id
   const dashboardResult = await getDashboardForms(authedUserId)
 
   if (dashboardResult.isErr()) {
@@ -87,7 +87,7 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -189,7 +189,7 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -245,7 +245,7 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { fileId, fileMd5Hash, fileType } = req.body
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -299,7 +299,7 @@ export const handleCountFormSubmissions: RequestHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const { startDate, endDate } = req.query
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   const logMeta = {
     action: 'handleCountFormSubmissions',
@@ -387,7 +387,7 @@ export const handleCountFormFeedback: RequestHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -436,7 +436,7 @@ export const handleStreamFormFeedback: RequestHandler<{
   formId: string
 }> = async (req, res) => {
   const { formId } = req.params
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   // Step 1: Retrieve currently logged in user.
   const hasReadPermissionResult = await UserService.getPopulatedUserById(
@@ -530,7 +530,7 @@ export const handleGetFormFeedbacks: RequestHandler<{
   formId: string
 }> = (req, res) => {
   const { formId } = req.params
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -574,7 +574,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
   res,
 ) => {
   const { formId } = req.params
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -627,7 +627,7 @@ export const handleDuplicateAdminForm: RequestHandler<
   DuplicateFormBody
 > = (req, res) => {
   const { formId } = req.params
-  const userId = req.session.user!._id
+  const userId = (req.session as Express.AuthedSession).user._id
   const overrideParams = req.body
 
   return (
@@ -672,7 +672,7 @@ export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
   res,
 ) => {
   const { formId } = req.params
-  const userId = req.session.user!._id
+  const userId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve form only if form is currently public.
@@ -730,7 +730,7 @@ export const handleCopyTemplateForm: RequestHandler<
   DuplicateFormBody
 > = (req, res) => {
   const { formId } = req.params
-  const userId = req.session.user!._id
+  const userId = (req.session as Express.AuthedSession).user._id
   const overrideParams = req.body
 
   // TODO(#792): Remove when frontend has stopped sending isTemplate.
@@ -801,7 +801,7 @@ export const handleTransferFormOwnership: RequestHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { email: newOwnerEmail } = req.body
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -855,7 +855,7 @@ export const handleCreateForm: RequestHandler<
   { form: Omit<IForm, 'admin'> }
 > = async (req, res) => {
   const { form: formParams } = req.body
-  const sessionUserId = req.session.user!._id
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   return (
     // Step 1: Retrieve currently logged in user.
