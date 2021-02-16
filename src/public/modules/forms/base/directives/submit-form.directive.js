@@ -138,8 +138,21 @@ function submitFormDirective(
         }
       }
 
+      const isAnyFieldInvalid = () => {
+        // Check the validity of each individual field. We do this due to
+        // a possible bug in WebKit where form submission may not be correctly
+        // prevented when the form is invalid.
+        return (
+          scope.forms.myForm.$invalid ||
+          scope.form.form_fields.some(
+            ({ _id }) =>
+              scope.forms.myForm[_id] && scope.forms.myForm[_id].$invalid,
+          )
+        )
+      }
+
       scope.checkCaptchaAndSubmit = () => {
-        if (scope.forms.myForm.$invalid) {
+        if (isAnyFieldInvalid()) {
           displayInvalidSubmit()
           return
         }
@@ -302,7 +315,8 @@ function submitFormDirective(
         } catch (err) {
           return handleSubmitFailure(
             err,
-            'Could not prepare your submission. Please contact the form administrator.',
+            'There was an error while processing your submission. Please refresh and try again. ' +
+              'If the problem persists, try using a different browser.',
           )
         }
 

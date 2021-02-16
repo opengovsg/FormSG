@@ -6,7 +6,6 @@ const FIELDS_TO_REJECT = require('../../../shared/resources/basic')
 const ALLOWED_VALIDATORS = [
   'YesNoValidator',
   'EmailValidator',
-  'DropdownValidator',
   'NumberValidator',
   'MobileValidator',
   'RatingValidator',

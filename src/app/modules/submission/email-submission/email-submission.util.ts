@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { flattenDeep, sumBy } from 'lodash'
 
+import { createLoggerWithLabel } from '../../../../config/logger'
 import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
@@ -13,11 +14,33 @@ import {
   IAttachmentInfo,
   IAttachmentResponse,
   MapRouteError,
+  SPCPFieldTitle,
 } from '../../../../types'
-import { DatabaseError } from '../../core/core.errors'
+import {
+  CaptchaConnectionError,
+  MissingCaptchaError,
+  VerifyCaptchaError,
+} from '../../../services/captcha/captcha.errors'
+import {
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoMissingHashError,
+} from '../../../services/myinfo/myinfo.errors'
+import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../../form/form.errors'
+import {
+  InvalidJwtError,
+  MissingJwtError,
+  VerifyJwtError,
+} from '../../spcp/spcp.errors'
 import {
   ConflictError,
   ProcessingError,
+  ResponseModeError,
   SendAdminEmailError,
   ValidateFieldError,
 } from '../submission.errors'
@@ -41,6 +64,8 @@ import {
   SubmissionHashError,
 } from './email-submission.errors'
 import { ResponseFormattedForEmail } from './email-submission.types'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Determines the prefix for a question based on whether it is verified
@@ -302,6 +327,7 @@ export const mapRouteError: MapRouteError = (error) => {
     case ProcessingError:
     case ValidateFieldError:
     case ConcatSubmissionError:
+    case ResponseModeError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
@@ -309,6 +335,7 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case DatabaseError:
     case SubmissionHashError:
+    case MissingFeatureError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
@@ -320,7 +347,72 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage:
           'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       }
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: "Oops! We can't find the form you're looking for.",
+      }
+    case PrivateFormError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case FormDeletedError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case CaptchaConnectionError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not verify captcha. Please submit again in a few minutes.',
+      }
+    case VerifyCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was incorrect. Please submit again.',
+      }
+    case MissingCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was missing. Please refresh and submit again.',
+      }
+    case MissingJwtError:
+    case VerifyJwtError:
+    case InvalidJwtError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage:
+          'Something went wrong with your login. Please try logging in and submitting again.',
+      }
+    case MyInfoMissingHashError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'MyInfo verification expired, please refresh and try again.',
+      }
+    case MyInfoHashDidNotMatchError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'MyInfo verification failed.',
+      }
+    case MyInfoHashingError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage:
+          'MyInfo verification unavailable, please try again later.',
+      }
     default:
+      logger.error({
+        message: 'mapRouteError called with unknown error type',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please refresh and try again.',
@@ -426,4 +518,35 @@ export const concatAttachmentsAndResponses = (
   }, '')
   response += attachments.reduce((acc, { content }) => acc + content, '')
   return response
+}
+
+export const maskUidOnLastField = (
+  autoReplyData: EmailAutoReplyField[],
+): EmailAutoReplyField[] => {
+  // Mask corppass UID and show only last 4 chars in autoreply to form filler
+  // This does not affect response email to form admin
+  // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
+  // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
+  // This will allow for proper tagging of corppass UID field instead of checking field title and position
+
+  const maskedAutoReplyData = autoReplyData.map(
+    (autoReplyField: EmailAutoReplyField, index) => {
+      if (
+        autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
+        index === autoReplyData.length - 1 // Check field position
+      ) {
+        return {
+          question: autoReplyField.question,
+          answerTemplate: autoReplyField.answerTemplate.map((answer) => {
+            return answer.length >= 4 // defensive, in case UID length is less than 4
+              ? '*'.repeat(answer.length - 4) + answer.substr(-4)
+              : answer
+          }),
+        }
+      } else {
+        return autoReplyField
+      }
+    },
+  )
+  return maskedAutoReplyData
 }
