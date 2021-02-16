@@ -55,7 +55,7 @@ const makeMobileSignatureValidator: MobileNoValidatorConstructor = (
       signatureString: signature,
       submissionCreatedAt: Date.now(),
       fieldId: _id,
-      answer: answer,
+      answer,
     })
 
   return isSigned
