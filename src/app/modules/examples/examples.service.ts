@@ -8,7 +8,6 @@ import { DatabaseError } from '../core/core.errors'
 
 import { PAGE_SIZE } from './examples.constants'
 import { ResultsNotFoundError } from './examples.errors'
-import { selectAndProjectCardInfo } from './examples.queries'
 import {
   ExamplesQueryParams,
   FormInfo,
@@ -65,10 +64,27 @@ const execExamplesQueryWithTotal = (
   return ResultAsync.fromPromise(
     queryBuilder
       .facet({
-        pageResults: selectAndProjectCardInfo(
-          /* limit= */ PAGE_SIZE,
-          /* offset= */ offset,
-        ),
+        pageResults: [
+          {
+            $skip: offset,
+          },
+          {
+            $limit: PAGE_SIZE,
+          },
+          {
+            $project: {
+              _id: 1,
+              count: 1,
+              lastSubmission: 1,
+              title: '$formInfo.title',
+              form_fields: '$formInfo.form_fields',
+              logo: '$agencyInfo.logo',
+              agency: '$agencyInfo.shortName',
+              colorTheme: '$formInfo.startPage.colorTheme',
+              avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+            },
+          },
+        ],
         totalCount: [{ $count: 'count' }],
       })
       .exec(),
@@ -102,9 +118,27 @@ const execExamplesQuery = (
 ): ResultAsync<QueryPageResult, DatabaseError> => {
   return ResultAsync.fromPromise(
     queryBuilder
-      .append(
-        selectAndProjectCardInfo(/* limit= */ PAGE_SIZE, /* offset= */ offset),
-      )
+      .append([
+        {
+          $skip: offset,
+        },
+        {
+          $limit: PAGE_SIZE,
+        },
+        {
+          $project: {
+            _id: 1,
+            count: 1,
+            lastSubmission: 1,
+            title: '$formInfo.title',
+            form_fields: '$formInfo.form_fields',
+            logo: '$agencyInfo.logo',
+            agency: '$agencyInfo.shortName',
+            colorTheme: '$formInfo.startPage.colorTheme',
+            avgFeedback: { $avg: '$formFeedbackInfo.rating' },
+          },
+        },
+      ])
       .exec() as Promise<QueryExecResult[]>,
     (error) => {
       logger.error({
