@@ -11,3 +11,9 @@ export class CreatePresignedUrlError extends ApplicationError {
     super(message)
   }
 }
+
+export class EditFieldError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
