@@ -24,11 +24,12 @@ export const MyInfoSchema = new Schema<IMyInfoSchema>(
         validator: function (this: IMyInfoSchema) {
           const { authType, responseMode } = this.ownerDocument()
           return (
-            authType === AuthType.SP && responseMode !== ResponseMode.Encrypt
+            authType === AuthType.MyInfo &&
+            responseMode !== ResponseMode.Encrypt
           )
         },
         message:
-          'MyInfo field is invalid. Check that your form has SingPass authentication enabled, or is not an encrypted mode form.',
+          'MyInfo field is invalid. Check that your form has MyInfo enabled, or is not an encrypted mode form.',
       },
     },
   },
