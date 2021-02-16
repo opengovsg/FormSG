@@ -179,7 +179,7 @@
     "@types/express-rate-limit": "^5.1.1",
     "@types/express-request-id": "^1.4.1",
     "@types/express-serve-static-core": "^4.17.18",
-    "@types/express-session": "^1.17.0",
+    "@types/express-session": "^1.17.3",
     "@types/has-ansi": "^3.0.0",
     "@types/helmet": "4.0.0",
     "@types/ip": "^1.1.0",

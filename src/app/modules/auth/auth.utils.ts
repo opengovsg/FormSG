@@ -1,3 +1,4 @@
+import { Session, SessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -51,14 +52,14 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
 }
 
 export const isUserInSession = (
-  session?: Express.Session,
-): session is Express.AuthedSession => {
+  session?: Session & Partial<SessionData>,
+): session is Session & SessionData => {
   return !!session?.user?._id
 }
 
 // TODO(#212): Save userId instead of entire user collection in session.
 export const getUserIdFromSession = (
-  session?: Express.Session,
+  session?: Session & Partial<SessionData>,
 ): string | undefined => {
   return session?.user?._id as string | undefined
 }

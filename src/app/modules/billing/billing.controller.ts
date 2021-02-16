@@ -29,7 +29,8 @@ export const handleGetBillInfo: RequestHandler<
   }
 > = async (req, res) => {
   const { esrvcId, mth, yr } = req.query
-  const authedUser = (req.session as Express.AuthedSession).user
+  // User must be in session.
+  const authedUser = req.session.user!
 
   const startOfMonth = moment
     .tz([parseInt(yr), parseInt(mth)], 'Asia/Singapore')
