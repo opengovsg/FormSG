@@ -66,3 +66,9 @@ export class MyInfoNoESrvcIdError extends ApplicationError {
     super(message)
   }
 }
+
+export class MyInfoInvalidAccessTokenError extends ApplicationError {
+  constructor(message = 'Access token could not be verified') {
+    super(message)
+  }
+}

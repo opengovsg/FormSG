@@ -29,6 +29,7 @@ import {
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoInvalidAccessTokenError,
   MyInfoMissingHashError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
@@ -401,5 +402,23 @@ export class MyInfoService {
       }
       return okAsync(new Set(comparedFieldIds))
     })
+  }
+
+  extractUinFin(
+    accessToken: string,
+  ): Result<string, MyInfoInvalidAccessTokenError> {
+    return Result.fromThrowable(
+      () => this.#myInfoGovClient.extractUinFin(accessToken),
+      (error) => {
+        logger.error({
+          message: 'Error while extracting uinFin from MyInfo access token',
+          meta: {
+            action: 'extractUinFin',
+          },
+          error,
+        })
+        return new MyInfoInvalidAccessTokenError()
+      },
+    )()
   }
 }

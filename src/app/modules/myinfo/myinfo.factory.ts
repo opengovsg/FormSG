@@ -20,6 +20,7 @@ import {
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoInvalidAccessTokenError,
   MyInfoMissingHashError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
@@ -77,6 +78,9 @@ interface IMyInfoFactory {
     Set<string>,
     MyInfoHashingError | MyInfoHashDidNotMatchError | MissingFeatureError
   >
+  extractUinFin: (
+    accessToken: string,
+  ) => Result<string, MyInfoInvalidAccessTokenError | MissingFeatureError>
 }
 
 export const createMyInfoFactory = ({
@@ -94,6 +98,7 @@ export const createMyInfoFactory = ({
       checkMyInfoHashes: () => errAsync(error),
       createRedirectURL: () => err(error),
       parseMyInfoRelayState: () => err(error),
+      extractUinFin: () => err(error),
     }
   }
   return new MyInfoService({
