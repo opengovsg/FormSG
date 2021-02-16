@@ -18,7 +18,6 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
-import { removePrivateDetailsFromForm } from '../form.utils'
 
 import { EditFieldError } from './admin-form.errors'
 import {
@@ -113,6 +112,56 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
         })
 
         const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for GET /:formId/adminform/preview.
+ * @security session
+ *
+ * @returns 200 with form with private details scrubbed for previewing if user has read permissions
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has read permissions to form
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Remove private details from form for previewing.
+      .map((populatedForm) => populatedForm.getPublicView())
+      .map((scrubbedForm) =>
+        res.status(StatusCodes.OK).json({ form: scrubbedForm }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error previewing admin form',
+          meta: {
+            action: 'handlePreviewAdminForm',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
@@ -629,7 +678,7 @@ export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
     // Step 1: Retrieve form only if form is currently public.
     AuthService.getFormIfPublic(formId)
       // Step 2: Remove private form details before being returned.
-      .map(removePrivateDetailsFromForm)
+      .map((populatedForm) => populatedForm.getPublicView())
       .map((scrubbedForm) =>
         res.status(StatusCodes.OK).json({ form: scrubbedForm }),
       )
