@@ -24,7 +24,6 @@ CORPPASS_PARTNER_ENTITY_ID=https://staging.form.gov.sg/corppass
 CORPPASS_ESRVC_ID=FORMSG-CP-TEST
 CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
 
-SPCP_COOKIE_MAX_AGE=7200000 
 SHOW_LOGIN_PAGE=true
 IS_SP_MAINTENANCE=Date/Time-SP
 IS_CP_MAINTENANCE=Date/Time-CP

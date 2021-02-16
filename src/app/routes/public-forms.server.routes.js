@@ -18,6 +18,7 @@ const PublicFormController = require('../modules/form/public-form/public-form.co
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
 const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
+const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
 module.exports = function (app) {
   /**
    * Redirect a form to the main index, with the specified path
@@ -210,7 +211,7 @@ module.exports = function (app) {
     EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     myInfoController.verifyMyInfoVals,
-    webhookVerifiedContentFactory.encryptedVerifiedFields,
+    VerifiedContentMiddleware.encryptVerifiedSpcpFields,
     EncryptSubmissionMiddleware.prepareEncryptSubmission,
     encryptSubmissions.saveResponseToDb,
     webhookVerifiedContentFactory.post,
