@@ -47,6 +47,7 @@ const iconTypeMap = {
   marriagedate: 'bx bx-calendar-check',
   divorcedate: 'bx bx-calendar-x',
   workpassexpirydate: 'bx bx-calendar-alt',
+  homeno: 'bx bx-phone',
   mobileno: 'bx bx-mobile-alt',
   marriagecertno: 'bx bx-award',
 }
