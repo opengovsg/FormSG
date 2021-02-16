@@ -29,29 +29,6 @@ const FormModel = getFormModel(mongoose)
 const logger = createLoggerWithLabel(module)
 
 /**
- * Creates and returns the query builder to execute some example fetch query.
- */
-const getExamplesQueryBuilder = (
-  query: ExamplesQueryParams,
-): mongoose.Aggregate<unknown[]> => {
-  const { agency, searchTerm } = query
-
-  const pipeline = searchTerm
-    ? createSearchQueryPipeline({
-        searchTerm,
-        agencyId: agency,
-      })
-    : createGeneralQueryPipeline(agency)
-
-  const queryBuilder = FormModel.aggregate(pipeline)
-    .read('secondary')
-    // Prevent out-of-memory for large search results (max 100MB).
-    .allowDiskUse(true)
-
-  return queryBuilder
-}
-
-/**
  * Adds facet for retrieving total result counts to given query builder and
  * returns the execution result offset by the given offset value.
  * @param queryBuilder The query builder containing the query to execute
@@ -214,9 +191,20 @@ const getFormInfo = (
 export const getExampleForms = (
   query: ExamplesQueryParams,
 ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
-  const queryBuilder = getExamplesQueryBuilder(query)
+  const { agency, searchTerm, pageNo, shouldGetTotalNumResults } = query
 
-  const { pageNo, shouldGetTotalNumResults } = query
+  const pipeline = searchTerm
+    ? createSearchQueryPipeline({
+        searchTerm,
+        agencyId: agency,
+      })
+    : createGeneralQueryPipeline(agency)
+
+  const queryBuilder = FormModel.aggregate(pipeline)
+    .read('secondary')
+    // Prevent out-of-memory for large search results (max 100MB).
+    .allowDiskUse(true)
+
   const offset = pageNo * PAGE_SIZE || 0
 
   return shouldGetTotalNumResults
