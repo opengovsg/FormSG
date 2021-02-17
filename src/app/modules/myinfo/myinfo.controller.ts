@@ -138,8 +138,8 @@ const loginToMyInfo: RequestHandler<
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-  const { formId, cookieDuration, isPreview } = parseStateResult.value
-  const redirectDestination = `/${formId}${isPreview ? '/preview' : ''}`
+  const { formId, cookieDuration } = parseStateResult.value
+  const redirectDestination = `/${formId}`
   return MyInfoFactory.retrieveAccessToken(code)
     .map((accessToken) => {
       const cookiePayload: MyInfoCookiePayload = {

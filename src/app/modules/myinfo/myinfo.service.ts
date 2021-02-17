@@ -124,11 +124,10 @@ export class MyInfoService {
     formTitle,
     formEsrvcId,
     requestedAttributes,
-    isPreview,
   }: IMyInfoRedirectURLArgs): Result<string, never> {
     const redirectURL = this.#myInfoGovClient.createRedirectURL({
       purpose: createConsentPagePurpose(formTitle),
-      relayState: createRelayState(formId, rememberMe, isPreview),
+      relayState: createRelayState(formId, rememberMe),
       // Always request consent for NRIC/FIN
       requestedAttributes: internalAttrListToExternal(requestedAttributes),
       singpassEserviceId: formEsrvcId,
@@ -141,11 +140,10 @@ export class MyInfoService {
   ): Result<ParsedRelayState, MyInfoParseRelayStateError> {
     const components = relayState.split(',')
     if (
-      components.length !== 4 ||
+      components.length !== 3 ||
       !uuid.validate(components[0]) ||
       !mongoose.Types.ObjectId.isValid(components[1]) ||
-      !['true', 'false'].includes(components[2]) ||
-      !['true', 'false'].includes(components[3])
+      !['true', 'false'].includes(components[2])
     ) {
       return err(new MyInfoParseRelayStateError())
     }
@@ -154,7 +152,6 @@ export class MyInfoService {
       uuid: components[0],
       formId: components[1],
       rememberMe,
-      isPreview: components[3] === 'true',
       cookieDuration: rememberMe
         ? this.#spCookieMaxAgePreserved
         : this.#spCookieMaxAge,
