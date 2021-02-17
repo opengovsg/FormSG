@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
-import uuid from 'uuid'
+import { v4 as uuidv4 } from 'uuid'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
@@ -263,7 +263,7 @@ export const createConsentPagePurpose = (formTitle: string): string =>
   `The form "${formTitle}" is requesting to pre-fill your MyInfo data.`
 
 export const createRelayState = (formId: string, rememberMe: boolean): string =>
-  `${uuid.v4()},${formId},${rememberMe}`
+  `${uuidv4()},${formId},${rememberMe}`
 
 export const validateMyInfoForm = (
   form: IFormSchema | IPopulatedForm,

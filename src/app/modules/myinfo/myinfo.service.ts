@@ -9,7 +9,7 @@ import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
-import uuid from 'uuid'
+import { validate as validateUUID } from 'uuid'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -141,7 +141,7 @@ export class MyInfoService {
     const components = relayState.split(',')
     if (
       components.length !== 3 ||
-      !uuid.validate(components[0]) ||
+      !validateUUID(components[0]) ||
       !mongoose.Types.ObjectId.isValid(components[1]) ||
       !['true', 'false'].includes(components[2])
     ) {
