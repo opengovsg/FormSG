@@ -1,7 +1,3 @@
-import {
-  IPersonBasic,
-  Mode as MyInfoClientMode,
-} from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
@@ -10,59 +6,52 @@ import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import {
-  Environment,
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  MyInfoAttribute,
 } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { MyInfoData } from '../myinfo.adapter'
 import { IPossiblyPrefilledField } from '../myinfo.types'
 
 import {
+  MOCK_ACCESS_TOKEN,
   MOCK_COOKIE_AGE,
   MOCK_ESRVC_ID,
-  MOCK_FETCH_PARAMS,
   MOCK_FORM_FIELDS,
   MOCK_FORM_ID,
   MOCK_HASHED_FIELD_IDS,
   MOCK_HASHES,
-  MOCK_KEY_PATH,
   MOCK_MYINFO_DATA,
   MOCK_POPULATED_FORM_FIELDS,
-  MOCK_REALM,
+  MOCK_REQUESTED_ATTRS,
   MOCK_RESPONSES,
+  MOCK_SERVICE_PARAMS,
   MOCK_UINFIN,
 } from './myinfo.test.constants'
 
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
-const mockGetPersonBasic = jest.fn()
+const mockGetPerson = jest.fn()
 jest.mock('@opengovsg/myinfo-gov-client', () => ({
   MyInfoGovClient: jest.fn().mockImplementation(() => ({
-    getPersonBasic: mockGetPersonBasic,
+    getPerson: mockGetPerson,
   })),
-  Mode: jest.requireActual('@opengovsg/myinfo-gov-client').Mode,
-  CATEGORICAL_DATA_DICT: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .CATEGORICAL_DATA_DICT,
+  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
   MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
+  AddressType: jest.requireActual('@opengovsg/myinfo-gov-client').AddressType,
+  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .MyInfoAttribute,
 }))
 
 jest.mock('bcrypt')
 const MockBcrypt = mocked(bcrypt, true)
 
 describe('MyInfoService', () => {
-  let myInfoService = new MyInfoService({
-    myInfoConfig: {
-      myInfoClientMode: MyInfoClientMode.Staging,
-      myInfoKeyPath: MOCK_KEY_PATH,
-    },
-    nodeEnv: Environment.Test,
-    realm: MOCK_REALM,
-    singpassEserviceId: MOCK_ESRVC_ID,
-    spCookieMaxAge: MOCK_COOKIE_AGE,
-  })
+  let myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => jest.clearAllMocks())
@@ -77,51 +66,64 @@ describe('MyInfoService', () => {
 
   describe('fetchMyInfoPersonData', () => {
     beforeEach(() => {
-      myInfoService = new MyInfoService({
-        myInfoConfig: {
-          myInfoClientMode: MyInfoClientMode.Staging,
-          myInfoKeyPath: MOCK_KEY_PATH,
-        },
-        nodeEnv: Environment.Test,
-        realm: MOCK_REALM,
-        singpassEserviceId: MOCK_ESRVC_ID,
-        spCookieMaxAge: MOCK_COOKIE_AGE,
-      })
+      myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
     })
 
     it('should call MyInfoGovClient.getPersonBasic with the correct parameters', async () => {
-      mockGetPersonBasic.mockResolvedValueOnce(MOCK_MYINFO_DATA)
+      const mockReturnedParams = {
+        uinFin: MOCK_UINFIN,
+        data: MOCK_MYINFO_DATA,
+      }
+      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
       const result = await myInfoService.fetchMyInfoPersonData(
-        MOCK_FETCH_PARAMS,
+        MOCK_ACCESS_TOKEN,
+        MOCK_REQUESTED_ATTRS,
+        MOCK_ESRVC_ID,
       )
 
-      expect(mockGetPersonBasic).toHaveBeenCalledWith(MOCK_FETCH_PARAMS)
-      expect(result._unsafeUnwrap()).toEqual(MOCK_MYINFO_DATA)
+      expect(mockGetPerson).toHaveBeenCalledWith(
+        MOCK_ACCESS_TOKEN,
+        MOCK_REQUESTED_ATTRS.concat('uinfin' as MyInfoAttribute),
+        MOCK_ESRVC_ID,
+      )
+      expect(result._unsafeUnwrap()).toEqual(new MyInfoData(mockReturnedParams))
     })
 
     it('should throw FetchMyInfoError when getPersonBasic fails once', async () => {
-      mockGetPersonBasic.mockRejectedValueOnce(new Error())
+      mockGetPerson.mockRejectedValueOnce(new Error())
       const result = await myInfoService.fetchMyInfoPersonData(
-        MOCK_FETCH_PARAMS,
+        MOCK_ACCESS_TOKEN,
+        MOCK_REQUESTED_ATTRS,
+        MOCK_ESRVC_ID,
       )
 
-      expect(mockGetPersonBasic).toHaveBeenCalledWith(MOCK_FETCH_PARAMS)
+      expect(mockGetPerson).toHaveBeenCalledWith(
+        MOCK_ACCESS_TOKEN,
+        MOCK_REQUESTED_ATTRS.concat('uinfin' as MyInfoAttribute),
+        MOCK_ESRVC_ID,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(
         new Error('Error while requesting MyInfo data'),
       )
     })
 
     it('should throw CircuitBreakerError when getPersonBasic fails 5 times', async () => {
-      mockGetPersonBasic.mockRejectedValue(new Error())
+      mockGetPerson.mockRejectedValue(new Error())
       for (let i = 0; i < 5; i++) {
-        await myInfoService.fetchMyInfoPersonData(MOCK_FETCH_PARAMS)
+        await myInfoService.fetchMyInfoPersonData(
+          MOCK_ACCESS_TOKEN,
+          MOCK_REQUESTED_ATTRS,
+          MOCK_ESRVC_ID,
+        )
       }
       const result = await myInfoService.fetchMyInfoPersonData(
-        MOCK_FETCH_PARAMS,
+        MOCK_ACCESS_TOKEN,
+        MOCK_REQUESTED_ATTRS,
+        MOCK_ESRVC_ID,
       )
 
       // Last function call doesn't count as breaker is open, so expect 5 calls
-      expect(mockGetPersonBasic).toHaveBeenCalledTimes(5)
+      expect(mockGetPerson).toHaveBeenCalledTimes(5)
       expect(result._unsafeUnwrapErr()).toEqual(
         new Error('Circuit breaker tripped'),
       )
@@ -130,8 +132,12 @@ describe('MyInfoService', () => {
 
   describe('prefillMyInfoFields', () => {
     it('should prefill fields correctly', () => {
+      const mockData = new MyInfoData({
+        data: MOCK_MYINFO_DATA,
+        uinFin: MOCK_UINFIN,
+      })
       const result = myInfoService.prefillMyInfoFields(
-        (MOCK_MYINFO_DATA as unknown) as IPersonBasic,
+        mockData,
         MOCK_FORM_FIELDS as IFieldSchema[],
       )
       expect(result._unsafeUnwrap()).toEqual(MOCK_POPULATED_FORM_FIELDS)

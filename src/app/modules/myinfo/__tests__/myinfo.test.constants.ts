@@ -1,8 +1,16 @@
-import { AddressType, MyInfoSource } from '@opengovsg/myinfo-gov-client'
+import {
+  AddressType,
+  IPerson,
+  MyInfoMode,
+  MyInfoSource,
+} from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { merge, zipWith } from 'lodash'
 
-import { Environment } from 'src/types'
+import { ISpcpMyInfo } from 'src/config/feature-manager'
+import { Environment, MyInfoAttribute } from 'src/types'
+
+import { IMyInfoServiceConfig } from '../myinfo.types'
 
 export const MOCK_MYINFO_DATA = {
   name: {
@@ -12,24 +20,25 @@ export const MOCK_MYINFO_DATA = {
     value: 'TAN XIAO HUI',
   },
   mobileno: {
-    code: '65',
-    prefix: '+',
+    areacode: { value: '65' },
+    prefix: { value: '+' },
     lastupdated: '2017-12-13',
-    source: '4',
+    source: MyInfoSource.UserProvided,
     classification: 'C',
-    nbr: '97324992',
+    nbr: { value: '97324992' },
   },
   regadd: {
-    country: 'US',
-    unit: '',
-    street: '5TH AVENUE',
+    type: AddressType.Singapore,
+    country: { code: 'SG', desc: 'SINGAPORE' },
+    unit: { value: '128' },
+    street: { value: 'BEDOK NORTH AVENUE 1' },
     lastupdated: '2016-03-11',
-    block: '725',
-    source: '2',
-    postal: 'NY 10022',
+    block: { value: '548' },
+    source: MyInfoSource.UserProvided,
+    postal: { value: '460548' },
     classification: 'C',
-    floor: '',
-    building: 'TRUMP TOWER',
+    floor: { value: '09' },
+    building: { value: '' },
   },
   employment: {
     lastupdated: '2017-10-11',
@@ -37,7 +46,7 @@ export const MOCK_MYINFO_DATA = {
     classification: 'C',
     value: 'ALPHA',
   },
-}
+} as IPerson
 
 export const MOCK_MYINFO_FORMAT_DATA = {
   mobileno: {
@@ -113,7 +122,7 @@ const populatedValues = [
   { fieldValue: 'TAN XIAO HUI', disabled: true },
   { fieldValue: '+65 97324992', disabled: false },
   {
-    fieldValue: 'TRUMP TOWER, 725 5TH AVENUE, UNITED STATES NY 10022',
+    fieldValue: '548 BEDOK NORTH AVENUE 1, #09-128, SINGAPORE 460548',
     disabled: false,
   },
   {},
@@ -135,14 +144,27 @@ export const MOCK_RESPONSES = zipWith(
 export const MOCK_COOKIE_AGE = 2000
 export const MOCK_KEY_PATH =
   './node_modules/@opengovsg/mockpass/static/certs/key.pem'
-export const MOCK_REALM = 'mockRealm'
+export const MOCK_CERT_PATH =
+  './node_modules/@opengovsg/mockpass/static/certs/server.crt'
 export const MOCK_ESRVC_ID = 'mockEsrvcId'
 export const MOCK_UINFIN = 'uinFin'
-export const MOCK_FETCH_PARAMS = {
-  uinFin: MOCK_UINFIN,
-  requestedAttributes: ['mockAttr'],
-  singpassEserviceId: 'mockEsrvcId',
-}
+export const MOCK_REQUESTED_ATTRS = [MyInfoAttribute.Name]
 export const MOCK_FORM_ID = new ObjectId().toHexString()
 export const MOCK_NODE_ENV = Environment.Test
 export const MOCK_APP_TITLE = 'appTitle'
+export const MOCK_ACCESS_TOKEN = 'accessToken'
+
+export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
+  appUrl: 'http://localhost:5000',
+  nodeEnv: MOCK_NODE_ENV,
+  spcpMyInfoConfig: {
+    spCookieMaxAge: MOCK_COOKIE_AGE,
+    spCookieMaxAgePreserved: MOCK_COOKIE_AGE,
+    spEsrvcId: MOCK_ESRVC_ID,
+    myInfoKeyPath: MOCK_KEY_PATH,
+    myInfoCertPath: MOCK_CERT_PATH,
+    myInfoClientId: 'mockClientId',
+    myInfoClientSecret: 'mockClientSecret',
+    myInfoClientMode: MyInfoMode.Dev,
+  } as ISpcpMyInfo,
+}
