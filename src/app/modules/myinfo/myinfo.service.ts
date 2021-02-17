@@ -1,6 +1,6 @@
 import {
   IPersonResponse,
-  MyInfoAttributeString,
+  MyInfoAttribute as ExternalMyInfoAttribute,
   MyInfoGovClient,
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
@@ -74,7 +74,7 @@ export class MyInfoService {
    * and limits the rate of requests in case the receiving server returns errors.
    */
   #myInfoPersonBreaker: CircuitBreaker<
-    [string, MyInfoAttributeString[], string],
+    [string, ExternalMyInfoAttribute[], string],
     IPersonResponse
   >
 
