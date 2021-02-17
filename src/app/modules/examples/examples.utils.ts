@@ -132,11 +132,6 @@ export const createSearchQueryPipeline = ({
   }
   // Sort by how well search terms were matched.
   query.push(
-    {
-      $sort: {
-        textScore: -1,
-      },
-    },
     // Retrieve form feedback from the forms that reach this step.
     {
       $lookup: {
@@ -144,6 +139,11 @@ export const createSearchQueryPipeline = ({
         localField: '_id',
         foreignField: 'formId',
         as: 'formFeedbackInfo',
+      },
+    },
+    {
+      $sort: {
+        textScore: -1,
       },
     },
   )
