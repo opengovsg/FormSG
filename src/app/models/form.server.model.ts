@@ -602,6 +602,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     lastModified: -1,
   })
 
+  // For examples search
+  FormSchema.index({
+    status: 1,
+    isListed: 1,
+  })
+
   const FormModel = db.model<IFormSchema, IFormModel>(
     FORM_SCHEMA_ID,
     FormSchema,
