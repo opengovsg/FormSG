@@ -246,6 +246,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === Status.Public) {
             return this.authType
+          } else if (
+            this.responseMode === ResponseMode.Encrypt &&
+            v === AuthType.MyInfo
+          ) {
+            // Do not allow storage mode to have MyInfo authentication
+            return this.authType
           } else {
             return v
           }
