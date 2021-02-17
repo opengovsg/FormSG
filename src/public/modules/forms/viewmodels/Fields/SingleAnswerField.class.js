@@ -24,6 +24,7 @@ class SingleAnswerField extends AnswerField {
       this.isVisible &&
       this.required &&
       this.fieldType !== 'section' &&
+      this.fieldValue !== 0 &&
       !this.fieldValue
     ) {
       console.error(
