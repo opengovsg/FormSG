@@ -63,20 +63,24 @@ export const mapRouteError: MapRouteError = (error) => {
  * @param lookUpMiddleware An aggregation step to insert into the pipeline after filtering by agency id. Must be lookupSubmissionInfo or lookupFormStatisticsInfo
  * @returns an array of aggregation steps to be used by Form model to aggregate with.
  */
-export const createSearchQueryPipeline = ({
+export const examplesSearchQueryBuilder = ({
   agencyId,
   searchTerm,
 }: {
   agencyId?: string
-  searchTerm: string
+  searchTerm?: string
 }): Record<string, unknown>[] => {
-  const query: Record<string, unknown>[] = [
-    // Get formId and formInfo of forms containing the search term.
-    {
+  const query: Record<string, unknown>[] = []
+
+  if (searchTerm) {
+    query.push({
       $match: {
         $text: { $search: searchTerm },
       },
-    },
+    })
+  }
+
+  query.push(
     // Filter out all inactive/unlisted forms.
     {
       $match: {
@@ -89,8 +93,7 @@ export const createSearchQueryPipeline = ({
       $project: {
         formInfo: '$$ROOT',
       },
-    },
-    // Retrieve agency info of forms in this stage.
+    }, // Retrieve agency info of forms in this stage.
     {
       $lookup: {
         from: 'users',
@@ -120,95 +123,8 @@ export const createSearchQueryPipeline = ({
         userInfo: 0,
       },
     },
-  ]
-
-  // Filter by agency id if parameter given.
-  if (agencyId) {
-    query.push({
-      $match: {
-        'agencyInfo._id': mongoose.Types.ObjectId(agencyId),
-      },
-    })
-  }
-  // Sort by how well search terms were matched.
-  query.push(
-    // Retrieve form feedback from the forms that reach this step.
-    {
-      $lookup: {
-        from: 'formfeedback',
-        localField: '_id',
-        foreignField: 'formId',
-        as: 'formFeedbackInfo',
-      },
-    },
-    {
-      $sort: {
-        textScore: -1,
-      },
-    },
   )
 
-  return query
-}
-
-/**
- * Creates a query pipeline that can be used to retrieve forms for the /examples
- * page.
- *
- * This query will return forms sorted by last submitted date, filtered by
- * number of submissions (greater than given minSubmissionCount), public forms,
- * and selected agency.
- * @param groupByMiddleware The inisital The id of the agency to filter forms listed by. If no id is given, all matched forms will be returned
- * @param agencyId Optional. The id of the agency to filter forms listed by. If no id is given, all matched forms will be returned
- * @param minSubmissionCount The minimum submission count returned forms must have to be returned by the aggregation pipeline
- */
-export const createGeneralQueryPipeline = (
-  agencyId?: string,
-): Record<string, unknown>[] => {
-  const query: Record<string, unknown>[] = [
-    // Filter out all inactive/unlisted forms.
-    {
-      $match: {
-        status: Status.Public,
-        isListed: true,
-      },
-    },
-    {
-      $project: {
-        formInfo: '$$ROOT',
-      },
-    },
-    // Retrieve agency infos of forms in this stage.
-    {
-      $lookup: {
-        from: 'users',
-        localField: 'formInfo.admin',
-        foreignField: '_id',
-        as: 'userInfo',
-      },
-    },
-    // There should only be one user with this _id
-    {
-      $unwind: '$userInfo',
-    },
-    {
-      $lookup: {
-        from: 'agencies',
-        localField: 'userInfo.agency',
-        foreignField: '_id',
-        as: 'agencyInfo',
-      },
-    },
-    // There should only be one agency with this _id
-    {
-      $unwind: '$agencyInfo',
-    },
-    {
-      $project: {
-        userInfo: 0,
-      },
-    },
-  ]
   // Filter by agency id if parameter given.
   if (agencyId) {
     query.push({
@@ -228,11 +144,23 @@ export const createGeneralQueryPipeline = (
         as: 'formFeedbackInfo',
       },
     },
-    // More recently created forms appear higher on the examples page.
-    {
-      $sort: { 'formInfo.created': -1 },
-    },
   )
+
+  // Sort by search relevancy if a search term was supplied, otherwise
+  // sort on recency
+
+  query.push(
+    searchTerm
+      ? {
+          $sort: {
+            textScore: -1,
+          },
+        }
+      : {
+          $sort: { 'formInfo.created': -1 },
+        },
+  )
+
   return query
 }
 

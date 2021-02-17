@@ -20,8 +20,7 @@ import {
 } from './examples.types'
 import {
   createFormIdInfoPipeline,
-  createGeneralQueryPipeline,
-  createSearchQueryPipeline,
+  examplesSearchQueryBuilder,
 } from './examples.utils'
 
 const FormModel = getFormModel(mongoose)
@@ -193,14 +192,12 @@ export const getExampleForms = (
 ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
   const { agency, searchTerm, pageNo, shouldGetTotalNumResults } = query
 
-  const pipeline = searchTerm
-    ? createSearchQueryPipeline({
-        searchTerm,
-        agencyId: agency,
-      })
-    : createGeneralQueryPipeline(agency)
-
-  const queryBuilder = FormModel.aggregate(pipeline)
+  const queryBuilder = FormModel.aggregate(
+    examplesSearchQueryBuilder({
+      searchTerm,
+      agencyId: agency,
+    }),
+  )
     .read('secondary')
     // Prevent out-of-memory for large search results (max 100MB).
     .allowDiskUse(true)
