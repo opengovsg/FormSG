@@ -108,8 +108,8 @@ function settingsFormDirective(
           return $scope.myform.responseMode === responseModeEnum.ENCRYPT
         }
 
-        $scope.isFormSingpass = () => {
-          return $scope.tempForm.authType === 'SP'
+        $scope.isFormMyInfo = () => {
+          return $scope.tempForm.authType === 'MyInfo'
         }
 
         $scope.doesFormContainAttachments = () => {
@@ -122,9 +122,9 @@ function settingsFormDirective(
 
         // Warning message when turning off SP with MyInfo fields
         $scope.myInfoSPWarning = () => {
-          let hasMyInfoFields =
+          return (
             $scope.myform.form_fields.filter((field) => field.myInfo).length > 0
-          return $scope.tempForm.authType === 'SP' && hasMyInfoFields
+          )
         }
 
         $scope.isDisableAuthType = () => {
@@ -138,7 +138,8 @@ function settingsFormDirective(
           return (
             $scope.myform.status === 'PUBLIC' &&
             ($scope.myform.authType === 'SP' ||
-              $scope.myform.authType === 'CP') &&
+              $scope.myform.authType === 'CP' ||
+              $scope.myform.authType === 'MyInfo') &&
             !$scope.myform.esrvcId
           )
         }
@@ -147,7 +148,8 @@ function settingsFormDirective(
           return (
             $scope.myform.status === 'PRIVATE' &&
             ($scope.myform.authType === 'SP' ||
-              $scope.myform.authType === 'CP') &&
+              $scope.myform.authType === 'CP' ||
+              $scope.myform.authType === 'MyInfo') &&
             !$scope.myform.esrvcId
           )
         }
@@ -156,15 +158,22 @@ function settingsFormDirective(
           {
             val: 'NIL',
             name: 'None',
+            isEnabledInStorageMode: true,
           },
           {
             val: 'SP',
-            name: 'SingPass/MyInfo',
-            storageName: 'SingPass',
+            name: 'SingPass',
+            isEnabledInStorageMode: true,
+          },
+          {
+            val: 'MyInfo',
+            name: 'MyInfo',
+            isEnabledInStorageMode: false,
           },
           {
             val: 'CP',
             name: 'CorpPass',
+            isEnabledInStorageMode: true,
           },
         ]
 
