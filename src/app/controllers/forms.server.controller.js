@@ -61,7 +61,7 @@ exports.read = (requestType) =>
    */
   (req, res) => {
     let form = req.form
-    let spcpSession = res.locals.spcpSession
+    let spcpSession = res.locals.spcpSession || {}
     let myInfoError = res.locals.myInfoError
 
     // Remove sensitive admin details
