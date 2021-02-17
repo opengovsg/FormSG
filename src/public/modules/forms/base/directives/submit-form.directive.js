@@ -34,9 +34,9 @@ angular
     'Submissions',
     '$uibModal',
     '$timeout',
-    'responseModeEnum',
-    'FormSgSdk',
     'Verification',
+    '$document',
+    'MyInfoRedirect',
     submitFormDirective,
   ])
 
@@ -52,9 +52,9 @@ function submitFormDirective(
   Submissions,
   $uibModal,
   $timeout,
-  responseModeEnum,
-  FormSgSdk,
   Verification,
+  $document,
+  MyInfoRedirect,
 ) {
   return {
     restrict: 'E',
@@ -86,8 +86,32 @@ function submitFormDirective(
       // of the progress modal
       scope.controllerState = {}
 
-      scope.hasMyInfoFields = FormFields.containsMyInfoFields(scope.form)
+      const setReferrerToNull = () => {
+        const meta = $document.createElement('meta')
+        meta.setAttribute('name', 'referrer')
+        meta.setAttribute('content', 'no-referrer')
+        meta.style.display = 'none'
+        $('head').append(meta)
+      }
+
       scope.formLogin = function (authType, rememberMe) {
+        if (authType === 'MyInfo') {
+          // rememberMe currently not supported for MyInfo
+          return MyInfoRedirect({
+            formId: scope.form._id,
+            rememberMe: false,
+          })
+            .then((response) => {
+              setReferrerToNull()
+              $window.location.href = response.redirectURL
+            })
+            .catch((error) => {
+              console.error(error)
+              Toastr.error(
+                'Sorry, there was a problem with your login. Please try again.',
+              )
+            })
+        }
         // Fire GA tracking event
         if (rememberMe) {
           GTag.persistentLoginUse(scope.form)
@@ -103,12 +127,7 @@ function submitFormDirective(
         let esrvcId = scope.form.esrvcId
         SpcpRedirect(target, authType, esrvcId).then(
           function (response) {
-            // Following code is needed to set referrer URL to null
-            let meta = document.createElement('meta')
-            meta.setAttribute('name', 'referrer')
-            meta.setAttribute('content', 'no-referrer')
-            meta.style.display = 'none'
-            $('head').append(meta)
+            setReferrerToNull()
             $window.location.href = response.redirectURL
           },
           function (error) {
@@ -333,9 +352,7 @@ function submitFormDirective(
        * Helper function for Google Analytics to check for persistent login.
        */
       const shouldTrackPersistentLoginUse = () => {
-        scope.form.authType === 'SP' &&
-          !scope.hasMyInfoFields &&
-          SpcpSession.isRememberMeSet()
+        scope.form.authType === 'SP' && SpcpSession.isRememberMeSet()
       }
       /**
        * Returns a callback for form submission success, which updates UI
