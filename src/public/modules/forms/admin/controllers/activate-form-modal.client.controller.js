@@ -6,6 +6,7 @@ angular
     '$uibModalInstance',
     '$timeout',
     'SpcpValidateEsrvcId',
+    'MyInfoValidateEsrvcId',
     'externalScope',
     'MailTo',
     ActivateFormController,
@@ -15,6 +16,7 @@ function ActivateFormController(
   $uibModalInstance,
   $timeout,
   SpcpValidateEsrvcId,
+  MyInfoValidateEsrvcId,
   externalScope,
   MailTo,
 ) {
@@ -96,7 +98,6 @@ function ActivateFormController(
     })
 
     if (authType === 'SP' && esrvcId !== '') {
-      // Only validate for Singpass. CorpPass doesn't return any error page even with the wrong e-service id
       return SpcpValidateEsrvcId(target, authType, esrvcId)
         .then((response) => {
           if (response.isValid) {
@@ -114,8 +115,26 @@ function ActivateFormController(
           return false
         })
     } else if (authType === 'CP' && esrvcId !== '') {
+      // CorpPass doesn't return any error page even with the wrong e-service id
       updateDisplay(null, { authType, esrvcId }, 0)
       return Promise.resolve(true)
+    } else if (authType === 'MyInfo') {
+      return MyInfoValidateEsrvcId(target)
+        .then((response) => {
+          if (response.isValid) {
+            updateDisplay(null, { authType, esrvcId })
+          } else {
+            updateDisplay(
+              { authType, esrvcId, errorCode: response.errorCode },
+              null,
+            )
+          }
+          return response.isValid
+        })
+        .catch(() => {
+          updateDisplay({ authType, esrvcId }, null)
+          return false
+        })
     }
   }
 

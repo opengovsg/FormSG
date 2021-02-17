@@ -19,34 +19,31 @@
       </div>
       <div ng-if="vm.esrvcIdError">
         <!-- Coding for the future - CorpPass for now always returns success because we have no way of validating it-->
-        <div
-          ng-if="vm.esrvcIdError.authType === 'SP' || vm.esrvcIdError.authType === 'CP'"
-        >
+        <div ng-if="['SP', 'CP', 'MyInfo'].includes(vm.esrvcIdError.authType)">
           <div class="field-title error-msg">
             <i class="bx bx-md icon-spacing bx-exclamation"></i>
-            {{ 'Your ' + (vm.esrvcIdError.authType === 'SP' ? 'SingPass' :
-            'CorpPass') + ' e-service ID is probably invalid ' }}
+            {{ 'Your e-service ID is probably invalid ' }}
           </div>
           <div class="field-description">
             <span ng-if="vm.esrvcIdError.errorCode">
-              {{ (vm.esrvcIdError.authType === 'SP' ? 'SingPass' : 'CorpPass') +
-              ' returns the error code ' }}
+              {{ (['SP', 'MyInfo'].includes(vm.esrvcIdError.authType) ?
+              'SingPass' : 'CorpPass') + ' returns the error code ' }}
               <b>{{vm.esrvcIdError.errorCode}}</b>
               {{' for the e-service ID ' }} <b>{{vm.esrvcIdError.esrvcId}}</b>
             </span>
             <span ng-if="!vm.esrvcIdError.errorCode">
-              {{ 'Could not connect to ' + (vm.esrvcIdError.authType === 'SP' ?
-              'SingPass' : 'CorpPass') + ' to check the e-service id '}}
+              {{ 'Could not connect to ' + (vm.esrvcIdError.authType === 'CP' ?
+              'CorpPass' : 'SingPass') + ' to check the e-service id '}}
               <b>{{vm.esrvcIdError.esrvcId}}</b>
             </span>
           </div>
         </div>
       </div>
       <div ng-if="!vm.esrvcIdError && vm.esrvcIdSuccess">
-        <div ng-if="vm.esrvcIdSuccess.authType === 'SP'">
+        <div ng-if="['SP', 'MyInfo'].includes(vm.esrvcIdSuccess.authType)">
           <div class="field-title success-msg">
             <i class="bx bx-md icon-spacing bx-check"></i>
-            Your Singpass e-service ID appears to be valid.
+            Your e-service ID appears to be valid.
           </div>
         </div>
         <!-- Since CorpPass eservice id cannot be validated, remind user to check-->
