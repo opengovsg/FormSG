@@ -60,7 +60,7 @@ export default async (): Promise<Connection> => {
   })
 
   // TODO: For testing on staging, to be removed
-  mongoose.set('debug', true)
+  mongoose.set('debug', { color: false, shell: true })
 
   mongoose.connection.on('error', (err) => {
     // No need to reconnect here since mongo config has auto reconnect, we log.
