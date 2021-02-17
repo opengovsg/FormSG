@@ -35,7 +35,6 @@ angular
     '$uibModal',
     '$timeout',
     'Verification',
-    '$document',
     'MyInfoRedirect',
     submitFormDirective,
   ])
@@ -53,7 +52,6 @@ function submitFormDirective(
   $uibModal,
   $timeout,
   Verification,
-  $document,
   MyInfoRedirect,
 ) {
   return {
@@ -87,7 +85,7 @@ function submitFormDirective(
       scope.controllerState = {}
 
       const setReferrerToNull = () => {
-        const meta = $document.createElement('meta')
+        const meta = document.createElement('meta')
         meta.setAttribute('name', 'referrer')
         meta.setAttribute('content', 'no-referrer')
         meta.style.display = 'none'
