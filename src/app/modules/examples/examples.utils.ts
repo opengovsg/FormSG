@@ -77,16 +77,17 @@ export const createSearchQueryPipeline = ({
         $text: { $search: searchTerm },
       },
     },
-    {
-      $project: {
-        formInfo: '$$ROOT',
-      },
-    },
     // Filter out all inactive/unlisted forms.
     {
       $match: {
-        'formInfo.status': Status.Public,
-        'formInfo.isListed': true,
+        status: Status.Public,
+        isListed: true,
+      },
+    },
+    // Rename entire document to the `formInfo` property
+    {
+      $project: {
+        formInfo: '$$ROOT',
       },
     },
     // Retrieve agency info of forms in this stage.
@@ -165,16 +166,16 @@ export const createGeneralQueryPipeline = (
   agencyId?: string,
 ): Record<string, unknown>[] => {
   const query: Record<string, unknown>[] = [
-    {
-      $project: {
-        formInfo: '$$ROOT',
-      },
-    },
     // Filter out all inactive/unlisted forms.
     {
       $match: {
-        'formInfo.status': Status.Public,
-        'formInfo.isListed': true,
+        status: Status.Public,
+        isListed: true,
+      },
+    },
+    {
+      $project: {
+        formInfo: '$$ROOT',
       },
     },
     // Retrieve agency infos of forms in this stage.
@@ -244,23 +245,19 @@ export const createGeneralQueryPipeline = (
 export const createFormIdInfoPipeline = (
   formId: string,
 ): Record<string, unknown>[] => {
-  // Retrieve all forms with the specified formId.
+  // Retrieve all forms with the specified formId,
+  // and filter out all inactive/unlisted forms.
   return [
     {
       $match: {
         _id: mongoose.Types.ObjectId(formId),
+        status: Status.Public,
+        isListed: true,
       },
     },
     {
       $project: {
         formInfo: '$$ROOT',
-      },
-    },
-    // Filter out all inactive/unlisted forms.
-    {
-      $match: {
-        'formInfo.status': Status.Public,
-        'formInfo.isListed': true,
       },
     },
     // Retrieve agency infos of forms in this stage.
