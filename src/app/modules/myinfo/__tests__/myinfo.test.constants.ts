@@ -151,7 +151,7 @@ export const MOCK_UINFIN = 'uinFin'
 export const MOCK_REQUESTED_ATTRS = [MyInfoAttribute.Name]
 export const MOCK_FORM_ID = new ObjectId().toHexString()
 export const MOCK_NODE_ENV = Environment.Test
-export const MOCK_APP_TITLE = 'appTitle'
+export const MOCK_APP_URL = 'appUrl'
 export const MOCK_ACCESS_TOKEN = 'accessToken'
 
 export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
