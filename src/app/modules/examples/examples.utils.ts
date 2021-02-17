@@ -1,12 +1,16 @@
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 
+import getFormModel from 'src/app/models/form.server.model'
+
 import { createLoggerWithLabel } from '../../../config/logger'
 import { Status } from '../../../types'
 import { MapRouteError } from '../../../types/routing'
 import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
+
+const FormModel = getFormModel(mongoose)
 
 const logger = createLoggerWithLabel(module)
 
@@ -69,7 +73,7 @@ export const examplesSearchQueryBuilder = ({
 }: {
   agencyId?: string
   searchTerm?: string
-}): Record<string, unknown>[] => {
+}): mongoose.Aggregate<any[]> => {
   const query: Record<string, unknown>[] = []
 
   if (searchTerm) {
@@ -161,7 +165,12 @@ export const examplesSearchQueryBuilder = ({
         },
   )
 
-  return query
+  return (
+    FormModel.aggregate(query)
+      .read('secondary')
+      // Prevent out-of-memory for large search results (max 100MB).
+      .allowDiskUse(true)
+  )
 }
 
 /**

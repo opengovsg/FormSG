@@ -192,15 +192,10 @@ export const getExampleForms = (
 ): ResultAsync<QueryPageResultWithTotal | QueryPageResult, DatabaseError> => {
   const { agency, searchTerm, pageNo, shouldGetTotalNumResults } = query
 
-  const queryBuilder = FormModel.aggregate(
-    examplesSearchQueryBuilder({
-      searchTerm,
-      agencyId: agency,
-    }),
-  )
-    .read('secondary')
-    // Prevent out-of-memory for large search results (max 100MB).
-    .allowDiskUse(true)
+  const queryBuilder = examplesSearchQueryBuilder({
+    searchTerm,
+    agencyId: agency,
+  })
 
   const offset = pageNo * PAGE_SIZE || 0
 
