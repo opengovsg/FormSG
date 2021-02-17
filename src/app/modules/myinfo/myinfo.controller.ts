@@ -113,10 +113,13 @@ export const handleEServiceIdCheck = [
 ] as RequestHandler[]
 
 const validateMyInfoLogin = celebrate({
-  [Segments.QUERY]: {
-    code: Joi.string().required(),
-    state: Joi.string().required(),
-  },
+  [Segments.QUERY]: Joi.object()
+    .keys({
+      code: Joi.string().required(),
+      state: Joi.string().required(),
+    })
+    // MyInfo sends several other params which are not necessary for Form
+    .unknown(true),
 })
 
 const loginToMyInfo: RequestHandler<
