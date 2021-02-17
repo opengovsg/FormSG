@@ -4,7 +4,7 @@ import { mocked } from 'ts-jest/utils'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import config from 'src/config/config'
-import { AuthType } from 'src/types'
+import { AuthType, IFormSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -55,6 +55,13 @@ MockConfig.isDev = false
 const MOCK_RESPONSE = expressHandler.mockResponse()
 const MOCK_REDIRECT_REQ = expressHandler.mockRequest({
   query: {
+    target: MOCK_RELAY_STATE,
+    authType: AuthType.SP as const,
+    esrvcId: MOCK_ESRVCID,
+  },
+})
+const MOCK_VALIDATE_REQ = expressHandler.mockRequest({
+  query: {
     target: MOCK_TARGET,
     authType: AuthType.SP as const,
     esrvcId: MOCK_ESRVCID,
@@ -71,16 +78,26 @@ describe('spcp.controller', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('handleRedirect', () => {
-    it('should return the redirect URL correctly', () => {
+    beforeEach(() => {
+      MockFormService.retrieveFormById.mockReturnValueOnce(
+        okAsync(MOCK_SP_FORM as IFormSchema),
+      )
+    })
+
+    it('should return the redirect URL correctly', async () => {
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
-      SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
+      await SpcpController.handleRedirect(
+        MOCK_REDIRECT_REQ,
+        MOCK_RESPONSE,
+        jest.fn(),
+      )
 
       expect(MockSpcpFactory.createRedirectUrl).toHaveBeenCalledWith(
         AuthType.SP,
-        MOCK_TARGET,
+        MOCK_RELAY_STATE,
         MOCK_ESRVCID,
       )
       expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(200)
@@ -89,16 +106,20 @@ describe('spcp.controller', () => {
       })
     })
 
-    it('should return 500 if auth client throws an error', () => {
+    it('should return 500 if auth client throws an error', async () => {
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
         err(new CreateRedirectUrlError()),
       )
 
-      SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
+      await SpcpController.handleRedirect(
+        MOCK_REDIRECT_REQ,
+        MOCK_RESPONSE,
+        jest.fn(),
+      )
 
       expect(MockSpcpFactory.createRedirectUrl).toHaveBeenCalledWith(
         AuthType.SP,
-        MOCK_TARGET,
+        MOCK_RELAY_STATE,
         MOCK_ESRVCID,
       )
       expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(500)
@@ -109,6 +130,12 @@ describe('spcp.controller', () => {
   })
 
   describe('handleValidate', () => {
+    beforeEach(() => {
+      MockFormService.retrieveFormById.mockReturnValue(
+        okAsync(MOCK_SP_FORM as IFormSchema),
+      )
+    })
+
     it('should return 200 with isValid true if validation passes', async () => {
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
@@ -121,7 +148,7 @@ describe('spcp.controller', () => {
       )
 
       await SpcpController.handleValidate(
-        MOCK_REDIRECT_REQ,
+        MOCK_VALIDATE_REQ,
         MOCK_RESPONSE,
         jest.fn(),
       )
@@ -155,7 +182,7 @@ describe('spcp.controller', () => {
       )
 
       await SpcpController.handleValidate(
-        MOCK_REDIRECT_REQ,
+        MOCK_VALIDATE_REQ,
         MOCK_RESPONSE,
         jest.fn(),
       )
@@ -187,7 +214,7 @@ describe('spcp.controller', () => {
       )
 
       await SpcpController.handleValidate(
-        MOCK_REDIRECT_REQ,
+        MOCK_VALIDATE_REQ,
         MOCK_RESPONSE,
         jest.fn(),
       )
@@ -219,7 +246,7 @@ describe('spcp.controller', () => {
       )
 
       await SpcpController.handleValidate(
-        MOCK_REDIRECT_REQ,
+        MOCK_VALIDATE_REQ,
         MOCK_RESPONSE,
         jest.fn(),
       )
