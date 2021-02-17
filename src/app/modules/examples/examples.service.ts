@@ -57,7 +57,6 @@ const execExamplesQueryWithTotal = (
               logo: '$agencyInfo.logo',
               agency: '$agencyInfo.shortName',
               colorTheme: '$formInfo.startPage.colorTheme',
-              avgFeedback: { $avg: '$formFeedbackInfo.rating' },
             },
           },
         ],
@@ -111,7 +110,6 @@ const execExamplesQuery = (
             logo: '$agencyInfo.logo',
             agency: '$agencyInfo.shortName',
             colorTheme: '$formInfo.startPage.colorTheme',
-            avgFeedback: { $avg: '$formFeedbackInfo.rating' },
           },
         },
       ])

@@ -139,7 +139,6 @@ function ExamplesController(
         /* Form Properties
             ------------------
             _id: form id
-            avgFeedback: 4.5
             title: form title
             logo: form logo url
             agency: agency shortname

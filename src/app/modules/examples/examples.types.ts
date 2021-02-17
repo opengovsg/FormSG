@@ -7,7 +7,6 @@ export type QueryExecResult = {
   logo: IAgency['logo']
   agency: IAgency['shortName']
   colorTheme: StartPage['colorTheme']
-  avgFeedback: number | null
 }
 
 export type QueryExecResultWithTotal = {

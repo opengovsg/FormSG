@@ -164,17 +164,10 @@ const prepareTestData = async (
 
   // Internal function to create expected aggregate pipeline results to insert
   // into test data.
-  const createFormInfo = (
-    forms: IFormSchema[],
-    titlePrefix: 'first' | 'second',
-  ): FormInfo[] => {
-    const isFirst = titlePrefix === 'first'
-    return forms.map((form, i) => ({
+  const createFormInfo = (forms: IFormSchema[]): FormInfo[] => {
+    return forms.map((form) => ({
       _id: form._id,
       agency: agency.shortName,
-      avgFeedback: isFirst
-        ? testData.first.feedbacks[i].rating
-        : testData.second.feedbacks[i].rating,
       colorTheme: form.startPage!.colorTheme,
       form_fields: [],
       logo: agency.logo,
@@ -183,14 +176,8 @@ const prepareTestData = async (
   }
 
   // Create expected results from running example aggregate pipelines.
-  testData.first.expectedFormInfo = createFormInfo(
-    testData.first.forms,
-    'first',
-  )
-  testData.second.expectedFormInfo = createFormInfo(
-    testData.second.forms,
-    'second',
-  )
+  testData.first.expectedFormInfo = createFormInfo(testData.first.forms)
+  testData.second.expectedFormInfo = createFormInfo(testData.second.forms)
 
   testData.total.expectedFormInfo = testData.first.expectedFormInfo.concat(
     testData.second.expectedFormInfo,

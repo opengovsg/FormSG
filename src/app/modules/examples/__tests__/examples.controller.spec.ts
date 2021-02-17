@@ -96,7 +96,6 @@ describe('examples.controller', () => {
         form: {
           _id: 'mock randomId',
           agency: 'mock agencyId',
-          avgFeedback: 5,
           colorTheme: Colors.Blue,
           form_fields: [],
           logo: 'logo',

@@ -1,11 +1,10 @@
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 
-import getFormModel from 'src/app/models/form.server.model'
-
 import { createLoggerWithLabel } from '../../../config/logger'
 import { Status } from '../../../types'
 import { MapRouteError } from '../../../types/routing'
+import getFormModel from '../../models/form.server.model'
 import { DatabaseError } from '../core/core.errors'
 
 import { ResultsNotFoundError } from './examples.errors'
@@ -138,18 +137,6 @@ export const examplesSearchQueryBuilder = ({
     })
   }
 
-  query.push(
-    // Retrieve form feedback from the forms that reach this step.
-    {
-      $lookup: {
-        from: 'formfeedback',
-        localField: '_id',
-        foreignField: 'formId',
-        as: 'formFeedbackInfo',
-      },
-    },
-  )
-
   // Sort by search relevancy if a search term was supplied, otherwise
   // sort on recency
 
@@ -238,28 +225,11 @@ export const createFormIdInfoPipeline = (
         colorTheme: '$formInfo.startPage.colorTheme',
       },
     },
-    // Retrieve form feedbacks for the submissions.
-    {
-      $lookup: {
-        from: 'formfeedback',
-        localField: '_id',
-        foreignField: 'formId',
-        as: 'formFeedbackInfo',
-      },
-    },
-    {
-      $addFields: {
-        avgFeedback: {
-          $avg: '$formFeedbackInfo.rating',
-        },
-      },
-    },
     // Project submissions by form id, get submission count, get the last
     // submission date, along with the average feedback of the submissions.
     {
       $project: {
         agency: 1,
-        avgFeedback: 1,
         colorTheme: 1,
         form_fields: 1,
         logo: 1,
