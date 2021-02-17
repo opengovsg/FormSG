@@ -1,3 +1,4 @@
+import { AddressType, MyInfoSource } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { merge, zipWith } from 'lodash'
 
@@ -40,28 +41,29 @@ export const MOCK_MYINFO_DATA = {
 
 export const MOCK_MYINFO_FORMAT_DATA = {
   mobileno: {
-    code: '65',
-    prefix: '+',
+    areacode: { value: '65' },
+    prefix: { value: '+' },
     lastupdated: '2017-12-13',
-    source: '4',
+    source: MyInfoSource.GovtVerified,
     classification: 'C',
-    nbr: '97324992',
+    nbr: { value: '97324992' },
   },
   regadd: {
-    country: 'SG',
-    unit: '128',
-    street: 'BEDOK NORTH AVENUE 1',
+    type: AddressType.Singapore,
+    country: { code: 'SG', desc: 'SINGAPORE' },
+    unit: { value: '128' },
+    street: { value: 'BEDOK NORTH AVENUE 1' },
     lastupdated: '2016-03-11',
-    block: '548',
-    source: '1',
-    postal: '460548',
+    block: { value: '548' },
+    source: MyInfoSource.GovtVerified,
+    postal: { value: '460548' },
     classification: 'C',
-    floor: '09',
-    building: '',
+    floor: { value: '09' },
+    building: { value: '' },
   },
-  workpassexpirydate: {
+  passexpirydate: {
     lastupdated: '2018-03-02',
-    source: '1',
+    source: MyInfoSource.GovtVerified,
     classification: 'C',
     value: '2018-12-31',
   },
