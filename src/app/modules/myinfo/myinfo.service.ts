@@ -50,7 +50,7 @@ import getMyInfoHashModel from './myinfo_hash.model'
 const logger = createLoggerWithLabel(module)
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
-const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v2/'
+const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v3'
 const BREAKER_PARAMS = {
   errorThresholdPercentage: 80, // % of errors before breaker trips
   timeout: 5000, // max time before individual request fails, ms
