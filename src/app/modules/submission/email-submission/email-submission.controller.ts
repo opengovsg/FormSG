@@ -133,7 +133,7 @@ export const handleEmailSubmission: RequestHandler<
   } else if (authType === AuthType.MyInfo) {
     const uinFinResult = MyInfoUtil.extractMyInfoCookie(req.cookies)
       .andThen(MyInfoUtil.extractAccessTokenFromCookie)
-      .andThen(MyInfoFactory.extractUinFin)
+      .andThen((accessToken) => MyInfoFactory.extractUinFin(accessToken))
     if (uinFinResult.isErr()) {
       const { errorMessage, statusCode } = mapRouteError(uinFinResult.error)
       return res
