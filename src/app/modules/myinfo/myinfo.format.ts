@@ -31,7 +31,6 @@ export const formatPhoneNumber = (
  * @returns Formatted address if minimally the `block`, `street`, `country`,and `postal` values are not empty in {@link addr}. Else return empty string.
  */
 export const formatAddress = (addr: MyInfoAddress | undefined): string => {
-  // Early return if missing required props in address.
   if (!addr || addr.unavailable) {
     return ''
   }
@@ -63,7 +62,9 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
     buildingBlocks.push(`${building.value},`)
   }
   buildingBlocks.push(block.value)
-  buildingBlocks.push(`${street.value},`)
+  if (street.value) {
+    buildingBlocks.push(`${street.value},`)
+  }
 
   if (floor.value && unit.value) {
     buildingBlocks.push(`#${floor.value}-${unit.value},`)
@@ -74,7 +75,7 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   buildingBlocks.push(postal.value)
 
   // Return string form with each block being separated by a space.
-  return buildingBlocks.join(' ')
+  return buildingBlocks.filter((b) => b !== '').join(' ')
 }
 
 export const formatDescriptionField = (
