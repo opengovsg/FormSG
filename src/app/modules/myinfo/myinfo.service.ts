@@ -115,6 +115,7 @@ export class MyInfoService {
     this.#myInfoPersonBreaker = new CircuitBreaker(
       (accessToken, attributes, eSrvcId) =>
         this.#myInfoGovClient.getPerson(accessToken, attributes, eSrvcId),
+      BREAKER_PARAMS,
     )
   }
 
