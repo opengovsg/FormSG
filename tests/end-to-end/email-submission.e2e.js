@@ -23,7 +23,7 @@ const { tripleAttachment } = require('./helpers/triple-attachment')
 const chainDisabled = require('./helpers/disabled-form-chained')
 
 const { cloneDeep } = require('lodash')
-// const { myInfoFields } = require('./helpers/myinfo-form')
+const { myInfoFields } = require('./helpers/myinfo-form')
 
 let db
 let User
@@ -201,18 +201,18 @@ test.meta('full-env', 'true').before(async (t) => {
 })
 
 // Form with a mix of autofilled and non-autofilled MyInfo fields
-// test.meta('full-env', 'true').before(async (t) => {
-//   const formData = await getDefaultFormOptions({
-//     authType: 'SP',
-//     esrvcId: 'Test-eServiceId-Sp',
-//   })
-//   formData.formFields = myInfoFields
-//   t.ctx.formData = formData
-// })('Create and submit basic MyInfo form', async (t) => {
-//   let authData = { testSpNric }
-//   t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
-//   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
-// })
+test.meta('full-env', 'true').before(async (t) => {
+  const formData = await getDefaultFormOptions({
+    authType: 'MyInfo',
+    esrvcId: 'Test-eServiceId-Sp',
+  })
+  formData.formFields = myInfoFields
+  t.ctx.formData = formData
+})('Create and submit basic MyInfo form', async (t) => {
+  let authData = { testSpNric }
+  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
+  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
+})
 
 test.meta('full-env', 'true').before(async (t) => {
   const formData = await getDefaultFormOptions()

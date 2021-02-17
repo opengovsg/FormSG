@@ -78,9 +78,10 @@ const logicTab = {
   addLogicBtn: Selector('#add-new-logic'),
 }
 const AUTH_TYPE_TO_VALUE = {
-  SP: 'SingPass\\/MyInfo',
+  SP: 'SingPass',
   CP: 'CorpPass',
   NIL: 'None',
+  MyInfo: 'MyInfo',
 }
 const settingsTab = {
   formStatus: Selector('#golive-option'),
@@ -207,6 +208,7 @@ const formPage = {
 
 const mockpass = {
   loginBtn: Selector('.container.visible-lg #loginModelbtn'),
+  consentBtn: Selector('input[type=submit]'),
   nricDropdownBtn: Selector('#dropdownMenuButton'),
   getNricOption: (nric) => Selector('.dropdown-menu li').withText(nric),
   getNricUenOption: (nric, uen) =>

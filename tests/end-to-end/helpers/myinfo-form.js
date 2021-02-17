@@ -14,10 +14,10 @@ const myInfoFields = [
     val: 'MALE',
   },
   {
-    myInfo: { attr: 'vehno' },
-    val: 'SKR1234R',
-    title: 'Vehicle number',
-    fieldType: 'textfield',
+    myInfo: { attr: 'workpassstatus' },
+    val: 'Live',
+    title: 'Workpass status',
+    fieldType: 'dropdown',
   },
 ].map(makeField)
 
