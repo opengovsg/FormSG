@@ -44,6 +44,7 @@ export type MyInfoComparePromises = Map<string, Promise<boolean>>
 export enum MyInfoCookieState {
   AccessTokenRetrieved = 'AccessTokenRetrieved',
   RetrieveAccessTokenError = 'RetrieveAccessTokenError',
+  ConsentError = 'ConsentError',
 }
 
 export type MyInfoCookiePayload =
@@ -53,7 +54,7 @@ export type MyInfoCookiePayload =
       state: MyInfoCookieState.AccessTokenRetrieved
     }
   | {
-      state: MyInfoCookieState.RetrieveAccessTokenError
+      state: Exclude<MyInfoCookieState, MyInfoCookieState.AccessTokenRetrieved>
     }
 
 export interface ParsedRelayState {

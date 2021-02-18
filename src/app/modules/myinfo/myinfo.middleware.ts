@@ -75,9 +75,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
         ...myInfoCookie,
         usedCount: myInfoCookie.usedCount + 1,
       }
-      res.cookie(MYINFO_COOKIE_NAME, cookiePayload, {
-        ...MYINFO_COOKIE_OPTIONS,
-      })
+      res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
       return MyInfoFactory.prefillMyInfoFields(
         myInfoData,
         formJson.form_fields,

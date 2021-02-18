@@ -113,22 +113,33 @@ export const handleEServiceIdCheck = [
 ] as RequestHandler[]
 
 const validateMyInfoLogin = celebrate({
-  [Segments.QUERY]: Joi.object()
-    .keys({
-      code: Joi.string().required(),
+  [Segments.QUERY]: Joi.alternatives().try(
+    Joi.object()
+      .keys({
+        code: Joi.string().required(),
+        state: Joi.string().required(),
+      })
+      // MyInfo sends several other params which are not necessary for Form
+      .unknown(true),
+    Joi.object().keys({
+      'error-description': Joi.string().required(),
+      error: Joi.string().required(),
       state: Joi.string().required(),
-    })
-    // MyInfo sends several other params which are not necessary for Form
-    .unknown(true),
+    }),
+  ),
 })
+
+type MyInfoLoginQueryParams =
+  | { code: string; state: string }
+  | { error: string; 'error-description': string; state: string }
 
 const loginToMyInfo: RequestHandler<
   unknown,
   unknown,
   unknown,
-  Query & { code: string; state: string }
+  MyInfoLoginQueryParams
 > = async (req, res) => {
-  const { code, state } = req.query
+  const { state } = req.query
   const logMeta = {
     action: 'loginToMyInfo',
     state,
@@ -143,7 +154,26 @@ const loginToMyInfo: RequestHandler<
   }
   const { formId, cookieDuration } = parseStateResult.value
   const redirectDestination = `/${formId}`
-  return MyInfoFactory.retrieveAccessToken(code)
+
+  // Consent flow not successful
+  if ('error' in req.query) {
+    logger.error({
+      message: 'Invalid MyInfo login query parameters',
+      meta: {
+        ...logMeta,
+        error: req.query.error,
+        errorDescription: req.query['error-description'],
+      },
+    })
+    const cookiePayload: MyInfoCookiePayload = {
+      state: MyInfoCookieState.ConsentError,
+    }
+    res.cookie(MYINFO_COOKIE_NAME, cookiePayload)
+    return res.redirect(redirectDestination)
+  }
+
+  // Consent flow successful, hence code is present
+  return MyInfoFactory.retrieveAccessToken(req.query.code)
     .map((accessToken) => {
       const cookiePayload: MyInfoCookiePayload = {
         accessToken,
