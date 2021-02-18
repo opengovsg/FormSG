@@ -168,7 +168,7 @@ const loginToMyInfo: RequestHandler<
     const cookiePayload: MyInfoCookiePayload = {
       state: MyInfoCookieState.ConsentError,
     }
-    res.cookie(MYINFO_COOKIE_NAME, cookiePayload)
+    res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
     return res.redirect(redirectDestination)
   }
 
@@ -195,7 +195,7 @@ const loginToMyInfo: RequestHandler<
       const cookiePayload: MyInfoCookiePayload = {
         state: MyInfoCookieState.RetrieveAccessTokenError,
       }
-      res.cookie(MYINFO_COOKIE_NAME, cookiePayload)
+      res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
       return res.redirect(redirectDestination)
     })
 }
