@@ -208,6 +208,19 @@ export const handleLogin: (
     })
     return res.sendStatus(StatusCodes.NOT_FOUND)
   }
+  const form = formResult.value
+  if (form.authType !== authType) {
+    logger.error({
+      message: "Log in attempt to wrong endpoint for form's authType",
+      meta: {
+        ...logMeta,
+        formAuthType: form.authType,
+        endpointAuthType: authType,
+      },
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
   const jwtResult = await SpcpFactory.getSpcpAttributes(
     samlArt,
     destination,
@@ -228,7 +241,7 @@ export const handleLogin: (
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
-  return SpcpFactory.addLogin(formResult.value, authType)
+  return SpcpFactory.addLogin(form, authType)
     .map(() => {
       res.cookie(JwtName[authType], jwtResult.value, {
         maxAge: cookieDuration,
