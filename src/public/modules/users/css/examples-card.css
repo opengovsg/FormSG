@@ -234,54 +234,6 @@
   color: white;
 }
 
-.template-header .header-stat {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  -webkit-box-align: start;
-  -ms-flex-align: start;
-  align-items: flex-start;
-  height: 100%;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  margin-right: 27px;
-}
-
-.template-header .header-stat .stat-title {
-  font-size: 12px;
-  line-height: 1.83;
-  letter-spacing: 0.7px;
-  color: #4a4a4a;
-  text-transform: uppercase;
-}
-
-.template-header .header-stat .stat-value {
-  font-size: 28px;
-  font-weight: bold;
-  line-height: 1.07;
-  color: black;
-}
-
-.template-header .header-stat .stat-value .rating-value {
-  white-space: nowrap;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-
-.template-header .header-stat .stat-value .rating-value img {
-  padding-left: 10px;
-  height: 26px;
-}
-
 .full-screen-template .template-iframe {
   height: calc(100% - 81px);
   width: 1024px;

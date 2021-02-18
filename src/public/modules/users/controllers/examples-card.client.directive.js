@@ -48,10 +48,7 @@ function examplesCardController(
       { formId: $scope.form._id },
       { absolute: true },
     )
-    $scope.feedbackScore = $scope.form.avgFeedback
-      ? $scope.form.avgFeedback.toFixed(2)
-      : '-'
-    $scope.emojiUrl = emoji.getUrlFromScore($scope.form.avgFeedback)
+
     $scope.showTemplate = true
     $scope.showIframeSpinner = true
     angular.element('body').addClass('modal-open')
