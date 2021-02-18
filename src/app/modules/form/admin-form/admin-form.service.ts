@@ -273,7 +273,7 @@ export const transferFormOwnership = (
   return (
     // Step 1: Retrieve current owner of form to transfer.
     UserService.findUserById(currentForm.admin._id)
-      .andThen((currentOwner) => {
+      .andThen<IUserSchema, TransferOwnershipError>((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
         if (newOwnerEmail === currentOwner.email) {
@@ -281,7 +281,7 @@ export const transferFormOwnership = (
             new TransferOwnershipError(
               'You are already the owner of this form',
             ),
-          ) as ResultAsync<IUserSchema, TransferOwnershipError | DatabaseError>
+          )
         }
         return okAsync(currentOwner)
       })
