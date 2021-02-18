@@ -1,7 +1,7 @@
 import {
   IPersonResponse,
-  MyInfoAttribute as ExternalMyInfoAttribute,
   MyInfoGovClient,
+  MyInfoScope,
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
 import fs from 'fs'
@@ -22,7 +22,7 @@ import {
 import { DatabaseError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
-import { internalAttrListToExternal, MyInfoData } from './myinfo.adapter'
+import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
 import { MYINFO_REDIRECT_PATH, MYINFO_ROUTER_PREFIX } from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
@@ -74,7 +74,7 @@ export class MyInfoService {
    * and limits the rate of requests in case the receiving server returns errors.
    */
   #myInfoPersonBreaker: CircuitBreaker<
-    [string, ExternalMyInfoAttribute[], string],
+    [string, MyInfoScope[], string],
     IPersonResponse
   >
 
@@ -130,7 +130,7 @@ export class MyInfoService {
       purpose: createConsentPagePurpose(formTitle),
       relayState: createRelayState(formId, rememberMe),
       // Always request consent for NRIC/FIN
-      requestedAttributes: internalAttrListToExternal(requestedAttributes),
+      requestedAttributes: internalAttrListToScopes(requestedAttributes),
       singpassEserviceId: formEsrvcId,
     })
     return ok(redirectURL)
@@ -207,7 +207,7 @@ export class MyInfoService {
       this.#myInfoPersonBreaker
         .fire(
           accessToken,
-          internalAttrListToExternal(requestedAttributes),
+          internalAttrListToScopes(requestedAttributes),
           singpassEserviceId,
         )
         .then((response) => new MyInfoData(response)),

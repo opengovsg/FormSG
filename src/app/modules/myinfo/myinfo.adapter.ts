@@ -2,6 +2,7 @@ import {
   IPerson,
   IPersonResponse,
   MyInfoAttribute as ExternalAttr,
+  MyInfoScope,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 
@@ -15,6 +16,61 @@ import {
   formatPhoneNumber,
   formatVehicleNumbers,
 } from './myinfo.format'
+
+export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
+  switch (attr) {
+    // Changes between MyInfo V2 and V3
+    case InternalAttr.WorkpassStatus:
+      return ExternalAttr.PassStatus
+    case InternalAttr.WorkpassExpiryDate:
+      return ExternalAttr.PassExpiryDate
+    case InternalAttr.VehicleNo:
+      return `${ExternalAttr.Vehicles}.vehicleno` as const
+    // Unchanged fields
+    case InternalAttr.Name:
+      return ExternalAttr.Name
+    case InternalAttr.PassportNumber:
+      return ExternalAttr.PassportNumber
+    case InternalAttr.RegisteredAddress:
+      return ExternalAttr.RegisteredAddress
+    case InternalAttr.Employment:
+      return ExternalAttr.Employment
+    case InternalAttr.MarriageCertNo:
+      return ExternalAttr.MarriageCertNumber
+    case InternalAttr.Sex:
+      return ExternalAttr.Sex
+    case InternalAttr.Race:
+      return ExternalAttr.Race
+    case InternalAttr.Dialect:
+      return ExternalAttr.Dialect
+    case InternalAttr.Nationality:
+      return ExternalAttr.Nationality
+    case InternalAttr.BirthCountry:
+      return ExternalAttr.BirthCountry
+    case InternalAttr.ResidentialStatus:
+      return ExternalAttr.ResidentialStatus
+    case InternalAttr.HousingType:
+      return ExternalAttr.HousingType
+    case InternalAttr.HdbType:
+      return ExternalAttr.HDBType
+    case InternalAttr.Marital:
+      return ExternalAttr.MaritalStatus
+    case InternalAttr.CountryOfMarriage:
+      return ExternalAttr.CountryOfMarriage
+    case InternalAttr.Occupation:
+      return ExternalAttr.Occupation
+    case InternalAttr.MobileNo:
+      return ExternalAttr.MobileNo
+    case InternalAttr.DateOfBirth:
+      return ExternalAttr.DateOfBirth
+    case InternalAttr.PassportExpiryDate:
+      return ExternalAttr.PassportExpiryDate
+    case InternalAttr.MarriageDate:
+      return ExternalAttr.MarriageDate
+    case InternalAttr.DivorceDate:
+      return ExternalAttr.DivorceDate
+  }
+}
 
 export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
   switch (attr) {
@@ -71,10 +127,9 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
   }
 }
 
-export const internalAttrListToExternal = (
+export const internalAttrListToScopes = (
   attrs: InternalAttr[],
-): ExternalAttr[] =>
-  attrs.map(internalAttrToExternal).concat(ExternalAttr.UinFin)
+): MyInfoScope[] => attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
 
 export class MyInfoData {
   #personData: IPerson
