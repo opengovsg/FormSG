@@ -357,7 +357,7 @@ const assertHashesMatch = (
   // Compare OTP hashes first.
   return (
     compareHash(otp, otpHash, logMeta)
-      .andThen((isOtpMatch) => {
+      .andThen<true, InvalidOtpError>((isOtpMatch) => {
         if (isOtpMatch) return okAsync(true)
         return errAsync(
           new InvalidOtpError('OTP is invalid. Please try again.'),
