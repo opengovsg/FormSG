@@ -298,7 +298,9 @@ export const extractMyInfoCookie = (
       typeof cookie.usedCount === 'number'
     ) {
       return ok(cookie as MyInfoCookiePayload)
-    } else if (cookie.state === MyInfoCookieState.RetrieveAccessTokenError) {
+    } else if (
+      Object.values<string>(MyInfoCookieState).includes(String(cookie.state))
+    ) {
       return ok(cookie as MyInfoCookiePayload)
     }
   }
