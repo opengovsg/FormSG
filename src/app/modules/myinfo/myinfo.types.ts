@@ -45,6 +45,7 @@ export enum MyInfoCookieState {
   AccessTokenRetrieved = 'AccessTokenRetrieved',
   RetrieveAccessTokenError = 'RetrieveAccessTokenError',
   ConsentError = 'ConsentError',
+  AddLoginError = 'AddLoginError',
 }
 
 export type MyInfoCookiePayload =

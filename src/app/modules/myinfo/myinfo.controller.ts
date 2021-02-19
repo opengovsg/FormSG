@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
 import { createReqMeta } from '../../utils/request'
+import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
 import { SpcpFactory } from '../spcp/spcp.factory'
 import { LoginPageValidationResult } from '../spcp/spcp.types'
@@ -155,6 +156,28 @@ const loginToMyInfo: RequestHandler<
   const { formId, cookieDuration } = parseStateResult.value
   const redirectDestination = `/${formId}`
 
+  // Ensure form exists
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.error({
+      message: 'Form not found',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    return res.sendStatus(StatusCodes.NOT_FOUND)
+  }
+  const form = formResult.value
+
+  // Ensure form is a MyInfo form
+  if (form.authType !== AuthType.MyInfo) {
+    logger.error({
+      message: "Log in attempt to wrong endpoint for form's authType",
+      meta: logMeta,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(redirectDestination)
+  }
+
   // Consent flow not successful
   if ('error' in req.query) {
     logger.error({
@@ -173,8 +196,27 @@ const loginToMyInfo: RequestHandler<
   }
 
   // Consent flow successful, hence code is present
-  return MyInfoFactory.retrieveAccessToken(req.query.code)
-    .map((accessToken) => {
+  const accessTokenResult = await MyInfoFactory.retrieveAccessToken(
+    req.query.code,
+  )
+  if (accessTokenResult.isErr()) {
+    logger.error({
+      message: 'Error while retrieving MyInfo access token',
+      meta: logMeta,
+      error: accessTokenResult.error,
+    })
+    const cookiePayload: MyInfoCookiePayload = {
+      state: MyInfoCookieState.RetrieveAccessTokenError,
+    }
+    res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
+    return res.redirect(redirectDestination)
+  }
+  const accessToken = accessTokenResult.value
+
+  // Once access token is retrieved, the request is assured to be legitimate,
+  // so add the login
+  return BillingFactory.recordLoginByForm(form)
+    .map(() => {
       const cookiePayload: MyInfoCookiePayload = {
         accessToken,
         usedCount: 0,
@@ -188,12 +230,12 @@ const loginToMyInfo: RequestHandler<
     })
     .mapErr((error) => {
       logger.error({
-        message: 'Error while retrieving MyInfo access token',
+        message: 'Error while adding MyInfo login record to database',
         meta: logMeta,
         error,
       })
       const cookiePayload: MyInfoCookiePayload = {
-        state: MyInfoCookieState.RetrieveAccessTokenError,
+        state: MyInfoCookieState.AddLoginError,
       }
       res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
       return res.redirect(redirectDestination)
