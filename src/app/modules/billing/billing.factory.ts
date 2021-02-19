@@ -1,14 +1,23 @@
-import { okAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
+import { ILoginSchema, IPopulatedForm } from '../../../types'
+import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 
-import { getSpLoginStats } from './billing.service'
+import { FormHasNoAuthError } from './billing.errors'
+import * as BillingService from './billing.service'
 
 interface IBillingFactory {
-  getSpLoginStats: typeof getSpLoginStats
+  getSpLoginStats: typeof BillingService.getSpLoginStats
+  addLogin: (
+    form: IPopulatedForm,
+  ) => ResultAsync<
+    ILoginSchema,
+    FormHasNoAuthError | DatabaseError | MissingFeatureError
+  >
 }
 
 const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
@@ -19,14 +28,14 @@ export const createBillingFactory = ({
   props,
 }: RegisteredFeature<FeatureNames.SpcpMyInfo>): IBillingFactory => {
   if (isEnabled && props) {
-    return {
-      getSpLoginStats,
-    }
+    return BillingService
   }
 
   // Not enabled, return passthrough functions.
+  const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
   return {
     getSpLoginStats: () => okAsync([]),
+    addLogin: () => errAsync(error),
   }
 }
 

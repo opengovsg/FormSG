@@ -8,6 +8,7 @@ import { AuthType } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
+import { BillingFactory } from '../../billing/billing.factory'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as SpcpController from '../spcp.controller'
@@ -43,6 +44,8 @@ import {
 
 jest.mock('../spcp.factory')
 const MockSpcpFactory = mocked(SpcpFactory, true)
+jest.mock('../../billing/billing.factory')
+const MockBillingFactory = mocked(BillingFactory, true)
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = mocked(FormService, true)
 jest.mock('src/config/config')
@@ -261,7 +264,7 @@ describe('spcp.controller', () => {
         )
         MockSpcpFactory.createJWTPayload.mockReturnValue(ok(MOCK_JWT_PAYLOAD))
         MockSpcpFactory.createJWT.mockReturnValue(ok(MOCK_JWT))
-        MockSpcpFactory.addLogin.mockReturnValue(okAsync(MOCK_LOGIN_DOC))
+        MockBillingFactory.addLogin.mockReturnValue(okAsync(MOCK_LOGIN_DOC))
         MockSpcpFactory.getCookieSettings.mockReturnValue(MOCK_COOKIE_SETTINGS)
       })
 
@@ -290,10 +293,7 @@ describe('spcp.controller', () => {
           MOCK_COOKIE_AGE,
           AuthType.SP,
         )
-        expect(MockSpcpFactory.addLogin).toHaveBeenCalledWith(
-          MOCK_SP_FORM,
-          AuthType.SP,
-        )
+        expect(MockBillingFactory.addLogin).toHaveBeenCalledWith(MOCK_SP_FORM)
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtSp', MOCK_JWT, {
           maxAge: MOCK_COOKIE_AGE,
           httpOnly: false,
@@ -321,7 +321,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpFactory.getSpcpAttributes).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
@@ -345,7 +345,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpFactory.getSpcpAttributes).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
@@ -372,7 +372,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
       })
 
@@ -402,7 +402,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
       })
 
@@ -434,12 +434,14 @@ describe('spcp.controller', () => {
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when addLogin errors', async () => {
-        MockSpcpFactory.addLogin.mockReturnValue(errAsync(new DatabaseError()))
+        MockBillingFactory.addLogin.mockReturnValue(
+          errAsync(new DatabaseError()),
+        )
         await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
         expect(MockSpcpFactory.parseOOBParams).toHaveBeenCalledWith(
           MOCK_SP_SAML,
@@ -464,10 +466,7 @@ describe('spcp.controller', () => {
           MOCK_COOKIE_AGE,
           AuthType.SP,
         )
-        expect(MockSpcpFactory.addLogin).toHaveBeenCalledWith(
-          MOCK_SP_FORM,
-          AuthType.SP,
-        )
+        expect(MockBillingFactory.addLogin).toHaveBeenCalledWith(MOCK_SP_FORM)
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
@@ -495,7 +494,7 @@ describe('spcp.controller', () => {
         )
         MockSpcpFactory.createJWTPayload.mockReturnValue(ok(MOCK_JWT_PAYLOAD))
         MockSpcpFactory.createJWT.mockReturnValue(ok(MOCK_JWT))
-        MockSpcpFactory.addLogin.mockReturnValue(okAsync(MOCK_LOGIN_DOC))
+        MockBillingFactory.addLogin.mockReturnValue(okAsync(MOCK_LOGIN_DOC))
         MockSpcpFactory.getCookieSettings.mockReturnValue(MOCK_COOKIE_SETTINGS)
       })
 
@@ -524,10 +523,7 @@ describe('spcp.controller', () => {
           MOCK_COOKIE_AGE,
           AuthType.CP,
         )
-        expect(MockSpcpFactory.addLogin).toHaveBeenCalledWith(
-          MOCK_CP_FORM,
-          AuthType.CP,
-        )
+        expect(MockBillingFactory.addLogin).toHaveBeenCalledWith(MOCK_CP_FORM)
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtCp', MOCK_JWT, {
           maxAge: MOCK_COOKIE_AGE,
           httpOnly: false,
@@ -555,7 +551,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpFactory.getSpcpAttributes).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
@@ -579,7 +575,7 @@ describe('spcp.controller', () => {
         expect(MockSpcpFactory.getSpcpAttributes).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
@@ -606,7 +602,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
       })
 
@@ -636,7 +632,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
       })
 
@@ -668,12 +664,14 @@ describe('spcp.controller', () => {
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when addLogin errors', async () => {
-        MockSpcpFactory.addLogin.mockReturnValue(errAsync(new DatabaseError()))
+        MockBillingFactory.addLogin.mockReturnValue(
+          errAsync(new DatabaseError()),
+        )
         await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
         expect(MockSpcpFactory.parseOOBParams).toHaveBeenCalledWith(
           MOCK_CP_SAML,
@@ -698,10 +696,7 @@ describe('spcp.controller', () => {
           MOCK_COOKIE_AGE,
           AuthType.CP,
         )
-        expect(MockSpcpFactory.addLogin).toHaveBeenCalledWith(
-          MOCK_CP_FORM,
-          AuthType.CP,
-        )
+        expect(MockBillingFactory.addLogin).toHaveBeenCalledWith(MOCK_CP_FORM)
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()

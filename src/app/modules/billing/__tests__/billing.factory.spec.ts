@@ -6,8 +6,14 @@ import {
   ISpcpMyInfo,
   RegisteredFeature,
 } from 'src/config/feature-manager'
-import { AuthType, LoginStatistic } from 'src/types'
+import {
+  AuthType,
+  ILoginSchema,
+  IPopulatedForm,
+  LoginStatistic,
+} from 'src/types'
 
+import { MissingFeatureError } from '../../core/core.errors'
 import { createBillingFactory } from '../billing.factory'
 import * as BillingService from '../billing.service'
 
@@ -37,6 +43,18 @@ describe('billing.factory', () => {
         expect(MockBillingService.getSpLoginStats).not.toHaveBeenCalled()
         expect(actualResults.isOk()).toEqual(true)
         expect(actualResults._unsafeUnwrap()).toEqual([])
+      })
+    })
+
+    describe('addLogin', () => {
+      it('should return MissingFeatureError', async () => {
+        const result = await BillingFactory.addLogin(
+          ({} as unknown) as IPopulatedForm,
+        )
+        expect(MockBillingService.addLogin).not.toHaveBeenCalled()
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new MissingFeatureError(FeatureNames.SpcpMyInfo),
+        )
       })
     })
   })
@@ -76,6 +94,23 @@ describe('billing.factory', () => {
         expect(serviceGetStatsSpy).toHaveBeenCalledTimes(1)
         expect(actualResults.isOk()).toEqual(true)
         expect(actualResults._unsafeUnwrap()).toEqual(mockLoginStats)
+      })
+    })
+
+    describe('addLogin', () => {
+      it('should call BillingService.addLogin', async () => {
+        const mockLoginDoc = ({
+          mockKey: 'mockValue',
+        } as unknown) as ILoginSchema
+        const mockForm = ({
+          mockFormKey: 'mockFormvalue',
+        } as unknown) as IPopulatedForm
+        MockBillingService.addLogin.mockResolvedValueOnce(okAsync(mockLoginDoc))
+
+        const result = await BillingFactory.addLogin(mockForm)
+
+        expect(result._unsafeUnwrap()).toEqual(mockLoginDoc)
+        expect(MockBillingService.addLogin).toHaveBeenCalledWith(mockForm)
       })
     })
   })

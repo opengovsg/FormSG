@@ -6,6 +6,7 @@ import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType, WithForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
+import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
@@ -241,7 +242,7 @@ export const handleLogin: (
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
-  return SpcpFactory.addLogin(form, authType)
+  return BillingFactory.addLogin(form)
     .map(() => {
       res.cookie(JwtName[authType], jwtResult.value, {
         maxAge: cookieDuration,

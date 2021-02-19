@@ -17,7 +17,6 @@ interface ISpcpFactory {
   parseOOBParams: SpcpService['parseOOBParams']
   getSpcpAttributes: SpcpService['getSpcpAttributes']
   createJWT: SpcpService['createJWT']
-  addLogin: SpcpService['addLogin']
   createJWTPayload: SpcpService['createJWTPayload']
   getCookieSettings: SpcpService['getCookieSettings']
 }
@@ -37,7 +36,6 @@ export const createSpcpFactory = ({
       parseOOBParams: () => err(error),
       getSpcpAttributes: () => errAsync(error),
       createJWT: () => err(error),
-      addLogin: () => errAsync(error),
       createJWTPayload: () => err(error),
       getCookieSettings: () => ({}),
     }
