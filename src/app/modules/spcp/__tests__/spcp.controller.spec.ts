@@ -350,6 +350,29 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
 
+      it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          // Note that this is a CorpPass form
+          okAsync(MOCK_CP_FORM),
+        )
+        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+        expect(MockSpcpFactory.parseOOBParams).toHaveBeenCalledWith(
+          MOCK_SP_SAML,
+          MOCK_RELAY_STATE,
+          AuthType.SP,
+        )
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_TARGET,
+        )
+        expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
+        expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
+        expect(MockSpcpFactory.getSpcpAttributes).not.toHaveBeenCalled()
+        expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
+        expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
+      })
+
       it('should set isLoginError cookie and redirect when getSpcpAttributes errors', async () => {
         MockSpcpFactory.getSpcpAttributes.mockReturnValue(
           errAsync(new RetrieveAttributesError()),
@@ -554,6 +577,29 @@ describe('spcp.controller', () => {
         expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
         expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
+      })
+
+      it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          // Note that this is a SingPass form
+          okAsync(MOCK_SP_FORM),
+        )
+        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+        expect(MockSpcpFactory.parseOOBParams).toHaveBeenCalledWith(
+          MOCK_CP_SAML,
+          MOCK_RELAY_STATE,
+          AuthType.CP,
+        )
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_TARGET,
+        )
+        expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
+        expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
+        expect(MockSpcpFactory.getSpcpAttributes).not.toHaveBeenCalled()
+        expect(MockSpcpFactory.createJWTPayload).not.toHaveBeenCalled()
+        expect(MockSpcpFactory.createJWT).not.toHaveBeenCalled()
+        expect(MockBillingFactory.addLogin).not.toHaveBeenCalled()
+        expect(MockSpcpFactory.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should return 404 when form cannot be found', async () => {
