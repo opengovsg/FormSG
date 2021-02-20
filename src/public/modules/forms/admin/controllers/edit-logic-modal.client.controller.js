@@ -2,12 +2,12 @@
 
 const { range } = require('lodash')
 const { LogicType } = require('../../../../../types')
-
+const FormLogic = require('../../services/form-logic.client.service')
+console.log('FormLogic', FormLogic)
 angular
   .module('forms')
   .controller('EditLogicModalController', [
     '$uibModalInstance',
-    'FormLogic',
     'externalScope',
     'updateLogic',
     'FormFields',
@@ -16,7 +16,6 @@ angular
 
 function EditLogicModalController(
   $uibModalInstance,
-  FormLogic,
   externalScope,
   updateLogic,
   FormFields,
