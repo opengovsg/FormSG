@@ -1,10 +1,12 @@
+import { BasicField } from 'src/types'
+
 const conditions = [
   {
-    fieldType: 'dropdown',
+    fieldType: BasicField.Dropdown,
     states: ['is equals to', 'is either'],
   },
   {
-    fieldType: 'number',
+    fieldType: BasicField.Number,
     states: [
       'is equals to',
       'is less than or equal to',
@@ -12,7 +14,7 @@ const conditions = [
     ],
   },
   {
-    fieldType: 'decimal',
+    fieldType: BasicField.Decimal,
     states: [
       'is equals to',
       'is less than or equal to',
@@ -20,7 +22,7 @@ const conditions = [
     ],
   },
   {
-    fieldType: 'rating',
+    fieldType: BasicField.Rating,
     states: [
       'is equals to',
       'is less than or equal to',
@@ -28,11 +30,11 @@ const conditions = [
     ],
   },
   {
-    fieldType: 'yes_no',
+    fieldType: BasicField.YesNo,
     states: ['is equals to'],
   },
   {
-    fieldType: 'radiobutton',
+    fieldType: BasicField.Radio,
     states: ['is equals to', 'is either'],
   },
 ]
@@ -44,4 +46,4 @@ const FormLogic = {
   }),
 }
 
-module.exports = FormLogic
+export default FormLogic

@@ -2,8 +2,8 @@
 
 const { range } = require('lodash')
 const { LogicType } = require('../../../../../types')
-const FormLogic = require('../../services/form-logic.client.service')
-console.log('FormLogic', FormLogic)
+const FormLogic = require('../../services/form-logic.client.service').default
+
 angular
   .module('forms')
   .controller('EditLogicModalController', [
