@@ -1,41 +1,41 @@
-import { BasicField } from 'src/types'
+import { BasicField, LogicConditionState } from '../../../../types'
 
 const conditions = [
   {
     fieldType: BasicField.Dropdown,
-    states: ['is equals to', 'is either'],
+    states: [LogicConditionState.Equal, LogicConditionState.Either],
   },
   {
     fieldType: BasicField.Number,
     states: [
-      'is equals to',
-      'is less than or equal to',
-      'is more than or equal to',
+      LogicConditionState.Equal,
+      LogicConditionState.Lte,
+      LogicConditionState.Gte,
     ],
   },
   {
     fieldType: BasicField.Decimal,
     states: [
-      'is equals to',
-      'is less than or equal to',
-      'is more than or equal to',
+      LogicConditionState.Equal,
+      LogicConditionState.Lte,
+      LogicConditionState.Gte,
     ],
   },
   {
     fieldType: BasicField.Rating,
     states: [
-      'is equals to',
-      'is less than or equal to',
-      'is more than or equal to',
+      LogicConditionState.Equal,
+      LogicConditionState.Lte,
+      LogicConditionState.Gte,
     ],
   },
   {
     fieldType: BasicField.YesNo,
-    states: ['is equals to'],
+    states: [LogicConditionState.Equal],
   },
   {
     fieldType: BasicField.Radio,
-    states: ['is equals to', 'is either'],
+    states: [LogicConditionState.Equal, LogicConditionState.Either],
   },
 ]
 
