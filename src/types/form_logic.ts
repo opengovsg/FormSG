@@ -1,6 +1,7 @@
 import { Document } from 'mongoose'
 
 import { IFieldSchema } from './field/baseField'
+import { BasicField } from './field/fieldTypes'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
@@ -51,3 +52,41 @@ export interface IPreventSubmitLogic extends ILogic {
 export interface IPreventSubmitLogicSchema
   extends IPreventSubmitLogic,
     Document {}
+
+export type LogicValidConditions =
+  | {
+      fieldType: BasicField.Dropdown
+      states: Array<LogicConditionState.Equal | LogicConditionState.Either>
+    }
+  | {
+      fieldType: BasicField.Number
+      states: Array<
+        | LogicConditionState.Equal
+        | LogicConditionState.Lte
+        | LogicConditionState.Gte
+      >
+    }
+  | {
+      fieldType: BasicField.Decimal
+      states: Array<
+        | LogicConditionState.Equal
+        | LogicConditionState.Lte
+        | LogicConditionState.Gte
+      >
+    }
+  | {
+      fieldType: BasicField.Rating
+      states: Array<
+        | LogicConditionState.Equal
+        | LogicConditionState.Lte
+        | LogicConditionState.Gte
+      >
+    }
+  | {
+      fieldType: BasicField.YesNo
+      states: Array<LogicConditionState.Equal>
+    }
+  | {
+      fieldType: BasicField.Radio
+      states: Array<LogicConditionState.Equal | LogicConditionState.Either>
+    }

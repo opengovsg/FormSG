@@ -1,42 +1,8 @@
-import { BasicField, LogicConditionState } from '../../../../types'
-
-type LogicValidConditions =
-  | {
-      fieldType: BasicField.Dropdown
-      states: Array<LogicConditionState.Equal | LogicConditionState.Either>
-    }
-  | {
-      fieldType: BasicField.Number
-      states: Array<
-        | LogicConditionState.Equal
-        | LogicConditionState.Lte
-        | LogicConditionState.Gte
-      >
-    }
-  | {
-      fieldType: BasicField.Decimal
-      states: Array<
-        | LogicConditionState.Equal
-        | LogicConditionState.Lte
-        | LogicConditionState.Gte
-      >
-    }
-  | {
-      fieldType: BasicField.Rating
-      states: Array<
-        | LogicConditionState.Equal
-        | LogicConditionState.Lte
-        | LogicConditionState.Gte
-      >
-    }
-  | {
-      fieldType: BasicField.YesNo
-      states: Array<LogicConditionState.Equal>
-    }
-  | {
-      fieldType: BasicField.Radio
-      states: Array<LogicConditionState.Equal | LogicConditionState.Either>
-    }
+import {
+  BasicField,
+  LogicConditionState,
+  LogicValidConditions,
+} from '../../../../types'
 
 const conditions: LogicValidConditions[] = [
   {
