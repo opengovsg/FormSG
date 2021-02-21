@@ -39,7 +39,7 @@ const makeEmailSignatureValidator: EmailValidatorConstructor = (emailField) => (
       signatureString: signature,
       submissionCreatedAt: Date.now(),
       fieldId: _id,
-      answer: answer,
+      answer,
     })
 
   return isSigned
