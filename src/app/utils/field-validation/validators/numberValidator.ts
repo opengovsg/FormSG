@@ -13,7 +13,7 @@ type NumberValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type NumberValidatorConstructor = (numberField: INumberField) => NumberValidator
 
 /**
- * Validator, to check that answer is an empty string or a nonnegative integer
+ * Return a validator to check if number format is correct.
  */
 const numberFormatValidator: NumberValidator = (response) => {
   const { answer } = response
@@ -22,6 +22,10 @@ const numberFormatValidator: NumberValidator = (response) => {
     : left(`NumberValidator:\t answer is not a valid number format`)
 }
 
+/**
+ * Returns a validation function to check if number length is
+ * less than the minimum length specified.
+ */
 const minLengthValidator: NumberValidatorConstructor = (numberField) => (
   response,
 ) => {
@@ -32,6 +36,10 @@ const minLengthValidator: NumberValidatorConstructor = (numberField) => (
     : left(`NumberValidator:\t answer is shorter than custom minimum length`)
 }
 
+/**
+ * Returns a validation function to check if number length is
+ * more than the maximum length specified.
+ */
 const maxLengthValidator: NumberValidatorConstructor = (numberField) => (
   response,
 ) => {
@@ -42,6 +50,10 @@ const maxLengthValidator: NumberValidatorConstructor = (numberField) => (
     : left(`NumberValidator:\t answer is longer than custom maximum length`)
 }
 
+/**
+ * Returns a validation function to check if number length is
+ * equal to the exact length specified.
+ */
 const exactLengthValidator: NumberValidatorConstructor = (numberField) => (
   response,
 ) => {
@@ -52,6 +64,10 @@ const exactLengthValidator: NumberValidatorConstructor = (numberField) => (
     : left(`NumberValidator:\t answer does not match custom exact length`)
 }
 
+/**
+ * Returns the appropriate validation function
+ * based on the number validation option selected.
+ */
 const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
   switch (numberField.ValidationOptions.selectedValidation) {
     case NumberSelectedValidation.Min:
@@ -65,6 +81,9 @@ const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
   }
 }
 
+/**
+ * Returns a validation function for a number field when called.
+ */
 export const constructNumberValidator: NumberValidatorConstructor = (
   numberField,
 ) =>

@@ -18,7 +18,7 @@ type MobileNoValidatorConstructor = (
 ) => MobileNoValidator
 
 /**
- * Returns a validator to check if home
+ * Returns a validator to check if mobile
  * number format is correct.
  */
 const mobilePhoneNumberValidator: MobileNoValidator = (response) => {
