@@ -5,7 +5,6 @@ const FIELDS_TO_REJECT = require('../../../shared/resources/basic')
 // deprecated
 const ALLOWED_VALIDATORS = [
   'YesNoValidator',
-  'NumberValidator',
   'TableValidator',
   'AttachmentValidator',
   'CheckboxValidator',
