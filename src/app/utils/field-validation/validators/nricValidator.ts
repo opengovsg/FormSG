@@ -11,11 +11,18 @@ import { notEmptySingleAnswerResponse } from './common'
 type NricValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type NricValidatorConstructor = () => NricValidator
 
+/**
+ * Returns a validator to check if nric
+ * format is correct.
+ */
 const nricValidator: NricValidator = (response) => {
   return isNricValid(response.answer)
     ? right(response)
     : left(`NricValidator:\tanswer is not a valid NRIC`)
 }
 
+/**
+ * Returns a validation function for a nric field when called.
+ */
 export const constructNricValidator: NricValidatorConstructor = () =>
   flow(notEmptySingleAnswerResponse, chain(nricValidator))

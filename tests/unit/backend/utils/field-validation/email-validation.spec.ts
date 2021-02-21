@@ -1,13 +1,22 @@
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { validateField } from 'src/app/utils/field-validation'
-import EmailValidator from 'src/app/utils/field-validation/validators/EmailValidator.class'
+import formsgSdk from 'src/config/formsg-sdk'
+import { IFieldSchema } from 'src/types'
 import { BasicField } from 'src/types/field/fieldTypes'
 import { ISingleAnswerResponse } from 'src/types/response'
+
+type VerificationMock = {
+  authenticate: () => boolean
+}
 
 describe('Email field validation', () => {
   beforeEach(() => {
     jest
-      .spyOn(EmailValidator.prototype, '_isSignatureValid')
+      .spyOn(
+        (formsgSdk.verification as unknown) as VerificationMock,
+        'authenticate',
+      )
       .mockImplementation(() => true)
   })
 
@@ -28,7 +37,11 @@ describe('Email field validation', () => {
       answer: 'valid@email.com',
       isVisible: true,
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
@@ -43,14 +56,18 @@ describe('Email field validation', () => {
       required: true,
       disabled: false,
     }
-    const response: ISingleAnswerResponse = {
+    const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@163.com',
       isVisible: true,
-    }
-    const validateResult = validateField('formId', formField, response)
+    } as ISingleAnswerResponse
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
@@ -65,14 +82,18 @@ describe('Email field validation', () => {
       required: true,
       disabled: false,
     }
-    const response: ISingleAnswerResponse = {
+    const response = {
       _id: 'abc123',
       fieldType: BasicField.Email,
       question: 'random',
       answer: 'abc@126.com',
       isVisible: true,
-    }
-    const validateResult = validateField('formId', formField, response)
+    } as ISingleAnswerResponse
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
@@ -94,7 +115,11 @@ describe('Email field validation', () => {
       answer: 'invalidemail.com',
       isVisible: true,
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
@@ -118,7 +143,11 @@ describe('Email field validation', () => {
       isVisible: false,
       answer: '',
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
@@ -142,8 +171,13 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
+      signature: 'some signature',
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      (formField as unknown) as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
@@ -167,8 +201,13 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
+      signature: 'some signature',
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      (formField as unknown) as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
@@ -194,8 +233,13 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
+      signature: 'some signature',
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      (formField as unknown) as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
@@ -219,8 +263,13 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
+      signature: 'some signature',
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      (formField as unknown) as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
@@ -245,10 +294,15 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      (formField as unknown) as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
+
   it('should disallow responses submitted for hidden fields', () => {
     const formField = {
       _id: 'abc123',
@@ -269,10 +323,80 @@ describe('Email field validation', () => {
       isVisible: false,
       answer: 'volunteer-testing@test.gov.sg',
     } as ISingleAnswerResponse
-    const validateResult = validateField('formId', formField, response)
+    const validateResult = validateField(
+      'formId',
+      (formField as unknown) as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
+
+  it('should reject email addresses if isVerifiable is true but there is no signature present', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      description: 'random',
+      required: true,
+      disabled: false,
+      isVerifiable: true,
+    }
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      answer: 'valid@email.com',
+      isVisible: true,
+    } as ISingleAnswerResponse
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
+
+  it('should reject email addresses if isVerifiable is true but signature is invalid', () => {
+    jest
+      .spyOn(
+        (formsgSdk.verification as unknown) as VerificationMock,
+        'authenticate',
+      )
+      .mockImplementation(() => false)
+
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      description: 'random',
+      required: true,
+      disabled: false,
+      isVerifiable: true,
+    }
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      answer: 'valid@email.com',
+      isVisible: true,
+      signature: 'some signature',
+    } as ISingleAnswerResponse
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
     )
   })
 })
