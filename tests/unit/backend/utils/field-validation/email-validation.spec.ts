@@ -333,4 +333,70 @@ describe('Email field validation', () => {
       new ValidateFieldError('Attempted to submit response on a hidden field'),
     )
   })
+
+  it('should reject email addresses if isVerifiable is true but there is no signature present', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      description: 'random',
+      required: true,
+      disabled: false,
+      isVerifiable: true,
+    }
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      answer: 'valid@email.com',
+      isVisible: true,
+    } as ISingleAnswerResponse
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
+
+  it('should reject email addresses if isVerifiable is true but signature is invalid', () => {
+    jest
+      .spyOn(
+        (formsgSdk.verification as unknown) as VerificationMock,
+        'authenticate',
+      )
+      .mockImplementation(() => false)
+
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      description: 'random',
+      required: true,
+      disabled: false,
+      isVerifiable: true,
+    }
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      answer: 'valid@email.com',
+      isVisible: true,
+      signature: 'some signature',
+    } as ISingleAnswerResponse
+    const validateResult = validateField(
+      'formId',
+      formField as IFieldSchema,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
 })
