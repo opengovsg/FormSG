@@ -36,7 +36,6 @@ describe('Email field validation', () => {
       question: 'random',
       answer: 'valid@email.com',
       isVisible: true,
-      signature: 'some signature',
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
@@ -63,7 +62,6 @@ describe('Email field validation', () => {
       question: 'random',
       answer: 'abc@163.com',
       isVisible: true,
-      signature: 'some signature',
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
@@ -90,7 +88,6 @@ describe('Email field validation', () => {
       question: 'random',
       answer: 'abc@126.com',
       isVisible: true,
-      signature: 'some signature',
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
@@ -117,7 +114,6 @@ describe('Email field validation', () => {
       question: 'random',
       answer: 'invalidemail.com',
       isVisible: true,
-      signature: 'some signature',
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
@@ -146,7 +142,6 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: false,
       answer: '',
-      signature: 'some signature',
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
@@ -298,7 +293,6 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'volunteer-testing@test.gov.sg',
-      signature: 'some signature',
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
@@ -308,6 +302,7 @@ describe('Email field validation', () => {
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
+
   it('should disallow responses submitted for hidden fields', () => {
     const formField = {
       _id: 'abc123',
@@ -327,7 +322,6 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: false,
       answer: 'volunteer-testing@test.gov.sg',
-      signature: 'some signature',
     } as ISingleAnswerResponse
     const validateResult = validateField(
       'formId',
