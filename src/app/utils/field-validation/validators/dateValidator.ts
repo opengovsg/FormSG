@@ -23,6 +23,9 @@ const createMomentFromDateString = (date: string): moment.Moment => {
   return moment(date, DATE_FORMAT, true)
 }
 
+/**
+ * A function that returns a validator to check if date format is correct
+ */
 const dateFormatValidator: DateValidator = (response) => {
   const { answer } = response
   return createMomentFromDateString(answer).isValid()
@@ -30,6 +33,9 @@ const dateFormatValidator: DateValidator = (response) => {
     : left(`DateValidator:\t answer is not a valid date`)
 }
 
+/**
+ * A function that returns a validator to check if date is in the future
+ */
 const pastOnlyValidator: DateValidator = (response) => {
   // Today takes two possible values - a min (in makeFutureOnlyValidator) and max (here)
   // Add 14 hours here to account for up to UTC + 14 timezone
@@ -44,6 +50,9 @@ const pastOnlyValidator: DateValidator = (response) => {
     : right(response)
 }
 
+/**
+ * A function that returns a validator to check if date is in the past
+ */
 const futureOnlyValidator: DateValidator = (response) => {
   // Today takes two possible values - a min (here) and max (in makePastOnlyValidator)
   // Subtract 12 hours here to account for up to UTC - 12 timezone
@@ -58,6 +67,10 @@ const futureOnlyValidator: DateValidator = (response) => {
     : right(response)
 }
 
+/**
+ * A function that returns a validator to check if date is within the
+ * specified custom date range
+ */
 const makeCustomDateValidator: DateValidatorConstructor = (dateField) => (
   response,
 ) => {
@@ -72,6 +85,10 @@ const makeCustomDateValidator: DateValidatorConstructor = (dateField) => (
     : right(response)
 }
 
+/**
+ * A function that returns the appropriate validator
+ * based on the date validation option selected
+ */
 const makeDateValidator: DateValidatorConstructor = (dateField) => {
   const { selectedDateValidation } = dateField.dateValidation || {}
   switch (selectedDateValidation) {
@@ -86,6 +103,9 @@ const makeDateValidator: DateValidatorConstructor = (dateField) => {
   }
 }
 
+/**
+ * A function that returns a validation function for a date field when called.
+ */
 export const constructDateValidator: DateValidatorConstructor = (dateField) =>
   flow(
     notEmptySingleAnswerResponse,

@@ -11,6 +11,10 @@ import { notEmptySingleAnswerResponse } from './common'
 type RatingValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type RatingValidatorConstructor = (ratingField: IRatingField) => RatingValidator
 
+/**
+ * A function that returns a validation function to check if the
+ * selected rating option is a valid option
+ */
 const makeRatingLimitsValidator: RatingValidatorConstructor = (ratingField) => (
   response,
 ) => {
@@ -28,6 +32,9 @@ const makeRatingLimitsValidator: RatingValidatorConstructor = (ratingField) => (
     : left(`RatingValidator:\t answer is not a valid rating`)
 }
 
+/**
+ * A function that returns a validation function for a rating field when called.
+ */
 export const constructRatingValidator: RatingValidatorConstructor = (
   ratingField,
 ) =>

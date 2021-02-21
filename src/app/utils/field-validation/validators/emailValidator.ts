@@ -13,6 +13,9 @@ type EmailValidatorConstructor = (
   emailField: IEmailFieldSchema,
 ) => EmailValidator
 
+/**
+ * A function that returns a validator to check if email format is correct
+ */
 const emailFormatValidator: EmailValidator = (response) => {
   const { answer } = response
   return isEmail(answer)
@@ -20,6 +23,10 @@ const emailFormatValidator: EmailValidator = (response) => {
     : left(`EmailValidator:\t answer is not a valid email`)
 }
 
+/**
+ * A function that returns a validation function
+ * to check if email domain is valid
+ */
 const makeEmailDomainValidator: EmailValidatorConstructor = (emailField) => (
   response,
 ) => {
@@ -39,6 +46,9 @@ const makeEmailDomainValidator: EmailValidatorConstructor = (emailField) => (
     : left(`EmailValidator:\t answer is not a valid email domain`)
 }
 
+/**
+ * A function that returns a validation function for a email field when called.
+ */
 export const constructEmailValidator: EmailValidatorConstructor = (
   emailField,
 ) =>

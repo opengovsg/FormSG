@@ -6,6 +6,9 @@ import { ResponseValidator } from 'src/types/field/utils/validation'
 
 import formsgSdk from '../../../../config/formsg-sdk'
 
+/**
+ * A function which returns a validator to check if single answer has a non-empty response
+ */
 export const notEmptySingleAnswerResponse: ResponseValidator<ProcessedSingleAnswerResponse> = (
   response,
 ) => {
@@ -20,6 +23,10 @@ type SignatureValidatorConstructor = (
   formField: IEmailFieldSchema | IMobileFieldSchema,
 ) => ResponseValidator<ProcessedSingleAnswerResponse>
 
+/**
+ * A function which returns a signature validator constructor for mobile and email verified field.
+ * The validator checks if field has correct signature
+ */
 export const makeSignatureValidator: SignatureValidatorConstructor = (
   formField,
 ) => (response) => {

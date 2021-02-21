@@ -18,6 +18,10 @@ interface IIsFloatOptions {
   max?: number
 }
 
+/**
+ * A function that returns a validation function
+ * to check if decimal is within the specified custom range
+ */
 const makeDecimalFloatRangeValidator: DecimalValidatorConstructor = (
   decimalField,
 ) => (response) => {
@@ -44,6 +48,10 @@ const makeDecimalFloatRangeValidator: DecimalValidatorConstructor = (
     : left(`DecimalValidator:\t answer is not a valid float`)
 }
 
+/**
+ * A function that returns a validator to check if
+ * decimal has correct leading pattern
+ */
 const decimalLeadingPatternValidator: DecimalValidator = (response) => {
   const { answer } = response
 
@@ -57,6 +65,9 @@ const decimalLeadingPatternValidator: DecimalValidator = (response) => {
     : left(`DecimalValidator:\t answer has invalid leading pattern`)
 }
 
+/**
+ * A function that returns a validation function for a decimal field when called.
+ */
 export const constructDecimalValidator: DecimalValidatorConstructor = (
   decimalField,
 ) =>

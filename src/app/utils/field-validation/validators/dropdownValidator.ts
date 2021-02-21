@@ -15,6 +15,10 @@ type DropdownValidatorConstructor = (
   dropdownField: IDropdownField,
 ) => DropdownValidator
 
+/**
+ * A function that returns a validation function
+ * to check if dropdown selection is one of the options
+ */
 const makeDropdownValidator: DropdownValidatorConstructor = (dropdownField) => (
   response,
 ) => {
@@ -30,6 +34,9 @@ const makeDropdownValidator: DropdownValidatorConstructor = (dropdownField) => (
     : left(`DropdownValidator:\t answer is not a valid dropdown option`)
 }
 
+/**
+ * A function that returns a validation function for a dropdown field when called.
+ */
 export const constructDropdownValidator: DropdownValidatorConstructor = (
   dropdownField,
 ) =>

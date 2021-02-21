@@ -13,6 +13,10 @@ type RadioButtonValidatorConstructor = (
   radioButtonField: IRadioField,
 ) => RadioButtonValidator
 
+/**
+ * A function that returns a validation function to check if the
+ * selected radio option is one of the specified options
+ */
 const makeRadioOptionsValidator: RadioButtonValidatorConstructor = (
   radioButtonField,
 ) => (response) => {
@@ -27,6 +31,9 @@ const makeRadioOptionsValidator: RadioButtonValidatorConstructor = (
     : left(`RadioButtonValidator:\tanswer is not a valid radio button option`)
 }
 
+/**
+ * A function that returns a validation function for a radio button field when called.
+ */
 export const constructRadioButtonValidator: RadioButtonValidatorConstructor = (
   radioButtonField,
 ) =>

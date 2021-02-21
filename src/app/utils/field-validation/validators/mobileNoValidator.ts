@@ -17,12 +17,20 @@ type MobileNoValidatorConstructor = (
   mobileNumberField: IMobileFieldSchema,
 ) => MobileNoValidator
 
+/**
+ * A function that returns a validator to check if home
+ * number format is correct
+ */
 const mobilePhoneNumberValidator: MobileNoValidator = (response) => {
   return isMobilePhoneNumber(response.answer)
     ? right(response)
     : left(`MobileNoValidator:\t answer is not a valid mobile phone number`)
 }
 
+/**
+ * A function that returns a validator to check if mobile
+ * number starts with singapore prefix
+ */
 const sgPrefixValidator: MobileNoValidator = (response) => {
   return startsWithSgPrefix(response.answer)
     ? right(response)
@@ -31,12 +39,19 @@ const sgPrefixValidator: MobileNoValidator = (response) => {
       )
 }
 
+/**
+ * A function that returns a validator to check if mobile
+ * number prefix is correct
+ */
 const makePrefixValidator: MobileNoValidatorConstructor = (
   mobileNumberField,
 ) => {
   return mobileNumberField.allowIntlNumbers ? right : sgPrefixValidator
 }
 
+/**
+ * Constructs validator for mobile number field
+ */
 export const constructMobileNoValidator: MobileNoValidatorConstructor = (
   mobileNumberField,
 ) =>
