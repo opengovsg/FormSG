@@ -134,6 +134,7 @@ module.exports = function (app) {
     .get(
       forms.formById,
       publicForms.isFormPublicCheck,
+      publicForms.checkFormSubmissionLimitAndDeactivate,
       SpcpController.addSpcpSessionInfo,
       MyInfoMiddleware.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
@@ -207,6 +208,7 @@ module.exports = function (app) {
     }),
     forms.formById,
     publicForms.isFormPublicCheck,
+    publicForms.checkFormSubmissionLimitAndDeactivate,
     CaptchaMiddleware.checkCaptchaResponse,
     EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     SpcpController.isSpcpAuthenticated,

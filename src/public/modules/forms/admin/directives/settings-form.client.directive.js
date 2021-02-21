@@ -11,6 +11,8 @@ const SETTINGS_PATH = [
   'esrvcId',
   'responseMode',
   'inactiveMessage',
+  'hasSubmissionLimit',
+  'submissionLimit',
   'webhook.url',
 ]
 
@@ -32,6 +34,7 @@ angular
     'responseModeEnum',
     '$uibModal',
     'Auth',
+    'Submissions',
     settingsFormDirective,
   ])
 
@@ -41,6 +44,7 @@ function settingsFormDirective(
   responseModeEnum,
   $uibModal,
   Auth,
+  Submissions,
 ) {
   return {
     templateUrl:
@@ -57,6 +61,13 @@ function settingsFormDirective(
 
         $scope.responseModeEnum = responseModeEnum
         $scope.tempForm = createTempSettings($scope.myform)
+
+        $scope.currentResponsesCount = 0
+        Submissions.count({ formId: $scope.myform._id }).then(
+          (responsesCount) => {
+            $scope.currentResponsesCount = responsesCount
+          },
+        )
 
         const getCurrentSettings = () => {
           // Detect difference between the new form (tempForm) and the old form (myform),
@@ -179,6 +190,7 @@ function settingsFormDirective(
           title: () => $scope.settingsForm.title,
           esrvcId: () => $scope.settingsForm.esrvcId,
           inactiveMessage: () => $scope.settingsForm.inactiveMessage,
+          submissionLimit: () => $scope.settingsForm.submissionLimit,
           webhook: () => $scope.settingsForm.webhookUrl,
         }
 
