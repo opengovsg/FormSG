@@ -14,8 +14,8 @@ type RadioButtonValidatorConstructor = (
 ) => RadioButtonValidator
 
 /**
- * A function that returns a validation function to check if the
- * selected radio option is one of the specified options
+ * Returns a validation function to check if the
+ * selected radio option is one of the specified options.
  */
 const makeRadioOptionsValidator: RadioButtonValidatorConstructor = (
   radioButtonField,
@@ -32,7 +32,7 @@ const makeRadioOptionsValidator: RadioButtonValidatorConstructor = (
 }
 
 /**
- * A function that returns a validation function for a radio button field when called.
+ * Returns a validation function for a radio button field when called.
  */
 export const constructRadioButtonValidator: RadioButtonValidatorConstructor = (
   radioButtonField,

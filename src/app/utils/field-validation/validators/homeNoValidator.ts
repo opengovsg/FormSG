@@ -18,8 +18,8 @@ type HomeNoValidatorConstructor = (
 ) => HomeNoValidator
 
 /**
- * A function that returns a validator to check if home number
- * format is correct
+ * Returns a validator to check if home number
+ * format is correct.
  */
 const homePhoneNumberValidator: HomeNoValidator = (response) => {
   return isHomePhoneNumber(response.answer)
@@ -28,8 +28,8 @@ const homePhoneNumberValidator: HomeNoValidator = (response) => {
 }
 
 /**
- * A function that returns a validator to check if home
- * number starts with singapore prefix
+ * Returns a validator to check if home
+ * number starts with singapore prefix.
  */
 const sgPrefixValidator: HomeNoValidator = (response) => {
   return startsWithSgPrefix(response.answer)
@@ -40,15 +40,15 @@ const sgPrefixValidator: HomeNoValidator = (response) => {
 }
 
 /**
- * A function that returns a validation function to check if home
- * number prefix is correct
+ * Returns a validation function to check if home
+ * number prefix is correct.
  */
 const makePrefixValidator: HomeNoValidatorConstructor = (homeNumberField) => {
   return homeNumberField.allowIntlNumbers ? right : sgPrefixValidator
 }
 
 /**
- * A function that returns a validation function for a home number field when called.
+ * Returns a validation function for a home number field when called.
  */
 export const constructHomeNoValidator: HomeNoValidatorConstructor = (
   homeNumberField,

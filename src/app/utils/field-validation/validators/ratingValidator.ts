@@ -12,8 +12,8 @@ type RatingValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type RatingValidatorConstructor = (ratingField: IRatingField) => RatingValidator
 
 /**
- * A function that returns a validation function to check if the
- * selected rating option is a valid option
+ * Returns a validation function to check if the
+ * selected rating option is a valid option.
  */
 const makeRatingLimitsValidator: RatingValidatorConstructor = (ratingField) => (
   response,
@@ -33,7 +33,7 @@ const makeRatingLimitsValidator: RatingValidatorConstructor = (ratingField) => (
 }
 
 /**
- * A function that returns a validation function for a rating field when called.
+ * Returns a validation function for a rating field when called.
  */
 export const constructRatingValidator: RatingValidatorConstructor = (
   ratingField,

@@ -19,8 +19,8 @@ interface IIsFloatOptions {
 }
 
 /**
- * A function that returns a validation function
- * to check if decimal is within the specified custom range
+ * Returns a validation function
+ * to check if decimal is within the specified custom range.
  */
 const makeDecimalFloatRangeValidator: DecimalValidatorConstructor = (
   decimalField,
@@ -49,7 +49,7 @@ const makeDecimalFloatRangeValidator: DecimalValidatorConstructor = (
 }
 
 /**
- * A function that returns a validator to check if
+ * Returns a validator to check if
  * decimal has correct leading pattern
  */
 const decimalLeadingPatternValidator: DecimalValidator = (response) => {
@@ -66,7 +66,7 @@ const decimalLeadingPatternValidator: DecimalValidator = (response) => {
 }
 
 /**
- * A function that returns a validation function for a decimal field when called.
+ * Returns a validation function for a decimal field when called.
  */
 export const constructDecimalValidator: DecimalValidatorConstructor = (
   decimalField,

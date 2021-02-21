@@ -14,8 +14,8 @@ type TextFieldValidatorConstructor = (
 ) => ResponseValidator<ProcessedSingleAnswerResponse>
 
 /**
- * A function that returns a validator to check if
- * text length is less than the min length specified
+ * Returns a validator to check if
+ * text length is less than the min length specified.
  */
 const minLengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
@@ -29,8 +29,8 @@ const minLengthValidator: TextFieldValidatorConstructor = (textField) => (
 }
 
 /**
- * A function that returns a validator to check if
- * text length is more than the max length specified
+ * Returns a validator to check if
+ * text length is more than the max length specified.
  */
 const maxLengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
@@ -44,8 +44,8 @@ const maxLengthValidator: TextFieldValidatorConstructor = (textField) => (
 }
 
 /**
- * A function that returns a validator to check if
- * text length is the exact length specified
+ * Returns a validator to check if
+ * text length is the exact length specified.
  */
 const exactLengthValidator: TextFieldValidatorConstructor = (textField) => (
   response,
@@ -66,8 +66,8 @@ const exactLengthValidator: TextFieldValidatorConstructor = (textField) => (
 }
 
 /**
- * A function that returns the appropriate validator
- * based on the text length validation option selected
+ * Returns the appropriate validator
+ * based on the text length validation option selected.
  */
 const getLengthValidator: TextFieldValidatorConstructor = (textField) => {
   switch (textField.ValidationOptions.selectedValidation) {
@@ -83,7 +83,7 @@ const getLengthValidator: TextFieldValidatorConstructor = (textField) => {
 }
 
 /**
- * A function that returns a validation function for a text field when called.
+ * Returns a validation function for a text field when called.
  */
 const constructTextValidator: TextFieldValidatorConstructor = (textField) => {
   return flow(

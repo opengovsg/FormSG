@@ -25,7 +25,7 @@ type SignatureValidatorConstructor = (
 
 /**
  * A function which returns a signature validator constructor for mobile and email verified field.
- * The validator checks if field has correct signature
+ * The validator checks if field has correct signature.
  */
 export const makeSignatureValidator: SignatureValidatorConstructor = (
   formField,

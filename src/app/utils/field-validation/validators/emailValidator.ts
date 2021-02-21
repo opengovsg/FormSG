@@ -14,7 +14,7 @@ type EmailValidatorConstructor = (
 ) => EmailValidator
 
 /**
- * A function that returns a validator to check if email format is correct
+ * Returns a validator to check if email format is correct.
  */
 const emailFormatValidator: EmailValidator = (response) => {
   const { answer } = response
@@ -24,8 +24,8 @@ const emailFormatValidator: EmailValidator = (response) => {
 }
 
 /**
- * A function that returns a validation function
- * to check if email domain is valid
+ * Returns a validation function
+ * to check if email domain is valid.
  */
 const makeEmailDomainValidator: EmailValidatorConstructor = (emailField) => (
   response,
@@ -47,7 +47,7 @@ const makeEmailDomainValidator: EmailValidatorConstructor = (emailField) => (
 }
 
 /**
- * A function that returns a validation function for a email field when called.
+ * Returns a validation function for a email field when called.
  */
 export const constructEmailValidator: EmailValidatorConstructor = (
   emailField,

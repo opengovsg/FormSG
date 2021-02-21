@@ -18,8 +18,8 @@ type MobileNoValidatorConstructor = (
 ) => MobileNoValidator
 
 /**
- * A function that returns a validator to check if home
- * number format is correct
+ * Returns a validator to check if home
+ * number format is correct.
  */
 const mobilePhoneNumberValidator: MobileNoValidator = (response) => {
   return isMobilePhoneNumber(response.answer)
@@ -28,8 +28,8 @@ const mobilePhoneNumberValidator: MobileNoValidator = (response) => {
 }
 
 /**
- * A function that returns a validator to check if mobile
- * number starts with singapore prefix
+ * Returns a validator to check if mobile
+ * number starts with singapore prefix.
  */
 const sgPrefixValidator: MobileNoValidator = (response) => {
   return startsWithSgPrefix(response.answer)
@@ -40,8 +40,8 @@ const sgPrefixValidator: MobileNoValidator = (response) => {
 }
 
 /**
- * A function that returns a validator to check if mobile
- * number prefix is correct
+ * Returns a validator to check if mobile
+ * number prefix is correct.
  */
 const makePrefixValidator: MobileNoValidatorConstructor = (
   mobileNumberField,
@@ -50,7 +50,7 @@ const makePrefixValidator: MobileNoValidatorConstructor = (
 }
 
 /**
- * Constructs validator for mobile number field
+ * Constructs validator for mobile number field.
  */
 export const constructMobileNoValidator: MobileNoValidatorConstructor = (
   mobileNumberField,

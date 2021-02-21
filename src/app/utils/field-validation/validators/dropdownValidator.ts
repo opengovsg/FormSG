@@ -16,8 +16,8 @@ type DropdownValidatorConstructor = (
 ) => DropdownValidator
 
 /**
- * A function that returns a validation function
- * to check if dropdown selection is one of the options
+ * Returns a validation function
+ * to check if dropdown selection is one of the options.
  */
 const makeDropdownValidator: DropdownValidatorConstructor = (dropdownField) => (
   response,
@@ -35,7 +35,7 @@ const makeDropdownValidator: DropdownValidatorConstructor = (dropdownField) => (
 }
 
 /**
- * A function that returns a validation function for a dropdown field when called.
+ * Returns a validation function for a dropdown field when called.
  */
 export const constructDropdownValidator: DropdownValidatorConstructor = (
   dropdownField,

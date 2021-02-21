@@ -12,8 +12,8 @@ type NricValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type NricValidatorConstructor = () => NricValidator
 
 /**
- * A function that returns a validator to check if nric
- * format is correct
+ * Returns a validator to check if nric
+ * format is correct.
  */
 const nricValidator: NricValidator = (response) => {
   return isNricValid(response.answer)
@@ -22,7 +22,7 @@ const nricValidator: NricValidator = (response) => {
 }
 
 /**
- * A function that returns a validation function for a nric field when called.
+ * Returns a validation function for a nric field when called.
  */
 export const constructNricValidator: NricValidatorConstructor = () =>
   flow(notEmptySingleAnswerResponse, chain(nricValidator))
