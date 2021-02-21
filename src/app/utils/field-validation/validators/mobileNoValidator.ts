@@ -5,13 +5,12 @@ import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submis
 import { IMobileFieldSchema } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import formsgSdk from '../../../../config/formsg-sdk'
 import {
   isMobilePhoneNumber,
   startsWithSgPrefix,
 } from '../../../../shared/util/phone-num-validation'
 
-import { notEmptySingleAnswerResponse } from './common'
+import { makeSignatureValidator, notEmptySingleAnswerResponse } from './common'
 
 type MobileNoValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type MobileNoValidatorConstructor = (
@@ -38,37 +37,12 @@ const makePrefixValidator: MobileNoValidatorConstructor = (
   return mobileNumberField.allowIntlNumbers ? right : sgPrefixValidator
 }
 
-const makeMobileSignatureValidator: MobileNoValidatorConstructor = (
-  mobileNumberField,
-) => (response) => {
-  const { isVerifiable, _id } = mobileNumberField
-  if (!isVerifiable) {
-    return right(response) // no validation occurred
-  }
-  const { signature, answer } = response
-  if (!signature) {
-    return left(`MobileNoValidator:\t answer does not have valid signature`)
-  }
-  const isSigned =
-    formsgSdk.verification.authenticate &&
-    formsgSdk.verification.authenticate({
-      signatureString: signature,
-      submissionCreatedAt: Date.now(),
-      fieldId: _id,
-      answer,
-    })
-
-  return isSigned
-    ? right(response)
-    : left(`MobileNoValidator:\t answer does not have valid signature`)
-}
-
 export const constructMobileNoValidator: MobileNoValidatorConstructor = (
   mobileNumberField,
 ) =>
   flow(
     notEmptySingleAnswerResponse,
     chain(mobilePhoneNumberValidator),
-    chain(makeMobileSignatureValidator(mobileNumberField)),
+    chain(makeSignatureValidator(mobileNumberField)),
     chain(makePrefixValidator(mobileNumberField)),
   )

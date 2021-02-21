@@ -6,9 +6,7 @@ import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submis
 import { IEmailFieldSchema } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import formsgSdk from '../../../../config/formsg-sdk'
-
-import { notEmptySingleAnswerResponse } from './common'
+import { makeSignatureValidator, notEmptySingleAnswerResponse } from './common'
 
 type EmailValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type EmailValidatorConstructor = (
@@ -20,31 +18,6 @@ const emailFormatValidator: EmailValidator = (response) => {
   return isEmail(answer)
     ? right(response)
     : left(`EmailValidator:\t answer is not a valid email`)
-}
-
-const makeEmailSignatureValidator: EmailValidatorConstructor = (emailField) => (
-  response,
-) => {
-  const { isVerifiable, _id } = emailField
-  if (!isVerifiable) {
-    return right(response) // no validation occurred
-  }
-  const { signature, answer } = response
-  if (!signature) {
-    return left(`EmailValidator:\t answer does not have valid signature`)
-  }
-  const isSigned =
-    formsgSdk.verification.authenticate &&
-    formsgSdk.verification.authenticate({
-      signatureString: signature,
-      submissionCreatedAt: Date.now(),
-      fieldId: _id,
-      answer,
-    })
-
-  return isSigned
-    ? right(response)
-    : left(`EmailValidator:\t answer does not have valid signature`)
 }
 
 const makeEmailDomainValidator: EmailValidatorConstructor = (emailField) => (
@@ -72,6 +45,6 @@ export const constructEmailValidator: EmailValidatorConstructor = (
   flow(
     notEmptySingleAnswerResponse,
     chain(emailFormatValidator),
-    chain(makeEmailSignatureValidator(emailField)),
+    chain(makeSignatureValidator(emailField)),
     chain(makeEmailDomainValidator(emailField)),
   )
