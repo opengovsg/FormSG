@@ -235,6 +235,8 @@ describe('Number field validation', () => {
       answer: '55',
     }
     const validateResult = validateField('formId', formField, response)
+    console.log('############')
+    console.log(validateResult)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
