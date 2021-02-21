@@ -19,17 +19,15 @@ export const notEmptySingleAnswerResponse: ResponseValidator<ProcessedSingleAnsw
   return right(response)
 }
 
-type SignatureValidatorConstructor = (
-  formField: IEmailFieldSchema | IMobileFieldSchema,
-) => ResponseValidator<ProcessedSingleAnswerResponse>
-
 /**
  * A function which returns a signature validator constructor for mobile and email verified field.
  * The validator checks if field has correct signature.
  */
-export const makeSignatureValidator: SignatureValidatorConstructor = (
-  formField,
-) => (response) => {
+export const makeSignatureValidator: (
+  formField: IEmailFieldSchema | IMobileFieldSchema,
+) => ResponseValidator<ProcessedSingleAnswerResponse> = (formField) => (
+  response,
+) => {
   const { isVerifiable, _id } = formField
   if (!isVerifiable) {
     return right(response) // no validation occurred
