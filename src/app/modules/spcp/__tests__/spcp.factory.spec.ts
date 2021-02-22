@@ -1,7 +1,7 @@
 import { mocked } from 'ts-jest/utils'
 
 import { FeatureNames, ISpcpMyInfo } from 'src/config/feature-manager'
-import { AuthType, IPopulatedForm } from 'src/types'
+import { AuthType } from 'src/types'
 
 import { MissingFeatureError } from '../../core/core.errors'
 import { createSpcpFactory } from '../spcp.factory'
@@ -42,10 +42,6 @@ describe('spcp.factory', () => {
       0,
       AuthType.SP,
     )
-    const addLoginResult = await SpcpFactory.addLogin(
-      ({} as unknown) as IPopulatedForm,
-      AuthType.SP,
-    )
     const createJWTPayloadResult = SpcpFactory.createJWTPayload(
       {},
       true,
@@ -59,7 +55,6 @@ describe('spcp.factory', () => {
     expect(parseOOBParamsResult._unsafeUnwrapErr()).toEqual(error)
     expect(getSpcpAttributesResult._unsafeUnwrapErr()).toEqual(error)
     expect(createJWTResult._unsafeUnwrapErr()).toEqual(error)
-    expect(addLoginResult._unsafeUnwrapErr()).toEqual(error)
     expect(createJWTPayloadResult._unsafeUnwrapErr()).toEqual(error)
     expect(cookieSettings).toEqual({})
   })
@@ -94,10 +89,6 @@ describe('spcp.factory', () => {
       0,
       AuthType.SP,
     )
-    const addLoginResult = await SpcpFactory.addLogin(
-      ({} as unknown) as IPopulatedForm,
-      AuthType.SP,
-    )
     const createJWTPayloadResult = SpcpFactory.createJWTPayload(
       {},
       true,
@@ -111,7 +102,6 @@ describe('spcp.factory', () => {
     expect(parseOOBParamsResult._unsafeUnwrapErr()).toEqual(error)
     expect(getSpcpAttributesResult._unsafeUnwrapErr()).toEqual(error)
     expect(createJWTResult._unsafeUnwrapErr()).toEqual(error)
-    expect(addLoginResult._unsafeUnwrapErr()).toEqual(error)
     expect(createJWTPayloadResult._unsafeUnwrapErr()).toEqual(error)
     expect(cookieSettings).toEqual({})
   })
