@@ -6,8 +6,8 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
   BasicField,
+  EmailAdminDataField,
   EmailData,
-  EmailFormField,
   FieldResponse,
   IAttachmentInfo,
   IEmailSubmissionSchema,
@@ -116,7 +116,7 @@ export const validateAttachments = (
  * @returns errAsync(ConcatSubmissionError) if error occurred while concatenating attachments
  */
 export const hashSubmission = (
-  formData: EmailFormField[],
+  formData: EmailAdminDataField[],
   attachments: IAttachmentInfo[],
 ): ResultAsync<SubmissionHash, SubmissionHashError | ConcatSubmissionError> => {
   // TODO (#847): remove this try-catch when we are sure that the shape of formData is correct

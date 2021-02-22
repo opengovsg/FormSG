@@ -8,7 +8,7 @@ import {
   getVisibleFieldIds,
 } from '../../../shared/util/logic'
 import {
-  EmailAutoReplyField,
+  EmailRespondentConfirmationField,
   FieldResponse,
   IAttachmentInfo,
   IFieldSchema,
@@ -237,7 +237,7 @@ export const sendEmailConfirmations = ({
   form: IPopulatedForm
   submission: ISubmissionSchema
   parsedResponses: ProcessedFieldResponse[]
-  autoReplyData?: EmailAutoReplyField[]
+  autoReplyData?: EmailRespondentConfirmationField[]
   attachments?: IAttachmentInfo[]
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {

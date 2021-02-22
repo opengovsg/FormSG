@@ -7,10 +7,10 @@ import * as FileValidation from '../../../../shared/util/file-validation'
 import {
   AuthType,
   BasicField,
-  EmailAutoReplyField,
+  EmailAdminDataField,
+  EmailDataCollationToolField,
   EmailDataForOneField,
-  EmailFormField,
-  EmailJsonField,
+  EmailRespondentConfirmationField,
   FieldResponse,
   IAttachmentInfo,
   IAttachmentResponse,
@@ -211,8 +211,8 @@ export const getFormattedResponse = (
   const { question, answer, fieldType, isVisible } = response
   const answerSplitByNewLine = answer.split('\n')
 
-  let autoReplyData: EmailAutoReplyField | undefined
-  let jsonData: EmailJsonField | undefined
+  let autoReplyData: EmailRespondentConfirmationField | undefined
+  let jsonData: EmailDataCollationToolField | undefined
   // Auto reply email will contain only visible fields
   if (isVisible) {
     autoReplyData = {
@@ -524,7 +524,7 @@ export const handleDuplicatesInAttachments = (
  * @returns concatenated response to hash
  */
 export const concatAttachmentsAndResponses = (
-  formData: EmailFormField[],
+  formData: EmailAdminDataField[],
   attachments: IAttachmentInfo[],
 ): string => {
   let response = ''
@@ -538,8 +538,8 @@ export const concatAttachmentsAndResponses = (
 }
 
 const maskUidOnLastField = (
-  autoReplyData: EmailAutoReplyField[],
-): EmailAutoReplyField[] => {
+  autoReplyData: EmailRespondentConfirmationField[],
+): EmailRespondentConfirmationField[] => {
   // Mask corppass UID and show only last 4 chars in autoreply to form filler
   // This does not affect response email to form admin
   // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
@@ -547,7 +547,7 @@ const maskUidOnLastField = (
   // This will allow for proper tagging of corppass UID field instead of checking field title and position
 
   const maskedAutoReplyData = autoReplyData.map(
-    (autoReplyField: EmailAutoReplyField, index) => {
+    (autoReplyField: EmailRespondentConfirmationField, index) => {
       if (
         autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
         index === autoReplyData.length - 1 // Check field position
@@ -588,7 +588,9 @@ const createFormattedDataForOneField = <T>(
 /**
  * Helper function to mask NRICs in Corppass Validated UID
  */
-const maskField = (field: EmailAutoReplyField): EmailAutoReplyField => {
+const maskField = (
+  field: EmailRespondentConfirmationField,
+): EmailRespondentConfirmationField => {
   const maskedAnswerTemplate = field.answerTemplate.map((answer) => {
     return answer.length >= 4 // defensive, in case UID length is less than 4
       ? '*'.repeat(answer.length - 4) + answer.substr(-4)
@@ -606,7 +608,7 @@ const maskField = (field: EmailAutoReplyField): EmailAutoReplyField => {
  */
 const getJsonFormattedResponse = (
   response: ResponseFormattedForEmail,
-): EmailJsonField | undefined => {
+): EmailDataCollationToolField | undefined => {
   const { answer, fieldType } = response
   // Headers are excluded from JSON data
   if (fieldType !== BasicField.Section) {
@@ -626,7 +628,7 @@ const getJsonFormattedResponse = (
 const getFormFormattedResponse = (
   response: ResponseFormattedForEmail,
   hashedFields: Set<string>,
-): EmailFormField => {
+): EmailAdminDataField => {
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
   const formData = {
@@ -644,7 +646,7 @@ const getFormFormattedResponse = (
  */
 const getAutoReplyFormattedResponse = (
   response: ResponseFormattedForEmail,
-): EmailAutoReplyField | undefined => {
+): EmailRespondentConfirmationField | undefined => {
   const { question, answer, isVisible } = response
   const answerSplitByNewLine = answer.split('\n')
   // Auto reply email will contain only visible fields
@@ -676,7 +678,7 @@ export class EmailDataObj {
   /**
    * Getter function to return jsonData which is used for data collation tool
    */
-  get jsonData(): EmailJsonField[] {
+  get jsonData(): EmailDataCollationToolField[] {
     return this.parsedResponses.flatMap((response) =>
       compact(
         createFormattedDataForOneField(
@@ -692,7 +694,7 @@ export class EmailDataObj {
    * Getter function to return autoReplyData for confirmation emails to respondent
    * If AuthType is CP, return a masked version
    */
-  get autoReplyData(): EmailAutoReplyField[] {
+  get autoReplyData(): EmailRespondentConfirmationField[] {
     const unmaskedAutoReplyData = this.parsedResponses.flatMap((response) =>
       compact(
         createFormattedDataForOneField(
@@ -709,7 +711,7 @@ export class EmailDataObj {
   /**
    * Getter function to return formData which is used to send responses to admin
    */
-  get formData(): EmailFormField[] {
+  get formData(): EmailAdminDataField[] {
     return this.parsedResponses.flatMap((response) =>
       compact(
         createFormattedDataForOneField(

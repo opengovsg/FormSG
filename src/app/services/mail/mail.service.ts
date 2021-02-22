@@ -10,7 +10,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   BounceType,
-  EmailFormField,
+  EmailAdminDataField,
   IEmailFormSchema,
   ISubmissionSchema,
 } from '../../../types'
@@ -379,7 +379,7 @@ export class MailService {
     form: Pick<IEmailFormSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
-    formData: EmailFormField[]
+    formData: EmailAdminDataField[]
     jsonData: {
       question: string
       answer: string | number
