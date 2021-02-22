@@ -707,14 +707,13 @@ export class EmailDataObj {
     // Compact is necessary because getAutoReplyFormattedResponse
     // will return undefined for non-visible fields
     const unmaskedAutoReplyData = compact(
-      this.parsedResponses.flatMap(
-        (response) =>
-          createFormattedDataForOneField(
-            response,
-            this.hashedFields,
-            getAutoReplyFormattedResponse,
-          ),
-      )
+      this.parsedResponses.flatMap((response) =>
+        createFormattedDataForOneField(
+          response,
+          this.hashedFields,
+          getAutoReplyFormattedResponse,
+        ),
+      ),
     )
 
     return this.authType === AuthType.CP
