@@ -231,7 +231,7 @@ const loginToMyInfo: RequestHandler<
   // Consent flow not successful
   if ('error' in req.query) {
     logger.error({
-      message: 'Invalid MyInfo login query parameters',
+      message: 'MyInfo returned error from consent flow',
       meta: {
         ...logMeta,
         error: req.query.error,
