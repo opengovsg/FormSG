@@ -621,11 +621,10 @@ const getDataCollationFormattedResponse = (
   const { answer, fieldType } = response
   // Headers are excluded from JSON data
   if (fieldType !== BasicField.Section) {
-    const dataCollationData = {
+    return {
       question: getJsonPrefixedQuestion(response),
       answer,
     }
-    return dataCollationData
   }
   return undefined
 }
@@ -640,13 +639,12 @@ const getFormFormattedResponse = (
 ): EmailAdminDataField => {
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
-  const formData = {
+  return {
     question: getFormDataPrefixedQuestion(response, hashedFields),
     answerTemplate: answerSplitByNewLine,
     answer,
     fieldType,
   }
-  return formData
 }
 
 /**
@@ -660,11 +658,10 @@ const getAutoReplyFormattedResponse = (
   const answerSplitByNewLine = answer.split('\n')
   // Auto reply email will contain only visible fields
   if (isVisible) {
-    const autoReplyData = {
+    return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
     }
-    return autoReplyData
   }
   return undefined
 }
@@ -707,22 +704,21 @@ export class EmailDataObj {
    * If AuthType is CP, return a masked version
    */
   get autoReplyData(): EmailRespondentConfirmationField[] {
-    const unmaskedAutoReplyFormattedData = this.parsedResponses.flatMap(
-      (response) =>
-        createFormattedDataForOneField(
-          response,
-          this.hashedFields,
-          getAutoReplyFormattedResponse,
-        ),
-    )
-
     // Compact is necessary because getAutoReplyFormattedResponse
     // will return undefined for non-visible fields
-    const unmaskedAutoReplyData = compact(unmaskedAutoReplyFormattedData)
-    const maskedAutoReplyData = maskUidOnLastField(unmaskedAutoReplyData)
+    const unmaskedAutoReplyData = compact(
+      this.parsedResponses.flatMap(
+        (response) =>
+          createFormattedDataForOneField(
+            response,
+            this.hashedFields,
+            getAutoReplyFormattedResponse,
+          ),
+      )
+    )
 
     return this.authType === AuthType.CP
-      ? maskedAutoReplyData
+      ? maskUidOnLastField(unmaskedAutoReplyData)
       : unmaskedAutoReplyData
   }
   /**
