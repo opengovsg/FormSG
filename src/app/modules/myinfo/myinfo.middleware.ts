@@ -49,6 +49,8 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   // Error occurred while retrieving access token
   if (myInfoCookie.state !== MyInfoCookieState.Success) {
     res.locals.myInfoError = true
+    // Important - clear the cookie so that user will not see error on refresh
+    res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
     return next()
   }
 
