@@ -12,9 +12,26 @@
   db.forms.count({ authType: 'SP' })
 }
 
+// C: Number of MyInfo authType logins
+{
+  db.logins.count({ authType: 'MyInfo' })
+}
+
+// D: Number of SingPass authType logins
+{
+  db.logins.count({ authType: 'SP' })
+}
+
 // UPDATE
 {
   db.forms.updateMany(
+    { authType: 'MyInfo' },
+    { $set: { authType: 'SP' } }
+  )
+}
+
+{
+  db.logins.updateMany(
     { authType: 'MyInfo' },
     { $set: { authType: 'SP' } }
   )
@@ -25,4 +42,9 @@
 // Number of forms with authType SP. Should be equal to A + B.
 {
   db.forms.count({ authType: 'SP' })
+}
+
+// Number of logins with authType SP. Should be equal to C + D.
+{
+  db.logins.count({ authType: 'SP' })
 }
