@@ -263,7 +263,10 @@ export const createConsentPagePurpose = (formTitle: string): string =>
   `The form "${formTitle}" is requesting to pre-fill your MyInfo data.`
 
 export const createRelayState = (formId: string): string =>
-  `${uuidv4()},${formId}`
+  JSON.stringify({
+    uuid: uuidv4(),
+    formId,
+  })
 
 export const validateMyInfoForm = (
   form: IFormSchema | IPopulatedForm,
@@ -277,7 +280,7 @@ export const validateMyInfoForm = (
   return ok(form as IMyInfoForm)
 }
 
-const hasProp = <K extends string>(
+export const hasProp = <K extends string>(
   // eslint-disable-next-line @typescript-eslint/ban-types
   obj: object | Record<string, unknown>,
   prop: K,

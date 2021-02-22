@@ -44,6 +44,7 @@ import {
   createConsentPagePurpose,
   createRelayState,
   hashFieldValues,
+  hasProp,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -136,18 +137,46 @@ export class MyInfoService {
   parseMyInfoRelayState(
     relayState: string,
   ): Result<ParsedRelayState, MyInfoParseRelayStateError> {
-    const components = relayState.split(',')
-    if (
-      components.length !== 2 ||
-      !validateUUID(components[0]) ||
-      !mongoose.Types.ObjectId.isValid(components[1])
-    ) {
+    const safeJSONParse = Result.fromThrowable(
+      () => JSON.parse(relayState) as unknown,
+      (error) => {
+        logger.error({
+          message: 'Error while calling JSON.parse on MyInfo relay state',
+          meta: {
+            action: 'parseMyInfoRelayState',
+            relayState,
+            error,
+          },
+        })
+        return new MyInfoParseRelayStateError()
+      },
+    )
+    return safeJSONParse().andThen((parsed) => {
+      // Narrow type of parsed
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        hasProp(parsed, 'formId') &&
+        typeof parsed.formId === 'string' &&
+        mongoose.Types.ObjectId.isValid(parsed.formId) &&
+        hasProp(parsed, 'uuid') &&
+        typeof parsed.uuid === 'string' &&
+        validateUUID(parsed.uuid)
+      ) {
+        return ok({
+          uuid: parsed.uuid,
+          formId: parsed.formId,
+          cookieDuration: this.#spCookieMaxAge,
+        })
+      }
+      logger.error({
+        message: 'MyInfo relay state had invalid shape',
+        meta: {
+          action: 'parseMyInfoRelayState',
+          relayState,
+        },
+      })
       return err(new MyInfoParseRelayStateError())
-    }
-    return ok({
-      uuid: components[0],
-      formId: components[1],
-      cookieDuration: this.#spCookieMaxAge,
     })
   }
 
