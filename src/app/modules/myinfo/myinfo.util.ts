@@ -262,8 +262,8 @@ export const getMyInfoFieldOptions = (
 export const createConsentPagePurpose = (formTitle: string): string =>
   `The form "${formTitle}" is requesting to pre-fill your MyInfo data.`
 
-export const createRelayState = (formId: string, rememberMe: boolean): string =>
-  `${uuidv4()},${formId},${rememberMe}`
+export const createRelayState = (formId: string): string =>
+  `${uuidv4()},${formId}`
 
 export const validateMyInfoForm = (
   form: IFormSchema | IPopulatedForm,

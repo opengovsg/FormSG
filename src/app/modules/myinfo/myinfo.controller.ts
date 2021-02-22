@@ -27,7 +27,6 @@ const validateRedirectURLRequest = celebrate({
     formId: Joi.string()
       .regex(/^[0-9a-fA-F]{24}$/)
       .required(),
-    rememberMe: Joi.boolean().required(),
   },
 })
 
@@ -35,9 +34,9 @@ const respondWithRedirectURL: RequestHandler<
   unknown,
   { redirectURL: string } | { message: string },
   unknown,
-  Query & { formId: string; rememberMe: boolean }
+  Query & { formId: string }
 > = async (req, res) => {
-  const { formId, rememberMe } = req.query
+  const { formId } = req.query
   return FormService.retrieveFormById(formId)
     .andThen((form) => validateMyInfoForm(form))
     .andThen((form) =>
@@ -45,7 +44,6 @@ const respondWithRedirectURL: RequestHandler<
         formEsrvcId: form.esrvcId,
         formId,
         formTitle: form.title,
-        rememberMe,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
       }),
     )

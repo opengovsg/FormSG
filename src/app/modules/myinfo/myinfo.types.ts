@@ -19,7 +19,6 @@ export interface IMyInfoServiceConfig {
 
 export interface IMyInfoRedirectURLArgs {
   formId: string
-  rememberMe: boolean
   formTitle: string
   formEsrvcId: string
   requestedAttributes: MyInfoAttribute[]
@@ -61,7 +60,6 @@ export type MyInfoCookiePayload =
 export interface ParsedRelayState {
   uuid: string
   formId: string
-  rememberMe: boolean
   cookieDuration: number
 }
 

@@ -50,7 +50,6 @@ export const handleRedirect: RequestHandler<
   // TODO (#1116): remove code accommodating AuthType.MyInfo
   const payloads = target.split(',')
   const formId = extractFormId(payloads[0])
-  const rememberMe = payloads[1] === 'true'
   if (!formId || !mongoose.Types.ObjectId.isValid(formId)) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'Something went wrong, please refresh and try again.',
@@ -84,7 +83,6 @@ export const handleRedirect: RequestHandler<
       formEsrvcId: form.esrvcId,
       formId,
       formTitle: form.title,
-      rememberMe,
       requestedAttributes: form.getUniqueMyInfoAttrs(),
     })
       .map((redirectURL) => res.json({ redirectURL }))

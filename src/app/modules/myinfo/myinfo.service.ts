@@ -82,7 +82,6 @@ export class MyInfoService {
    * TTL of SingPass cookie in milliseconds.
    */
   #spCookieMaxAge: number
-  #spCookieMaxAgePreserved: number
 
   /**
    *
@@ -94,7 +93,6 @@ export class MyInfoService {
    */
   constructor({ spcpMyInfoConfig, nodeEnv, appUrl }: IMyInfoServiceConfig) {
     this.#spCookieMaxAge = spcpMyInfoConfig.spCookieMaxAge
-    this.#spCookieMaxAgePreserved = spcpMyInfoConfig.spCookieMaxAgePreserved
 
     this.#myInfoGovClient = new MyInfoGovClient({
       singpassEserviceId: spcpMyInfoConfig.spEsrvcId,
@@ -121,14 +119,13 @@ export class MyInfoService {
 
   createRedirectURL({
     formId,
-    rememberMe,
     formTitle,
     formEsrvcId,
     requestedAttributes,
   }: IMyInfoRedirectURLArgs): Result<string, never> {
     const redirectURL = this.#myInfoGovClient.createRedirectURL({
       purpose: createConsentPagePurpose(formTitle),
-      relayState: createRelayState(formId, rememberMe),
+      relayState: createRelayState(formId),
       // Always request consent for NRIC/FIN
       requestedAttributes: internalAttrListToScopes(requestedAttributes),
       singpassEserviceId: formEsrvcId,
@@ -141,21 +138,16 @@ export class MyInfoService {
   ): Result<ParsedRelayState, MyInfoParseRelayStateError> {
     const components = relayState.split(',')
     if (
-      components.length !== 3 ||
+      components.length !== 2 ||
       !validateUUID(components[0]) ||
-      !mongoose.Types.ObjectId.isValid(components[1]) ||
-      !['true', 'false'].includes(components[2])
+      !mongoose.Types.ObjectId.isValid(components[1])
     ) {
       return err(new MyInfoParseRelayStateError())
     }
-    const rememberMe = components[2] === 'true'
     return ok({
       uuid: components[0],
       formId: components[1],
-      rememberMe,
-      cookieDuration: rememberMe
-        ? this.#spCookieMaxAgePreserved
-        : this.#spCookieMaxAge,
+      cookieDuration: this.#spCookieMaxAge,
     })
   }
 
