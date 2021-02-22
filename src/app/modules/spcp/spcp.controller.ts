@@ -242,7 +242,7 @@ export const handleLogin: (
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
-  return BillingFactory.addLogin(form)
+  return BillingFactory.recordLoginByForm(form)
     .map(() => {
       res.cookie(JwtName[authType], jwtResult.value, {
         maxAge: cookieDuration,

@@ -46,12 +46,12 @@ describe('billing.factory', () => {
       })
     })
 
-    describe('addLogin', () => {
+    describe('recordLoginByForm', () => {
       it('should return MissingFeatureError', async () => {
-        const result = await BillingFactory.addLogin(
+        const result = await BillingFactory.recordLoginByForm(
           ({} as unknown) as IPopulatedForm,
         )
-        expect(MockBillingService.addLogin).not.toHaveBeenCalled()
+        expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(result._unsafeUnwrapErr()).toEqual(
           new MissingFeatureError(FeatureNames.SpcpMyInfo),
         )
@@ -97,20 +97,24 @@ describe('billing.factory', () => {
       })
     })
 
-    describe('addLogin', () => {
-      it('should call BillingService.addLogin', async () => {
+    describe('recordLoginByForm', () => {
+      it('should call BillingService.recordLoginByForm', async () => {
         const mockLoginDoc = ({
           mockKey: 'mockValue',
         } as unknown) as ILoginSchema
         const mockForm = ({
           mockFormKey: 'mockFormvalue',
         } as unknown) as IPopulatedForm
-        MockBillingService.addLogin.mockResolvedValueOnce(okAsync(mockLoginDoc))
+        MockBillingService.recordLoginByForm.mockResolvedValueOnce(
+          okAsync(mockLoginDoc),
+        )
 
-        const result = await BillingFactory.addLogin(mockForm)
+        const result = await BillingFactory.recordLoginByForm(mockForm)
 
         expect(result._unsafeUnwrap()).toEqual(mockLoginDoc)
-        expect(MockBillingService.addLogin).toHaveBeenCalledWith(mockForm)
+        expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+          mockForm,
+        )
       })
     })
   })

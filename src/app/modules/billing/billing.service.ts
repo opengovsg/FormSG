@@ -61,11 +61,11 @@ export const getSpLoginStats = (
  * @param form Form populated with admin and agency data
  * @return The Login document saved to the database
  */
-export const addLogin = (
+export const recordLoginByForm = (
   form: IPopulatedForm,
 ): ResultAsync<ILoginSchema, FormHasNoAuthError | DatabaseError> => {
   const logMeta = {
-    action: 'addLogin',
+    action: 'recordLoginByForm',
     formId: form._id,
   }
   if (form.authType === AuthType.NIL) {

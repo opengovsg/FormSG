@@ -12,7 +12,7 @@ import * as BillingService from './billing.service'
 
 interface IBillingFactory {
   getSpLoginStats: typeof BillingService.getSpLoginStats
-  addLogin: (
+  recordLoginByForm: (
     form: IPopulatedForm,
   ) => ResultAsync<
     ILoginSchema,
@@ -35,7 +35,7 @@ export const createBillingFactory = ({
   const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
   return {
     getSpLoginStats: () => okAsync([]),
-    addLogin: () => errAsync(error),
+    recordLoginByForm: () => errAsync(error),
   }
 }
 

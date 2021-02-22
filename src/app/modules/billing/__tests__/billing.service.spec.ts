@@ -16,7 +16,7 @@ import * as BillingService from '../billing.service'
 const LoginModel = getLoginModel(mongoose)
 
 describe('billing.service', () => {
-  describe('addLogin', () => {
+  describe('recordLoginByForm', () => {
     beforeEach(() => jest.restoreAllMocks())
     it('should call LoginModel.addLoginFromForm with the given form', async () => {
       const mockForm = ({ authType: AuthType.SP } as unknown) as IPopulatedForm
@@ -24,7 +24,7 @@ describe('billing.service', () => {
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockResolvedValueOnce(mockLogin)
-      const result = await BillingService.addLogin(mockForm)
+      const result = await BillingService.recordLoginByForm(mockForm)
       expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
       expect(result._unsafeUnwrap()).toEqual(mockLogin)
     })
@@ -35,7 +35,7 @@ describe('billing.service', () => {
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockResolvedValueOnce(mockLogin)
-      const result = await BillingService.addLogin(mockForm)
+      const result = await BillingService.recordLoginByForm(mockForm)
       expect(addLoginSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new FormHasNoAuthError())
     })
@@ -45,7 +45,7 @@ describe('billing.service', () => {
       const addLoginSpy = jest
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockRejectedValueOnce('')
-      const result = await BillingService.addLogin(mockForm)
+      const result = await BillingService.recordLoginByForm(mockForm)
       expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
       expect(result._unsafeUnwrapErr()).toEqual(
         new DatabaseError(getMongoErrorMessage('')),
