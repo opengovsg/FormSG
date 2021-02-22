@@ -22,6 +22,10 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Validation middleware for the endpoint which generates
+ * the MyInfo redirect URL.
+ */
 const validateRedirectURLRequest = celebrate({
   [Segments.QUERY]: {
     formId: Joi.string()
@@ -30,6 +34,12 @@ const validateRedirectURLRequest = celebrate({
   },
 })
 
+/**
+ * Creates the URL to which the client should be
+ * redirected to login to MyInfo for a form.
+ * @param req Express Request
+ * @param res Express Response
+ */
 const respondWithRedirectURL: RequestHandler<
   unknown,
   { redirectURL: string } | { message: string },
@@ -62,11 +72,18 @@ const respondWithRedirectURL: RequestHandler<
     })
 }
 
+/**
+ * Handles request for a redirect URL for a MyInfo form.
+ */
 export const handleRedirectURLRequest = [
   validateRedirectURLRequest,
   respondWithRedirectURL,
 ] as RequestHandler[]
 
+/**
+ * Validation middleware for requests to check that an
+ * e-service ID on a MyInfo form is valid.
+ */
 const validateEServiceIdCheck = celebrate({
   [Segments.QUERY]: {
     formId: Joi.string()
@@ -75,6 +92,11 @@ const validateEServiceIdCheck = celebrate({
   },
 })
 
+/**
+ * Checks that a form's e-service ID is valid.
+ * @param req Express request
+ * @param res Express response
+ */
 const checkMyInfoEServiceId: RequestHandler<
   unknown,
   LoginPageValidationResult | { message: string },
@@ -105,11 +127,19 @@ const checkMyInfoEServiceId: RequestHandler<
     })
 }
 
+/**
+ * Handles requests to validate e-service ID for a MyInfo form.
+ */
 export const handleEServiceIdCheck = [
   validateEServiceIdCheck,
   checkMyInfoEServiceId,
 ] as RequestHandler[]
 
+/**
+ * Validation middleware for the MyInfo redirect endpoint.
+ * This is the endpoint to which MyInfo will redirect the client
+ * after they have consented to provide their MyInfo data.
+ */
 const validateMyInfoLogin = celebrate({
   [Segments.QUERY]: Joi.alternatives().try(
     Joi.object()
@@ -131,6 +161,12 @@ type MyInfoLoginQueryParams =
   | { code: string; state: string }
   | { error: string; 'error-description': string; state: string }
 
+/**
+ * Logs a user in to MyInfo by retrieving their access token and
+ * redirecting them to the correct form.
+ * @param req Express request
+ * @param res Express response
+ */
 const loginToMyInfo: RequestHandler<
   unknown,
   unknown,
@@ -235,6 +271,11 @@ const loginToMyInfo: RequestHandler<
     })
 }
 
+/**
+ * Handles redirects from MyInfo after user has
+ * logged in to SingPass and given consent to provide their
+ * MyInfo data.
+ */
 export const handleMyInfoLogin = [
   validateMyInfoLogin,
   loginToMyInfo,
