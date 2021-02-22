@@ -291,7 +291,7 @@ export const extractMyInfoCookie = (
   const cookie = cookies[MYINFO_COOKIE_NAME]
   if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
     if (
-      cookie.state === MyInfoCookieState.AccessTokenRetrieved &&
+      cookie.state === MyInfoCookieState.Success &&
       hasProp(cookie, 'accessToken') &&
       typeof cookie.accessToken === 'string' &&
       hasProp(cookie, 'usedCount') &&
@@ -310,7 +310,7 @@ export const extractMyInfoCookie = (
 export const extractAccessTokenFromCookie = (
   cookie: MyInfoCookiePayload,
 ): Result<string, MyInfoCookieStateError> => {
-  if (cookie.state !== MyInfoCookieState.AccessTokenRetrieved) {
+  if (cookie.state !== MyInfoCookieState.Success) {
     return err(new MyInfoCookieStateError())
   }
   return ok(cookie.accessToken)

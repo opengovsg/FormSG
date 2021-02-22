@@ -47,7 +47,7 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
   const myInfoCookie = myInfoCookieResult.value
 
   // Error occurred while retrieving access token
-  if (myInfoCookie.state !== MyInfoCookieState.AccessTokenRetrieved) {
+  if (myInfoCookie.state !== MyInfoCookieState.Success) {
     res.locals.myInfoError = true
     return next()
   }

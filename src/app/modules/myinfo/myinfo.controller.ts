@@ -166,13 +166,17 @@ const loginToMyInfo: RequestHandler<
   }
   const form = formResult.value
 
+  // Cookie payload for any errors while retrieving access token
+  const errorCookiePayload: MyInfoCookiePayload = {
+    state: MyInfoCookieState.Error,
+  }
+
   // Ensure form is a MyInfo form
   if (form.authType !== AuthType.MyInfo) {
     logger.error({
       message: "Log in attempt to wrong endpoint for form's authType",
       meta: logMeta,
     })
-    res.cookie('isLoginError', true)
     return res.redirect(redirectDestination)
   }
 
@@ -186,10 +190,7 @@ const loginToMyInfo: RequestHandler<
         errorDescription: req.query['error-description'],
       },
     })
-    const cookiePayload: MyInfoCookiePayload = {
-      state: MyInfoCookieState.ConsentError,
-    }
-    res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
+    res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
     return res.redirect(redirectDestination)
   }
 
@@ -203,10 +204,7 @@ const loginToMyInfo: RequestHandler<
       meta: logMeta,
       error: accessTokenResult.error,
     })
-    const cookiePayload: MyInfoCookiePayload = {
-      state: MyInfoCookieState.RetrieveAccessTokenError,
-    }
-    res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
+    res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
     return res.redirect(redirectDestination)
   }
   const accessToken = accessTokenResult.value
@@ -218,7 +216,7 @@ const loginToMyInfo: RequestHandler<
       const cookiePayload: MyInfoCookiePayload = {
         accessToken,
         usedCount: 0,
-        state: MyInfoCookieState.AccessTokenRetrieved,
+        state: MyInfoCookieState.Success,
       }
       res.cookie(MYINFO_COOKIE_NAME, cookiePayload, {
         maxAge: cookieDuration,
@@ -232,10 +230,7 @@ const loginToMyInfo: RequestHandler<
         meta: logMeta,
         error,
       })
-      const cookiePayload: MyInfoCookiePayload = {
-        state: MyInfoCookieState.AddLoginError,
-      }
-      res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
+      res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
       return res.redirect(redirectDestination)
     })
 }
