@@ -149,17 +149,27 @@ const validateMyInfoLogin = celebrate({
       })
       // MyInfo sends several other params which are not necessary for Form
       .unknown(true),
-    Joi.object().keys({
-      error_description: Joi.string().required(),
-      error: Joi.string().required(),
-      state: Joi.string().required(),
-    }),
+    Joi.object()
+      .keys({
+        // TODO (#1211): determine whether production returns error_description or error-description
+        error_description: Joi.string(),
+        'error-description': Joi.string(),
+        error: Joi.string().required(),
+        state: Joi.string().required(),
+      })
+      .xor('error-description', 'error_description'),
   ),
 })
 
 type MyInfoLoginQueryParams =
   | { code: string; state: string }
-  | { error: string; error_description: string; state: string }
+  | {
+      error: string
+      // TODO (#1211): determine whether production returns error_description or error-description
+      error_description?: string
+      'error-description'?: string
+      state: string
+    }
 
 /**
  * Logs a user in to MyInfo by retrieving their access token and
@@ -225,7 +235,9 @@ const loginToMyInfo: RequestHandler<
       meta: {
         ...logMeta,
         error: req.query.error,
+        // TODO (#1211): determine whether production returns error_description or error-description
         errorDescription: req.query.error_description,
+        errorDescription2: req.query['error-description'],
       },
     })
     res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
