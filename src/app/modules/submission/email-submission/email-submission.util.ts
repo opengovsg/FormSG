@@ -537,30 +537,6 @@ export const concatAttachmentsAndResponses = (
   return response
 }
 
-const maskUidOnLastField = (
-  autoReplyData: EmailRespondentConfirmationField[],
-): EmailRespondentConfirmationField[] => {
-  // Mask corppass UID and show only last 4 chars in autoreply to form filler
-  // This does not affect response email to form admin
-  // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
-  // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
-  // This will allow for proper tagging of corppass UID field instead of checking field title and position
-
-  const maskedAutoReplyData = autoReplyData.map(
-    (autoReplyField: EmailRespondentConfirmationField, index) => {
-      if (
-        autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
-        index === autoReplyData.length - 1 // Check field position
-      ) {
-        return maskField(autoReplyField)
-      } else {
-        return autoReplyField
-      }
-    },
-  )
-  return maskedAutoReplyData
-}
-
 /**
  * Function to generate email data
  * for a single field
@@ -586,20 +562,49 @@ const createFormattedDataForOneField = <T>(
 }
 
 /**
- * Helper function to mask NRICs in Corppass Validated UID
+ * Helper function to mask the front of a string
+ * Used to mask NRICs in Corppass Validated UID
+ * @param field The string to be masked
+ * @param charsToReveal The number of characters at the tail to reveal
  */
-const maskField = (
-  field: EmailRespondentConfirmationField,
-): EmailRespondentConfirmationField => {
-  const maskedAnswerTemplate = field.answerTemplate.map((answer) => {
-    return answer.length >= 4 // defensive, in case UID length is less than 4
-      ? '*'.repeat(answer.length - 4) + answer.substr(-4)
-      : answer
-  })
-  return {
-    question: field.question,
-    answerTemplate: maskedAnswerTemplate,
-  }
+const maskStringHead = (field: string, charsToReveal = 4): string => {
+  return field.length >= charsToReveal
+    ? '*'.repeat(field.length - charsToReveal) + field.substr(-charsToReveal)
+    : field
+}
+
+/**
+ * Helper function that masks the UID on the last
+ * field of autoReplyData using maskStringHead function
+ */
+const maskUidOnLastField = (
+  autoReplyData: EmailRespondentConfirmationField[],
+): EmailRespondentConfirmationField[] => {
+  // Mask corppass UID and show only last 4 chars in autoreply to form filler
+  // This does not affect response email to form admin
+  // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
+  // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
+  // This will allow for proper tagging of corppass UID field instead of checking field title and position
+
+  const maskedAutoReplyData = autoReplyData.map(
+    (autoReplyField: EmailRespondentConfirmationField, index) => {
+      if (
+        autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
+        index === autoReplyData.length - 1 // Check field position
+      ) {
+        const maskedAnswerTemplate = autoReplyField.answerTemplate.map(
+          (answer) => maskStringHead(answer, 4),
+        )
+        return {
+          question: autoReplyField.question,
+          answerTemplate: maskedAnswerTemplate,
+        }
+      } else {
+        return autoReplyField
+      }
+    },
+  )
+  return maskedAutoReplyData
 }
 
 /**
