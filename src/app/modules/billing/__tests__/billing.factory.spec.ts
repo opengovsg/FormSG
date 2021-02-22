@@ -31,7 +31,7 @@ describe('billing.factory', () => {
     const BillingFactory = createBillingFactory(MOCK_DISABLED_FEATURE)
 
     describe('getSpLoginStats', () => {
-      it('should return empty array passthrough', async () => {
+      it('should return empty array passthrough when spcp-myinfo feature is disabled', async () => {
         // Act
         const actualResults = await BillingFactory.getSpLoginStats(
           'anything',
@@ -47,7 +47,8 @@ describe('billing.factory', () => {
     })
 
     describe('recordLoginByForm', () => {
-      it('should return MissingFeatureError', async () => {
+      it('should return MissingFeatureError when spcp-myinfo feature is disabled', async () => {
+        // Argument here does not matter, as the function should always return a MissingFeatureError
         const result = await BillingFactory.recordLoginByForm(
           ({} as unknown) as IPopulatedForm,
         )
