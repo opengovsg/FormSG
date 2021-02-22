@@ -78,6 +78,11 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   return buildingBlocks.filter((b) => b !== '').join(' ')
 }
 
+/**
+ * Converts a MyInfo field with a code and description into a
+ * prefilled field value.
+ * @param field Field to format
+ */
 export const formatDescriptionField = (
   field: FieldWithCodeAndDesc | undefined,
 ): string => {
@@ -85,6 +90,11 @@ export const formatDescriptionField = (
   return field.desc
 }
 
+/**
+ * Converts a MyInfo field with a single value into a
+ * prefilled field value.
+ * @param field Field to format
+ */
 export const formatBasicField = (
   field: MyInfoBasicField | undefined,
 ): string => {
@@ -92,6 +102,11 @@ export const formatBasicField = (
   return field.value
 }
 
+/**
+ * Converts a MyInfo Vehicle Number field into a
+ * prefilled field value.
+ * @param field Field to format
+ */
 export const formatVehicleNumbers = (
   field: MyInfoVehicle[] | undefined,
 ): string => {
@@ -106,6 +121,11 @@ export const formatVehicleNumbers = (
   return vehicleNumbers.join(', ')
 }
 
+/**
+ * Converts a MyInfo Occupation field into a
+ * prefilled field value.
+ * @param field Field to format
+ */
 export const formatOccupation = (
   field: MyInfoOccupation | undefined,
 ): string => {
