@@ -137,9 +137,7 @@ function settingsFormDirective(
         $scope.isPublicWithoutEsrvcId = () => {
           return (
             $scope.myform.status === 'PUBLIC' &&
-            ($scope.myform.authType === 'SP' ||
-              $scope.myform.authType === 'CP' ||
-              $scope.myform.authType === 'MyInfo') &&
+            ['SP', 'CP', 'MyInfo'].includes($scope.form.authType) &&
             !$scope.myform.esrvcId
           )
         }
@@ -147,9 +145,7 @@ function settingsFormDirective(
         $scope.isPrivateWithoutEsrvcId = () => {
           return (
             $scope.myform.status === 'PRIVATE' &&
-            ($scope.myform.authType === 'SP' ||
-              $scope.myform.authType === 'CP' ||
-              $scope.myform.authType === 'MyInfo') &&
+            ['SP', 'CP', 'MyInfo'].includes($scope.form.authType) &&
             !$scope.myform.esrvcId
           )
         }

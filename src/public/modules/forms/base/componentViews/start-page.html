@@ -45,13 +45,13 @@
         </p>
         <div
           id="start-page-btn-container"
-          ng-if="vm.authType === 'SP' || vm.authType === 'CP' || vm.authType === 'MyInfo'"
+          ng-if="['SP', 'CP', 'MyInfo'].includes(vm.authType)"
         >
           <button
             type="button"
             class="start-page-btn {{ vm.colorTheme }}-font"
             ng-click="vm.formLogin({ authType: vm.authType, rememberMe: vm.rememberMe.checked })"
-            ng-if="(vm.authType === 'SP' || vm.authType === 'MyInfo') && !vm.userName && !vm.isTemplate"
+            ng-if="['SP', 'MyInfo'].includes(vm.authType) && !vm.userName && !vm.isTemplate"
             ng-disabled="vm.isAdminPreview"
           >
             <span>Log in with SingPass</span>
@@ -88,8 +88,8 @@
             ng-if="vm.authType!=='NIL' && vm.isTemplate"
           >
             <span
-              >{{ vm.authType === 'SP' || vm.authType === 'MyInfo' ? 'S1234567A'
-              : '123456789A'}} - Log out</span
+              >{{ ['SP', 'MyInfo'].includes(vm.authType) ? 'S1234567A' :
+              '123456789A'}} - Log out</span
             >
             <span class="hidden-xs">
               <i class="bx bx-log-out"></i>
@@ -97,7 +97,7 @@
           </button>
           <div ng-if="!vm.userName && !vm.isTemplate">
             <div
-              ng-if="vm.authType === 'SP' || vm.authType === 'MyInfo'"
+              ng-if="['SP', 'MyInfo'].includes(vm.authType)"
               class="form-locked-msg padded-view"
             >
               Login with SingPass to access this form. Your SingPass ID will be
