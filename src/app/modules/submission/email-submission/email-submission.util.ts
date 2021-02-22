@@ -568,6 +568,10 @@ const createFormattedDataForOneField = <T>(
  * @param charsToReveal The number of characters at the tail to reveal
  */
 const maskStringHead = (field: string, charsToReveal = 4): string => {
+  // Defensive, in case a negative number is passed in
+  // the entire string is masked
+  if (charsToReveal < 0) return '*'.repeat(field.length)
+
   return field.length >= charsToReveal
     ? '*'.repeat(field.length - charsToReveal) + field.substr(-charsToReveal)
     : field
