@@ -121,6 +121,13 @@ export class MyInfoService {
     )
   }
 
+  /**
+   * Creates a redirect URL which the client should visit in order to
+   * log in to MyInfo and prefill their data on a form.
+   * @param config.formId ID of form to which user should log in
+   * @param config.formEsrvcId SingPass e-service ID of form
+   * @param config.requestedAttributes MyInfo attributes requested in form
+   */
   createRedirectURL({
     formId,
     formEsrvcId,
@@ -136,6 +143,11 @@ export class MyInfoService {
     return ok(redirectURL)
   }
 
+  /**
+   * Parses state forwarded by MyInfo after user has logged in and MyInfo
+   * has redirected them.
+   * @param relayState State forwarded by MyInfo
+   */
   parseMyInfoRelayState(
     relayState: string,
   ): Result<ParsedRelayState, MyInfoParseRelayStateError> {
@@ -182,6 +194,10 @@ export class MyInfoService {
     })
   }
 
+  /**
+   * Retrieves an access token from MyInfo as part of OAuth2 flow.
+   * @param authCode Authorisation code provided by MyInfo
+   */
   retrieveAccessToken(
     authCode: string,
   ): ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError> {
@@ -421,6 +437,11 @@ export class MyInfoService {
     })
   }
 
+  /**
+   * Decodes and verifies a JWT from MyInfo containing the user's
+   * UIN/FIN.
+   * @param accessToken Access token JWT
+   */
   extractUinFin(
     accessToken: string,
   ): Result<string, MyInfoInvalidAccessTokenError> {
