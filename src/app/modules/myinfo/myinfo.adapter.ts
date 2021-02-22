@@ -17,6 +17,11 @@ import {
   formatVehicleNumbers,
 } from './myinfo.format'
 
+/**
+ * Converts an internal MyInfo attribute used in FormSG to a scope
+ * which can be used to retrieve data from MyInfo.
+ * @param attr Internal MyInfo attribute used in FormSG
+ */
 export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
   switch (attr) {
     // Changes between MyInfo V2 and V3
@@ -72,6 +77,11 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
   }
 }
 
+/**
+ * Converts an internal MyInfo attribute used in FormSG to a key of the
+ * data object returned by the MyInfo Person API.
+ * @param attr Internal MyInfo attribute used in FormSG
+ */
 export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
   switch (attr) {
     // Changes between MyInfo V2 and V3
@@ -127,10 +137,23 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
   }
 }
 
+/**
+ * Converts an array of internal FormSG attributes to an array of scopes
+ * to request from MyInfo. Always appends UinFin to the array so that
+ * consent is always obtained for getting the user's UIN/FIN.
+ * @param attrs List of internal attributes used in FormSG
+ */
 export const internalAttrListToScopes = (
   attrs: InternalAttr[],
-): MyInfoScope[] => attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
+): MyInfoScope[] =>
+  // Always ask for consent for UinFin, even though it is not a form field
+  attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
 
+/**
+ * Wrapper class for MyInfo data. Provides public methods to safely
+ * extract the correct data by translating internal FormSG attributes
+ * to the correct keys in the data.
+ */
 export class MyInfoData {
   #personData: IPerson
   #uinFin: string
@@ -236,6 +259,10 @@ export class MyInfoData {
     )
   }
 
+  /**
+   * Retrieves the fieldValue for the given internal MyInfo attribute.
+   * @param attr Internal FormSG MyInfo attribute
+   */
   getFieldValueForAttr(
     attr: InternalAttr,
   ): { fieldValue: string | undefined; isReadOnly: boolean } {
