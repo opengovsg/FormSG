@@ -315,10 +315,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // Name of credentials for messaging service, stored in secrets manager
         type: String,
         required: false,
-        validate: [
-          /^([a-zA-Z0-9-/])+$/i,
-          'msgSrvcName must be alphanumeric, dashes and slashes are allowed',
-        ],
       },
     },
     formSchemaOptions,
