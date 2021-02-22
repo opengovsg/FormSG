@@ -164,6 +164,11 @@ export const mapVerifyMyInfoError: MapRouteError = (error) => {
   }
 }
 
+/**
+ * Maps errors while creating MyInfo redirect URL to status codes and messages.
+ * @param error Error to be mapped
+ * @param coreErrorMessage Default error message
+ */
 export const mapRedirectURLError: MapRouteError = (
   error,
   coreErrorMessage = 'Something went wrong. Please refresh and try again.',
@@ -202,6 +207,11 @@ export const mapRedirectURLError: MapRouteError = (
   }
 }
 
+/**
+ * Maps errors while validating e-service ID to status codes and messages.
+ * @param error Error to be mapped
+ * @param coreErrorMessage Default error message
+ */
 export const mapEServiceIdCheckError: MapRouteError = (
   error,
   coreErrorMessage = 'Something went wrong. Please refresh and try again.',
@@ -253,6 +263,11 @@ export const mapEServiceIdCheckError: MapRouteError = (
   }
 }
 
+/**
+ * Retrieves the field options which should be provided with a MyInfo
+ * dropdown field.
+ * @param myInfoAttr MyInfo attribute
+ */
 export const getMyInfoFieldOptions = (
   myInfoAttr: IMyInfo['attr'],
 ): string[] => {
@@ -260,12 +275,20 @@ export const getMyInfoFieldOptions = (
   return myInfoField?.fieldOptions || []
 }
 
+/**
+ * Creates state which MyInfo should forward back once user has logged in.
+ * @param formId ID of form which user is logging into
+ */
 export const createRelayState = (formId: string): string =>
   JSON.stringify({
     uuid: uuidv4(),
     formId,
   })
 
+/**
+ * Validates that a form is a MyInfo form with an e-service ID
+ * @param form Form to validate
+ */
 export const validateMyInfoForm = (
   form: IFormSchema | IPopulatedForm,
 ): Result<IMyInfoForm, MyInfoNoESrvcIdError | MyInfoAuthTypeError> => {
@@ -278,6 +301,12 @@ export const validateMyInfoForm = (
   return ok(form as IMyInfoForm)
 }
 
+/**
+ * Utility to narrow type of an object by determining whether
+ * it contains the given property.
+ * @param obj Object
+ * @param prop Property to check
+ */
 export const hasProp = <K extends string>(
   // eslint-disable-next-line @typescript-eslint/ban-types
   obj: object | Record<string, unknown>,
@@ -286,6 +315,11 @@ export const hasProp = <K extends string>(
   return prop in obj
 }
 
+/**
+ * Extracts a MyInfo cookie from a request's cookies, and validates
+ * its shape.
+ * @param cookies Cookies in a request
+ */
 export const extractMyInfoCookie = (
   cookies: Record<string, unknown>,
 ): Result<MyInfoCookiePayload, MyInfoMissingAccessTokenError> => {
@@ -308,6 +342,10 @@ export const extractMyInfoCookie = (
   return err(new MyInfoMissingAccessTokenError())
 }
 
+/**
+ * Extracts access token from a MyInfo cookie
+ * @param cookie Cookie from which access token should be extracted
+ */
 export const extractAccessTokenFromCookie = (
   cookie: MyInfoCookiePayload,
 ): Result<string, MyInfoCookieStateError> => {
