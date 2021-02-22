@@ -222,7 +222,8 @@ export const mapEServiceIdCheckError: MapRouteError = (
     case MyInfoNoESrvcIdError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
-        errorMessage: 'This form does not have a valid e-service ID.',
+        errorMessage:
+          'This form does not have valid MyInfo credentials. Please contact the form administrator.',
       }
     case FetchLoginPageError:
     case LoginPageValidationError:
