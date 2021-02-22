@@ -92,6 +92,8 @@ export const addMyInfo: RequestHandler<ParamsDictionary> = async (
     })
     .map(() => next())
     .mapErr((error) => {
+      // No need for cookie if data could not be retrieved
+      res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
       logger.error({
         message: error.message,
         meta: {
