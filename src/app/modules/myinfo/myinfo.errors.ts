@@ -45,6 +45,9 @@ export class MyInfoHashDidNotMatchError extends ApplicationError {
   }
 }
 
+/**
+ * Relay state forwarded by MyInfo did not have expected shape.
+ */
 export class MyInfoParseRelayStateError extends ApplicationError {
   constructor(
     message = 'Relay state received from MyInfo had incorrect format',
@@ -53,6 +56,10 @@ export class MyInfoParseRelayStateError extends ApplicationError {
   }
 }
 
+/**
+ * Attempt to perform a MyInfo-related operation on a form without MyInfo
+ * authentication enabled.
+ */
 export class MyInfoAuthTypeError extends ApplicationError {
   constructor(
     message = 'MyInfo function called on form without MyInfo authentication type',
@@ -61,24 +68,36 @@ export class MyInfoAuthTypeError extends ApplicationError {
   }
 }
 
+/**
+ * MyInfo form missing e-service ID.
+ */
 export class MyInfoNoESrvcIdError extends ApplicationError {
   constructor(message = 'Form does not have e-service ID') {
     super(message)
   }
 }
 
+/**
+ * Submission on MyInfo form missing access token.
+ */
 export class MyInfoMissingAccessTokenError extends ApplicationError {
   constructor(message = 'Access token not present on MyInfo submission') {
     super(message)
   }
 }
 
+/**
+ * Access token on submission for MyInfo form is invalid.
+ */
 export class MyInfoInvalidAccessTokenError extends ApplicationError {
   constructor(message = 'Access token could not be verified') {
     super(message)
   }
 }
 
+/**
+ * MyInfo cookie on submission is in error state.
+ */
 export class MyInfoCookieStateError extends ApplicationError {
   constructor(message = 'MyInfo cookie is in error state') {
     super(message)
