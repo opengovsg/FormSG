@@ -591,7 +591,7 @@ const maskUidOnLastField = (
   // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
   // This will allow for proper tagging of corppass UID field instead of checking field title and position
 
-  const maskedAutoReplyData = autoReplyData.map(
+  return autoReplyData.map(
     (autoReplyField: EmailRespondentConfirmationField, index) => {
       if (
         autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
@@ -609,7 +609,6 @@ const maskUidOnLastField = (
       }
     },
   )
-  return maskedAutoReplyData
 }
 
 /**
