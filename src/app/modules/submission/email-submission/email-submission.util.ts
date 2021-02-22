@@ -606,7 +606,7 @@ const maskField = (
  * Function to extract information for email json field from response
  * Json field is used for data collation tool
  */
-const getJsonFormattedResponse = (
+const getDataCollationFormattedResponse = (
   response: ResponseFormattedForEmail,
 ): EmailDataCollationToolField | undefined => {
   const { answer, fieldType } = response
@@ -679,15 +679,18 @@ export class EmailDataObj {
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
-    return this.parsedResponses.flatMap((response) =>
-      compact(
+    const dataCollationFormattedData = this.parsedResponses.flatMap(
+      (response) =>
         createFormattedDataForOneField(
           response,
           this.hashedFields,
-          getJsonFormattedResponse,
+          getDataCollationFormattedResponse,
         ),
-      ),
     )
+
+    // Compact is necessary because getDataCollationFormattedResponse
+    // will return undefined for header fields
+    return compact(dataCollationFormattedData)
   }
 
   /**
@@ -695,17 +698,22 @@ export class EmailDataObj {
    * If AuthType is CP, return a masked version
    */
   get autoReplyData(): EmailRespondentConfirmationField[] {
-    const unmaskedAutoReplyData = this.parsedResponses.flatMap((response) =>
-      compact(
+    const unmaskedAutoReplyFormattedData = this.parsedResponses.flatMap(
+      (response) =>
         createFormattedDataForOneField(
           response,
           this.hashedFields,
           getAutoReplyFormattedResponse,
         ),
-      ),
     )
+
+    // Compact is necessary because getAutoReplyFormattedResponse
+    // will return undefined for non-visible fields
+    const unmaskedAutoReplyData = compact(unmaskedAutoReplyFormattedData)
+    const maskedAutoReplyData = maskUidOnLastField(unmaskedAutoReplyData)
+
     return this.authType === AuthType.CP
-      ? maskUidOnLastField(unmaskedAutoReplyData)
+      ? maskedAutoReplyData
       : unmaskedAutoReplyData
   }
   /**
@@ -713,12 +721,10 @@ export class EmailDataObj {
    */
   get formData(): EmailAdminDataField[] {
     return this.parsedResponses.flatMap((response) =>
-      compact(
-        createFormattedDataForOneField(
-          response,
-          this.hashedFields,
-          getFormFormattedResponse,
-        ),
+      createFormattedDataForOneField(
+        response,
+        this.hashedFields,
+        getFormFormattedResponse,
       ),
     )
   }
