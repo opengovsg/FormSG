@@ -1,7 +1,6 @@
 export enum JwtName {
   SP = 'jwtSp',
   CP = 'jwtCp',
-  MyInfo = 'jwtMyInfo',
 }
 
 export type LoginPageValidationResult =
