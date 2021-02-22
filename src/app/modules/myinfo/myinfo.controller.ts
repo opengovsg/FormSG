@@ -157,11 +157,12 @@ const loginToMyInfo: RequestHandler<
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.error({
-      message: 'Form not found',
+      message: 'Form in MyInfo relayState not found',
       meta: logMeta,
       error: formResult.error,
     })
-    return res.sendStatus(StatusCodes.NOT_FOUND)
+    // No valid redirect destination, so redirect to home
+    return res.redirect('/')
   }
   const form = formResult.value
 
