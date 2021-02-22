@@ -162,7 +162,7 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
     },
     myInfoKeyPath: {
       doc:
-        'Filepath to MyInfo private key, which is used to sign requests to MyInfo.',
+        'Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
       format: String,
       default: null,
       env: 'MYINFO_FORMSG_KEY_PATH',
