@@ -20,8 +20,8 @@ function SubmitFormController(FormData, SpcpSession, $window, $document, GTag) {
   vm.myform = FormData.form
 
   // Set MyInfo login status
-  if (vm.myform.authType === 'MyInfo') {
-    if (FormData.spcpSession.userName) {
+  if (!FormData.isTemplate && vm.myform.authType === 'MyInfo') {
+    if (FormData.spcpSession && FormData.spcpSession.userName) {
       SpcpSession.setUserName(FormData.spcpSession.userName)
     } else {
       SpcpSession.clearUserName()
