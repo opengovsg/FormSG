@@ -9,6 +9,7 @@ import {
   BasicField,
   EmailAdminDataField,
   EmailDataCollationToolField,
+  EmailDataFields,
   EmailDataForOneField,
   EmailRespondentConfirmationField,
   FieldResponse,
@@ -541,7 +542,7 @@ export const concatAttachmentsAndResponses = (
  * Function to generate email data
  * for a single field
  */
-const createFormattedDataForOneField = <T>(
+const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   response: ProcessedFieldResponse,
   hashedFields: Set<string>,
   getFormattedFunction: (

@@ -40,22 +40,27 @@ export type SpcpLocals =
   | { uinFin: string; userInfo: string }
   | { [key: string]: never } // empty object
 
-export interface EmailRespondentConfirmationField {
+export type EmailRespondentConfirmationField = {
   question: string
   answerTemplate: string[]
 }
 
-export interface EmailDataCollationToolField {
+export type EmailDataCollationToolField = {
   question: string
   answer: string
 }
 
-export interface EmailAdminDataField {
+export type EmailAdminDataField = {
   question: string
   answer: string
   fieldType: BasicField
   answerTemplate: string[]
 }
+
+export type EmailDataFields =
+  | EmailRespondentConfirmationField
+  | EmailDataCollationToolField
+  | EmailAdminDataField
 
 export interface EmailData {
   autoReplyData: EmailRespondentConfirmationField[]
