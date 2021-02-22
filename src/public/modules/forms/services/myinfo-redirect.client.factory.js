@@ -5,12 +5,12 @@ angular
   .factory('MyInfoRedirect', ['$q', '$http', MyInfoRedirect])
 
 function MyInfoRedirect($q, $http) {
-  return function ({ formId, rememberMe }) {
+  return function ({ formId }) {
     let deferred = $q.defer()
     $http({
       url: '/myinfo/redirect',
       method: 'GET',
-      params: { formId, rememberMe },
+      params: { formId },
     }).then(
       function (response) {
         deferred.resolve(response.data)

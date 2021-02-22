@@ -94,10 +94,8 @@ function submitFormDirective(
 
       scope.formLogin = function (authType, rememberMe) {
         if (authType === 'MyInfo') {
-          // rememberMe currently not supported for MyInfo
           return MyInfoRedirect({
             formId: scope.form._id,
-            rememberMe: false,
           })
             .then((response) => {
               setReferrerToNull()
