@@ -99,14 +99,13 @@ describe('email-submission.service', () => {
         [response],
         new Set(),
       )
-
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [],
-          autoReplyData: [generateSingleAnswerAutoreply(response)],
-          formData: [generateSingleAnswerFormData(response)],
-        }),
-      )
+      expect(emailData.dataCollationData).toEqual([])
+      expect(emailData.autoReplyData).toEqual([
+        generateSingleAnswerAutoreply(response),
+      ])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
     })
 
     it('should exclude non-visible fields from autoreply data', () => {
@@ -119,13 +118,13 @@ describe('email-submission.service', () => {
         new Set(),
       )
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [generateSingleAnswerJson(response)],
-          autoReplyData: [],
-          formData: [generateSingleAnswerFormData(response)],
-        }),
-      )
+      expect(emailData.dataCollationData).toEqual([
+        generateSingleAnswerJson(response),
+      ])
+      expect(emailData.autoReplyData).toEqual([])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
     })
 
     it('should generate table answers with [table] prefix in form and JSON data', () => {
@@ -140,32 +139,34 @@ describe('email-submission.service', () => {
       const firstRow = response.answerArray[0].join(',')
       const secondRow = response.answerArray[1].join(',')
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [
-            { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
-            { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
-          ],
-          autoReplyData: [
-            { question, answerTemplate: [firstRow] },
-            { question, answerTemplate: [secondRow] },
-          ],
-          formData: [
-            {
-              question: `${TABLE_PREFIX}${question}`,
-              answer: firstRow,
-              answerTemplate: [firstRow],
-              fieldType: BasicField.Table,
-            },
-            {
-              question: `${TABLE_PREFIX}${question}`,
-              answer: secondRow,
-              answerTemplate: [secondRow],
-              fieldType: BasicField.Table,
-            },
-          ],
-        }),
-      )
+      const expectedDataCollationData = [
+        { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
+        { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
+      ]
+
+      const expectedAutoReplyData = [
+        { question, answerTemplate: [firstRow] },
+        { question, answerTemplate: [secondRow] },
+      ]
+
+      const expectedFormData = [
+        {
+          question: `${TABLE_PREFIX}${question}`,
+          answer: firstRow,
+          answerTemplate: [firstRow],
+          fieldType: BasicField.Table,
+        },
+        {
+          question: `${TABLE_PREFIX}${question}`,
+          answer: secondRow,
+          answerTemplate: [secondRow],
+          fieldType: BasicField.Table,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
 
     it('should generate checkbox answers correctly', () => {
@@ -179,20 +180,20 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = response.answerArray.join(', ')
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [{ question, answer }],
-          autoReplyData: [{ question, answerTemplate: [answer] }],
-          formData: [
-            {
-              question,
-              answer,
-              answerTemplate: [answer],
-              fieldType: BasicField.Checkbox,
-            },
-          ],
-        }),
-      )
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedFormData = [
+        {
+          question,
+          answer,
+          answerTemplate: [answer],
+          fieldType: BasicField.Checkbox,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
 
     it('should generate attachment answers with [attachment] prefix in form and JSON data', () => {
@@ -206,22 +207,22 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = response.answer
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [
-            { question: `${ATTACHMENT_PREFIX}${question}`, answer },
-          ],
-          autoReplyData: [{ question, answerTemplate: [answer] }],
-          formData: [
-            {
-              question: `${ATTACHMENT_PREFIX}${question}`,
-              answer,
-              answerTemplate: [answer],
-              fieldType: BasicField.Attachment,
-            },
-          ],
-        }),
-      )
+      const expectedDataCollationData = [
+        { question: `${ATTACHMENT_PREFIX}${question}`, answer },
+      ]
+      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedFormData = [
+        {
+          question: `${ATTACHMENT_PREFIX}${question}`,
+          answer,
+          answerTemplate: [answer],
+          fieldType: BasicField.Attachment,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
 
     it('should split single answer fields by newline', () => {
@@ -237,20 +238,22 @@ describe('email-submission.service', () => {
 
       const question = response.question
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [{ question, answer }],
-          autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
-          formData: [
-            {
-              question,
-              answer,
-              answerTemplate: answer.split('\n'),
-              fieldType: BasicField.ShortText,
-            },
-          ],
-        }),
-      )
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: answer.split('\n') },
+      ]
+      const expectedFormData = [
+        {
+          question,
+          answer,
+          answerTemplate: answer.split('\n'),
+          fieldType: BasicField.ShortText,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
 
     it('should split table answers by newline', () => {
@@ -265,22 +268,24 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = answerArray[0].join(',')
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [
-            { question: `${TABLE_PREFIX}${question}`, answer },
-          ],
-          autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
-          formData: [
-            {
-              question: `${TABLE_PREFIX}${question}`,
-              answer,
-              answerTemplate: answer.split('\n'),
-              fieldType: BasicField.Table,
-            },
-          ],
-        }),
-      )
+      const expectedDataCollationData = [
+        { question: `${TABLE_PREFIX}${question}`, answer },
+      ]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: answer.split('\n') },
+      ]
+      const expectedFormData = [
+        {
+          question: `${TABLE_PREFIX}${question}`,
+          answer,
+          answerTemplate: answer.split('\n'),
+          fieldType: BasicField.Table,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
 
     it('should split checkbox answers by newline', () => {
@@ -295,20 +300,22 @@ describe('email-submission.service', () => {
       const question = response.question
       const answer = answerArray.join(', ')
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [{ question, answer }],
-          autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
-          formData: [
-            {
-              question,
-              answer,
-              answerTemplate: answer.split('\n'),
-              fieldType: BasicField.Checkbox,
-            },
-          ],
-        }),
-      )
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: answer.split('\n') },
+      ]
+      const expectedFormData = [
+        {
+          question,
+          answer,
+          answerTemplate: answer.split('\n'),
+          fieldType: BasicField.Checkbox,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
 
     it('should prefix verified fields with [verified] only in form data', () => {
@@ -323,20 +330,21 @@ describe('email-submission.service', () => {
 
       const question = response.question
       const answer = response.answer
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [{ question, answer }],
-          autoReplyData: [{ question, answerTemplate: [answer] }],
-          formData: [
-            {
-              question: `${VERIFIED_PREFIX}${question}`,
-              answer,
-              answerTemplate: [answer],
-              fieldType: BasicField.Email,
-            },
-          ],
-        }),
-      )
+
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedFormData = [
+        {
+          question: `${VERIFIED_PREFIX}${question}`,
+          answer,
+          answerTemplate: [answer],
+          fieldType: BasicField.Email,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
 
     it('should prefix MyInfo-verified fields with [MyInfo] only in form data', () => {
@@ -363,43 +371,43 @@ describe('email-submission.service', () => {
         new Set([nameResponse._id]),
       )
 
-      expect(emailData).toEqual(
-        expect.objectContaining({
-          dataCollationData: [
-            { question: nameResponse.question, answer: nameResponse.answer },
-            {
-              question: vehicleResponse.question,
-              answer: vehicleResponse.answer,
-            },
-          ],
-          autoReplyData: [
-            {
-              question: nameResponse.question,
-              answerTemplate: [nameResponse.answer],
-            },
-            {
-              question: vehicleResponse.question,
-              answerTemplate: [vehicleResponse.answer],
-            },
-          ],
-          formData: [
-            {
-              // Prefixed because its ID was in the Set
-              question: `${MYINFO_PREFIX}${nameResponse.question}`,
-              answer: nameResponse.answer,
-              answerTemplate: [nameResponse.answer],
-              fieldType: BasicField.ShortText,
-            },
-            {
-              // Not prefixed because ID not in Set
-              question: vehicleResponse.question,
-              answer: vehicleResponse.answer,
-              answerTemplate: [vehicleResponse.answer],
-              fieldType: BasicField.ShortText,
-            },
-          ],
-        }),
-      )
+      const expectedDataCollationData = [
+        { question: nameResponse.question, answer: nameResponse.answer },
+        {
+          question: vehicleResponse.question,
+          answer: vehicleResponse.answer,
+        },
+      ]
+      const expectedAutoReplyData = [
+        {
+          question: nameResponse.question,
+          answerTemplate: [nameResponse.answer],
+        },
+        {
+          question: vehicleResponse.question,
+          answerTemplate: [vehicleResponse.answer],
+        },
+      ]
+      const expectedFormData = [
+        {
+          // Prefixed because its ID was in the Set
+          question: `${MYINFO_PREFIX}${nameResponse.question}`,
+          answer: nameResponse.answer,
+          answerTemplate: [nameResponse.answer],
+          fieldType: BasicField.ShortText,
+        },
+        {
+          // Not prefixed because ID not in Set
+          question: vehicleResponse.question,
+          answer: vehicleResponse.answer,
+          answerTemplate: [vehicleResponse.answer],
+          fieldType: BasicField.ShortText,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
     })
   })
 
