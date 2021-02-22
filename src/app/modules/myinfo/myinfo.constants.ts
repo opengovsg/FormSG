@@ -15,4 +15,5 @@ export const MYINFO_COOKIE_OPTIONS = {
  * "This digital service will like to request the following information
  * from Singpass, for the purpose of..."
  */
-export const MYINFO_CONSENT_PAGE_PURPOSE = 'pre-filling your data on a form.'
+export const MYINFO_CONSENT_PAGE_PURPOSE =
+  'filling out your form on form.gov.sg.'
