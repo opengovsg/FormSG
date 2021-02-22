@@ -213,6 +213,8 @@ const loginToMyInfo: RequestHandler<
       message: "Log in attempt to wrong endpoint for form's authType",
       meta: logMeta,
     })
+    // Set cookie so that user still sees MyInfo error message.
+    res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
     return res.redirect(redirectDestination)
   }
 
