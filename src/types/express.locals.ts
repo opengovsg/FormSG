@@ -59,13 +59,13 @@ export interface EmailAdminDataField {
 
 export interface EmailData {
   autoReplyData: EmailRespondentConfirmationField[]
-  jsonData: EmailDataCollationToolField[]
+  dataCollationData: EmailDataCollationToolField[]
   formData: EmailAdminDataField[]
 }
 
 export interface EmailDataForOneField {
   autoReplyData?: EmailRespondentConfirmationField
-  jsonData?: EmailDataCollationToolField
+  dataCollationData?: EmailDataCollationToolField
   formData: EmailAdminDataField
 }
 

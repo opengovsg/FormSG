@@ -85,7 +85,8 @@ export const prepareEmailSubmission: RequestHandler<
   }
   // eslint-disable-next-line @typescript-eslint/no-extra-semi
   ;(req as WithEmailData<typeof req>).autoReplyData = emailData.autoReplyData
-  ;(req as WithEmailData<typeof req>).jsonData = emailData.jsonData
+  ;(req as WithEmailData<typeof req>).dataCollationData =
+    emailData.dataCollationData
   ;(req as WithEmailData<typeof req>).formData = emailData.formData
   return next()
 }
@@ -184,7 +185,7 @@ export const validateEmailSubmission: RequestHandler<
  * @param req - Express request object
  * @param req.form - form object from req
  * @param req.formData - the submission for the form
- * @param req.jsonData - data to be included in JSON section of email
+ * @param req.dataCollationData - data to be included in JSON section of email
  * @param req.submission - submission which was saved to database
  * @param req.attachments - submitted attachments, parsed by
  * exports.receiveSubmission
@@ -200,7 +201,7 @@ export const sendAdminEmail: RequestHandler<
   const {
     form,
     formData,
-    jsonData,
+    dataCollationData,
     submission,
     attachments,
   } = req as WithAdminEmailData<typeof req>
@@ -222,7 +223,7 @@ export const sendAdminEmail: RequestHandler<
     form,
     submission,
     attachments,
-    jsonData,
+    dataCollationData,
     formData,
   })
     .map(() => next())

@@ -209,7 +209,7 @@ export const handleEmailSubmission: RequestHandler<
       form,
       submission,
       attachments,
-      jsonData: emailData.jsonData,
+      dataCollationData: emailData.dataCollationData,
       formData: emailData.formData,
     },
   )

@@ -198,7 +198,7 @@ export const getAnswerForCheckbox = (
 /**
  *  Formats the response for sending to the submitter (autoReplyData),
  *  the table that is sent to the admin (formData),
- *  and the json used by data collation tool (jsonData).
+ *  and the json used by data collation tool (dataCollationData).
  *
  * @param response
  * @param hashedFields Field IDs hashed to verify answers provided by MyInfo
@@ -212,7 +212,7 @@ export const getFormattedResponse = (
   const answerSplitByNewLine = answer.split('\n')
 
   let autoReplyData: EmailRespondentConfirmationField | undefined
-  let jsonData: EmailDataCollationToolField | undefined
+  let dataCollationData: EmailDataCollationToolField | undefined
   // Auto reply email will contain only visible fields
   if (isVisible) {
     autoReplyData = {
@@ -223,7 +223,7 @@ export const getFormattedResponse = (
 
   // Headers are excluded from JSON data
   if (fieldType !== BasicField.Section) {
-    jsonData = {
+    dataCollationData = {
       question: getJsonPrefixedQuestion(response),
       answer,
     }
@@ -238,7 +238,7 @@ export const getFormattedResponse = (
   }
   return {
     autoReplyData,
-    jsonData,
+    dataCollationData,
     formData,
   }
 }
@@ -612,11 +612,11 @@ const getJsonFormattedResponse = (
   const { answer, fieldType } = response
   // Headers are excluded from JSON data
   if (fieldType !== BasicField.Section) {
-    const jsonData = {
+    const dataCollationData = {
       question: getJsonPrefixedQuestion(response),
       answer,
     }
-    return jsonData
+    return dataCollationData
   }
   return undefined
 }
@@ -676,9 +676,9 @@ export class EmailDataObj {
   }
 
   /**
-   * Getter function to return jsonData which is used for data collation tool
+   * Getter function to return dataCollationData which is used for data collation tool
    */
-  get jsonData(): EmailDataCollationToolField[] {
+  get dataCollationData(): EmailDataCollationToolField[] {
     return this.parsedResponses.flatMap((response) =>
       compact(
         createFormattedDataForOneField(

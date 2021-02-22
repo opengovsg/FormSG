@@ -105,7 +105,7 @@ describe('Email Submissions Controller', () => {
           id: 1,
           created: Date.now(),
         },
-        jsonData: [
+        dataCollationData: [
           {
             question: 'Reference Number',
             answer: '123',
@@ -476,7 +476,7 @@ describe('Email Submissions Controller', () => {
       res.status(200).send({
         formData: req.formData,
         autoReplyData: req.autoReplyData,
-        jsonData: req.jsonData,
+        dataCollationData: req.dataCollationData,
         attachments: req.attachments.map((b) => {
           b.content = b.content.toString('base64')
           return b
@@ -502,12 +502,14 @@ describe('Email Submissions Controller', () => {
       request(app)
         .get(endpointPath)
         .expect(StatusCodes.OK)
-        .then(({ body: { formData, autoReplyData, jsonData } }) => {
+        .then(({ body: { formData, autoReplyData, dataCollationData } }) => {
           expect(formData).withContext('Form Data').toEqual(expected.formData)
           expect(autoReplyData)
             .withContext('autoReplyData')
             .toEqual(expected.autoReplyData)
-          expect(jsonData).withContext('jsonData').toEqual(expected.jsonData)
+          expect(dataCollationData)
+            .withContext('dataCollationData')
+            .toEqual(expected.dataCollationData)
         })
         .then(done)
         .catch(done)
@@ -573,7 +575,7 @@ describe('Email Submissions Controller', () => {
       let expected = {
         autoReplyData: [],
         formData: [],
-        jsonData: [],
+        dataCollationData: [],
       }
       for (let answer of answerArray) {
         answer = String(answer)
@@ -585,7 +587,7 @@ describe('Email Submissions Controller', () => {
             answerTemplate,
           })
         }
-        expected.jsonData.push({
+        expected.dataCollationData.push({
           question,
           answer,
         })
@@ -603,13 +605,13 @@ describe('Email Submissions Controller', () => {
      *  Generate expected output
      * @param {Array} fields
      * @param {Array} responses
-     * @returns {Object} { autoReplyData: Array, formData: Array, jsonData: Array }
+     * @returns {Object} { autoReplyData: Array, formData: Array, dataCollationData: Array }
      */
     const getExpectedOutput = (fields, responses) => {
       let expected = {
         autoReplyData: [],
         formData: [],
-        jsonData: [],
+        dataCollationData: [],
       }
       for (let i = 0; i < fields.length; i++) {
         const answer = String(responses[i].answer)
@@ -617,7 +619,7 @@ describe('Email Submissions Controller', () => {
         if (fields[i].fieldType === 'table') {
           const expectedTable = getExpectedForTable(fields[i], responses[i])
           expected.autoReplyData.push(...expectedTable.autoReplyData)
-          expected.jsonData.push(...expectedTable.jsonData)
+          expected.dataCollationData.push(...expectedTable.dataCollationData)
           expected.formData.push(...expectedTable.formData)
         } else {
           let question = fields[i].title
@@ -629,7 +631,7 @@ describe('Email Submissions Controller', () => {
             })
           }
           if (fields[i].fieldType !== 'section') {
-            expected.jsonData.push({
+            expected.dataCollationData.push({
               question,
               answer,
             })
@@ -662,7 +664,7 @@ describe('Email Submissions Controller', () => {
           answerTemplate: [resLocalFixtures.uinFin],
         },
       ]
-      const expectedJsonData = [
+      const expectedDataCollationData = [
         {
           question: SPCPFieldTitle.SpNric,
           answer: resLocalFixtures.uinFin,
@@ -671,7 +673,7 @@ describe('Email Submissions Controller', () => {
       const expected = {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
+        dataCollationData: expectedDataCollationData,
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -705,7 +707,7 @@ describe('Email Submissions Controller', () => {
           answerTemplate: [maskedCpUid],
         },
       ]
-      const expectedJsonData = [
+      const expectedDataCollationData = [
         {
           question: SPCPFieldTitle.CpUen,
           answer: resLocalFixtures.uinFin,
@@ -718,7 +720,7 @@ describe('Email Submissions Controller', () => {
       const expected = {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
+        dataCollationData: expectedDataCollationData,
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -744,7 +746,7 @@ describe('Email Submissions Controller', () => {
         required: true,
         myInfo: { attr },
       })
-      const expectedJsonData = [
+      const expectedDataCollationData = [
         {
           question: 'myinfo',
           answer: 'bar',
@@ -766,7 +768,7 @@ describe('Email Submissions Controller', () => {
       ]
       const expected = {
         autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
+        dataCollationData: expectedDataCollationData,
         formData: expectedFormData,
       }
       prepareSubmissionThenCompare(expected, done)
@@ -792,7 +794,7 @@ describe('Email Submissions Controller', () => {
           answerTemplate: ['foo'],
         },
       ]
-      const expectedJsonData = [
+      const expectedDataCollationData = [
         {
           question: 'regular',
           answer: 'foo',
@@ -809,7 +811,7 @@ describe('Email Submissions Controller', () => {
       const expected = {
         formData: expectedFormData,
         autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
+        dataCollationData: expectedDataCollationData,
       }
       prepareSubmissionThenCompare(expected, done)
     })
@@ -858,7 +860,7 @@ describe('Email Submissions Controller', () => {
         _id: '5db00a15af2ffb29487d4eb1',
         logicType: 'showFields',
       })
-      const expectedJsonData = [
+      const expectedDataCollationData = [
         {
           question: nonVisibleField.title,
           answer: nonVisibleResponse.answer,
@@ -890,7 +892,7 @@ describe('Email Submissions Controller', () => {
       ]
       const expected = {
         autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
+        dataCollationData: expectedDataCollationData,
         formData: expectedFormData,
       }
       prepareSubmissionThenCompare(expected, done)
@@ -914,7 +916,7 @@ describe('Email Submissions Controller', () => {
         fieldType: 'attachment',
         attachmentSize: '1',
       })
-      const expectedJsonData = [
+      const expectedDataCollationData = [
         {
           question: '[attachment] an attachment',
           answer: validAttachmentName,
@@ -936,7 +938,7 @@ describe('Email Submissions Controller', () => {
       ]
       const expected = {
         autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
+        dataCollationData: expectedDataCollationData,
         formData: expectedFormData,
       }
       prepareSubmissionThenCompare(expected, done)
@@ -961,7 +963,7 @@ describe('Email Submissions Controller', () => {
         ],
         minimumRows: 1,
       })
-      const expectedJsonData = [
+      const expectedDataCollationData = [
         {
           question: '[table] a table (Name, Age)',
           answer: ',',
@@ -983,7 +985,7 @@ describe('Email Submissions Controller', () => {
       ]
       const expected = {
         autoReplyData: expectedAutoReplyData,
-        jsonData: expectedJsonData,
+        dataCollationData: expectedDataCollationData,
         formData: expectedFormData,
       }
       prepareSubmissionThenCompare(expected, done)
@@ -1210,7 +1212,7 @@ describe('Email Submissions Controller', () => {
       let expected = {
         autoReplyData: [],
         formData: [],
-        jsonData: [],
+        dataCollationData: [],
       }
       for (let i = 0; i < fields.length; i++) {
         let { fieldType, title } = fields[i]
@@ -1221,7 +1223,10 @@ describe('Email Submissions Controller', () => {
             answerTemplate: String(answer).split('\n'),
           })
           if (fieldType !== 'section') {
-            expected.jsonData.push({ question: title, answer: String(answer) })
+            expected.dataCollationData.push({
+              question: title,
+              answer: String(answer),
+            })
           }
           expected.formData.push({
             question: title,

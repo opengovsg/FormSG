@@ -81,14 +81,14 @@ describe('email-submission.service', () => {
       const expectedAutoReplyData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerAutoreply,
       )
-      const expectedJsonData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
+      const expectedDataCollationData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerJson,
       )
       const expectedFormData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerFormData,
       )
       expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
-      expect(emailData.jsonData).toEqual(expectedJsonData)
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -102,7 +102,7 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [],
+          dataCollationData: [],
           autoReplyData: [generateSingleAnswerAutoreply(response)],
           formData: [generateSingleAnswerFormData(response)],
         }),
@@ -121,7 +121,7 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [generateSingleAnswerJson(response)],
+          dataCollationData: [generateSingleAnswerJson(response)],
           autoReplyData: [],
           formData: [generateSingleAnswerFormData(response)],
         }),
@@ -142,7 +142,7 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [
+          dataCollationData: [
             { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
             { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
           ],
@@ -181,7 +181,7 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [{ question, answer }],
+          dataCollationData: [{ question, answer }],
           autoReplyData: [{ question, answerTemplate: [answer] }],
           formData: [
             {
@@ -208,7 +208,9 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [{ question: `${ATTACHMENT_PREFIX}${question}`, answer }],
+          dataCollationData: [
+            { question: `${ATTACHMENT_PREFIX}${question}`, answer },
+          ],
           autoReplyData: [{ question, answerTemplate: [answer] }],
           formData: [
             {
@@ -237,7 +239,7 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [{ question, answer }],
+          dataCollationData: [{ question, answer }],
           autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
           formData: [
             {
@@ -265,7 +267,9 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [{ question: `${TABLE_PREFIX}${question}`, answer }],
+          dataCollationData: [
+            { question: `${TABLE_PREFIX}${question}`, answer },
+          ],
           autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
           formData: [
             {
@@ -293,7 +297,7 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [{ question, answer }],
+          dataCollationData: [{ question, answer }],
           autoReplyData: [{ question, answerTemplate: answer.split('\n') }],
           formData: [
             {
@@ -321,7 +325,7 @@ describe('email-submission.service', () => {
       const answer = response.answer
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [{ question, answer }],
+          dataCollationData: [{ question, answer }],
           autoReplyData: [{ question, answerTemplate: [answer] }],
           formData: [
             {
@@ -361,7 +365,7 @@ describe('email-submission.service', () => {
 
       expect(emailData).toEqual(
         expect.objectContaining({
-          jsonData: [
+          dataCollationData: [
             { question: nameResponse.question, answer: nameResponse.answer },
             {
               question: vehicleResponse.question,
@@ -707,7 +711,7 @@ describe('email-submission.service', () => {
           content: Buffer.from('content'),
         },
       ],
-      jsonData: [{ question: 'question', answer: 'answer' }],
+      dataCollationData: [{ question: 'question', answer: 'answer' }],
       formData: [{ question: 'question', answer: 'answer' }],
     }
     it('should call MailService correctly', async () => {
