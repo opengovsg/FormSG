@@ -19,7 +19,6 @@ export interface IMyInfoServiceConfig {
 
 export interface IMyInfoRedirectURLArgs {
   formId: string
-  formTitle: string
   formEsrvcId: string
   requestedAttributes: MyInfoAttribute[]
 }

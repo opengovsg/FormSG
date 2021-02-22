@@ -82,7 +82,6 @@ export const handleRedirect: RequestHandler<
     return MyInfoFactory.createRedirectURL({
       formEsrvcId: form.esrvcId,
       formId,
-      formTitle: form.title,
       requestedAttributes: form.getUniqueMyInfoAttrs(),
     })
       .map((redirectURL) => res.json({ redirectURL }))

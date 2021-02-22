@@ -43,7 +43,6 @@ const respondWithRedirectURL: RequestHandler<
       MyInfoFactory.createRedirectURL({
         formEsrvcId: form.esrvcId,
         formId,
-        formTitle: form.title,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
       }),
     )

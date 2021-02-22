@@ -23,7 +23,11 @@ import { DatabaseError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
-import { MYINFO_REDIRECT_PATH, MYINFO_ROUTER_PREFIX } from './myinfo.constants'
+import {
+  MYINFO_CONSENT_PAGE_PURPOSE,
+  MYINFO_REDIRECT_PATH,
+  MYINFO_ROUTER_PREFIX,
+} from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
@@ -41,7 +45,6 @@ import {
 } from './myinfo.types'
 import {
   compareHashedValues,
-  createConsentPagePurpose,
   createRelayState,
   hashFieldValues,
   hasProp,
@@ -120,12 +123,11 @@ export class MyInfoService {
 
   createRedirectURL({
     formId,
-    formTitle,
     formEsrvcId,
     requestedAttributes,
   }: IMyInfoRedirectURLArgs): Result<string, never> {
     const redirectURL = this.#myInfoGovClient.createRedirectURL({
-      purpose: createConsentPagePurpose(formTitle),
+      purpose: MYINFO_CONSENT_PAGE_PURPOSE,
       relayState: createRelayState(formId),
       // Always request consent for NRIC/FIN
       requestedAttributes: internalAttrListToScopes(requestedAttributes),

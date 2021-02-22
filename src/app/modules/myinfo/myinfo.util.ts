@@ -259,9 +259,6 @@ export const getMyInfoFieldOptions = (
   return myInfoField?.fieldOptions || []
 }
 
-export const createConsentPagePurpose = (formTitle: string): string =>
-  `The form "${formTitle}" is requesting to pre-fill your MyInfo data.`
-
 export const createRelayState = (formId: string): string =>
   JSON.stringify({
     uuid: uuidv4(),

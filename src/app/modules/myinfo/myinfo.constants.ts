@@ -9,3 +9,10 @@ export const MYINFO_COOKIE_OPTIONS = {
   sameSite: 'lax' as const, // Setting to 'strict' prevents Singpass login on Safari, Firefox
   secure: !config.isDev,
 }
+
+/**
+ * Message shown on the consent page, which completes the sentence
+ * "This digital service will like to request the following information
+ * from Singpass, for the purpose of..."
+ */
+export const MYINFO_CONSENT_PAGE_PURPOSE = 'pre-filling your data on a form.'
