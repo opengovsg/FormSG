@@ -2,17 +2,14 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import axios from 'axios'
 import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
-import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, ILoginSchema, IPopulatedForm } from '../../../types'
-import getLoginModel from '../../models/login.server.model'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { AuthType } from '../../../types'
+import { ApplicationError } from '../core/core.errors'
 
 import {
-  AuthTypeMismatchError,
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidJwtError,
@@ -43,7 +40,6 @@ import {
 } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
-const LoginModel = getLoginModel(mongoose)
 
 const LOGIN_PAGE_HEADERS =
   'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3'
@@ -364,45 +360,6 @@ export class SpcpService {
         cookieDuration / 1000,
         // NOTE: cookieDuration is interpreted as a seconds count if numeric.
       ),
-    )
-  }
-
-  /**
-   * Adds an SP/CP login record to the database.
-   * @param form Form populated with admin and agency data
-   * @param authType 'SP' or 'CP'
-   * @return The Login document saved to the database
-   */
-  addLogin(
-    form: IPopulatedForm,
-    authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<ILoginSchema, AuthTypeMismatchError | DatabaseError> {
-    const logMeta = {
-      action: 'addLogin',
-      formId: form._id,
-    }
-    if (form.authType !== authType) {
-      logger.error({
-        message: 'Form auth type did not match attempted auth type',
-        meta: {
-          ...logMeta,
-          attemptedAuthType: authType,
-          formAuthType: form.authType,
-        },
-      })
-      return errAsync(new AuthTypeMismatchError(authType, form.authType))
-    }
-    return ResultAsync.fromPromise(
-      LoginModel.addLoginFromForm(form),
-      (error) => {
-        logger.error({
-          message: 'Error adding login to database',
-          meta: logMeta,
-          error,
-        })
-        // TODO (#614): Use utility to return better error message
-        return new DatabaseError()
-      },
     )
   }
 

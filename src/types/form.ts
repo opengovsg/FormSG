@@ -3,10 +3,11 @@ import { Merge, SetRequired } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
+import { PublicView } from './database'
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
-import { IPopulatedUser, IUserSchema } from './user'
+import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
 export enum AuthType {
   NIL = 'NIL',
@@ -35,6 +36,31 @@ export enum ResponseMode {
 }
 
 // Typings
+// Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
+export type PublicFormValues = Pick<
+  IFormDocument,
+  | 'admin'
+  | 'authType'
+  | 'endPage'
+  | 'esrvcId'
+  | 'form_fields'
+  | 'form_logics'
+  | 'hasCaptcha'
+  | 'publicKey'
+  | 'startPage'
+  | 'status'
+  | 'title'
+  | '_id'
+  | 'responseMode'
+>
+
+export type PublicForm = Merge<
+  PublicFormValues,
+  {
+    admin: PublicUser
+  }
+>
+
 export type FormOtpData = {
   form: IFormSchema['_id']
   formAdmin: {
@@ -118,7 +144,7 @@ export interface IForm {
   emails?: string[] | string
 }
 
-export interface IFormSchema extends IForm, Document {
+export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Returns the dashboard form view of the form.
    * @param admin the admin to inject into the returned object
@@ -172,20 +198,7 @@ export interface IFormDocument extends IFormSchema {
   webhook: SetRequired<NonNullable<IFormSchema['webhook']>, 'url'>
 }
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
-  // Remove extraneous keys that the populated form should not require.
-  admin: Merge<
-    Omit<
-      IPopulatedUser,
-      '__v' | 'created' | 'lastModified' | 'updatedAt' | 'lastAccessed'
-    >,
-    {
-      agency: Omit<
-        IPopulatedUser['agency'],
-        '__v' | 'created' | 'lastModified' | 'updatedAt'
-      >
-    }
-  >
-
+  admin: IPopulatedUser
   // Override types.
   toJSON(options?: ToObjectOptions): LeanDocument<IPopulatedForm>
 }

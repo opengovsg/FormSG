@@ -1,6 +1,3 @@
-import { pick } from 'lodash'
-import { Merge } from 'type-fest'
-
 import {
   IEncryptedFormSchema,
   IFormSchema,
@@ -9,56 +6,27 @@ import {
   ResponseMode,
 } from '../../../types'
 
-// Kept in this file instead of form.types.ts so that this can be kept in sync
-// with FORM_PUBLIC_FIELDS more easily.
-type PublicFormValues = Pick<
-  IPopulatedForm,
-  | 'authType'
-  | 'endPage'
-  | 'esrvcId'
-  | 'form_fields'
-  | 'form_logics'
-  | 'hasCaptcha'
-  | 'publicKey'
-  | 'startPage'
-  | 'status'
-  | 'title'
-  | '_id'
-  | 'responseMode'
->
+// Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
+export const transformEmailString = (v: string): string[] => {
+  return v
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter((email) => email.includes('@')) // remove ""
+}
 
-type PublicForm = Merge<
-  PublicFormValues,
-  { admin: Pick<IPopulatedForm['admin'], 'agency'> }
->
-
-const FORM_PUBLIC_FIELDS = [
-  'admin',
-  'authType',
-  'endPage',
-  'esrvcId',
-  'form_fields',
-  'form_logics',
-  'hasCaptcha',
-  'publicKey',
-  'startPage',
-  'status',
-  'title',
-  '_id',
-  'responseMode',
-]
-
-/**
- * Removes all private details such as admin email from given form.
- * @param form the form to scrub
- * @returns form with only public details
- */
-export const removePrivateDetailsFromForm = (
-  form: IPopulatedForm,
-): PublicForm => {
-  return {
-    ...(pick(form, FORM_PUBLIC_FIELDS) as PublicFormValues),
-    admin: pick(form.admin, 'agency'),
+// Function that coerces the string of comma-separated emails sent by the client
+// into an array of emails
+export const transformEmails = (v: string | string[]): string[] => {
+  // Cases
+  // ['test@hotmail.com'] => ['test@hotmail.com'] ~ unchanged
+  // ['test@hotmail.com', 'test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com'] ~ unchanged
+  // ['test@hotmail.com, test@gmail.com'] => ['test@hotmail.com', 'test@gmail.com']
+  // ['test@hotmail.com, test@gmail.com', 'test@yahoo.com'] => ['test@hotmail.com', 'test@gmail.com', 'test@yahoo.com']
+  // 'test@hotmail.com, test@gmail.com' => ['test@hotmail.com', 'test@gmail.com']
+  if (Array.isArray(v)) {
+    return v.flatMap(transformEmailString)
+  } else {
+    return transformEmailString(v)
   }
 }
 

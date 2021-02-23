@@ -11,6 +11,7 @@ import {
   ILongTextField,
   IMobileField,
   INricField,
+  INumberField,
   IRadioField,
   IRatingField,
   ISectionFieldSchema,
@@ -81,4 +82,8 @@ export const isDropdownField = (
   formField: IField,
 ): formField is IDropdownField => {
   return formField.fieldType === BasicField.Dropdown
+}
+
+export const isNumberField = (formField: IField): formField is INumberField => {
+  return formField.fieldType === BasicField.Number
 }

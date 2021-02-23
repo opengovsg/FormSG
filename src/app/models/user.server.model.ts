@@ -3,7 +3,13 @@ import { MongoError } from 'mongodb'
 import { CallbackError, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
-import { IUser, IUserModel, IUserSchema } from '../../types'
+import {
+  IAgencySchema,
+  IUser,
+  IUserModel,
+  IUserSchema,
+  PublicUser,
+} from '../../types'
 
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 
@@ -95,6 +101,16 @@ const compileUserModel = (db: Mongoose) => {
       }
     },
   )
+
+  // Methods
+  UserSchema.methods.getPublicView = function (this: IUserSchema): PublicUser {
+    // Return public view of nested agency document if populated.
+    return {
+      agency: this.populated('agency')
+        ? (this.agency as IAgencySchema).getPublicView()
+        : this.agency,
+    }
+  }
 
   // Statics
   /**

@@ -6,7 +6,7 @@ import { ResponseValidator } from 'src/types/field/utils/validation'
 type SectionValidatorConstructor = () => ResponseValidator<ProcessedSingleAnswerResponse>
 
 /**
- * A function that returns a validation function for a section field when called.
+ * Returns a validation function for a section field when called.
  */
 export const constructSectionValidator: SectionValidatorConstructor = () => (
   response,

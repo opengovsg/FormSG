@@ -155,9 +155,11 @@ export const validateField = (
         case BasicField.HomeNo:
         case BasicField.Radio:
         case BasicField.Rating:
+        case BasicField.Email:
         case BasicField.Date:
         case BasicField.Dropdown:
         case BasicField.Decimal:
+        case BasicField.Number:
         case BasicField.Mobile: {
           const validator = constructSingleAnswerValidator(formField)
           const validEither = validator(response)

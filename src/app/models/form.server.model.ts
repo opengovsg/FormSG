@@ -21,13 +21,15 @@ import {
   LogicType,
   Permission,
   PickDuplicateForm,
+  PublicForm,
+  PublicFormValues,
   ResponseMode,
   Status,
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
-import { transformEmails } from '../modules/form/form.util'
+import { transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.utils'
 
 import getAgencyModel from './agency.server.model'
@@ -61,6 +63,23 @@ import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
 
 export const FORM_SCHEMA_ID = 'Form'
+
+// Exported for testing.
+export const FORM_PUBLIC_FIELDS = [
+  'admin',
+  'authType',
+  'endPage',
+  'esrvcId',
+  'form_fields',
+  'form_logics',
+  'hasCaptcha',
+  'publicKey',
+  'startPage',
+  'status',
+  'title',
+  '_id',
+  'responseMode',
+]
 
 const bson = new BSON([
   BSON.Binary,
@@ -401,6 +420,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return { ...newForm, ...overrideProps }
   }
 
+  FormSchema.methods.getPublicView = function (this: IFormSchema): PublicForm {
+    const basePublicView = pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues
+
+    // Return non-populated public fields of form if not populated.
+    if (!this.populated('admin')) {
+      return basePublicView
+    }
+
+    // Populated, return public view with user's public view.
+    return {
+      ...basePublicView,
+      admin: (this.admin as IUserSchema).getPublicView(),
+    }
+  }
+
   // Archives form.
   FormSchema.methods.archive = function (this: IFormSchema) {
     // Return instantly when form is already archived.
@@ -463,11 +497,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ): Promise<IPopulatedForm | null> {
     return this.findById(formId).populate({
       path: 'admin',
-      // Remove irrelevant keys from populated fields of form admin and agency.
-      select: '-__v -created -lastModified -updatedAt -lastAccessed',
       populate: {
         path: 'agency',
-        select: '-__v -created -lastModified -updatedAt',
       },
     }) as Query<IPopulatedForm, IFormDocument>
   }

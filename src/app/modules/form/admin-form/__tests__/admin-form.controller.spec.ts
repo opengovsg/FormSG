@@ -1,8 +1,9 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import { merge } from 'lodash'
+import { assignIn, cloneDeep, merge } from 'lodash'
 import { errAsync, okAsync } from 'neverthrow'
 import { PassThrough } from 'stream'
+import { MockedObject } from 'ts-jest/dist/utils/testing'
 import { mocked } from 'ts-jest/utils'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
@@ -16,16 +17,20 @@ import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
+import { EditFieldActions } from 'src/shared/constants'
 import {
+  BasicField,
   FormMetaView,
   IForm,
   IFormSchema,
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
+  PublicForm,
   ResponseMode,
 } from 'src/types'
 
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as UserService from '../../../user/user.service'
@@ -36,14 +41,18 @@ import {
   PrivateFormError,
   TransferOwnershipError,
 } from '../../form.errors'
-import { removePrivateDetailsFromForm } from '../../form.utils'
 import * as AdminFormController from '../admin-form.controller'
 import {
   CreatePresignedUrlError,
+  EditFieldError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
-import { DuplicateFormBody, PermissionLevel } from '../admin-form.types'
+import {
+  DuplicateFormBody,
+  EditFormFieldParams,
+  PermissionLevel,
+} from '../admin-form.types'
 
 jest.mock('src/app/modules/auth/auth.service')
 const MockAuthService = mocked(AuthService)
@@ -543,6 +552,294 @@ describe('admin-form.controller', () => {
           level: PermissionLevel.Read,
         },
       )
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+  })
+
+  describe('handlePreviewAdminForm', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'randomrandomtest@example.com',
+    } as IPopulatedUser
+
+    const MOCK_SCRUBBED_FORM = ({
+      _id: MOCK_FORM_ID,
+      title: 'mock preview title',
+      admin: { _id: MOCK_USER_ID },
+    } as unknown) as PublicForm
+
+    const MOCK_FORM = (mocked({
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: MOCK_SCRUBBED_FORM.title,
+      getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
+    }) as unknown) as MockedObject<IPopulatedForm>
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    beforeEach(() => MOCK_FORM.getPublicView.mockClear())
+
+    it('should return 200 with preview form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MOCK_FORM.getPublicView).toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({ form: MOCK_SCRUBBED_FORM })
+    })
+
+    it('should return 403 when ForbiddenFormError is returned when verifying user permissions', async () => {
+      // Arrange
+      const expectedErrorString = 'no read access'
+
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 404 when FormNotFoundError is returned when retrieving form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error when retrieving form.
+      const expectedErrorString = 'form is not found'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 410 when FormDeletedError is returned when retrieving form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error when retrieving form.
+      const expectedErrorString = 'form is deleted'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 422 when MissingUserError is returned when retrieving logged in user', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      const expectedErrorString = 'user is not found'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving user in session', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      const expectedErrorString = 'database goes boom'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving populated form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error when retrieving form.
+      const expectedErrorString = 'database goes boom'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handlePreviewAdminForm(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MOCK_FORM.getPublicView).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
@@ -2932,11 +3229,19 @@ describe('admin-form.controller', () => {
       },
       email: 'alwaystesting@example.com',
     } as IPopulatedUser
-    const MOCK_FORM = {
-      admin: MOCK_USER,
+
+    const MOCK_SCRUBBED_FORM = ({
       _id: MOCK_FORM_ID,
       title: "guess what it's another mock title",
-    } as IPopulatedForm
+      admin: { _id: MOCK_USER_ID },
+    } as unknown) as PublicForm
+
+    const MOCK_FORM = (mocked({
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: MOCK_SCRUBBED_FORM.title,
+      getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
+    }) as unknown) as MockedObject<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -2964,7 +3269,7 @@ describe('admin-form.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({
-        form: removePrivateDetailsFromForm(MOCK_FORM),
+        form: MOCK_SCRUBBED_FORM,
       })
     })
 
@@ -3716,6 +4021,391 @@ describe('admin-form.controller', () => {
       )
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+  })
+
+  describe('handleUpdateForm', () => {
+    const editFormFieldSpy = jest.spyOn(AdminFormService, 'editFormFields')
+    const updateFormSpy = jest.spyOn(AdminFormService, 'updateForm')
+
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_BASE_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    const MOCK_EDIT_FIELD_REQ = assignIn(cloneDeep(MOCK_BASE_REQ), {
+      body: {
+        form: {
+          editFormField: {
+            action: { name: EditFieldActions.Create },
+            field: generateDefaultField(BasicField.Mobile),
+          } as EditFormFieldParams,
+        },
+      },
+    })
+
+    const MOCK_UPDATE_FORM_REQ = assignIn(cloneDeep(MOCK_BASE_REQ), {
+      body: {
+        form: {
+          esrvcId: 'MOCK-SOME-ID',
+        },
+      },
+    })
+
+    it('should return 200 with updated form when updating form fields', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedForm = assignIn(cloneDeep(MOCK_FORM), {
+        form_fields: [MOCK_EDIT_FIELD_REQ.body.form.editFormField.field],
+      })
+      editFormFieldSpy.mockReturnValueOnce(okAsync(expectedForm))
+
+      // Mock services to return success results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_EDIT_FIELD_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedForm)
+      expect(editFormFieldSpy).toHaveBeenCalledTimes(1)
+      expect(updateFormSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 200 with updated form when updating form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedForm = assignIn(cloneDeep(MOCK_FORM), {
+        esrvcId: MOCK_UPDATE_FORM_REQ.body.form.esrvcId,
+      })
+      updateFormSpy.mockReturnValueOnce(okAsync(expectedForm))
+
+      // Mock services to return success results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_UPDATE_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedForm)
+      expect(updateFormSpy).toHaveBeenCalledTimes(1)
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 when performing invalid update to form fields', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Mock services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      // Return error when editing form fields
+      const expectedErrorString = 'invalid field update'
+      editFormFieldSpy.mockReturnValueOnce(
+        errAsync(new EditFieldError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_EDIT_FIELD_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(editFormFieldSpy).toHaveBeenCalledTimes(1)
+      expect(updateFormSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 when current user does not have permissions to update form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_UPDATE_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
+      expect(updateFormSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form to update cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'nope'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_EDIT_FIELD_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
+      expect(updateFormSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 409 when version conflict occurs whilst saving updated form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'some conflict happened'
+      updateFormSpy.mockReturnValueOnce(
+        errAsync(new DatabaseConflictError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_UPDATE_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateFormSpy).toHaveBeenCalledTimes(1)
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 410 when form to update is already archived', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'already deleted'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_EDIT_FIELD_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
+      expect(updateFormSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 413 when updated form is too large to be saved in the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'payload too large'
+      editFormFieldSpy.mockReturnValueOnce(
+        errAsync(new DatabasePayloadSizeError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_EDIT_FIELD_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(413)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(editFormFieldSpy).toHaveBeenCalledTimes(1)
+      expect(updateFormSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when an invalid update is attempted on the form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'invalid update to form shape'
+      updateFormSpy.mockReturnValueOnce(
+        errAsync(new DatabaseValidationError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_UPDATE_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateFormSpy).toHaveBeenCalledTimes(1)
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'user not in session??!!'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_UPDATE_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(updateFormSpy).not.toHaveBeenCalled()
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when generic database error occurs during form update', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'some database error bam'
+      updateFormSpy.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_UPDATE_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(updateFormSpy).toHaveBeenCalledTimes(1)
+      expect(editFormFieldSpy).not.toHaveBeenCalled()
     })
   })
 })
