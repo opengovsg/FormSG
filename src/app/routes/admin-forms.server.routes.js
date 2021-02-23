@@ -113,10 +113,14 @@ const updateFormValidator = celebrate({
       ),
       hasCaptcha: Joi.boolean(),
       inactiveMessage: Joi.string(),
-      permissionList: Joi.array().items({
-        email: Joi.string().email().required(),
-        write: Joi.boolean(),
-      }),
+      permissionList: Joi.array().items(
+        Joi.object().keys({
+          email: Joi.string().email().required(),
+          write: Joi.boolean(),
+          // Optional _id as previous saved permissionList objects have an id.
+          _id: Joi.string(),
+        }),
+      ),
       status: Joi.string().valid(...Object.values(Status)),
       title: Joi.string(),
       webhook: Joi.object({
