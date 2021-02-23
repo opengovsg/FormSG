@@ -61,8 +61,7 @@ const FORM_DEFAULTS = {
     url: '',
   },
   status: 'PRIVATE',
-  hasSubmissionLimit: false,
-  submissionLimit: 1000,
+  submissionLimit: -1,
 }
 
 describe('Form Model', () => {

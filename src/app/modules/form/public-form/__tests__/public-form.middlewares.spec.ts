@@ -11,6 +11,7 @@ import {
   IEncryptedSubmissionSchema,
   ResponseMode,
   Status,
+  SubmissionLimits,
   SubmissionType,
   WithForm,
 } from '../../../../../types'
@@ -49,7 +50,7 @@ describe('public-form.middlewares', () => {
 
     it('should let requests through when form has no submission limit', async () => {
       const mockReq = Object.assign(expressHandler.mockRequest(), {
-        form: { hasSubmissionLimit: false },
+        form: { submissionLimit: SubmissionLimits.Unlimited },
       }) as WithForm<Request>
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
@@ -65,7 +66,6 @@ describe('public-form.middlewares', () => {
     it('should let requests through when form has not reached submission limit', async () => {
       const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
         status: Status.Public,
-        hasSubmissionLimit: true,
         submissionLimit: 10,
       })
       const validForm = new FormModel(formParams)
@@ -89,7 +89,6 @@ describe('public-form.middlewares', () => {
       const mockReq = Object.assign(expressHandler.mockRequest(), {
         form: {
           _id: form._id.toHexString(),
-          hasSubmissionLimit: true,
           submissionLimit: 10,
           title,
           inactiveMessage,
@@ -109,7 +108,6 @@ describe('public-form.middlewares', () => {
     it('should not let requests through and deactivate form when form has reached submission limit', async () => {
       const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
         status: Status.Public,
-        hasSubmissionLimit: true,
         submissionLimit: 5,
       })
       const validForm = new FormModel(formParams)
@@ -133,7 +131,6 @@ describe('public-form.middlewares', () => {
       const mockReq = Object.assign(expressHandler.mockRequest(), {
         form: {
           _id: form._id.toHexString(),
-          hasSubmissionLimit: true,
           submissionLimit: 5,
           title,
           inactiveMessage,

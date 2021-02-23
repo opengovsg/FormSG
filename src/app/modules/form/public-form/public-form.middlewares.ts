@@ -1,16 +1,12 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import mongoose from 'mongoose'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { WithForm } from '../../../../types'
-import getSubmissionModel from '../../../models/submission.server.model'
 import { FormDeletedError } from '../form.errors'
-import { deactivateForm, isFormPublic } from '../form.service'
-
-const SubmissionModel = getSubmissionModel(mongoose)
-
-const logger = createLoggerWithLabel(module)
+import {
+  checkFormSubmissionLimitAndDeactivateForm,
+  isFormPublic,
+} from '../form.service'
 
 /**
  * Express middleware function that checks if a form has exceeded its submission limits before allowing
@@ -22,30 +18,15 @@ export const checkFormSubmissionLimitAndDeactivate: RequestHandler = async (
   next,
 ) => {
   const { form } = req as WithForm<typeof req>
-  if (form.hasSubmissionLimit) {
-    const currentCount = await SubmissionModel.countDocuments({
-      form: form._id,
-    }).exec()
-    if (currentCount >= form.submissionLimit) {
-      logger.warn({
-        message:
-          'Form submission reached maximum submission count, deactivating form.',
-        meta: {
-          form: form._id,
-          action: 'checkFormSubmissionLimitAndDeactivate',
-        },
-      })
-      await deactivateForm(form._id)
-      return res.status(StatusCodes.NOT_FOUND).json({
-        message: form.inactiveMessage,
-        isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
-        formTitle: form.title,
-      })
-    } else {
-      return next()
-    }
-  } else {
+  const formResult = await checkFormSubmissionLimitAndDeactivateForm(form)
+  if (!formResult.isErr()) {
     return next()
+  } else {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: form.inactiveMessage,
+      isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
+      formTitle: form.title,
+    })
   }
 }
 

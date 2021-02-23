@@ -25,6 +25,7 @@ import {
   PublicFormValues,
   ResponseMode,
   Status,
+  SubmissionLimits,
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
@@ -321,8 +322,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         ],
       },
 
-      hasSubmissionLimit: { type: Boolean, default: false },
-      submissionLimit: { type: Number, default: 1000 },
+      submissionLimit: { type: Number, default: SubmissionLimits.Unlimited },
     },
     formSchemaOptions,
   )
@@ -426,7 +426,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'authType',
       'inactiveMessage',
       'responseMode',
-      'hasSubmissionLimit',
       'submissionLimit',
     ]) as PickDuplicateForm
     return { ...newForm, ...overrideProps }
