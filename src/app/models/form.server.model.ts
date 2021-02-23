@@ -243,8 +243,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         enum: Object.values(AuthType),
         default: AuthType.NIL,
         set: function (this: IFormSchema, v: AuthType) {
+          // TODO (#1222): Convert to validator
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === Status.Public) {
+            return this.authType
+          } else if (
+            this.responseMode === ResponseMode.Encrypt &&
+            v === AuthType.MyInfo
+          ) {
+            // Do not allow storage mode to have MyInfo authentication
             return this.authType
           } else {
             return v
@@ -395,7 +402,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function (this: IFormSchema) {
-    if (this.authType !== AuthType.SP) {
+    if (this.authType !== AuthType.MyInfo) {
       return []
     }
 

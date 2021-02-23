@@ -28,7 +28,7 @@
       <uib-tab-heading> MyInfo </uib-tab-heading>
       <!-- Unlike the non-mobile view, no overlay is shown. Thus, fields are -->
       <!-- disabled instead if they do not fulfil a certain criteria. -->
-      <div ng-if="vm.myform.authType === 'SP'">
+      <div ng-if="vm.myform.authType === 'MyInfo'">
         <div class="myinfo-category">PERSONAL</div>
         <div class="add-field-modal-panel">
           <div
@@ -112,7 +112,7 @@
         </div>
       </div>
 
-      <div id="myinfo-disable-mobile" ng-if="vm.myform.authType !== 'SP'">
+      <div id="myinfo-disable-mobile" ng-if="vm.myform.authType !== 'MyInfo'">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="72"

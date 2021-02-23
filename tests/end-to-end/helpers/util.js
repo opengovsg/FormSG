@@ -1128,6 +1128,18 @@ const getResponseTitle = (field, isInJson, formMode) => {
 const expectSpcpLogin = async (t, authType, authData) => {
   const { testSpNric, testCpNric, testCpUen } = authData
   switch (authType) {
+    case 'MyInfo':
+      await t
+        .expect(formPage.spcpLoginBtn.textContent)
+        .contains(`Log in with SingPass`)
+        .click(formPage.spcpLoginBtn)
+        .click(mockpass.loginBtn)
+        .click(mockpass.nricDropdownBtn)
+        .click(mockpass.getNricOption(testSpNric))
+        .click(mockpass.consentBtn)
+        .expect(formPage.spcpLogoutBtn.textContent)
+        .contains(`${testSpNric} - Log out`)
+      break
     case 'SP':
       await t
         .expect(formPage.spcpLoginBtn.textContent)
@@ -1168,6 +1180,7 @@ const getAuthFields = (authType, authData) => {
   switch (authType) {
     case 'NIL':
       return []
+    case 'MyInfo':
     case 'SP':
       return [
         makeField({

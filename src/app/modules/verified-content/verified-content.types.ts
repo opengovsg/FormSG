@@ -38,6 +38,6 @@ export type EncryptVerificationContentParams = {
 }
 
 export type GetVerifiedContentParams = {
-  type: Exclude<AuthType, AuthType.NIL>
+  type: AuthType.SP | AuthType.CP
   data: Record<string, unknown>
 }

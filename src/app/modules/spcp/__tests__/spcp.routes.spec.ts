@@ -44,7 +44,10 @@ const corppassLoginApp = setupApp('/corppass/login', CorppassLoginRouter)
 
 describe('spcp.routes', () => {
   beforeAll(async () => await dbHandler.connect())
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(async () => {
+    jest.clearAllMocks()
+    await dbHandler.clearDatabase()
+  })
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /spcp/redirect', () => {
@@ -85,7 +88,7 @@ describe('spcp.routes', () => {
         buildCelebrateError({
           query: {
             key: 'authType',
-            message: '"authType" must be one of [SP, CP]',
+            message: '"authType" must be one of [SP, CP, MyInfo]',
           },
         }),
       )
@@ -113,25 +116,53 @@ describe('spcp.routes', () => {
       )
     })
 
-    it('should return 200 with the redirect URL when Singpass request is valid', async () => {
-      const response = await request
-        .get(ROUTE)
-        .query({ authType: 'SP', target: MOCK_TARGET, esrvcId: MOCK_ESRVCID })
+    describe('SingPass', () => {
+      beforeEach(async () => {
+        await dbHandler.insertEmailForm({
+          // MOCK_TARGET is the form ID of MOCK_RELAY_STATE
+          formId: new ObjectId(MOCK_TARGET),
+          formOptions: {
+            authType: AuthType.SP,
+          },
+        })
+      })
 
-      expect(response.status).toBe(200)
-      expect(response.body).toEqual({
-        redirectURL: MOCK_REDIRECT_URL,
+      it('should return 200 with the redirect URL when Singpass request is valid', async () => {
+        const response = await request.get(ROUTE).query({
+          authType: 'SP',
+          target: MOCK_RELAY_STATE,
+          esrvcId: MOCK_ESRVCID,
+        })
+
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          redirectURL: MOCK_REDIRECT_URL,
+        })
       })
     })
 
-    it('should return 200 with the redirect URL when Corppass request is valid', async () => {
-      const response = await request
-        .get('/spcp/redirect')
-        .query({ authType: 'CP', target: MOCK_TARGET, esrvcId: MOCK_ESRVCID })
+    describe('CorpPass', () => {
+      beforeEach(async () => {
+        await dbHandler.insertEmailForm({
+          // MOCK_TARGET is the form ID of MOCK_RELAY_STATE
+          formId: new ObjectId(MOCK_TARGET),
+          formOptions: {
+            authType: AuthType.CP,
+          },
+        })
+      })
 
-      expect(response.status).toBe(200)
-      expect(response.body).toEqual({
-        redirectURL: MOCK_REDIRECT_URL,
+      it('should return 200 with the redirect URL when Corppass request is valid', async () => {
+        const response = await request.get('/spcp/redirect').query({
+          authType: 'CP',
+          target: MOCK_RELAY_STATE,
+          esrvcId: MOCK_ESRVCID,
+        })
+
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          redirectURL: MOCK_REDIRECT_URL,
+        })
       })
     })
   })
@@ -174,7 +205,7 @@ describe('spcp.routes', () => {
         buildCelebrateError({
           query: {
             key: 'authType',
-            message: '"authType" must be one of [SP, CP]',
+            message: '"authType" must be one of [SP, CP, MyInfo]',
           },
         }),
       )
@@ -314,25 +345,21 @@ describe('spcp.routes', () => {
     let request: Session
     // Assumes that SingPass client was initialised first
     const mockClient = mocked(MockAuthClient.mock.instances[0], true)
-    beforeEach(() => {
+    beforeEach(async () => {
       request = session(singpassLoginApp)
       mockClient.getAttributes.mockImplementation((_samlArt, _dest, cb) =>
         cb(null, MOCK_GET_ATTRIBUTES_RETURN_VALUE),
       )
       mockClient.createJWT.mockReturnValue(MOCK_JWT)
       jest.restoreAllMocks()
-    })
-
-    beforeAll(async () => {
-      const { form } = await dbHandler.insertEmailForm({
+      await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_TARGET),
+        formOptions: {
+          authType: AuthType.SP,
+          esrvcId: MOCK_ESRVCID,
+        },
       })
-      form.authType = AuthType.SP
-      form.esrvcId = MOCK_ESRVCID
-      await form.save()
     })
-
-    afterAll(async () => await dbHandler.clearDatabase())
 
     it('should return 400 when SAMLart is not provided as a query param', async () => {
       const response = await request
@@ -440,22 +467,20 @@ describe('spcp.routes', () => {
     let request: Session
     // Assumes that SingPass client was initialised first
     const mockClient = mocked(MockAuthClient.mock.instances[1], true)
-    beforeEach(() => {
+    beforeEach(async () => {
       request = session(corppassLoginApp)
       mockClient.getAttributes.mockImplementation((_samlArt, _dest, cb) =>
         cb(null, MOCK_GET_ATTRIBUTES_RETURN_VALUE),
       )
       mockClient.createJWT.mockReturnValue(MOCK_JWT)
       jest.restoreAllMocks()
-    })
-
-    beforeAll(async () => {
-      const { form } = await dbHandler.insertEmailForm({
+      await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_TARGET),
+        formOptions: {
+          authType: AuthType.CP,
+          esrvcId: MOCK_ESRVCID,
+        },
       })
-      form.authType = AuthType.CP
-      form.esrvcId = MOCK_ESRVCID
-      await form.save()
     })
 
     afterAll(async () => await dbHandler.clearDatabase())
