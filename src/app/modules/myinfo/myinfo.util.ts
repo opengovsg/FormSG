@@ -316,6 +316,33 @@ export const hasProp = <K extends string>(
 }
 
 /**
+ * Type guard for MyInfo cookie.
+ * @param cookie Unknown object
+ */
+export const isMyInfoCookie = (
+  cookie: unknown,
+): cookie is MyInfoCookiePayload => {
+  if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
+    // Test for success state
+    if (
+      cookie.state === MyInfoCookieState.Success &&
+      hasProp(cookie, 'accessToken') &&
+      typeof cookie.accessToken === 'string' &&
+      hasProp(cookie, 'usedCount') &&
+      typeof cookie.usedCount === 'number'
+    ) {
+      return true
+    } else if (
+      // Test for any other valid state
+      Object.values<string>(MyInfoCookieState).includes(String(cookie.state))
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Extracts a MyInfo cookie from a request's cookies, and validates
  * its shape.
  * @param cookies Cookies in a request
@@ -324,20 +351,8 @@ export const extractMyInfoCookie = (
   cookies: Record<string, unknown>,
 ): Result<MyInfoCookiePayload, MyInfoMissingAccessTokenError> => {
   const cookie = cookies[MYINFO_COOKIE_NAME]
-  if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
-    if (
-      cookie.state === MyInfoCookieState.Success &&
-      hasProp(cookie, 'accessToken') &&
-      typeof cookie.accessToken === 'string' &&
-      hasProp(cookie, 'usedCount') &&
-      typeof cookie.usedCount === 'number'
-    ) {
-      return ok(cookie as MyInfoCookiePayload)
-    } else if (
-      Object.values<string>(MyInfoCookieState).includes(String(cookie.state))
-    ) {
-      return ok(cookie as MyInfoCookiePayload)
-    }
+  if (isMyInfoCookie(cookie)) {
+    return ok(cookie)
   }
   return err(new MyInfoMissingAccessTokenError())
 }
