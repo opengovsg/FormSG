@@ -164,7 +164,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",
-    "@babel/plugin-transform-runtime": "^7.12.17",
+    "@babel/plugin-transform-runtime": "^7.13.1",
     "@babel/preset-env": "^7.12.17",
     "@opengovsg/mockpass": "^2.6.3",
     "@types/bcrypt": "^3.0.0",
@@ -208,7 +208,7 @@
     "core-js": "^3.9.0",
     "coveralls": "^3.1.0",
     "css-loader": "^2.1.1",
-    "csv-parse": "^4.15.1",
+    "csv-parse": "^4.15.3",
     "env-cmd": "^10.1.0",
     "eslint": "^7.20.0",
     "eslint-config-prettier": "^8.0.0",
