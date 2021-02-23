@@ -243,6 +243,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         enum: Object.values(AuthType),
         default: AuthType.NIL,
         set: function (this: IFormSchema, v: AuthType) {
+          // TODO (#1222): Convert to validator
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === Status.Public) {
             return this.authType
