@@ -1,15 +1,14 @@
-import { IPersonBasic, IPersonBasicRequest } from '@opengovsg/myinfo-gov-client'
-import { pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
 import config from 'src/config/config'
 import { ISpcpMyInfo } from 'src/config/feature-manager'
 import { Environment } from 'src/types'
 
+import { MyInfoData } from '../myinfo.adapter'
 import { createMyInfoFactory } from '../myinfo.factory'
 import * as MyInfoServiceModule from '../myinfo.service'
 
-import { MOCK_APP_TITLE, MOCK_NODE_ENV } from './myinfo.test.constants'
+import { MOCK_APP_URL, MOCK_NODE_ENV } from './myinfo.test.constants'
 
 jest.mock('../myinfo.service', () => ({
   MyInfoService: jest.fn(),
@@ -19,15 +18,16 @@ jest.mock('src/config/config')
 const MockConfig = mocked(config, true)
 MockConfig.nodeEnv = MOCK_NODE_ENV as Environment
 MockConfig.app = {
-  title: MOCK_APP_TITLE,
+  title: '',
   description: '',
-  appUrl: '',
+  appUrl: MOCK_APP_URL,
   keywords: '',
   images: [''],
   twitterImage: '',
 }
 
 describe('myinfo.factory', () => {
+  afterEach(() => jest.clearAllMocks())
   it('should return error functions when isEnabled is false', async () => {
     const MyInfoFactory = createMyInfoFactory({
       isEnabled: false,
@@ -37,10 +37,12 @@ describe('myinfo.factory', () => {
       'spcp-myinfo is not activated, but a feature-specific function was called.',
     )
     const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
-      {} as IPersonBasicRequest,
+      '',
+      [],
+      '',
     )
     const prefillMyInfoFieldsResult = MyInfoFactory.prefillMyInfoFields(
-      {} as IPersonBasic,
+      {} as MyInfoData,
       [],
     )
     const saveMyInfoHashesResult = await MyInfoFactory.saveMyInfoHashes(
@@ -72,10 +74,12 @@ describe('myinfo.factory', () => {
       'spcp-myinfo is not activated, but a feature-specific function was called.',
     )
     const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
-      {} as IPersonBasicRequest,
+      '',
+      [],
+      '',
     )
     const prefillMyInfoFieldsResult = MyInfoFactory.prefillMyInfoFields(
-      {} as IPersonBasic,
+      {} as MyInfoData,
       [],
     )
     const saveMyInfoHashesResult = await MyInfoFactory.saveMyInfoHashes(
@@ -111,11 +115,9 @@ describe('myinfo.factory', () => {
     })
 
     expect(MockMyInfoService.MyInfoService).toHaveBeenCalledWith({
-      myInfoConfig: pick(mockProps, ['myInfoClientMode', 'myInfoKeyPath']),
+      spcpMyInfoConfig: mockProps,
       nodeEnv: MOCK_NODE_ENV,
-      realm: MOCK_APP_TITLE,
-      singpassEserviceId: mockProps.spEsrvcId,
-      spCookieMaxAge: mockProps.spCookieMaxAge,
+      appUrl: MOCK_APP_URL,
     })
   })
 })

@@ -30,6 +30,12 @@ function SpcpSession($window, $cookies) {
         }
       }
     },
+    setUserName: function (userName) {
+      session.userName = userName
+    },
+    clearUserName: function () {
+      session.userName = undefined
+    },
     logout: function () {
       $cookies.remove(
         session.cookieName,

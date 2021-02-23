@@ -5,7 +5,7 @@ import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submis
 import { IDropdownField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import { getMyInfoFieldOptions } from '../../../services/myinfo/myinfo.util'
+import { getMyInfoFieldOptions } from '../../../modules/myinfo/myinfo.util'
 
 import { notEmptySingleAnswerResponse } from './common'
 import { isOneOfOptions } from './options'

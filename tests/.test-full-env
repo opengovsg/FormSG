@@ -10,8 +10,11 @@ SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/sam
 MOCKPASS_PORT=5156
 SINGPASS_ESRVC_ID=Test-eServiceId-Sp
 
-MYINFO_CLIENT_CONFIG=stg
+MYINFO_CLIENT_CONFIG=dev
 MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+MYINFO_CLIENT_ID=mockClientId
+MYINFO_CLIENT_SECRET=mockClientSecret
 
 CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
@@ -68,4 +71,4 @@ AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
 
 AWS_ENDPOINT=http://localhost:4566
 
-APP_URL=https://example.com
+APP_URL=http://localhost:5000

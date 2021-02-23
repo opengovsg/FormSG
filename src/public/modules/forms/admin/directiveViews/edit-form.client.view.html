@@ -37,7 +37,7 @@
       <uib-tab feature-toggle feature-name="spcp-myinfo">
         <uib-tab-heading> MyInfo </uib-tab-heading>
         <!-- Only show fields if form type is not storage form -->
-        <div ng-if="myform.authType==='SP' && !isStorageForm">
+        <div ng-if="myform.authType==='MyInfo' && !isStorageForm">
           <div class="row">
             <div class="myinfo-category">PERSONAL</div>
             <div
@@ -131,7 +131,7 @@
         SingPass and form is not a Storage Mode form. -->
         <div
           id="myinfo-disable-screen"
-          ng-if="myform.authType!=='SP' &&
+          ng-if="myform.authType!=='MyInfo' &&
         myform.responseMode !== responseModeEnum.ENCRYPT"
         >
           <svg

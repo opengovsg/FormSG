@@ -6,7 +6,7 @@
 const forms = require('../../app/controllers/forms.server.controller')
 const publicForms = require('../modules/form/public-form/public-form.middlewares')
 const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
-const myInfoController = require('../../app/controllers/myinfo.server.controller')
+const MyInfoMiddleware = require('../modules/myinfo/myinfo.middleware')
 const { celebrate, Joi, Segments } = require('celebrate')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../services/captcha/captcha.factory')
@@ -135,7 +135,7 @@ module.exports = function (app) {
       forms.formById,
       publicForms.isFormPublicCheck,
       SpcpController.addSpcpSessionInfo,
-      myInfoController.addMyInfo,
+      MyInfoMiddleware.addMyInfo,
       forms.read(forms.REQUEST_TYPE.PUBLIC),
     )
 
@@ -210,7 +210,7 @@ module.exports = function (app) {
     CaptchaMiddleware.checkCaptchaResponse,
     EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
-    myInfoController.verifyMyInfoVals,
+    MyInfoMiddleware.verifyMyInfoVals,
     VerifiedContentMiddleware.encryptVerifiedSpcpFields,
     EncryptSubmissionMiddleware.prepareEncryptSubmission,
     encryptSubmissions.saveResponseToDb,

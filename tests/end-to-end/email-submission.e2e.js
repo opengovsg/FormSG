@@ -203,7 +203,7 @@ test.meta('full-env', 'true').before(async (t) => {
 // Form with a mix of autofilled and non-autofilled MyInfo fields
 test.meta('full-env', 'true').before(async (t) => {
   const formData = await getDefaultFormOptions({
-    authType: 'SP',
+    authType: 'MyInfo',
     esrvcId: 'Test-eServiceId-Sp',
   })
   formData.formFields = myInfoFields
