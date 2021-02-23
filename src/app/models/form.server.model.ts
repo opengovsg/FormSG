@@ -290,8 +290,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
         validate: [
-          /^([a-zA-Z0-9-])+$/i,
-          'msgSrvcName must be alphanumeric, dashes are allowed',
+          /^([a-zA-Z0-9-/])+$/i,
+          'msgSrvcName must be alphanumeric, dashes and slashes are allowed',
         ],
       },
     },

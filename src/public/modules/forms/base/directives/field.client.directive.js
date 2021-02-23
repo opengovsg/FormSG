@@ -57,8 +57,6 @@ function fieldDirective(FormFields) {
       function _getMyInfoPlaceholder(myInfoAttr, readOnly) {
         if (readOnly) {
           return ''
-        } else if (myInfoAttr === 'homeno') {
-          return '+65 6XXXXXXX'
         } else if (myInfoAttr === 'mobileno') {
           return '+65 9XXXXXXX'
         }
