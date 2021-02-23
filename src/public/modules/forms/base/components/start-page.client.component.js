@@ -14,7 +14,6 @@ angular.module('forms').component('startPageComponent', {
     authType: '<',
     myInfoError: '<',
     isAdminPreview: '<',
-    hasMyinfoFields: '<',
     isTemplate: '<',
     formLogin: '&',
   },
@@ -34,15 +33,6 @@ function startPageController(SpcpSession, Toastr) {
   vm.$onInit = () => {
     vm.userName = SpcpSession.userName
     vm.FormLogoState = FormLogoState
-    // Log out if form has MyInfo fields and user is logged in.
-    if (
-      vm.authType === 'SP' &&
-      vm.userName &&
-      vm.hasMyinfoFields &&
-      SpcpSession.isRememberMeSet()
-    ) {
-      vm.formLogout()
-    }
 
     if (SpcpSession.isJustLogOut()) {
       Toastr.success('You have been logged out')

@@ -3,6 +3,7 @@ import { mocked } from 'ts-jest/utils'
 
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import { validateWebhookUrl } from 'src/app/modules/webhook/webhook.utils'
+import config from 'src/config/config'
 
 jest.mock('dns', () => ({
   promises: {
@@ -10,6 +11,11 @@ jest.mock('dns', () => ({
   },
 }))
 const MockDns = mocked(dns, true)
+
+const MOCK_APP_URL = 'https://example.com'
+jest.mock('src/config/config')
+const MockConfig = mocked(config, true)
+MockConfig.app.appUrl = MOCK_APP_URL
 
 const MOCK_WEBHOOK_URL = 'https://mock.webhook.url'
 
@@ -48,10 +54,10 @@ describe('Webhook URL validation', () => {
 
   it('should reject URLs in the same domain as the app URL', async () => {
     await expect(
-      validateWebhookUrl(`${process.env.APP_URL}/test`),
+      validateWebhookUrl(`${MOCK_APP_URL}/test`),
     ).rejects.toStrictEqual(
       new WebhookValidationError(
-        `You cannot send responses back to ${process.env.APP_URL}.`,
+        `You cannot send responses back to ${MOCK_APP_URL}.`,
       ),
     )
   })

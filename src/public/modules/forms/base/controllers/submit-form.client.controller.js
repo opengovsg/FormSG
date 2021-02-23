@@ -19,6 +19,15 @@ function SubmitFormController(FormData, SpcpSession, $window, $document, GTag) {
   // The form attribute of the FormData object contains the form fields, logic etc
   vm.myform = FormData.form
 
+  // Set MyInfo login status
+  if (!FormData.isTemplate && vm.myform.authType === 'MyInfo') {
+    if (FormData.spcpSession && FormData.spcpSession.userName) {
+      SpcpSession.setUserName(FormData.spcpSession.userName)
+    } else {
+      SpcpSession.clearUserName()
+    }
+  }
+
   vm.myform.isTemplate = Boolean(FormData.isTemplate)
   vm.myform.isPreview = Boolean(FormData.isPreview)
   vm.myInfoError = Boolean(FormData.myInfoError)
