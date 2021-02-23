@@ -36,6 +36,11 @@ export enum ResponseMode {
   Email = 'email',
 }
 
+export enum SubmissionLimits {
+  Unlimited = -1,
+  StandardLimit = 1000,
+}
+
 // Typings
 // Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
 export type PublicFormValues = Pick<
@@ -110,7 +115,6 @@ export type PickDuplicateForm = Pick<
   | 'endPage'
   | 'authType'
   | 'inactiveMessage'
-  | 'hasSubmissionLimit'
   | 'submissionLimit'
   | 'responseMode'
 >
@@ -130,7 +134,6 @@ export interface IForm {
   status?: Status
 
   inactiveMessage?: string
-  hasSubmissionLimit?: boolean
   submissionLimit?: number
   isListed?: boolean
   esrvcId?: string
@@ -193,7 +196,6 @@ export interface IFormDocument extends IFormSchema {
   authType: NonNullable<IFormSchema['authType']>
   status: NonNullable<IFormSchema['status']>
   inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
-  hasSubmissionLimit: NonNullable<IFormSchema['hasSubmissionLimit']>
   submissionLimit: NonNullable<IFormSchema['submissionLimit']>
   isListed: NonNullable<IFormSchema['isListed']>
   form_fields: NonNullable<IFormSchema['form_fields']>

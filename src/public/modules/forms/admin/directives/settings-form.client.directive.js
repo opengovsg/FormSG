@@ -1,6 +1,7 @@
 'use strict'
 const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
+const { SubmissionLimits } = require('../../../../../types')
 
 const SETTINGS_PATH = [
   'title',
@@ -11,7 +12,6 @@ const SETTINGS_PATH = [
   'esrvcId',
   'responseMode',
   'inactiveMessage',
-  'hasSubmissionLimit',
   'submissionLimit',
   'webhook.url',
 ]
@@ -61,6 +61,9 @@ function settingsFormDirective(
 
         $scope.responseModeEnum = responseModeEnum
         $scope.tempForm = createTempSettings($scope.myform)
+        $scope.submissionLimitToggle =
+          $scope.tempForm.submissionLimit != SubmissionLimits.Unlimited
+        $scope.submissionLimitUnlimited = SubmissionLimits.Unlimited
 
         $scope.currentResponsesCount = 0
         Submissions.count({ formId: $scope.myform._id }).then(
@@ -213,6 +216,15 @@ function settingsFormDirective(
 
         const revertField = () => {
           $scope.tempForm = createTempSettings($scope.myform)
+        }
+
+        $scope.toggleFormSubmissionLimit = () => {
+          if ($scope.submissionLimitToggle) {
+            $scope.tempForm.submissionLimit = SubmissionLimits.StandardLimit
+          } else {
+            $scope.tempForm.submissionLimit = SubmissionLimits.Unlimited
+          }
+          $scope.saveForm()
         }
 
         $scope.saveForm = () => {
