@@ -1,6 +1,7 @@
 import { types as basicTypes } from '../../../shared/resources/basic'
 import { BasicField, ITableRow } from '../../../types'
 import {
+  ColumnResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
@@ -54,6 +55,12 @@ export const isProcessedTableResponse = (
     return response.answerArray.every((arr) => arr.length === subArrLength)
   }
   return false
+}
+
+export const isColumnResponseContainingAnswer = (
+  response: ColumnResponse,
+): response is ProcessedSingleAnswerResponse => {
+  return 'answer' in response
 }
 
 export const isProcessedAttachmentResponse = (

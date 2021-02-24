@@ -5,10 +5,18 @@ import {
   ITableResponse,
 } from 'src/types/response'
 
+import { BasicField } from '../../../types/field'
+
 export type ProcessedResponse = {
   question: string
   isVisible?: boolean
   isUserVerified?: boolean
+}
+
+export type ColumnResponse = {
+  fieldType: BasicField
+  answer: string
+  isVisible?: boolean
 }
 
 export type ProcessedSingleAnswerResponse = ISingleAnswerResponse &

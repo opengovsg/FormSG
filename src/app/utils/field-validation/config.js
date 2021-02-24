@@ -3,12 +3,7 @@ const FIELDS_TO_REJECT = require('../../../shared/resources/basic')
   .map((f) => f.name)
 
 // deprecated
-const ALLOWED_VALIDATORS = [
-  'TableValidator',
-  // BaseFieldValidator can be constructed by the FieldValidatorFactory,
-  // but is missing from this list.
-  // 'BaseFieldValidator',
-]
+const ALLOWED_VALIDATORS = []
 
 module.exports = {
   FIELDS_TO_REJECT,

@@ -6,10 +6,12 @@ import {
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
+  ProcessedTableResponse,
 } from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IFieldSchema } from '../../../types/field/baseField'
+import { IFieldSchema, ITableFieldSchema } from '../../../types/field'
 import { BasicField } from '../../../types/field/fieldTypes'
+import { isTableField } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
@@ -18,6 +20,7 @@ import {
   constructAttachmentFieldValidator,
   constructCheckboxFieldValidator,
   constructSingleAnswerValidator,
+  constructTableFieldValidator,
 } from './answerValidator.factory'
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import {
@@ -110,6 +113,19 @@ const checkboxRequiresValidation = (
   response: ProcessedCheckboxResponse,
 ) =>
   (formField.required && response.isVisible) || response.answerArray.length > 0
+
+const tableRequiresValidation = (
+  formField: ITableFieldSchema,
+  response: ProcessedTableResponse,
+) => {
+  const { columns } = formField
+  const { isVisible } = response
+  const requiredVisible = columns.some((column) => column.required) && isVisible
+  const answerPresent = !response.answerArray.every((row) =>
+    row.every((elem) => elem === ''),
+  )
+  return requiredVisible || answerPresent
+}
 
 /**
  * Generic logging function for invalid fields.
@@ -236,9 +252,16 @@ export const validateField = (
         response,
       )
     }
-  } else if (isProcessedTableResponse(response)) {
-    // fallback for processed table responses
-    return classBasedValidation(formId, formField, response)
+  } else if (isProcessedTableResponse(response) && isTableField(formField)) {
+    if (tableRequiresValidation(formField, response)) {
+      const validator = constructTableFieldValidator(formField)
+      const validEither = validator(response)
+      if (isLeft(validEither)) {
+        logInvalidAnswer(formId, formField, validEither.left)
+        return err(new ValidateFieldError('Invalid answer submitted'))
+      }
+      return ok(true)
+    }
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
     return err(new ValidateFieldError('Response has invalid shape'))
