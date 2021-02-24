@@ -29,7 +29,7 @@ import { MyInfoService } from './myinfo.service'
 import {
   IMyInfoRedirectURLArgs,
   IPossiblyPrefilledField,
-  ParsedRelayState,
+  MyInfoParsedRelayState,
 } from './myinfo.types'
 
 interface IMyInfoFactory {
@@ -50,7 +50,7 @@ interface IMyInfoFactory {
   parseMyInfoRelayState: (
     relayState: string,
   ) => Result<
-    ParsedRelayState,
+    MyInfoParsedRelayState,
     MyInfoParseRelayStateError | MissingFeatureError
   >
   prefillMyInfoFields: (
