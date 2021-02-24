@@ -201,8 +201,8 @@ export class MyInfoData {
       case ExternalAttr.DivorceDate:
       case ExternalAttr.PassExpiryDate:
         return formatBasicField(this.#personData[attr])
-      // Above cases should be exhaustive. Fall back to undefined
-      // as data shape is unknown.
+      // Above cases should be exhaustive for all attributes supported by Form.
+      // Fall back to undefined as data shape is unknown.
       default:
         return undefined
     }
@@ -239,24 +239,49 @@ export class MyInfoData {
   ): boolean {
     const data = this.#personData[attr]
     if (!data || !myInfoValue) return false
-    // Edge case: data is in array format
-    if (Array.isArray(data)) {
-      // All array items have source attribute
-      return (data as { source: MyInfoSource }[]).every(
-        (item) => item.source === MyInfoSource.GovtVerified,
-      )
+
+    switch (attr) {
+      case ExternalAttr.Vehicles:
+        // Form always leaves vehicle numbers editable to preserve
+        // behaviour between MyInfo V2 and V3
+        return false
+      case ExternalAttr.MobileNo:
+      case ExternalAttr.RegisteredAddress:
+      case ExternalAttr.Occupation:
+      case ExternalAttr.Sex:
+      case ExternalAttr.Race:
+      case ExternalAttr.Dialect:
+      case ExternalAttr.Nationality:
+      case ExternalAttr.BirthCountry:
+      case ExternalAttr.ResidentialStatus:
+      case ExternalAttr.HousingType:
+      case ExternalAttr.HDBType:
+      case ExternalAttr.Name:
+      case ExternalAttr.PassportNumber:
+      case ExternalAttr.Employment:
+      case ExternalAttr.PassStatus:
+      case ExternalAttr.DateOfBirth:
+      case ExternalAttr.PassportExpiryDate:
+      case ExternalAttr.PassExpiryDate: {
+        const data = this.#personData[attr]
+        return (
+          !!data &&
+          !data.unavailable &&
+          data.source === MyInfoSource.GovtVerified
+        )
+      }
+      // Fields required to always be editable according to MyInfo docs
+      case ExternalAttr.MaritalStatus:
+      case ExternalAttr.MarriageDate:
+      case ExternalAttr.DivorceDate:
+      case ExternalAttr.CountryOfMarriage:
+      case ExternalAttr.MarriageCertNumber:
+        return false
+      // Above cases should be exhaustive for all attributes supported by Form.
+      // Fall back to leaving field editable as data shape is unknown.
+      default:
+        return false
     }
-    return (
-      !data.unavailable &&
-      data.source === MyInfoSource.GovtVerified &&
-      ![
-        ExternalAttr.MaritalStatus,
-        ExternalAttr.MarriageDate,
-        ExternalAttr.DivorceDate,
-        ExternalAttr.CountryOfMarriage,
-        ExternalAttr.MarriageCertNumber,
-      ].includes(attr)
-    )
   }
 
   /**

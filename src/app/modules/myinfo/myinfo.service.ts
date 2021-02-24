@@ -9,7 +9,6 @@ import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
-import { validate as validateUUID } from 'uuid'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -41,13 +40,13 @@ import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
   IPossiblyPrefilledField,
-  ParsedRelayState,
+  MyInfoParsedRelayState,
 } from './myinfo.types'
 import {
   compareHashedValues,
   createRelayState,
   hashFieldValues,
-  hasProp,
+  isMyInfoRelayState,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -150,7 +149,7 @@ export class MyInfoService {
    */
   parseMyInfoRelayState(
     relayState: string,
-  ): Result<ParsedRelayState, MyInfoParseRelayStateError> {
+  ): Result<MyInfoParsedRelayState, MyInfoParseRelayStateError> {
     const safeJSONParse = Result.fromThrowable(
       () => JSON.parse(relayState) as unknown,
       (error) => {
@@ -167,19 +166,12 @@ export class MyInfoService {
     )
     return safeJSONParse().andThen((parsed) => {
       // Narrow type of parsed
-      if (
-        parsed &&
-        typeof parsed === 'object' &&
-        hasProp(parsed, 'formId') &&
-        typeof parsed.formId === 'string' &&
-        mongoose.Types.ObjectId.isValid(parsed.formId) &&
-        hasProp(parsed, 'uuid') &&
-        typeof parsed.uuid === 'string' &&
-        validateUUID(parsed.uuid)
-      ) {
+      if (isMyInfoRelayState(parsed)) {
         return ok({
           uuid: parsed.uuid,
           formId: parsed.formId,
+          // Cookie duration is currently not derived from the relay state
+          // but may be in future, e.g. if rememberMe is implemented
           cookieDuration: this.#spCookieMaxAge,
         })
       }
