@@ -77,19 +77,12 @@ const buildTab = {
 const logicTab = {
   addLogicBtn: Selector('#add-new-logic'),
 }
-const AUTH_TYPE_TO_VALUE = {
-  SP: 'SingPass',
-  CP: 'CorpPass',
-  NIL: 'None',
-  MyInfo: 'MyInfo',
-}
+
 const settingsTab = {
   formStatus: Selector('#golive-option'),
   activateBtn: Selector('#btn-live'),
-  getAuthRadioInput: (authType) =>
-    Selector(`#auth-type-${AUTH_TYPE_TO_VALUE[authType]}`),
-  getAuthRadioLabel: (authType) =>
-    Selector(`#auth-type-${AUTH_TYPE_TO_VALUE[authType]}`).parent(),
+  getAuthRadioInput: (authType) => Selector(`#auth-type-${authType}`),
+  getAuthRadioLabel: (authType) => Selector(`#auth-type-${authType}`).parent(),
   esrvcIdInput: Selector('#enable-auth-options input[type="text"]'),
   captchaToggleInput: Selector('#enable-captcha input'),
   captchaToggleLabel: Selector('#enable-captcha input').parent(),

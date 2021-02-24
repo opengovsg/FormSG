@@ -177,9 +177,9 @@
                 ng-class="isDisableAuthType() ? 'radio-disabled' : ''"
                 ng-if="!isFormEncrypt() || type.isEnabledInStorageMode"
               >
-                <label for="auth-type-{{type.name}}" class="col-xs-12">
+                <label for="auth-type-{{type.val}}" class="col-xs-12">
                   <input
-                    id="auth-type-{{type.name}}"
+                    id="auth-type-{{type.val}}"
                     type="radio"
                     ng-model="tempForm.authType"
                     value="{{ type.val }}"
