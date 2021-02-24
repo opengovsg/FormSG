@@ -340,6 +340,7 @@ export const appendVerifiedSPCPResponses: RequestHandler<
   const { form } = req as WithForm<typeof req>
   const { uinFin, userInfo } = res.locals
   switch (form.authType) {
+    case AuthType.MyInfo:
     case AuthType.SP:
       req.body.parsedResponses.push(...createSingpassParsedResponses(uinFin))
       break
