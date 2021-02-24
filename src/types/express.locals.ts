@@ -35,7 +35,7 @@ export type ResWithHashedFields<T> = T & {
 export type SpcpLocals =
   | {
       uinFin: string
-      hashedFields: Set<string>
+      hashedFields?: Set<string>
     }
   | { uinFin: string; userInfo: string }
   | { [key: string]: never } // empty object

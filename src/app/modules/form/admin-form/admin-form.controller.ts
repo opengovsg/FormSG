@@ -360,7 +360,7 @@ export const handleCountFormSubmissions: RequestHandler<
  */
 export const passThroughSpcp: RequestHandler = (req, res, next) => {
   const { authType } = (req as WithForm<typeof req>).form
-  if (authType === AuthType.SP || authType === AuthType.CP) {
+  if ([AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(authType)) {
     res.locals = {
       ...res.locals,
       ...getMockSpcpLocals(
