@@ -5,8 +5,11 @@
   <div id="end-page-main-container" class="{{ vm.colorTheme }}-bg">
     <div class="row">
       <h2 id="end-page-title">{{ vm.title }}</h2>
-      <div id="end-page-follow-up">
+      <div class="end-page-follow-up end-page-instructions">
         <p ng-bind-html="vm.paragraph | linky:'_blank'"></p>
+      </div>
+      <div class="end-page-follow-up" ng-if="vm.authType === 'MyInfo'">
+        <p>You will be automatically logged out of SingPass.</p>
       </div>
 
       <div id="end-page-btn-link">
@@ -19,7 +22,8 @@
         </p>
       </div>
 
-      <div ng-if="vm.authType!=='NIL' && vm.userName">
+      <!-- No log out option for MyInfo as logins do not persist -->
+      <div ng-if="['SP', 'CP'].includes(vm.authType) && vm.userName">
         <button
           type="button"
           class="end-page-btn {{ vm.colorTheme }}-font"

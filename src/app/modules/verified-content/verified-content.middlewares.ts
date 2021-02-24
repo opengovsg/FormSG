@@ -16,7 +16,7 @@ export const encryptVerifiedSpcpFields: RequestHandler = (req, res, next) => {
   const { form } = req as WithForm<typeof req>
 
   // Early return if this is not a Singpass/Corppass submission.
-  if (form.authType === AuthType.NIL) {
+  if (form.authType !== AuthType.SP && form.authType !== AuthType.CP) {
     return next()
   }
 

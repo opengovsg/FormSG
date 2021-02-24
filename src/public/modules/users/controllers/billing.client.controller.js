@@ -30,6 +30,32 @@ function BillingController(
     return
   }
 
+  vm.authTypeToName = (authType) => {
+    switch (authType) {
+      case 'SP':
+        return 'SingPass'
+      case 'MyInfo':
+        return 'SingPass (MyInfo)'
+      case 'CP':
+        return 'CorpPass'
+      default:
+        return 'NIL'
+    }
+  }
+
+  vm.authTypeToShortName = (authType) => {
+    switch (authType) {
+      case 'SP':
+        return 'SP'
+      case 'MyInfo':
+        return 'SP (MI)'
+      case 'CP':
+        return 'CP'
+      default:
+        return 'NIL'
+    }
+  }
+
   vm.loading = true
 
   vm.searchState = {
@@ -133,7 +159,7 @@ function BillingController(
       csvGenerator.addLine([
         stat.formName,
         stat.adminEmail,
-        stat.authType === 'SP' ? 'SingPass' : 'CorpPass',
+        vm.authTypeToName(stat.authType),
         stat.total,
         $state.href('submitForm', { formId: stat.formId }, { absolute: true }),
       ])

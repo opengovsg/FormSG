@@ -21,17 +21,20 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
-import {
-  MyInfoHashDidNotMatchError,
-  MyInfoHashingError,
-  MyInfoMissingHashError,
-} from '../../../services/myinfo/myinfo.errors'
 import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
 import {
   FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import {
+  MyInfoCookieStateError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoInvalidAccessTokenError,
+  MyInfoMissingAccessTokenError,
+  MyInfoMissingHashError,
+} from '../../myinfo/myinfo.errors'
 import {
   InvalidJwtError,
   MissingJwtError,
@@ -383,6 +386,9 @@ export const mapRouteError: MapRouteError = (error) => {
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
+    case MyInfoMissingAccessTokenError:
+    case MyInfoCookieStateError:
+    case MyInfoInvalidAccessTokenError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
