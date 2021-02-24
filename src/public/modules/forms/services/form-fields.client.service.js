@@ -199,7 +199,7 @@ function FormFields() {
       case 'divorcedate':
         return new Date(2007, 1, 10)
       case 'residentialstatus':
-        return 'Citizen'
+        return 'CITIZEN'
       case 'dialect':
         return 'HOKKIEN'
       case 'vehno':
