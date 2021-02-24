@@ -204,6 +204,10 @@
   font-size: 18px;
 }
 
+#end-page-main-container .end-page-follow-up.end-page-instructions {
+  margin-bottom: 40px;
+}
+
 #end-page-main-container .end-page-follow-up > p {
   white-space: pre-wrap;
 }
