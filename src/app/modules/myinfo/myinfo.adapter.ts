@@ -15,6 +15,7 @@ import {
   formatOccupation,
   formatPhoneNumber,
   formatVehicleNumbers,
+  formatWorkpassStatus,
 } from './myinfo.format'
 
 /**
@@ -189,12 +190,14 @@ export class MyInfoData {
       case ExternalAttr.MaritalStatus:
       case ExternalAttr.CountryOfMarriage:
         return formatDescriptionField(this.#personData[attr])
+      // Deal with workpass status bug where value is returned in uppercase
+      case ExternalAttr.PassStatus:
+        return formatWorkpassStatus(this.#personData[attr])
       // Remaining fields should only have 'value' key
       case ExternalAttr.Name:
       case ExternalAttr.PassportNumber:
       case ExternalAttr.Employment:
       case ExternalAttr.MarriageCertNumber:
-      case ExternalAttr.PassStatus:
       case ExternalAttr.DateOfBirth:
       case ExternalAttr.PassportExpiryDate:
       case ExternalAttr.MarriageDate:
