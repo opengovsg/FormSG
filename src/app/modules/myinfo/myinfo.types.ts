@@ -54,9 +54,18 @@ export type MyInfoCookiePayload =
       state: Exclude<MyInfoCookieState, MyInfoCookieState.Success>
     }
 
-export interface ParsedRelayState {
+/**
+ * The stringified properties included in the state sent to MyInfo.
+ */
+export type MyInfoRelayState = {
   uuid: string
   formId: string
+}
+
+/**
+ * RelayState with additional properties derived from parsing it.
+ */
+export type MyInfoParsedRelayState = MyInfoRelayState & {
   cookieDuration: number
 }
 
