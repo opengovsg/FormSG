@@ -195,7 +195,7 @@
               </div>
               <div
                 class="col-xs-12"
-                ng-if="(type.val === 'SP' || type.val === 'CP' || type.val === 'MyInfo') && (tempForm.authType === type.val)"
+                ng-if="['SP', 'CP', 'MyInfo'].includes(type.val) && tempForm.authType === type.val"
               >
                 <div
                   class="settings-save esrvcId-input"
