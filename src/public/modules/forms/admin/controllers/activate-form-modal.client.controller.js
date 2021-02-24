@@ -1,4 +1,5 @@
 const dedent = require('dedent-js')
+const { validateESrvcId } = require('../../services/myinfo.service')
 
 angular
   .module('forms')
@@ -6,7 +7,6 @@ angular
     '$uibModalInstance',
     '$timeout',
     'SpcpValidateEsrvcId',
-    'MyInfoValidateEsrvcId',
     'externalScope',
     'MailTo',
     ActivateFormController,
@@ -16,7 +16,6 @@ function ActivateFormController(
   $uibModalInstance,
   $timeout,
   SpcpValidateEsrvcId,
-  MyInfoValidateEsrvcId,
   externalScope,
   MailTo,
 ) {
@@ -119,7 +118,7 @@ function ActivateFormController(
       updateDisplay(null, { authType, esrvcId }, 0)
       return Promise.resolve(true)
     } else if (authType === 'MyInfo') {
-      return MyInfoValidateEsrvcId(target)
+      return validateESrvcId(target)
         .then((response) => {
           if (response.isValid) {
             updateDisplay(null, { authType, esrvcId })
