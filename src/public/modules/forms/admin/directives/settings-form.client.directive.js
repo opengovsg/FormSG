@@ -163,7 +163,7 @@ function settingsFormDirective(
           },
           {
             val: 'MyInfo',
-            name: 'MyInfo',
+            name: 'SingPass (MyInfo)',
             isEnabledInStorageMode: false,
           },
           {

@@ -134,3 +134,22 @@ export const formatOccupation = (
   if ('value' in field) return field.value
   return field.desc
 }
+
+/**
+ * Formats a MyInfo workpass status value
+ * by ensuring that it is in title case.
+ * Possible values are 'Live', 'Approved'.
+ */
+export const formatWorkpassStatus = (
+  field: MyInfoBasicField | undefined,
+): string => {
+  // Field value should always be a string, but check for type safety since
+  // string methods need to be called
+  if (!field || field.unavailable || typeof field.value !== 'string') return ''
+  // Change to title case
+  const originalValue = field.value
+  return (
+    originalValue.slice(0, 1).toUpperCase() +
+    originalValue.slice(1).toLowerCase()
+  )
+}
