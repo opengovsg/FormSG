@@ -175,13 +175,13 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
       env: 'MYINFO_CERT_PATH',
     },
     myInfoClientId: {
-      doc: 'Client ID registered with MyInfo.',
+      doc: 'OAuth2 client ID registered with MyInfo.',
       format: String,
       default: null,
       env: 'MYINFO_CLIENT_ID',
     },
     myInfoClientSecret: {
-      doc: 'Client secret registered with MyInfo.',
+      doc: 'OAuth2 client secret registered with MyInfo.',
       format: String,
       default: null,
       env: 'MYINFO_CLIENT_SECRET',

@@ -5,6 +5,10 @@ import { AuthType, FieldResponse } from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
+import {
+  MYINFO_COOKIE_NAME,
+  MYINFO_COOKIE_OPTIONS,
+} from '../../myinfo/myinfo.constants'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
@@ -224,6 +228,8 @@ export const handleEmailSubmission: RequestHandler<
     })
   }
 
+  // MyInfo access token is single-use, so clear it
+  res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
   // Return the reply early to the submitter
   res.json({
     message: 'Form submission successful.',

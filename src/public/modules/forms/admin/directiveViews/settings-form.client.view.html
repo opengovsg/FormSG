@@ -177,9 +177,9 @@
                 ng-class="isDisableAuthType() ? 'radio-disabled' : ''"
                 ng-if="!isFormEncrypt() || type.isEnabledInStorageMode"
               >
-                <label for="auth-type-{{type.name}}" class="col-xs-12">
+                <label for="auth-type-{{type.val}}" class="col-xs-12">
                   <input
-                    id="auth-type-{{type.name}}"
+                    id="auth-type-{{type.val}}"
                     type="radio"
                     ng-model="tempForm.authType"
                     value="{{ type.val }}"
@@ -195,7 +195,7 @@
               </div>
               <div
                 class="col-xs-12"
-                ng-if="(type.val === 'SP' || type.val === 'CP' || type.val === 'MyInfo') && (tempForm.authType === type.val)"
+                ng-if="['SP', 'CP', 'MyInfo'].includes(type.val) && tempForm.authType === type.val"
               >
                 <div
                   class="settings-save esrvcId-input"

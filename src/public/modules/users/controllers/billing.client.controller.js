@@ -35,9 +35,22 @@ function BillingController(
       case 'SP':
         return 'SingPass'
       case 'MyInfo':
-        return 'MyInfo'
+        return 'SingPass (MyInfo)'
       case 'CP':
         return 'CorpPass'
+      default:
+        return 'NIL'
+    }
+  }
+
+  vm.authTypeToShortName = (authType) => {
+    switch (authType) {
+      case 'SP':
+        return 'SP'
+      case 'MyInfo':
+        return 'SP (MI)'
+      case 'CP':
+        return 'CP'
       default:
         return 'NIL'
     }

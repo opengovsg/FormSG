@@ -212,10 +212,14 @@ export const getMockSpcpLocals = (
         .map((field) => field._id.toString())
     : []
   switch (authType) {
-    case AuthType.SP:
+    case AuthType.MyInfo:
       return {
         uinFin: 'S1234567A',
         hashedFields: new Set(myInfoFieldIds),
+      }
+    case AuthType.SP:
+      return {
+        uinFin: 'S1234567A',
       }
     case AuthType.CP:
       return {
