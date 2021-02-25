@@ -32,6 +32,12 @@ describe('Table validation', () => {
       columnType: 'textfield',
       required: true,
       _id: '5dd64c2497d7540392def29c',
+      ValidationOptions: {
+        customMax: null,
+        customMin: null,
+        customVal: null,
+        selectedValidation: null,
+      },
       ...options,
     }
   }
