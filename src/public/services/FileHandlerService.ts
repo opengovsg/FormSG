@@ -61,7 +61,16 @@ const postToPresignedUrl = async (
   })
 }
 
-const uploadFile = async ({
+/**
+ * Exported for testing.
+ * Uploads a file by requesting a presignedUrl and posting to it.
+ *
+ * @param arg.url the url to fetch presigned data from
+ * @param arg.file the file to upload
+ * @param arg.fileId the identifier of the file
+ * @param arg.cancelToken optional. Allows for cancellation of the post request to the generated url in flight
+ */
+export const uploadFile = async ({
   url,
   file,
   fileId,
@@ -71,13 +80,19 @@ const uploadFile = async ({
   file: File
   fileId: string
   cancelToken?: CancelToken
-}) => {
+}): Promise<UploadedFileData> => {
   const fileMd5Hash = await generateFileMd5Hash(file)
-  const postData = await fetchPresignedData(url, {
+  const presignedDataParams = {
     fileId,
     fileMd5Hash,
     fileType: file.type,
-  })
+  }
+
+  const postData = await fetchPresignedData(
+    url,
+    presignedDataParams,
+    cancelToken,
+  )
 
   // Generate formdata to post to the presigned url.
   const formData = new FormData()
