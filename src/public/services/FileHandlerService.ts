@@ -119,7 +119,7 @@ export const uploadFile = async ({
  * Uploads an image to the backend
  * @param arg.image The image to upload.
  * @param arg.formId The form the upload is tied to.
- * @param arg.cancelUploadPromise On resolve, this will cancel the upload
+ * @param arg.cancelToken optional. Allows for cancellation of the upload in flight
  */
 export const uploadImage = ({
   image,
@@ -140,7 +140,7 @@ export const uploadImage = ({
  * Uploads a logo to the backend
  * @param arg.image The logo to upload.
  * @param arg.formId The form the upload is tied to.
- * @param arg.cancelUploadPromise On resolve, this will cancel the upload
+ * @param arg.cancelToken optional. Allows for cancellation of the upload in flight
  */
 export const uploadLogo = ({
   image,
