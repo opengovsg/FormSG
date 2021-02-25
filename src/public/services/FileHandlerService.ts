@@ -14,26 +14,48 @@ type UploadImageParams = {
   formId: string
   cancelToken?: CancelToken
 }
-
 /**
  * Generates an md5 hash string from given file.
+ * Retrieved from https://dev.to/qortex/compute-md5-checksum-for-a-file-in-typescript-59a4.
  * @param file The file to generate an md5 hash for
  */
-const generateFileMd5Hash = (file: File): Promise<string> => {
+const computeChecksumMd5 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
+    const chunkSize = 2097152 // Read in chunks of 2MB
     const spark = new SparkMD5.ArrayBuffer()
+    const fileReader = new FileReader()
 
-    reader.onload = function (e) {
-      const arrayBuffer = e.target?.result
-      if (!arrayBuffer) return
-      spark.append(arrayBuffer as ArrayBuffer) // Append array buffer
-      const md5Hash = spark.end()
+    let cursor = 0 // current cursor in file
 
-      return resolve(md5Hash)
+    fileReader.onerror = function (): void {
+      reject('MD5 computation failed - error reading the file')
     }
-    reader.onerror = () => reject(new Error(`Error while hashing!`))
-    reader.readAsArrayBuffer(file)
+
+    // read chunk starting at `cursor` into memory
+    function processChunk(chunk_start: number): void {
+      const chunk_end = Math.min(file.size, chunk_start + chunkSize)
+      fileReader.readAsArrayBuffer(file.slice(chunk_start, chunk_end))
+    }
+
+    fileReader.onload = function (e): void {
+      const arrayBuffer = e.target?.result
+      if (!arrayBuffer) {
+        reject('Empty array buffer - error reading the file')
+      }
+      spark.append(arrayBuffer as ArrayBuffer) // Accumulate chunk to md5 computation
+      cursor += chunkSize // Move past this chunk
+
+      if (cursor < file.size) {
+        // Enqueue next chunk to be accumulated
+        processChunk(cursor)
+      } else {
+        // Computation ended, last chunk has been processed. Return as Promise value.
+        // This returns the base64 encoded md5 hash, which is what cloud services expect.
+        resolve(btoa(spark.end(true)))
+      }
+    }
+
+    processChunk(0)
   })
 }
 
@@ -81,7 +103,7 @@ export const uploadFile = async ({
   fileId: string
   cancelToken?: CancelToken
 }): Promise<UploadedFileData> => {
-  const fileMd5Hash = await generateFileMd5Hash(file)
+  const fileMd5Hash = await computeChecksumMd5(file)
   const presignedDataParams = {
     fileId,
     fileMd5Hash,
