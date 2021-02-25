@@ -35,7 +35,8 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
     return ''
   }
 
-  if (addr.type === AddressType.Unformatted) {
+  if (addr.type !== AddressType.Singapore) {
+    //workaround - AddressType.Unformatted should be the string "UNFORMATTED" not "Unformatted"
     let result = ''
     if (addr.line1.value) {
       result += addr.line1.value
