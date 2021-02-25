@@ -40,8 +40,13 @@ const generateFileMd5Hash = (file: File): Promise<string> => {
 const fetchPresignedData = async (
   url: string,
   params: { fileId: string; fileMd5Hash: string; fileType: string },
+  cancelToken?: CancelToken,
 ): Promise<{ fields: Record<string, string>; url: string }> => {
-  return axios.post(url, params).then(({ data }) => data)
+  return axios
+    .post(url, params, {
+      cancelToken,
+    })
+    .then(({ data }) => data)
 }
 
 const postToPresignedUrl = async (
