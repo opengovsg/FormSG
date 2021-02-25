@@ -4,14 +4,32 @@
     "commonjs": true,
     "jquery": true
   },
-  "extends": ["plugin:angular/johnpapa"],
-  "globals": {
-    "angular": true
-  },
   "parserOptions": {
     "ecmaVersion": 2018
   },
   "overrides": [
+    {
+      "files": ["*.js"],
+      "extends": ["plugin:angular/johnpapa"],
+      "globals": {
+        "angular": true
+      },
+      "rules": {
+        "angular/controller-name": 1,
+        "angular/controller-as-route": 1,
+        "angular/controller-as": 1,
+        "angular/window-service": 1,
+        "angular/module-getter": 1,
+        "angular/no-run-logic": 1,
+        "angular/module-setter": 1,
+        "angular/file-name": "off",
+        "angular/function-type": 2,
+        "angular/document-service": 1,
+        "angular/timeout-service": 1,
+        "angular/interval-service": 1,
+        "angular/no-service-method": 0
+      }
+    },
     {
       "files": ["*.ts"],
       "parser": "@typescript-eslint/parser",
@@ -61,28 +79,28 @@
         "typesafe/no-throw-sync-func": "error"
       }
     },
-    { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] },
+    {
+      "files": ["*.test.ts"],
+      "extends": ["plugin:jest/recommended"],
+      "rules": {
+        "typesafe/no-await-without-trycatch": 0
+      }
+    },
     {
       "files": ["*.ts", "*.js"],
-      "excludedFiles": ["**/*.spec.ts", "**/.spec.js"],
+      "excludedFiles": ["**/*.test.ts", "**/.test.js"],
       "rules": {
         "typesafe/no-await-without-trycatch": "warn"
       }
+    },
+    {
+      "files": ["**/__mocks__/*.js"],
+      "parserOptions": {
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "modules": true
+        }
+      }
     }
-  ],
-  "rules": {
-    "angular/controller-name": 1,
-    "angular/controller-as-route": 1,
-    "angular/controller-as": 1,
-    "angular/window-service": 1,
-    "angular/module-getter": 1,
-    "angular/no-run-logic": 1,
-    "angular/module-setter": 1,
-    "angular/file-name": "off",
-    "angular/function-type": 2,
-    "angular/document-service": 1,
-    "angular/timeout-service": 1,
-    "angular/interval-service": 1,
-    "angular/no-service-method": 0
-  }
+  ]
 }
