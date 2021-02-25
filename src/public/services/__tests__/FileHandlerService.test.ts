@@ -5,7 +5,7 @@ import mockFile from 'tests/unit/frontend/helpers/mockFile'
 
 import * as FileHandlerService from '../FileHandlerService'
 
-jest.mock('axios')
+jest.mock('axios', () => mockAxios)
 
 describe('FileHandlerService', () => {
   describe('uploadImage', () => {
