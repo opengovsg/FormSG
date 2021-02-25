@@ -10,4 +10,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  clearMocks: true,
 }
