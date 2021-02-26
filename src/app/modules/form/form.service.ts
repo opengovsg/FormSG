@@ -140,7 +140,7 @@ export const checkFormSubmissionLimitAndDeactivateForm = async (
     }).exec()
 
     if (currentCount >= form.submissionLimit) {
-      logger.warn({
+      logger.info({
         message: 'Form reached maximum submission count, deactivating.',
         meta: {
           form: form._id,

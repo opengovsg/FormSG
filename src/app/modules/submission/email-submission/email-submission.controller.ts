@@ -66,23 +66,6 @@ export const handleEmailSubmission: RequestHandler<
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Check that the form has not reached submission limits
-  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-    form,
-  )
-  if (formSubmissionLimitResult.isErr()) {
-    logger.warn({
-      message:
-        'Attempt to submit form which has just reached submission limits',
-      meta: logMeta,
-      error: formSubmissionLimitResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(
-      formSubmissionLimitResult.error,
-    )
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
   // Check captcha
   if (form.hasCaptcha) {
     const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
@@ -98,6 +81,23 @@ export const handleEmailSubmission: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
       return res.status(statusCode).json({ message: errorMessage })
     }
+  }
+
+  // Check that the form has not reached submission limits
+  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
+    form,
+  )
+  if (formSubmissionLimitResult.isErr()) {
+    logger.warn({
+      message:
+        'Attempt to submit form which has just reached submission limits',
+      meta: logMeta,
+      error: formSubmissionLimitResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(
+      formSubmissionLimitResult.error,
+    )
+    return res.status(statusCode).json({ message: errorMessage })
   }
 
   // Validate responses
