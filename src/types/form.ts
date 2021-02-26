@@ -36,11 +36,6 @@ export enum ResponseMode {
   Email = 'email',
 }
 
-export enum SubmissionLimits {
-  Unlimited = null,
-  StandardLimit = 1000,
-}
-
 // Typings
 // Make sure this is kept in sync with form.server.model#FORM_PUBLIC_FIELDS.
 export type PublicFormValues = Pick<

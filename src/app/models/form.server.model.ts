@@ -25,7 +25,6 @@ import {
   PublicFormValues,
   ResponseMode,
   Status,
-  SubmissionLimits,
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
@@ -322,7 +321,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         ],
       },
 
-      submissionLimit: { type: Number, default: SubmissionLimits.Unlimited },
+      submissionLimit: { type: Number, default: null },
     },
     formSchemaOptions,
   )

@@ -1,7 +1,6 @@
 'use strict'
 const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
-const { SubmissionLimits } = require('../../../../../types')
 
 const SETTINGS_PATH = [
   'title',
@@ -61,9 +60,8 @@ function settingsFormDirective(
 
         $scope.responseModeEnum = responseModeEnum
         $scope.tempForm = createTempSettings($scope.myform)
-        $scope.submissionLimitToggle =
-          $scope.tempForm.submissionLimit !== SubmissionLimits.Unlimited
-        $scope.submissionLimitUnlimited = SubmissionLimits.Unlimited
+        $scope.submissionLimitToggle = $scope.tempForm.submissionLimit !== null
+        $scope.submissionLimitUnlimited = null
 
         $scope.currentResponsesCount = 0
         Submissions.count({ formId: $scope.myform._id }).then(
@@ -220,9 +218,9 @@ function settingsFormDirective(
 
         $scope.toggleFormSubmissionLimit = () => {
           if ($scope.submissionLimitToggle) {
-            $scope.tempForm.submissionLimit = SubmissionLimits.StandardLimit
+            $scope.tempForm.submissionLimit = 1000
           } else {
-            $scope.tempForm.submissionLimit = SubmissionLimits.Unlimited
+            $scope.tempForm.submissionLimit = null
           }
           $scope.updateSettingsByPath(
             'submissionLimit',

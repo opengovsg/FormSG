@@ -2,12 +2,7 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import {
-  IFormSchema,
-  IPopulatedForm,
-  Status,
-  SubmissionLimits,
-} from '../../../types'
+import { IFormSchema, IPopulatedForm, Status } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
@@ -134,7 +129,7 @@ export const isFormPublic = (
 export const checkFormSubmissionLimitAndDeactivateForm = async (
   form: IPopulatedForm,
 ): Promise<Result<true, PrivateFormError>> => {
-  if (form.submissionLimit !== SubmissionLimits.Unlimited) {
+  if (form.submissionLimit !== null) {
     const currentCount = await SubmissionModel.countDocuments({
       form: form._id,
     }).exec()
