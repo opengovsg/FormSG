@@ -62,7 +62,7 @@ function settingsFormDirective(
         $scope.responseModeEnum = responseModeEnum
         $scope.tempForm = createTempSettings($scope.myform)
         $scope.submissionLimitToggle =
-          $scope.tempForm.submissionLimit != SubmissionLimits.Unlimited
+          $scope.tempForm.submissionLimit !== SubmissionLimits.Unlimited
         $scope.submissionLimitUnlimited = SubmissionLimits.Unlimited
 
         $scope.currentResponsesCount = 0
@@ -224,7 +224,10 @@ function settingsFormDirective(
           } else {
             $scope.tempForm.submissionLimit = SubmissionLimits.Unlimited
           }
-          $scope.saveForm()
+          $scope.updateSettingsByPath(
+            'submissionLimit',
+            $scope.tempForm.submissionLimit,
+          )
         }
 
         $scope.saveForm = () => {
@@ -247,7 +250,10 @@ function settingsFormDirective(
         }
 
         $scope.updateSettingsByPath = (path, value) => {
-          if (path && value !== null && value !== undefined) {
+          if (
+            (path && value !== null && value !== undefined) ||
+            path === 'submissionLimit'
+          ) {
             set($scope.tempForm, path, value)
           }
           // Update form
