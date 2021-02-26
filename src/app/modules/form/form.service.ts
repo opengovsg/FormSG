@@ -134,7 +134,7 @@ export const isFormPublic = (
 export const checkFormSubmissionLimitAndDeactivateForm = async (
   form: IPopulatedForm,
 ): Promise<Result<true, PrivateFormError>> => {
-  if (form.submissionLimit != SubmissionLimits.Unlimited) {
+  if (form.submissionLimit !== SubmissionLimits.Unlimited) {
     const currentCount = await SubmissionModel.countDocuments({
       form: form._id,
     }).exec()

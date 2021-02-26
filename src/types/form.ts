@@ -37,7 +37,7 @@ export enum ResponseMode {
 }
 
 export enum SubmissionLimits {
-  Unlimited = -1,
+  Unlimited = null,
   StandardLimit = 1000,
 }
 
