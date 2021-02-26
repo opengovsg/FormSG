@@ -38,10 +38,10 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   if (addr.type !== AddressType.Singapore) {
     //workaround - AddressType.Unformatted should be the string "UNFORMATTED" not "Unformatted"
     let result = ''
-    if (addr.line1.value) {
+    if (addr.line1?.value) {
       result += addr.line1.value
     }
-    if (addr.line2.value) {
+    if (addr.line2?.value) {
       result += ', ' + addr.line2.value
     }
     return result
@@ -57,26 +57,32 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   // 4. floor + unit (if available),
   // 5. country
   // 6. postal
-  const buildingBlocks = []
+  const buildingBlocks: string[] = []
 
-  if (building.value) {
+  if (building?.value) {
     buildingBlocks.push(`${building.value},`)
   }
-  buildingBlocks.push(block.value)
-  if (street.value) {
+  if (block?.value) {
+    buildingBlocks.push(block.value)
+  }
+  if (street?.value) {
     buildingBlocks.push(`${street.value},`)
   }
 
-  if (floor.value && unit.value) {
+  if (floor?.value && unit?.value) {
     buildingBlocks.push(`#${floor.value}-${unit.value},`)
   }
 
-  buildingBlocks.push(country.desc)
+  if (country?.desc) {
+    buildingBlocks.push(country.desc)
+  }
 
-  buildingBlocks.push(postal.value)
+  if (postal?.value) {
+    buildingBlocks.push(postal.value)
+  }
 
   // Return string form with each block being separated by a space.
-  return buildingBlocks.filter((b) => b !== '').join(' ')
+  return buildingBlocks.join(' ')
 }
 
 /**
