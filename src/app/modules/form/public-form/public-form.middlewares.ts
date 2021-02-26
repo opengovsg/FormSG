@@ -19,15 +19,15 @@ export const checkFormSubmissionLimitAndDeactivate: RequestHandler = async (
 ) => {
   const { form } = req as WithForm<typeof req>
   const formResult = await checkFormSubmissionLimitAndDeactivateForm(form)
-  if (!formResult.isErr()) {
-    return next()
-  } else {
+  if (formResult.isErr()) {
     return res.status(StatusCodes.NOT_FOUND).json({
       message: form.inactiveMessage,
       isPageFound: true, // Flag to prevent default 404 subtext ("please check link") from showing
       formTitle: form.title,
     })
   }
+  
+  return next()
 }
 
 /**
