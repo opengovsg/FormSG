@@ -11,7 +11,6 @@ import {
   IEncryptedSubmissionSchema,
   ResponseMode,
   Status,
-  SubmissionLimits,
   SubmissionType,
   WithForm,
 } from '../../../../../types'
@@ -50,7 +49,7 @@ describe('public-form.middlewares', () => {
 
     it('should let requests through when form has no submission limit', async () => {
       const mockReq = Object.assign(expressHandler.mockRequest(), {
-        form: { submissionLimit: SubmissionLimits.Unlimited },
+        form: { submissionLimit: null },
       }) as WithForm<Request>
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
