@@ -142,7 +142,9 @@ export const checkFormSubmissionLimitAndDeactivateForm = async (
           action: 'checkFormSubmissionLimitAndDeactivate',
         },
       })
-      await deactivateForm(form._id)
+      if (isFormPublic(form).isOk()) {
+        await deactivateForm(form._id)
+      }
       return err(new PrivateFormError(form.inactiveMessage, form.title))
     } else {
       return ok(true)
