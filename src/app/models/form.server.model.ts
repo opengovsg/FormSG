@@ -320,6 +320,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           'msgSrvcName must be alphanumeric, dashes and slashes are allowed',
         ],
       },
+
+      submissionLimit: { type: Number, default: null },
     },
     formSchemaOptions,
   )
@@ -423,6 +425,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'authType',
       'inactiveMessage',
       'responseMode',
+      'submissionLimit',
     ]) as PickDuplicateForm
     return { ...newForm, ...overrideProps }
   }
