@@ -1,11 +1,15 @@
 {
   "presets": [
-    ["@babel/preset-env", {
-      "corejs": 3,
-      "useBuiltIns": "entry",
-      "targets": {
-        "browsers": ["IE 11", "not dead"]
+    [
+      "@babel/preset-env",
+      {
+        "corejs": 3,
+        "useBuiltIns": "entry",
+        "targets": {
+          "browsers": ["IE 11", "not dead"]
+        }
       }
-    }]
-  ]
+    ]
+  ],
+  "ignore": ["node_modules"]
 }
