@@ -1,11 +1,9 @@
-import connectMongo from 'connect-mongo'
+import MongoStore from 'connect-mongo'
 import cookieParser from 'cookie-parser'
-import session, { SessionOptions } from 'express-session'
+import session from 'express-session'
 import { Connection } from 'mongoose'
 
 import config from '../../config/config'
-
-const sessionMongoStore = connectMongo(session)
 
 const sessionMiddlewares = (connection: Connection) => {
   // Configure express-session and connect to mongo
@@ -13,12 +11,11 @@ const sessionMiddlewares = (connection: Connection) => {
     saveUninitialized: false,
     resave: false,
     secret: config.sessionSecret,
-    // TODO(#42): Remove the typecast once `config` has correct types.
-    cookie: config.cookieSettings as SessionOptions['cookie'],
+    cookie: config.cookieSettings,
     name: 'connect.sid',
-    store: new sessionMongoStore({
-      mongooseConnection: connection,
-      collection: 'sessions',
+    store: MongoStore.create({
+      clientPromise: Promise.resolve(connection.getClient()),
+      collectionName: 'sessions',
     }),
   })
 
