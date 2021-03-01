@@ -1,5 +1,10 @@
 'use strict'
 const { isEmpty, merge, keys } = require('lodash')
+const {
+  resetVerifiedField,
+  triggerSendOtp,
+  verifyOtp,
+} = require('../../../../services/FieldVerificationService')
 angular.module('forms').component('verifiableFieldComponent', {
   transclude: true,
   templateUrl: 'modules/forms/base/componentViews/verifiable-field.html',
@@ -8,16 +13,11 @@ angular.module('forms').component('verifiableFieldComponent', {
     field: '<', // The model that the input field is based on
     input: '<',
   },
-  controller: [
-    'Verification',
-    '$timeout',
-    '$interval',
-    verifiableFieldController,
-  ],
+  controller: ['$timeout', '$interval', verifiableFieldController],
   controllerAs: 'vm',
 })
 
-function verifiableFieldController(Verification, $timeout, $interval) {
+function verifiableFieldController($timeout, $interval) {
   const vm = this
   vm.$onInit = () => {
     vm.otp = {
@@ -50,10 +50,11 @@ function verifiableFieldController(Verification, $timeout, $interval) {
         throw new Error('No transaction id')
       }
 
-      await Verification.getNewOtp(
-        { transactionId: vm.transactionId },
-        { fieldId: vm.field._id, answer: lastRequested.value },
-      )
+      await triggerSendOtp({
+        transactionId: vm.transactionId,
+        fieldId: vm.field._id,
+        answer: lastRequested.value,
+      })
       disableResendButton(DISABLED_SECONDS)
       updateView(STATES.VFN_WAITING_FOR_INPUT)
     } catch (err) {
@@ -81,10 +82,11 @@ function verifiableFieldController(Verification, $timeout, $interval) {
         return onVerificationFailure()
       }
 
-      await Verification.verifyOtp(
-        { transactionId: vm.transactionId },
-        { fieldId: vm.field._id, otp: otp },
-      )
+      await verifyOtp({
+        transactionId: vm.transactionId,
+        fieldId: vm.field._id,
+        otp,
+      })
         .then(onVerificationSuccess)
         .catch(onVerificationFailure)
     } catch (err) {
@@ -110,10 +112,10 @@ function verifiableFieldController(Verification, $timeout, $interval) {
         if (getView() !== STATES.VFN_DEFAULT) {
           // We don't await on reset because we don't care if it fails
           // The signature will be wrong anyway if it fails, and submission will be prevented
-          Verification.resetFieldInTransaction(
-            { transactionId: vm.transactionId },
-            { fieldId: vm.field._id },
-          )
+          resetVerifiedField({
+            transactionId: vm.transactionId,
+            fieldId: vm.field._id,
+          })
         }
         resetDefault()
       }
