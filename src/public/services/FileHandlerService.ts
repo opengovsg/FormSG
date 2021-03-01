@@ -143,7 +143,7 @@ export const uploadFile = async ({
  * @param arg.formId The form the upload is tied to.
  * @param arg.cancelToken optional. Allows for cancellation of the upload in flight
  */
-export const uploadImage = ({
+export const uploadImage = async ({
   image,
   formId,
   cancelToken,
@@ -164,7 +164,7 @@ export const uploadImage = ({
  * @param arg.formId The form the upload is tied to.
  * @param arg.cancelToken optional. Allows for cancellation of the upload in flight
  */
-export const uploadLogo = ({
+export const uploadLogo = async ({
   image,
   formId,
   cancelToken,
