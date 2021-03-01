@@ -4,8 +4,8 @@ import { Opaque } from 'type-fest'
 export type JsonDate = Opaque<string, 'JsonDate'>
 
 /**
- * Response when retrieving new transaction. Can be undefined if current form
- * does not have any verifiable fields.
+ * Response when retrieving new transaction. Can be an empty object if the
+ * current form does not have any verifiable fields.
  */
 export type FetchNewTransactionResponse =
   | { expireAt: JsonDate; transactionId: string }
