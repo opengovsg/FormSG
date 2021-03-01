@@ -8,6 +8,8 @@ import * as FileHandlerService from '../FileHandlerService'
 jest.mock('axios', () => mockAxios)
 
 describe('FileHandlerService', () => {
+  afterEach(() => mockAxios.reset())
+
   describe('uploadImage', () => {
     it('should successfully return upload file data', async () => {
       // Arrange
