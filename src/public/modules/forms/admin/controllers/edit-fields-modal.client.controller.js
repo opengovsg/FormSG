@@ -1,5 +1,6 @@
 'use strict'
 
+const axios = require('axios').default
 const values = require('lodash/values')
 
 const {
@@ -7,6 +8,9 @@ const {
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
 } = require('shared/constants')
+const { uploadImage } = require('../../../../services/FileHandlerService')
+
+const CancelToken = axios.CancelToken
 
 const DATE_VALIDATION_OPTIONS = {
   disallowPast: 'Disallow past dates',
@@ -26,7 +30,6 @@ angular
     'Rating',
     'Attachment',
     'FormFields',
-    'FileHandler',
     '$q',
     'Betas',
     'Auth',
@@ -42,12 +45,12 @@ function EditFieldsModalController(
   Rating,
   Attachment,
   FormFields,
-  FileHandler,
   $q,
   Betas,
   Auth,
   $state,
 ) {
+  let source
   const vm = this
 
   // Copy so as to not touch the original
@@ -522,7 +525,13 @@ function EditFieldsModalController(
 
   vm.beforeResizing = () => {
     vm.uploading = true
-    vm.shouldCancelUpload = $q.defer() // Will cancel the upload on resolve
+    vm.cancelUpload()
+  }
+
+  vm.cancelUpload = () => {
+    if (source) {
+      source.cancel()
+    }
   }
 
   /**
@@ -551,12 +560,16 @@ function EditFieldsModalController(
       }
     } else if (image) {
       vm.uploadError = null
+      source = CancelToken.source()
 
-      FileHandler.uploadImage(
-        image,
-        vm.myform._id,
-        vm.shouldCancelUpload.promise,
-      )
+      return $q
+        .when(
+          uploadImage({
+            image,
+            formId: vm.myform._id,
+            cancelToken: source.token,
+          }),
+        )
         .then((result) => {
           field.url = result.url
           field.fileMd5Hash = result.fileMd5Hash
@@ -568,12 +581,12 @@ function EditFieldsModalController(
           // On error, we explicitly clear the files stored in the model, as the library does not always automatically do this
           field.uploadedFile = ''
 
-          if (uploadError.xhrStatus === 'abort') {
+          if (axios.isCancel(uploadError)) {
             vm.uploadError = `Upload cancelled. Please try again!`
-            return
+          } else {
+            console.error(uploadError)
+            vm.uploadError = 'Upload error. Please try again!'
           }
-          console.error(uploadError)
-          vm.uploadError = 'Upload error. Please try again!'
         })
         .finally(() => {
           vm.uploading = false
