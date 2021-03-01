@@ -10,6 +10,7 @@ import {
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
+import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { aws } from 'src/config/config'
 import {
   SubmissionCursorData,
@@ -434,7 +435,7 @@ describe('encrypt-submission.service', () => {
       // Should be error.
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(mockErrorString),
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(getSubmissionSpy).toHaveBeenCalledWith(
         mockFormId,
@@ -611,7 +612,7 @@ describe('encrypt-submission.service', () => {
       // Arrange
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(mockErrorString),
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
     })
@@ -689,7 +690,7 @@ describe('encrypt-submission.service', () => {
       // Arrange
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(mockErrorString),
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, { page: undefined })
     })
