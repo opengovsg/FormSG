@@ -47,10 +47,8 @@ function EditLogicModalController(
 
   vm.getFieldTitle = FormFields.getFieldTitle
 
+  vm.ifFields = FormLogic.getApplicableIfFields(vm.myform.form_fields)
   vm.thenFields = vm.myform.form_fields
-  vm.ifFields = vm.myform.form_fields.filter((field) =>
-    FormLogic.fieldTypes.includes(field.fieldType),
-  )
 
   vm.logicTypeSelection = {
     showFields:

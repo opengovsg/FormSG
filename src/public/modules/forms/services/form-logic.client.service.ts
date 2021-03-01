@@ -1,5 +1,6 @@
 import {
   BasicField,
+  IField,
   LogicConditionState,
   LogicValidConditions,
 } from '../../../../types'
@@ -43,11 +44,16 @@ const LOGIC_VALID_CONDITIONS: LogicValidConditions[] = [
   },
 ]
 
+export const getApplicableIfFields = (formFields: IField[]): IField[] =>
+  formFields.filter((field) =>
+    LOGIC_VALID_CONDITIONS.find(
+      (validCondition) => validCondition.fieldType === field.fieldType,
+    ),
+  )
+
 const FormLogic = {
   conditions: LOGIC_VALID_CONDITIONS,
-  fieldTypes: LOGIC_VALID_CONDITIONS.map(function (condition) {
-    return condition.fieldType
-  }),
+  getApplicableIfFields,
 }
 
 export default FormLogic
