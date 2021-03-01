@@ -1,24 +1,25 @@
 import axios from 'axios'
 import { Opaque } from 'type-fest'
 
-type JsonDate = Opaque<string, 'JsonDate'>
+export type JsonDate = Opaque<string, 'JsonDate'>
 
 /**
  * Response when retrieving new transaction. Can be undefined if current form
  * does not have any verifiable fields.
  */
-type FetchNewTransactionResponse =
+export type FetchNewTransactionResponse =
   | { expireAt: JsonDate; transactionId: string }
-  | undefined
+  | Record<string, never>
 
 type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
 
-const TRANSACTION_ENDPOINT = '/transaction'
+/** Exported for testing */
+export const TRANSACTION_ENDPOINT = '/transaction'
 
 /**
  * Create a transaction for given form.
  * @param formId The id of the form to create a transaction for
- * @returns transaction metadata on success
+ * @returns transaction metadata on success. Can be empty if no transactions are found in the form.
  */
 export const createTransactionForForm = async (
   formId: string,

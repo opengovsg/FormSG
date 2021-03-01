@@ -426,7 +426,7 @@ function submitFormDirective(
       // Create a transaction if there are fields to be verified and the form is intended for submission
       if (!scope.disableSubmitButton) {
         createTransactionForForm(scope.form._id).then((res) => {
-          if (res) {
+          if (res.transactionId) {
             scope.transactionId = res.transactionId
           }
         })
