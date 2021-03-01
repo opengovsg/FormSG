@@ -4,7 +4,7 @@ import {
   LogicValidConditions,
 } from '../../../../types'
 
-const conditions: LogicValidConditions[] = [
+const LOGIC_VALID_CONDITIONS: LogicValidConditions[] = [
   {
     fieldType: BasicField.Dropdown,
     states: [LogicConditionState.Equal, LogicConditionState.Either],
@@ -44,8 +44,8 @@ const conditions: LogicValidConditions[] = [
 ]
 
 const FormLogic = {
-  conditions,
-  fieldTypes: conditions.map(function (condition) {
+  conditions: LOGIC_VALID_CONDITIONS,
+  fieldTypes: LOGIC_VALID_CONDITIONS.map(function (condition) {
     return condition.fieldType
   }),
 }
