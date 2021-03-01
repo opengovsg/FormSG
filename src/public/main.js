@@ -274,7 +274,6 @@ require('./modules/forms/services/color-themes.client.service.js')
 require('./modules/forms/services/form-logic.client.service.js')
 require('./modules/forms/services/rating.client.service.js')
 require('./modules/forms/services/betas.client.factory.js')
-require('./modules/forms/services/verification.client.factory.js')
 require('./modules/forms/services/captcha.client.service.js')
 require('./modules/forms/services/mailto.client.factory.js')
 
