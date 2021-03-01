@@ -12,13 +12,14 @@ angular.module('forms').component('endPageComponent', {
     isAdminPreview: '<',
     colorTheme: '@',
   },
-  controller: ['SpcpSession', '$window', endPageController],
+  controller: ['SpcpSession', '$window', 'moment', endPageController],
   controllerAs: 'vm',
 })
 
-function endPageController(SpcpSession, $window) {
+function endPageController(SpcpSession, $window, moment) {
   const vm = this
 
+  vm.timestamp = moment().format('D MMM YYYY, HH:mm')
   vm.userName = SpcpSession.userName
   vm.formLogout = SpcpSession.logout
 
