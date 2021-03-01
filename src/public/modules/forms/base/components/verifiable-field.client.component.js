@@ -1,5 +1,5 @@
 'use strict'
-const { isEmpty, merge, keys } = require('lodash')
+const { isEmpty, merge, keys, get } = require('lodash')
 const {
   resetVerifiedField,
   triggerSendOtp,
@@ -246,8 +246,11 @@ function verifiableFieldController($timeout, $interval) {
   }
 
   const getErrorMessage = (err) => {
+    // So that switch case works for both axios error objects and string objects.
+    const error = get(err, 'response.data', err)
+
     let errMessage = ''
-    switch (err) {
+    switch (error) {
       case 'SEND_OTP_FAILED':
       case 'RESEND_OTP':
         errMessage = 'Error - try resending the OTP.'
