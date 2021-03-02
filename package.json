@@ -45,7 +45,7 @@
     "lint": "npm run lint-code && npm run lint-style && npm run lint-html",
     "lint-ci": "concurrently \"eslint src/ --quiet\" \"stylelint '*/**/*.css' --quiet\" \"htmlhint\" \"prettier --c './src/public/**/*.html' --ignore-path './dist/**'\"",
     "version": "auto-changelog -p && git add CHANGELOG.md",
-    "postinstall": "husky install"
+    "prepare": "husky install"
   },
   "lint-staged": {
     "*.{js,ts}": "eslint --fix",
