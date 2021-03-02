@@ -7,3 +7,9 @@ export class MailSendError extends ApplicationError {
     super(message)
   }
 }
+
+export class MailGenerationError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

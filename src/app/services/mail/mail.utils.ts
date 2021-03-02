@@ -1,5 +1,5 @@
 import dedent from 'dedent-js'
-import ejs from 'ejs'
+import ejs, { Data } from 'ejs'
 import { flattenDeep } from 'lodash'
 import { ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
@@ -9,7 +9,7 @@ import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { BounceType } from '../../../types'
 
-import { MailSendError } from './mail.errors'
+import { MailGenerationError, MailSendError } from './mail.errors'
 import {
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
@@ -19,6 +19,52 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+const safeRenderFile = (
+  pathToTemplate: string,
+  htmlData: Data,
+): ResultAsync<string, MailGenerationError> => {
+  return ResultAsync.fromPromise(
+    ejs.renderFile(pathToTemplate, htmlData),
+    (error) => {
+      logger.error({
+        meta: {
+          action: 'safeRenderFile',
+        },
+        message: 'Error occurred whilst rendering ejs data',
+        error,
+      })
+
+      return new MailGenerationError(
+        'Error occurred whilst rendering mail template',
+      )
+    },
+  )
+}
+
+const generateAutoreplyPdfPromise = async (
+  summaryHtml: string,
+): Promise<Buffer> => {
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox'],
+    headless: true,
+    executablePath: config.chromiumBin,
+  })
+  const page = await browser.newPage()
+  await page.setContent(summaryHtml, {
+    waitUntil: 'networkidle0',
+  })
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: {
+      top: '20px',
+      bottom: '40px',
+    },
+  })
+  await browser.close()
+  return pdfBuffer
+}
+
 export const generateLoginOtpHtml = (htmlData: {
   otp: string
   appName: string
@@ -26,20 +72,7 @@ export const generateLoginOtpHtml = (htmlData: {
   ipAddress: string
 }): ResultAsync<string, MailSendError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/otp-email.server.view.html`
-  return ResultAsync.fromPromise(
-    ejs.renderFile(pathToTemplate, htmlData),
-    (error) => {
-      logger.error({
-        message: 'Error occurred whilst rendering login otp ejs',
-        meta: {
-          action: 'generateLoginOtpHtml',
-        },
-        error,
-      })
-
-      return new MailSendError()
-    },
-  )
+  return safeRenderFile(pathToTemplate, htmlData)
 }
 
 export const generateVerificationOtpHtml = ({
@@ -65,58 +98,57 @@ export const generateVerificationOtpHtml = ({
   `
 }
 
-export const generateSubmissionToAdminHtml = async (
+export const generateSubmissionToAdminHtml = (
   htmlData: SubmissionToAdminHtmlData,
-): Promise<string> => {
+): ResultAsync<string, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-email.server.view.html`
-  return ejs.renderFile(pathToTemplate, htmlData)
+  return safeRenderFile(pathToTemplate, htmlData)
 }
 
-export const generateBounceNotificationHtml = async (
+export const generateBounceNotificationHtml = (
   htmlData: BounceNotificationHtmlData,
   bounceType: BounceType | undefined,
-): Promise<string> => {
+): ResultAsync<string, MailGenerationError> => {
   let pathToTemplate
   if (bounceType === BounceType.Permanent) {
     pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-permanent.server.view.html`
   } else {
     pathToTemplate = `${process.cwd()}/src/app/views/templates/bounce-notification-transient.server.view.html`
   }
-  return ejs.renderFile(pathToTemplate, htmlData)
+
+  return safeRenderFile(pathToTemplate, htmlData)
 }
 
-export const generateAutoreplyPdf = async (
+export const generateAutoreplyPdf = (
   renderData: AutoreplySummaryRenderData,
-): Promise<Buffer> => {
+): ResultAsync<Buffer, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-summary-pdf.server.view.html`
 
-  const summaryHtml = await ejs.renderFile(pathToTemplate, renderData)
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox'],
-    headless: true,
-    executablePath: config.chromiumBin,
+  return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
+    return ResultAsync.fromPromise(
+      generateAutoreplyPdfPromise(summaryHtml),
+      (error) => {
+        logger.error({
+          meta: {
+            action: 'generateAutoreplyPdf',
+          },
+          message: 'Error occurred whilst generating autoreply PDF',
+          error,
+        })
+
+        return new MailGenerationError(
+          'Error occurred whilst generating autoreply PDF',
+        )
+      },
+    )
   })
-  const page = await browser.newPage()
-  await page.setContent(summaryHtml, {
-    waitUntil: 'networkidle0',
-  })
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: {
-      top: '20px',
-      bottom: '40px',
-    },
-  })
-  await browser.close()
-  return pdfBuffer
 }
 
-export const generateAutoreplyHtml = async (
+export const generateAutoreplyHtml = (
   htmlData: AutoreplyHtmlData,
-): Promise<string> => {
+): ResultAsync<string, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-autoreply.server.view.html`
-  return ejs.renderFile(pathToTemplate, htmlData)
+  return safeRenderFile(pathToTemplate, htmlData)
 }
 
 export const isToFieldValid = (addresses: string | string[]): boolean => {
