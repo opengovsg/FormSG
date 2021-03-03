@@ -1,6 +1,6 @@
 'use strict'
 const { cloneDeep } = require('lodash')
-const MyInfoService = require('../../services/myinfo.service')
+const MyInfoService = require('../../../../services/MyInfoService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,

@@ -1,5 +1,5 @@
 const dedent = require('dedent-js')
-const MyInfoService = require('../../services/myinfo.service')
+const MyInfoService = require('../../../../services/MyInfoService')
 
 angular
   .module('forms')
