@@ -2,11 +2,15 @@ import axios from 'axios'
 
 type RedirectURLResult = { redirectURL: string }
 
+// Exported for testing
+export const REDIRECT_URL_ENDPOINT = '/myinfo/redirect'
+export const VALIDATE_ESRVCID_ENDPOINT = '/myinfo/validate'
+
 export const createRedirectURL = (
   formId: string,
 ): Promise<RedirectURLResult> => {
   return axios
-    .get<RedirectURLResult>('/myinfo/redirect', {
+    .get<RedirectURLResult>(REDIRECT_URL_ENDPOINT, {
       params: { formId },
     })
     .then(({ data }) => data)
@@ -20,7 +24,7 @@ export const validateESrvcId = (
   formId: string,
 ): Promise<LoginPageValidationResult> => {
   return axios
-    .get<LoginPageValidationResult>('/myinfo/validate', {
+    .get<LoginPageValidationResult>(VALIDATE_ESRVCID_ENDPOINT, {
       params: { formId },
     })
     .then(({ data }) => data)
