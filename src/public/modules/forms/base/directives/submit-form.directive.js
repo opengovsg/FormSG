@@ -1,6 +1,6 @@
 'use strict'
 const { cloneDeep } = require('lodash')
-const { createRedirectURL } = require('../../services/myinfo.service')
+const MyInfoService = require('../../services/myinfo.service')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -24,7 +24,7 @@ angular
   .module('forms')
   .directive('submitFormDirective', [
     '$window',
-    'FormFields',
+    '$q',
     'GTag',
     'SpcpRedirect',
     'SpcpSession',
@@ -40,7 +40,7 @@ angular
 
 function submitFormDirective(
   $window,
-  FormFields,
+  $q,
   GTag,
   SpcpRedirect,
   SpcpSession,
@@ -92,7 +92,8 @@ function submitFormDirective(
 
       scope.formLogin = function (authType, rememberMe) {
         if (authType === 'MyInfo') {
-          return createRedirectURL(scope.form._id)
+          return $q
+            .when(MyInfoService.createRedirectURL(scope.form._id))
             .then((response) => {
               setReferrerToNull()
               $window.location.href = response.redirectURL
