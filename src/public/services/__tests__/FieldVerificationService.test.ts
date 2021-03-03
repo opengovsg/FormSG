@@ -111,7 +111,7 @@ describe('FieldVerificationService', () => {
   })
 
   describe('resetVerifiedField', () => {
-    it('should call endpoint successfully', async () => {
+    it('should call reset endpoint with correct params', async () => {
       // Arrange
       const mockTransactionId = 'mockTransactionIdYetAgain'
       const mockFieldId = 'someFieldIdYetAgain'
