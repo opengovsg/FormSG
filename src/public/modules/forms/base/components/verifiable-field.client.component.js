@@ -9,11 +9,11 @@ angular.module('forms').component('verifiableFieldComponent', {
     field: '<', // The model that the input field is based on
     input: '<',
   },
-  controller: ['$timeout', '$interval', verifiableFieldController],
+  controller: ['$q', '$timeout', '$interval', verifiableFieldController],
   controllerAs: 'vm',
 })
 
-function verifiableFieldController($timeout, $interval) {
+function verifiableFieldController($q, $timeout, $interval) {
   const vm = this
   vm.$onInit = () => {
     vm.otp = {
@@ -78,11 +78,13 @@ function verifiableFieldController($timeout, $interval) {
         return onVerificationFailure()
       }
 
-      await FieldVerificationService.verifyOtp({
-        transactionId: vm.transactionId,
-        fieldId: vm.field._id,
-        otp,
-      })
+      $q.resolve(
+        FieldVerificationService.verifyOtp({
+          transactionId: vm.transactionId,
+          fieldId: vm.field._id,
+          otp,
+        }),
+      )
         .then(onVerificationSuccess)
         .catch(onVerificationFailure)
     } catch (err) {

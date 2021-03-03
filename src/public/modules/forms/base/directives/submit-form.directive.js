@@ -1,8 +1,6 @@
 'use strict'
 const { cloneDeep } = require('lodash')
-const {
-  createTransactionForForm,
-} = require('../../../../services/FieldVerificationService')
+const FieldVerificationService = require('../../../../services/FieldVerificationService')
 
 const {
   getVisibleFieldIds,
@@ -26,6 +24,7 @@ const FORM_STATES = {
 angular
   .module('forms')
   .directive('submitFormDirective', [
+    '$q',
     '$window',
     'FormFields',
     'GTag',
@@ -42,6 +41,7 @@ angular
   ])
 
 function submitFormDirective(
+  $q,
   $window,
   FormFields,
   GTag,
@@ -425,7 +425,9 @@ function submitFormDirective(
 
       // Create a transaction if there are fields to be verified and the form is intended for submission
       if (!scope.disableSubmitButton) {
-        createTransactionForForm(scope.form._id).then((res) => {
+        $q.resolve(
+          FieldVerificationService.createTransactionForForm(scope.form._id),
+        ).then((res) => {
           if (res.transactionId) {
             scope.transactionId = res.transactionId
           }
