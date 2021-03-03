@@ -56,7 +56,7 @@
     ]
   },
   "dependencies": {
-    "@babel/runtime": "^7.12.18",
+    "@babel/runtime": "^7.13.9",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
     "@opengovsg/angular-legacy-sortablejs-maintained": "^1.0.0",
     "@opengovsg/angular-recaptcha-fallback": "^5.0.0",
