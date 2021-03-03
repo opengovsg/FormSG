@@ -316,8 +316,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
       },
-
-      submissionLimit: { type: Number, default: null },
     },
     formSchemaOptions,
   )
@@ -421,7 +419,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'authType',
       'inactiveMessage',
       'responseMode',
-      'submissionLimit',
     ]) as PickDuplicateForm
     return { ...newForm, ...overrideProps }
   }

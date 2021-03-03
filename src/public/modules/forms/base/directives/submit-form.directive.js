@@ -1,7 +1,8 @@
 'use strict'
 const { cloneDeep } = require('lodash')
-const FieldVerificationService = require('../../../../services/FieldVerificationService')
 
+const FieldVerificationService = require('../../../../services/FieldVerificationService')
+const MyInfoService = require('../../../../services/MyInfoService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -26,7 +27,6 @@ angular
   .directive('submitFormDirective', [
     '$q',
     '$window',
-    'FormFields',
     'GTag',
     'SpcpRedirect',
     'SpcpSession',
@@ -36,14 +36,12 @@ angular
     'Submissions',
     '$uibModal',
     '$timeout',
-    'MyInfoRedirect',
     submitFormDirective,
   ])
 
 function submitFormDirective(
   $q,
   $window,
-  FormFields,
   GTag,
   SpcpRedirect,
   SpcpSession,
@@ -53,7 +51,6 @@ function submitFormDirective(
   Submissions,
   $uibModal,
   $timeout,
-  MyInfoRedirect,
 ) {
   return {
     restrict: 'E',
@@ -95,9 +92,8 @@ function submitFormDirective(
 
       scope.formLogin = function (authType, rememberMe) {
         if (authType === 'MyInfo') {
-          return MyInfoRedirect({
-            formId: scope.form._id,
-          })
+          return $q
+            .when(MyInfoService.createRedirectURL(scope.form._id))
             .then((response) => {
               setReferrerToNull()
               $window.location.href = response.redirectURL
