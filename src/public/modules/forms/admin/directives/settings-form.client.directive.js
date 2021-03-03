@@ -11,7 +11,6 @@ const SETTINGS_PATH = [
   'esrvcId',
   'responseMode',
   'inactiveMessage',
-  'submissionLimit',
   'webhook.url',
 ]
 
@@ -33,7 +32,6 @@ angular
     'responseModeEnum',
     '$uibModal',
     'Auth',
-    'Submissions',
     settingsFormDirective,
   ])
 
@@ -43,7 +41,6 @@ function settingsFormDirective(
   responseModeEnum,
   $uibModal,
   Auth,
-  Submissions,
 ) {
   return {
     templateUrl:
@@ -60,15 +57,6 @@ function settingsFormDirective(
 
         $scope.responseModeEnum = responseModeEnum
         $scope.tempForm = createTempSettings($scope.myform)
-        $scope.submissionLimitToggle = $scope.tempForm.submissionLimit !== null
-        $scope.submissionLimitUnlimited = null
-
-        $scope.currentResponsesCount = 0
-        Submissions.count({ formId: $scope.myform._id }).then(
-          (responsesCount) => {
-            $scope.currentResponsesCount = responsesCount
-          },
-        )
 
         const getCurrentSettings = () => {
           // Detect difference between the new form (tempForm) and the old form (myform),
@@ -191,7 +179,6 @@ function settingsFormDirective(
           title: () => $scope.settingsForm.title,
           esrvcId: () => $scope.settingsForm.esrvcId,
           inactiveMessage: () => $scope.settingsForm.inactiveMessage,
-          submissionLimit: () => $scope.settingsForm.submissionLimit,
           webhook: () => $scope.settingsForm.webhookUrl,
         }
 
@@ -216,18 +203,6 @@ function settingsFormDirective(
           $scope.tempForm = createTempSettings($scope.myform)
         }
 
-        $scope.toggleFormSubmissionLimit = () => {
-          if ($scope.submissionLimitToggle) {
-            $scope.tempForm.submissionLimit = 1000
-          } else {
-            $scope.tempForm.submissionLimit = null
-          }
-          $scope.updateSettingsByPath(
-            'submissionLimit',
-            $scope.tempForm.submissionLimit,
-          )
-        }
-
         $scope.saveForm = () => {
           const dirtyFields = getDirtyInputFields()
           if (dirtyInputFieldsAreInvalid(dirtyFields)) {
@@ -248,10 +223,7 @@ function settingsFormDirective(
         }
 
         $scope.updateSettingsByPath = (path, value) => {
-          if (
-            (path && value !== null && value !== undefined) ||
-            path === 'submissionLimit'
-          ) {
+          if (path && value !== null && value !== undefined) {
             set($scope.tempForm, path, value)
           }
           // Update form
