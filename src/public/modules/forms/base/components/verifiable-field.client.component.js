@@ -1,10 +1,6 @@
 'use strict'
 const { isEmpty, merge, keys, get } = require('lodash')
-const {
-  resetVerifiedField,
-  triggerSendOtp,
-  verifyOtp,
-} = require('../../../../services/FieldVerificationService')
+const FieldVerificationService = require('../../../../services/FieldVerificationService')
 angular.module('forms').component('verifiableFieldComponent', {
   transclude: true,
   templateUrl: 'modules/forms/base/componentViews/verifiable-field.html',
@@ -50,7 +46,7 @@ function verifiableFieldController($timeout, $interval) {
         throw new Error('No transaction id')
       }
 
-      await triggerSendOtp({
+      await FieldVerificationService.triggerSendOtp({
         transactionId: vm.transactionId,
         fieldId: vm.field._id,
         answer: lastRequested.value,
@@ -82,7 +78,7 @@ function verifiableFieldController($timeout, $interval) {
         return onVerificationFailure()
       }
 
-      await verifyOtp({
+      await FieldVerificationService.verifyOtp({
         transactionId: vm.transactionId,
         fieldId: vm.field._id,
         otp,
@@ -112,7 +108,7 @@ function verifiableFieldController($timeout, $interval) {
         if (getView() !== STATES.VFN_DEFAULT) {
           // We don't await on reset because we don't care if it fails
           // The signature will be wrong anyway if it fails, and submission will be prevented
-          resetVerifiedField({
+          FieldVerificationService.resetVerifiedField({
             transactionId: vm.transactionId,
             fieldId: vm.field._id,
           })
