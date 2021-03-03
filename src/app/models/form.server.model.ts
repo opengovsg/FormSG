@@ -317,7 +317,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         required: false,
       },
 
-      submissionLimit: { type: Number, default: null },
+      submissionLimit: {
+        type: Number,
+        default: null,
+        validate: {
+          validator: (v) => v > 0 || v === null,
+          message:
+            'Response limit must be either empty (null) or greater than 0',
+        },
+      },
     },
     formSchemaOptions,
   )

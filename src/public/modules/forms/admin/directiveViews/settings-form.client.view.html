@@ -78,7 +78,7 @@
             Limit number of responses
             <i
               class="glyphicon glyphicon-question-sign"
-              uib-tooltip="Limits the number of submissions. Form automatically deactivates upon reaching the submission limit."
+              uib-tooltip="Form will automatically deactivate when the set response limit is reached. Enable reCaptcha to prevent spam submissions from triggering this limit."
               tooltip-trigger="'click mouseenter'"
             ></i>
           </div>
@@ -105,7 +105,7 @@
       <div class="settings-input" ng-show="submissionLimitToggle">
         <label for="settings-submissionLimit">
           <div class="label-custom label-large label-bottom">
-            Maximum number of submissions allowed
+            Maximum number of responses allowed
           </div>
         </label>
         <div class="settings-save">
@@ -126,7 +126,7 @@
         <div
           ng-if="settingsForm.submissionLimit.$invalid"
           ng-messages="settingsForm.submissionLimit.$error"
-          class="alert-custom alert-info"
+          class="alert-custom alert-error"
         >
           <i class="bx bx-exclamation bx-md icon-spacing"></i>
           <span class="alert-msg" ng-message-default
