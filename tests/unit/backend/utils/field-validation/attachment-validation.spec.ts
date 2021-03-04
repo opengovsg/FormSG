@@ -49,6 +49,22 @@ describe('Attachment validation', () => {
       )
     })
 
+    it('should allow submission with attachment if it is required', () => {
+      const formField = makeField(fieldId, '1')
+      const response = makeResponse(fieldId, Buffer.alloc(1))
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should allow submission with attachment if it is optional', () => {
+      const formField = makeField(fieldId, '1', { required: false })
+      const response = makeResponse(fieldId, Buffer.alloc(1))
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
     it('should allow submission with no attachment if it is not required', () => {
       const formField = makeField(fieldId, '1', { required: false })
       const response = makeResponse(fieldId, undefined, { answer: '' })
