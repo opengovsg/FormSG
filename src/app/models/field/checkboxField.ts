@@ -10,6 +10,7 @@ const createCheckboxFieldSchema = () => {
         validator: (optionsArray: string[]): boolean => {
           return optionsArray.length === new Set(optionsArray).size
         },
+        message: 'Please ensure that there are no duplicate checkbox options.',
       },
     },
     othersRadioButton: {
