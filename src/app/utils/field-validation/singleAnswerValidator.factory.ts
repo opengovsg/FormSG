@@ -73,6 +73,8 @@ export const constructSingleAnswerValidator = (
 }
 
 export const constructAttachmentFieldValidator = (
+  // Separate from constructSingleAnswerValidator as
+  // constructAttachmentValidator returns different type
   formField: IField,
 ): ResponseValidator<ProcessedAttachmentResponse> => {
   if (isAttachmentField(formField)) {
