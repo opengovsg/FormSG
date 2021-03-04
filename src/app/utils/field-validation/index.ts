@@ -75,9 +75,7 @@ const isResponsePresentOnHiddenField = (
     }
   } else if (isProcessedAttachmentResponse(response)) {
     if (
-      (response.filename &&
-        typeof response.filename === 'string' &&
-        response.filename.trim() !== '') ||
+      (response.filename && response.filename.trim() !== '') || // filename is defined only if there is a file uploaded for the response
       response.answer.trim() !== '' ||
       response.content
     ) {
