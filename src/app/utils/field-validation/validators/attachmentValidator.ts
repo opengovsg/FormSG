@@ -12,6 +12,9 @@ type AttachmentValidatorConstructor = (
   attachmentField: IAttachmentField,
 ) => AttachmentValidator
 
+/**
+ * Returns a validator to check if answer is empty string.
+ */
 const attachmentAnswerValidator: AttachmentValidator = (response) => {
   const { answer } = response
 
@@ -20,6 +23,9 @@ const attachmentAnswerValidator: AttachmentValidator = (response) => {
     : right(response)
 }
 
+/**
+ * Returns a validator to check if attachment content is empty.
+ */
 const attachmentContentValidator: AttachmentValidator = (response) => {
   const { content } = response
 
@@ -28,6 +34,10 @@ const attachmentContentValidator: AttachmentValidator = (response) => {
     : right(response)
 }
 
+/**
+ * Returns a validation function to check if
+ * attachment size is within the specified limit.
+ */
 const makeAttachmentSizeValidator: AttachmentValidatorConstructor = (
   attachmentField,
 ) => (response) => {
@@ -38,6 +48,9 @@ const makeAttachmentSizeValidator: AttachmentValidatorConstructor = (
     : left(`AttachmentValidator:\t File size more than limit`)
 }
 
+/**
+ * Returns a validation function for an attachment field when called.
+ */
 export const constructAttachmentValidator: AttachmentValidatorConstructor = (
   attachmentField,
 ) =>
