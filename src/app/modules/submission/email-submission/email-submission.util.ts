@@ -534,8 +534,13 @@ export const concatAttachmentsAndResponses = (
 }
 
 /**
- * Function to generate email data
- * for a single field
+ * Applies a formatting function to generate email data for a single field
+ * @param response
+ * @param hashedFields Used if formatting function is getFormFormattedResponse to provide
+ * [verified] field to admin
+ * @param getFormattedFunction The formatting function to use
+ * @returns EmailRespondentConfirmationField[], EmailDataCollationToolField[] or
+ * EmailAdminDataField[] depending on which formatting function is used
  */
 const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   response: ProcessedFieldResponse,
