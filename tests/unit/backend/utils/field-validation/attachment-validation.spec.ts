@@ -1,52 +1,42 @@
+import { ObjectId } from 'mongodb'
+
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { ProcessedAttachmentResponse } from 'src/app/modules/submission/submission.types'
 import { validateField } from 'src/app/utils/field-validation/'
-import { IFieldSchema } from 'src/types'
+import { BasicField, IAttachmentFieldSchema, IField } from 'src/types'
 
-type MakeFieldOptions = {
-  required?: boolean
-}
-
-type MakeResponseOptions = {
-  answer?: string
-  filename?: string
-}
+import {
+  generateDefaultField,
+  generateNewAttachmentResponse,
+} from '../../helpers/generate-form-data'
 
 describe('Attachment validation', () => {
   const makeField = (
     fieldId: string,
-    size: string,
-    options?: MakeFieldOptions,
-  ) => {
-    const attachment = {
+    attachmentSize: string,
+    customParams?: Partial<IField>,
+  ): IAttachmentFieldSchema => {
+    return {
+      ...generateDefaultField(BasicField.Attachment, customParams),
       _id: fieldId,
-      fieldType: 'attachment',
-      attachmentSize: size,
-      required: true,
-      ...options,
-    }
-    return (attachment as unknown) as IFieldSchema
+      attachmentSize,
+    } as IAttachmentFieldSchema
   }
 
   const makeResponse = (
     fieldId: string,
-    buffer?: Buffer,
-    options?: MakeResponseOptions,
-  ) => {
-    const response = {
+    content: Buffer | undefined,
+    customParams?: Partial<ProcessedAttachmentResponse>,
+  ): ProcessedAttachmentResponse => {
+    return {
+      ...generateNewAttachmentResponse(customParams),
       _id: fieldId,
-      fieldType: 'attachment',
-      answer: 'file.jpg',
-      filename: 'file.jpg',
-      content: buffer,
-      isVisible: true,
-      ...options,
-    }
-    return (response as unknown) as ProcessedAttachmentResponse
+      content,
+    } as ProcessedAttachmentResponse
   }
 
-  const formId = '5dd3b0bd3fbe670012fdf23f'
-  const fieldId = '5ad072e3d9a3d4000f2c77c8'
+  const formId = new ObjectId().toHexString()
+  const fieldId = new ObjectId().toHexString()
 
   describe('Required or optional', () => {
     it('should disallow submission with no attachment if it is required', () => {
