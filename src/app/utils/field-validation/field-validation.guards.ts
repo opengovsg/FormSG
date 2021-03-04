@@ -62,6 +62,8 @@ export const isProcessedAttachmentResponse = (
   return (
     response.fieldType === BasicField.Attachment &&
     'answer' in response &&
-    typeof response.answer === 'string' // No check for response.filename as response.filename is generated only when actual file is uploaded
+    typeof response.answer === 'string'
+    // No check for response.filename as response.filename is generated only when actual file is uploaded
+    // Hence hidden attachment fields - which still return empty response - will not have response.filename property
   )
 }
