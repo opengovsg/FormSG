@@ -666,7 +666,7 @@ const getAutoReplyFormattedResponse = (
   return undefined
 }
 
-export class EmailDataObj {
+export class SubmissionEmailObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<string>
   authType: AuthType

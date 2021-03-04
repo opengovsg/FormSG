@@ -40,9 +40,9 @@ import { SubmissionHash } from './email-submission.types'
 import {
   areAttachmentsMoreThan7MB,
   concatAttachmentsAndResponses,
-  EmailDataObj,
   getInvalidFileExtensions,
   mapAttachmentsFromResponses,
+  SubmissionEmailObj,
 } from './email-submission.util'
 
 const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
@@ -59,7 +59,7 @@ export const createEmailData = (
   hashedFields: Set<string>,
   authType: AuthType = AuthType.NIL,
 ): EmailData => {
-  return new EmailDataObj(parsedResponses, hashedFields, authType)
+  return new SubmissionEmailObj(parsedResponses, hashedFields, authType)
 }
 
 /**
