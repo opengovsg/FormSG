@@ -3,6 +3,7 @@ import { err, ok, Result } from 'neverthrow'
 
 import {
   ProcessedAttachmentResponse,
+  ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
 } from '../../../app/modules/submission/submission.types'
@@ -22,6 +23,7 @@ import {
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
 import {
   constructAttachmentFieldValidator,
+  constructCheckboxFieldValidator,
   constructSingleAnswerValidator,
 } from './singleAnswerValidator.factory'
 
@@ -101,6 +103,12 @@ const attachmentRequiresValidation = (
   formField: IFieldSchema,
   response: ProcessedAttachmentResponse,
 ) => (formField.required && response.isVisible) || response.answer.trim() !== ''
+
+const checkboxRequiresValidation = (
+  formField: IFieldSchema,
+  response: ProcessedCheckboxResponse,
+) =>
+  (formField.required && response.isVisible) || response.answerArray.length > 0
 
 /**
  * Generic logging function for invalid fields.
@@ -198,10 +206,17 @@ export const validateField = (
       }
       return ok(true)
     }
-  } else if (
-    isProcessedCheckboxResponse(response) ||
-    isProcessedTableResponse(response)
-  ) {
+  } else if (isProcessedCheckboxResponse(response)) {
+    if (checkboxRequiresValidation(formField, response)) {
+      const validator = constructCheckboxFieldValidator(formField)
+      const validEither = validator(response)
+      if (isLeft(validEither)) {
+        logInvalidAnswer(formId, formField, validEither.left)
+        return err(new ValidateFieldError('Invalid answer submitted'))
+      }
+      return ok(true)
+    }
+  } else if (isProcessedTableResponse(response)) {
     // fallback for processed checkbox/table responses
     return classBasedValidation(formId, formField, response)
   } else {
