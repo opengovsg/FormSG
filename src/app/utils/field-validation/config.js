@@ -6,7 +6,6 @@ const FIELDS_TO_REJECT = require('../../../shared/resources/basic')
 const ALLOWED_VALIDATORS = [
   'YesNoValidator',
   'TableValidator',
-  'AttachmentValidator',
   'CheckboxValidator',
   // BaseFieldValidator can be constructed by the FieldValidatorFactory,
   // but is missing from this list.

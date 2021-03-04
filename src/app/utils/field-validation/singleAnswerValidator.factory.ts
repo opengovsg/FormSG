@@ -2,6 +2,7 @@ import { left } from 'fp-ts/lib/Either'
 
 import { IField } from '../../../types/field/baseField'
 import {
+  isAttachmentField,
   isDateField,
   isDecimalField,
   isDropdownField,
@@ -17,8 +18,12 @@ import {
   isShortTextField,
 } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
-import { ProcessedSingleAnswerResponse } from '../../modules/submission/submission.types'
+import {
+  ProcessedAttachmentResponse,
+  ProcessedSingleAnswerResponse,
+} from '../../modules/submission/submission.types'
 
+import { constructAttachmentValidator } from './validators/attachmentValidator'
 import { constructDateValidator } from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
 import { constructDropdownValidator } from './validators/dropdownValidator'
@@ -63,6 +68,15 @@ export const constructSingleAnswerValidator = (
     return constructDropdownValidator(formField)
   } else if (isEmailField(formField)) {
     return constructEmailValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructAttachmentFieldValidator = (
+  formField: IField,
+): ResponseValidator<ProcessedAttachmentResponse> => {
+  if (isAttachmentField(formField)) {
+    return constructAttachmentValidator(formField)
   }
   return () => left('Unsupported field type')
 }

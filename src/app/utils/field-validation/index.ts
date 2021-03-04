@@ -2,6 +2,7 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
 import {
+  ProcessedAttachmentResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
 } from '../../../app/modules/submission/submission.types'
@@ -19,7 +20,10 @@ import {
   isProcessedTableResponse,
 } from './field-validation.guards'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
-import { constructSingleAnswerValidator } from './singleAnswerValidator.factory'
+import {
+  constructAttachmentFieldValidator,
+  constructSingleAnswerValidator,
+} from './singleAnswerValidator.factory'
 
 const logger = createLoggerWithLabel(module)
 
@@ -87,6 +91,11 @@ const isResponsePresentOnHiddenField = (
 const singleAnswerRequiresValidation = (
   formField: IFieldSchema,
   response: ProcessedSingleAnswerResponse,
+) => (formField.required && response.isVisible) || response.answer.trim() !== ''
+
+const attachmentRequiresValidation = (
+  formField: IFieldSchema,
+  response: ProcessedAttachmentResponse,
 ) => (formField.required && response.isVisible) || response.answer.trim() !== ''
 
 /**
@@ -174,6 +183,16 @@ export const validateField = (
           return classBasedValidation(formId, formField, response)
         }
       }
+    }
+  } else if (isProcessedAttachmentResponse(response)) {
+    if (attachmentRequiresValidation(formField, response)) {
+      const validator = constructAttachmentFieldValidator(formField)
+      const validEither = validator(response)
+      if (isLeft(validEither)) {
+        logInvalidAnswer(formId, formField, validEither.left)
+        return err(new ValidateFieldError('Invalid answer submitted'))
+      }
+      return ok(true)
     }
   } else if (
     isProcessedCheckboxResponse(response) ||

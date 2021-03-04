@@ -9,7 +9,7 @@ import {
 } from '../../modules/submission/submission.types'
 
 const singleAnswerFieldTypes = basicTypes
-  .filter((field) => !field.answerArray)
+  .filter((field) => !field.answerArray && field.name !== BasicField.Attachment)
   .map((f) => f.name)
 
 export const isProcessedSingleAnswerResponse = (
