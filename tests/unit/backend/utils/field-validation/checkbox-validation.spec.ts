@@ -53,6 +53,7 @@ describe('Checkbox validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
     })
+
     it('should allow empty submission if checkbox is optional', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions, {
@@ -74,6 +75,7 @@ describe('Checkbox validation', () => {
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
+
     it('should allow multiple valid options to be selected', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
@@ -82,6 +84,7 @@ describe('Checkbox validation', () => {
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
+
     it('should disallow answers not in fieldOptions', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
@@ -92,6 +95,7 @@ describe('Checkbox validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
     })
+
     it('should disallow duplicate answers', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions)
@@ -102,6 +106,7 @@ describe('Checkbox validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
     })
+
     it('should allow self-configured others options in field options', () => {
       // This occurs when admins create their own checkboxes with options like ["Others: <please specify>"]
       const fieldOptions = ['a', 'b', 'c', 'Others: <please specify>']
@@ -113,6 +118,7 @@ describe('Checkbox validation', () => {
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
+
     it('should allow Others option to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions, {
@@ -123,6 +129,7 @@ describe('Checkbox validation', () => {
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
+
     it('should disallow Others option to be submitted if field is not configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions, {
@@ -135,6 +142,7 @@ describe('Checkbox validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
     })
+
     it('should disallow Others option to be submitted with blank answer if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
       const formField = makeCheckboxField(fieldId, fieldOptions, {
@@ -146,6 +154,17 @@ describe('Checkbox validation', () => {
       expect(validateResult._unsafeUnwrapErr()).toEqual(
         new ValidateFieldError('Invalid answer submitted'),
       )
+    })
+
+    it('should allow submission without Others option even if field is configured for Others', () => {
+      const fieldOptions = ['a', 'b', 'c']
+      const formField = makeCheckboxField(fieldId, fieldOptions, {
+        othersRadioButton: true,
+      })
+      const response = makeCheckboxResponse(fieldId, ['a'])
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
   })
 
