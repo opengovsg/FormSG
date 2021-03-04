@@ -63,6 +63,12 @@ export const generateDefaultField = (
         ...defaultParams,
         fieldOptions: ['Option 1', 'Option 2'],
         getQuestion: () => defaultParams.title,
+        ValidationOptions: {
+          customMin: null,
+          customMax: null,
+        },
+        othersRadioButton: false,
+        validateByValue: false,
         ...customParams,
       } as ICheckboxFieldSchema
     case BasicField.Attachment:
@@ -119,9 +125,9 @@ export const generateProcessedSingleAnswerResponse = (
       field.fieldType,
     )
   ) {
-    throw new Error(
+    return (new Error(
       'Call the custom response generator functions for attachment, table and checkbox.',
-    )
+    ) as unknown) as ProcessedSingleAnswerResponse
   }
   return {
     _id: field._id,
@@ -144,9 +150,9 @@ export const generateSingleAnswerResponse = (
       field.fieldType,
     )
   ) {
-    throw new Error(
+    return (new Error(
       'Call the custom response generator functions for attachment, table and checkbox.',
-    )
+    ) as unknown) as ProcessedSingleAnswerResponse
   }
   return {
     _id: field._id,
@@ -167,9 +173,9 @@ export const generateNewSingleAnswerResponse = (
       fieldType,
     )
   ) {
-    throw new Error(
+    return (new Error(
       'Call the custom response generator functions for attachment, table and checkbox.',
-    )
+    ) as unknown) as ProcessedSingleAnswerResponse
   }
   return {
     _id: new ObjectId().toHexString(),

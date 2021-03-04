@@ -1,7 +1,16 @@
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { ProcessedCheckboxResponse } from 'src/app/modules/submission/submission.types'
 import { validateField } from 'src/app/utils/field-validation'
-import { CheckboxValidationOptions, IFieldSchema } from 'src/types'
+import {
+  BasicField,
+  CheckboxValidationOptions,
+  ICheckboxFieldSchema,
+} from 'src/types'
+
+import {
+  generateDefaultField,
+  generateNewCheckboxResponse,
+} from '../../helpers/generate-form-data'
 
 type MakeCheckboxFieldOptions = {
   required?: boolean
@@ -15,29 +24,19 @@ describe('Checkbox validation', () => {
     fieldOptions: string[],
     options?: MakeCheckboxFieldOptions,
   ) => {
-    const checkbox = {
+    return {
+      ...generateDefaultField(BasicField.Checkbox, options),
       _id: fieldId,
-      fieldType: 'checkbox',
-      required: true,
       fieldOptions,
-      othersRadioButton: false,
-      validateByValue: false,
-      ValidationOptions: {
-        customMin: null,
-        customMax: null,
-      },
-      ...options,
-    }
-    return (checkbox as unknown) as IFieldSchema
+    } as ICheckboxFieldSchema
   }
+
   const makeCheckboxResponse = (fieldId: string, answerArray: string[]) => {
-    const response = {
+    return {
+      ...generateNewCheckboxResponse(),
       _id: fieldId,
-      fieldType: 'checkbox',
       answerArray,
-      isVisible: true,
-    }
-    return (response as unknown) as ProcessedCheckboxResponse
+    } as ProcessedCheckboxResponse
   }
 
   const formId = '5dd3b0bd3fbe670012fdf23f'
@@ -136,6 +135,23 @@ describe('Checkbox validation', () => {
         othersRadioButton: false,
       })
       const response = makeCheckboxResponse(fieldId, ['a', 'Others: xyz'])
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+
+    it('should disallow multiple Others option to be submitted if field is configured for Others', () => {
+      const fieldOptions = ['a', 'b', 'c']
+      const formField = makeCheckboxField(fieldId, fieldOptions, {
+        othersRadioButton: true,
+      })
+      const response = makeCheckboxResponse(fieldId, [
+        'a',
+        'Others: xyz',
+        'Others: abc',
+      ])
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
