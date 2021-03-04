@@ -5,6 +5,8 @@ import { ProcessedCheckboxResponse } from 'src/app/modules/submission/submission
 import { ICheckboxField } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
+import { isOtherOption } from './options'
+
 type CheckboxValidator = ResponseValidator<ProcessedCheckboxResponse>
 type CheckboxValidatorConstructor = (
   checkboxField: ICheckboxField,
@@ -62,51 +64,9 @@ const maxOptionsValidator: CheckboxValidatorConstructor = (checkboxField) => (
 }
 
 /**
- * Returns a validation function to check if 'others' is selected
- * and if so, whether the response for 'others' is valid.
- */
-const othersOptionValidator: CheckboxValidatorConstructor = (checkboxField) => (
-  response,
-) => {
-  const { othersRadioButton } = checkboxField
-  const { answerArray } = response
-
-  if (othersRadioButton) {
-    const othersAnswer = answerArray[answerArray.length - 1]
-    const othersText = 'Others: '
-    return othersAnswer.startsWith(othersText) &&
-      othersAnswer.trim().length > othersText.length // not a blank answer
-      ? right(response)
-      : left(`CheckboxValidator:\t answer for Others is invalid`)
-  }
-
-  return right(response)
-}
-
-/**
- * Returns a validation function to check if there are any
- * duplicates amongst the answers.
- */
-const duplicateOptionsValidator: CheckboxValidatorConstructor = (
-  checkboxField,
-) => (response) => {
-  const { othersRadioButton } = checkboxField
-  const { answerArray } = response
-
-  // Exclude 'Others' response if selected
-  // As non-others option are allowed to start with 'Others: '.
-  const answersToCheck = othersRadioButton
-    ? answerArray.slice(0, -1)
-    : answerArray
-
-  return answersToCheck.length === new Set(answersToCheck).size
-    ? right(response)
-    : left(`CheckboxValidator:\t duplicate answers in response`)
-}
-
-/**
  * Returns a validation function to check if the
- * answers are all within the specified field options
+ * answers are all either within the specified field options or
+ * have the correct format for 'others' answer, if others is enabled
  */
 const validOptionsValidator: CheckboxValidatorConstructor = (checkboxField) => (
   response,
@@ -114,15 +74,82 @@ const validOptionsValidator: CheckboxValidatorConstructor = (checkboxField) => (
   const { fieldOptions, othersRadioButton } = checkboxField
   const { answerArray } = response
 
-  // Exclude 'Others' response if selected
-  // as this does not need to be one of the pre-defined options
-  const answersToCheck = othersRadioButton
-    ? answerArray.slice(0, -1)
-    : answerArray
-
-  return answersToCheck.every((answer) => fieldOptions.includes(answer))
+  return answerArray.every(
+    (answer) =>
+      fieldOptions.includes(answer) || isOtherOption(othersRadioButton, answer),
+  )
     ? right(response)
-    : left(`CheckboxValidator:\t answer not in fieldoptions`)
+    : left(`CheckboxValidator:\t answer is not valid`)
+}
+
+/**
+ * Returns a validation function to check if there are any
+ * duplicates amongst the non-others answers.
+ */
+const duplicateNonOtherOptionsValidator: CheckboxValidatorConstructor = (
+  checkboxField,
+) => (response) => {
+  const { othersRadioButton } = checkboxField
+  const { answerArray } = response
+
+  const nonOtherAnswers = answerArray.filter(
+    (answer) => !isOtherOption(othersRadioButton, answer),
+  )
+
+  return nonOtherAnswers.length === new Set(nonOtherAnswers).size
+    ? right(response)
+    : left(`CheckboxValidator:\t duplicate non-other answers in response`)
+}
+
+/**
+ * Returns a validation function to check if there are any
+ * duplicates amongst the others answers, or if there are more
+ * than one others answer.
+ *
+ * Note that it is possible for Admins to create fieldOptions that
+ * look like ['Option 1', 'Others: please elaborate']
+ *
+ */
+const duplicateOtherOptionsValidator: CheckboxValidatorConstructor = (
+  checkboxField,
+) => (response) => {
+  const { fieldOptions, othersRadioButton } = checkboxField
+  const { answerArray } = response
+
+  const otherAnswers = answerArray.filter((answer) =>
+    isOtherOption(othersRadioButton, answer),
+  )
+
+  // First check the answers which do not appear in fieldOptions.
+  // There should be at most one.
+
+  const otherAnswersNotInFieldOptions = otherAnswers.filter(
+    (answer) => !fieldOptions.includes(answer),
+  )
+
+  if (otherAnswersNotInFieldOptions.length > 1) {
+    return left(`CheckboxValidator:\t duplicate other answers in response`)
+  }
+
+  // Next check that for the remaining answers which do appear in fieldOptions,
+  // Either there should no duplicates, OR
+  // There should be at most 1 duplicate and otherAnswersNotInFieldOptions.length === 0
+  // i.e. the 'Others' field is used for the duplicate response.
+
+  const otherAnswersInFieldOptions = otherAnswers.filter((answer) =>
+    fieldOptions.includes(answer),
+  )
+
+  const numDuplicates =
+    otherAnswersInFieldOptions.length - new Set(otherAnswersInFieldOptions).size
+
+  if (numDuplicates > 1) {
+    return left(`CheckboxValidator:\t duplicate other answers in response`)
+  } else if (numDuplicates === 1 && otherAnswersInFieldOptions.length !== 0) {
+    return left(`CheckboxValidator:\t duplicate other answers in response`)
+  } else {
+    return right(response)
+  }
 }
 
 /**
@@ -135,7 +162,7 @@ export const constructCheckboxValidator: CheckboxValidatorConstructor = (
     checkboxAnswerValidator,
     chain(minOptionsValidator(checkboxField)),
     chain(maxOptionsValidator(checkboxField)),
-    chain(othersOptionValidator(checkboxField)),
-    chain(duplicateOptionsValidator(checkboxField)),
     chain(validOptionsValidator(checkboxField)),
+    chain(duplicateNonOtherOptionsValidator(checkboxField)),
+    chain(duplicateOtherOptionsValidator(checkboxField)),
   )
