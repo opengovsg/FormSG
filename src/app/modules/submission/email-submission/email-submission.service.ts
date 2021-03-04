@@ -57,7 +57,7 @@ const logger = createLoggerWithLabel(module)
 export const createEmailData = (
   parsedResponses: ProcessedFieldResponse[],
   hashedFields: Set<string>,
-  authType: AuthType = AuthType.NIL, //default to AuthType.NIL
+  authType: AuthType = AuthType.NIL,
 ): EmailData => {
   return new EmailDataObj(parsedResponses, hashedFields, authType)
 }
