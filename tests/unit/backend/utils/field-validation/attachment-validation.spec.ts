@@ -140,6 +140,7 @@ describe('Attachment validation', () => {
         ),
       )
     })
+
     it('should disallow responses submitted for hidden fields when response contains answer', () => {
       const formField = makeField(fieldId, '3')
       const response = makeResponse(fieldId, undefined, {
@@ -155,6 +156,7 @@ describe('Attachment validation', () => {
         ),
       )
     })
+
     it('should disallow responses submitted for hidden fields when response contains filename', () => {
       const formField = makeField(fieldId, '3')
       const response = makeResponse(fieldId, undefined, {
