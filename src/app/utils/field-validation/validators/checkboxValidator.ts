@@ -17,7 +17,7 @@ const checkboxAnswerValidator: CheckboxValidator = (response) => {
   const { answerArray } = response
 
   return answerArray.length === 0
-    ? left(`AttachmentValidator:\t Answer is empty array`)
+    ? left(`CheckboxValidator:\t Answer is empty array`)
     : right(response)
 }
 

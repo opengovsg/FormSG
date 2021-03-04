@@ -217,7 +217,7 @@ export const validateField = (
       return ok(true)
     }
   } else if (isProcessedTableResponse(response)) {
-    // fallback for processed checkbox/table responses
+    // fallback for processed table responses
     return classBasedValidation(formId, formField, response)
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
