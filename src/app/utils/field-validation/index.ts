@@ -13,6 +13,11 @@ import { BasicField } from '../../../types/field/fieldTypes'
 import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
+import {
+  constructAttachmentFieldValidator,
+  constructCheckboxFieldValidator,
+  constructSingleAnswerValidator,
+} from './answerValidator.factory'
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import {
   isProcessedAttachmentResponse,
@@ -21,11 +26,6 @@ import {
   isProcessedTableResponse,
 } from './field-validation.guards'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
-import {
-  constructAttachmentFieldValidator,
-  constructCheckboxFieldValidator,
-  constructSingleAnswerValidator,
-} from './singleAnswerValidator.factory'
 
 const logger = createLoggerWithLabel(module)
 
