@@ -153,6 +153,8 @@ export const MOCK_FORM_ID = new ObjectId().toHexString()
 export const MOCK_NODE_ENV = Environment.Test
 export const MOCK_APP_URL = 'appUrl'
 export const MOCK_ACCESS_TOKEN = 'accessToken'
+export const MOCK_REDIRECT_URL = 'mockRedirectURL'
+export const MOCK_AUTH_CODE = 'authCode'
 
 export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
   appUrl: 'http://localhost:5000',
