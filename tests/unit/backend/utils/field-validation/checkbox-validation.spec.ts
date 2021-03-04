@@ -279,16 +279,19 @@ describe('Checkbox validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
     })
-  })
-  it('should disallow responses submitted for hidden fields', () => {
-    const fieldOptions = ['a', 'b', 'c']
-    const formField = makeCheckboxField(fieldId, fieldOptions)
-    const response = makeCheckboxResponse(fieldId, ['a'])
-    response.isVisible = false
-    const validateResult = validateField(formId, formField, response)
-    expect(validateResult.isErr()).toBe(true)
-    expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
-    )
+
+    it('should disallow responses submitted for hidden fields', () => {
+      const fieldOptions = ['a', 'b', 'c']
+      const formField = makeCheckboxField(fieldId, fieldOptions)
+      const response = makeCheckboxResponse(fieldId, ['a'])
+      response.isVisible = false
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError(
+          'Attempted to submit response on a hidden field',
+        ),
+      )
+    })
   })
 })
