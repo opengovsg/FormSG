@@ -32,13 +32,13 @@ const minOptionsValidator: CheckboxValidatorConstructor = (checkboxField) => (
   const { customMin } = checkboxField.ValidationOptions
   const { answerArray } = response
 
-  return validateByValue && customMin
-    ? answerArray.length >= customMin
-      ? right(response)
-      : left(
-          `CheckboxValidator:\t answer has less options selected than minimum specified`,
-        )
-    : right(response)
+  if (!validateByValue || !customMin) return right(response)
+
+  return answerArray.length >= customMin
+    ? right(response)
+    : left(
+        `CheckboxValidator:\t answer has less options selected than minimum specified`,
+      )
 }
 
 /**
@@ -52,13 +52,13 @@ const maxOptionsValidator: CheckboxValidatorConstructor = (checkboxField) => (
   const { customMax } = checkboxField.ValidationOptions
   const { answerArray } = response
 
-  return validateByValue && customMax
-    ? answerArray.length <= customMax
-      ? right(response)
-      : left(
-          `CheckboxValidator:\t answer has more options selected than maximum specified`,
-        )
-    : right(response)
+  if (!validateByValue || !customMax) return right(response)
+
+  return answerArray.length <= customMax
+    ? right(response)
+    : left(
+        `CheckboxValidator:\t answer has more options selected than maximum specified`,
+      )
 }
 
 /**
