@@ -1,51 +1,23 @@
+import { ObjectId } from 'mongodb'
+
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { ProcessedCheckboxResponse } from 'src/app/modules/submission/submission.types'
 import { validateField } from 'src/app/utils/field-validation'
-import {
-  BasicField,
-  CheckboxValidationOptions,
-  ICheckboxFieldSchema,
-} from 'src/types'
+import { BasicField } from 'src/types'
 
 import {
   generateDefaultField,
   generateNewCheckboxResponse,
 } from '../../helpers/generate-form-data'
 
-type MakeCheckboxFieldOptions = {
-  required?: boolean
-  othersRadioButton?: boolean
-  validateByValue?: boolean
-  ValidationOptions?: CheckboxValidationOptions
-}
 describe('Checkbox validation', () => {
-  const makeCheckboxField = (
-    fieldId: string,
-    fieldOptions: string[],
-    options?: MakeCheckboxFieldOptions,
-  ) => {
-    return {
-      ...generateDefaultField(BasicField.Checkbox, options),
-      _id: fieldId,
-      fieldOptions,
-    } as ICheckboxFieldSchema
-  }
-
-  const makeCheckboxResponse = (fieldId: string, answerArray: string[]) => {
-    return {
-      ...generateNewCheckboxResponse(),
-      _id: fieldId,
-      answerArray,
-    } as ProcessedCheckboxResponse
-  }
-
-  const formId = '5dd3b0bd3fbe670012fdf23f'
-  const fieldId = '5ad072e3d9a3d4000f2c77c8'
+  const formId = new ObjectId().toHexString()
   describe('Required or optional', () => {
     it('should disallow empty submission if checkbox is required', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions)
-      const response = makeCheckboxResponse(fieldId, [])
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = generateNewCheckboxResponse({ answerArray: [] })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -55,10 +27,11 @@ describe('Checkbox validation', () => {
 
     it('should allow empty submission if checkbox is optional', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         required: false,
       })
-      const response = makeCheckboxResponse(fieldId, [])
+      const response = generateNewCheckboxResponse({ answerArray: [] })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -68,8 +41,10 @@ describe('Checkbox validation', () => {
   describe('Validation of field options', () => {
     it('should allow a valid option to be selected', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions)
-      const response = makeCheckboxResponse(fieldId, ['a'])
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = generateNewCheckboxResponse({ answerArray: ['a'] })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -77,8 +52,10 @@ describe('Checkbox validation', () => {
 
     it('should allow multiple valid options to be selected', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions)
-      const response = makeCheckboxResponse(fieldId, ['a', 'b'])
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = generateNewCheckboxResponse({ answerArray: ['a', 'b'] })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -86,8 +63,12 @@ describe('Checkbox validation', () => {
 
     it('should disallow answers not in fieldOptions', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions)
-      const response = makeCheckboxResponse(fieldId, ['a', 'notinoption'])
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a', 'notinoption'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -97,8 +78,12 @@ describe('Checkbox validation', () => {
 
     it('should disallow duplicate answers', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions)
-      const response = makeCheckboxResponse(fieldId, ['a', 'b', 'a'])
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a', 'b', 'a'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -109,10 +94,12 @@ describe('Checkbox validation', () => {
     it('should allow self-configured others options in field options', () => {
       // This occurs when admins create their own checkboxes with options like ["Others: <please specify>"]
       const fieldOptions = ['a', 'b', 'c', 'Others: <please specify>']
-      const formField = makeCheckboxField(fieldId, fieldOptions)
-      const response = makeCheckboxResponse(fieldId, [
-        'Others: <please specify>',
-      ])
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = generateNewCheckboxResponse({
+        answerArray: ['Others: <please specify>'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -120,10 +107,13 @@ describe('Checkbox validation', () => {
 
     it('should allow Others option to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         othersRadioButton: true,
       })
-      const response = makeCheckboxResponse(fieldId, ['a', 'Others: xyz'])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a', 'Others: xyz'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -131,10 +121,13 @@ describe('Checkbox validation', () => {
 
     it('should disallow Others option to be submitted if field is not configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         othersRadioButton: false,
       })
-      const response = makeCheckboxResponse(fieldId, ['a', 'Others: xyz'])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a', 'Others: xyz'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -144,14 +137,13 @@ describe('Checkbox validation', () => {
 
     it('should disallow multiple Others option to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         othersRadioButton: true,
       })
-      const response = makeCheckboxResponse(fieldId, [
-        'a',
-        'Others: xyz',
-        'Others: abc',
-      ])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a', 'Others: xyz', 'Others: abc'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -161,10 +153,13 @@ describe('Checkbox validation', () => {
 
     it('should disallow Others option to be submitted with blank answer if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         othersRadioButton: true,
       })
-      const response = makeCheckboxResponse(fieldId, ['a', 'Others: '])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a', 'Others: '],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -174,10 +169,13 @@ describe('Checkbox validation', () => {
 
     it('should allow submission without Others option even if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         othersRadioButton: true,
       })
-      const response = makeCheckboxResponse(fieldId, ['a'])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -187,11 +185,14 @@ describe('Checkbox validation', () => {
   describe('Selection limits', () => {
     it('should disallow more answers than customMax if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         validateByValue: true,
         ValidationOptions: { customMax: 2, customMin: null },
       })
-      const response = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['c', 'd', 'e'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -201,11 +202,14 @@ describe('Checkbox validation', () => {
 
     it('should disallow fewer answers than customMin if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         validateByValue: true,
         ValidationOptions: { customMax: null, customMin: 2 },
       })
-      const response = makeCheckboxResponse(fieldId, ['c'])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['c'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -215,11 +219,14 @@ describe('Checkbox validation', () => {
 
     it('should allow more answers than customMax if selection limits are not configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         validateByValue: false,
         ValidationOptions: { customMax: 2, customMin: null },
       })
-      const response = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['c', 'd', 'e'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -227,11 +234,14 @@ describe('Checkbox validation', () => {
 
     it('should allow fewer answers than customMin if selection limits are not configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         validateByValue: false,
         ValidationOptions: { customMax: null, customMin: 2 },
       })
-      const response = makeCheckboxResponse(fieldId, ['c'])
+      const response = generateNewCheckboxResponse({
+        answerArray: ['c'],
+      })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
@@ -239,24 +249,21 @@ describe('Checkbox validation', () => {
 
     it('should disallow more answers than customMax, and fewer answers than customMin, if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = makeCheckboxField(fieldId, fieldOptions, {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
         validateByValue: true,
         ValidationOptions: { customMax: 4, customMin: 2 },
       })
-
-      const validResponse = makeCheckboxResponse(fieldId, ['c', 'd', 'e'])
+      const validResponse = generateNewCheckboxResponse({
+        answerArray: ['c', 'd', 'e'],
+      })
       const validateResult = validateField(formId, formField, validResponse)
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
 
-      const moreAnswers = makeCheckboxResponse(fieldId, [
-        'c',
-        'd',
-        'e',
-        'a',
-        'b',
-      ])
-
+      const moreAnswers = generateNewCheckboxResponse({
+        answerArray: ['c', 'd', 'e', 'a', 'b'],
+      })
       const validateMoreAnswersResult = validateField(
         formId,
         formField,
@@ -267,7 +274,9 @@ describe('Checkbox validation', () => {
         new ValidateFieldError('Invalid answer submitted'),
       )
 
-      const fewerAnswers = makeCheckboxResponse(fieldId, ['c'])
+      const fewerAnswers = generateNewCheckboxResponse({
+        answerArray: ['c'],
+      })
 
       const validateFewerAnswersResult = validateField(
         formId,
@@ -282,8 +291,12 @@ describe('Checkbox validation', () => {
 
     it('should disallow responses submitted for hidden fields', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = makeCheckboxField(fieldId, fieldOptions)
-      const response = makeCheckboxResponse(fieldId, ['a'])
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = generateNewCheckboxResponse({
+        answerArray: ['a'],
+      })
       response.isVisible = false
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)

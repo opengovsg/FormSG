@@ -13,6 +13,7 @@ import {
   IAttachmentField,
   IAttachmentFieldSchema,
   IAttachmentResponse,
+  ICheckboxField,
   ICheckboxFieldSchema,
   ICheckboxResponse,
   IDecimalFieldSchema,
@@ -27,7 +28,7 @@ import {
 
 export const generateDefaultField = (
   fieldType: BasicField,
-  customParams?: Partial<IField | IAttachmentField>,
+  customParams?: Partial<IField | IAttachmentField | ICheckboxField>,
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
@@ -125,9 +126,9 @@ export const generateProcessedSingleAnswerResponse = (
       field.fieldType,
     )
   ) {
-    return (new Error(
+    throw new Error(
       'Call the custom response generator functions for attachment, table and checkbox.',
-    ) as unknown) as ProcessedSingleAnswerResponse
+    )
   }
   return {
     _id: field._id,
@@ -150,9 +151,9 @@ export const generateSingleAnswerResponse = (
       field.fieldType,
     )
   ) {
-    return (new Error(
+    throw new Error(
       'Call the custom response generator functions for attachment, table and checkbox.',
-    ) as unknown) as ProcessedSingleAnswerResponse
+    )
   }
   return {
     _id: field._id,
@@ -173,9 +174,9 @@ export const generateNewSingleAnswerResponse = (
       fieldType,
     )
   ) {
-    return (new Error(
+    throw new Error(
       'Call the custom response generator functions for attachment, table and checkbox.',
-    ) as unknown) as ProcessedSingleAnswerResponse
+    )
   }
   return {
     _id: new ObjectId().toHexString(),
