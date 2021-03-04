@@ -3,7 +3,6 @@ const {
   TableValidator,
   YesNoValidator,
   BaseFieldValidator,
-  AttachmentValidator,
 } = require('./validators')
 
 const myInfoTypes = require('../../../shared/resources/myinfo').types
@@ -39,6 +38,7 @@ class FieldValidatorFactory {
       case 'date':
       case 'decimal':
       case 'radiobutton':
+      case 'attachment':
       case 'email':
       case 'number':
       case 'dropdown':
@@ -49,8 +49,6 @@ class FieldValidatorFactory {
         return new TableValidator(...arguments)
       case 'yes_no':
         return new YesNoValidator(...arguments)
-      case 'attachment':
-        return new AttachmentValidator(...arguments)
       default:
         // Checks if answer is optional or required, but will throw an error when there is an answer
         // since _isFilledAnswerValid is not implemented

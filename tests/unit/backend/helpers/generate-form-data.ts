@@ -1,3 +1,4 @@
+/* eslint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
 
 import {
@@ -9,6 +10,7 @@ import {
 import {
   AttachmentSize,
   BasicField,
+  IAttachmentField,
   IAttachmentFieldSchema,
   IAttachmentResponse,
   ICheckboxFieldSchema,
@@ -25,7 +27,7 @@ import {
 
 export const generateDefaultField = (
   fieldType: BasicField,
-  customParams?: Partial<IField>,
+  customParams?: Partial<IField | IAttachmentField>,
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
