@@ -24,11 +24,6 @@ import {
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
 import {
-  MyInfoHashDidNotMatchError,
-  MyInfoHashingError,
-  MyInfoMissingHashError,
-} from '../../../services/myinfo/myinfo.errors'
-import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
