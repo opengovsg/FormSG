@@ -61,9 +61,7 @@ export const isProcessedAttachmentResponse = (
 ): response is ProcessedAttachmentResponse => {
   return (
     response.fieldType === BasicField.Attachment &&
-    'filename' in response &&
-    typeof response.filename === 'string' &&
     'answer' in response &&
-    typeof response.answer === 'string'
+    typeof response.answer === 'string' // No check for response.filename as response.filename is generated only when actual file is uploaded
   )
 }
