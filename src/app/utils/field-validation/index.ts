@@ -74,7 +74,13 @@ const isResponsePresentOnHiddenField = (
       return true
     }
   } else if (isProcessedAttachmentResponse(response)) {
-    if (response.filename.trim() !== '') {
+    if (
+      (response.filename &&
+        typeof response.filename === 'string' &&
+        response.filename.trim() !== '') ||
+      response.answer.trim() !== '' ||
+      response.content
+    ) {
       return true
     }
   }
