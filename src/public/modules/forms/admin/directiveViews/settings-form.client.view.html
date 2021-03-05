@@ -73,6 +73,73 @@
       </div>
 
       <div class="settings-input">
+        <div class="row">
+          <div class="col-xs-9 label-custom label-large label-bottom">
+            Limit number of responses
+            <i
+              class="glyphicon glyphicon-question-sign"
+              uib-tooltip="Form will automatically deactivate when the set response limit is reached. Enable reCaptcha to prevent spam submissions from triggering this limit."
+              tooltip-trigger="'click mouseenter'"
+            ></i>
+          </div>
+          <div class="col-xs-3">
+            <label
+              class="toggle-selector pull-right"
+              ng-class="submissionLimitToggle ? 'toggle-selector-on' : ''"
+            >
+              <input
+                type="checkbox"
+                ng-model="submissionLimitToggle"
+                ng-change="toggleFormSubmissionLimit()"
+              />
+              <div class="toggle-selector-switch">
+                <i
+                  ng-class="submissionLimitToggle ? 'bx bx-check' : 'bx bx-x'"
+                ></i>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-input" ng-show="submissionLimitToggle">
+        <label for="settings-submissionLimit">
+          <div class="label-custom label-large label-bottom">
+            Maximum number of responses allowed
+          </div>
+        </label>
+        <div class="settings-save">
+          <input
+            class="input-custom input-medium"
+            id="settings-submissionLimit"
+            name="submissionLimit"
+            type="number"
+            step="1"
+            ng-model="tempForm.submissionLimit"
+            autocomplete="off"
+            ng-required="submissionLimitToggle"
+            ng-keyup="$event.keyCode === 13 && saveForm()"
+            ng-blur="saveForm()"
+            min="{{ submissionLimitToggle ? currentResponsesCount + 1 : submissionLimitUnlimited }}"
+          />
+        </div>
+        <div
+          ng-if="settingsForm.submissionLimit.$invalid"
+          ng-messages="settingsForm.submissionLimit.$error"
+          class="alert-custom alert-error"
+        >
+          <i class="bx bx-exclamation bx-md icon-spacing"></i>
+          <span class="alert-msg" ng-message-default
+            >You must enter a valid number.</span
+          >
+          <span class="alert-msg" ng-message="min"
+            >Response limit must be higher than already received responses ({{
+            currentResponsesCount }}).</span
+          >
+        </div>
+      </div>
+
+      <div class="settings-input">
         <label for="settings-inactiveMessage">
           <div class="label-custom label-large label-bottom">
             Set message for inactive form
