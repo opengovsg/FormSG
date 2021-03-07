@@ -50,29 +50,6 @@ function makeModule(connection) {
       return next()
     },
     /**
-     * Submit feedback when previewing forms
-     * Preview feedback is not stored
-     * @param  {Object} req - Express request object
-     * @param  {Object} res - Express response object
-     */
-    passThroughFeedback: function (req, res) {
-      if (
-        !req.params ||
-        !('formId' in req.params) ||
-        !req.body ||
-        !('rating' in req.body) ||
-        !('comment' in req.body)
-      ) {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Form feedback data not passed in' })
-      } else {
-        return res
-          .status(StatusCodes.OK)
-          .json({ message: 'Successfully received feedback' })
-      }
-    },
-    /**
      * Pass through save new Submission object to db
      * Simply create and pass forward a submissions object w/o saving to db
      * @param {Object} req - Express request object

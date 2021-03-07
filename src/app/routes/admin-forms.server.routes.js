@@ -342,7 +342,6 @@ module.exports = function (app) {
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
     .get(withUserAuthentication, AdminFormController.handleGetFormFeedbacks)
-    .post(authActiveForm(PermissionLevel.Read), adminForms.passThroughFeedback)
 
   /**
    * Count the number of feedback for a form
