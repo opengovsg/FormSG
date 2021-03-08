@@ -67,7 +67,6 @@ import {
 } from './email-submission.constants'
 import {
   AttachmentTooLargeError,
-  ConcatSubmissionError,
   InitialiseMultipartReceiverError,
   InvalidFileExtensionError,
   MultipartError,
@@ -336,7 +335,6 @@ export const mapRouteError: MapRouteError = (error) => {
       }
     case ProcessingError:
     case ValidateFieldError:
-    case ConcatSubmissionError:
     case ResponseModeError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,

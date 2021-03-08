@@ -22,6 +22,7 @@ import * as EmailSubmissionService from './email-submission.service'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
+  SubmissionEmailObj,
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
@@ -185,7 +186,7 @@ export const handleEmailSubmission: RequestHandler<
   }
 
   // Create data for response email as well as email confirmation
-  const emailData = EmailSubmissionService.createEmailData(
+  const emailData = new SubmissionEmailObj(
     parsedResponses,
     hashedFields,
     authType,

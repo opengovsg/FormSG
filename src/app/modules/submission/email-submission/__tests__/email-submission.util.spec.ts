@@ -2,17 +2,36 @@ import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
+import { types as basicTypes } from 'src/shared/resources/basic'
 import {
   AuthType,
   BasicField,
   FieldResponse,
   IAttachmentResponse,
   ISingleAnswerResponse,
+  MyInfoAttribute,
   SPCPFieldTitle,
 } from 'src/types'
 
+import {
+  generateSingleAnswerAutoreply,
+  generateSingleAnswerFormData,
+  generateSingleAnswerJson,
+} from 'tests/unit/backend/helpers/generate-email-data'
+import {
+  generateNewAttachmentResponse,
+  generateNewCheckboxResponse,
+  generateNewSingleAnswerResponse,
+  generateNewTableResponse,
+} from 'tests/unit/backend/helpers/generate-form-data'
+
 import { ProcessedFieldResponse } from '../../submission.types'
-import { createEmailData } from '../email-submission.service'
+import {
+  ATTACHMENT_PREFIX,
+  MYINFO_PREFIX,
+  TABLE_PREFIX,
+  VERIFIED_PREFIX,
+} from '../email-submission.constants'
 import { ResponseFormattedForEmail } from '../email-submission.types'
 import {
   addAttachmentToResponses,
@@ -22,6 +41,7 @@ import {
   getJsonPrefixedQuestion,
   handleDuplicatesInAttachments,
   mapAttachmentsFromResponses,
+  SubmissionEmailObj,
 } from '../email-submission.util'
 
 const validSingleFile = {
@@ -82,6 +102,16 @@ const getResponse = (
     question: 'mockQuestion',
     answer,
   } as unknown) as WithQuestion<ISingleAnswerResponse>)
+
+const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
+  // Attachments are special cases, requiring filename and content
+  // Section fields are not submitted
+  .filter(
+    (t) =>
+      !t.answerArray &&
+      ![BasicField.Attachment, BasicField.Section].includes(t.name),
+  )
+  .map((t) => generateNewSingleAnswerResponse(t.name))
 
 describe('email-submission.util', () => {
   describe('getInvalidFileExtensions', () => {
@@ -330,11 +360,359 @@ describe('email-submission.util', () => {
       new ObjectId().toHexString(),
     ])
     const authType = AuthType.NIL
-    const submissionEmailObj = createEmailData(
+    const submissionEmailObj = new SubmissionEmailObj(
       [response1, response2],
       hashedFields,
       authType,
     )
+
+    it('should return email data correctly for all single answer field types', () => {
+      const emailData = new SubmissionEmailObj(
+        ALL_SINGLE_SUBMITTED_RESPONSES,
+        new Set(),
+        AuthType.NIL,
+      )
+      const expectedAutoReplyData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
+        generateSingleAnswerAutoreply,
+      )
+      const expectedDataCollationData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
+        generateSingleAnswerJson,
+      )
+      const expectedFormData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
+        generateSingleAnswerFormData,
+      )
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should exclude section fields from JSON data', () => {
+      const response = generateNewSingleAnswerResponse(BasicField.Section)
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+      expect(emailData.dataCollationData).toEqual([])
+      expect(emailData.autoReplyData).toEqual([
+        generateSingleAnswerAutoreply(response),
+      ])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
+    })
+
+    it('should exclude non-visible fields from autoreply data', () => {
+      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
+        isVisible: false,
+      })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      expect(emailData.dataCollationData).toEqual([
+        generateSingleAnswerJson(response),
+      ])
+      expect(emailData.autoReplyData).toEqual([])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
+    })
+
+    it('should generate table answers with [table] prefix in form and JSON data', () => {
+      const response = generateNewTableResponse()
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      const question = response.question
+      const firstRow = response.answerArray[0].join(',')
+      const secondRow = response.answerArray[1].join(',')
+
+      const expectedDataCollationData = [
+        { question: `${TABLE_PREFIX}${question}`, answer: firstRow },
+        { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
+      ]
+
+      const expectedAutoReplyData = [
+        { question, answerTemplate: [firstRow] },
+        { question, answerTemplate: [secondRow] },
+      ]
+
+      const expectedFormData = [
+        {
+          question: `${TABLE_PREFIX}${question}`,
+          answer: firstRow,
+          answerTemplate: [firstRow],
+          fieldType: BasicField.Table,
+        },
+        {
+          question: `${TABLE_PREFIX}${question}`,
+          answer: secondRow,
+          answerTemplate: [secondRow],
+          fieldType: BasicField.Table,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should generate checkbox answers correctly', () => {
+      const response = generateNewCheckboxResponse()
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      const question = response.question
+      const answer = response.answerArray.join(', ')
+
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedFormData = [
+        {
+          question,
+          answer,
+          answerTemplate: [answer],
+          fieldType: BasicField.Checkbox,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should generate attachment answers with [attachment] prefix in form and JSON data', () => {
+      const response = generateNewAttachmentResponse()
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      const question = response.question
+      const answer = response.answer
+
+      const expectedDataCollationData = [
+        { question: `${ATTACHMENT_PREFIX}${question}`, answer },
+      ]
+      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedFormData = [
+        {
+          question: `${ATTACHMENT_PREFIX}${question}`,
+          answer,
+          answerTemplate: [answer],
+          fieldType: BasicField.Attachment,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should split single answer fields by newline', () => {
+      const answer = 'first line\nsecond line'
+      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
+        answer,
+      })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      const question = response.question
+
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: answer.split('\n') },
+      ]
+      const expectedFormData = [
+        {
+          question,
+          answer,
+          answerTemplate: answer.split('\n'),
+          fieldType: BasicField.ShortText,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should split table answers by newline', () => {
+      const answerArray = [['firstLine\nsecondLine', 'thirdLine\nfourthLine']]
+      const response = generateNewTableResponse({ answerArray })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      const question = response.question
+      const answer = answerArray[0].join(',')
+
+      const expectedDataCollationData = [
+        { question: `${TABLE_PREFIX}${question}`, answer },
+      ]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: answer.split('\n') },
+      ]
+      const expectedFormData = [
+        {
+          question: `${TABLE_PREFIX}${question}`,
+          answer,
+          answerTemplate: answer.split('\n'),
+          fieldType: BasicField.Table,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should split checkbox answers by newline', () => {
+      const answerArray = ['firstLine\nsecondLine', 'thirdLine\nfourtLine']
+      const response = generateNewCheckboxResponse({ answerArray })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      const question = response.question
+      const answer = answerArray.join(', ')
+
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: answer.split('\n') },
+      ]
+      const expectedFormData = [
+        {
+          question,
+          answer,
+          answerTemplate: answer.split('\n'),
+          fieldType: BasicField.Checkbox,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should prefix verified fields with [verified] only in form data', () => {
+      const response = generateNewSingleAnswerResponse(BasicField.Email, {
+        isUserVerified: true,
+      })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        AuthType.NIL,
+      )
+
+      const question = response.question
+      const answer = response.answer
+
+      const expectedDataCollationData = [{ question, answer }]
+      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedFormData = [
+        {
+          question: `${VERIFIED_PREFIX}${question}`,
+          answer,
+          answerTemplate: [answer],
+          fieldType: BasicField.Email,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
+
+    it('should prefix MyInfo-verified fields with [MyInfo] only in form data', () => {
+      // MyInfo-verified
+      const nameResponse = generateNewSingleAnswerResponse(
+        BasicField.ShortText,
+        {
+          myInfo: { attr: MyInfoAttribute.Name },
+          answer: 'name',
+        },
+      )
+
+      // MyInfo field but not MyInfo-verified
+      const vehicleResponse = generateNewSingleAnswerResponse(
+        BasicField.ShortText,
+        {
+          myInfo: { attr: MyInfoAttribute.VehicleNo },
+          answer: 'vehiclenumber',
+        },
+      )
+
+      const emailData = new SubmissionEmailObj(
+        [nameResponse, vehicleResponse],
+        new Set([nameResponse._id]),
+        AuthType.MyInfo,
+      )
+
+      const expectedDataCollationData = [
+        { question: nameResponse.question, answer: nameResponse.answer },
+        {
+          question: vehicleResponse.question,
+          answer: vehicleResponse.answer,
+        },
+      ]
+      const expectedAutoReplyData = [
+        {
+          question: nameResponse.question,
+          answerTemplate: [nameResponse.answer],
+        },
+        {
+          question: vehicleResponse.question,
+          answerTemplate: [vehicleResponse.answer],
+        },
+      ]
+      const expectedFormData = [
+        {
+          // Prefixed because its ID was in the Set
+          question: `${MYINFO_PREFIX}${nameResponse.question}`,
+          answer: nameResponse.answer,
+          answerTemplate: [nameResponse.answer],
+          fieldType: BasicField.ShortText,
+        },
+        {
+          // Not prefixed because ID not in Set
+          question: vehicleResponse.question,
+          answer: vehicleResponse.answer,
+          answerTemplate: [vehicleResponse.answer],
+          fieldType: BasicField.ShortText,
+        },
+      ]
+
+      expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
+      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.formData).toEqual(expectedFormData)
+    })
 
     it('should return the response in correct json format when dataCollationData() method is called', () => {
       const correctJson = [
@@ -404,7 +782,7 @@ describe('email-submission.util', () => {
       responseCPUID.question = SPCPFieldTitle.CpUid
       responseCPUID.isVisible = true
 
-      const submissionEmailObjCP = createEmailData(
+      const submissionEmailObjCP = new SubmissionEmailObj(
         [response1, response2, responseCPUID],
         hashedFields,
         AuthType.CP,

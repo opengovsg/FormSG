@@ -4,10 +4,8 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
-  AuthType,
   BasicField,
   EmailAdminDataField,
-  EmailData,
   FieldResponse,
   IAttachmentInfo,
   IEmailSubmissionSchema,
@@ -32,7 +30,6 @@ import {
 } from './email-submission.constants'
 import {
   AttachmentTooLargeError,
-  ConcatSubmissionError,
   InvalidFileExtensionError,
   SubmissionHashError,
 } from './email-submission.errors'
@@ -42,25 +39,10 @@ import {
   concatAttachmentsAndResponses,
   getInvalidFileExtensions,
   mapAttachmentsFromResponses,
-  SubmissionEmailObj,
 } from './email-submission.util'
 
 const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
 const logger = createLoggerWithLabel(module)
-
-/**
- * Creates data to be included in the response and autoreply emails.
- * @param parsedResponses Processed and validated responses
- * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
- * @returns email data for admin response and email confirmations
- */
-export const createEmailData = (
-  parsedResponses: ProcessedFieldResponse[],
-  hashedFields: Set<string>,
-  authType: AuthType = AuthType.NIL,
-): EmailData => {
-  return new SubmissionEmailObj(parsedResponses, hashedFields, authType)
-}
 
 /**
  * Validates that the attachments in a submission do not violate form-level
@@ -113,27 +95,12 @@ export const validateAttachments = (
  * @param attachments Attachments in response
  * @returns okAsync(hash and salt) if hashing was successful
  * @returns errAsync(SubmissionHashError) if error occurred while hashing
- * @returns errAsync(ConcatSubmissionError) if error occurred while concatenating attachments
  */
 export const hashSubmission = (
   formData: EmailAdminDataField[],
   attachments: IAttachmentInfo[],
-): ResultAsync<SubmissionHash, SubmissionHashError | ConcatSubmissionError> => {
-  // TODO (#847): remove this try-catch when we are sure that the shape of formData is correct
-  let baseString: string
-  try {
-    baseString = concatAttachmentsAndResponses(formData, attachments)
-  } catch (error) {
-    logger.error({
-      message:
-        'Error while concatenating attachments and responses for hashing',
-      meta: {
-        action: 'hashSubmission',
-        questions: formData.map((field) => field.question),
-      },
-    })
-    return errAsync(new ConcatSubmissionError())
-  }
+): ResultAsync<SubmissionHash, SubmissionHashError> => {
+  const baseString = concatAttachmentsAndResponses(formData, attachments)
   const salt = crypto.randomBytes(SALT_LENGTH).toString('base64')
   const hashPromise = new Promise<SubmissionHash>((resolve, reject) => {
     crypto.pbkdf2(

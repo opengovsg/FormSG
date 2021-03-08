@@ -1,13 +1,11 @@
 import { celebrate, Joi } from 'celebrate'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   BasicField,
-  EmailData,
   FieldResponse,
   ResWithHashedFields,
   WithAttachments,
@@ -16,11 +14,7 @@ import {
 } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
-import {
-  ProcessedCheckboxResponse,
-  ProcessedFieldResponse,
-  ProcessedSingleAnswerResponse,
-} from '../submission.types'
+import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
@@ -28,6 +22,7 @@ import { WithAdminEmailData } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
+  SubmissionEmailObj,
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
@@ -46,43 +41,12 @@ export const prepareEmailSubmission: RequestHandler<
 > = (req, res, next) => {
   const hashedFields =
     (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
-  let emailData: EmailData
-  // TODO (#847): remove when we are sure of the shape of responses
   const { form } = req as WithForm<typeof req>
-  try {
-    emailData = EmailSubmissionService.createEmailData(
-      req.body.parsedResponses,
-      hashedFields,
-      form.authType,
-    )
-  } catch (error) {
-    logger.error({
-      message: 'Failed to create email data',
-      meta: {
-        action: 'prepareEmailSubmission',
-        ...createReqMeta(req),
-        responseMetaData: req.body.parsedResponses.map((response) => ({
-          question: response?.question,
-          // Cast just for logging purposes
-          answerType: typeof (response as ProcessedSingleAnswerResponse)
-            ?.answer,
-          isAnswerTruthy: !!(response as ProcessedSingleAnswerResponse)?.answer,
-          isAnswerArrayAnArray: Array.isArray(
-            (response as ProcessedCheckboxResponse)?.answerArray,
-          ),
-          isAnswerArrayTruthy: !!(response as ProcessedCheckboxResponse)
-            ?.answerArray,
-          _id: response?._id,
-          fieldType: response?.fieldType,
-        })),
-      },
-      error,
-    })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'There was something wrong with your submission. Please refresh and try again.',
-    })
-  }
+  const emailData = new SubmissionEmailObj(
+    req.body.parsedResponses,
+    hashedFields,
+    form.authType,
+  )
   // eslint-disable-next-line @typescript-eslint/no-extra-semi
   ;(req as WithEmailData<typeof req>).autoReplyData = emailData.autoReplyData
   ;(req as WithEmailData<typeof req>).dataCollationData =
