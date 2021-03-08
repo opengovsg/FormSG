@@ -6,17 +6,15 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
-import {
-  DatabaseError,
-  MalformedParametersError,
-} from 'src/app/modules/core/core.errors'
-
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isPhoneNumber } from '../../../shared/util/phone-num-validation'
-import { VfnErrors } from '../../../shared/util/verification'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import getFormModel from '../../models/form.server.model'
+import {
+  DatabaseError,
+  MalformedParametersError,
+} from '../../modules/core/core.errors'
 
 import { InvalidNumberError, SmsSendError } from './sms.errors'
 import {
@@ -335,7 +333,7 @@ export const sendAdminContactOtp = (
   otp: string,
   userId: string,
   defaultConfig: TwilioConfig,
-): ResultAsync<boolean, SmsSendError> => {
+): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   logger.info({
     message: `Sending admin contact verification OTP for ${userId}`,
     meta: {
@@ -350,31 +348,7 @@ export const sendAdminContactOtp = (
     admin: userId,
   }
 
-  return ResultAsync.fromPromise(
-    send(defaultConfig, otpData, recipient, message, SmsType.AdminContact),
-    (error) => {
-      logger.error({
-        message: 'Failed to send OTP for admin contact verification',
-        meta: {
-          action: 'sendAdminContactOtp',
-          recipient,
-        },
-        error,
-      })
-
-      let processedErrMsg = 'Failed to send emergency contact verification SMS'
-
-      // Return appropriate error message.
-      if (
-        error instanceof Error &&
-        error.message === VfnErrors.InvalidMobileNumber
-      ) {
-        processedErrMsg = 'Please enter a valid phone number'
-      }
-
-      return new SmsSendError(processedErrMsg)
-    },
-  )
+  return send(defaultConfig, otpData, recipient, message, SmsType.AdminContact)
 }
 
 /**
@@ -398,7 +372,7 @@ export const sendFormDeactivatedSms = (
     formTitle,
   }: BounceNotificationSmsParams,
   defaultConfig: TwilioConfig,
-): Promise<boolean> => {
+): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   logger.info({
     message: `Sending form deactivation notification for ${recipientEmail}`,
     meta: {
@@ -449,7 +423,7 @@ export const sendBouncedSubmissionSms = (
     formTitle,
   }: BounceNotificationSmsParams,
   defaultConfig: TwilioConfig,
-): Promise<boolean> => {
+): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   logger.info({
     message: `Sending bounced submission notification for ${recipientEmail}`,
     meta: {
