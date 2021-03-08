@@ -8,7 +8,7 @@ import { ObjectId } from 'bson'
 import { merge, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/config/feature-manager'
-import { Environment, MyInfoAttribute } from 'src/types'
+import { Environment, IFormSchema, MyInfoAttribute } from 'src/types'
 
 import { IMyInfoServiceConfig } from '../myinfo.types'
 
@@ -170,3 +170,10 @@ export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
     myInfoClientMode: MyInfoMode.Dev,
   } as ISpcpMyInfo,
 }
+
+export const MOCK_MYINFO_FORM = ({
+  _id: MOCK_FORM_ID,
+  esrvcId: MOCK_ESRVC_ID,
+  authType: 'MyInfo',
+  getUniqueMyInfoAttrs: () => MOCK_REQUESTED_ATTRS,
+} as unknown) as IFormSchema
