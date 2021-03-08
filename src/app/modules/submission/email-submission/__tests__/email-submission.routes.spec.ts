@@ -36,8 +36,6 @@ const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
-const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
-const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
@@ -49,7 +47,8 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
   MyInfoGovClient: jest.fn(),
   MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
   MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
-  AddressType: jest.requireActual('@opengovsg/myinfo-gov-client').AddressType,
+  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .MyInfoAddressType,
   MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
     .MyInfoAttribute,
 }))
@@ -75,6 +74,8 @@ const EmailSubmissionsApp = setupApp(
 
 describe('email-submission.routes', () => {
   let request: Session
+  const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
+  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
