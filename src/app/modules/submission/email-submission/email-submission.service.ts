@@ -30,7 +30,6 @@ import {
 } from './email-submission.constants'
 import {
   AttachmentTooLargeError,
-  ConcatSubmissionError,
   InvalidFileExtensionError,
   SubmissionHashError,
 } from './email-submission.errors'
@@ -96,27 +95,12 @@ export const validateAttachments = (
  * @param attachments Attachments in response
  * @returns okAsync(hash and salt) if hashing was successful
  * @returns errAsync(SubmissionHashError) if error occurred while hashing
- * @returns errAsync(ConcatSubmissionError) if error occurred while concatenating attachments
  */
 export const hashSubmission = (
   formData: EmailAdminDataField[],
   attachments: IAttachmentInfo[],
-): ResultAsync<SubmissionHash, SubmissionHashError | ConcatSubmissionError> => {
-  // TODO (#847): remove this try-catch when we are sure that the shape of formData is correct
-  let baseString: string
-  try {
-    baseString = concatAttachmentsAndResponses(formData, attachments)
-  } catch (error) {
-    logger.error({
-      message:
-        'Error while concatenating attachments and responses for hashing',
-      meta: {
-        action: 'hashSubmission',
-        questions: formData.map((field) => field.question),
-      },
-    })
-    return errAsync(new ConcatSubmissionError())
-  }
+): ResultAsync<SubmissionHash, SubmissionHashError> => {
+  const baseString = concatAttachmentsAndResponses(formData, attachments)
   const salt = crypto.randomBytes(SALT_LENGTH).toString('base64')
   const hashPromise = new Promise<SubmissionHash>((resolve, reject) => {
     crypto.pbkdf2(
