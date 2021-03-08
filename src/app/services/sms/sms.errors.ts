@@ -8,3 +8,9 @@ export class SmsSendError extends ApplicationError {
     super(message, meta)
   }
 }
+
+export class InvalidNumberError extends ApplicationError {
+  constructor(message = 'Please enter a valid phone number') {
+    super(message)
+  }
+}

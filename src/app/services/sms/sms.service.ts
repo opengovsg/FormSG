@@ -2,7 +2,7 @@ import { SecretsManager } from 'aws-sdk'
 import dedent from 'dedent-js'
 import { get } from 'lodash'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
@@ -13,7 +13,7 @@ import { VfnErrors } from '../../../shared/util/verification'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 
-import { SmsSendError } from './sms.errors'
+import { InvalidNumberError, SmsSendError } from './sms.errors'
 import {
   BouncedSubmissionSmsData,
   BounceNotificationSmsParams,
@@ -136,6 +136,19 @@ const getTwilio = async (
   return defaultConfig
 }
 
+const logSmsSend = (logParams: LogSmsParams) => {
+  return SmsCount.logSms(logParams).catch((error) => {
+    logger.error({
+      message: 'Error logging sms count to database',
+      meta: {
+        action: 'logSmsSend',
+        ...logParams,
+      },
+      error,
+    })
+  })
+}
+
 /**
  * Sends a message to a valid phone number
  * @param twilioConfig The configuration used to send OTPs with
@@ -145,100 +158,99 @@ const getTwilio = async (
  * @param recipient The mobile number of the recipient
  * @param message The message to send
  */
-const send = async (
+const send = (
   twilioConfig: TwilioConfig,
   smsData: FormOtpData | AdminContactOtpData,
   recipient: string,
   message: string,
   smsType: SmsType,
-) => {
+): ResultAsync<true, SmsSendError | InvalidNumberError> => {
   if (!isPhoneNumber(recipient)) {
-    throw new Error(`${recipient} is not a valid phone number`)
+    logger.warn({
+      message: `${recipient} is not a valid phone number`,
+      meta: {
+        action: 'send',
+      },
+    })
+    return errAsync(new InvalidNumberError())
   }
 
   const { client, msgSrvcSid } = twilioConfig
 
-  return client.messages
-    .create({
+  const logMeta = {
+    action: 'send',
+    smsData,
+    smsType,
+  }
+
+  return ResultAsync.fromPromise(
+    client.messages.create({
       to: recipient,
       body: message,
       from: msgSrvcSid,
       forceDelivery: true,
-    })
-    .then(({ status, sid, errorCode, errorMessage }) => {
-      // Sent but with error code.
-      // Throw error to be caught in catch block.
-      if (!sid || errorCode) {
-        throw new SmsSendError(errorMessage, { errorCode, status })
-      }
+    }),
+    (error) => {
+      logger.error({
+        message: 'SMS send error',
+        meta: logMeta,
+        error,
+      })
 
-      // Log success
-      const logParams: LogSmsParams = {
+      return new SmsSendError()
+    },
+  )
+    .andThen<true, SmsSendError | InvalidNumberError>(
+      ({ status, sid, errorCode, errorMessage }) => {
+        if (!sid || errorCode) {
+          logger.error({
+            message: 'Encountered error code or missing sid after sending SMS',
+            meta: {
+              ...logMeta,
+              status,
+              errorCode,
+              errorMessage,
+            },
+          })
+
+          // Invalid number error code, throw a more reasonable error for error
+          // handling.
+          // See https://www.twilio.com/docs/api/errors/21211
+          return errAsync(
+            errorCode === 21211 ? new InvalidNumberError() : new SmsSendError(),
+          )
+        }
+
+        // No errors.
+        logger.info({
+          message: 'Successfully sent sms',
+          meta: logMeta,
+        })
+
+        return okAsync(true)
+      },
+    )
+    .map((result) => {
+      // Fire log sms success promise without waiting.
+      void logSmsSend({
         smsData,
         smsType,
         msgSrvcSid,
         logType: LogType.success,
-      }
-
-      SmsCount.logSms(logParams).catch((err) => {
-        logger.error({
-          message: 'Error logging sms count to database',
-          meta: {
-            action: 'send',
-            ...logParams,
-          },
-          error: err,
-        })
       })
 
-      logger.info({
-        message: 'Successfully sent sms',
-        meta: {
-          action: 'send',
-          smsData,
-        },
-      })
-
-      return true
+      return result
     })
-    .catch((err) => {
-      logger.error({
-        message: 'SMS send error',
-        meta: {
-          action: 'send',
-        },
-        error: err,
-      })
-
-      // Log failure
-      const logParams: LogSmsParams = {
+    .mapErr((error) => {
+      // Fire log sms failure promise without waiting.
+      void logSmsSend({
         smsData,
         smsType,
         msgSrvcSid,
         logType: LogType.failure,
-      }
-      SmsCount.logSms(logParams).catch((err) => {
-        logger.error({
-          message: 'Error logging sms count to database',
-          meta: {
-            action: 'send',
-            ...logParams,
-          },
-          error: err,
-        })
       })
 
-      // Invalid number error code, throw a more reasonable error for error
-      // handling.
-      // See https://www.twilio.com/docs/api/errors/21211
-      // err.meta.errorCode may exist if SmsSendError is thrown inside the `then` block.
-      if (err?.code === 21211 || get(err, 'meta.errorCode') === 21211) {
-        const invalidOtpError = new Error(VfnErrors.InvalidMobileNumber)
-        invalidOtpError.name = VfnErrors.SendOtpFailed
-        throw invalidOtpError
-      } else {
-        throw err
-      }
+      return error
     })
 }
 
