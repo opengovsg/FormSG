@@ -1,10 +1,12 @@
 import {
-  AddressType,
-  BasicField as MyInfoBasicField,
-  FieldWithCodeAndDesc,
   MyInfoAddress,
+  MyInfoAddressType,
+  MyInfoCodeField,
+  MyInfoNotApplicable,
   MyInfoOccupation,
   MyInfoPhoneNumber,
+  MyInfoSource,
+  MyInfoValueField,
   MyInfoVehicle,
 } from '@opengovsg/myinfo-gov-client'
 
@@ -31,12 +33,12 @@ export const formatPhoneNumber = (
  * @returns Formatted address if minimally the `block`, `street`, `country`,and `postal` values are not empty in {@link addr}. Else return empty string.
  */
 export const formatAddress = (addr: MyInfoAddress | undefined): string => {
-  if (!addr || addr.unavailable) {
+  if (!addr || addr.source === MyInfoSource.NotApplicable || addr.unavailable) {
     return ''
   }
 
-  if (addr.type !== AddressType.Singapore) {
-    //workaround - AddressType.Unformatted should be the string "UNFORMATTED" not "Unformatted"
+  if (addr.type !== MyInfoAddressType.Singapore) {
+    //workaround - MyInfoAddressType.Unformatted should be the string "UNFORMATTED" not "Unformatted"
     let result = ''
     if (addr.line1?.value) {
       result += addr.line1.value
@@ -91,9 +93,14 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
  * @param field Field to format
  */
 export const formatDescriptionField = (
-  field: FieldWithCodeAndDesc | undefined,
+  field: MyInfoCodeField | MyInfoNotApplicable | undefined,
 ): string => {
-  if (!field || field.unavailable) return ''
+  if (
+    !field ||
+    field.source === MyInfoSource.NotApplicable ||
+    field.unavailable
+  )
+    return ''
   return field.desc
 }
 
@@ -103,9 +110,14 @@ export const formatDescriptionField = (
  * @param field Field to format
  */
 export const formatBasicField = (
-  field: MyInfoBasicField | undefined,
+  field: MyInfoValueField | MyInfoNotApplicable | undefined,
 ): string => {
-  if (!field || field.unavailable) return ''
+  if (
+    !field ||
+    field.source === MyInfoSource.NotApplicable ||
+    field.unavailable
+  )
+    return ''
   return field.value
 }
 
@@ -148,11 +160,17 @@ export const formatOccupation = (
  * Possible values are 'Live', 'Approved'.
  */
 export const formatWorkpassStatus = (
-  field: MyInfoBasicField | undefined,
+  field: MyInfoValueField | MyInfoNotApplicable | undefined,
 ): string => {
   // Field value should always be a string, but check for type safety since
   // string methods need to be called
-  if (!field || field.unavailable || typeof field.value !== 'string') return ''
+  if (
+    !field ||
+    field.source === MyInfoSource.NotApplicable ||
+    field.unavailable ||
+    typeof field.value !== 'string'
+  )
+    return ''
   // Change to title case
   const originalValue = field.value
   return (

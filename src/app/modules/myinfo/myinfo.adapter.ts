@@ -269,6 +269,7 @@ export class MyInfoData {
         const data = this.#personData[attr]
         return (
           !!data &&
+          data.source !== MyInfoSource.NotApplicable &&
           !data.unavailable &&
           data.source === MyInfoSource.GovtVerified
         )
