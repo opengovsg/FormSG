@@ -1,4 +1,3 @@
-import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
 
 import { validateEmailDomains } from '../../../shared/util/email-domain-validation'
@@ -8,10 +7,12 @@ const validateAllowDomainsToBeSet = (
   emailDomains: string[],
   hasAllowedEmailDomains: boolean,
 ): boolean => {
+  const areDomainsEmpty = emailDomains.length === 0
+
   // Case 1: hasAllowedEmailDomains is false and emailDomains must be empty.
-  const case1 = !hasAllowedEmailDomains && isEmpty(emailDomains)
+  const case1 = !hasAllowedEmailDomains && areDomainsEmpty
   // Case 2: hasAllowedEmailDomains is true and email domains must not be empty.
-  const case2 = hasAllowedEmailDomains && !isEmpty(emailDomains)
+  const case2 = hasAllowedEmailDomains && !areDomainsEmpty
 
   return case1 || case2
 }
@@ -100,15 +101,6 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
           Error('Autoreply PDF is not allowed for storage mode forms'),
         )
       }
-    }
-
-    return next()
-  })
-
-  // If hasAllowedEmailDomains is false, then clear allowedEmailDomains
-  EmailFieldSchema.pre<IEmailFieldSchema>('validate', function (next) {
-    if (!this.hasAllowedEmailDomains) {
-      this.allowedEmailDomains = []
     }
 
     return next()
