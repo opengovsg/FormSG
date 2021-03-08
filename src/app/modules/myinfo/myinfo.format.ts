@@ -10,6 +10,10 @@ import {
   MyInfoVehicle,
 } from '@opengovsg/myinfo-gov-client'
 
+import { createLoggerWithLabel } from '../../../config/logger'
+
+const logger = createLoggerWithLabel(module)
+
 /**
  * Formats MyInfo attribute as phone number
  * @param phone
@@ -38,18 +42,56 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   }
 
   if (addr.type !== MyInfoAddressType.Singapore) {
-    let result = ''
-    if (addr.line1?.value) {
-      result += addr.line1.value
+    const { line1, line2 } = addr
+    if (!line1 || !line2) {
+      logger.warn({
+        message: 'Missing keys from MyInfo address',
+        meta: {
+          action: 'formatAddress',
+          isAddrTypeDefined: !!addr.type,
+          isLine1Defined: !!line1,
+          isLine2Defined: !!line2,
+        },
+      })
+      return ''
     }
-    if (addr.line2?.value) {
-      result += ', ' + addr.line2.value
+    let result = ''
+    if (line1.value) {
+      result += line1.value
+    }
+    if (line2.value) {
+      result += ', ' + line2.value
     }
     return result
   }
 
   // Structured Singapore address
   const { building, block, street, floor, unit, country, postal } = addr
+
+  if (
+    !building ||
+    !block ||
+    !street ||
+    !floor ||
+    !unit ||
+    !country ||
+    !postal
+  ) {
+    logger.warn({
+      message: 'Missing keys from MyInfo address',
+      meta: {
+        action: 'formatAddress',
+        isBuildingDefined: !!building,
+        isBlockDefined: !!block,
+        isStreetDefined: !!street,
+        isFloorDefined: !!floor,
+        isUnitDefined: !!unit,
+        isCountryDefined: !!country,
+        isPostalDefined: !!postal,
+      },
+    })
+    return ''
+  }
 
   // Create an array of data in the order:
   // 1. building (if available),
@@ -60,25 +102,25 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   // 6. postal
   const buildingBlocks: string[] = []
 
-  if (building?.value) {
+  if (building.value) {
     buildingBlocks.push(`${building.value},`)
   }
-  if (block?.value) {
+  if (block.value) {
     buildingBlocks.push(block.value)
   }
-  if (street?.value) {
+  if (street.value) {
     buildingBlocks.push(`${street.value},`)
   }
 
-  if (floor?.value && unit?.value) {
+  if (floor.value && unit.value) {
     buildingBlocks.push(`#${floor.value}-${unit.value},`)
   }
 
-  if (country?.desc) {
+  if (country.desc) {
     buildingBlocks.push(country.desc)
   }
 
-  if (postal?.value) {
+  if (postal.value) {
     buildingBlocks.push(postal.value)
   }
 
