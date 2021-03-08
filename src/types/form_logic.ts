@@ -53,40 +53,39 @@ export interface IPreventSubmitLogicSchema
   extends IPreventSubmitLogic,
     Document {}
 
+type LogicValidCondition<
+  F extends BasicField,
+  S extends LogicConditionState
+> = {
+  fieldType: F
+  states: Array<S>
+}
+
 export type LogicValidConditions =
-  | {
-      fieldType: BasicField.Dropdown
-      states: Array<LogicConditionState.Equal | LogicConditionState.Either>
-    }
-  | {
-      fieldType: BasicField.Number
-      states: Array<
-        | LogicConditionState.Equal
-        | LogicConditionState.Lte
-        | LogicConditionState.Gte
-      >
-    }
-  | {
-      fieldType: BasicField.Decimal
-      states: Array<
-        | LogicConditionState.Equal
-        | LogicConditionState.Lte
-        | LogicConditionState.Gte
-      >
-    }
-  | {
-      fieldType: BasicField.Rating
-      states: Array<
-        | LogicConditionState.Equal
-        | LogicConditionState.Lte
-        | LogicConditionState.Gte
-      >
-    }
-  | {
-      fieldType: BasicField.YesNo
-      states: Array<LogicConditionState.Equal>
-    }
-  | {
-      fieldType: BasicField.Radio
-      states: Array<LogicConditionState.Equal | LogicConditionState.Either>
-    }
+  | LogicValidCondition<
+      BasicField.Dropdown,
+      LogicConditionState.Equal | LogicConditionState.Either
+    >
+  | LogicValidCondition<BasicField.YesNo, LogicConditionState.Equal>
+  | LogicValidCondition<
+      BasicField.Radio,
+      LogicConditionState.Equal | LogicConditionState.Either
+    >
+  | LogicValidCondition<
+      BasicField.Number,
+      | LogicConditionState.Equal
+      | LogicConditionState.Lte
+      | LogicConditionState.Gte
+    >
+  | LogicValidCondition<
+      BasicField.Decimal,
+      | LogicConditionState.Equal
+      | LogicConditionState.Lte
+      | LogicConditionState.Gte
+    >
+  | LogicValidCondition<
+      BasicField.Rating,
+      | LogicConditionState.Equal
+      | LogicConditionState.Lte
+      | LogicConditionState.Gte
+    >
