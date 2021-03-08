@@ -10,6 +10,7 @@ import {
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IFieldSchema } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
+import { ResponseValidator } from '../../../types/field/utils/validation'
 import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
@@ -135,6 +136,24 @@ const logInvalidAnswer = (
 }
 
 /**
+ * Helper function that applies validator to response,
+ * logs if answer is invalid, and returns the result
+ */
+const validateResponseWithValidator = <T extends ProcessedFieldResponse>(
+  validator: ResponseValidator<T>,
+  formId: string,
+  formField: IFieldSchema,
+  response: T,
+): Result<true, ValidateFieldError> => {
+  const validEither = validator(response)
+  if (isLeft(validEither)) {
+    logInvalidAnswer(formId, formField, validEither.left)
+    return err(new ValidateFieldError('Invalid answer submitted'))
+  }
+  return ok(true)
+}
+
+/**
  * Single exported function that abstracts away the complexities
  * of field validation.
  * @param formId id of form, for logging
@@ -183,12 +202,12 @@ export const validateField = (
         case BasicField.Number:
         case BasicField.Mobile: {
           const validator = constructSingleAnswerValidator(formField)
-          const validEither = validator(response)
-          if (isLeft(validEither)) {
-            logInvalidAnswer(formId, formField, validEither.left)
-            return err(new ValidateFieldError('Invalid answer submitted'))
-          }
-          return ok(true)
+          return validateResponseWithValidator(
+            validator,
+            formId,
+            formField,
+            response,
+          )
         }
         // Fallback for un-migrated single answer validators
         default: {
@@ -199,22 +218,22 @@ export const validateField = (
   } else if (isProcessedAttachmentResponse(response)) {
     if (attachmentRequiresValidation(formField, response)) {
       const validator = constructAttachmentFieldValidator(formField)
-      const validEither = validator(response)
-      if (isLeft(validEither)) {
-        logInvalidAnswer(formId, formField, validEither.left)
-        return err(new ValidateFieldError('Invalid answer submitted'))
-      }
-      return ok(true)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
     }
   } else if (isProcessedCheckboxResponse(response)) {
     if (checkboxRequiresValidation(formField, response)) {
       const validator = constructCheckboxFieldValidator(formField)
-      const validEither = validator(response)
-      if (isLeft(validEither)) {
-        logInvalidAnswer(formId, formField, validEither.left)
-        return err(new ValidateFieldError('Invalid answer submitted'))
-      }
-      return ok(true)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
     }
   } else if (isProcessedTableResponse(response)) {
     // fallback for processed table responses
