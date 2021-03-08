@@ -1,6 +1,6 @@
 import {
-  AddressType,
   IPerson,
+  MyInfoAddressType,
   MyInfoMode,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
@@ -28,7 +28,7 @@ export const MOCK_MYINFO_DATA = {
     nbr: { value: '97324992' },
   },
   regadd: {
-    type: AddressType.Singapore,
+    type: MyInfoAddressType.Singapore,
     country: { code: 'SG', desc: 'SINGAPORE' },
     unit: { value: '128' },
     street: { value: 'BEDOK NORTH AVENUE 1' },
@@ -58,7 +58,7 @@ export const MOCK_MYINFO_FORMAT_DATA = {
     nbr: { value: '97324992' },
   },
   regadd: {
-    type: AddressType.Singapore,
+    type: MyInfoAddressType.Singapore,
     country: { code: 'SG', desc: 'SINGAPORE' },
     unit: { value: '128' },
     street: { value: 'BEDOK NORTH AVENUE 1' },
