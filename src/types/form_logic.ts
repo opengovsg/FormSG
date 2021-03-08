@@ -53,8 +53,18 @@ export interface IPreventSubmitLogicSchema
   extends IPreventSubmitLogic,
     Document {}
 
+type LogicField = Extract<
+  BasicField,
+  | BasicField.Dropdown
+  | BasicField.Radio
+  | BasicField.YesNo
+  | BasicField.Number
+  | BasicField.Decimal
+  | BasicField.Rating
+>
+
 type LogicValidCondition<
-  F extends BasicField,
+  F extends LogicField,
   S extends LogicConditionState
 > = {
   fieldType: F
