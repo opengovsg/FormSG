@@ -48,36 +48,6 @@ export const MOCK_MYINFO_DATA = {
   },
 } as IPerson
 
-export const MOCK_MYINFO_FORMAT_DATA = {
-  mobileno: {
-    areacode: { value: '65' },
-    prefix: { value: '+' },
-    lastupdated: '2017-12-13',
-    source: MyInfoSource.GovtVerified,
-    classification: 'C',
-    nbr: { value: '97324992' },
-  },
-  regadd: {
-    type: MyInfoAddressType.Singapore,
-    country: { code: 'SG', desc: 'SINGAPORE' },
-    unit: { value: '128' },
-    street: { value: 'BEDOK NORTH AVENUE 1' },
-    lastupdated: '2016-03-11',
-    block: { value: '548' },
-    source: MyInfoSource.GovtVerified,
-    postal: { value: '460548' },
-    classification: 'C',
-    floor: { value: '09' },
-    building: { value: '' },
-  },
-  passexpirydate: {
-    lastupdated: '2018-03-02',
-    source: MyInfoSource.GovtVerified,
-    classification: 'C',
-    value: '2018-12-31',
-  },
-}
-
 export const MOCK_FORM_FIELDS = [
   // Some MyInfo fields
   {
@@ -147,7 +117,7 @@ export const MOCK_KEY_PATH =
 export const MOCK_CERT_PATH =
   './node_modules/@opengovsg/mockpass/static/certs/server.crt'
 export const MOCK_ESRVC_ID = 'mockEsrvcId'
-export const MOCK_UINFIN = 'mockUinFin'
+export const MOCK_UINFIN = 'S1234567A'
 export const MOCK_REQUESTED_ATTRS = [MyInfoAttribute.Name]
 export const MOCK_FORM_ID = new ObjectId().toHexString()
 export const MOCK_NODE_ENV = Environment.Test
