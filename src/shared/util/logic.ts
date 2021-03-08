@@ -15,7 +15,6 @@ type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
 type LogicField = IClientFieldSchema | FieldResponse
-type LogicFieldArray = LogicField[]
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
@@ -125,7 +124,7 @@ const getPreventSubmitConditions = (
  * @returns a condition if submission is to prevented, otherwise `undefined`
  */
 export const getLogicUnitPreventingSubmit = (
-  submission: LogicFieldArray,
+  submission: LogicField[],
   form: IFormDocument,
   visibleFieldIds?: FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
@@ -164,7 +163,7 @@ const allConditionsExist = (
  * @returns a set of IDs of visible fields in the submission
  */
 export const getVisibleFieldIds = (
-  submission: LogicFieldArray,
+  submission: LogicField[],
   form: IFormDocument,
 ): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
@@ -206,7 +205,7 @@ export const getVisibleFieldIds = (
  * @returns true if all the conditions are satisfied, false otherwise
  */
 const isLogicUnitSatisfied = (
-  submission: LogicFieldArray,
+  submission: LogicField[],
   logicUnit: IConditionSchema[],
   visibleFieldIds: FieldIdSet,
 ): boolean => {
@@ -307,7 +306,7 @@ const isConditionFulfilled = (
  * @returns the condition field if it exists, `undefined` otherwise
  */
 const findConditionField = (
-  submission: LogicFieldArray,
+  submission: LogicField[],
   fieldId: IConditionSchema['field'],
 ): LogicField | undefined => {
   return submission.find(
