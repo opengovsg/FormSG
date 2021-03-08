@@ -146,9 +146,9 @@ function EditLogicModalController(
     }
     condition.fieldInfo = externalScope.getField(condition.field)
     if (condition.fieldInfo) {
-      condition.ifStates = FormLogic.conditions.find(function (c) {
-        return c.fieldType === condition.fieldInfo.fieldType
-      }).states
+      condition.ifStates = FormLogic.getApplicableIfStates(
+        condition.fieldInfo.fieldType,
+      )
     }
   }
 

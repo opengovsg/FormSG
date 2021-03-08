@@ -57,4 +57,18 @@ export const getApplicableIfFields = (formFields: IField[]): IField[] =>
     ),
   )
 
+/**
+ * Given a form field type, returns the applicable logic states for that field.
+ * @param formFields
+ * @returns
+ */
+export const getApplicableIfStates = (
+  fieldType: BasicField,
+): LogicConditionState[] => {
+  const condition = LOGIC_VALID_CONDITIONS.find(
+    (c) => c.fieldType === fieldType,
+  )
+  return condition ? condition.states : []
+}
+
 export const conditions = LOGIC_VALID_CONDITIONS
