@@ -1,74 +1,57 @@
 import {
   BasicField,
   IField,
+  LogicConditions,
   LogicConditionState,
-  LogicValidConditions,
 } from '../../../../types'
 
-const LOGIC_VALID_CONDITIONS: LogicValidConditions[] = [
-  {
-    fieldType: BasicField.Dropdown,
-    states: [LogicConditionState.Equal, LogicConditionState.Either],
-  },
-  {
-    fieldType: BasicField.Number,
-    states: [
+const LOGIC_VALID_CONDITIONS: LogicConditions[] = [
+  [
+    BasicField.Dropdown,
+    [LogicConditionState.Equal, LogicConditionState.Either],
+  ],
+  [
+    BasicField.Number,
+    [
       LogicConditionState.Equal,
       LogicConditionState.Lte,
       LogicConditionState.Gte,
     ],
-  },
-  {
-    fieldType: BasicField.Decimal,
-    states: [
+  ],
+  [
+    BasicField.Decimal,
+    [
       LogicConditionState.Equal,
       LogicConditionState.Lte,
       LogicConditionState.Gte,
     ],
-  },
-  {
-    fieldType: BasicField.Rating,
-    states: [
+  ],
+  [
+    BasicField.Rating,
+    [
       LogicConditionState.Equal,
       LogicConditionState.Lte,
       LogicConditionState.Gte,
     ],
-  },
-  {
-    fieldType: BasicField.YesNo,
-    states: [LogicConditionState.Equal],
-  },
-  {
-    fieldType: BasicField.Radio,
-    states: [LogicConditionState.Equal, LogicConditionState.Either],
-  },
+  ],
+  [BasicField.YesNo, [LogicConditionState.Equal]],
+  [BasicField.Radio, [LogicConditionState.Equal, LogicConditionState.Either]],
 ]
 
-/**
- * Given a list of form fields, returns only the elements that are
- * allowed to be present in the if-condition dropdown in the Logic tab.
- * @param formFields
- * @returns
- */
-export const getApplicableIfFields = (formFields: IField[]): IField[] =>
-  formFields.filter((field) =>
-    LOGIC_VALID_CONDITIONS.find(
-      (validCondition) => validCondition.fieldType === field.fieldType,
-    ),
-  )
+const LOGIC_MAP = new Map<BasicField, LogicConditionState[]>(
+  LOGIC_VALID_CONDITIONS,
+)
 
 /**
- * Given a form field type, returns the applicable logic states for that field.
- * @param formFields
- * @returns
+ * Given a list of form fields, returns only the fields that are
+ * allowed to be present in the if-condition dropdown in the Logic tab.
+ */
+export const getApplicableIfFields = (formFields: IField[]): IField[] =>
+  formFields.filter((field) => !!LOGIC_MAP.get(field.fieldType))
+
+/**
+ * Given a single form field type, returns the applicable logic states for that field type.
  */
 export const getApplicableIfStates = (
   fieldType: BasicField,
-): LogicConditionState[] => {
-  const condition = LOGIC_VALID_CONDITIONS.find(
-    (c) => c.fieldType === fieldType,
-  )
-  return condition ? condition.states : []
-}
-
-export const conditions = LOGIC_VALID_CONDITIONS
+): LogicConditionState[] => LOGIC_MAP.get(fieldType) || []

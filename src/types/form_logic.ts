@@ -63,10 +63,10 @@ type LogicField = Extract<
   | BasicField.Rating
 >
 
-type LogicCondition<F extends LogicField, S extends LogicConditionState> = {
-  fieldType: F
-  states: Array<S>
-}
+type LogicCondition<K extends LogicField, V extends LogicConditionState> = [
+  K,
+  Array<V>,
+]
 
 // Logic fields that are categorical
 type CategoricalLogicField = Extract<
@@ -100,7 +100,7 @@ type NumericalLogicCondition = LogicCondition<
   NumericalLogicStates
 >
 
-export type LogicValidConditions =
+export type LogicConditions =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
