@@ -42,7 +42,8 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
   })),
   MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
   MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
-  AddressType: jest.requireActual('@opengovsg/myinfo-gov-client').AddressType,
+  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .MyInfoAddressType,
   MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
     .MyInfoAttribute,
 }))
