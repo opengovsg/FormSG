@@ -6,6 +6,11 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
+import {
+  DatabaseError,
+  MalformedParametersError,
+} from 'src/app/modules/core/core.errors'
+
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isPhoneNumber } from '../../../shared/util/phone-num-validation'
@@ -253,7 +258,6 @@ const send = (
       return error
     })
 }
-
 /**
  * Gets the correct twilio client for the form and sends an otp to a valid phonenumber
  * @param recipient The phone number to send to
@@ -261,12 +265,15 @@ const send = (
  * @param formId Form id for retrieving otp data.
  *
  */
-export const sendVerificationOtp = async (
+export const sendVerificationOtp = (
   recipient: string,
   otp: string,
   formId: string,
   defaultConfig: TwilioConfig,
-): Promise<boolean> => {
+): ResultAsync<
+  true,
+  DatabaseError | MalformedParametersError | SmsSendError | InvalidNumberError
+> => {
   logger.info({
     message: `Sending verification OTP for ${formId}`,
     meta: {
@@ -274,28 +281,53 @@ export const sendVerificationOtp = async (
       formId,
     },
   })
-  const otpData = await Form.getOtpData(formId)
-
-  if (!otpData) {
-    const errMsg = `Unable to retrieve otpData from ${formId}`
+  return ResultAsync.fromPromise(Form.getOtpData(formId), (error) => {
     logger.error({
-      message: errMsg,
+      message: `Database error occurred whilst retrieving form otp data`,
       meta: {
         action: 'sendVerificationOtp',
         formId,
       },
+      error,
     })
-    throw new Error(errMsg)
-  }
-  const twilioData = await getTwilio(otpData.msgSrvcName, defaultConfig)
 
-  const message = dedent`Use the OTP ${otp} to complete your submission on ${
-    new URL(config.app.appUrl).host
-  }.
+    return new DatabaseError()
+  }).andThen((otpData) => {
+    if (!otpData) {
+      const errMsg = `Unable to retrieve otpData from ${formId}`
+      logger.error({
+        message: errMsg,
+        meta: {
+          action: 'sendVerificationOtp',
+          formId,
+        },
+      })
+
+      return errAsync(new MalformedParametersError(errMsg))
+    }
+
+    return ResultAsync.fromSafePromise<
+      TwilioConfig,
+      SmsSendError | InvalidNumberError
+    >(getTwilio(otpData.msgSrvcName, defaultConfig)).andThen<
+      true,
+      SmsSendError | InvalidNumberError
+    >((twilioConfig) => {
+      const message = dedent`Use the OTP ${otp} to complete your submission on ${
+        new URL(config.app.appUrl).host
+      }.
 
   If you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`
 
-  return send(twilioData, otpData, recipient, message, SmsType.Verification)
+      return send(
+        twilioConfig,
+        otpData,
+        recipient,
+        message,
+        SmsType.Verification,
+      )
+    })
+  })
 }
 
 export const sendAdminContactOtp = (
