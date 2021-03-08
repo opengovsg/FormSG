@@ -147,14 +147,14 @@ export const MOCK_KEY_PATH =
 export const MOCK_CERT_PATH =
   './node_modules/@opengovsg/mockpass/static/certs/server.crt'
 export const MOCK_ESRVC_ID = 'mockEsrvcId'
-export const MOCK_UINFIN = 'uinFin'
+export const MOCK_UINFIN = 'mockUinFin'
 export const MOCK_REQUESTED_ATTRS = [MyInfoAttribute.Name]
 export const MOCK_FORM_ID = new ObjectId().toHexString()
 export const MOCK_NODE_ENV = Environment.Test
-export const MOCK_APP_URL = 'appUrl'
-export const MOCK_ACCESS_TOKEN = 'accessToken'
+export const MOCK_APP_URL = 'mockAppUrl'
+export const MOCK_ACCESS_TOKEN = 'mockAccessToken'
 export const MOCK_REDIRECT_URL = 'mockRedirectURL'
-export const MOCK_AUTH_CODE = 'authCode'
+export const MOCK_AUTH_CODE = 'mockAuthCode'
 
 export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
   appUrl: 'http://localhost:5000',
