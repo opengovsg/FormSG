@@ -3,21 +3,25 @@ import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
 import {
+  AuthType,
   BasicField,
-  EmailAutoReplyField,
   FieldResponse,
   IAttachmentResponse,
   ISingleAnswerResponse,
   SPCPFieldTitle,
 } from 'src/types'
 
+import { ProcessedFieldResponse } from '../../submission.types'
+import { createEmailData } from '../email-submission.service'
+import { ResponseFormattedForEmail } from '../email-submission.types'
 import {
   addAttachmentToResponses,
   areAttachmentsMoreThan7MB,
+  getFormDataPrefixedQuestion,
   getInvalidFileExtensions,
+  getJsonPrefixedQuestion,
   handleDuplicatesInAttachments,
   mapAttachmentsFromResponses,
-  maskUidOnLastField,
 } from '../email-submission.util'
 
 const validSingleFile = {
@@ -305,30 +309,120 @@ describe('email-submission.util', () => {
     })
   })
 
-  describe('maskUidOnLastField', () => {
-    it('should mask UID on SPCPFieldTitle.CpUid if it is the last field of autoReplyData', () => {
-      const autoReplyData: EmailAutoReplyField[] = [
-        { question: 'question 1', answerTemplate: ['answer1'] },
-        { question: SPCPFieldTitle.CpUid, answerTemplate: ['S1234567A'] },
+  describe('Submission Email Object', () => {
+    const response1 = getResponse(
+      String(new ObjectId()),
+      MOCK_ANSWER,
+    ) as ProcessedFieldResponse
+
+    const response2 = getResponse(
+      String(new ObjectId()),
+      '',
+    ) as ProcessedFieldResponse
+
+    response1.fieldType = BasicField.YesNo
+    response2.fieldType = BasicField.YesNo
+    response1.isVisible = true
+    response2.isVisible = false
+
+    const hashedFields = new Set([
+      new ObjectId().toHexString(),
+      new ObjectId().toHexString(),
+    ])
+    const authType = AuthType.NIL
+    const submissionEmailObj = createEmailData(
+      [response1, response2],
+      hashedFields,
+      authType,
+    )
+
+    it('should return the response in correct json format when dataCollationData() method is called', () => {
+      const correctJson = [
+        {
+          question: getJsonPrefixedQuestion(
+            response1 as ResponseFormattedForEmail,
+          ),
+          answer: (response1 as ResponseFormattedForEmail).answer,
+        },
+        {
+          question: getJsonPrefixedQuestion(
+            response2 as ResponseFormattedForEmail,
+          ),
+          answer: (response2 as ResponseFormattedForEmail).answer,
+        },
       ]
-      const maskedAutoReplyData: EmailAutoReplyField[] = [
-        { question: 'question 1', answerTemplate: ['answer1'] },
-        { question: SPCPFieldTitle.CpUid, answerTemplate: ['*****567A'] },
-      ]
-      expect(maskUidOnLastField(autoReplyData)).toEqual(maskedAutoReplyData)
+      expect(submissionEmailObj.dataCollationData).toEqual(correctJson)
     })
-    it('should not mask UID on form field with same name as SPCPFieldTitle.CpUid if it is not the last field of autoReplyData', () => {
-      const autoReplyData: EmailAutoReplyField[] = [
-        { question: 'question 1', answerTemplate: ['answer1'] },
-        { question: 'CorpPass Validated UID', answerTemplate: ['S9999999Z'] },
-        { question: SPCPFieldTitle.CpUid, answerTemplate: ['S1234567A'] },
+
+    it('should return the response in correct admin response format when formData() method is called', () => {
+      const correctFormData = [
+        {
+          question: getFormDataPrefixedQuestion(
+            response1 as ResponseFormattedForEmail,
+            hashedFields,
+          ),
+          answerTemplate: (response1 as ResponseFormattedForEmail).answer.split(
+            '\n',
+          ),
+          answer: (response1 as ResponseFormattedForEmail).answer,
+          fieldType: response1.fieldType,
+        },
+        {
+          question: getFormDataPrefixedQuestion(
+            response2 as ResponseFormattedForEmail,
+            hashedFields,
+          ),
+          answerTemplate: (response2 as ResponseFormattedForEmail).answer.split(
+            '\n',
+          ),
+          answer: (response2 as ResponseFormattedForEmail).answer,
+          fieldType: response2.fieldType,
+        },
       ]
-      const maskedAutoReplyData: EmailAutoReplyField[] = [
-        { question: 'question 1', answerTemplate: ['answer1'] },
-        { question: 'CorpPass Validated UID', answerTemplate: ['S9999999Z'] },
-        { question: SPCPFieldTitle.CpUid, answerTemplate: ['*****567A'] },
+      expect(submissionEmailObj.formData).toEqual(correctFormData)
+    })
+
+    it('should return the response in correct email confirmation format when autoReplyData() method is called', () => {
+      const correctConfirmation = [
+        {
+          question: response1.question,
+          answerTemplate: (response1 as ResponseFormattedForEmail).answer.split(
+            '\n',
+          ),
+        },
+        // Note that response2 is not shown in Email Confirmation as isVisible is false
       ]
-      expect(maskUidOnLastField(autoReplyData)).toEqual(maskedAutoReplyData)
+      expect(submissionEmailObj.autoReplyData).toEqual(correctConfirmation)
+    })
+
+    it('should mask corppass UID if AuthType is Corppass and autoReplyData() method is called', () => {
+      const responseCPUID = getResponse(
+        String(new ObjectId()),
+        'S1234567A',
+      ) as ProcessedFieldResponse
+
+      responseCPUID.question = SPCPFieldTitle.CpUid
+      responseCPUID.isVisible = true
+
+      const submissionEmailObjCP = createEmailData(
+        [response1, response2, responseCPUID],
+        hashedFields,
+        AuthType.CP,
+      )
+      const correctConfirmation = [
+        {
+          question: response1.question,
+          answerTemplate: (response1 as ResponseFormattedForEmail).answer.split(
+            '\n',
+          ),
+        },
+        // Note that response2 is not shown in Email Confirmation as isVisible is false
+        {
+          question: responseCPUID.question,
+          answerTemplate: ['*****567A'],
+        },
+      ]
+      expect(submissionEmailObjCP.autoReplyData).toEqual(correctConfirmation)
     })
   })
 })

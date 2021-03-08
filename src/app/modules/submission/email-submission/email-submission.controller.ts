@@ -22,7 +22,6 @@ import * as EmailSubmissionService from './email-submission.service'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
-  maskUidOnLastField,
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
@@ -189,6 +188,7 @@ export const handleEmailSubmission: RequestHandler<
   const emailData = EmailSubmissionService.createEmailData(
     parsedResponses,
     hashedFields,
+    authType,
   )
 
   // Save submission to database
@@ -226,7 +226,7 @@ export const handleEmailSubmission: RequestHandler<
       form,
       submission,
       attachments,
-      jsonData: emailData.jsonData,
+      dataCollationData: emailData.dataCollationData,
       formData: emailData.formData,
     },
   )
@@ -259,10 +259,7 @@ export const handleEmailSubmission: RequestHandler<
     parsedResponses,
     submission,
     attachments,
-    autoReplyData:
-      authType === AuthType.CP
-        ? maskUidOnLastField(emailData.autoReplyData)
-        : emailData.autoReplyData,
+    autoReplyData: emailData.autoReplyData,
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',

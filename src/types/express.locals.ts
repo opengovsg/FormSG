@@ -40,33 +40,38 @@ export type SpcpLocals =
   | { uinFin: string; userInfo: string }
   | { [key: string]: never } // empty object
 
-export interface EmailAutoReplyField {
+export type EmailRespondentConfirmationField = {
   question: string
   answerTemplate: string[]
 }
 
-export interface EmailJsonField {
+export type EmailDataCollationToolField = {
   question: string
   answer: string
 }
 
-export interface EmailFormField {
+export type EmailAdminDataField = {
   question: string
   answer: string
   fieldType: BasicField
   answerTemplate: string[]
 }
 
+export type EmailDataFields =
+  | EmailRespondentConfirmationField
+  | EmailDataCollationToolField
+  | EmailAdminDataField
+
 export interface EmailData {
-  autoReplyData: EmailAutoReplyField[]
-  jsonData: EmailJsonField[]
-  formData: EmailFormField[]
+  autoReplyData: EmailRespondentConfirmationField[]
+  dataCollationData: EmailDataCollationToolField[]
+  formData: EmailAdminDataField[]
 }
 
 export interface EmailDataForOneField {
-  autoReplyData?: EmailAutoReplyField
-  jsonData?: EmailJsonField
-  formData: EmailFormField
+  autoReplyData?: EmailRespondentConfirmationField
+  dataCollationData?: EmailDataCollationToolField
+  formData: EmailAdminDataField
 }
 
 export type WithSubmission<T> = T & { submission: ISubmissionSchema }
