@@ -255,12 +255,12 @@ export const validateField = (
   } else if (isProcessedTableResponse(response) && isTableField(formField)) {
     if (tableRequiresValidation(formField, response)) {
       const validator = constructTableFieldValidator(formField)
-      const validEither = validator(response)
-      if (isLeft(validEither)) {
-        logInvalidAnswer(formId, formField, validEither.left)
-        return err(new ValidateFieldError('Invalid answer submitted'))
-      }
-      return ok(true)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
     }
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
