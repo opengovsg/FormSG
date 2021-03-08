@@ -44,6 +44,12 @@ const LOGIC_VALID_CONDITIONS: LogicValidConditions[] = [
   },
 ]
 
+/**
+ * Given a list of form fields, returns only the elements that are
+ * allowed to be present in the if-condition dropdown in the Logic tab.
+ * @param formFields
+ * @returns
+ */
 export const getApplicableIfFields = (formFields: IField[]): IField[] =>
   formFields.filter((field) =>
     LOGIC_VALID_CONDITIONS.find(
@@ -51,9 +57,4 @@ export const getApplicableIfFields = (formFields: IField[]): IField[] =>
     ),
   )
 
-const FormLogic = {
-  conditions: LOGIC_VALID_CONDITIONS,
-  getApplicableIfFields,
-}
-
-export default FormLogic
+export const conditions = LOGIC_VALID_CONDITIONS
