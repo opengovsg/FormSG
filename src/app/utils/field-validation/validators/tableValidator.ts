@@ -4,7 +4,7 @@ import { unzip } from 'lodash'
 
 import {
   BasicField,
-  IFieldSchema,
+  IColumnSchema,
   ITableFieldSchema,
 } from '../../../../types/field'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
@@ -100,10 +100,24 @@ const makeColumnValidator: TableValidatorConstructor = (tableField) => (
       ) {
         return false
       }
-      const columnField = {
-        fieldType: columnFormField.columnType,
-        ...columnFormField.toJSON(), //necessary to convert before spread as columnFormField is a mongoose doc
+
+      // Inject properties so that columnField can be passed into validateField
+      type ColumnFormFieldWithProperties<T> = T & {
+        getQuestion: { (): string }
+        description: string
+        disabled: boolean
+        fieldType: BasicField
       }
+
+      const columnField = columnFormField
+      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).disabled = false
+      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).description =
+        'some description'
+      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).fieldType =
+        columnFormField.columnType
+      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).getQuestion = () =>
+        'some question'
+
       const columnResponse = {
         answer,
         isVisible,
@@ -113,7 +127,7 @@ const makeColumnValidator: TableValidatorConstructor = (tableField) => (
       }
       return validateField(
         columnField._id,
-        (columnField as unknown) as IFieldSchema,
+        columnField as ColumnFormFieldWithProperties<IColumnSchema>,
         columnResponse,
       ).isOk()
     })

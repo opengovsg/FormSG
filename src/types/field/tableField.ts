@@ -16,7 +16,7 @@ export interface IColumnSchema extends IColumn, Document {
   /** Returns the top level document of this sub-document. */
   ownerDocument(): IFormSchema
   /** Returns this sub-documents parent document. */
-  parent(): ITableFieldSchema
+  parent(): IFormSchema
 }
 
 export interface ITableField extends IField {
