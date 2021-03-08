@@ -63,39 +63,44 @@ type LogicField = Extract<
   | BasicField.Rating
 >
 
-type LogicValidCondition<
-  F extends LogicField,
-  S extends LogicConditionState
-> = {
+type LogicCondition<F extends LogicField, S extends LogicConditionState> = {
   fieldType: F
   states: Array<S>
 }
 
+// Logic fields that are categorical
+type CategoricalLogicField = Extract<
+  BasicField,
+  BasicField.Dropdown | BasicField.Radio
+>
+type CategoricalLogicStates =
+  | LogicConditionState.Equal
+  | LogicConditionState.Either
+type CategoricalLogicCondition = LogicCondition<
+  CategoricalLogicField,
+  CategoricalLogicStates
+>
+
+// Logic fields that are boolean
+type BinaryLogicField = Extract<BasicField, BasicField.YesNo>
+type BinaryLogicStates = LogicConditionState.Equal
+type BinaryLogicCondition = LogicCondition<BinaryLogicField, BinaryLogicStates>
+
+// Logic fields that can be numerically compared
+type NumericalLogicField = Extract<
+  BasicField,
+  BasicField.Number | BasicField.Decimal | BasicField.Rating
+>
+type NumericalLogicStates =
+  | LogicConditionState.Equal
+  | LogicConditionState.Lte
+  | LogicConditionState.Gte
+type NumericalLogicCondition = LogicCondition<
+  NumericalLogicField,
+  NumericalLogicStates
+>
+
 export type LogicValidConditions =
-  | LogicValidCondition<
-      BasicField.Dropdown,
-      LogicConditionState.Equal | LogicConditionState.Either
-    >
-  | LogicValidCondition<BasicField.YesNo, LogicConditionState.Equal>
-  | LogicValidCondition<
-      BasicField.Radio,
-      LogicConditionState.Equal | LogicConditionState.Either
-    >
-  | LogicValidCondition<
-      BasicField.Number,
-      | LogicConditionState.Equal
-      | LogicConditionState.Lte
-      | LogicConditionState.Gte
-    >
-  | LogicValidCondition<
-      BasicField.Decimal,
-      | LogicConditionState.Equal
-      | LogicConditionState.Lte
-      | LogicConditionState.Gte
-    >
-  | LogicValidCondition<
-      BasicField.Rating,
-      | LogicConditionState.Equal
-      | LogicConditionState.Lte
-      | LogicConditionState.Gte
-    >
+  | CategoricalLogicCondition
+  | BinaryLogicCondition
+  | NumericalLogicCondition
