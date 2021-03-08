@@ -3,6 +3,7 @@ import { left } from 'fp-ts/lib/Either'
 import { IField } from '../../../types/field/baseField'
 import {
   isAttachmentField,
+  isCheckboxField,
   isDateField,
   isDecimalField,
   isDropdownField,
@@ -20,10 +21,12 @@ import {
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
   ProcessedAttachmentResponse,
+  ProcessedCheckboxResponse,
   ProcessedSingleAnswerResponse,
 } from '../../modules/submission/submission.types'
 
 import { constructAttachmentValidator } from './validators/attachmentValidator'
+import { constructCheckboxValidator } from './validators/checkboxValidator'
 import { constructDateValidator } from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
 import { constructDropdownValidator } from './validators/dropdownValidator'
@@ -79,6 +82,15 @@ export const constructAttachmentFieldValidator = (
 ): ResponseValidator<ProcessedAttachmentResponse> => {
   if (isAttachmentField(formField)) {
     return constructAttachmentValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructCheckboxFieldValidator = (
+  formField: IField,
+): ResponseValidator<ProcessedCheckboxResponse> => {
+  if (isCheckboxField(formField)) {
+    return constructCheckboxValidator(formField)
   }
   return () => left('Unsupported field type')
 }

@@ -1,5 +1,4 @@
 const {
-  CheckboxValidator,
   TableValidator,
   YesNoValidator,
   BaseFieldValidator,
@@ -33,6 +32,7 @@ class FieldValidatorFactory {
       case 'textarea': // long text
       case 'nric':
       case 'homeno':
+      case 'checkbox':
       case 'rating':
       case 'mobileno':
       case 'date':
@@ -43,8 +43,6 @@ class FieldValidatorFactory {
       case 'number':
       case 'dropdown':
         throw new Error(`${fieldType} has been migrated to TypeScript`)
-      case 'checkbox':
-        return new CheckboxValidator(...arguments)
       case 'table':
         return new TableValidator(...arguments)
       case 'yes_no':
