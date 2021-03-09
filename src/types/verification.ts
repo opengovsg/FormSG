@@ -1,5 +1,6 @@
-import { Document, Model, Query } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
+import { PublicView } from './database'
 import { IFormSchema } from './form'
 
 export interface IVerificationField {
@@ -20,14 +21,23 @@ export interface IVerificationFieldSchema
 
 export interface IVerification {
   formId: IFormSchema['_id']
-  expireAt?: Date
+  expireAt: Date
   fields: IVerificationFieldSchema[]
 }
 
-export interface IVerificationSchema extends IVerification, Document {}
+export interface IVerificationSchema
+  extends IVerification,
+    Document,
+    PublicView<PublicTransaction> {}
+
+// Keep in sync with VERIFICATION_PUBLIC_FIELDS
+export type PublicTransaction = Pick<
+  IVerificationSchema,
+  'formId' | 'expireAt' | '_id'
+>
 
 export interface IVerificationModel extends Model<IVerificationSchema> {
-  findTransactionMetadata(
+  getPublicViewById(
     id: IVerificationSchema['_id'],
-  ): Query<Omit<IVerificationSchema, 'fields'>, IVerificationSchema>
+  ): Promise<PublicTransaction | null>
 }

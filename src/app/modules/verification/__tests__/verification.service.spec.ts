@@ -114,7 +114,7 @@ describe('Verification service', () => {
       const testVerification = new Verification({ formId, expireAt })
       await testVerification.save()
       const actual = await getTransactionMetadata(testVerification._id)
-      expect(actual.toObject()).toEqual({
+      expect(actual).toEqual({
         _id: testVerification._id,
         formId,
         expireAt,
