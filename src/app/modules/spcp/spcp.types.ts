@@ -35,5 +35,4 @@ export interface ParsedSpcpParams {
   destination: string
   rememberMe: boolean
   cookieDuration: number
-  samlArt: string
 }
