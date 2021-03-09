@@ -3,7 +3,7 @@ import {
   IField,
   LogicConditions,
   LogicConditionState,
-} from '../../../../types'
+} from '../../../../../types'
 
 const LOGIC_VALID_CONDITIONS: LogicConditions[] = [
   [
