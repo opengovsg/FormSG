@@ -2,12 +2,12 @@
 
 const { range } = require('lodash')
 const { LogicType } = require('../../../../../types')
+const FormLogic = require('../../services/form-logic/form-logic.client.service')
 
 angular
   .module('forms')
   .controller('EditLogicModalController', [
     '$uibModalInstance',
-    'FormLogic',
     'externalScope',
     'updateLogic',
     'FormFields',
@@ -16,7 +16,6 @@ angular
 
 function EditLogicModalController(
   $uibModalInstance,
-  FormLogic,
   externalScope,
   updateLogic,
   FormFields,
@@ -48,10 +47,8 @@ function EditLogicModalController(
 
   vm.getFieldTitle = FormFields.getFieldTitle
 
+  vm.ifFields = FormLogic.getApplicableIfFields(vm.myform.form_fields)
   vm.thenFields = vm.myform.form_fields
-  vm.ifFields = vm.myform.form_fields.filter((field) =>
-    FormLogic.fieldTypes.includes(field.fieldType),
-  )
 
   vm.logicTypeSelection = {
     showFields:
@@ -149,9 +146,9 @@ function EditLogicModalController(
     }
     condition.fieldInfo = externalScope.getField(condition.field)
     if (condition.fieldInfo) {
-      condition.ifStates = FormLogic.conditions.find(function (c) {
-        return c.fieldType === condition.fieldInfo.fieldType
-      }).states
+      condition.ifStates = FormLogic.getApplicableIfStates(
+        condition.fieldInfo.fieldType,
+      )
     }
   }
 

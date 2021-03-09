@@ -11,4 +11,5 @@ module.exports = {
     },
   },
   clearMocks: true,
+  setupFilesAfterEnv: ['jest-extended'],
 }
