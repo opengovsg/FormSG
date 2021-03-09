@@ -1,17 +1,15 @@
-import { Model, Mongoose, Query, Schema } from 'mongoose'
+import { Mongoose, Schema } from 'mongoose'
 
 import * as vfnConstants from '../../../shared/util/verification'
-import { IVerificationFieldSchema, IVerificationSchema } from '../../../types'
+import {
+  IVerificationFieldSchema,
+  IVerificationModel,
+  IVerificationSchema,
+} from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 const { getExpiryDate } = vfnConstants
 const VERIFICATION_SCHEMA_ID = 'Verification'
-
-interface IVerificationModel extends Model<IVerificationSchema> {
-  findTransactionMetadata(
-    id: IVerificationSchema['_id'],
-  ): Query<Omit<IVerificationSchema, 'fields'>, IVerificationSchema>
-}
 
 const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
   _id: {
