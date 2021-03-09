@@ -183,17 +183,13 @@ export const handleLogin: (
   unknown,
   { SAMLart: string; RelayState: string }
 > = (authType) => async (req, res) => {
-  const { SAMLart: rawSamlArt, RelayState: rawRelayState } = req.query
+  const { SAMLart, RelayState } = req.query
   const logMeta = {
     action: 'handleLogin',
-    samlArt: rawSamlArt,
-    relayState: rawRelayState,
+    samlArt: SAMLart,
+    relayState: RelayState,
   }
-  const parseResult = SpcpFactory.parseOOBParams(
-    rawSamlArt,
-    rawRelayState,
-    authType,
-  )
+  const parseResult = SpcpFactory.parseOOBParams(SAMLart, RelayState, authType)
   if (parseResult.isErr()) {
     logger.error({
       message: 'Invalid SPCP login parameters',
@@ -202,13 +198,7 @@ export const handleLogin: (
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-  const {
-    formId,
-    destination,
-    rememberMe,
-    cookieDuration,
-    samlArt,
-  } = parseResult.value
+  const { formId, destination, rememberMe, cookieDuration } = parseResult.value
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.error({
@@ -232,7 +222,7 @@ export const handleLogin: (
     return res.redirect(destination)
   }
   const jwtResult = await SpcpFactory.getSpcpAttributes(
-    samlArt,
+    SAMLart,
     destination,
     authType,
   )
