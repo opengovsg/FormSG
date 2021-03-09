@@ -297,8 +297,10 @@ export class SpcpService {
         destination,
         rememberMe,
         cookieDuration,
-        // Resolve known express req.query issue where pluses become spaces
-        samlArt: String(samlArt).replace(/ /g, '+'),
+        // In the past, this function would perform some transformations
+        // on the SAML artifact. This is no longer necessary, so we simply
+        // return the original SAML artifact passed to the function.
+        samlArt,
       })
     } else {
       logger.error({
