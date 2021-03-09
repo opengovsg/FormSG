@@ -113,15 +113,14 @@ describe('Verification Model', () => {
   })
 
   describe('Statics', () => {
-    describe('findTransactionMetadata', () => {
+    describe('getPublicViewById', () => {
       it('should only return non-sensitive fields', async () => {
         const verification = new Verification(VFN_PARAMS)
         const verificationSaved = await verification.save()
         expect(verificationSaved._id).toBeDefined()
-        const found = await Verification.findTransactionMetadata(
+        const actual = await Verification.getPublicViewById(
           verificationSaved._id,
         )
-        const actual = found.toObject()
         const expected = pick(verificationSaved, ['formId', 'expireAt', '_id'])
         expect(actual).toEqual(expected)
       })

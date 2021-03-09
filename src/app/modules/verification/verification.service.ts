@@ -13,6 +13,7 @@ import {
   IMobileFieldSchema,
   IVerificationFieldSchema,
   IVerificationSchema,
+  PublicTransaction,
 } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 import { MailSendError } from '../../services/mail/mail.errors'
@@ -66,19 +67,16 @@ export const createTransaction = async (
   return null
 }
 
-type TransactionMetadata = ReturnType<
-  typeof Verification.findTransactionMetadata
->
 /**
  *  Retrieves a transaction's metadata by id
  * @param transactionId
  */
 export const getTransactionMetadata = async (
   transactionId: string,
-): Promise<TransactionMetadata> => {
-  const transaction = await Verification.findTransactionMetadata(transactionId)
+): Promise<PublicTransaction> => {
+  const transaction = await Verification.getPublicViewById(transactionId)
   if (transaction === null) {
-    throwError(VfnErrors.TransactionNotFound)
+    return throwError(VfnErrors.TransactionNotFound)
   }
   return transaction
 }
