@@ -1,9 +1,8 @@
 import { Model, Mongoose, Query, Schema } from 'mongoose'
 
-import * as vfnConstants from '../../shared/util/verification'
-import { IVerificationFieldSchema, IVerificationSchema } from '../../types'
-
-import { FORM_SCHEMA_ID } from './form.server.model'
+import * as vfnConstants from '../../../shared/util/verification'
+import { IVerificationFieldSchema, IVerificationSchema } from '../../../types'
+import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 const { getExpiryDate } = vfnConstants
 const VERIFICATION_SCHEMA_ID = 'Verification'

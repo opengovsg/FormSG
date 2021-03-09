@@ -2,7 +2,6 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import getVerificationModel from 'src/app/models/verification.server.model'
 import {
   createTransaction,
   getNewOtp,
@@ -10,6 +9,7 @@ import {
   resetFieldInTransaction,
   verifyOtp,
 } from 'src/app/modules/verification/verification.controller'
+import getVerificationModel from 'src/app/modules/verification/verification.model'
 import * as VfnService from 'src/app/modules/verification/verification.service'
 
 import expressHandler from '../../helpers/jest-express'

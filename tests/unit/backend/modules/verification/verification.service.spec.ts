@@ -5,7 +5,7 @@ import { okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
-import getVerificationModel from 'src/app/models/verification.server.model'
+import getVerificationModel from 'src/app/modules/verification/verification.model'
 import {
   createTransaction,
   getNewOtp,

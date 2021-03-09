@@ -15,7 +15,6 @@ import {
   IVerificationSchema,
 } from '../../../types'
 import getFormModel from '../../models/form.server.model'
-import getVerificationModel from '../../models/verification.server.model'
 import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
@@ -28,6 +27,7 @@ import {
   MalformedParametersError,
 } from '../core/core.errors'
 
+import getVerificationModel from './verification.model'
 import { Transaction } from './verification.types'
 
 const logger = createLoggerWithLabel(module)

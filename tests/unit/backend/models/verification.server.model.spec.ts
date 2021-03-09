@@ -2,7 +2,7 @@ import { ObjectID } from 'bson'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import getVerificationModel from 'src/app/models/verification.server.model'
+import getVerificationModel from 'src/app/modules/verification/verification.model'
 
 import dbHandler from '../helpers/jest-db'
 
