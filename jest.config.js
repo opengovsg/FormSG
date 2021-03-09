@@ -24,4 +24,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  setupFilesAfterEnv: ['jest-extended'],
 }
