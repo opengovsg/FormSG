@@ -5,14 +5,6 @@ import { okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
-import getVerificationModel from 'src/app/modules/verification/verification.model'
-import {
-  createTransaction,
-  getNewOtp,
-  getTransactionMetadata,
-  resetFieldInTransaction,
-  verifyOtp,
-} from 'src/app/modules/verification/verification.service'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { generateOtp } from 'src/app/utils/otp'
@@ -20,7 +12,16 @@ import formsgSdk from 'src/config/formsg-sdk'
 import { SALT_ROUNDS } from 'src/shared/util/verification'
 import { BasicField, IUserSchema, IVerificationSchema } from 'src/types'
 
-import dbHandler from '../../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
+import getVerificationModel from '../verification.model'
+import {
+  createTransaction,
+  getNewOtp,
+  getTransactionMetadata,
+  resetFieldInTransaction,
+  verifyOtp,
+} from '../verification.service'
 
 const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
