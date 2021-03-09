@@ -1,11 +1,11 @@
 import {
   BasicField,
   IField,
+  LogicCondition,
   LogicConditionState,
-  PossibleLogicCondition,
 } from '../../../../../types'
 
-const LOGIC_CONDITIONS: PossibleLogicCondition[] = [
+const LOGIC_CONDITIONS: LogicCondition[] = [
   [
     BasicField.Dropdown,
     [LogicConditionState.Equal, LogicConditionState.Either],

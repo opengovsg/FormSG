@@ -63,9 +63,9 @@ type LogicField = Extract<
   | BasicField.Rating
 >
 
-type LogicCondition<K extends LogicField, V extends LogicConditionState> = [
+type LogicAssociation<K extends LogicField, VS extends LogicConditionState> = [
   K,
-  Array<V>,
+  Array<VS>,
 ]
 
 // Logic fields that are categorical
@@ -76,7 +76,7 @@ type CategoricalLogicField = Extract<
 type CategoricalLogicStates =
   | LogicConditionState.Equal
   | LogicConditionState.Either
-type CategoricalLogicCondition = LogicCondition<
+type CategoricalLogicCondition = LogicAssociation<
   CategoricalLogicField,
   CategoricalLogicStates
 >
@@ -84,7 +84,10 @@ type CategoricalLogicCondition = LogicCondition<
 // Logic fields that are boolean
 type BinaryLogicField = Extract<BasicField, BasicField.YesNo>
 type BinaryLogicStates = LogicConditionState.Equal
-type BinaryLogicCondition = LogicCondition<BinaryLogicField, BinaryLogicStates>
+type BinaryLogicCondition = LogicAssociation<
+  BinaryLogicField,
+  BinaryLogicStates
+>
 
 // Logic fields that can be numerically compared
 type NumericalLogicField = Extract<
@@ -95,12 +98,12 @@ type NumericalLogicStates =
   | LogicConditionState.Equal
   | LogicConditionState.Lte
   | LogicConditionState.Gte
-type NumericalLogicCondition = LogicCondition<
+type NumericalLogicCondition = LogicAssociation<
   NumericalLogicField,
   NumericalLogicStates
 >
 
-export type PossibleLogicCondition =
+export type LogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
