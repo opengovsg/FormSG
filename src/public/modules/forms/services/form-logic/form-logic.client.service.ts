@@ -52,4 +52,4 @@ export const getApplicableIfFields = (formFields: IField[]): IField[] =>
  */
 export const getApplicableIfStates = (
   fieldType: BasicField,
-): LogicConditionState[] => LOGIC_MAP.get(fieldType) || []
+): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
