@@ -1,11 +1,11 @@
 import {
   BasicField,
   IField,
-  LogicConditions,
   LogicConditionState,
+  PossibleLogicCondition,
 } from '../../../../../types'
 
-const LOGIC_VALID_CONDITIONS: LogicConditions[] = [
+const LOGIC_CONDITIONS: PossibleLogicCondition[] = [
   [
     BasicField.Dropdown,
     [LogicConditionState.Equal, LogicConditionState.Either],
@@ -38,9 +38,7 @@ const LOGIC_VALID_CONDITIONS: LogicConditions[] = [
   [BasicField.Radio, [LogicConditionState.Equal, LogicConditionState.Either]],
 ]
 
-const LOGIC_MAP = new Map<BasicField, LogicConditionState[]>(
-  LOGIC_VALID_CONDITIONS,
-)
+const LOGIC_MAP = new Map<BasicField, LogicConditionState[]>(LOGIC_CONDITIONS)
 
 /**
  * Given a list of form fields, returns only the fields that are

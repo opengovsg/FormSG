@@ -100,7 +100,7 @@ type NumericalLogicCondition = LogicCondition<
   NumericalLogicStates
 >
 
-export type LogicConditions =
+export type PossibleLogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
