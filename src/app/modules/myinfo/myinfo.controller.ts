@@ -40,7 +40,7 @@ const validateRedirectURLRequest = celebrate({
  * @param req Express Request
  * @param res Express Response
  */
-const respondWithRedirectURL: RequestHandler<
+export const respondWithRedirectURL: RequestHandler<
   unknown,
   { redirectURL: string } | { message: string },
   unknown,
@@ -97,7 +97,7 @@ const validateEServiceIdCheck = celebrate({
  * @param req Express request
  * @param res Express response
  */
-const checkMyInfoEServiceId: RequestHandler<
+export const checkMyInfoEServiceId: RequestHandler<
   unknown,
   LoginPageValidationResult | { message: string },
   unknown,
@@ -177,7 +177,7 @@ type MyInfoLoginQueryParams =
  * @param req Express request
  * @param res Express response
  */
-const loginToMyInfo: RequestHandler<
+export const loginToMyInfo: RequestHandler<
   unknown,
   unknown,
   unknown,
