@@ -62,6 +62,10 @@ import {
   notifyAdminsOfBounce,
   notifyAdminsOfDeactivation,
 } from 'src/app/modules/bounce/bounce.service'
+import {
+  InvalidNumberError,
+  SmsSendError,
+} from 'src/app/services/sms/sms.errors'
 
 const Form = getFormModel(mongoose)
 const Bounce = getBounceModel(mongoose)
@@ -390,7 +394,7 @@ describe('BounceService', () => {
         formId: form._id,
         bounces: [],
       })
-      MockSmsFactory.sendBouncedSubmissionSms.mockResolvedValue(true)
+      MockSmsFactory.sendBouncedSubmissionSms.mockReturnValue(okAsync(true))
 
       const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
         MOCK_CONTACT,
@@ -431,10 +435,9 @@ describe('BounceService', () => {
         formId: form._id,
         bounces: [],
       })
-      const mockRejectedReason = 'reasons'
       MockSmsFactory.sendBouncedSubmissionSms
-        .mockResolvedValueOnce(true)
-        .mockRejectedValueOnce(mockRejectedReason)
+        .mockReturnValueOnce(okAsync(true))
+        .mockReturnValueOnce(errAsync(new InvalidNumberError()))
 
       const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
         MOCK_CONTACT,
@@ -778,7 +781,7 @@ describe('BounceService', () => {
       })
         .populate('admin')
         .execPopulate()) as IPopulatedForm
-      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+      MockUserService.findContactsForEmails.mockReturnValueOnce(
         okAsync([MOCK_CONTACT]),
       )
 
@@ -802,7 +805,7 @@ describe('BounceService', () => {
       })
         .populate('admin')
         .execPopulate()) as IPopulatedForm
-      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+      MockUserService.findContactsForEmails.mockReturnValueOnce(
         okAsync([omit(MOCK_CONTACT, 'contact'), MOCK_CONTACT_2]),
       )
 
@@ -826,7 +829,7 @@ describe('BounceService', () => {
       })
         .populate('admin')
         .execPopulate()) as IPopulatedForm
-      MockUserService.findContactsForEmails.mockResolvedValueOnce(
+      MockUserService.findContactsForEmails.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
 
@@ -862,7 +865,7 @@ describe('BounceService', () => {
       })
         .populate('admin')
         .execPopulate()) as IPopulatedForm
-      MockSmsFactory.sendFormDeactivatedSms.mockResolvedValue(true)
+      MockSmsFactory.sendFormDeactivatedSms.mockReturnValue(okAsync(true))
 
       const result = await notifyAdminsOfDeactivation(form, [
         MOCK_CONTACT,
@@ -897,8 +900,8 @@ describe('BounceService', () => {
         .populate('admin')
         .execPopulate()) as IPopulatedForm
       MockSmsFactory.sendFormDeactivatedSms
-        .mockResolvedValueOnce(true)
-        .mockRejectedValueOnce(new Error())
+        .mockReturnValueOnce(okAsync(true))
+        .mockReturnValueOnce(errAsync(new SmsSendError()))
 
       const result = await notifyAdminsOfDeactivation(form, [
         MOCK_CONTACT,
