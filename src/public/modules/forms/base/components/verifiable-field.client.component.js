@@ -246,7 +246,6 @@ function verifiableFieldController($q, $timeout, $interval) {
   const getErrorMessage = (err) => {
     // So that switch case works for both axios error objects and string objects.
     const error = get(err, 'response.data', err)
-
     let errMessage = ''
     switch (error) {
       case 'SEND_OTP_FAILED':
@@ -260,7 +259,7 @@ function verifiableFieldController($q, $timeout, $interval) {
         errMessage = 'Error - Please enter a valid number.'
         break
       default:
-        errMessage = 'Error - please refresh the form.'
+        errMessage = error || 'Error - please refresh the form.'
     }
     return errMessage
   }
