@@ -1,16 +1,22 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import * as vfnConstants from '../../../shared/util/verification'
 import {
+  getExpiryDate,
+  TRANSACTION_EXPIRE_AFTER_SECONDS,
+} from '../../../shared/util/verification'
+import {
+  IFormSchema,
   IVerificationFieldSchema,
   IVerificationModel,
   IVerificationSchema,
   PublicTransaction,
+  UpdateFieldData,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-const { getExpiryDate } = vfnConstants
+import { extractTransactionFields } from './verification.util'
+
 const VERIFICATION_SCHEMA_ID = 'Verification'
 
 export const VERIFICATION_PUBLIC_FIELDS = ['formId', 'expireAt', '_id']
@@ -38,8 +44,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     },
     expireAt: {
       type: Date,
-      default: () =>
-        getExpiryDate(vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS),
+      default: () => getExpiryDate(TRANSACTION_EXPIRE_AFTER_SECONDS),
     },
     fields: {
       type: [VerificationFieldSchema],
@@ -70,6 +75,58 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return pick(this, VERIFICATION_PUBLIC_FIELDS) as PublicTransaction
   }
 
+  VerificationSchema.methods.getField = function (
+    this: IVerificationSchema,
+    fieldId: string,
+  ): IVerificationFieldSchema | undefined {
+    return this.fields.find((field) => field._id === fieldId)
+  }
+
+  VerificationSchema.methods.updateDataForField = async function (
+    this: IVerificationSchema,
+    updateData: UpdateFieldData,
+  ): Promise<IVerificationSchema | null> {
+    const field = this.getField(updateData.fieldId)
+    if (!field) return null
+
+    if (updateData.hashCreatedAt !== undefined) {
+      field.hashCreatedAt = updateData.hashCreatedAt
+    }
+    if (updateData.hashRetries !== undefined) {
+      field.hashRetries = updateData.hashRetries
+    }
+    if (updateData.hashedOtp !== undefined) {
+      field.hashedOtp = updateData.hashedOtp
+    }
+    if (updateData.signedData !== undefined) {
+      field.signedData = updateData.signedData
+    }
+    return this.save()
+  }
+
+  VerificationSchema.methods.incrementFieldRetries = async function (
+    this: IVerificationSchema,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null> {
+    const field = this.getField(fieldId)
+    if (!field) return null
+    field.hashRetries = (field.hashRetries ?? 0) + 1
+    return this.save()
+  }
+
+  VerificationSchema.methods.resetField = async function (
+    this: IVerificationSchema,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null> {
+    return this.updateDataForField({
+      fieldId,
+      hashCreatedAt: null,
+      hashedOtp: null,
+      signedData: null,
+      hashRetries: 0,
+    })
+  }
+
   // Static methods
   // Method to return non-sensitive fields
   VerificationSchema.statics.getPublicViewById = async function (
@@ -79,6 +136,20 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     const document = await this.findById(id)
     if (!document) return null
     return document.getPublicView()
+  }
+
+  VerificationSchema.statics.createTransactionFromForm = async function (
+    this: IVerificationModel,
+    form: IFormSchema,
+  ): Promise<IVerificationSchema | null> {
+    const { form_fields } = form
+    if (!form_fields) return null
+    const fields = extractTransactionFields(form_fields)
+    if (fields.length === 0) return null
+    return this.create({
+      formId: form._id,
+      fields,
+    })
   }
 
   const VerificationModel = db.model<IVerificationSchema, IVerificationModel>(
