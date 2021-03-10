@@ -1,6 +1,5 @@
 import { SecretsManager } from 'aws-sdk'
 import dedent from 'dedent-js'
-import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
@@ -200,7 +199,9 @@ const send = (
         error,
       })
 
-      return new SmsSendError()
+      return new SmsSendError('Error sending SMS to given number', {
+        originalError: error,
+      })
     },
   )
     .andThen<true, SmsSendError | InvalidNumberError>(
@@ -220,7 +221,9 @@ const send = (
           // handling.
           // See https://www.twilio.com/docs/api/errors/21211
           return errAsync(
-            errorCode === 21211 ? new InvalidNumberError() : new SmsSendError(),
+            errorCode === 21211
+              ? new InvalidNumberError()
+              : new SmsSendError('Error sending SMS to given number'),
           )
         }
 
