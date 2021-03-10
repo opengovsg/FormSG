@@ -1,5 +1,6 @@
 import { SecretsManager } from 'aws-sdk'
 import dedent from 'dedent-js'
+import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
@@ -230,7 +231,8 @@ const send = async (
       // Invalid number error code, throw a more reasonable error for error
       // handling.
       // See https://www.twilio.com/docs/api/errors/21211
-      if (err?.code === 21211) {
+      // err.meta.errorCode may exist if SmsSendError is thrown inside the `then` block.
+      if (err?.code === 21211 || get(err, 'meta.errorCode') === 21211) {
         const invalidOtpError = new Error(VfnErrors.InvalidMobileNumber)
         invalidOtpError.name = VfnErrors.SendOtpFailed
         throw invalidOtpError
