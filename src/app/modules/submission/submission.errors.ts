@@ -1,5 +1,3 @@
-import { StatusCodes } from 'http-status-codes'
-
 import { ResponseMode } from '../../../types'
 import { ApplicationError } from '../core/core.errors'
 
@@ -8,8 +6,8 @@ import { ApplicationError } from '../core/core.errors'
  * when some form fields are missing from the submission
  */
 export class ConflictError extends ApplicationError {
-  constructor(message: string, meta?: string) {
-    super(message, StatusCodes.CONFLICT, meta)
+  constructor(message: string, meta?: unknown) {
+    super(message, meta)
   }
 }
 
