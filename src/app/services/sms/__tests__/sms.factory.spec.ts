@@ -48,38 +48,56 @@ describe('sms.factory', () => {
 
     const SmsFactory = createSmsFactory(MOCK_DISABLED_SMS_FEATURE)
 
-    it('should throw error when invoking sendAdminContactOtp', () => {
+    it('should return MissingFeatureError when invoking sendAdminContactOtp', async () => {
       // Act
-      const invocation = () =>
-        SmsFactory.sendAdminContactOtp('anything', 'anything', 'anything')
+      const result = await SmsFactory.sendAdminContactOtp(
+        'anything',
+        'anything',
+        'anything',
+      )
 
       // Assert
-      expect(invocation).toThrowError(
-        'sendAdminContactOtp: SMS feature must be enabled in Feature Manager first',
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new MissingFeatureError(FeatureNames.Sms),
       )
     })
 
-    it('should throw error when invoking sendVerificationOtp', () => {
+    it('should return MissingFeatureError when invoking sendVerificationOtp', async () => {
       // Act
-      const invocation = () =>
-        SmsFactory.sendVerificationOtp('anything', 'anything', 'anything')
+      const result = await SmsFactory.sendVerificationOtp(
+        'anything',
+        'anything',
+        'anything',
+      )
 
       // Assert
-      expect(invocation).toThrowError(
-        'sendVerificationOtp: SMS feature must be enabled in Feature Manager first',
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new MissingFeatureError(FeatureNames.Sms),
       )
     })
 
-    it('should reject with MissingFeatureError for sendFormDeactivatedSms', async () => {
-      await expect(
-        SmsFactory.sendFormDeactivatedSms(MOCK_BOUNCE_SMS_PARAMS),
-      ).rejects.toThrowError(new MissingFeatureError(FeatureNames.Sms))
+    it('should return MissingFeatureError when invoking sendFormDeactivatedSms', async () => {
+      // Act
+      const result = await SmsFactory.sendFormDeactivatedSms(
+        MOCK_BOUNCE_SMS_PARAMS,
+      )
+
+      // Assert
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new MissingFeatureError(FeatureNames.Sms),
+      )
     })
 
-    it('should reject with MissingFeatureError for sendBouncedSubmissionSms', async () => {
-      await expect(
-        SmsFactory.sendBouncedSubmissionSms(MOCK_BOUNCE_SMS_PARAMS),
-      ).rejects.toThrowError(new MissingFeatureError(FeatureNames.Sms))
+    it('should return MissingFeatureError when invoking sendBouncedSubmissionSms', async () => {
+      // Act
+      const result = await SmsFactory.sendBouncedSubmissionSms(
+        MOCK_BOUNCE_SMS_PARAMS,
+      )
+
+      // Assert
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new MissingFeatureError(FeatureNames.Sms),
+      )
     })
   })
 
