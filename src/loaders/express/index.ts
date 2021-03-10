@@ -14,6 +14,8 @@ import { BillingRouter } from '../../app/modules/billing/billing.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import { ExamplesRouter } from '../../app/modules/examples/examples.routes'
 import { HomeRouter } from '../../app/modules/home/home.routes'
+import { MYINFO_ROUTER_PREFIX } from '../../app/modules/myinfo/myinfo.constants'
+import { MyInfoRouter } from '../../app/modules/myinfo/myinfo.routes'
 import {
   CorppassLoginRouter,
   SingpassLoginRouter,
@@ -154,6 +156,8 @@ const loadExpressApp = async (connection: Connection) => {
   // Registered routes with the Singpass/Corppass servers
   app.use('/singpass/login', SingpassLoginRouter)
   app.use('/corppass/login', CorppassLoginRouter)
+  // Use constant for registered routes with MyInfo servers
+  app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
   app.use(sentryMiddlewares())
 

@@ -11,11 +11,12 @@ import { VerifiedContentFactory } from './verified-content.factory'
 
 const logger = createLoggerWithLabel(module)
 
+// TODO: Delete this middleware when this step is inlined into the controller.
 export const encryptVerifiedSpcpFields: RequestHandler = (req, res, next) => {
   const { form } = req as WithForm<typeof req>
 
   // Early return if this is not a Singpass/Corppass submission.
-  if (form.authType === AuthType.NIL) {
+  if (form.authType !== AuthType.SP && form.authType !== AuthType.CP) {
     return next()
   }
 
@@ -30,7 +31,7 @@ export const encryptVerifiedSpcpFields: RequestHandler = (req, res, next) => {
       message: 'encryptVerifiedSpcpFields called on non-encrypt mode form',
       meta: logMeta,
     })
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send({
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       message:
         'Unable to encrypt verified SPCP fields on non storage mode forms',
     })

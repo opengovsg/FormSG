@@ -7,8 +7,8 @@
       >
         <i class="bx bx-exclamation bx-md icon-spacing"></i>
         <span class="alert-msg"
-          >Please specify a valid e-service ID below, by 1st June 2019. Failing
-          to do so may result in service disruptions to your form.</span
+          >Please specify a valid e-service ID below. Failing to do so may
+          result in service disruptions to your form.</span
         >
       </div>
 
@@ -135,7 +135,7 @@
             </legend>
 
             <div
-              ng-if="isFormEncrypt() && isFormSingpass()"
+              ng-if="isFormEncrypt() && isFormMyInfo()"
               class="alert-custom alert-info spcp-warning"
             >
               <i class="bx bx-info-circle bx-md icon-spacing"></i>
@@ -175,18 +175,18 @@
               <div
                 class="radio-option col-xs-12"
                 ng-class="isDisableAuthType() ? 'radio-disabled' : ''"
+                ng-if="!isFormEncrypt() || type.isEnabledInStorageMode"
               >
-                <label for="auth-type-{{type.name}}" class="col-xs-12">
+                <label for="auth-type-{{type.val}}" class="col-xs-12">
                   <input
-                    id="auth-type-{{type.name}}"
+                    id="auth-type-{{type.val}}"
                     type="radio"
                     ng-model="tempForm.authType"
                     value="{{ type.val }}"
                     ng-click="updateSettingsByPath('authType', $event.target.value)"
                     ng-disabled="isDisableAuthType()"
                   />
-                  {{ (isFormEncrypt() && type.storageName) ? type.storageName :
-                  type.name }}
+                  {{ type.name }}
                   <span
                     class="radiomark"
                     ng-class="tempForm.authType === type.val ? 'blue-border' : ''"
@@ -195,7 +195,7 @@
               </div>
               <div
                 class="col-xs-12"
-                ng-if="(type.val === 'SP' || type.val === 'CP') && (tempForm.authType === type.val)"
+                ng-if="['SP', 'CP', 'MyInfo'].includes(type.val) && tempForm.authType === type.val"
               >
                 <div
                   class="settings-save esrvcId-input"

@@ -473,12 +473,21 @@ async function createBasicField(t, field) {
       }
       break
     case 'radiobutton':
-    case 'checkbox':
       await setRatingCheckboxOptions(t, 0, field.fieldOptions[0])
       for (let i = 1; i < field.fieldOptions.length; i++) {
         await t.click(editFieldModal.addOption)
         await setRatingCheckboxOptions(t, i, field.fieldOptions[i])
       }
+      if (field.othersRadioButton) {
+        await t.click(editFieldModal.getToggle('Others option'))
+      }
+      break
+    case 'checkbox':
+      await t.selectText(editFieldModal.optionTextArea).pressKey('delete')
+      // The wait(500) is necessary because of the debounce time in reloadDropdownField
+      await t
+        .typeText(editFieldModal.optionTextArea, field.fieldOptions.join('\n'))
+        .wait(500)
       if (field.othersRadioButton) {
         await t.click(editFieldModal.getToggle('Others option'))
       }
@@ -1119,6 +1128,18 @@ const getResponseTitle = (field, isInJson, formMode) => {
 const expectSpcpLogin = async (t, authType, authData) => {
   const { testSpNric, testCpNric, testCpUen } = authData
   switch (authType) {
+    case 'MyInfo':
+      await t
+        .expect(formPage.spcpLoginBtn.textContent)
+        .contains(`Log in with SingPass`)
+        .click(formPage.spcpLoginBtn)
+        .click(mockpass.loginBtn)
+        .click(mockpass.nricDropdownBtn)
+        .click(mockpass.getNricOption(testSpNric))
+        .click(mockpass.consentBtn)
+        .expect(formPage.spcpLogoutBtn.textContent)
+        .contains(`${testSpNric} - Log out`)
+      break
     case 'SP':
       await t
         .expect(formPage.spcpLoginBtn.textContent)
@@ -1159,6 +1180,7 @@ const getAuthFields = (authType, authData) => {
   switch (authType) {
     case 'NIL':
       return []
+    case 'MyInfo':
     case 'SP':
       return [
         makeField({

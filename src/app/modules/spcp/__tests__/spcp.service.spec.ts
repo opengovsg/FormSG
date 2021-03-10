@@ -2,19 +2,15 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import axios from 'axios'
 import fs from 'fs'
 import { omit } from 'lodash'
-import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import getLoginModel from 'src/app/models/login.server.model'
-import { MOCK_COOKIE_AGE } from 'src/app/services/myinfo/__tests__/myinfo.test.constants'
+import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { ISpcpMyInfo } from 'src/config/feature-manager'
-import { AuthType, ILoginSchema, IPopulatedForm } from 'src/types'
+import { AuthType } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { DatabaseError } from '../../core/core.errors'
 import {
-  AuthTypeMismatchError,
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidOOBParamsError,
@@ -56,8 +52,6 @@ jest.mock('fs', () => ({
 }))
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
-
-const LoginModel = getLoginModel(mongoose)
 
 describe('spcp.service', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -669,46 +663,6 @@ describe('spcp.service', () => {
         MOCK_COOKIE_AGE / 1000,
       )
       expect(jwtResult._unsafeUnwrap()).toEqual(MOCK_JWT)
-    })
-  })
-
-  describe('addLogin', () => {
-    beforeEach(() => jest.restoreAllMocks())
-    it('should call LoginModel.addLoginFromForm with the given form', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const mockForm = ({ authType: AuthType.SP } as unknown) as IPopulatedForm
-      const mockLogin = ({ esrvcId: 'esrvcId' } as unknown) as ILoginSchema
-      const addLoginSpy = jest
-        .spyOn(LoginModel, 'addLoginFromForm')
-        .mockResolvedValueOnce(mockLogin)
-      const result = await spcpService.addLogin(mockForm, AuthType.SP)
-      expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
-      expect(result._unsafeUnwrap()).toEqual(mockLogin)
-    })
-
-    it('should return AuthTypeMismatchError when auth types do not match', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const mockForm = ({ authType: AuthType.CP } as unknown) as IPopulatedForm
-      const mockLogin = ({ esrvcId: 'esrvcId' } as unknown) as ILoginSchema
-      const addLoginSpy = jest
-        .spyOn(LoginModel, 'addLoginFromForm')
-        .mockResolvedValueOnce(mockLogin)
-      const result = await spcpService.addLogin(mockForm, AuthType.SP)
-      expect(addLoginSpy).not.toHaveBeenCalled()
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new AuthTypeMismatchError(AuthType.SP, AuthType.CP),
-      )
-    })
-
-    it('should return DatabaseError when adding login fails', async () => {
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const mockForm = ({ authType: AuthType.SP } as unknown) as IPopulatedForm
-      const addLoginSpy = jest
-        .spyOn(LoginModel, 'addLoginFromForm')
-        .mockRejectedValueOnce('')
-      const result = await spcpService.addLogin(mockForm, AuthType.SP)
-      expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
-      expect(result._unsafeUnwrapErr()).toEqual(new DatabaseError())
     })
   })
 

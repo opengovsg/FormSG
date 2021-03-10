@@ -1,8 +1,8 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { omit } from 'lodash'
+import { assignIn, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { Merge } from 'type-fest'
+import { Except, Merge } from 'type-fest'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -40,10 +40,18 @@ import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
+  EditFieldError,
   InvalidFileTypeError,
 } from './admin-form.errors'
-import { DuplicateFormBody } from './admin-form.types'
-import { processDuplicateOverrideProps } from './admin-form.utils'
+import {
+  DuplicateFormBody,
+  EditFormFieldParams,
+  FormUpdateParams,
+} from './admin-form.types'
+import {
+  getUpdatedFormFields,
+  processDuplicateOverrideProps,
+} from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -204,10 +212,14 @@ export const getMockSpcpLocals = (
         .map((field) => field._id.toString())
     : []
   switch (authType) {
-    case AuthType.SP:
+    case AuthType.MyInfo:
       return {
         uinFin: 'S1234567A',
         hashedFields: new Set(myInfoFieldIds),
+      }
+    case AuthType.SP:
+      return {
+        uinFin: 'S1234567A',
       }
     case AuthType.CP:
       return {
@@ -265,7 +277,7 @@ export const transferFormOwnership = (
   return (
     // Step 1: Retrieve current owner of form to transfer.
     UserService.findUserById(currentForm.admin._id)
-      .andThen((currentOwner) => {
+      .andThen<IUserSchema, TransferOwnershipError>((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
         if (newOwnerEmail === currentOwner.email) {
@@ -273,7 +285,7 @@ export const transferFormOwnership = (
             new TransferOwnershipError(
               'You are already the owner of this form',
             ),
-          ) as ResultAsync<IUserSchema, TransferOwnershipError | DatabaseError>
+          )
         }
         return okAsync(currentOwner)
       })
@@ -409,4 +421,84 @@ export const duplicateForm = (
       return new DatabaseError(getMongoErrorMessage(error))
     },
   )
+}
+
+/**
+ * Updates form fields of given form depending on the given editFormFieldParams
+ * @param originalForm the original form to update form fields for
+ * @param editFormFieldParams the parameters stating the type of updates and the position metadata if update type is edit
+ *
+ * @returns ok(updated form) if form fields update successfully
+ * @returns err(EditFieldError) if invalid updates are being performed to form fields
+ * @returns err(set of DatabaseError) if any database errors occurs
+ */
+export const editFormFields = (
+  originalForm: IPopulatedForm,
+  editFormFieldParams: EditFormFieldParams,
+): ResultAsync<
+  IPopulatedForm,
+  EditFieldError | ReturnType<typeof transformMongoError>
+> => {
+  // TODO(#815): Split out this function into their own separate service functions depending on the update type.
+  return getUpdatedFormFields(
+    originalForm.form_fields,
+    editFormFieldParams,
+  ).asyncAndThen((newFormFields) => {
+    // Update form fields of original form.
+    originalForm.form_fields = newFormFields
+    return ResultAsync.fromPromise(originalForm.save(), (error) => {
+      logger.error({
+        message: 'Error encountered while editing form fields',
+        meta: {
+          action: 'editFormFields',
+          originalForm,
+          editFormFieldParams,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    })
+  })
+}
+
+/**
+ * Updates form schema of given form depending on the given formUpdateParams
+ * @param originalForm the original form to update form fields for
+ * @param formUpdateParams the parameters to update the original form with
+ *
+ * @returns ok(updated form) if form fields update successfully
+ * @returns err(set of DatabaseError) if any database errors occurs
+ */
+export const updateForm = (
+  originalForm: IPopulatedForm,
+  formUpdateParams: Except<FormUpdateParams, 'editFormField'>,
+): ResultAsync<IPopulatedForm, ReturnType<typeof transformMongoError>> => {
+  // TODO(#815): Split out this function into their own separate service functions depending on the form parameter to update.
+  // Scrub formUpdateParams to remove private details, if any.
+  const scrubbedFormParams = omit(formUpdateParams, [
+    'admin',
+    '__v',
+    '_id',
+    'id',
+    'created',
+    'lastModified',
+  ])
+
+  // Updating some part of form, override original form with new updated form.
+  assignIn(originalForm, scrubbedFormParams)
+
+  return ResultAsync.fromPromise(originalForm.save(), (error) => {
+    logger.error({
+      message: 'Error encountered while updating form',
+      meta: {
+        action: 'updateForm',
+        originalForm,
+        formUpdateParams,
+      },
+      error,
+    })
+
+    return transformMongoError(error)
+  })
 }

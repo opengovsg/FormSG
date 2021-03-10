@@ -5,7 +5,10 @@ import { AuthType } from '../../../types'
 export const redirectParamsMiddleware = celebrate({
   [Segments.QUERY]: Joi.object({
     target: Joi.string().required(),
-    authType: Joi.string().required().valid(AuthType.SP, AuthType.CP),
+    // TODO (#1116): stop allowing AuthType.MyInfo
+    authType: Joi.string()
+      .required()
+      .valid(AuthType.SP, AuthType.CP, AuthType.MyInfo),
     esrvcId: Joi.string().required(),
   }),
 })

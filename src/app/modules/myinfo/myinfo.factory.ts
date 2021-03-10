@@ -1,5 +1,3 @@
-import { IPersonBasic, IPersonBasicRequest } from '@opengovsg/myinfo-gov-client'
-import { pick } from 'lodash'
 import { LeanDocument } from 'mongoose'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -8,32 +6,55 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../../config/feature-manager'
-import { IFieldSchema, IHashes, IMyInfoHashSchema } from '../../../types'
 import {
-  DatabaseError,
-  MissingFeatureError,
-} from '../../modules/core/core.errors'
-import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
+  IFieldSchema,
+  IHashes,
+  IMyInfoHashSchema,
+  MyInfoAttribute,
+} from '../../../types'
+import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { ProcessedFieldResponse } from '../submission/submission.types'
 
+import { MyInfoData } from './myinfo.adapter'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoInvalidAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
-import { IPossiblyPrefilledField } from './myinfo.types'
+import {
+  IMyInfoRedirectURLArgs,
+  IPossiblyPrefilledField,
+  MyInfoParsedRelayState,
+} from './myinfo.types'
 
 interface IMyInfoFactory {
+  createRedirectURL: (
+    params: IMyInfoRedirectURLArgs,
+  ) => Result<string, MissingFeatureError>
+  retrieveAccessToken: (
+    authCode: string,
+  ) => ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError>
   fetchMyInfoPersonData: (
-    params: IPersonBasicRequest,
+    accessToken: string,
+    requestedAttributes: MyInfoAttribute[],
+    singpassEserviceId: string,
   ) => ResultAsync<
-    IPersonBasic,
+    MyInfoData,
     MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
   >
+  parseMyInfoRelayState: (
+    relayState: string,
+  ) => Result<
+    MyInfoParsedRelayState,
+    MyInfoParseRelayStateError | MissingFeatureError
+  >
   prefillMyInfoFields: (
-    myInfoData: IPersonBasic,
+    myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ) => Result<IPossiblyPrefilledField[], MissingFeatureError>
   saveMyInfoHashes: (
@@ -58,6 +79,9 @@ interface IMyInfoFactory {
     Set<string>,
     MyInfoHashingError | MyInfoHashDidNotMatchError | MissingFeatureError
   >
+  extractUinFin: (
+    accessToken: string,
+  ) => Result<string, MyInfoInvalidAccessTokenError | MissingFeatureError>
 }
 
 export const createMyInfoFactory = ({
@@ -67,20 +91,21 @@ export const createMyInfoFactory = ({
   if (!isEnabled || !props) {
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     return {
+      retrieveAccessToken: () => errAsync(error),
       fetchMyInfoPersonData: () => errAsync(error),
       prefillMyInfoFields: () => err(error),
       saveMyInfoHashes: () => errAsync(error),
       fetchMyInfoHashes: () => errAsync(error),
       checkMyInfoHashes: () => errAsync(error),
+      createRedirectURL: () => err(error),
+      parseMyInfoRelayState: () => err(error),
+      extractUinFin: () => err(error),
     }
   }
-  const myInfoConfig = pick(props, ['myInfoClientMode', 'myInfoKeyPath'])
   return new MyInfoService({
-    myInfoConfig,
+    spcpMyInfoConfig: props,
     nodeEnv: config.nodeEnv,
-    realm: config.app.title,
-    singpassEserviceId: props.spEsrvcId,
-    spCookieMaxAge: props.spCookieMaxAge,
+    appUrl: config.app.appUrl,
   })
 }
 

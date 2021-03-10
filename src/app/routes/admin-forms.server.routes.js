@@ -189,7 +189,7 @@ module.exports = function (app) {
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform')
     .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
-    .put(authActiveForm(PermissionLevel.Write), adminForms.update)
+    .put(withUserAuthentication, AdminFormController.handleUpdateForm)
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
     .post(
       withUserAuthentication,
@@ -255,10 +255,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/preview')
-    .get(
-      authActiveForm(PermissionLevel.Read),
-      forms.read(forms.REQUEST_TYPE.ADMIN),
-    )
+    .get(withUserAuthentication, AdminFormController.handlePreviewAdminForm)
 
   /**
    * Duplicate a specified form and return that form to the user.

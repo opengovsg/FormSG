@@ -57,9 +57,12 @@ function EditFieldsModalController(
   vm.myform = externalScope.myform
   vm.attachmentsMax = externalScope.attachmentsMax
 
-  if (vm.field.fieldType === 'dropdown' && vm.field.fieldOptions.length > 0) {
+  if (
+    ['dropdown', 'checkbox'].includes(vm.field.fieldType) &&
+    vm.field.fieldOptions.length > 0
+  ) {
     vm.field.fieldOptionsFromText = vm.field.fieldOptions.join('\n')
-  } else if (['radiobutton', 'checkbox'].includes(vm.field.fieldType)) {
+  } else if (['radiobutton'].includes(vm.field.fieldType)) {
     vm.field.manualOptions = vm.field.fieldOptions
   }
 
@@ -130,7 +133,7 @@ function EditFieldsModalController(
 
   // Updates field.fieldOptions array for dropdown fields when the
   // admin user types into the <textarea>
-  vm.reloadDropdownField = function (field) {
+  vm.reloadFieldOptions = function (field) {
     if (field.fieldOptionsFromText) {
       field.fieldOptions = field.fieldOptionsFromText.split('\n')
     } else {
@@ -360,7 +363,7 @@ function EditFieldsModalController(
   // dropdown options based on what is typed in the textarea, as well as to update
   // the admin preview.
   vm.updateColumnOptions = function (index) {
-    vm.reloadDropdownField(vm.field.columns[index])
+    vm.reloadFieldOptions(vm.field.columns[index])
     vm.field.updateColumnOptions(index)
   }
 

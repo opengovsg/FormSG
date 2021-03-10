@@ -2,7 +2,14 @@ import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { IPopulatedForm, ResponseMode, Status } from '../../../../types'
+import { EditFieldActions } from '../../../../shared/constants'
+import {
+  IFieldSchema,
+  IPopulatedForm,
+  ResponseMode,
+  Status,
+} from '../../../../types'
+import { reorder, replaceAt } from '../../../utils/immutable-array-fns'
 import {
   ApplicationError,
   DatabaseConflictError,
@@ -23,11 +30,14 @@ import {
 
 import {
   CreatePresignedUrlError,
+  EditFieldError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
   AssertFormFn,
   DuplicateFormBody,
+  EditFormFieldParams,
+  EditFormFieldResult,
   OverrideProps,
   PermissionLevel,
 } from './admin-form.types'
@@ -45,6 +55,7 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
+    case EditFieldError:
     case InvalidFileTypeError:
     case CreatePresignedUrlError:
       return {
@@ -236,4 +247,119 @@ export const processDuplicateOverrideProps = (
   }
 
   return overrideProps
+}
+
+/**
+ * Private utility to update given field in the existing form fields.
+ * @param existingFormFields the existing form fields
+ * @param fieldToUpdate the field to replace the current field in existing form fields
+ * @returns ok(new array with updated field) if fieldToUpdate can be found in the current fields
+ * @returns err(EditFieldError) if field to be updated does not exist
+ */
+const updateCurrentField = (
+  existingFormFields: IFieldSchema[],
+  fieldToUpdate: IFieldSchema,
+): EditFormFieldResult => {
+  const existingFieldPosition = existingFormFields.findIndex(
+    (f) => f.globalId === fieldToUpdate.globalId,
+  )
+
+  return existingFieldPosition === -1
+    ? err(new EditFieldError('Field to be updated does not exist'))
+    : ok(replaceAt(existingFormFields, existingFieldPosition, fieldToUpdate))
+}
+
+/**
+ * Private utility to insert given field in the existing form fields.
+ * @param existingFormFields the existing form fields
+ * @param fieldToInsert the field to insert into the back of current fields
+ * @returns ok(new array with field inserted) if fieldToInsert does not already exist
+ * @returns err(EditFieldError) if field to be inserted already exists in current fields
+ */
+const insertField = (
+  existingFormFields: IFieldSchema[],
+  fieldToInsert: IFieldSchema,
+): EditFormFieldResult => {
+  const doesFieldExist = existingFormFields.some(
+    (f) => f.globalId === fieldToInsert.globalId,
+  )
+
+  return doesFieldExist
+    ? err(
+        new EditFieldError(
+          `Field ${fieldToInsert.globalId} to be inserted already exists`,
+        ),
+      )
+    : ok([...existingFormFields, fieldToInsert])
+}
+
+/**
+ * Private utility to delete given field in the existing form fields.
+ * @param existingFormFields the existing form fields
+ * @param fieldToDelete the field to be deleted that exists in the current field
+ * @returns ok(new array with given field deleted) if fieldToDelete can be found in the current fields
+ * @returns err(EditFieldError) if field to be deleted does not exist
+ */
+const deleteField = (
+  existingFormFields: IFieldSchema[],
+  fieldToDelete: IFieldSchema,
+): EditFormFieldResult => {
+  const updatedFormFields = existingFormFields.filter(
+    (f) => f.globalId !== fieldToDelete.globalId,
+  )
+
+  return updatedFormFields.length === existingFormFields.length
+    ? err(new EditFieldError('Field to be deleted does not exist'))
+    : ok(updatedFormFields)
+}
+
+/**
+ * Private utility to reorder the given field to the given newPosition in the existing form fields.
+ *
+ * @param existingFormFields the existing form fields
+ * @param fieldToReorder the field to reorder in the existing form fields
+ * @param newPosition the new index position to move the field to.
+ * @returns ok(new array with updated field) if fieldToReorder can be found in the current fields
+ * @returns err(EditFieldError) if field to reorder does not exist
+ */
+const reorderField = (
+  existingFormFields: IFieldSchema[],
+  fieldToReorder: IFieldSchema,
+  newPosition: number,
+): EditFormFieldResult => {
+  const existingFieldPosition = existingFormFields.findIndex(
+    (f) => f.globalId === fieldToReorder.globalId,
+  )
+
+  return existingFieldPosition === -1
+    ? err(new EditFieldError('Field to be reordered does not exist'))
+    : ok(reorder(existingFormFields, existingFieldPosition, newPosition))
+}
+
+/**
+ * Utility factory to run correct update function depending on given action.
+ * @param currentFormFields the existing form fields to update
+ * @param editFieldParams the parameters with the given update to perform and any metadata required.
+ *
+ * @returns ok(updated form fields array) if fields update successfully
+ * @returns err(EditFieldError) if any errors occur whilst updating fields
+ */
+export const getUpdatedFormFields = (
+  currentFormFields: IPopulatedForm['form_fields'],
+  editFieldParams: EditFormFieldParams,
+): EditFormFieldResult => {
+  const { field: fieldToUpdate, action } = editFieldParams
+
+  switch (action.name) {
+    // Duplicate is just an alias of create for the use case.
+    case EditFieldActions.Create:
+    case EditFieldActions.Duplicate:
+      return insertField(currentFormFields, fieldToUpdate)
+    case EditFieldActions.Delete:
+      return deleteField(currentFormFields, fieldToUpdate)
+    case EditFieldActions.Reorder:
+      return reorderField(currentFormFields, fieldToUpdate, action.position)
+    case EditFieldActions.Update:
+      return updateCurrentField(currentFormFields, fieldToUpdate)
+  }
 }

@@ -1,56 +1,86 @@
 import {
-  IPersonBasic,
-  IPersonBasicRequest,
-  Mode as MyInfoClientMode,
+  IPersonResponse,
   MyInfoGovClient,
+  MyInfoScope,
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
 import fs from 'fs'
 import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
-import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import { IMyInfoConfig } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   Environment,
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  MyInfoAttribute,
 } from '../../../types'
-import { DatabaseError } from '../../modules/core/core.errors'
-import { ProcessedFieldResponse } from '../../modules/submission/submission.types'
+import { DatabaseError } from '../core/core.errors'
+import { ProcessedFieldResponse } from '../submission/submission.types'
 
+import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
+import {
+  MYINFO_CONSENT_PAGE_PURPOSE,
+  MYINFO_REDIRECT_PATH,
+  MYINFO_ROUTER_PREFIX,
+} from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoInvalidAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoParseRelayStateError,
 } from './myinfo.errors'
-import { IPossiblyPrefilledField } from './myinfo.types'
+import {
+  IMyInfoRedirectURLArgs,
+  IMyInfoServiceConfig,
+  IPossiblyPrefilledField,
+  MyInfoParsedRelayState,
+} from './myinfo.types'
 import {
   compareHashedValues,
-  getMyInfoValue,
+  createRelayState,
   hashFieldValues,
-  isFieldReadOnly,
+  isMyInfoRelayState,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
 const logger = createLoggerWithLabel(module)
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
-const MYINFO_STG_PREFIX = 'STG2-'
-const MYINFO_PROD_PREFIX = 'PROD2-'
-const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v2/'
+const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v3'
+const BREAKER_PARAMS = {
+  errorThresholdPercentage: 80, // % of errors before breaker trips
+  timeout: 5000, // max time before individual request fails, ms
+  rollingCountTimeout: 30000, // width of statistical window, ms
+  volumeThreshold: 5, // min number of requests within statistical window before breaker trips
+}
 
 export class MyInfoService {
   /**
-   * Circuit breaker which fires requests to the MyInfo PersonBasic endpoint
+   * Instance of MyInfoGovClient configured with Form credentials.
+   */
+  #myInfoGovClient: MyInfoGovClient
+  /**
+   * Circuit breaker which fires requests to the MyInfo Token endpoint
    * and limits the rate of requests in case the receiving server returns errors.
    */
-  #myInfoClientBreaker: CircuitBreaker<[IPersonBasicRequest], IPersonBasic>
+  #myInfoTokenBreaker: CircuitBreaker<[string], string>
+
+  /**
+   * Circuit breaker which fires requests to the MyInfo Person endpoint
+   * and limits the rate of requests in case the receiving server returns errors.
+   */
+  #myInfoPersonBreaker: CircuitBreaker<
+    [string, MyInfoScope[], string],
+    IPersonResponse
+  >
+
   /**
    * TTL of SingPass cookie in milliseconds.
    */
@@ -64,53 +94,126 @@ export class MyInfoService {
    * @param singpassEserviceId
    * @param spCookieMaxAge Validity duration of the SingPass cookie
    */
-  constructor({
-    myInfoConfig,
-    nodeEnv,
-    realm,
-    singpassEserviceId,
-    spCookieMaxAge,
-  }: {
-    myInfoConfig: IMyInfoConfig
-    nodeEnv: Environment
-    realm: string
-    singpassEserviceId: string
-    spCookieMaxAge: number
-  }) {
-    this.#spCookieMaxAge = spCookieMaxAge
+  constructor({ spcpMyInfoConfig, nodeEnv, appUrl }: IMyInfoServiceConfig) {
+    this.#spCookieMaxAge = spcpMyInfoConfig.spCookieMaxAge
 
-    const { myInfoClientMode, myInfoKeyPath } = myInfoConfig
-    let myInfoGovClient: MyInfoGovClient
-    const myInfoPrefix =
-      myInfoClientMode === MyInfoClientMode.Staging
-        ? MYINFO_STG_PREFIX
-        : MYINFO_PROD_PREFIX
-    if (nodeEnv === Environment.Prod) {
-      myInfoGovClient = new MyInfoGovClient({
-        realm,
-        singpassEserviceId,
-        privateKey: fs.readFileSync(myInfoKeyPath),
-        appId: myInfoPrefix + singpassEserviceId,
-        mode: myInfoClientMode,
-      })
-    } else {
-      myInfoGovClient = new MyInfoGovClient({
-        realm,
-        singpassEserviceId,
-        privateKey: fs.readFileSync(myInfoKeyPath),
-        appId: myInfoPrefix + singpassEserviceId,
-        mode: MyInfoClientMode.Dev,
-      })
-      myInfoGovClient.baseUrl = MYINFO_DEV_BASE_URL
+    this.#myInfoGovClient = new MyInfoGovClient({
+      singpassEserviceId: spcpMyInfoConfig.spEsrvcId,
+      clientPrivateKey: fs.readFileSync(spcpMyInfoConfig.myInfoKeyPath),
+      myInfoPublicKey: fs.readFileSync(spcpMyInfoConfig.myInfoCertPath),
+      clientId: spcpMyInfoConfig.myInfoClientId,
+      clientSecret: spcpMyInfoConfig.myInfoClientSecret,
+      redirectEndpoint: `${appUrl}${MYINFO_ROUTER_PREFIX}${MYINFO_REDIRECT_PATH}`,
+      mode: spcpMyInfoConfig.myInfoClientMode,
+    })
+    if (nodeEnv !== Environment.Prod) {
+      this.#myInfoGovClient.baseAPIUrl = MYINFO_DEV_BASE_URL
     }
+    this.#myInfoTokenBreaker = new CircuitBreaker(
+      (authCode) => this.#myInfoGovClient.getAccessToken(authCode),
+      BREAKER_PARAMS,
+    )
+    this.#myInfoPersonBreaker = new CircuitBreaker(
+      (accessToken, attributes, eSrvcId) =>
+        this.#myInfoGovClient.getPerson(accessToken, attributes, eSrvcId),
+      BREAKER_PARAMS,
+    )
+  }
 
-    this.#myInfoClientBreaker = new CircuitBreaker(
-      (params) => myInfoGovClient.getPersonBasic(params),
-      {
-        errorThresholdPercentage: 80, // % of errors before breaker trips
-        timeout: 5000, // max time before individual request fails, ms
-        rollingCountTimeout: 30000, // width of statistical window, ms
-        volumeThreshold: 5, // min number of requests within statistical window before breaker trips
+  /**
+   * Creates a redirect URL which the client should visit in order to
+   * log in to MyInfo and prefill their data on a form.
+   * @param config.formId ID of form to which user should log in
+   * @param config.formEsrvcId SingPass e-service ID of form
+   * @param config.requestedAttributes MyInfo attributes requested in form
+   */
+  createRedirectURL({
+    formId,
+    formEsrvcId,
+    requestedAttributes,
+  }: IMyInfoRedirectURLArgs): Result<string, never> {
+    const redirectURL = this.#myInfoGovClient.createRedirectURL({
+      purpose: MYINFO_CONSENT_PAGE_PURPOSE,
+      relayState: createRelayState(formId),
+      // Always request consent for NRIC/FIN
+      requestedAttributes: internalAttrListToScopes(requestedAttributes),
+      singpassEserviceId: formEsrvcId,
+    })
+    return ok(redirectURL)
+  }
+
+  /**
+   * Parses state forwarded by MyInfo after user has logged in and MyInfo
+   * has redirected them.
+   * @param relayState State forwarded by MyInfo
+   */
+  parseMyInfoRelayState(
+    relayState: string,
+  ): Result<MyInfoParsedRelayState, MyInfoParseRelayStateError> {
+    const safeJSONParse = Result.fromThrowable(
+      () => JSON.parse(relayState) as unknown,
+      (error) => {
+        logger.error({
+          message: 'Error while calling JSON.parse on MyInfo relay state',
+          meta: {
+            action: 'parseMyInfoRelayState',
+            relayState,
+            error,
+          },
+        })
+        return new MyInfoParseRelayStateError()
+      },
+    )
+    return safeJSONParse().andThen((parsed) => {
+      // Narrow type of parsed
+      if (isMyInfoRelayState(parsed)) {
+        return ok({
+          uuid: parsed.uuid,
+          formId: parsed.formId,
+          // Cookie duration is currently not derived from the relay state
+          // but may be in future, e.g. if rememberMe is implemented
+          cookieDuration: this.#spCookieMaxAge,
+        })
+      }
+      logger.error({
+        message: 'MyInfo relay state had invalid shape',
+        meta: {
+          action: 'parseMyInfoRelayState',
+          relayState,
+        },
+      })
+      return err(new MyInfoParseRelayStateError())
+    })
+  }
+
+  /**
+   * Retrieves an access token from MyInfo as part of OAuth2 flow.
+   * @param authCode Authorisation code provided by MyInfo
+   */
+  retrieveAccessToken(
+    authCode: string,
+  ): ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError> {
+    return ResultAsync.fromPromise(
+      this.#myInfoTokenBreaker.fire(authCode),
+      (error) => {
+        const logMeta = {
+          action: 'retrieveAccessToken',
+        }
+        if (CircuitBreaker.isOurError(error)) {
+          logger.error({
+            message: 'Circuit breaker tripped',
+            meta: logMeta,
+            error,
+          })
+          return new MyInfoCircuitBreakerError()
+        } else {
+          logger.error({
+            message: 'Error retrieving data from MyInfo',
+            meta: logMeta,
+            error,
+          })
+          return new MyInfoFetchError()
+        }
       },
     )
   }
@@ -127,15 +230,22 @@ export class MyInfoService {
    * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
    */
   fetchMyInfoPersonData(
-    params: IPersonBasicRequest,
-  ): ResultAsync<IPersonBasic, MyInfoCircuitBreakerError | MyInfoFetchError> {
+    accessToken: string,
+    requestedAttributes: MyInfoAttribute[],
+    singpassEserviceId: string,
+  ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
     return ResultAsync.fromPromise(
-      this.#myInfoClientBreaker.fire(params),
+      this.#myInfoPersonBreaker
+        .fire(
+          accessToken,
+          internalAttrListToScopes(requestedAttributes),
+          singpassEserviceId,
+        )
+        .then((response) => new MyInfoData(response)),
       (error) => {
         const logMeta = {
           action: 'fetchMyInfoPersonData',
-          requestedAttributes: params.requestedAttributes,
-          eServiceId: params.singpassEserviceId,
+          requestedAttributes,
         }
         if (CircuitBreaker.isOurError(error)) {
           logger.error({
@@ -163,17 +273,18 @@ export class MyInfoService {
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
    */
   prefillMyInfoFields(
-    myInfoData: IPersonBasic,
+    myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): Result<IPossiblyPrefilledField[], never> {
     const prefilledFields = currFormFields.map((field) => {
       if (!field.myInfo?.attr) return field
 
       const myInfoAttr = field.myInfo.attr
-      const myInfoValue = getMyInfoValue(myInfoAttr, myInfoData)
-      const isReadOnly = isFieldReadOnly(myInfoAttr, myInfoValue, myInfoData)
+      const { fieldValue, isReadOnly } = myInfoData.getFieldValueForAttr(
+        myInfoAttr,
+      )
       const prefilledField = cloneDeep(field) as IPossiblyPrefilledField
-      prefilledField.fieldValue = myInfoValue
+      prefilledField.fieldValue = fieldValue
 
       // Disable field
       prefilledField.disabled = isReadOnly
@@ -316,5 +427,28 @@ export class MyInfoService {
       }
       return okAsync(new Set(comparedFieldIds))
     })
+  }
+
+  /**
+   * Decodes and verifies a JWT from MyInfo containing the user's
+   * UIN/FIN.
+   * @param accessToken Access token JWT
+   */
+  extractUinFin(
+    accessToken: string,
+  ): Result<string, MyInfoInvalidAccessTokenError> {
+    return Result.fromThrowable(
+      () => this.#myInfoGovClient.extractUinFin(accessToken),
+      (error) => {
+        logger.error({
+          message: 'Error while extracting uinFin from MyInfo access token',
+          meta: {
+            action: 'extractUinFin',
+          },
+          error,
+        })
+        return new MyInfoInvalidAccessTokenError()
+      },
+    )()
   }
 }

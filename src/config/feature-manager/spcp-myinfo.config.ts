@@ -1,4 +1,4 @@
-import { Mode as MyInfoClientMode } from '@opengovsg/myinfo-gov-client'
+import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 
 import { FeatureNames, RegisterableFeature } from './types'
 
@@ -156,16 +156,35 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
     myInfoClientMode: {
       doc:
         'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
-      format: Object.values(MyInfoClientMode),
-      default: MyInfoClientMode.Production,
+      format: Object.values(MyInfoMode),
+      default: MyInfoMode.Production,
       env: 'MYINFO_CLIENT_CONFIG',
     },
     myInfoKeyPath: {
       doc:
-        'Filepath to MyInfo private key, which is used to decrypt returned responses.',
+        'Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
       format: String,
       default: null,
       env: 'MYINFO_FORMSG_KEY_PATH',
+    },
+    myInfoCertPath: {
+      doc:
+        "Path to MyInfo's public certificate, which is used to verify their signature.",
+      format: String,
+      default: null,
+      env: 'MYINFO_CERT_PATH',
+    },
+    myInfoClientId: {
+      doc: 'OAuth2 client ID registered with MyInfo.',
+      format: String,
+      default: null,
+      env: 'MYINFO_CLIENT_ID',
+    },
+    myInfoClientSecret: {
+      doc: 'OAuth2 client secret registered with MyInfo.',
+      format: String,
+      default: null,
+      env: 'MYINFO_CLIENT_SECRET',
     },
   },
 }

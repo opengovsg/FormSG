@@ -1,6 +1,11 @@
-import { Document, Model } from 'mongoose'
+import { Document, Model, ObjectId } from 'mongoose'
 
-import { IAgencySchema } from './agency'
+import { IAgencySchema, PublicAgency } from './agency'
+import { PublicView } from './database'
+
+export type PublicUser = {
+  agency: PublicAgency | ObjectId
+}
 
 export type AdminContactOtpData = {
   admin: IUserSchema['_id']
@@ -17,7 +22,7 @@ export interface IUser {
 
 export type UserContactView = Pick<IUser, 'email' | 'contact'>
 
-export interface IUserSchema extends IUser, Document {
+export interface IUserSchema extends IUser, Document, PublicView<PublicUser> {
   created?: Date
 }
 

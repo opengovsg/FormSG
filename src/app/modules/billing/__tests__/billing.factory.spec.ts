@@ -6,8 +6,14 @@ import {
   ISpcpMyInfo,
   RegisteredFeature,
 } from 'src/config/feature-manager'
-import { AuthType, LoginStatistic } from 'src/types'
+import {
+  AuthType,
+  ILoginSchema,
+  IPopulatedForm,
+  LoginStatistic,
+} from 'src/types'
 
+import { MissingFeatureError } from '../../core/core.errors'
 import { createBillingFactory } from '../billing.factory'
 import * as BillingService from '../billing.service'
 
@@ -25,7 +31,7 @@ describe('billing.factory', () => {
     const BillingFactory = createBillingFactory(MOCK_DISABLED_FEATURE)
 
     describe('getSpLoginStats', () => {
-      it('should return empty array passthrough', async () => {
+      it('should return empty array passthrough when spcp-myinfo feature is disabled', async () => {
         // Act
         const actualResults = await BillingFactory.getSpLoginStats(
           'anything',
@@ -37,6 +43,19 @@ describe('billing.factory', () => {
         expect(MockBillingService.getSpLoginStats).not.toHaveBeenCalled()
         expect(actualResults.isOk()).toEqual(true)
         expect(actualResults._unsafeUnwrap()).toEqual([])
+      })
+    })
+
+    describe('recordLoginByForm', () => {
+      it('should return MissingFeatureError when spcp-myinfo feature is disabled', async () => {
+        // Argument here does not matter, as the function should always return a MissingFeatureError
+        const result = await BillingFactory.recordLoginByForm(
+          ({} as unknown) as IPopulatedForm,
+        )
+        expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new MissingFeatureError(FeatureNames.SpcpMyInfo),
+        )
       })
     })
   })
@@ -76,6 +95,27 @@ describe('billing.factory', () => {
         expect(serviceGetStatsSpy).toHaveBeenCalledTimes(1)
         expect(actualResults.isOk()).toEqual(true)
         expect(actualResults._unsafeUnwrap()).toEqual(mockLoginStats)
+      })
+    })
+
+    describe('recordLoginByForm', () => {
+      it('should call BillingService.recordLoginByForm', async () => {
+        const mockLoginDoc = ({
+          mockKey: 'mockValue',
+        } as unknown) as ILoginSchema
+        const mockForm = ({
+          mockFormKey: 'mockFormvalue',
+        } as unknown) as IPopulatedForm
+        MockBillingService.recordLoginByForm.mockResolvedValueOnce(
+          okAsync(mockLoginDoc),
+        )
+
+        const result = await BillingFactory.recordLoginByForm(mockForm)
+
+        expect(result._unsafeUnwrap()).toEqual(mockLoginDoc)
+        expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+          mockForm,
+        )
       })
     })
   })

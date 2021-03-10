@@ -199,16 +199,20 @@
   margin-bottom: 13px;
 }
 
-#end-page-main-container #end-page-follow-up {
+#end-page-main-container .end-page-follow-up {
   font-weight: 200;
   font-size: 18px;
 }
 
-#end-page-main-container #end-page-follow-up > p {
+#end-page-main-container .end-page-follow-up.end-page-instructions {
+  margin-bottom: 40px;
+}
+
+#end-page-main-container .end-page-follow-up > p {
   white-space: pre-wrap;
 }
 
-#end-page-main-container #end-page-follow-up > p > a {
+#end-page-main-container .end-page-follow-up > p > a {
   text-decoration: underline;
   color: white;
 }

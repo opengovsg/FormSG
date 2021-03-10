@@ -92,7 +92,7 @@ export const types: IMyInfoFieldType[] = [
     source: 'Immigration and Checkpoints Authority',
     description: 'The residential status of the form-filler.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: ['Alien', 'Citizen', 'NOT APPLICABLE', 'PR', 'Unknown'],
+    fieldOptions: ['ALIEN', 'CITIZEN', 'NOT APPLICABLE', 'PR', 'UNKNOWN'],
   },
   {
     name: MyInfoAttribute.Dialect,

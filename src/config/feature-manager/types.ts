@@ -1,4 +1,4 @@
-import { Mode as MyInfoClientMode } from '@opengovsg/myinfo-gov-client'
+import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { Schema } from 'convict'
 
 export enum FeatureNames {
@@ -63,8 +63,11 @@ export interface ISpcpConfig {
 }
 
 export interface IMyInfoConfig {
-  myInfoClientMode: MyInfoClientMode
+  myInfoClientMode: MyInfoMode
   myInfoKeyPath: string
+  myInfoCertPath: string
+  myInfoClientId: string
+  myInfoClientSecret: string
 }
 
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig

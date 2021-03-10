@@ -113,7 +113,7 @@
                   class="auth-col auth-col-desktop"
                   header-class="'auth-col auth-col-desktop'"
                 >
-                  {{row.authType === 'SP' ? 'SingPass' : 'CorpPass' }}
+                  {{vm.authTypeToName(row.authType)}}
                 </td>
                 <td
                   title="'Auth'"
@@ -121,7 +121,7 @@
                   class="auth-col auth-col-mobile"
                   header-class="'auth-col auth-col-mobile'"
                 >
-                  {{row.authType}}
+                  {{vm.authTypeToShortName(row.authType)}}
                 </td>
                 <td
                   title="'#'"

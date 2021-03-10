@@ -1,4 +1,4 @@
-import { Mode as MyInfoClientMode } from '@opengovsg/myinfo-gov-client'
+import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 
@@ -33,8 +33,11 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   cpFormSgCertPath: 'cpFormSgCertPath',
   spIdpCertPath: 'spIdpCertPath',
   cpIdpCertPath: 'cpIdpCertPath',
-  myInfoClientMode: MyInfoClientMode.Dev,
+  myInfoClientMode: MyInfoMode.Dev,
   myInfoKeyPath: 'myInfoKeyPath',
+  myInfoCertPath: 'myInfoCertPath',
+  myInfoClientId: 'myInfoClientId',
+  myInfoClientSecret: 'myInfoClientSecret',
 }
 
 export const MOCK_ESRVCID = 'eServiceId'
