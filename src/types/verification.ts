@@ -5,10 +5,10 @@ import { IFormSchema } from './form'
 
 export interface IVerificationField {
   fieldType: string
-  signedData?: string | null
-  hashedOtp?: string | null
-  hashCreatedAt?: Date | null
-  hashRetries?: number
+  signedData: string | null
+  hashedOtp: string | null
+  hashCreatedAt: Date | null
+  hashRetries: number
 }
 
 export interface IVerificationFieldSchema

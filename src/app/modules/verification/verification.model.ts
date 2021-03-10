@@ -1,10 +1,7 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import {
-  getExpiryDate,
-  TRANSACTION_EXPIRE_AFTER_SECONDS,
-} from '../../../shared/util/verification'
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   IFormSchema,
   IVerificationFieldSchema,
@@ -15,7 +12,7 @@ import {
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-import { extractTransactionFields } from './verification.util'
+import { extractTransactionFields, getExpiryDate } from './verification.util'
 
 const VERIFICATION_SCHEMA_ID = 'Verification'
 
