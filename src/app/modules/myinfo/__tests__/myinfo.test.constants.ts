@@ -1,6 +1,6 @@
 import {
-  AddressType,
   IPerson,
+  MyInfoAddressType,
   MyInfoMode,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
@@ -8,7 +8,7 @@ import { ObjectId } from 'bson'
 import { merge, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/config/feature-manager'
-import { Environment, MyInfoAttribute } from 'src/types'
+import { Environment, IFormSchema, MyInfoAttribute } from 'src/types'
 
 import { IMyInfoServiceConfig } from '../myinfo.types'
 
@@ -28,7 +28,7 @@ export const MOCK_MYINFO_DATA = {
     nbr: { value: '97324992' },
   },
   regadd: {
-    type: AddressType.Singapore,
+    type: MyInfoAddressType.Singapore,
     country: { code: 'SG', desc: 'SINGAPORE' },
     unit: { value: '128' },
     street: { value: 'BEDOK NORTH AVENUE 1' },
@@ -47,36 +47,6 @@ export const MOCK_MYINFO_DATA = {
     value: 'ALPHA',
   },
 } as IPerson
-
-export const MOCK_MYINFO_FORMAT_DATA = {
-  mobileno: {
-    areacode: { value: '65' },
-    prefix: { value: '+' },
-    lastupdated: '2017-12-13',
-    source: MyInfoSource.GovtVerified,
-    classification: 'C',
-    nbr: { value: '97324992' },
-  },
-  regadd: {
-    type: AddressType.Singapore,
-    country: { code: 'SG', desc: 'SINGAPORE' },
-    unit: { value: '128' },
-    street: { value: 'BEDOK NORTH AVENUE 1' },
-    lastupdated: '2016-03-11',
-    block: { value: '548' },
-    source: MyInfoSource.GovtVerified,
-    postal: { value: '460548' },
-    classification: 'C',
-    floor: { value: '09' },
-    building: { value: '' },
-  },
-  passexpirydate: {
-    lastupdated: '2018-03-02',
-    source: MyInfoSource.GovtVerified,
-    classification: 'C',
-    value: '2018-12-31',
-  },
-}
 
 export const MOCK_FORM_FIELDS = [
   // Some MyInfo fields
@@ -147,12 +117,14 @@ export const MOCK_KEY_PATH =
 export const MOCK_CERT_PATH =
   './node_modules/@opengovsg/mockpass/static/certs/server.crt'
 export const MOCK_ESRVC_ID = 'mockEsrvcId'
-export const MOCK_UINFIN = 'uinFin'
+export const MOCK_UINFIN = 'S1234567A'
 export const MOCK_REQUESTED_ATTRS = [MyInfoAttribute.Name]
 export const MOCK_FORM_ID = new ObjectId().toHexString()
 export const MOCK_NODE_ENV = Environment.Test
-export const MOCK_APP_URL = 'appUrl'
-export const MOCK_ACCESS_TOKEN = 'accessToken'
+export const MOCK_APP_URL = 'mockAppUrl'
+export const MOCK_ACCESS_TOKEN = 'mockAccessToken'
+export const MOCK_REDIRECT_URL = 'mockRedirectURL'
+export const MOCK_AUTH_CODE = 'mockAuthCode'
 
 export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
   appUrl: 'http://localhost:5000',
@@ -168,3 +140,10 @@ export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
     myInfoClientMode: MyInfoMode.Dev,
   } as ISpcpMyInfo,
 }
+
+export const MOCK_MYINFO_FORM = ({
+  _id: MOCK_FORM_ID,
+  esrvcId: MOCK_ESRVC_ID,
+  authType: 'MyInfo',
+  getUniqueMyInfoAttrs: () => MOCK_REQUESTED_ATTRS,
+} as unknown) as IFormSchema

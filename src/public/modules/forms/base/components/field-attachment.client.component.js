@@ -1,5 +1,10 @@
 'use strict'
 
+const {
+  getFileExtension,
+  isInvalidFileExtension,
+  getInvalidFileExtensionsInZip,
+} = require('../../../../../shared/util/file-validation')
 const { FilePlatforms } = require('../../../../../shared/constants')
 
 angular.module('forms').component('attachmentFieldComponent', {
@@ -10,11 +15,11 @@ angular.module('forms').component('attachmentFieldComponent', {
     forms: '<',
     isadminpreview: '<',
   },
-  controller: ['FileHandler', '$timeout', attachmentFieldComponentController],
+  controller: ['$timeout', attachmentFieldComponentController],
   controllerAs: 'vm',
 })
 
-function attachmentFieldComponentController(FileHandler, $timeout) {
+function attachmentFieldComponentController($timeout) {
   const vm = this
 
   vm.isAttachmentTouched = false
@@ -46,21 +51,19 @@ function attachmentFieldComponentController(FileHandler, $timeout) {
 
     if (!file) return
 
-    let fileExt = FileHandler.getFileExtension(file.name)
-    if (FileHandler.isInvalidFileExtension(fileExt)) {
+    let fileExt = getFileExtension(file.name)
+    if (isInvalidFileExtension(fileExt)) {
       showAttachmentError(
         `Your file's extension ending in *${fileExt} is not allowed`,
       )
       return
     }
 
-    const getInvalidFileExtensionsInZip = FileHandler.getInvalidFileExtensionsInZip(
+    const getInvalidFileExts = getInvalidFileExtensionsInZip(
       FilePlatforms.Browser,
     )
     const invalidFilesInZip =
-      fileExt === '.zip'
-        ? getInvalidFileExtensionsInZip(file)
-        : Promise.resolve([])
+      fileExt === '.zip' ? getInvalidFileExts(file) : Promise.resolve([])
     invalidFilesInZip
       .then((invalidFiles) => {
         // Use $timeout to trigger digest cycle

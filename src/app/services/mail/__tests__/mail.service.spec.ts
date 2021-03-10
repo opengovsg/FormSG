@@ -364,7 +364,7 @@ describe('mail.service', () => {
         created: new Date(),
       },
       attachments: [],
-      jsonData: [
+      dataCollationData: [
         {
           question: 'some question',
           answer: 'some answer',
@@ -389,7 +389,7 @@ describe('mail.service', () => {
         question: 'Timestamp',
         answer: FORMATTED_SUBMISSION_TIME,
       },
-      ...MOCK_VALID_SUBMISSION_PARAMS.jsonData,
+      ...MOCK_VALID_SUBMISSION_PARAMS.dataCollationData,
     ]
 
     const generateExpectedArgWithToField = (toField: string[]) => {
@@ -414,7 +414,7 @@ describe('mail.service', () => {
         appName: MOCK_APP_NAME,
         formData: MOCK_VALID_SUBMISSION_PARAMS.formData,
         formTitle: MOCK_VALID_SUBMISSION_PARAMS.form.title,
-        jsonData: EXPECTED_JSON_DATA,
+        dataCollationData: EXPECTED_JSON_DATA,
         refNo: MOCK_VALID_SUBMISSION_PARAMS.submission.id,
         submissionTime: FORMATTED_SUBMISSION_TIME,
       }

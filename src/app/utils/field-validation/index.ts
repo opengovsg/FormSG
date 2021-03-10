@@ -2,15 +2,23 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
 import {
+  ProcessedAttachmentResponse,
+  ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
 } from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IFieldSchema } from '../../../types/field/baseField'
 import { BasicField } from '../../../types/field/fieldTypes'
+import { ResponseValidator } from '../../../types/field/utils/validation'
 import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
+import {
+  constructAttachmentFieldValidator,
+  constructCheckboxFieldValidator,
+  constructSingleAnswerValidator,
+} from './answerValidator.factory'
 import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import {
   isProcessedAttachmentResponse,
@@ -19,7 +27,6 @@ import {
   isProcessedTableResponse,
 } from './field-validation.guards'
 import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
-import { constructSingleAnswerValidator } from './singleAnswerValidator.factory'
 
 const logger = createLoggerWithLabel(module)
 
@@ -70,7 +77,11 @@ const isResponsePresentOnHiddenField = (
       return true
     }
   } else if (isProcessedAttachmentResponse(response)) {
-    if (response.filename.trim() !== '') {
+    if (
+      (response.filename && response.filename.trim() !== '') || // filename is defined only if there is a file uploaded for the response
+      response.answer.trim() !== '' ||
+      response.content
+    ) {
       return true
     }
   }
@@ -88,6 +99,17 @@ const singleAnswerRequiresValidation = (
   formField: IFieldSchema,
   response: ProcessedSingleAnswerResponse,
 ) => (formField.required && response.isVisible) || response.answer.trim() !== ''
+
+const attachmentRequiresValidation = (
+  formField: IFieldSchema,
+  response: ProcessedAttachmentResponse,
+) => (formField.required && response.isVisible) || response.answer.trim() !== ''
+
+const checkboxRequiresValidation = (
+  formField: IFieldSchema,
+  response: ProcessedCheckboxResponse,
+) =>
+  (formField.required && response.isVisible) || response.answerArray.length > 0
 
 /**
  * Generic logging function for invalid fields.
@@ -111,6 +133,24 @@ const logInvalidAnswer = (
       fieldType: formField.fieldType,
     },
   })
+}
+
+/**
+ * Helper function that applies validator to response,
+ * logs if answer is invalid, and returns the result
+ */
+const validateResponseWithValidator = <T extends ProcessedFieldResponse>(
+  validator: ResponseValidator<T>,
+  formId: string,
+  formField: IFieldSchema,
+  response: T,
+): Result<true, ValidateFieldError> => {
+  const validEither = validator(response)
+  if (isLeft(validEither)) {
+    logInvalidAnswer(formId, formField, validEither.left)
+    return err(new ValidateFieldError('Invalid answer submitted'))
+  }
+  return ok(true)
 }
 
 /**
@@ -162,12 +202,12 @@ export const validateField = (
         case BasicField.Number:
         case BasicField.Mobile: {
           const validator = constructSingleAnswerValidator(formField)
-          const validEither = validator(response)
-          if (isLeft(validEither)) {
-            logInvalidAnswer(formId, formField, validEither.left)
-            return err(new ValidateFieldError('Invalid answer submitted'))
-          }
-          return ok(true)
+          return validateResponseWithValidator(
+            validator,
+            formId,
+            formField,
+            response,
+          )
         }
         // Fallback for un-migrated single answer validators
         default: {
@@ -175,11 +215,28 @@ export const validateField = (
         }
       }
     }
-  } else if (
-    isProcessedCheckboxResponse(response) ||
-    isProcessedTableResponse(response)
-  ) {
-    // fallback for processed checkbox/table responses
+  } else if (isProcessedAttachmentResponse(response)) {
+    if (attachmentRequiresValidation(formField, response)) {
+      const validator = constructAttachmentFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
+    }
+  } else if (isProcessedCheckboxResponse(response)) {
+    if (checkboxRequiresValidation(formField, response)) {
+      const validator = constructCheckboxFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
+    }
+  } else if (isProcessedTableResponse(response)) {
+    // fallback for processed table responses
     return classBasedValidation(formId, formField, response)
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')

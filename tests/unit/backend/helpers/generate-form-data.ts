@@ -1,3 +1,4 @@
+/* eslint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
 
 import {
@@ -9,8 +10,10 @@ import {
 import {
   AttachmentSize,
   BasicField,
+  IAttachmentField,
   IAttachmentFieldSchema,
   IAttachmentResponse,
+  ICheckboxField,
   ICheckboxFieldSchema,
   ICheckboxResponse,
   IDecimalFieldSchema,
@@ -25,7 +28,7 @@ import {
 
 export const generateDefaultField = (
   fieldType: BasicField,
-  customParams?: Partial<IField>,
+  customParams?: Partial<IField | IAttachmentField | ICheckboxField>,
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
@@ -61,6 +64,12 @@ export const generateDefaultField = (
         ...defaultParams,
         fieldOptions: ['Option 1', 'Option 2'],
         getQuestion: () => defaultParams.title,
+        ValidationOptions: {
+          customMin: null,
+          customMax: null,
+        },
+        othersRadioButton: false,
+        validateByValue: false,
         ...customParams,
       } as ICheckboxFieldSchema
     case BasicField.Attachment:

@@ -1,8 +1,8 @@
 import { IField, IFieldSchema } from './baseField'
 
 export type CheckboxValidationOptions = {
-  customMax: number
-  customMin: number
+  customMax: number | null
+  customMin: number | null
 }
 
 export interface ICheckboxField extends IField {

@@ -315,10 +315,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // Name of credentials for messaging service, stored in secrets manager
         type: String,
         required: false,
-        validate: [
-          /^([a-zA-Z0-9-/])+$/i,
-          'msgSrvcName must be alphanumeric, dashes and slashes are allowed',
-        ],
+      },
+
+      submissionLimit: {
+        type: Number,
+        default: null,
+        min: 1,
       },
     },
     formSchemaOptions,
@@ -423,6 +425,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'authType',
       'inactiveMessage',
       'responseMode',
+      'submissionLimit',
     ]) as PickDuplicateForm
     return { ...newForm, ...overrideProps }
   }

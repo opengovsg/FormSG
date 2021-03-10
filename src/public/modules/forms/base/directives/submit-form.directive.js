@@ -1,6 +1,8 @@
 'use strict'
 const { cloneDeep } = require('lodash')
 
+const FieldVerificationService = require('../../../../services/FieldVerificationService')
+const MyInfoService = require('../../../../services/MyInfoService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -23,8 +25,8 @@ const FORM_STATES = {
 angular
   .module('forms')
   .directive('submitFormDirective', [
+    '$q',
     '$window',
-    'FormFields',
     'GTag',
     'SpcpRedirect',
     'SpcpSession',
@@ -34,14 +36,12 @@ angular
     'Submissions',
     '$uibModal',
     '$timeout',
-    'Verification',
-    'MyInfoRedirect',
     submitFormDirective,
   ])
 
 function submitFormDirective(
+  $q,
   $window,
-  FormFields,
   GTag,
   SpcpRedirect,
   SpcpSession,
@@ -51,8 +51,6 @@ function submitFormDirective(
   Submissions,
   $uibModal,
   $timeout,
-  Verification,
-  MyInfoRedirect,
 ) {
   return {
     restrict: 'E',
@@ -94,9 +92,8 @@ function submitFormDirective(
 
       scope.formLogin = function (authType, rememberMe) {
         if (authType === 'MyInfo') {
-          return MyInfoRedirect({
-            formId: scope.form._id,
-          })
+          return $q
+            .when(MyInfoService.createRedirectURL(scope.form._id))
             .then((response) => {
               setReferrerToNull()
               $window.location.href = response.redirectURL
@@ -424,11 +421,13 @@ function submitFormDirective(
 
       // Create a transaction if there are fields to be verified and the form is intended for submission
       if (!scope.disableSubmitButton) {
-        Verification.createTransaction({ formId: scope.form._id }).then(
-          ({ transactionId }) => {
-            if (transactionId) scope.transactionId = transactionId
-          },
-        )
+        $q.resolve(
+          FieldVerificationService.createTransactionForForm(scope.form._id),
+        ).then((res) => {
+          if (res.transactionId) {
+            scope.transactionId = res.transactionId
+          }
+        })
       }
     },
   }

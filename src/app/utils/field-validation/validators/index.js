@@ -1,6 +1,4 @@
 module.exports.BaseFieldValidator = require('./BaseFieldValidator.class')
-module.exports.CheckboxValidator = require('./CheckboxValidator.class')
 module.exports.TableValidator = require('./TableValidator.class')
 module.exports.TextValidator = require('./TextValidator.class')
 module.exports.YesNoValidator = require('./YesNoValidator.class')
-module.exports.AttachmentValidator = require('./AttachmentValidator.class')

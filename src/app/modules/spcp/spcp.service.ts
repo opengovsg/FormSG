@@ -297,8 +297,6 @@ export class SpcpService {
         destination,
         rememberMe,
         cookieDuration,
-        // Resolve known express req.query issue where pluses become spaces
-        samlArt: String(samlArt).replace(/ /g, '+'),
       })
     } else {
       logger.error({

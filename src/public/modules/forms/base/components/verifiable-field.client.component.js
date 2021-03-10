@@ -1,5 +1,6 @@
 'use strict'
-const { isEmpty, merge, keys } = require('lodash')
+const { isEmpty, merge, keys, get } = require('lodash')
+const FieldVerificationService = require('../../../../services/FieldVerificationService')
 angular.module('forms').component('verifiableFieldComponent', {
   transclude: true,
   templateUrl: 'modules/forms/base/componentViews/verifiable-field.html',
@@ -8,16 +9,11 @@ angular.module('forms').component('verifiableFieldComponent', {
     field: '<', // The model that the input field is based on
     input: '<',
   },
-  controller: [
-    'Verification',
-    '$timeout',
-    '$interval',
-    verifiableFieldController,
-  ],
+  controller: ['$q', '$timeout', '$interval', verifiableFieldController],
   controllerAs: 'vm',
 })
 
-function verifiableFieldController(Verification, $timeout, $interval) {
+function verifiableFieldController($q, $timeout, $interval) {
   const vm = this
   vm.$onInit = () => {
     vm.otp = {
@@ -50,10 +46,11 @@ function verifiableFieldController(Verification, $timeout, $interval) {
         throw new Error('No transaction id')
       }
 
-      await Verification.getNewOtp(
-        { transactionId: vm.transactionId },
-        { fieldId: vm.field._id, answer: lastRequested.value },
-      )
+      await FieldVerificationService.triggerSendOtp({
+        transactionId: vm.transactionId,
+        fieldId: vm.field._id,
+        answer: lastRequested.value,
+      })
       disableResendButton(DISABLED_SECONDS)
       updateView(STATES.VFN_WAITING_FOR_INPUT)
     } catch (err) {
@@ -81,9 +78,12 @@ function verifiableFieldController(Verification, $timeout, $interval) {
         return onVerificationFailure()
       }
 
-      await Verification.verifyOtp(
-        { transactionId: vm.transactionId },
-        { fieldId: vm.field._id, otp: otp },
+      $q.resolve(
+        FieldVerificationService.verifyOtp({
+          transactionId: vm.transactionId,
+          fieldId: vm.field._id,
+          otp,
+        }),
       )
         .then(onVerificationSuccess)
         .catch(onVerificationFailure)
@@ -110,10 +110,10 @@ function verifiableFieldController(Verification, $timeout, $interval) {
         if (getView() !== STATES.VFN_DEFAULT) {
           // We don't await on reset because we don't care if it fails
           // The signature will be wrong anyway if it fails, and submission will be prevented
-          Verification.resetFieldInTransaction(
-            { transactionId: vm.transactionId },
-            { fieldId: vm.field._id },
-          )
+          FieldVerificationService.resetVerifiedField({
+            transactionId: vm.transactionId,
+            fieldId: vm.field._id,
+          })
         }
         resetDefault()
       }
@@ -244,8 +244,11 @@ function verifiableFieldController(Verification, $timeout, $interval) {
   }
 
   const getErrorMessage = (err) => {
+    // So that switch case works for both axios error objects and string objects.
+    const error = get(err, 'response.data', err)
+
     let errMessage = ''
-    switch (err) {
+    switch (error) {
       case 'SEND_OTP_FAILED':
       case 'RESEND_OTP':
         errMessage = 'Error - try resending the OTP.'

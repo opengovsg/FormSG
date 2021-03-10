@@ -275,7 +275,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}`,
         rememberMe: true,
         cookieDuration: MOCK_PARAMS.spCookieMaxAgePreserved,
-        samlArt: MOCK_SP_SAML,
       })
     })
 
@@ -293,7 +292,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}`,
         rememberMe: true,
         cookieDuration: MOCK_PARAMS.cpCookieMaxAge,
-        samlArt: MOCK_CP_SAML,
       })
     })
 
@@ -311,7 +309,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}`,
         rememberMe: false,
         cookieDuration: MOCK_PARAMS.spCookieMaxAge,
-        samlArt: MOCK_SP_SAML,
       })
     })
 
@@ -329,7 +326,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}`,
         rememberMe: false,
         cookieDuration: MOCK_PARAMS.cpCookieMaxAge,
-        samlArt: MOCK_CP_SAML,
       })
     })
 
@@ -347,7 +343,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}`,
         rememberMe: false,
         cookieDuration: MOCK_PARAMS.spCookieMaxAge,
-        samlArt: MOCK_SP_SAML,
       })
     })
 
@@ -365,7 +360,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}`,
         rememberMe: false,
         cookieDuration: MOCK_PARAMS.cpCookieMaxAge,
-        samlArt: MOCK_CP_SAML,
       })
     })
 
@@ -383,7 +377,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}/`,
         rememberMe: true,
         cookieDuration: MOCK_PARAMS.spCookieMaxAgePreserved,
-        samlArt: MOCK_SP_SAML,
       })
     })
 
@@ -401,7 +394,6 @@ describe('spcp.service', () => {
         destination: `/${MOCK_TARGET}/`,
         rememberMe: true,
         cookieDuration: MOCK_PARAMS.cpCookieMaxAge,
-        samlArt: MOCK_CP_SAML,
       })
     })
 

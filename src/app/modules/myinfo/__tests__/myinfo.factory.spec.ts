@@ -7,6 +7,7 @@ import { Environment } from 'src/types'
 import { MyInfoData } from '../myinfo.adapter'
 import { createMyInfoFactory } from '../myinfo.factory'
 import * as MyInfoServiceModule from '../myinfo.service'
+import { IMyInfoRedirectURLArgs } from '../myinfo.types'
 
 import { MOCK_APP_URL, MOCK_NODE_ENV } from './myinfo.test.constants'
 
@@ -36,6 +37,14 @@ describe('myinfo.factory', () => {
     const error = new Error(
       'spcp-myinfo is not activated, but a feature-specific function was called.',
     )
+    const retrieveAccessTokenResult = await MyInfoFactory.retrieveAccessToken(
+      '',
+    )
+    const createRedirectURLResult = MyInfoFactory.createRedirectURL(
+      {} as IMyInfoRedirectURLArgs,
+    )
+    const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
+    const extractUinFinResult = MyInfoFactory.extractUinFin('')
     const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
       '',
       [],
@@ -58,6 +67,10 @@ describe('myinfo.factory', () => {
       [],
       {},
     )
+    expect(retrieveAccessTokenResult._unsafeUnwrapErr()).toEqual(error)
+    expect(parseMyInfoRelayStateResult._unsafeUnwrapErr()).toEqual(error)
+    expect(createRedirectURLResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractUinFinResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchMyInfoPersonDataResult._unsafeUnwrapErr()).toEqual(error)
     expect(prefillMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
     expect(saveMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
@@ -73,6 +86,14 @@ describe('myinfo.factory', () => {
     const error = new Error(
       'spcp-myinfo is not activated, but a feature-specific function was called.',
     )
+    const retrieveAccessTokenResult = await MyInfoFactory.retrieveAccessToken(
+      '',
+    )
+    const createRedirectURLResult = MyInfoFactory.createRedirectURL(
+      {} as IMyInfoRedirectURLArgs,
+    )
+    const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
+    const extractUinFinResult = MyInfoFactory.extractUinFin('')
     const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
       '',
       [],
@@ -95,6 +116,10 @@ describe('myinfo.factory', () => {
       [],
       {},
     )
+    expect(retrieveAccessTokenResult._unsafeUnwrapErr()).toEqual(error)
+    expect(parseMyInfoRelayStateResult._unsafeUnwrapErr()).toEqual(error)
+    expect(createRedirectURLResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractUinFinResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchMyInfoPersonDataResult._unsafeUnwrapErr()).toEqual(error)
     expect(prefillMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
     expect(saveMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)

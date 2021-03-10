@@ -4,7 +4,11 @@ module.exports = {
   modulePaths: ['<rootDir>'],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/tests/jest-global-setup.js',
-  testPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/dist/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/src/public',
+  ],
   collectCoverageFrom: ['./src/**/*.{ts,js}', '!**/__tests__/**'],
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],
   coverageReporters: ['lcov', 'text'],
@@ -20,4 +24,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  setupFilesAfterEnv: ['jest-extended'],
 }

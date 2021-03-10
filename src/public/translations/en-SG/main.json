@@ -5,7 +5,9 @@
       "ROOT": "https://guide.form.gov.sg/",
       "GUARD_EMAIL_BOUNCE": "https://go.gov.sg/form-prevent-bounces",
       "STORAGE_MODE": "https://guide.form.gov.sg/AdvancedGuide.html#storage-mode",
-      "SECRET_KEY_SAFEKEEPING": "https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-make-sure-i-dont-lose-my-secret-key"
+      "SECRET_KEY_LOSS": "https://go.gov.sg/secretkeyloss",
+      "SECRET_KEY_SAFEKEEPING": "https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-make-sure-i-dont-lose-my-secret-key",
+      "EMAIL_RELIABILITY": "http://go.gov.sg/form-email-reliability"
     },
     "GITHUB": "https://github.com/opengovsg/FormSG",
     "APP": {

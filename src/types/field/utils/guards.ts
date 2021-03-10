@@ -1,6 +1,8 @@
 /* Type guards */
 import {
   BasicField,
+  IAttachmentField,
+  ICheckboxField,
   IDateField,
   IDecimalField,
   IDropdownField,
@@ -36,6 +38,12 @@ export const isLongTextField = (
   return formField.fieldType === BasicField.LongText
 }
 
+export const isCheckboxField = (
+  formField: IField,
+): formField is ICheckboxField => {
+  return formField.fieldType === BasicField.Checkbox
+}
+
 export const isNricField = (formField: IField): formField is INricField => {
   return formField.fieldType === BasicField.Nric
 }
@@ -60,6 +68,12 @@ export const isMobileNumberField = (
   formField: IField,
 ): formField is IMobileField => {
   return formField.fieldType === BasicField.Mobile
+}
+
+export const isAttachmentField = (
+  formField: IField,
+): formField is IAttachmentField => {
+  return formField.fieldType === BasicField.Attachment
 }
 
 export const isDateField = (formField: IField): formField is IDateField => {
