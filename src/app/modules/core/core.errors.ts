@@ -6,15 +6,11 @@ import { FeatureNames } from 'src/config/feature-manager'
  */
 export class ApplicationError extends Error {
   /**
-   * Http status code for the error to be returned in the response.
+   * Meta object to be logged by the application logger, if any.
    */
-  status: number
-  /**
-   * Meta string to be logged by the application logger, if any.
-   */
-  meta?: string
+  meta?: unknown
 
-  constructor(message?: string, status?: number, meta?: string) {
+  constructor(message?: string, meta?: unknown) {
     super()
 
     Error.captureStackTrace(this, this.constructor)
@@ -22,8 +18,6 @@ export class ApplicationError extends Error {
     this.name = this.constructor.name
 
     this.message = message || 'Something went wrong. Please try again.'
-
-    this.status = status || 500
 
     this.meta = meta
   }

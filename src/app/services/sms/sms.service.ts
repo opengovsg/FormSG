@@ -168,7 +168,7 @@ const send = async (
       // Sent but with error code.
       // Throw error to be caught in catch block.
       if (!sid || errorCode) {
-        throw new SmsSendError(errorMessage, errorCode, status)
+        throw new SmsSendError(errorMessage, { errorCode, status })
       }
 
       // Log success
