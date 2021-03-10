@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
+import { okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -16,6 +17,7 @@ import MailService from 'src/app/services/mail/mail.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { generateOtp } from 'src/app/utils/otp'
 import formsgSdk from 'src/config/formsg-sdk'
+import { SALT_ROUNDS } from 'src/shared/util/verification'
 import { BasicField, IUserSchema, IVerificationSchema } from 'src/types'
 
 import dbHandler from '../../helpers/jest-db'
@@ -230,7 +232,7 @@ describe('Verification service', () => {
       transaction.expireAt = new Date(1)
       await transaction.save()
       return expect(
-        getNewOtp(transaction, transaction.fields[0]._id, mockAnswer),
+        getNewOtp(transaction, transaction.fields[0]._id!, mockAnswer),
       ).rejects.toThrowError('TRANSACTION_NOT_FOUND')
     })
 
@@ -245,71 +247,96 @@ describe('Verification service', () => {
       transaction.fields[0].hashCreatedAt = new Date(Date.now() + 6e4)
       // Actual error is 'Wait for _ seconds before requesting'
       return expect(
-        getNewOtp(transaction, transaction.fields[0]._id, mockAnswer),
+        getNewOtp(transaction, transaction.fields[0]._id!, mockAnswer),
       ).rejects.toThrowError('seconds before requesting for a new otp')
     })
 
     it('should send OTP when params are valid for email field', async () => {
+      // Arrange
       // Reset field so we can it update later on
       transaction.fields[0].hashedOtp = null
       transaction.fields[0].signedData = null
       transaction.fields[0].hashCreatedAt = null
       transaction.fields[0].hashRetries = 1
       await transaction.save()
-      await getNewOtp(transaction, transaction.fields[0]._id, mockAnswer)
+      // Mock success of mail sending.
+      MockMailService.sendVerificationOtp.mockReturnValueOnce(okAsync(true))
+
+      // Act
+      await getNewOtp(transaction, transaction.fields[0]._id!, mockAnswer)
+
+      // Assert
       expect(MockGenerateOtp).toHaveBeenCalled()
-      expect(MockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
-      expect(
-        MockFormsgSdk.verification.generateSignature!.mock.calls[0][0],
-      ).toEqual({
-        transactionId: transaction._id,
-        formId: transaction.formId,
-        fieldId: transaction.fields[0]._id,
-        answer: mockAnswer,
-      })
-      expect(MockMailService.sendVerificationOtp.mock.calls[0]).toEqual([
+      expect(MockBcrypt.hash).toHaveBeenCalledWith(mockOtp, SALT_ROUNDS)
+      expect(MockFormsgSdk.verification.generateSignature).toHaveBeenCalledWith(
+        {
+          transactionId: transaction._id,
+          formId: transaction.formId,
+          fieldId: transaction.fields[0]._id!,
+          answer: mockAnswer,
+        },
+      )
+      expect(MockMailService.sendVerificationOtp).toHaveBeenCalledWith(
         mockAnswer,
         mockOtp,
-      ])
+      )
+      // Verification document should have been updated.
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
-      expect(foundTransaction!.fields[0].hashedOtp).toBe(hashedOtp)
-      expect(foundTransaction!.fields[0].signedData).toBe(signedData)
-      expect(foundTransaction!.fields[0].hashRetries).toBe(0)
+
+      expect(foundTransaction!.fields[0]).toEqual(
+        expect.objectContaining({
+          hashCreatedAt: expect.any(Date),
+          hashedOtp,
+          signedData,
+          hashRetries: 0,
+        }),
+      )
     })
 
     it('should send OTP when params are valid for mobile field', async () => {
+      // Arrange
       // Reset field so we can test update later on
       transaction.fields[1].hashedOtp = null
       transaction.fields[1].signedData = null
       transaction.fields[1].hashCreatedAt = null
       transaction.fields[1].hashRetries = 1
       await transaction.save()
-      await getNewOtp(transaction, transaction.fields[1]._id, mockAnswer)
+      // Mock success of sms sending.
+      MockSmsFactory.sendVerificationOtp.mockReturnValueOnce(okAsync(true))
+
+      // Act
+      await getNewOtp(transaction, transaction.fields[1]._id!, mockAnswer)
+
+      // Assert
       expect(MockGenerateOtp).toHaveBeenCalled()
-      expect(MockBcrypt.hash.mock.calls[0][0]).toBe(mockOtp)
-      expect(
-        MockFormsgSdk.verification.generateSignature!.mock.calls[0][0],
-      ).toEqual({
-        transactionId: transaction._id,
-        formId: transaction.formId,
-        fieldId: transaction.fields[1]._id,
-        answer: mockAnswer,
-      })
-      expect(MockSmsFactory.sendVerificationOtp.mock.calls[0]).toEqual([
+      expect(MockBcrypt.hash).toHaveBeenCalledWith(mockOtp, SALT_ROUNDS)
+      expect(MockFormsgSdk.verification.generateSignature).toHaveBeenCalledWith(
+        {
+          transactionId: transaction._id,
+          formId: transaction.formId,
+          fieldId: transaction.fields[1]._id,
+          answer: mockAnswer,
+        },
+      )
+      expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
         mockAnswer,
         mockOtp,
         transaction.formId,
-      ])
+      )
+      // Verification document should have been updated.
       const foundTransaction = await Verification.findOne({
         _id: transaction._id,
       })
-      expect(foundTransaction!.fields[1].hashCreatedAt).toBeInstanceOf(Date)
-      expect(foundTransaction!.fields[1].hashedOtp).toBe(hashedOtp)
-      expect(foundTransaction!.fields[1].signedData).toBe(signedData)
-      expect(foundTransaction!.fields[1].hashRetries).toBe(0)
+      expect(foundTransaction!.fields[1]).toEqual(
+        expect.objectContaining({
+          hashCreatedAt: expect.any(Date),
+          hashedOtp,
+          signedData,
+          hashRetries: 0,
+        }),
+      )
     })
 
     it('should catch and re-throw errors thrown when sending email', async () => {
@@ -324,7 +351,7 @@ describe('Verification service', () => {
         throw new Error(myErrorMsg)
       })
       return expect(
-        getNewOtp(transaction, transaction.fields[0]._id, mockAnswer),
+        getNewOtp(transaction, transaction.fields[0]._id!, mockAnswer),
       ).rejects.toThrowError(myErrorMsg)
     })
 
@@ -340,7 +367,7 @@ describe('Verification service', () => {
         throw new Error(myErrorMsg)
       })
       return expect(
-        getNewOtp(transaction, transaction.fields[1]._id, mockAnswer),
+        getNewOtp(transaction, transaction.fields[1]._id!, mockAnswer),
       ).rejects.toThrowError(myErrorMsg)
     })
   })
@@ -384,7 +411,7 @@ describe('Verification service', () => {
       transaction.expireAt = new Date(1)
       await transaction.save()
       await expect(
-        verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
+        verifyOtp(transaction, transaction.fields[0]._id!, mockOtp),
       ).rejects.toThrowError('TRANSACTION_NOT_FOUND')
       // Check that database was not updated
       const foundTransaction = await Verification.findOne({
@@ -409,7 +436,7 @@ describe('Verification service', () => {
       transaction.fields[0].hashedOtp = null
       await transaction.save()
       await expect(
-        verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
+        verifyOtp(transaction, transaction.fields[0]._id!, mockOtp),
       ).rejects.toThrowError('RESEND_OTP')
       // Check that database was not updated
       const foundTransaction = await Verification.findOne({
@@ -422,7 +449,7 @@ describe('Verification service', () => {
       transaction.fields[0].hashCreatedAt = null
       await transaction.save()
       await expect(
-        verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
+        verifyOtp(transaction, transaction.fields[0]._id!, mockOtp),
       ).rejects.toThrowError('RESEND_OTP')
       // Check that database was not updated
       const foundTransaction = await Verification.findOne({
@@ -436,7 +463,7 @@ describe('Verification service', () => {
       transaction.fields[0].hashCreatedAt = new Date(Date.now() - 6.1e5)
       await transaction.save()
       await expect(
-        verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
+        verifyOtp(transaction, transaction.fields[0]._id!, mockOtp),
       ).rejects.toThrowError('RESEND_OTP')
       // Check that database was not updated
       const foundTransaction = await Verification.findOne({
@@ -450,7 +477,7 @@ describe('Verification service', () => {
       transaction.fields[0].hashRetries = tooManyRetries
       await transaction.save()
       await expect(
-        verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
+        verifyOtp(transaction, transaction.fields[0]._id!, mockOtp),
       ).rejects.toThrowError('RESEND_OTP')
       // Check that database was not updated
       const foundTransaction = await Verification.findOne({
@@ -463,7 +490,7 @@ describe('Verification service', () => {
       MockBcrypt.compare.mockReturnValueOnce(Promise.resolve(false))
       await transaction.save()
       await expect(
-        verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
+        verifyOtp(transaction, transaction.fields[0]._id!, mockOtp),
       ).rejects.toThrowError('INVALID_OTP')
       // Check that database was updated
       const foundTransaction = await Verification.findOne({
@@ -476,7 +503,7 @@ describe('Verification service', () => {
       MockBcrypt.compare.mockReturnValueOnce(Promise.resolve(true))
       await transaction.save()
       await expect(
-        verifyOtp(transaction, transaction.fields[0]._id, mockOtp),
+        verifyOtp(transaction, transaction.fields[0]._id!, mockOtp),
       ).resolves.toBe(signedData)
       // Check that database was updated
       const foundTransaction = await Verification.findOne({
