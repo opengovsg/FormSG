@@ -35,6 +35,7 @@ describe('FieldVerificationService', () => {
         formId: mockFormId,
       })
     })
+
     it('should successfully return empty transaction data when returned data is empty', async () => {
       // Arrange
       const expected: FetchNewTransactionResponse = {}
