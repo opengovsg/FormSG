@@ -1,6 +1,7 @@
 const { StatusCodes } = require('http-status-codes')
 const { times, omit } = require('lodash')
 const ejs = require('ejs')
+const { okAsync, errAsync } = require('neverthrow')
 const express = require('express')
 const request = require('supertest')
 const mongoose = require('mongoose')
@@ -23,6 +24,10 @@ const vfnConstants = require('../../../../dist/backend/shared/util/verification'
 const {
   SPCPFieldTitle,
 } = require('../../../../dist/backend/types/field/fieldTypes')
+const {
+  MailSendError,
+  MailGenerationError,
+} = require('../../../../dist/backend/app/services/mail/mail.errors')
 
 describe('Email Submissions Controller', () => {
   // Declare global variables
@@ -124,7 +129,7 @@ describe('Email Submissions Controller', () => {
 
     it('sends mail with correct parameters', (done) => {
       // Arrange
-      sendSubmissionMailSpy.and.callFake(() => Promise.resolve(true))
+      sendSubmissionMailSpy.and.callFake(() => okAsync(true))
 
       request(app)
         .get(endpointPath)
@@ -139,8 +144,20 @@ describe('Email Submissions Controller', () => {
 
     it('errors with 400 on send failure', (done) => {
       // Arrange
+      sendSubmissionMailSpy.and.callFake(() => errAsync(new MailSendError()))
+      // Trigger error by deleting recipient list
+      delete fixtures.form.emails
+      request(app)
+        .get(endpointPath)
+        .expect(StatusCodes.BAD_REQUEST)
+        .then(done)
+        .catch(done)
+    })
+
+    it('errors with 400 on generation failure', (done) => {
+      // Arrange
       sendSubmissionMailSpy.and.callFake(() =>
-        Promise.reject(new Error('mockErrorResponse')),
+        errAsync(new MailGenerationError()),
       )
       // Trigger error by deleting recipient list
       delete fixtures.form.emails
