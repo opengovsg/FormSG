@@ -12,12 +12,7 @@ export const isPhoneNumber = (phoneNumber: string): boolean => {
     return false
   }
 
-  // Using isPossible() only for SG numbers due to some valid SG numbers
-  // being marked as invalid due to its newness.
-  if (parsedNumber.countryCallingCode === '65') {
-    return parsedNumber.isPossible()
-  }
-  return parsedNumber.isValid()
+  return parsedNumber.isPossible()
 }
 
 /**
