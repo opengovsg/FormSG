@@ -15,7 +15,7 @@ const sessionMiddlewares = (connection: Connection): RequestHandler[] => {
     cookie: config.cookieSettings,
     name: 'connect.sid',
     store: MongoStore.create({
-      clientPromise: Promise.resolve(connection.getClient()),
+      client: connection.getClient(),
     }),
   })
 
