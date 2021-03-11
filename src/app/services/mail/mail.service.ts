@@ -107,6 +107,56 @@ export class MailService {
   }
 
   /**
+   * Private function to wrap the sending of email using SES / Direct transport with retries.
+   * @param mail Mail data to send with
+   * @param loggerMeta optional object to pass into logger
+   * @returns true on successful mail sending
+   * @throws error if mail still fails to send after retries
+   */
+  #sendMailWithRetries = (
+    mail: MailOptions,
+    loggerMeta?: Record<string, unknown>,
+  ): Promise<true> => {
+    const logMeta = {
+      action: '#sendMailWithRetries',
+      mailFrom: mail.from,
+      mailSubject: mail.subject,
+      ...loggerMeta,
+    }
+
+    return promiseRetry<true>(async (retry, attemptNum) => {
+      logger.info({
+        message: `Attempt ${attemptNum} to send mail`,
+        meta: logMeta,
+      })
+
+      try {
+        await this.#transporter.sendMail(mail)
+        logger.info({
+          message: `Mail successfully sent on attempt ${attemptNum}`,
+          meta: logMeta,
+        })
+        return true
+      } catch (error) {
+        // Pass errors to the callback
+        logger.error({
+          message: `Send mail failure on attempt ${attemptNum}`,
+          meta: logMeta,
+          error,
+        })
+
+        // Retry only on 4xx errors.
+        if (inRange(get(error, 'responseCode', 0), 400, 500)) {
+          return retry(error)
+        }
+
+        // Not 4xx error, rethrow error.
+        throw error
+      }
+    }, this.#retryParams)
+  }
+
+  /**
    * Private function to send email using SES / Direct transport.
    * @param mail Mail data to send with
    * @param sendOptions Extra options to better identify mail, such as form or mail id.
@@ -120,9 +170,9 @@ export class MailService {
     const logMeta = {
       action: '#sendNodeMail',
       mailId: sendOptions?.mailId,
+      formId: sendOptions?.formId,
       mailFrom: mail.from,
       mailSubject: mail.subject,
-      formId: sendOptions?.formId,
     }
 
     // Guard against missing mail info.
@@ -145,46 +195,20 @@ export class MailService {
     }
 
     return ResultAsync.fromPromise(
-      promiseRetry<true>((retry, attemptNum) => {
-        logger.info({
-          message: `Attempt ${attemptNum} to send mail`,
-          meta: logMeta,
-        })
-
-        return this.#transporter
-          .sendMail(mail)
-          .then(() => {
-            logger.info({
-              message: `Mail successfully sent on attempt ${attemptNum}`,
-              meta: logMeta,
-            })
-            return true as const
-          })
-          .catch((err) => {
-            // Pass errors to the callback
-            logger.error({
-              message: `Send mail failure on attempt ${attemptNum}`,
-              meta: logMeta,
-              error: err,
-            })
-
-            // Retry only on 4xx errors.
-            if (inRange(get(err, 'responseCode', 0), 400, 500)) {
-              return retry(err)
-            }
-
-            // Not 4xx error, rethrow error.
-            throw err
-          })
-      }, this.#retryParams),
-      (err) => {
+      this.#sendMailWithRetries(mail, {
+        mailId: sendOptions?.mailId,
+        formId: sendOptions?.formId,
+      }),
+      (error) => {
         logger.error({
           message: 'Error returned from sendMail retries',
           meta: logMeta,
-          error: err,
+          error,
         })
 
-        return new MailSendError('Failed to send mail')
+        return new MailSendError('Failed to send mail', {
+          originalError: error,
+        })
       },
     )
   }
