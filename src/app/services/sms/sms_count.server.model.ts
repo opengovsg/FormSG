@@ -68,7 +68,7 @@ const bounceSmsCountSchema = {
     validate: (value: string) => {
       const phoneNumber = parsePhoneNumberFromString(value)
       if (!phoneNumber) return false
-      return phoneNumber.isPossible()
+      return phoneNumber.isValid()
     },
     required: true,
   },

@@ -57,7 +57,7 @@ const compileUserModel = (db: Mongoose) => {
           validator: function (value: string) {
             const phoneNumber = parsePhoneNumberFromString(value)
             if (!phoneNumber) return false
-            return phoneNumber.isPossible()
+            return phoneNumber.isValid()
           },
           message: (props) => `${props.value} is not a valid mobile number`,
         },
