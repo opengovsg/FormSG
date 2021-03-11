@@ -161,7 +161,7 @@ const logSmsSend = (logParams: LogSmsParams) => {
  * @param recipient The mobile number of the recipient
  * @param message The message to send
  */
-const send = (
+const sendSms = (
   twilioConfig: TwilioConfig,
   smsData: FormOtpData | AdminContactOtpData,
   recipient: string,
@@ -324,7 +324,7 @@ export const sendVerificationOtp = (
         new URL(config.app.appUrl).host,
       )
 
-      return send(
+      return sendSms(
         twilioConfig,
         otpData,
         recipient,
@@ -355,7 +355,13 @@ export const sendAdminContactOtp = (
     admin: userId,
   }
 
-  return send(defaultConfig, otpData, recipient, message, SmsType.AdminContact)
+  return sendSms(
+    defaultConfig,
+    otpData,
+    recipient,
+    message,
+    SmsType.AdminContact,
+  )
 }
 
 /**
@@ -400,7 +406,7 @@ export const sendFormDeactivatedSms = (
     },
   }
 
-  return send(
+  return sendSms(
     defaultConfig,
     smsData,
     recipient,
@@ -451,7 +457,7 @@ export const sendBouncedSubmissionSms = (
     },
   }
 
-  return send(
+  return sendSms(
     defaultConfig,
     smsData,
     recipient,
