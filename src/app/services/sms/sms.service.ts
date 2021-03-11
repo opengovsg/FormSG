@@ -223,7 +223,11 @@ const send = (
           return errAsync(
             errorCode === 21211
               ? new InvalidNumberError()
-              : new SmsSendError('Error sending SMS to given number'),
+              : new SmsSendError('Error sending SMS to given number', {
+                  status,
+                  errorCode,
+                  errorMessage,
+                }),
           )
         }
 
