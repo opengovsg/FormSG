@@ -172,9 +172,11 @@ describe('mail.service', () => {
       )
 
       // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MailSendError('Failed to send mail'),
-      )
+      const actualError = actualResult._unsafeUnwrapErr()
+      // error equality does not check for existence of meta. Jest bug?
+      expect(actualError).toEqual(new MailSendError('Failed to send mail'))
+      expect(actualError.meta).toEqual({ originalError: mock4xxReject })
+
       // Check arguments passed to sendNodeMail
       // Should have been called MOCK_RETRY_COUNT + 1 times
       expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
@@ -269,8 +271,9 @@ describe('mail.service', () => {
         ipAddress: MOCK_IP,
       })
       // Assert
-      expect(actualResult.isErr()).toBe(true)
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MailSendError)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new MailSendError('Invalid email error'),
+      )
     })
 
     it('should autoretry when 4xx error is thrown by sendNodeMail and pass if second try passes', async () => {
@@ -321,8 +324,9 @@ describe('mail.service', () => {
       })
 
       // Assert
-      expect(actualResult.isErr()).toBe(true)
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MailSendError)
+      const actualError = actualResult._unsafeUnwrapErr()
+      expect(actualError).toEqual(new MailSendError('Failed to send mail'))
+      expect(actualError.meta).toEqual({ originalError: mock4xxReject })
       // Check arguments passed to sendNodeMail
       // Should have been called MOCK_RETRY_COUNT + 1 times
       expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
@@ -350,8 +354,10 @@ describe('mail.service', () => {
       })
 
       // Assert
-      expect(actualResult.isErr()).toBe(true)
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MailSendError)
+      const actualError = actualResult._unsafeUnwrapErr()
+      expect(actualError).toEqual(new MailSendError('Failed to send mail'))
+      // Should not be the 4xx error but the final error.
+      expect(actualError.meta).toEqual({ originalError: mockError })
       // Check arguments passed to sendNodeMail
       // Should only invoke two times and stop since the second rejected value
       // is non-4xx error.
@@ -642,9 +648,9 @@ describe('mail.service', () => {
       )
 
       // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MailSendError('Failed to send mail'),
-      )
+      const actualError = actualResult._unsafeUnwrapErr()
+      expect(actualError).toEqual(new MailSendError('Failed to send mail'))
+      expect(actualError.meta).toEqual({ originalError: mock4xxReject })
       // Check arguments passed to sendNodeMail
       // Should have been called MOCK_RETRY_COUNT + 1 times
       expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
@@ -679,9 +685,10 @@ describe('mail.service', () => {
       )
 
       // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MailSendError('Failed to send mail'),
-      )
+      const actualError = actualResult._unsafeUnwrapErr()
+      expect(actualError).toEqual(new MailSendError('Failed to send mail'))
+      // Final error logged should be the non-4xx error.
+      expect(actualError.meta).toEqual({ originalError: mockError })
       // Check arguments passed to sendNodeMail
       // Should retry two times and stop since the second rejected value is
       // non-4xx error.
@@ -1194,9 +1201,9 @@ describe('mail.service', () => {
       const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MailSendError('Failed to send mail'),
-      )
+      const actualError = actualResult._unsafeUnwrapErr()
+      expect(actualError).toEqual(new MailSendError('Failed to send mail'))
+      expect(actualError.meta).toEqual({ originalError: mock4xxReject })
       // Check arguments passed to sendNodeMail
       // Should have been called MOCK_RETRY_COUNT + 1 times
       expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
@@ -1225,9 +1232,10 @@ describe('mail.service', () => {
       const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MailSendError('Failed to send mail'),
-      )
+      const actualError = actualResult._unsafeUnwrapErr()
+      expect(actualError).toEqual(new MailSendError('Failed to send mail'))
+      // Final error should be non-4xx error.
+      expect(actualError.meta).toEqual({ originalError: mockError })
       // Check arguments passed to sendNodeMail
       // Should retry two times and stop since the second rejected value is
       // non-4xx error.
