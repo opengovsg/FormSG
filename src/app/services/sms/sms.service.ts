@@ -14,6 +14,7 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from '../../modules/core/core.errors'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 
 import { InvalidNumberError, SmsSendError } from './sms.errors'
 import {
@@ -296,7 +297,7 @@ export const sendVerificationOtp = (
       error,
     })
 
-    return new DatabaseError()
+    return new DatabaseError(getMongoErrorMessage(error))
   }).andThen((otpData) => {
     if (!otpData) {
       const errMsg = `Unable to retrieve otpData from ${formId}`

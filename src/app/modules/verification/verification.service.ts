@@ -20,6 +20,7 @@ import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { generateOtp } from '../../utils/otp'
 import {
   ApplicationError,
@@ -187,9 +188,7 @@ export const getNewOtp = async (
               },
               error,
             })
-            return new DatabaseError(
-              'Database error occurred whilst updating verification document',
-            )
+            return new DatabaseError(getMongoErrorMessage(error))
           },
         )
         // TODO(#941): Properly handle error in controller instead of throwing.
