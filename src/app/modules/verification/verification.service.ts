@@ -309,7 +309,10 @@ const sendOtpForField = (
       return MailService.sendVerificationOtp(recipient, otp)
     default:
       return errAsync(
-        new ApplicationError(`sendOTPForField: ${fieldType} is unsupported`),
+        new ApplicationError(
+          'Unsupported field type passed to sendOtpForField',
+          { fieldType },
+        ),
       )
   }
 }
