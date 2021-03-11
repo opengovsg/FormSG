@@ -3,11 +3,9 @@ import crypto from 'crypto'
 import { readFileSync } from 'fs'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
-import { mocked } from 'ts-jest/utils'
 
 import { getEmailSubmissionModel } from 'src/app/models/submission.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import MailService from 'src/app/services/mail/mail.service'
 import {
   AuthType,
   BasicField,
@@ -23,7 +21,6 @@ import {
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
-import { SendAdminEmailError } from '../../submission.errors'
 import { ProcessedSingleAnswerResponse } from '../../submission.types'
 import {
   DIGEST_TYPE,
@@ -38,11 +35,6 @@ import {
 import * as EmailSubmissionService from '../email-submission.service'
 
 type ResolvedValue<T> = T extends PromiseLike<infer U> ? U | T : never
-
-jest.mock('src/config/config')
-
-jest.mock('src/app/services/mail/mail.service')
-const MockMailService = mocked(MailService, true)
 
 const MOCK_SALT = Buffer.from('salt')
 const MOCK_HASH = Buffer.from('mockHash')
@@ -344,49 +336,6 @@ describe('email-submission.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(
         new DatabaseError('Error while saving submission to database'),
       )
-    })
-  })
-
-  describe('sendSubmissionToAdmin', () => {
-    const MOCK_PARAMS = {
-      replyToEmails: ['a@abc.com', 'b@cde.com'],
-      form: { _id: 'id', title: 'title', emails: ['c@fgh.com', 'd@ijk.com'] },
-      submission: { _id: 'id2', created: new Date() },
-      attachments: [
-        {
-          filename: 'filename',
-          content: Buffer.from('content'),
-        },
-      ],
-      dataCollationData: [{ question: 'question', answer: 'answer' }],
-      formData: [{ question: 'question', answer: 'answer' }],
-    }
-    it('should call MailService correctly', async () => {
-      MockMailService.sendSubmissionToAdmin.mockResolvedValueOnce(true)
-
-      const result = await EmailSubmissionService.sendSubmissionToAdmin(
-        (MOCK_PARAMS as unknown) as Parameters<
-          typeof MailService['sendSubmissionToAdmin']
-        >[0],
-      )
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
-        MOCK_PARAMS,
-      )
-      expect(result._unsafeUnwrap()).toBe(true)
-    })
-
-    it('should return SendAdminEmailError if mail service fails', async () => {
-      MockMailService.sendSubmissionToAdmin.mockRejectedValueOnce(true)
-
-      const result = await EmailSubmissionService.sendSubmissionToAdmin(
-        (MOCK_PARAMS as unknown) as Parameters<
-          typeof MailService['sendSubmissionToAdmin']
-        >[0],
-      )
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
-        MOCK_PARAMS,
-      )
-      expect(result._unsafeUnwrapErr()).toEqual(new SendAdminEmailError())
     })
   })
 
