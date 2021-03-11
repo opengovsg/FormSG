@@ -1,5 +1,4 @@
 import { SecretsManager } from 'aws-sdk'
-import dedent from 'dedent-js'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
@@ -30,6 +29,7 @@ import {
 import {
   renderBouncedSubmissionSms,
   renderFormDeactivatedSms,
+  renderVerificationSms,
 } from './sms.util'
 import getSmsCountModel from './sms_count.server.model'
 
@@ -319,11 +319,10 @@ export const sendVerificationOtp = (
       true,
       SmsSendError | InvalidNumberError
     >((twilioConfig) => {
-      const message = dedent`Use the OTP ${otp} to complete your submission on ${
-        new URL(config.app.appUrl).host
-      }.
-
-  If you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`
+      const message = renderVerificationSms(
+        otp,
+        new URL(config.app.appUrl).host,
+      )
 
       return send(
         twilioConfig,
