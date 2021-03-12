@@ -18,6 +18,22 @@ angular.module('core').config([
       templateUrl: 'modules/core/views/landing.client.view.html',
       controller: 'LandingPageController',
       controllerAs: 'vm',
+      resolve: {
+        AnalyticStats: [
+          'Analytics',
+          '$q',
+          function (Analytics) {
+            const formCountP = Analytics.getFormCount()
+            const userCountP = Analytics.getUserCount()
+            const submissionCountP = Analytics.getSubmissionCount()
+            return Promise.all([formCountP, userCountP, submissionCountP]).then(
+              ([formCount, userCount, submissionCount]) => {
+                return { formCount, userCount, submissionCount }
+              },
+            )
+          },
+        ],
+      },
     })
   },
 ])

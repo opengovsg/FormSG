@@ -10,7 +10,7 @@ angular
     '$timeout',
     '$translate',
     '$translatePartialLoader',
-    'Analytics',
+    'AnalyticStats',
     LandingPageController,
   ])
 
@@ -20,7 +20,7 @@ function LandingPageController(
   $timeout,
   $translate,
   $translatePartialLoader,
-  Analytics,
+  AnalyticStats,
 ) {
   const vm = this
 
@@ -29,11 +29,7 @@ function LandingPageController(
   $translate.refresh()
 
   // Hero
-  vm.stats = {
-    formCount: 0,
-    userCount: 0,
-    submissionCount: 0,
-  }
+  vm.stats = AnalyticStats
 
   vm.selectedCarousel = 0
   vm.prevCarousel = () => {
@@ -82,19 +78,6 @@ function LandingPageController(
   vm.nextTestimonial = () => {
     vm.selectedTestimonial =
       vm.selectedTestimonial === 2 ? 0 : vm.selectedTestimonial + 1
-  }
-
-  /**
-   * Initialises form statistics
-   */
-  function initialiseStats() {
-    ;[
-      [Analytics.getFormCount, 'formCount'],
-      [Analytics.getUserCount, 'userCount'],
-      [Analytics.getSubmissionCount, 'submissionCount'],
-    ].forEach(([fn, key]) =>
-      fn().then((response) => (vm.stats[key] = response), console.error),
-    )
   }
 
   /**
@@ -209,7 +192,6 @@ function LandingPageController(
   vm.init = function () {
     vm.currentYear = new Date().getFullYear()
     $timeout(() => {
-      initialiseStats()
       addCarouselBehavior()
     })
   }
