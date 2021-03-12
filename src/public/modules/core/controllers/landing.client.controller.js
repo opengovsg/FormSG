@@ -7,7 +7,6 @@ angular
   .controller('LandingPageController', [
     '$scope',
     '$state',
-    '$interval',
     '$timeout',
     '$translate',
     '$translatePartialLoader',
@@ -18,7 +17,6 @@ angular
 function LandingPageController(
   $scope,
   $state,
-  $interval,
   $timeout,
   $translate,
   $translatePartialLoader,
