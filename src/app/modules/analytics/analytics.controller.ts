@@ -2,6 +2,8 @@ import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { combine } from 'neverthrow'
 
+import { AnalyticStats } from 'src/types/analytics'
+
 import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../utils/request'
@@ -108,11 +110,12 @@ export const handleGetStatistics: RequestHandler = async (req, res) => {
     await getSubmissionCount(),
   ])
     .map(([userCount, formCount, submissionCount]) => {
-      return res.json({
+      const stats: AnalyticStats = {
         userCount,
         formCount,
         submissionCount,
-      })
+      }
+      return res.json(stats)
     })
     .mapErr((e) => {
       logger.error({
