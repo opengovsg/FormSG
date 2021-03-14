@@ -1,3 +1,5 @@
+const { default: axios } = require('axios')
+
 angular.module('core').factory('Analytics', ['$q', '$http', Analytics])
 
 function Analytics($q, $http) {
@@ -42,6 +44,12 @@ function Analytics($q, $http) {
         },
       )
       return deferred.promise
+    },
+
+    getStatistics: () => {
+      return axios
+        .get('/analytics/statistics')
+        .then((response) => response.data)
     },
   }
   return analyticsService

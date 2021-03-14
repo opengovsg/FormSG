@@ -21,16 +21,8 @@ angular.module('core').config([
       resolve: {
         AnalyticStats: [
           'Analytics',
-          '$q',
           function (Analytics) {
-            const formCountP = Analytics.getFormCount()
-            const userCountP = Analytics.getUserCount()
-            const submissionCountP = Analytics.getSubmissionCount()
-            return Promise.all([formCountP, userCountP, submissionCountP]).then(
-              ([formCount, userCount, submissionCount]) => {
-                return { formCount, userCount, submissionCount }
-              },
-            )
+            return Analytics.getStatistics()
           },
         ],
       },
