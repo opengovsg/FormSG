@@ -107,6 +107,9 @@ export const handleGetFormCount: RequestHandler = async (req, res) => {
   )()
 }
 
+/**
+ * Controller for returning application statistics
+ */
 export const handleGetStatistics: RequestHandler = async (req, res) => {
   void pipe(
     sequence(TE.taskEither)([

@@ -15,8 +15,6 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Retrieves the number of user documents in the database.
- * @returns ok(user count) on success
- * @returns err(DatabaseError) on query failure
  */
 export const getUserCount = (): TaskEither<DatabaseError, number> => {
   return tryCatch(
@@ -37,8 +35,6 @@ export const getUserCount = (): TaskEither<DatabaseError, number> => {
 
 /**
  * Retrieves the number of submission documents in the database.
- * @returns ok(submissions count) on success
- * @returns err(DatabaseError) on query failure
  */
 export const getSubmissionCount = (): TaskEither<DatabaseError, number> => {
   return tryCatch(
@@ -59,8 +55,6 @@ export const getSubmissionCount = (): TaskEither<DatabaseError, number> => {
 
 /**
  * Retrieves the number of form documents in the database.
- * @returns ok(forms count) on success
- * @returns err(DatabaseError) on query failure
  */
 export const getFormCount = (): TaskEither<DatabaseError, number> => {
   return tryCatch(
