@@ -1,5 +1,7 @@
 'use strict'
 
+const Analytics = require('../services/analytics.client.service')
+
 angular.module('core').config([
   '$urlRouterProvider',
   '$stateProvider',
@@ -20,9 +22,9 @@ angular.module('core').config([
       controllerAs: 'vm',
       resolve: {
         AnalyticStats: [
-          'Analytics',
-          function (Analytics) {
-            return Analytics.getStatistics()
+          '$q',
+          function ($q) {
+            return $q.resolve(Analytics.getLandingPageStatistics())
           },
         ],
       },
