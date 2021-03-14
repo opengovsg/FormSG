@@ -34,3 +34,11 @@ AnalyticsRouter.get(
   '/submissions',
   AnalyticsController.handleGetSubmissionCount,
 )
+
+/**
+ * Retrieves the total number of users, forms and submissions of forms across the application.
+ * @route GET /analytics/statistics
+ * @group analytics - FormSG usage statistics
+ * @returns 200
+ */
+AnalyticsRouter.get('/statistics', AnalyticsController.handleGetStatistics)
