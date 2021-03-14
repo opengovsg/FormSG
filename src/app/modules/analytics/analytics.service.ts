@@ -28,7 +28,7 @@ export const getUserCount = (): TaskEither<DatabaseError, number> => {
         error,
       })
 
-      return new DatabaseError()
+      return new DatabaseError('Error retrieving user collection count')
     },
   )
 }
@@ -48,7 +48,7 @@ export const getSubmissionCount = (): TaskEither<DatabaseError, number> => {
         error,
       })
 
-      return new DatabaseError()
+      return new DatabaseError('Error retrieving submission collection count')
     },
   )
 }
@@ -68,7 +68,7 @@ export const getFormCount = (): TaskEither<DatabaseError, number> => {
         error,
       })
 
-      return new DatabaseError()
+      return new DatabaseError('Error retrieving form collection count')
     },
   )
 }
