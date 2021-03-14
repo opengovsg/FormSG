@@ -1,6 +1,9 @@
 import { RequestHandler } from 'express'
+import { taskEither as TE } from 'fp-ts'
+import { sequence } from 'fp-ts/lib/Array'
+import { pipe } from 'fp-ts/lib/function'
+import { map, mapLeft } from 'fp-ts/lib/TaskEither'
 import { StatusCodes } from 'http-status-codes'
-import { combine } from 'neverthrow'
 
 import { AnalyticStats } from 'src/types/analytics'
 
@@ -24,24 +27,24 @@ const logger = createLoggerWithLabel(module)
  * @returns 500 when database error occurs whilst retrieving user count
  */
 export const handleGetUserCount: RequestHandler = async (req, res) => {
-  const countResult = await getUserCount()
+  void pipe(
+    getUserCount(),
+    map((value) => res.json(value)),
+    mapLeft((error) => {
+      logger.error({
+        message: 'Mongo user count error',
+        meta: {
+          action: 'handleGetUserCount',
+          ...createReqMeta(req),
+        },
+        error,
+      })
 
-  if (countResult.isErr()) {
-    logger.error({
-      message: 'Mongo user count error',
-      meta: {
-        action: 'handleGetUserCount',
-        ...createReqMeta(req),
-      },
-      error: countResult.error,
-    })
-
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json('Unable to retrieve number of users from the database')
-  }
-
-  return res.json(countResult.value)
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json('Unable to retrieve number of users from the database')
+    }),
+  )()
 }
 
 /**
@@ -52,27 +55,26 @@ export const handleGetUserCount: RequestHandler = async (req, res) => {
  * @returns 500 when database error occurs whilst retrieving submissions count
  */
 export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
-  const countResult = await getSubmissionCount()
+  void pipe(
+    getSubmissionCount(),
+    // Top up submissions from config file that tracks submissions that has been
+    // archived (and thus deleted from the database).
+    map((value) => res.json(value + submissionsTopUp)),
+    mapLeft((error) => {
+      logger.error({
+        message: 'Mongo submissions count error',
+        meta: {
+          action: 'handleGetSubmissionCount',
+          ...createReqMeta(req),
+        },
+        error,
+      })
 
-  if (countResult.isErr()) {
-    logger.error({
-      message: 'Mongo submissions count error',
-      meta: {
-        action: 'handleGetSubmissionCount',
-        ...createReqMeta(req),
-      },
-      error: countResult.error,
-    })
-
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json('Unable to retrieve number of submissions from the database')
-  }
-
-  // Top up submissions from config file that tracks submissions that has been
-  // archived (and thus deleted from the database).
-  const totalProperCount = countResult.value + submissionsTopUp
-  return res.json(totalProperCount)
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json('Unable to retrieve number of submissions from the database')
+    }),
+  )()
 }
 
 /**
@@ -83,51 +85,55 @@ export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
  * @returns 500 when database error occurs whilst retrieving form count
  */
 export const handleGetFormCount: RequestHandler = async (req, res) => {
-  const countResult = await getFormCount()
+  void pipe(
+    getFormCount(),
+    // Top up submissions from config file that tracks submissions that has been
+    // archived (and thus deleted from the database).
+    map((value) => res.json(value)),
+    mapLeft((error) => {
+      logger.error({
+        message: 'Mongo form count error',
+        meta: {
+          action: 'handleGetFormCount',
+          ...createReqMeta(req),
+        },
+        error,
+      })
 
-  if (countResult.isErr()) {
-    logger.error({
-      message: 'Mongo form count error',
-      meta: {
-        action: 'handleGetFormCount',
-        ...createReqMeta(req),
-      },
-      error: countResult.error,
-    })
-
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json('Unable to retrieve number of forms from the database')
-  }
-
-  return res.json(countResult.value)
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json('Unable to retrieve number of forms from the database')
+    }),
+  )()
 }
 
 export const handleGetStatistics: RequestHandler = async (req, res) => {
-  combine([
-    await getUserCount(),
-    await getFormCount(),
-    await getSubmissionCount(),
-  ])
-    .map(([userCount, formCount, submissionCount]) => {
+  void pipe(
+    sequence(TE.taskEither)([
+      getUserCount(),
+      getFormCount(),
+      getSubmissionCount(),
+    ]),
+    map(([userCount, formCount, submissionCount]) => {
       const stats: AnalyticStats = {
         userCount,
         formCount,
         submissionCount,
       }
       return res.json(stats)
-    })
-    .mapErr((e) => {
+    }),
+    mapLeft((error) => {
       logger.error({
         message: 'Mongo handleGetStatistics error',
         meta: {
           action: 'handleGetStatistics',
           ...createReqMeta(req),
         },
-        error: e,
+        error,
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json('Unable to retrieve statistics from the database')
-    })
+    }),
+  )()
 }

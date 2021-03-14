@@ -1,5 +1,6 @@
+// import { either, taskEither } from 'fp-ts'
+import { TaskEither, tryCatch } from 'fp-ts/TaskEither'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
@@ -17,9 +18,9 @@ const logger = createLoggerWithLabel(module)
  * @returns ok(user count) on success
  * @returns err(DatabaseError) on query failure
  */
-export const getUserCount = (): ResultAsync<number, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    UserModel.estimatedDocumentCount().exec(),
+export const getUserCount = (): TaskEither<DatabaseError, number> => {
+  return tryCatch(
+    () => UserModel.estimatedDocumentCount().exec(),
     (error) => {
       logger.error({
         message: 'Database error when retrieving user collection count',
@@ -39,9 +40,9 @@ export const getUserCount = (): ResultAsync<number, DatabaseError> => {
  * @returns ok(submissions count) on success
  * @returns err(DatabaseError) on query failure
  */
-export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    SubmissionModel.estimatedDocumentCount().exec(),
+export const getSubmissionCount = (): TaskEither<DatabaseError, number> => {
+  return tryCatch(
+    () => SubmissionModel.estimatedDocumentCount().exec(),
     (error) => {
       logger.error({
         message: 'Database error when retrieving submission collection count',
@@ -61,9 +62,9 @@ export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
  * @returns ok(forms count) on success
  * @returns err(DatabaseError) on query failure
  */
-export const getFormCount = (): ResultAsync<number, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    FormModel.estimatedDocumentCount().exec(),
+export const getFormCount = (): TaskEither<DatabaseError, number> => {
+  return tryCatch(
+    () => FormModel.estimatedDocumentCount().exec(),
     (error) => {
       logger.error({
         message: 'Database error when retrieving form collection count',
