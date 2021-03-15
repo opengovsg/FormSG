@@ -128,4 +128,145 @@ describe('analytics.controller', () => {
       )
     })
   })
+
+  describe('handleGetStatistics', () => {
+    it('should return HTTP 200 when calls to AnalyticsService do not return any errors', async () => {
+      // Arrange
+      const mockUserCount = 10
+      const mockFormCount = 20
+      const mockSubmissionCount = 100
+
+      const mockRes = expressHandler.mockResponse()
+
+      const getUserSpy = jest
+        .spyOn(AnalyticsService, 'getUserCount')
+        .mockReturnValueOnce(TE.of(mockUserCount))
+      const getFormSpy = jest
+        .spyOn(AnalyticsService, 'getFormCount')
+        .mockReturnValueOnce(TE.of(mockFormCount))
+      const getSubmissionSpy = jest
+        .spyOn(AnalyticsService, 'getSubmissionCount')
+        .mockReturnValueOnce(TE.of(mockSubmissionCount))
+
+      // Act
+      await AnalyticsController.handleGetStatistics(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(getUserSpy).toHaveBeenCalledTimes(1)
+      expect(getFormSpy).toHaveBeenCalledTimes(1)
+      expect(getSubmissionSpy).toHaveBeenCalledTimes(1)
+      expect(mockRes.status).not.toHaveBeenCalled()
+      expect(mockRes.json).toHaveBeenCalledWith({
+        userCount: mockUserCount,
+        formCount: mockFormCount,
+        submissionCount: mockSubmissionCount,
+      })
+    })
+
+    it('should return HTTP 500 when calls to AnalyticsService.getUserCount fail', async () => {
+      // Arrange
+      const mockFormCount = 20
+      const mockSubmissionCount = 100
+
+      const mockRes = expressHandler.mockResponse()
+
+      const getUserSpy = jest
+        .spyOn(AnalyticsService, 'getUserCount')
+        .mockReturnValueOnce(TE.fromEither(E.left(new DatabaseError())))
+      const getFormSpy = jest
+        .spyOn(AnalyticsService, 'getFormCount')
+        .mockReturnValueOnce(TE.of(mockFormCount))
+      const getSubmissionSpy = jest
+        .spyOn(AnalyticsService, 'getSubmissionCount')
+        .mockReturnValueOnce(TE.of(mockSubmissionCount))
+
+      // Act
+      await AnalyticsController.handleGetStatistics(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(getUserSpy).toHaveBeenCalledTimes(1)
+      expect(getFormSpy).toHaveBeenCalledTimes(1)
+      expect(getSubmissionSpy).toHaveBeenCalledTimes(1)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        'Unable to retrieve statistics from the database',
+      )
+    })
+
+    it('should return HTTP 500 when calls to AnalyticsService.getFormCount fails', async () => {
+      // Arrange
+      const mockUserCount = 10
+      const mockSubmissionCount = 100
+
+      const mockRes = expressHandler.mockResponse()
+
+      const getUserSpy = jest
+        .spyOn(AnalyticsService, 'getUserCount')
+        .mockReturnValueOnce(TE.of(mockUserCount))
+      const getFormSpy = jest
+        .spyOn(AnalyticsService, 'getFormCount')
+        .mockReturnValueOnce(TE.fromEither(E.left(new DatabaseError())))
+      const getSubmissionSpy = jest
+        .spyOn(AnalyticsService, 'getSubmissionCount')
+        .mockReturnValueOnce(TE.of(mockSubmissionCount))
+
+      // Act
+      await AnalyticsController.handleGetStatistics(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(getUserSpy).toHaveBeenCalledTimes(1)
+      expect(getFormSpy).toHaveBeenCalledTimes(1)
+      expect(getSubmissionSpy).toHaveBeenCalledTimes(1)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        'Unable to retrieve statistics from the database',
+      )
+    })
+
+    it('should return HTTP 500 when calls to AnalyticsService.getSubmissionCount fails', async () => {
+      // Arrange
+      const mockUserCount = 10
+      const mockFormCount = 20
+
+      const mockRes = expressHandler.mockResponse()
+
+      const getUserSpy = jest
+        .spyOn(AnalyticsService, 'getUserCount')
+        .mockReturnValueOnce(TE.of(mockUserCount))
+      const getFormSpy = jest
+        .spyOn(AnalyticsService, 'getFormCount')
+        .mockReturnValueOnce(TE.of(mockFormCount))
+      const getSubmissionSpy = jest
+        .spyOn(AnalyticsService, 'getSubmissionCount')
+        .mockReturnValueOnce(TE.fromEither(E.left(new DatabaseError())))
+
+      // Act
+      await AnalyticsController.handleGetStatistics(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(getUserSpy).toHaveBeenCalledTimes(1)
+      expect(getFormSpy).toHaveBeenCalledTimes(1)
+      expect(getSubmissionSpy).toHaveBeenCalledTimes(1)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        'Unable to retrieve statistics from the database',
+      )
+    })
+  })
 })

@@ -26,7 +26,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 500 when database error occurs whilst retrieving user count
  */
 export const handleGetUserCount: RequestHandler = async (req, res) => {
-  void pipe(
+  return pipe(
     getUserCount(),
     bimap(
       (error) => {
@@ -56,7 +56,7 @@ export const handleGetUserCount: RequestHandler = async (req, res) => {
  * @returns 500 when database error occurs whilst retrieving submissions count
  */
 export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
-  void pipe(
+  return pipe(
     getSubmissionCount(),
     bimap(
       (error) => {
@@ -86,7 +86,7 @@ export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
  * @returns 500 when database error occurs whilst retrieving form count
  */
 export const handleGetFormCount: RequestHandler = async (req, res) => {
-  void pipe(
+  return pipe(
     getFormCount(),
     bimap(
       (error) => {
@@ -112,7 +112,7 @@ export const handleGetFormCount: RequestHandler = async (req, res) => {
  * Controller for returning application statistics
  */
 export const handleGetStatistics: RequestHandler = async (req, res) => {
-  void pipe(
+  return pipe(
     sequence(TE.taskEither)([
       getUserCount(),
       getFormCount(),
