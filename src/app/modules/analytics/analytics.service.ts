@@ -1,5 +1,5 @@
 // import { either, taskEither } from 'fp-ts'
-import { TaskEither, tryCatch } from 'fp-ts/TaskEither'
+import * as TE from 'fp-ts/TaskEither'
 import mongoose from 'mongoose'
 
 import { submissionsTopUp } from '../../../config/config'
@@ -17,8 +17,8 @@ const logger = createLoggerWithLabel(module)
 /**
  * Retrieves the number of user documents in the database.
  */
-export const getUserCount = (): TaskEither<DatabaseError, number> => {
-  return tryCatch(
+export const getUserCount = (): TE.TaskEither<DatabaseError, number> => {
+  return TE.tryCatch(
     () => UserModel.estimatedDocumentCount().exec(),
     (error) => {
       logger.error({
@@ -37,8 +37,8 @@ export const getUserCount = (): TaskEither<DatabaseError, number> => {
 /**
  * Retrieves the number of submission documents in the database.
  */
-export const getSubmissionCount = (): TaskEither<DatabaseError, number> => {
-  return tryCatch(
+export const getSubmissionCount = (): TE.TaskEither<DatabaseError, number> => {
+  return TE.tryCatch(
     () =>
       SubmissionModel.estimatedDocumentCount()
         .exec()
@@ -62,8 +62,8 @@ export const getSubmissionCount = (): TaskEither<DatabaseError, number> => {
 /**
  * Retrieves the number of form documents in the database.
  */
-export const getFormCount = (): TaskEither<DatabaseError, number> => {
-  return tryCatch(
+export const getFormCount = (): TE.TaskEither<DatabaseError, number> => {
+  return TE.tryCatch(
     () => FormModel.estimatedDocumentCount().exec(),
     (error) => {
       logger.error({

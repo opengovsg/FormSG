@@ -1,5 +1,4 @@
 import * as E from 'fp-ts/lib/Either'
-import { isLeft } from 'fp-ts/lib/These'
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'
 
@@ -174,7 +173,7 @@ describe('analytics.service', () => {
       const actualE = await actualTE()
 
       // Assert
-      if (isLeft(actualE)) throw new TestError()
+      if (E.isLeft(actualE)) throw new TestError()
       expect(actualE.right).toEqual(0)
     })
 

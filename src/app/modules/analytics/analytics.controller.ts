@@ -1,8 +1,7 @@
 import { RequestHandler } from 'express'
-import { taskEither as TE } from 'fp-ts'
-import { sequence } from 'fp-ts/lib/Array'
-import { pipe } from 'fp-ts/lib/function'
-import { bimap } from 'fp-ts/lib/TaskEither'
+import * as A from 'fp-ts/lib/Array'
+import * as F from 'fp-ts/lib/function'
+import * as TE from 'fp-ts/lib/TaskEither'
 import { StatusCodes } from 'http-status-codes'
 
 import { AnalyticStats } from 'src/types/analytics'
@@ -26,9 +25,9 @@ const logger = createLoggerWithLabel(module)
  * @returns 500 when database error occurs whilst retrieving user count
  */
 export const handleGetUserCount: RequestHandler = async (req, res) => {
-  return pipe(
+  return F.pipe(
     getUserCount(),
-    bimap(
+    TE.bimap(
       (error) => {
         logger.error({
           message: 'Mongo user count error',
@@ -56,9 +55,9 @@ export const handleGetUserCount: RequestHandler = async (req, res) => {
  * @returns 500 when database error occurs whilst retrieving submissions count
  */
 export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
-  return pipe(
+  return F.pipe(
     getSubmissionCount(),
-    bimap(
+    TE.bimap(
       (error) => {
         logger.error({
           message: 'Mongo submissions count error',
@@ -86,9 +85,9 @@ export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
  * @returns 500 when database error occurs whilst retrieving form count
  */
 export const handleGetFormCount: RequestHandler = async (req, res) => {
-  return pipe(
+  return F.pipe(
     getFormCount(),
-    bimap(
+    TE.bimap(
       (error) => {
         logger.error({
           message: 'Mongo form count error',
@@ -112,13 +111,13 @@ export const handleGetFormCount: RequestHandler = async (req, res) => {
  * Controller for returning application statistics
  */
 export const handleGetStatistics: RequestHandler = async (req, res) => {
-  return pipe(
-    sequence(TE.taskEither)([
+  return F.pipe(
+    A.sequence(TE.taskEither)([
       getUserCount(),
       getFormCount(),
       getSubmissionCount(),
     ]),
-    bimap(
+    TE.bimap(
       (error) => {
         logger.error({
           message: 'Mongo handleGetStatistics error',
