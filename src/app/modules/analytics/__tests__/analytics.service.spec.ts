@@ -95,9 +95,7 @@ describe('analytics.service', () => {
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
       if (E.isRight(actualE)) throw new AnalyticsTestError()
-      expect(actualE.left).toEqual(
-        new DatabaseError('Error retrieving form collection count'),
-      )
+      expect(actualE.left instanceof DatabaseError).toBe(true)
     })
   })
 
@@ -158,9 +156,7 @@ describe('analytics.service', () => {
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
       if (E.isRight(actualE)) throw new AnalyticsTestError()
-      expect(actualE.left).toEqual(
-        new DatabaseError('Error retrieving user collection count'),
-      )
+      expect(actualE.left instanceof DatabaseError).toBe(true)
     })
   })
 
@@ -220,9 +216,7 @@ describe('analytics.service', () => {
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
       if (E.isRight(actualE)) throw new AnalyticsTestError()
-      expect(actualE.left).toEqual(
-        new DatabaseError('Error retrieving submission collection count'),
-      )
+      expect(actualE.left instanceof DatabaseError).toBe(true)
     })
   })
 })

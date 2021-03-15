@@ -2,6 +2,8 @@
 import * as TE from 'fp-ts/TaskEither'
 import mongoose from 'mongoose'
 
+import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
+
 import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
@@ -29,7 +31,7 @@ export const getUserCount = (): TE.TaskEither<DatabaseError, number> => {
         error,
       })
 
-      return new DatabaseError('Error retrieving user collection count')
+      return new DatabaseError(getMongoErrorMessage(error))
     },
   )
 }
@@ -54,7 +56,7 @@ export const getSubmissionCount = (): TE.TaskEither<DatabaseError, number> => {
         error,
       })
 
-      return new DatabaseError('Error retrieving submission collection count')
+      return new DatabaseError(getMongoErrorMessage(error))
     },
   )
 }
@@ -74,7 +76,7 @@ export const getFormCount = (): TE.TaskEither<DatabaseError, number> => {
         error,
       })
 
-      return new DatabaseError('Error retrieving form collection count')
+      return new DatabaseError(getMongoErrorMessage(error))
     },
   )
 }
