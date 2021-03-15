@@ -2,8 +2,7 @@
 import * as TE from 'fp-ts/TaskEither'
 import mongoose from 'mongoose'
 
-import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-
+import { getMongoErrorMessage } from '../../../app/utils/handle-mongo-error'
 import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
