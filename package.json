@@ -166,7 +166,7 @@
     "@types/bluebird": "^3.5.33",
     "@types/busboy": "^0.2.3",
     "@types/compression": "^1.7.0",
-    "@types/convict": "^6.0.0",
+    "@types/convict": "^6.0.1",
     "@types/cookie-parser": "^1.4.2",
     "@types/dedent": "^0.7.0",
     "@types/ejs": "^3.0.6",
