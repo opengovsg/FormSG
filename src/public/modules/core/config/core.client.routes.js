@@ -1,6 +1,6 @@
 'use strict'
 
-const Analytics = require('../services/analytics.client.service')
+const Analytics = require('../../../services/AnalyticsService')
 
 angular.module('core').config([
   '$urlRouterProvider',
