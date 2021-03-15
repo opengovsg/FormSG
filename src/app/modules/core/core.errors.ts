@@ -63,12 +63,3 @@ export class MissingFeatureError extends ApplicationError {
     )
   }
 }
-
-/**
- * Error thrown in testing code.
- */
-export class TestError extends ApplicationError {
-  constructor(message?: string) {
-    super(message)
-  }
-}

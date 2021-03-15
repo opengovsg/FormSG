@@ -14,12 +14,14 @@ import {
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { DatabaseError, TestError } from '../../core/core.errors'
+import { DatabaseError } from '../../core/core.errors'
 import {
   getFormCount,
   getSubmissionCount,
   getUserCount,
 } from '../analytics.service'
+
+import { AnalyticsTestError } from './analytics.error'
 
 const FormModel = getFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -53,7 +55,7 @@ describe('analytics.service', () => {
       const actualTE = getFormCount()
       const actualE = await actualTE()
       // Assert
-      if (E.isLeft(actualE)) throw new TestError()
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
       expect(actualE.right).toEqual(0)
     })
 
@@ -76,7 +78,7 @@ describe('analytics.service', () => {
       const actualTE = await getFormCount()
       const actualE = await actualTE()
       // Assert
-      if (E.isLeft(actualE)) throw new TestError()
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
       expect(actualE.right).toEqual(expectedNum)
     })
 
@@ -92,7 +94,7 @@ describe('analytics.service', () => {
       const actualE = await actualTE()
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
-      if (E.isRight(actualE)) throw new TestError()
+      if (E.isRight(actualE)) throw new AnalyticsTestError()
       expect(actualE.left).toEqual(
         new DatabaseError('Error retrieving form collection count'),
       )
@@ -118,7 +120,7 @@ describe('analytics.service', () => {
       const actualTE = await getUserCount()
       const actualE = await actualTE()
       // Assert
-      if (E.isLeft(actualE)) throw new TestError()
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
       expect(actualE.right).toEqual(0)
     })
 
@@ -139,7 +141,7 @@ describe('analytics.service', () => {
       const actualTE = await getUserCount()
       const actualE = await actualTE()
       // Assert
-      if (E.isLeft(actualE)) throw new TestError()
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
       expect(actualE.right).toEqual(expectedNumUsers)
     })
 
@@ -155,7 +157,7 @@ describe('analytics.service', () => {
       const actualE = await actualTE()
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
-      if (E.isRight(actualE)) throw new TestError()
+      if (E.isRight(actualE)) throw new AnalyticsTestError()
       expect(actualE.left).toEqual(
         new DatabaseError('Error retrieving user collection count'),
       )
@@ -173,7 +175,7 @@ describe('analytics.service', () => {
       const actualE = await actualTE()
 
       // Assert
-      if (E.isLeft(actualE)) throw new TestError()
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
       expect(actualE.right).toEqual(0)
     })
 
@@ -198,7 +200,7 @@ describe('analytics.service', () => {
       const actualE = await actualTE()
 
       // Assert
-      if (E.isLeft(actualE)) throw new TestError()
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
       expect(actualE.right).toEqual(expectedNumSubs)
     })
 
@@ -217,7 +219,7 @@ describe('analytics.service', () => {
 
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
-      if (E.isRight(actualE)) throw new TestError()
+      if (E.isRight(actualE)) throw new AnalyticsTestError()
       expect(actualE.left).toEqual(
         new DatabaseError('Error retrieving submission collection count'),
       )
