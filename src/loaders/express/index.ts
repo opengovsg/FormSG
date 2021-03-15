@@ -32,6 +32,7 @@ import helmetMiddlewares from './helmet'
 import appLocals from './locals'
 import loggingMiddleware from './logging'
 import parserMiddlewares from './parser'
+import { API_ROOT_ROUTE, ApiRouter } from './router'
 import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
 
@@ -158,6 +159,9 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/corppass/login', CorppassLoginRouter)
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
+
+  // New routes in preparation for API refactor.
+  app.use(API_ROOT_ROUTE, ApiRouter)
 
   app.use(sentryMiddlewares())
 
