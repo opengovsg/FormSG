@@ -2,6 +2,7 @@
 import { TaskEither, tryCatch } from 'fp-ts/TaskEither'
 import mongoose from 'mongoose'
 
+import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
@@ -38,7 +39,12 @@ export const getUserCount = (): TaskEither<DatabaseError, number> => {
  */
 export const getSubmissionCount = (): TaskEither<DatabaseError, number> => {
   return tryCatch(
-    () => SubmissionModel.estimatedDocumentCount().exec(),
+    () =>
+      SubmissionModel.estimatedDocumentCount()
+        .exec()
+        // Top up submissions from config file that tracks submissions that has been
+        // archived (and thus deleted from the database).
+        .then((value) => value + submissionsTopUp),
     (error) => {
       logger.error({
         message: 'Database error when retrieving submission collection count',

@@ -7,7 +7,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { AnalyticStats } from 'src/types/analytics'
 
-import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
@@ -74,9 +73,7 @@ export const handleGetSubmissionCount: RequestHandler = async (req, res) => {
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .json('Unable to retrieve number of submissions from the database')
       },
-      // Top up submissions from config file that tracks submissions that has been
-      // archived (and thus deleted from the database).
-      (value) => res.json(value + submissionsTopUp),
+      (value) => res.json(value),
     ),
   )()
 }
@@ -139,7 +136,7 @@ export const handleGetStatistics: RequestHandler = async (req, res) => {
         const stats: AnalyticStats = {
           userCount,
           formCount,
-          submissionCount: submissionCount + submissionsTopUp,
+          submissionCount,
         }
         return res.json(stats)
       },
