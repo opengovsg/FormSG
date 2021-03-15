@@ -1,4 +1,5 @@
-import { errAsync, okAsync } from 'neverthrow'
+import * as E from 'fp-ts/lib/Either'
+import * as TE from 'fp-ts/TaskEither'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -17,7 +18,7 @@ describe('analytics.controller', () => {
       const mockUserCount = 21
       const getUserSpy = jest
         .spyOn(AnalyticsService, 'getUserCount')
-        .mockReturnValueOnce(okAsync(mockUserCount))
+        .mockReturnValueOnce(TE.of(mockUserCount))
 
       // Act
       await AnalyticsController.handleGetUserCount(MOCK_REQ, mockRes, jest.fn())
@@ -32,7 +33,7 @@ describe('analytics.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const getUserSpy = jest
         .spyOn(AnalyticsService, 'getUserCount')
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
+        .mockReturnValueOnce(TE.fromEither(E.left(new DatabaseError())))
 
       // Act
       await AnalyticsController.handleGetUserCount(MOCK_REQ, mockRes, jest.fn())
@@ -53,7 +54,7 @@ describe('analytics.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const getSubsSpy = jest
         .spyOn(AnalyticsService, 'getSubmissionCount')
-        .mockReturnValueOnce(okAsync(mockSubmissionCount))
+        .mockReturnValueOnce(TE.of(mockSubmissionCount))
 
       // Act
       await AnalyticsController.handleGetSubmissionCount(
@@ -73,7 +74,7 @@ describe('analytics.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const getSubsSpy = jest
         .spyOn(AnalyticsService, 'getSubmissionCount')
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
+        .mockReturnValueOnce(TE.fromEither(E.left(new DatabaseError())))
 
       // Act
       await AnalyticsController.handleGetSubmissionCount(
@@ -98,7 +99,7 @@ describe('analytics.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const getFormSpy = jest
         .spyOn(AnalyticsService, 'getFormCount')
-        .mockReturnValueOnce(okAsync(mockFormCount))
+        .mockReturnValueOnce(TE.of(mockFormCount))
 
       // Act
       await AnalyticsController.handleGetFormCount(MOCK_REQ, mockRes, jest.fn())
@@ -114,7 +115,7 @@ describe('analytics.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const getFormSpy = jest
         .spyOn(AnalyticsService, 'getFormCount')
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
+        .mockReturnValueOnce(TE.fromEither(E.left(new DatabaseError())))
 
       // Act
       await AnalyticsController.handleGetFormCount(MOCK_REQ, mockRes, jest.fn())
