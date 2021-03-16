@@ -18,6 +18,7 @@ import {
   IRatingField,
   ISectionFieldSchema,
   IShortTextField,
+  IYesNoField,
 } from '..'
 
 export const isSectionField = (
@@ -84,6 +85,10 @@ export const isDecimalField = (
   formField: IField,
 ): formField is IDecimalField => {
   return formField.fieldType === BasicField.Decimal
+}
+
+export const isYesNoField = (formField: IField): formField is IYesNoField => {
+  return formField.fieldType === BasicField.YesNo
 }
 
 export const isEmailField = (

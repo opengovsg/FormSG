@@ -192,6 +192,7 @@ export const validateField = (
         case BasicField.ShortText:
         case BasicField.LongText:
         case BasicField.Nric:
+        case BasicField.YesNo:
         case BasicField.HomeNo:
         case BasicField.Radio:
         case BasicField.Rating:
