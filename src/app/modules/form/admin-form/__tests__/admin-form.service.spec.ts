@@ -11,16 +11,20 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { aws } from 'src/config/config'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
+import { SettingsUpdateDto } from 'src/shared/typings/form'
 import {
+  AuthType,
   BasicField,
   FormLogoState,
   FormMetaView,
+  FormSettings,
   ICustomFormLogo,
   IEmailFormSchema,
   IFormDocument,
@@ -51,6 +55,7 @@ import {
   getDashboardForms,
   transferFormOwnership,
   updateForm,
+  updateFormSettings,
 } from '../admin-form.service'
 import {
   DuplicateFormBody,
@@ -1050,6 +1055,107 @@ describe('admin-form.service', () => {
         assignIn(cloneDeep(MOCK_INITIAL_FORM), formUpdateParams),
       )
       expect(MOCK_INITIAL_FORM.save).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('updateFormSettings', () => {
+    const MOCK_UPDATED_SETTINGS: FormSettings = {
+      authType: AuthType.NIL,
+      hasCaptcha: false,
+      inactiveMessage: 'some inactive message',
+      status: Status.Private,
+      submissionLimit: 42069,
+      title: 'new title',
+      webhook: {
+        url: '',
+      },
+    }
+
+    const MOCK_UPDATED_FORM = ({
+      ...MOCK_UPDATED_SETTINGS,
+      responseMode: ResponseMode.Encrypt,
+      publicKey: 'some public key',
+      getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
+    } as unknown) as IFormDocument
+
+    const formSaveSpy = jest.fn().mockResolvedValue(MOCK_UPDATED_FORM)
+    const MOCK_INITIAL_FORM = mocked(({
+      status: Status.Public,
+      save: formSaveSpy,
+    } as unknown) as IPopulatedForm)
+
+    beforeEach(() => jest.clearAllMocks())
+
+    it('should return updated form settings when successfully updating settings', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        status: Status.Private,
+        title: 'new title',
+      }
+      // Act
+      const actualResult = await updateFormSettings(
+        MOCK_INITIAL_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(formSaveSpy).toHaveBeenCalledTimes(1)
+      // Before invoking .save, should have become a new form with updated settings.
+      expect(formSaveSpy.mock.instances[0]).toEqual(
+        expect.objectContaining(settingsToUpdate),
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return MalformedParametersError when invoked with invalid settings keys to update', async () => {
+      // Arrange
+      const invalidUpdate = {
+        somethingExtra: 'test',
+        title: 'new title',
+      }
+      // Act
+      const actualResult = await updateFormSettings(
+        MOCK_INITIAL_FORM,
+        invalidUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new MalformedParametersError('Unknown settings update'),
+      )
+      expect(formSaveSpy).toHaveBeenCalledTimes(0)
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
+    })
+
+    it('should return DatabaseValidationError when validation error occurs whilst saving', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        title: 'does not matter',
+      }
+      // Mock database error
+      formSaveSpy.mockRejectedValueOnce(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        new mongoose.Error.ValidationError({ errors: 'some error' }),
+      )
+
+      // Act
+      const actualResult = await updateFormSettings(
+        MOCK_INITIAL_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        DatabaseValidationError,
+      )
+      expect(formSaveSpy).toHaveBeenCalledTimes(1)
+      // Before invoking .save, should have become a new form with updated settings.
+      expect(formSaveSpy.mock.instances[0]).toEqual(
+        expect.objectContaining(settingsToUpdate),
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
     })
   })
 })
