@@ -964,12 +964,13 @@ export const handleUpdateForm: RequestHandler<
  * @security session
  *
  * @returns 200 with updated form settings
- * @returns 403 when current user does not have permissions to update form
- * @returns 404 when form to update cannot be found
- * @returns 409 when saving updated form incurs a conflict in the database
- * @returns 410 when form to update is archived
- * @returns 413 when updated form is too large to be saved in the database
- * @returns 422 when an invalid update is attempted on the form
+ * @returns 400 when invalid setting update key is passed in to update
+ * @returns 403 when current user does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
