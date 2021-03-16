@@ -4,7 +4,7 @@ import * as F from 'fp-ts/lib/function'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { StatusCodes } from 'http-status-codes'
 
-import { AnalyticStats } from 'src/types/analytics'
+import { AnalyticStatsDTO } from 'src/types/analytics'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../utils/request'
@@ -132,7 +132,7 @@ export const handleGetStatistics: RequestHandler = async (req, res) => {
           .json('Unable to retrieve statistics from the database')
       },
       ([userCount, formCount, submissionCount]) => {
-        const stats: AnalyticStats = {
+        const stats: AnalyticStatsDTO = {
           userCount,
           formCount,
           submissionCount,

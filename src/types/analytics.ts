@@ -1,4 +1,4 @@
-export type AnalyticStats = {
+export type AnalyticStatsDTO = {
   userCount: number
   formCount: number
   submissionCount: number
