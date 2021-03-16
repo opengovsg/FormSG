@@ -76,4 +76,16 @@ export type FormUpdateParams = {
   webhook?: IForm['webhook']
 }
 
+export type SettingsUpdateBody = Partial<{
+  authType: NonNullable<IForm['authType']>
+  emails: NonNullable<IForm['emails']>
+  esrvcId: NonNullable<IForm['esrvcId']>
+  hasCaptcha: NonNullable<IForm['hasCaptcha']>
+  inactiveMessage: NonNullable<IForm['inactiveMessage']>
+  permissionList: NonNullable<IForm['permissionList']>
+  status: NonNullable<IForm['status']>
+  title: NonNullable<IForm['title']>
+  webhook: NonNullable<IForm['webhook']>
+}>
+
 export type EditFormFieldResult = Result<IFieldSchema[], EditFieldError>

@@ -1,5 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, omit } from 'lodash'
+import { assignIn, merge, omit, pick, set } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
@@ -32,6 +32,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  UnreachableCaseError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
@@ -47,6 +48,7 @@ import {
   DuplicateFormBody,
   EditFormFieldParams,
   FormUpdateParams,
+  SettingsUpdateBody,
 } from './admin-form.types'
 import {
   getUpdatedFormFields,
@@ -501,4 +503,60 @@ export const updateForm = (
 
     return transformMongoError(error)
   })
+}
+
+export const updateFormSettings = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateBody,
+): ResultAsync<
+  Partial<Pick<IFormDocument, keyof SettingsUpdateBody>>,
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+> => {
+  const updateKeys = Object.keys(body) as (keyof SettingsUpdateBody)[]
+  const newForm = updateKeys.reduce((accumulatedForm, key) => {
+    switch (key) {
+      // Non-object patches, assign key to form.
+      case 'title':
+      case 'esrvcId':
+      case 'inactiveMessage':
+      case 'emails':
+      case 'authType':
+      case 'status':
+      case 'hasCaptcha':
+      case 'permissionList': {
+        set(accumulatedForm, key, body[key])
+        break
+      }
+      // Object patches, deep mutate.
+      case 'webhook': {
+        merge(accumulatedForm[key], body[key])
+        break
+      }
+      default:
+        // Purely compile time check for missed keys. No need to throw or return
+        // so unknown keys will just be skipped if that somehow happens during
+        // runtime.
+        new UnreachableCaseError(key)
+    }
+    return accumulatedForm
+  }, originalForm)
+
+  return ResultAsync.fromPromise(newForm.save(), (error) => {
+    logger.error({
+      message: 'Error encountered while updating form',
+      meta: {
+        action: 'updateFormSettings',
+        originalForm,
+        // Body is not logged in case sensitive data such as emails are stored.
+        updateKeys,
+      },
+      error,
+    })
+
+    return transformMongoError(error)
+    // Only return subset of original form that were updated.
+  }).map((updatedForm) => pick(updatedForm, updateKeys))
 }

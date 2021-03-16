@@ -63,3 +63,12 @@ export class MissingFeatureError extends ApplicationError {
     )
   }
 }
+
+/**
+ * This should never be thrown and is only to check exhaustive switch satements.
+ */
+export class UnreachableCaseError extends ApplicationError {
+  constructor(value: never) {
+    super(`Unreachable case: ${value}`)
+  }
+}
