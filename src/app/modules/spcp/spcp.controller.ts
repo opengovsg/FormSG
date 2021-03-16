@@ -126,7 +126,7 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
   if (jwtResult.isErr()) return next()
 
   const useCpCloud =
-    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === _id
+    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === String(_id)
   return SpcpFactory.extractJwtPayload(jwtResult.value, authType, useCpCloud)
     .map(({ userName }) => {
       res.locals.spcpSession = { userName }
@@ -160,7 +160,7 @@ export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
   if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
 
   const useCpCloud =
-    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === _id
+    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === String(_id)
   return SpcpFactory.extractJwt(req.cookies, authType)
     .asyncAndThen((jwt) =>
       SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
@@ -240,7 +240,8 @@ export const handleLogin: (
     return res.redirect(destination)
   }
   const useCpCloud =
-    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === form._id
+    spcpFeature.isEnabled &&
+    spcpFeature.props?.cpCloudFormId === String(form._id)
   const jwtResult = await SpcpFactory.getSpcpAttributes(
     SAMLart,
     destination,
