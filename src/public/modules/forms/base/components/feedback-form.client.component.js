@@ -25,12 +25,6 @@ function feedbackController(FormFeedback, Toastr) {
     vm.isLoading = true
 
     if (vm.rating !== null) {
-      const feedback = {
-        rating: vm.rating,
-        comment: vm.comment,
-        isPreview: vm.isPreview,
-      }
-
       vm.isSubmitted = true
       vm.isLoading = false
       Toastr.success('Thank you for your submission!')
