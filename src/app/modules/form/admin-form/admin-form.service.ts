@@ -572,22 +572,24 @@ export const updateFormSettings = (
   | MalformedParametersError
 > => {
   const updateKeys = Object.keys(body) as (keyof SettingsUpdateDto)[]
-  return replaceSettingsToUpdate(originalForm, updateKeys, body)
-    .asyncAndThen((newForm) =>
-      ResultAsync.fromPromise(newForm.save(), (error) => {
-        logger.error({
-          message: 'Error encountered while updating form',
-          meta: {
-            action: 'updateFormSettings',
-            originalForm,
-            // Body is not logged in case sensitive data such as emails are stored.
-          },
-          error,
-        })
+  return (
+    replaceSettingsToUpdate(originalForm, updateKeys, body)
+      .asyncAndThen((newForm) =>
+        ResultAsync.fromPromise(newForm.save(), (error) => {
+          logger.error({
+            message: 'Error encountered while updating form',
+            meta: {
+              action: 'updateFormSettings',
+              originalForm,
+              // Body is not logged in case sensitive data such as emails are stored.
+            },
+            error,
+          })
 
-        return transformMongoError(error)
-        // Only return subset of original form that were updated.
-      }),
-    )
-    .map((updatedForm) => updatedForm.getSettings())
+          return transformMongoError(error)
+        }),
+      )
+      // Only return form settings.
+      .map((updatedForm) => updatedForm.getSettings())
+  )
 }
