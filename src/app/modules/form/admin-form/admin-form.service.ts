@@ -1,7 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, merge, omit, pick, set } from 'lodash'
+import { assignIn, merge, omit, set } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import { aws as AwsConfig } from '../../../../config/config'
@@ -10,10 +10,12 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
+import { SettingsUpdateDto } from '../../../../shared/typings/form'
 import {
   AuthType,
   FormLogoState,
   FormMetaView,
+  FormSettings,
   IFieldSchema,
   IForm,
   IFormDocument,
@@ -32,6 +34,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  MalformedParametersError,
   UnreachableCaseError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
@@ -48,7 +51,6 @@ import {
   DuplicateFormBody,
   EditFormFieldParams,
   FormUpdateParams,
-  SettingsUpdateBody,
 } from './admin-form.types'
 import {
   getUpdatedFormFields,
@@ -505,58 +507,87 @@ export const updateForm = (
   })
 }
 
+const replaceSettingsToUpdate = (
+  originalForm: IPopulatedForm,
+  updateKeys: (keyof SettingsUpdateDto)[],
+  body: SettingsUpdateDto,
+) => {
+  return Result.fromThrowable(
+    () => {
+      return updateKeys.reduce((accumulatedForm, key) => {
+        switch (key) {
+          // Non-object patches, assign key to form.
+          case 'authType':
+          case 'emails':
+          case 'esrvcId':
+          case 'hasCaptcha':
+          case 'inactiveMessage':
+          case 'status':
+          case 'submissionLimit':
+          case 'title': {
+            set(accumulatedForm, key, body[key])
+            break
+          }
+          // Object patches, deep mutate.
+          case 'webhook': {
+            merge(accumulatedForm[key], body[key])
+            break
+          }
+          default:
+            // Compile time check for missed keys. Thrown so unknown keys will
+            // be caught if unknown keys somehow happens during runtime.
+            // eslint-disable-next-line typesafe/no-throw-sync-func
+            throw new UnreachableCaseError(key)
+        }
+        return accumulatedForm
+      }, originalForm)
+    },
+    (error) => {
+      logger.error({
+        message: 'Unknown settings key to update encountered',
+        meta: {
+          action: 'replaceSettingsToUpdate',
+          originalForm,
+          // Body is not logged in case sensitive data such as emails are stored.
+          updateKeys,
+        },
+        error,
+      })
+      return new MalformedParametersError('Unknown settings update', {
+        originalError: error,
+      })
+    },
+  )()
+}
+
 export const updateFormSettings = (
   originalForm: IPopulatedForm,
-  body: SettingsUpdateBody,
+  body: SettingsUpdateDto,
 ): ResultAsync<
-  Partial<Pick<IFormDocument, keyof SettingsUpdateBody>>,
+  FormSettings,
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
   | DatabasePayloadSizeError
+  | MalformedParametersError
 > => {
-  const updateKeys = Object.keys(body) as (keyof SettingsUpdateBody)[]
-  const newForm = updateKeys.reduce((accumulatedForm, key) => {
-    switch (key) {
-      // Non-object patches, assign key to form.
-      case 'authType':
-      case 'emails':
-      case 'esrvcId':
-      case 'hasCaptcha':
-      case 'inactiveMessage':
-      case 'status':
-      case 'submissionLimit':
-      case 'title': {
-        set(accumulatedForm, key, body[key])
-        break
-      }
-      // Object patches, deep mutate.
-      case 'webhook': {
-        merge(accumulatedForm[key], body[key])
-        break
-      }
-      default:
-        // Purely compile time check for missed keys. No need to throw or return
-        // so unknown keys will just be skipped if that somehow happens during
-        // runtime.
-        new UnreachableCaseError(key)
-    }
-    return accumulatedForm
-  }, originalForm)
+  const updateKeys = Object.keys(body) as (keyof SettingsUpdateDto)[]
+  return replaceSettingsToUpdate(originalForm, updateKeys, body)
+    .asyncAndThen((newForm) =>
+      ResultAsync.fromPromise(newForm.save(), (error) => {
+        logger.error({
+          message: 'Error encountered while updating form',
+          meta: {
+            action: 'updateFormSettings',
+            originalForm,
+            // Body is not logged in case sensitive data such as emails are stored.
+          },
+          error,
+        })
 
-  return ResultAsync.fromPromise(newForm.save(), (error) => {
-    logger.error({
-      message: 'Error encountered while updating form',
-      meta: {
-        action: 'updateFormSettings',
-        originalForm,
-        // Body is not logged in case sensitive data such as emails are stored.
-        updateKeys,
-      },
-      error,
-    })
-
-    return transformMongoError(error)
-    // Only return subset of original form that were updated.
-  }).map((updatedForm) => pick(updatedForm, updateKeys))
+        return transformMongoError(error)
+        // Only return subset of original form that were updated.
+      }),
+    )
+    .map((updatedForm) => updatedForm.getSettings())
 }

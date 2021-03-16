@@ -10,6 +10,7 @@ import {
   FormLogoState,
   FormMetaView,
   FormOtpData,
+  FormSettings,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormModel,
@@ -443,6 +444,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ...basePublicView,
       admin: (this.admin as IUserSchema).getPublicView(),
     }
+  }
+
+  FormSchema.methods.getSettings = function (
+    this: IFormDocument,
+  ): FormSettings {
+    return pick(this, [
+      'authType',
+      'emails',
+      'esrvcId',
+      'hasCaptcha',
+      'inactiveMessage',
+      'status',
+      'submissionLimit',
+      'title',
+      'webhook',
+    ])
   }
 
   // Archives form.
