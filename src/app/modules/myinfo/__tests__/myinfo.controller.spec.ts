@@ -1,4 +1,3 @@
-import { MyInfoFetchError } from 'dist/backend/app/modules/myinfo/myinfo.errors'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -22,6 +21,7 @@ import {
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS } from '../myinfo.constants'
 import * as MyInfoController from '../myinfo.controller'
+import { MyInfoFetchError } from '../myinfo.errors'
 import { MyInfoFactory } from '../myinfo.factory'
 import { MyInfoCookieState } from '../myinfo.types'
 
