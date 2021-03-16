@@ -2,7 +2,7 @@ import { Router } from 'express'
 
 import { AdminRouter } from '../../app/modules/form/admin-form/admin-form.routes'
 
-export const API_ROOT_ROUTE = '/api/v1'
+export const API_ROOT_ROUTE = '/api/v3'
 
 export const ApiRouter = Router()
 

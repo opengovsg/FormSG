@@ -3,7 +3,7 @@ import axios from 'axios'
 import { SettingsUpdateDto } from '../../shared/typings/form'
 import { FormSettings } from '../../types'
 
-const ADMIN_FORM_ENDPOINT = '/api/v1/admin/form'
+const ADMIN_FORM_ENDPOINT = '/api/v3/admin/form'
 
 export const updateFormSettings = async (
   formId: string,
