@@ -1306,5 +1306,64 @@ describe('Form Model', () => {
         )
       })
     })
+
+    describe('getSettings', () => {
+      it('should correctly return settings of email form', async () => {
+        // Arrange
+        const emailForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+        })
+
+        // Act
+        const actual = emailForm.getSettings()
+
+        // Assert
+        const expected = pick(emailForm, [
+          'authType',
+          'emails',
+          'esrvcId',
+          'hasCaptcha',
+          'inactiveMessage',
+          'status',
+          'submissionLimit',
+          'title',
+          'webhook',
+        ])
+        expect(actual).toEqual(expected)
+      })
+
+      it('should correctly return settings of storage mode forms', async () => {
+        // Arrange
+        const encryptForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Encrypt,
+          webhook: {
+            url: 'https://example.com',
+          },
+          title: 'mock encrypt form electric boogaloo',
+          publicKey: 'some public key again',
+        })
+
+        // Act
+        const actual = encryptForm.getSettings()
+
+        // Assert
+        const expected = pick(encryptForm, [
+          'authType',
+          'emails',
+          'esrvcId',
+          'hasCaptcha',
+          'inactiveMessage',
+          'status',
+          'submissionLimit',
+          'title',
+          'webhook',
+        ])
+        expect(actual).toEqual(expected)
+      })
+    })
   })
 })
