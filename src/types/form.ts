@@ -147,6 +147,19 @@ export interface IForm {
   emails?: string[] | string
 }
 
+export type FormSettings = Pick<
+  IFormDocument,
+  | 'authType'
+  | 'emails'
+  | 'esrvcId'
+  | 'hasCaptcha'
+  | 'inactiveMessage'
+  | 'status'
+  | 'submissionLimit'
+  | 'title'
+  | 'webhook'
+>
+
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Returns the dashboard form view of the form.
@@ -155,6 +168,10 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    */
   getDashboardView(admin: IPopulatedUser): FormMetaView
   getUniqueMyInfoAttrs(): MyInfoAttribute[]
+  /**
+   * Retrieve form settings.
+   */
+  getSettings(): FormSettings
   /**
    * Archives form.
    * @returns form that has been archived
