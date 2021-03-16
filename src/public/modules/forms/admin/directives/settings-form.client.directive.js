@@ -51,7 +51,7 @@ function settingsFormDirective(
     restrict: 'E',
     scope: {
       myform: '=',
-      updateForm: '&',
+      updateFormSettings: '&',
     },
     controller: [
       '$scope',
@@ -89,7 +89,8 @@ function settingsFormDirective(
           const emailsFieldIncorrectlyAdded =
             updatedSettings.emails &&
             !Array.isArray(tempForm.emails) &&
-            myform.emails.join(',') === tempForm.emails
+            // Remove all whitespace from tempForm email string so spaces do not affect equality.
+            myform.emails.join(',') === tempForm.emails.replace(/\s+/g, '')
           if (emailsFieldIncorrectlyAdded) delete updatedSettings.emails
 
           return updatedSettings
@@ -98,7 +99,7 @@ function settingsFormDirective(
         // Generic update form function with custom callback on success
         const updateSettings = (callback) => {
           return $scope
-            .updateForm({ update: getCurrentSettings() })
+            .updateFormSettings({ settingsToUpdate: getCurrentSettings() })
             .then((error) => {
               if (error) {
                 revertField()
