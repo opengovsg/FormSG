@@ -31,11 +31,13 @@ import {
   getMockSpcpLocals,
   transferFormOwnership,
   updateForm,
+  updateFormSettings,
 } from './admin-form.service'
 import {
   DuplicateFormBody,
   FormUpdateParams,
   PermissionLevel,
+  SettingsUpdateBody,
 } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -942,6 +944,60 @@ export const handleUpdateForm: RequestHandler<
           userId: sessionUserId,
           formId,
           formUpdateParams,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for PATCH /form/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form to update cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when an invalid update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateSettings: RequestHandler<
+  { formId: string },
+  unknown,
+  SettingsUpdateBody
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const settingsToPatch = req.body
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      updateFormSettings(retrievedForm, settingsToPatch),
+    )
+    .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form settings',
+        meta: {
+          action: 'handleUpdateSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          settingsKeysToUpdate: Object.keys(settingsToPatch),
         },
         error,
       })
