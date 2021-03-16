@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -84,7 +84,7 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.29",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.863.0",
+    "aws-sdk": "^2.864.0",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.5.2",
@@ -96,7 +96,7 @@
     "celebrate": "^13.0.4",
     "compression": "~1.7.2",
     "connect-mongo": "^4.4.0",
-    "convict": "^6.0.0",
+    "convict": "^6.0.1",
     "convict-format-with-validator": "^6.0.1",
     "cookie-parser": "~1.4.0",
     "css-toggle-switch": "^4.1.0",
