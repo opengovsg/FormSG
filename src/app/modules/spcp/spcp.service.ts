@@ -75,6 +75,14 @@ export class SpcpService {
     })
     // TODO (private #123): remove #corppassCloudAuthClient
     try {
+      logger.info({
+        message: 'Initialising CorpPass Cloud client',
+        meta: {
+          action: 'SpcpService',
+          idpEndpoint: props.cpCloudEndpoint,
+          spcpCertPath: props.cpCloudCertPath,
+        },
+      })
       this.#corppassCloudAuthClient = new SPCPAuthClient({
         partnerEntityId: props.cpPartnerEntityId,
         idpLoginURL: props.cpIdpLoginUrl,
