@@ -25,16 +25,13 @@ const updateSettingsValidator = celebrate({
     esrvcId: Joi.string().allow(''),
     hasCaptcha: Joi.boolean(),
     inactiveMessage: Joi.string(),
-    permissionList: Joi.array().items({
-      email: Joi.string().email().required(),
-      write: Joi.boolean(),
-    }),
     status: Joi.string().valid(...Object.values(Status)),
+    submissionLimit: Joi.number().allow(null),
     title: Joi.string(),
     webhook: Joi.object({
       url: Joi.string().uri().required().allow(''),
     }),
-  }).length(1),
+  }),
 })
 
 AdminRouter.route('/form/:formId([a-fA-F0-9]{24})/settings').patch(

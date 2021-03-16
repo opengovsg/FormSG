@@ -519,14 +519,14 @@ export const updateFormSettings = (
   const newForm = updateKeys.reduce((accumulatedForm, key) => {
     switch (key) {
       // Non-object patches, assign key to form.
-      case 'title':
-      case 'esrvcId':
-      case 'inactiveMessage':
-      case 'emails':
       case 'authType':
-      case 'status':
+      case 'emails':
+      case 'esrvcId':
       case 'hasCaptcha':
-      case 'permissionList': {
+      case 'inactiveMessage':
+      case 'status':
+      case 'submissionLimit':
+      case 'title': {
         set(accumulatedForm, key, body[key])
         break
       }

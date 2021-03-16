@@ -82,8 +82,8 @@ export type SettingsUpdateBody = Partial<{
   esrvcId: NonNullable<IForm['esrvcId']>
   hasCaptcha: NonNullable<IForm['hasCaptcha']>
   inactiveMessage: NonNullable<IForm['inactiveMessage']>
-  permissionList: NonNullable<IForm['permissionList']>
   status: NonNullable<IForm['status']>
+  submissionLimit: NonNullable<IForm['submissionLimit']>
   title: NonNullable<IForm['title']>
   webhook: NonNullable<IForm['webhook']>
 }>
