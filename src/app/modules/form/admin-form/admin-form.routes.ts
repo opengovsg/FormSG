@@ -1,11 +1,11 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import { SettingsUpdateDto } from '../../../../shared/typings/form'
 import { AuthType, Status } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 
 import { handleUpdateSettings } from './admin-form.controller'
-import { SettingsUpdateBody } from './admin-form.types'
 
 export const AdminRouter = Router()
 
@@ -16,7 +16,7 @@ AdminRouter.use(withUserAuthentication)
  * Joi validator for PATCH /form/:formId/settings route.
  */
 const updateSettingsValidator = celebrate({
-  [Segments.BODY]: Joi.object<SettingsUpdateBody>({
+  [Segments.BODY]: Joi.object<SettingsUpdateDto>({
     authType: Joi.string().valid(...Object.values(AuthType)),
     emails: Joi.alternatives().try(
       Joi.array().items(Joi.string()),

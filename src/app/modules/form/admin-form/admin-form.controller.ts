@@ -5,7 +5,15 @@ import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { AuthType, IForm, IPopulatedForm, WithForm } from '../../../../types'
+import { ErrorDto } from '../../../../shared/typings/core'
+import { SettingsUpdateDto } from '../../../../shared/typings/form'
+import {
+  AuthType,
+  FormSettings,
+  IForm,
+  IPopulatedForm,
+  WithForm,
+} from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -37,7 +45,6 @@ import {
   DuplicateFormBody,
   FormUpdateParams,
   PermissionLevel,
-  SettingsUpdateBody,
 } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -968,8 +975,8 @@ export const handleUpdateForm: RequestHandler<
  */
 export const handleUpdateSettings: RequestHandler<
   { formId: string },
-  unknown,
-  SettingsUpdateBody
+  FormSettings | ErrorDto,
+  SettingsUpdateDto
 > = (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as Express.AuthedSession).user._id

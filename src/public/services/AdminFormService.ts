@@ -1,30 +1,16 @@
 import axios from 'axios'
 
+import { SettingsUpdateDto } from '../../shared/typings/form'
+import { FormSettings } from '../../types'
+
 const ADMIN_FORM_ENDPOINT = '/api/v1/admin/form'
-
-// TODO: Sync up these types with SettingsUpdateBody in admin-form.types.ts
-type SettingsUpdateBody = Partial<{
-  authType: string
-  emails: string | string[]
-  esrvcId: string
-  hasCaptcha: boolean
-  inactiveMessage: string
-  status: string
-  submissionLimit: number | null
-  title: string
-  webhook: {
-    url: string
-  }
-}>
-
-type SettingsUpdateResult = SettingsUpdateBody
 
 export const updateFormSettings = async (
   formId: string,
-  settingsToUpdate: SettingsUpdateBody,
-): Promise<SettingsUpdateResult> => {
+  settingsToUpdate: SettingsUpdateDto,
+): Promise<FormSettings> => {
   return axios
-    .patch<SettingsUpdateResult>(
+    .patch<FormSettings>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
       settingsToUpdate,
     )
