@@ -31,7 +31,7 @@ const updateSettingsValidator = celebrate({
     webhook: Joi.object({
       url: Joi.string().uri().required().allow(''),
     }),
-  }),
+  }).min(1),
 })
 
 AdminRouter.route('/form/:formId([a-fA-F0-9]{24})/settings').patch(
