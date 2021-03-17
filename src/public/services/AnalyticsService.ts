@@ -1,11 +1,11 @@
 import axios from 'axios'
 
-import { AnalyticStats } from 'src/types/analytics'
+import { AnalyticStatsDto } from '../../types/analytics'
 
 /**
  * Retrieves landing page statistics - user, form and submission count.
  */
-export const getLandingPageStatistics = async (): Promise<AnalyticStats> =>
+export const getLandingPageStatistics = async (): Promise<AnalyticStatsDto> =>
   axios
-    .get<AnalyticStats>('/analytics/statistics')
+    .get<AnalyticStatsDto>('/analytics/statistics')
     .then((response) => response.data)
