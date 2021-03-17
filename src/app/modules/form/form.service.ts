@@ -38,17 +38,15 @@ const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 
 /**
- * Intentionally caught instead of neverthrown to prevent blocking because the result of the call is not important.
+ * Deactivates a given form by its id
  * @param formId the id of the form to deactivate
- * @returns Promise(IFormSchema) the db object of the form if the form is successfully deactivated
+ * @returns Promise the db object of the form if the form is successfully deactivated
  * @returns null if an error is thrown while deactivating
  */
-export const deactivateForm = async (
+export const deactivateForm = (
   formId: string,
-): Promise<IFormSchema | null> => {
-  try {
-    return FormModel.deactivateById(formId)
-  } catch (error) {
+): ResultAsync<true, PossibleDatabaseError | FormNotFoundError> => {
+  return ResultAsync.fromPromise(FormModel.deactivateById(formId), (error) => {
     logger.error({
       message: 'Error deactivating form by id',
       meta: {
@@ -57,8 +55,23 @@ export const deactivateForm = async (
       },
       error,
     })
-    return null
-  }
+
+    return transformMongoError(error)
+  }).andThen((deactivatedForm) => {
+    if (!deactivatedForm) {
+      logger.error({
+        message:
+          'Attempted to deactivate form that cannot be found in the database',
+        meta: {
+          action: 'deactivateForm',
+          form: formId,
+        },
+      })
+      return errAsync(new FormNotFoundError())
+    }
+    // Successfully deactivated.
+    return okAsync(true)
+  })
 }
 
 /**
