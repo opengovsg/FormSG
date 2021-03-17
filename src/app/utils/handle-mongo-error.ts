@@ -8,6 +8,12 @@ import {
   DatabaseValidationError,
 } from '../modules/core/core.errors'
 
+export type PossibleDatabaseError =
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+
 /**
  * Exported for testing.
  * Format error recovery message to be returned to client.
@@ -66,13 +72,7 @@ export const getMongoErrorMessage = (
  * @param error the error thrown by database operations
  * @returns errors that extend from ApplicationError class
  */
-export const transformMongoError = (
-  error: unknown,
-):
-  | DatabaseError
-  | DatabaseValidationError
-  | DatabaseConflictError
-  | DatabasePayloadSizeError => {
+export const transformMongoError = (error: unknown): PossibleDatabaseError => {
   const errorMessage = getMongoErrorMessage(error)
   if (!(error instanceof Error)) {
     return new DatabaseError(errorMessage)
