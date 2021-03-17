@@ -24,6 +24,10 @@ import {
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
 import {
+  MailGenerationError,
+  MailSendError,
+} from '../../../services/mail/mail.errors'
+import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
@@ -50,7 +54,6 @@ import {
   ConflictError,
   ProcessingError,
   ResponseModeError,
-  SendAdminEmailError,
   ValidateFieldError,
 } from '../submission.errors'
 import {
@@ -349,7 +352,8 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage:
           'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       }
-    case SendAdminEmailError:
+    case MailGenerationError:
+    case MailSendError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:

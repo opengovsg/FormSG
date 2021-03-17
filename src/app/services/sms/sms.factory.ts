@@ -1,3 +1,4 @@
+import { errAsync } from 'neverthrow'
 import Twilio from 'twilio'
 
 import FeatureManager, {
@@ -62,20 +63,13 @@ export const createSmsFactory = (
   smsFeature: RegisteredFeature<FeatureNames.Sms>,
 ): ISmsFactory => {
   if (!smsFeature.isEnabled || !smsFeature.props) {
-    const errorMessage = 'SMS feature must be enabled in Feature Manager first'
+    // Not enabled, return passthrough functions.
+    const error = new MissingFeatureError(FeatureNames.Sms)
     return {
-      sendAdminContactOtp: () => {
-        //eslint-disable-next-line
-        throw new Error(`sendAdminContactOtp: ${errorMessage}`)
-      },
-      sendVerificationOtp: () => {
-        //eslint-disable-next-line
-        throw new Error(`sendVerificationOtp: ${errorMessage}`)
-      },
-      sendFormDeactivatedSms: () =>
-        Promise.reject(new MissingFeatureError(FeatureNames.Sms)),
-      sendBouncedSubmissionSms: () =>
-        Promise.reject(new MissingFeatureError(FeatureNames.Sms)),
+      sendAdminContactOtp: () => errAsync(error),
+      sendVerificationOtp: () => errAsync(error),
+      sendFormDeactivatedSms: () => errAsync(error),
+      sendBouncedSubmissionSms: () => errAsync(error),
     }
   }
 

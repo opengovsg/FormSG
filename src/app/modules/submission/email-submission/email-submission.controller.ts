@@ -3,6 +3,7 @@ import { Request, RequestHandler } from 'express'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType, FieldResponse } from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
 import {
@@ -219,18 +220,14 @@ export const handleEmailSubmission: RequestHandler<
     message: 'Sending admin mail',
     meta: logMetaWithSubmission,
   })
-  const sendAdminEmailResult = await EmailSubmissionService.sendSubmissionToAdmin(
-    {
-      replyToEmails: EmailSubmissionService.extractEmailAnswers(
-        parsedResponses,
-      ),
-      form,
-      submission,
-      attachments,
-      dataCollationData: emailData.dataCollationData,
-      formData: emailData.formData,
-    },
-  )
+  const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
+    form,
+    submission,
+    attachments,
+    dataCollationData: emailData.dataCollationData,
+    formData: emailData.formData,
+  })
   if (sendAdminEmailResult.isErr()) {
     logger.error({
       message: 'Error sending submission to admin',

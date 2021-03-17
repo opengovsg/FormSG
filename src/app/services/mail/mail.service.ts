@@ -1,6 +1,6 @@
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { ResultAsync } from 'neverthrow'
+import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
@@ -16,7 +16,7 @@ import {
 } from '../../../types'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
-import { MailSendError } from './mail.errors'
+import { MailGenerationError, MailSendError } from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
@@ -107,38 +107,21 @@ export class MailService {
   }
 
   /**
-   * Private function to send email using SES / Direct transport.
+   * Private function to wrap the sending of email using SES / Direct transport with retries.
    * @param mail Mail data to send with
-   * @param sendOptions Extra options to better identify mail, such as form or mail id.
+   * @param loggerMeta optional object to pass into logger
+   * @returns true on successful mail sending
+   * @throws error if mail still fails to send after retries
    */
-  #sendNodeMail = async (
+  #sendMailWithRetries = (
     mail: MailOptions,
-    sendOptions?: SendMailOptions,
+    loggerMeta?: Record<string, unknown>,
   ): Promise<true> => {
     const logMeta = {
-      action: '#sendNodeMail',
-      mailId: sendOptions?.mailId,
+      action: '#sendMailWithRetries',
       mailFrom: mail.from,
       mailSubject: mail.subject,
-      formId: sendOptions?.formId,
-    }
-
-    // Guard against missing mail info.
-    if (!mail || isEmpty(mail.to)) {
-      logger.error({
-        message: 'Undefined mail',
-        meta: logMeta,
-      })
-      return Promise.reject(new Error('Mail undefined error'))
-    }
-
-    // Guard against invalid emails.
-    if (!isToFieldValid(mail.to)) {
-      logger.error({
-        message: `${mail.to} is not a valid email`,
-        meta: logMeta,
-      })
-      return Promise.reject(new Error('Invalid email error'))
+      ...loggerMeta,
     }
 
     return promiseRetry<true>(async (retry, attemptNum) => {
@@ -154,23 +137,80 @@ export class MailService {
           meta: logMeta,
         })
         return true
-      } catch (err) {
+      } catch (error) {
         // Pass errors to the callback
         logger.error({
           message: `Send mail failure on attempt ${attemptNum}`,
           meta: logMeta,
-          error: err,
+          error,
         })
 
         // Retry only on 4xx errors.
-        if (inRange(get(err, 'responseCode', 0), 400, 500)) {
-          return retry(err)
+        if (inRange(get(error, 'responseCode', 0), 400, 500)) {
+          return retry(error)
         }
 
         // Not 4xx error, rethrow error.
-        throw err
+        throw error
       }
     }, this.#retryParams)
+  }
+
+  /**
+   * Private function to send email using SES / Direct transport.
+   * @param mail Mail data to send with
+   * @param sendOptions Extra options to better identify mail, such as form or mail id.
+   * @returns ok(true) on successful mail sending
+   * @returns err(MailSendError) if any errors occurs whilst sending mail
+   */
+  #sendNodeMail = (
+    mail: MailOptions,
+    sendOptions?: SendMailOptions,
+  ): ResultAsync<true, MailSendError> => {
+    const logMeta = {
+      action: '#sendNodeMail',
+      mailId: sendOptions?.mailId,
+      formId: sendOptions?.formId,
+      mailFrom: mail.from,
+      mailSubject: mail.subject,
+    }
+
+    // Guard against missing mail info.
+    if (!mail || isEmpty(mail.to)) {
+      logger.error({
+        message: 'Undefined mail',
+        meta: logMeta,
+      })
+
+      return errAsync(new MailSendError('Mail undefined error'))
+    }
+
+    // Guard against invalid emails.
+    if (!isToFieldValid(mail.to)) {
+      logger.error({
+        message: `${mail.to} is not a valid email`,
+        meta: logMeta,
+      })
+      return errAsync(new MailSendError('Invalid email error'))
+    }
+
+    return ResultAsync.fromPromise(
+      this.#sendMailWithRetries(mail, {
+        mailId: sendOptions?.mailId,
+        formId: sendOptions?.formId,
+      }),
+      (error) => {
+        logger.error({
+          message: 'Error returned from sendMail retries',
+          meta: logMeta,
+          error,
+        })
+
+        return new MailSendError('Failed to send mail', {
+          originalError: error,
+        })
+      },
+    )
   }
 
   /**
@@ -182,14 +222,17 @@ export class MailService {
    * @param arg.submission the submission mongoose object to retrieve id from for metadata
    * @param arg.index the index metadata of this mail for logging purposes
    */
-  #sendSingleAutoreplyMail = async ({
+  #sendSingleAutoreplyMail = ({
     autoReplyMailData,
     attachments,
     formSummaryRenderData,
     form,
     submission,
     index,
-  }: SendSingleAutoreplyMailArgs): Promise<true> => {
+  }: SendSingleAutoreplyMailArgs): ResultAsync<
+    true,
+    MailSendError | MailGenerationError
+  > => {
     const emailSubject =
       autoReplyMailData.subject || `Thank you for submitting ${form.title}`
     // Sender's name appearing after "("" symbol gets truncated. Escaping it
@@ -207,26 +250,26 @@ export class MailService {
       ...(autoReplyMailData.includeFormSummary && formSummaryRenderData),
     }
 
-    const mailHtml = await generateAutoreplyHtml(templateData)
+    return generateAutoreplyHtml(templateData).andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: autoReplyMailData.email,
+        from: `${emailSender} <${this.#senderMail}>`,
+        subject: emailSubject,
+        // Only send attachments if the admin has the box checked for email
+        // fields.
+        attachments: autoReplyMailData.includeFormSummary ? attachments : [],
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.formId]: String(form._id),
+          [EMAIL_HEADERS.submissionId]: String(submission.id),
+          [EMAIL_HEADERS.emailType]: EmailType.EmailConfirmation,
+        },
+      }
 
-    const mail: MailOptions = {
-      to: autoReplyMailData.email,
-      from: `${emailSender} <${this.#senderMail}>`,
-      subject: emailSubject,
-      // Only send attachments if the admin has the box checked for email
-      // fields.
-      attachments: autoReplyMailData.includeFormSummary ? attachments : [],
-      html: mailHtml,
-      headers: {
-        [EMAIL_HEADERS.formId]: String(form._id),
-        [EMAIL_HEADERS.submissionId]: String(submission.id),
-        [EMAIL_HEADERS.emailType]: EmailType.EmailConfirmation,
-      },
-    }
-
-    return this.#sendNodeMail(mail, {
-      mailId: `${submission.id}-${index}`,
-      formId: form._id,
+      return this.#sendNodeMail(mail, {
+        mailId: `${submission.id}-${index}`,
+        formId: form._id,
+      })
     })
   }
 
@@ -236,15 +279,10 @@ export class MailService {
    * @param otp the otp to send
    * @throws error if mail fails, to be handled by the caller
    */
-  sendVerificationOtp = async (
+  sendVerificationOtp = (
     recipient: string,
     otp: string,
-  ): Promise<true> => {
-    // TODO(#42): Remove param guards once whole backend is TypeScript.
-    if (!otp) {
-      throw new Error('OTP is missing.')
-    }
-
+  ): ResultAsync<true, MailSendError> => {
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
 
     const mail: MailOptions = {
@@ -296,21 +334,18 @@ export class MailService {
         },
       }
 
-      return ResultAsync.fromPromise(
-        this.#sendNodeMail(mail, { mailId: 'OTP' }),
-        (error) => {
-          logger.error({
-            message: 'Error sending login OTP to email',
-            meta: {
-              action: 'sendLoginOtp',
-              recipient,
-            },
-            error,
-          })
-
-          return new MailSendError()
-        },
-      )
+      return this.#sendNodeMail(mail, { mailId: 'OTP' }).mapErr((error) => {
+        // Add additional logging.
+        logger.error({
+          message: 'Error sending login OTP to email',
+          meta: {
+            action: 'sendLoginOtp',
+            recipient,
+          },
+          error,
+        })
+        return error
+      })
     })
   }
 
@@ -324,7 +359,7 @@ export class MailService {
    * @param args.formId ID of form
    * @throws error if mail fails, to be handled by the caller
    */
-  sendBounceNotification = async ({
+  sendBounceNotification = ({
     emailRecipients,
     bouncedRecipients,
     bounceType,
@@ -336,25 +371,45 @@ export class MailService {
     bounceType: BounceType | undefined
     formTitle: string
     formId: string
-  }): Promise<true> => {
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const htmlData: BounceNotificationHtmlData = {
       formTitle,
       formLink: `${this.#appUrl}/${formId}`,
       bouncedRecipients: bouncedRecipients.join(', '),
       appName: this.#appName,
     }
-    const mail: MailOptions = {
-      to: emailRecipients,
-      from: this.#senderFromString,
-      subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
-      html: await generateBounceNotificationHtml(htmlData, bounceType),
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
-        [EMAIL_HEADERS.formId]: formId,
-      },
-    }
 
-    return this.#sendNodeMail(mail, { mailId: 'bounce' })
+    return generateBounceNotificationHtml(htmlData, bounceType).andThen(
+      (mailHtml) => {
+        const mail: MailOptions = {
+          to: emailRecipients,
+          from: this.#senderFromString,
+          subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
+          html: mailHtml,
+          headers: {
+            [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
+            [EMAIL_HEADERS.formId]: formId,
+          },
+        }
+
+        return this.#sendNodeMail(mail, { mailId: 'bounce' }).mapErr(
+          (error) => {
+            // Add additional logging.
+            logger.error({
+              message: 'Error sending bounce notification email',
+              meta: {
+                action: 'sendBounceNotification',
+                bounceType,
+                formTitle,
+                formId,
+              },
+              error,
+            })
+            return error
+          },
+        )
+      },
+    )
   }
 
   /**
@@ -367,7 +422,7 @@ export class MailService {
    * @param args.dataCollationData the data to use in the data collation tool to be appended to the end of the email
    * @param args.formData the form data to display to in the body in table form
    */
-  sendSubmissionToAdmin = async ({
+  sendSubmissionToAdmin = ({
     replyToEmails,
     form,
     submission,
@@ -384,7 +439,7 @@ export class MailService {
       question: string
       answer: string | number
     }[]
-  }): Promise<true> => {
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const refNo = String(submission.id)
     const formTitle = form.title
     const submissionTime = moment(submission.created)
@@ -414,26 +469,36 @@ export class MailService {
       formData,
     }
 
-    const mailHtml = await generateSubmissionToAdminHtml(htmlData)
+    return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: form.emails,
+        from: this.#senderFromString,
+        subject: `formsg-auto: ${formTitle} (Ref: ${refNo})`,
+        html: mailHtml,
+        attachments,
+        headers: {
+          [EMAIL_HEADERS.formId]: String(form._id),
+          [EMAIL_HEADERS.submissionId]: refNo,
+          [EMAIL_HEADERS.emailType]: EmailType.AdminResponse,
+        },
+        // replyTo options only allow string format.
+        replyTo: replyToEmails?.join(', '),
+      }
 
-    const mail: MailOptions = {
-      to: form.emails,
-      from: this.#senderFromString,
-      subject: `formsg-auto: ${formTitle} (Ref: ${refNo})`,
-      html: mailHtml,
-      attachments,
-      headers: {
-        [EMAIL_HEADERS.formId]: String(form._id),
-        [EMAIL_HEADERS.submissionId]: refNo,
-        [EMAIL_HEADERS.emailType]: EmailType.AdminResponse,
-      },
-      // replyTo options only allow string format.
-      replyTo: replyToEmails?.join(', '),
-    }
-
-    return this.#sendNodeMail(mail, {
-      mailId: refNo,
-      formId: String(form._id),
+      return this.#sendNodeMail(mail, {
+        mailId: refNo,
+        formId: String(form._id),
+      }).mapErr((error) => {
+        // Add additional logging.
+        logger.error({
+          message: 'Error sending submission to admin email',
+          meta: {
+            action: 'sendSubmissionToAdmin',
+          },
+          error,
+        })
+        return error
+      })
     })
   }
 
@@ -457,7 +522,9 @@ export class MailService {
     responsesData,
     autoReplyMailDatas,
     attachments = [],
-  }: SendAutoReplyEmailsArgs): Promise<PromiseSettledResult<true>[]> => {
+  }: SendAutoReplyEmailsArgs): Promise<
+    PromiseSettledResult<Result<true, MailSendError | MailGenerationError>>[]
+  > => {
     // Data to render both the submission details mail HTML body and PDF.
 
     const renderData: AutoreplySummaryRenderData = {
@@ -476,10 +543,13 @@ export class MailService {
     // Generate autoreply pdf and append into attachments if any of the mail has
     // to include a form summary.
     if (autoReplyMailDatas.some((data) => data.includeFormSummary)) {
-      const pdfBuffer = await generateAutoreplyPdf(renderData)
+      const pdfBufferResult = await generateAutoreplyPdf(renderData)
+      if (pdfBufferResult.isErr()) {
+        return Promise.allSettled([err(pdfBufferResult.error)])
+      }
       attachmentsWithAutoreplyPdf.push({
         filename: 'response.pdf',
-        content: pdfBuffer,
+        content: pdfBufferResult.value,
       })
     }
 

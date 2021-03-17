@@ -39,7 +39,7 @@ const MockAuthClient = mocked(SPCPAuthClient, true)
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
-    sendMail: jest.fn(),
+    sendMail: jest.fn().mockResolvedValue(true),
   }),
 }))
 

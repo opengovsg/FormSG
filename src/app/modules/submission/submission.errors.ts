@@ -44,12 +44,6 @@ export class ValidateFieldError extends ApplicationError {
   }
 }
 
-export class SendAdminEmailError extends ApplicationError {
-  constructor(message = 'Error sending submission to admin') {
-    super(message)
-  }
-}
-
 /**
  * Error while sending confirmation email to recipients.
  */
