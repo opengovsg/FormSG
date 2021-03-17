@@ -1,6 +1,6 @@
 'use strict'
 
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const { LogicType } = require('../../../../../types')
 const AdminFormService = require('../../../../services/AdminFormService')
 
@@ -140,15 +140,16 @@ function AdminFormController(
     }
     let errorMessage
     switch (error.status) {
-      case HttpStatus.BAD_REQUEST:
+      case StatusCodes.CONFLICT:
+      case StatusCodes.BAD_REQUEST:
         errorMessage =
           'This page seems outdated, and your changes could not be saved. Please refresh.'
         break
-      case HttpStatus.UNAUTHORIZED:
+      case StatusCodes.UNAUTHORIZED:
         errorMessage =
           'Your changes could not be saved as your account lacks the requisite privileges.'
         break
-      case HttpStatus.UNPROCESSABLE_ENTITY:
+      case StatusCodes.UNPROCESSABLE_ENTITY:
         // Validation can fail for many reasons, so return more specific message
         errorMessage = _.get(
           error,
@@ -156,7 +157,7 @@ function AdminFormController(
           'Your changes contain invalid input.',
         )
         break
-      case HttpStatus.REQUEST_TOO_LONG: // HTTP Payload Too Large
+      case StatusCodes.REQUEST_TOO_LONG: // HTTP Payload Too Large
         errorMessage = `
                 Your form is too large. Reduce the number of fields, or submit a
                 <a href="${$scope.supportFormLink}" target="_blank" rel="noopener"><u>Support Form</u></a>.
