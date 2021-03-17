@@ -39,13 +39,13 @@ function configureMobileDirective() {
               resolve: {
                 externalScope: function () {
                   return {
-                    title: 'Verified SMS',
+                    title: 'Verified SMS charges',
                     confirmButtonText: 'OK, Noted',
                     description: `
-                      FormSG provides free verified SMS <b>up to 10,000 responses</b>
-                      <b>per form</b>. If you expect >10k responses, please <a href=${$scope.supportFormLink} target="_blank" class="">contact us</a> 
-                      to arrange billing for verified SMS. <b>Failure to do so risks your form</b>
-                      <b>being deactivated for submissions</b>.
+                      Under 10,000 form responses: Free verified SMS
+                      <br><br>
+                      Above 10,000 form responses: <b>$0.0395 per SMS - <a href=${$scope.supportFormLink} target="_blank" class="">contact us</a> 
+                      for billing</b>. Forms exceeding the free tier without billing will be deactivated.
                     `,
                   }
                 },
