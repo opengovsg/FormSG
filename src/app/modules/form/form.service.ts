@@ -15,8 +15,15 @@ import getFormModel, {
   getEncryptedFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import {
+  getMongoErrorMessage,
+  transformMongoError,
+} from '../../utils/handle-mongo-error'
+import {
+  ApplicationError,
+  DatabaseError,
+  DatabaseValidationError,
+} from '../core/core.errors'
 
 import {
   FormDeletedError,
@@ -30,10 +37,28 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 
+/**
+ * Intentionally caught instead of neverthrown to prevent blocking because the result of the call is not important.
+ * @param formId the id of the form to deactivate
+ * @returns Promise(IFormSchema) the db object of the form if the form is successfully deactivated
+ * @returns null if an error is thrown while deactivating
+ */
 export const deactivateForm = async (
   formId: string,
 ): Promise<IFormSchema | null> => {
-  return FormModel.deactivateById(formId)
+  try {
+    return FormModel.deactivateById(formId)
+  } catch (error) {
+    logger.error({
+      message: 'Error deactivating form by id',
+      meta: {
+        action: 'deactivateForm',
+        form: formId,
+      },
+      error,
+    })
+    return null
+  }
 }
 
 /**
@@ -135,17 +160,35 @@ export const isFormPublic = (
 /**
  * Method to check whether a form has reached submission limits, and deactivate the form if necessary
  * @param form the form to check
- * @returns ok(true) if submission is allowed because the form has not reached limits
- * @returns ok(false) if submission is not allowed because the form has reached limits
+ * @returns okAsync(form) if submission is allowed because the form has not reached limits
+ * @returns errAsync(error) if submission is not allowed because the form has reached limits or if an error occurs while counting the documents
  */
-export const checkFormSubmissionLimitAndDeactivateForm = async (
+export const checkFormSubmissionLimitAndDeactivateForm = (
   form: IPopulatedForm,
-): Promise<Result<true, PrivateFormError>> => {
-  if (form.submissionLimit !== null) {
-    const currentCount = await SubmissionModel.countDocuments({
-      form: form._id,
-    }).exec()
+): ResultAsync<
+  IPopulatedForm,
+  DatabaseError | DatabaseValidationError | PrivateFormError
+> => {
+  if (!form.submissionLimit) {
+    return okAsync(form)
+  }
 
+  return ResultAsync.fromPromise(
+    SubmissionModel.countDocuments({
+      form: form._id,
+    }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error counting documents',
+        meta: {
+          action: 'checkFormSubmissionLimitAndDeactivateForm',
+          form: form._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((currentCount) => {
     if (currentCount >= form.submissionLimit) {
       logger.info({
         message: 'Form reached maximum submission count, deactivating.',
@@ -154,14 +197,36 @@ export const checkFormSubmissionLimitAndDeactivateForm = async (
           action: 'checkFormSubmissionLimitAndDeactivate',
         },
       })
+
       await deactivateForm(form._id)
-      return err(new PrivateFormError(form.inactiveMessage, form.title))
+      return errAsync(new PrivateFormError(form.inactiveMessage, form.title))
     } else {
-      return ok(true)
+      return okAsync(form)
     }
-  } else {
-    return ok(true)
-  }
+  })
+}
+
+/**
+ * Method to retrieve a fully populated form that is public
+ * @param formId the id of the form to retrieve
+ * @returns okAsync(form) if the form was retrieved successfully
+ * @returns errAsync(error) the kind of error resulting from unsuccessful retrieval
+ */
+export const retrievePublicFormById = (
+  formId: string,
+): ResultAsync<
+  IPopulatedForm,
+  | FormNotFoundError
+  | DatabaseError
+  | FormDeletedError
+  | PrivateFormError
+  | ApplicationError
+> => {
+  return retrieveFullFormById(formId).andThen((form) =>
+    isFormPublic(form)
+      .map(() => form)
+      .mapErr((error) => error),
+  )
 }
 
 export const getFormModelByResponseMode = (
