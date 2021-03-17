@@ -995,7 +995,7 @@ export const handleUpdateSettings: RequestHandler<
     .andThen((retrievedForm) =>
       updateFormSettings(retrievedForm, settingsToPatch),
     )
-    .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
+    .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when updating form settings',
