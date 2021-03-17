@@ -39,7 +39,10 @@ function SubmitFormController(
   vm.myform.isTemplate = Boolean(FormData.isTemplate)
   vm.myform.isPreview = Boolean(FormData.isPreview)
   vm.myInfoError = Boolean(FormData.myInfoError)
-  if (FormData.isIntranetUser && vm.myform.authType !== 'NIL') {
+  if (
+    FormData.isIntranetUser &&
+    ['SP', 'CP', 'MyInfo'].includes(vm.myform.authType)
+  ) {
     Toastr.permanentError(
       'SingPass/CorpPass login is not supported from WOG Intranet. Please use an Internet-enabled device to submit this form.',
     )
