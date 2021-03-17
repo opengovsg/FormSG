@@ -25,6 +25,7 @@ import { SubmissionRouter } from '../../app/modules/submission/submission.routes
 import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
+import { API_V3_ROOT_ROUTE, ApiRouter } from '../../app/routes/api.routes'
 import config from '../../config/config'
 
 import errorHandlerMiddlewares from './error-handler'
@@ -32,7 +33,6 @@ import helmetMiddlewares from './helmet'
 import appLocals from './locals'
 import loggingMiddleware from './logging'
 import parserMiddlewares from './parser'
-import { API_ROOT_ROUTE, ApiRouter } from './router'
 import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
 
@@ -161,7 +161,7 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
   // New routes in preparation for API refactor.
-  app.use(API_ROOT_ROUTE, ApiRouter)
+  app.use(API_V3_ROOT_ROUTE, ApiRouter)
 
   app.use(sentryMiddlewares())
 
