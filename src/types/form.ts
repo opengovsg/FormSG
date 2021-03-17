@@ -129,7 +129,7 @@ export interface IForm {
   status?: Status
 
   inactiveMessage?: string
-  submissionLimit?: number
+  submissionLimit?: number | null
   isListed?: boolean
   esrvcId?: string
   webhook?: Webhook
@@ -208,7 +208,7 @@ export interface IFormDocument extends IFormSchema {
   authType: NonNullable<IFormSchema['authType']>
   status: NonNullable<IFormSchema['status']>
   inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
-  submissionLimit: NonNullable<IFormSchema['submissionLimit']>
+  submissionLimit: Exclude<IFormSchema['submissionLimit'], undefined>
   isListed: NonNullable<IFormSchema['isListed']>
   form_fields: NonNullable<IFormSchema['form_fields']>
   startPage: SetRequired<NonNullable<IFormSchema['startPage']>, 'colorTheme'>
