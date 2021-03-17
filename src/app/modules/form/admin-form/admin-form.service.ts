@@ -22,6 +22,7 @@ import {
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
+  ResponseMode,
   SpcpLocals,
 } from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
@@ -506,6 +507,14 @@ export const updateForm = (
   })
 }
 
+/**
+ * Updates form settings.
+ * @param originalForm The original form to update settings for
+ * @param body the subset of form settings to update
+ * @returns ok(updated form settings) on success
+ * @returns err(MalformedParametersError) if email update is attempted for an encrypt mode form
+ * @returns err(database errors) if db error is thrown during form setting update
+ */
 export const updateFormSettings = (
   originalForm: IPopulatedForm,
   body: SettingsUpdateDto,
@@ -517,6 +526,22 @@ export const updateFormSettings = (
   | DatabasePayloadSizeError
   | MalformedParametersError
 > => {
+  // If non-empty string or even if any array is passed in, return with error if
+  // form is encrypt mode.
+  if (originalForm.responseMode === ResponseMode.Encrypt && !!body.emails) {
+    logger.error({
+      message: 'Attempted to update form emails on an encrypt mode form',
+      meta: {
+        action: 'updateFormSettings',
+        originalFormId: originalForm._id,
+        // Body is not logged in case sensitive data such as emails are stored.
+      },
+    })
+    return errAsync(
+      new MalformedParametersError('Settings update parameters are invalid.'),
+    )
+  }
+
   const updateKeys = Object.keys(body) as (keyof SettingsUpdateDto)[]
   const newForm = updateKeys.reduce((accumulatedForm, key) => {
     switch (key) {
@@ -545,7 +570,7 @@ export const updateFormSettings = (
       message: 'Error encountered while updating form',
       meta: {
         action: 'updateFormSettings',
-        originalForm,
+        originalFormId: originalForm._id,
         // Body is not logged in case sensitive data such as emails are stored.
       },
       error,

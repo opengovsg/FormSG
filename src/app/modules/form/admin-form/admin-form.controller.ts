@@ -964,6 +964,7 @@ export const handleUpdateForm: RequestHandler<
  * @security session
  *
  * @returns 200 with updated form settings
+ * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
  * @returns 403 when current user does not have permissions to update form settings
  * @returns 404 when form to update settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
