@@ -12,6 +12,7 @@ const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormModel = require('../models/form.server.model').default
 const { IntranetFactory } = require('../services/intranet/intranet.factory')
 const { getRequestIp } = require('../utils/request')
+const { AuthType } = require('../../types')
 
 const Form = getFormModel(mongoose)
 
@@ -81,6 +82,21 @@ exports.read = (requestType) =>
     let isIntranetUser = false
     if (isIntranetResult.isOk()) {
       isIntranetUser = isIntranetResult.value
+    }
+
+    // SP, CP and MyInfo are not available on intranet
+    if (
+      isIntranetUser &&
+      [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
+    ) {
+      logger.warn({
+        message:
+          'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+        meta: {
+          action: 'read',
+          formId: form._id,
+        },
+      })
     }
 
     return res.json({
