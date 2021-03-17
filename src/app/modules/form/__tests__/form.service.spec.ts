@@ -1,8 +1,17 @@
 import { ObjectId } from 'bson'
+import { merge, times } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
-import { IFormSchema, IPopulatedForm, Status } from 'src/types'
+import getSubmissionModel from 'src/app/models/submission.server.model'
+import {
+  IEncryptedSubmissionSchema,
+  IFormSchema,
+  IPopulatedForm,
+  ResponseMode,
+  Status,
+  SubmissionType,
+} from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -16,9 +25,26 @@ import * as FormService from '../form.service'
 
 const MOCK_FORM_ID = new ObjectId()
 const Form = getFormModel(mongoose)
+const Submission = getSubmissionModel(mongoose)
+
+const MOCK_ADMIN_OBJ_ID = new ObjectId()
+const MOCK_FORM_PARAMS = {
+  title: 'Test Form',
+  admin: String(MOCK_ADMIN_OBJ_ID),
+}
+const MOCK_ENCRYPTED_FORM_PARAMS = {
+  ...MOCK_FORM_PARAMS,
+  publicKey: 'mockPublicKey',
+  responseMode: ResponseMode.Encrypt,
+}
 
 describe('FormService', () => {
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    await dbHandler.connect()
+    await dbHandler.insertFormCollectionReqs({
+      userId: MOCK_ADMIN_OBJ_ID,
+    })
+  })
 
   afterEach(() => jest.clearAllMocks())
 
@@ -199,6 +225,86 @@ describe('FormService', () => {
       expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('checkFormSubmissionLimitAndDeactivateForm', () => {
+    it('should let requests through when form has no submission limit', async () => {
+      // Arrange
+      const form = {
+        _id: new ObjectId(),
+        submissionLimit: null,
+      } as IPopulatedForm
+
+      // Act
+      const actual = await FormService.checkFormSubmissionLimitAndDeactivateForm(
+        form,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should let requests through when form has not reached submission limit', async () => {
+      // Arrange
+      const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+        status: Status.Public,
+        submissionLimit: 10,
+      })
+      const validForm = new Form(formParams)
+      const form = await validForm.save()
+
+      const submissionPromises = times(5, () =>
+        Submission.create<IEncryptedSubmissionSchema>({
+          form: form._id,
+          myInfoFields: [],
+          submissionType: SubmissionType.Encrypt,
+          encryptedContent: 'mockEncryptedContent',
+          version: 1,
+          created: new Date('2020-01-01'),
+        }),
+      )
+      await Promise.all(submissionPromises)
+
+      // Act
+      const actual = await FormService.checkFormSubmissionLimitAndDeactivateForm(
+        form,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should not let requests through and deactivate form when form has reached submission limit', async () => {
+      // Arrange
+      const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+        status: Status.Public,
+        submissionLimit: 5,
+      })
+      const validForm = new Form(formParams)
+      const form = await validForm.save()
+
+      const submissionPromises = times(5, () =>
+        Submission.create<IEncryptedSubmissionSchema>({
+          form: form._id,
+          myInfoFields: [],
+          submissionType: SubmissionType.Encrypt,
+          encryptedContent: 'mockEncryptedContent',
+          version: 1,
+          created: new Date('2020-01-01'),
+        }),
+      )
+      await Promise.all(submissionPromises)
+
+      // Act
+      const actual = await FormService.checkFormSubmissionLimitAndDeactivateForm(
+        form,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new PrivateFormError())
+      const updated = await Form.findById(form._id)
+      expect(updated!.status).toBe('PRIVATE')
     })
   })
 

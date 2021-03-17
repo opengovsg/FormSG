@@ -10,7 +10,6 @@ const MyInfoMiddleware = require('../modules/myinfo/myinfo.middleware')
 const { celebrate, Joi, Segments } = require('celebrate')
 const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../services/captcha/captcha.factory')
-const CaptchaMiddleware = require('../services/captcha/captcha.middleware')
 const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
@@ -19,6 +18,8 @@ const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
 const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
+const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
+
 module.exports = function (app) {
   /**
    * Redirect a form to the main index, with the specified path
@@ -207,9 +208,7 @@ module.exports = function (app) {
       }),
     }),
     forms.formById,
-    publicForms.isFormPublicCheck,
-    CaptchaMiddleware.checkCaptchaResponse,
-    publicForms.checkFormSubmissionLimitAndDeactivate,
+    EncryptSubmissionController.handleEncryptedSubmission,
     EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
     SpcpController.isSpcpAuthenticated,
     MyInfoMiddleware.verifyMyInfoVals,
