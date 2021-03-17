@@ -83,7 +83,7 @@ export const retrieveFullFormById = (
 ): ResultAsync<IPopulatedForm, FormNotFoundError | DatabaseError> => {
   if (!mongoose.Types.ObjectId.isValid(formId)) {
     return errAsync(new FormNotFoundError())
-    }
+  }
 
   return ResultAsync.fromPromise(FormModel.getFullFormById(formId), (error) => {
     logger.error({
