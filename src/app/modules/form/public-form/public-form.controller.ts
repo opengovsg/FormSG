@@ -1,9 +1,22 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { err, errAsync, ok, okAsync, Result } from 'neverthrow'
 import querystring from 'querystring'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { AuthType } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
+import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import {
+  MyInfoCookiePayload,
+  MyInfoCookieState,
+} from '../../myinfo/myinfo.types'
+import {
+  extractMyInfoCookie,
+  validateMyInfoForm,
+} from '../../myinfo/myinfo.util'
+import { AuthTypeMismatchError } from '../../spcp/spcp.errors'
+import { SpcpFactory } from '../../spcp/spcp.factory'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -161,3 +174,82 @@ export const handleRedirect: RequestHandler<
     redirectPath,
   })
 }
+
+const extractCookieInfo = (
+  cookiePayload: MyInfoCookiePayload,
+  authType: AuthType,
+): Result<MyInfoCookiePayload, AuthTypeMismatchError> =>
+  authType === AuthType.MyInfo
+    ? ok(cookiePayload)
+    : err(new AuthTypeMismatchError(AuthType.MyInfo))
+
+export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  // eslint-disable-next-line typesafe/no-await-without-trycatch
+  const formData = await FormService.retrievePublicFormById(formId)
+    .andThen((form) =>
+      FormService.checkFormSubmissionLimitAndDeactivateForm(form),
+    )
+    .andThen((form) => {
+      const { authType } = form
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const jwtPayload = SpcpFactory.getSpcpSession(
+        authType,
+        req.cookies,
+      ).mapErr((error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: {
+            action: 'addSpcpSessionInfo',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+        return error
+      })
+
+      const myInfoCookie: Result<
+        MyInfoCookiePayload,
+        AuthTypeMismatchError
+      > = extractMyInfoCookie(req.cookies).andThen((cookiePayload) =>
+        extractCookieInfo(cookiePayload, authType),
+      )
+
+      const myInfoError = myInfoCookie
+        .andThen(({ state }) => ok(state !== MyInfoCookieState.Success))
+        .unwrapOr(true)
+
+      const requestedAttributes = form.getUniqueMyInfoAttrs()
+      const spcpSession = myInfoCookie.asyncAndThen((cookiePayload) => {
+        return validateMyInfoForm(form).asyncAndThen((form) =>
+          cookiePayload.state === MyInfoCookieState.Success
+            ? MyInfoFactory.fetchMyInfoPersonData(
+                cookiePayload.accessToken,
+                requestedAttributes,
+                form.esrvcId,
+              ).andThen((myinfoData) =>
+                okAsync({ userName: myinfoData.getUinFin() }),
+              )
+            : errAsync('cookie payload has wrong state'),
+        )
+      })
+
+      return {
+        form: form.getPublicView(),
+        spcpSession,
+        myInfoError,
+      }
+
+      //   .map() => return form and spcpSession
+      //   .mapErr() => return form and myInfoError
+    })
+
+  return res.json(formData)
+}
+
+// SpcpController.addSpcpSessionInfo,
+// MyInfoMiddleware.addMyInfo,
+// forms.read(forms.REQUEST_TYPE.PUBLIC),
