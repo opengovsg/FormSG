@@ -19,8 +19,8 @@ const updateSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<SettingsUpdateDto>({
     authType: Joi.string().valid(...Object.values(AuthType)),
     emails: Joi.alternatives().try(
-      Joi.array().items(Joi.string()),
-      Joi.string(),
+      Joi.array().items(Joi.string().email()),
+      Joi.string().email({ multiple: true }),
     ),
     esrvcId: Joi.string().allow(''),
     hasCaptcha: Joi.boolean(),
