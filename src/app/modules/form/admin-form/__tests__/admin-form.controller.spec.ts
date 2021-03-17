@@ -12,7 +12,6 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-  MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
@@ -4478,46 +4477,6 @@ describe('admin-form.controller', () => {
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
       )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Write,
-        },
-      )
-      expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
-        MOCK_FORM,
-        MOCK_REQ.body,
-      )
-    })
-
-    it('should return 400 when MalformedParametersError is returned when updating settings', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-
-      const expectedErrorString = 'some invalid key!!'
-      MockAdminFormService.updateFormSettings.mockReturnValueOnce(
-        errAsync(new MalformedParametersError(expectedErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handleUpdateSettings(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expectedErrorString,
-      })
       expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
         {
           user: MOCK_USER,

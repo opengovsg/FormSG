@@ -11,7 +11,6 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-  MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
@@ -1106,26 +1105,6 @@ describe('admin-form.service', () => {
         expect.objectContaining(settingsToUpdate),
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
-    })
-
-    it('should return MalformedParametersError when invoked with invalid settings keys to update', async () => {
-      // Arrange
-      const invalidUpdate = {
-        somethingExtra: 'test',
-        title: 'new title',
-      }
-      // Act
-      const actualResult = await updateFormSettings(
-        MOCK_INITIAL_FORM,
-        invalidUpdate,
-      )
-
-      // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError('Unknown settings update'),
-      )
-      expect(formSaveSpy).toHaveBeenCalledTimes(0)
-      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
     })
 
     it('should return DatabaseValidationError when validation error occurs whilst saving', async () => {

@@ -964,7 +964,6 @@ export const handleUpdateForm: RequestHandler<
  * @security session
  *
  * @returns 200 with updated form settings
- * @returns 400 when invalid setting update key is passed in to update
  * @returns 403 when current user does not have permissions to update form settings
  * @returns 404 when form to update settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
