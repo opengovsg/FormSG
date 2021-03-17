@@ -10,6 +10,7 @@ import { AuthType } from '../../../types'
 import { ApplicationError } from '../core/core.errors'
 
 import {
+  AuthTypeMismatchError,
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidJwtError,
@@ -393,5 +394,24 @@ export class SpcpService {
   getCookieSettings(): SpcpDomainSettings {
     const spcpCookieDomain = this.#spcpProps.spcpCookieDomain
     return spcpCookieDomain ? { domain: spcpCookieDomain, path: '/' } : {}
+  }
+
+  /**
+   * Gets the spcp session info from the auth and the cookies
+   * @param authType The authentication type of the user
+   * @param cookies The spcp cookies set by the redirect
+   * @return okAsync(jwtPayload) if successful
+   * @return errAsync(error) the kind of error encountered
+   */
+  getSpcpSession(
+    authType: AuthType,
+    cookies: SpcpCookies,
+  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidJwtError> {
+    if (authType === AuthType.SP || authType === AuthType.CP) {
+      return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
+        this.extractJwtPayload(jwtResult, authType),
+      )
+    }
+    return errAsync(new AuthTypeMismatchError(authType))
   }
 }
