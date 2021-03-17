@@ -397,7 +397,7 @@ export class SpcpService {
   }
 
   /**
-   * Gets the spcp session info from the auth and the cookies
+   * Gets the spcp session info from the auth, cookies
    * @param authType The authentication type of the user
    * @param cookies The spcp cookies set by the redirect
    * @return okAsync(jwtPayload) if successful
@@ -412,6 +412,19 @@ export class SpcpService {
         this.extractJwtPayload(jwtResult, authType),
       )
     }
-    return errAsync(new AuthTypeMismatchError(authType))
+
+    const error = new AuthTypeMismatchError(authType)
+    const logMeta = {
+      action: 'getSpcpSession',
+      authType,
+    }
+
+    logger.error({
+      message: 'Failed to obtain spcp session info from cookies',
+      meta: logMeta,
+      error,
+    })
+
+    return errAsync(error)
   }
 }
