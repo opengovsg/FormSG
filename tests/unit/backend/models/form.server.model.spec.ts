@@ -1342,17 +1342,7 @@ describe('Form Model', () => {
         const actual = encryptForm.getSettings()
 
         // Assert
-        const expected = pick(encryptForm, [
-          'authType',
-          'emails',
-          'esrvcId',
-          'hasCaptcha',
-          'inactiveMessage',
-          'status',
-          'submissionLimit',
-          'title',
-          'webhook',
-        ])
+        const expected = pick(encryptForm, FORM_SETTING_FIELDS)
         expect(actual).toEqual(expected)
       })
     })
