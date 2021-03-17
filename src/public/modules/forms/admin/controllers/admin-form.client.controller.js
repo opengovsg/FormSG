@@ -1,7 +1,6 @@
 'use strict'
 
 const HttpStatus = require('http-status-codes')
-const merge = require('lodash/merge')
 const { LogicType } = require('../../../../../types')
 const AdminFormService = require('../../../../services/AdminFormService')
 
@@ -203,7 +202,7 @@ function AdminFormController(
       )
       .then((updatedSettings) => {
         // merge back into main form since updating settings only returns the changed subset.
-        $scope.myform = merge($scope.myform, updatedSettings)
+        Object.assign($scope.myform, updatedSettings)
       })
       .catch(handleUpdateError)
   }
