@@ -17,13 +17,10 @@ import getFormModel, {
 import getSubmissionModel from '../../models/submission.server.model'
 import {
   getMongoErrorMessage,
+  PossibleDatabaseError,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
-import {
-  ApplicationError,
-  DatabaseError,
-  DatabaseValidationError,
-} from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
 
 import {
   FormDeletedError,
@@ -86,7 +83,7 @@ export const retrieveFullFormById = (
 ): ResultAsync<IPopulatedForm, FormNotFoundError | DatabaseError> => {
   if (!mongoose.Types.ObjectId.isValid(formId)) {
     return errAsync(new FormNotFoundError())
-  }
+    }
 
   return ResultAsync.fromPromise(FormModel.getFullFormById(formId), (error) => {
     logger.error({
@@ -151,15 +148,10 @@ export const retrieveFormById = (
  * @returns ok(true) if form is public
  * @returns err(FormDeletedError) if form has been deleted
  * @returns err(PrivateFormError) if form is private, the message will be the form inactive message
- * @returns err(ApplicationError) if form has an invalid state
  */
 export const isFormPublic = (
   form: IPopulatedForm,
-): Result<true, FormDeletedError | PrivateFormError | ApplicationError> => {
-  if (!form.status) {
-    return err(new ApplicationError())
-  }
-
+): Result<true, FormDeletedError | PrivateFormError> => {
   switch (form.status) {
     case Status.Public:
       return ok(true)
@@ -180,42 +172,50 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
   form: IPopulatedForm,
 ): ResultAsync<
   IPopulatedForm,
-  DatabaseError | DatabaseValidationError | PrivateFormError
+  PossibleDatabaseError | PrivateFormError | FormNotFoundError
 > => {
-  if (!form.submissionLimit) {
+  const { submissionLimit } = form
+  const formId = String(form._id)
+  // Not using falsey check as submissionLimit === 0 can result in incorrectly
+  // returning form without any actions.
+  if (submissionLimit === null) {
     return okAsync(form)
   }
 
   return ResultAsync.fromPromise(
     SubmissionModel.countDocuments({
-      form: form._id,
+      form: formId,
     }).exec(),
     (error) => {
       logger.error({
         message: 'Error counting documents',
         meta: {
           action: 'checkFormSubmissionLimitAndDeactivateForm',
-          form: form._id,
+          form: formId,
         },
         error,
       })
       return transformMongoError(error)
     },
   ).andThen((currentCount) => {
-    if (currentCount >= form.submissionLimit) {
-      logger.info({
-        message: 'Form reached maximum submission count, deactivating.',
-        meta: {
-          form: form._id,
-          action: 'checkFormSubmissionLimitAndDeactivate',
-        },
-      })
-
-      await deactivateForm(form._id)
-      return errAsync(new PrivateFormError(form.inactiveMessage, form.title))
-    } else {
+    // Limit has not been hit yet, passthrough.
+    if (currentCount < submissionLimit) {
       return okAsync(form)
     }
+
+    logger.info({
+      message: 'Form reached maximum submission count, deactivating.',
+      meta: {
+        form: formId,
+        action: 'checkFormSubmissionLimitAndDeactivate',
+      },
+    })
+
+    // Map success case back into error to display to client as form has been
+    // deactivated.
+    return deactivateForm(formId).andThen(() =>
+      errAsync(new PrivateFormError(form.inactiveMessage, form.title)),
+    )
   })
 }
 
@@ -229,16 +229,10 @@ export const retrievePublicFormById = (
   formId: string,
 ): ResultAsync<
   IPopulatedForm,
-  | FormNotFoundError
-  | DatabaseError
-  | FormDeletedError
-  | PrivateFormError
-  | ApplicationError
+  FormNotFoundError | DatabaseError | FormDeletedError | PrivateFormError
 > => {
   return retrieveFullFormById(formId).andThen((form) =>
-    isFormPublic(form)
-      .map(() => form)
-      .mapErr((error) => error),
+    isFormPublic(form).map(() => form),
   )
 }
 
