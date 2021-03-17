@@ -10,6 +10,8 @@ const { StatusCodes } = require('http-status-codes')
 const { createReqMeta } = require('../utils/request')
 const logger = require('../../config/logger').createLoggerWithLabel(module)
 const getFormModel = require('../models/form.server.model').default
+const { IntranetFactory } = require('../services/intranet/intranet.factory')
+const { getRequestIp } = require('../utils/request')
 
 const Form = getFormModel(mongoose)
 
@@ -75,10 +77,17 @@ exports.read = (requestType) =>
       form = _.pick(form, formPublicFields)
     }
 
+    const isIntranetResult = IntranetFactory.isIntranetIp(getRequestIp(req))
+    let isIntranetUser = false
+    if (isIntranetResult.isOk()) {
+      isIntranetUser = isIntranetResult.value
+    }
+
     return res.json({
       form,
       spcpSession,
       myInfoError,
+      isIntranetUser,
     })
   }
 
