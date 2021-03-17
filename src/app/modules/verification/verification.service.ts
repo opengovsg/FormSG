@@ -18,7 +18,7 @@ import MailService from '../../services/mail/mail.service'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { generateOtp } from '../../utils/otp'
 
-import { ITransaction } from './verification.types'
+import { Transaction } from './verification.types'
 
 const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
@@ -38,7 +38,7 @@ const {
  */
 export const createTransaction = async (
   formId: string,
-): Promise<ITransaction | null> => {
+): Promise<Transaction | null> => {
   const form = await Form.findById(formId)
 
   if (!form) {

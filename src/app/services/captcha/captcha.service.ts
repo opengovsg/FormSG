@@ -43,7 +43,7 @@ export const makeCaptchaResponseVerifier = (captchaPrivateKey: string) => (
     return new CaptchaConnectionError()
   }).andThen(({ data }) => {
     if (!data.success) {
-      logger.error({
+      logger.warn({
         message: 'Incorrect captcha response',
         meta: {
           action: 'verifyCaptchaResponse',

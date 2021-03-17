@@ -44,10 +44,7 @@ const corppassLoginApp = setupApp('/corppass/login', CorppassLoginRouter)
 
 describe('spcp.routes', () => {
   beforeAll(async () => await dbHandler.connect())
-  beforeEach(async () => {
-    jest.clearAllMocks()
-    await dbHandler.clearDatabase()
-  })
+  beforeEach(async () => jest.clearAllMocks())
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /spcp/redirect', () => {
@@ -88,7 +85,7 @@ describe('spcp.routes', () => {
         buildCelebrateError({
           query: {
             key: 'authType',
-            message: '"authType" must be one of [SP, CP, MyInfo]',
+            message: '"authType" must be one of [SP, CP]',
           },
         }),
       )
@@ -117,16 +114,6 @@ describe('spcp.routes', () => {
     })
 
     describe('SingPass', () => {
-      beforeEach(async () => {
-        await dbHandler.insertEmailForm({
-          // MOCK_TARGET is the form ID of MOCK_RELAY_STATE
-          formId: new ObjectId(MOCK_TARGET),
-          formOptions: {
-            authType: AuthType.SP,
-          },
-        })
-      })
-
       it('should return 200 with the redirect URL when Singpass request is valid', async () => {
         const response = await request.get(ROUTE).query({
           authType: 'SP',
@@ -142,16 +129,6 @@ describe('spcp.routes', () => {
     })
 
     describe('CorpPass', () => {
-      beforeEach(async () => {
-        await dbHandler.insertEmailForm({
-          // MOCK_TARGET is the form ID of MOCK_RELAY_STATE
-          formId: new ObjectId(MOCK_TARGET),
-          formOptions: {
-            authType: AuthType.CP,
-          },
-        })
-      })
-
       it('should return 200 with the redirect URL when Corppass request is valid', async () => {
         const response = await request.get('/spcp/redirect').query({
           authType: 'CP',
@@ -205,7 +182,7 @@ describe('spcp.routes', () => {
         buildCelebrateError({
           query: {
             key: 'authType',
-            message: '"authType" must be one of [SP, CP, MyInfo]',
+            message: '"authType" must be one of [SP, CP]',
           },
         }),
       )
@@ -361,6 +338,8 @@ describe('spcp.routes', () => {
       })
     })
 
+    afterEach(async () => await dbHandler.clearDatabase())
+
     it('should return 400 when SAMLart is not provided as a query param', async () => {
       const response = await request
         .get(ROUTE)
@@ -483,7 +462,7 @@ describe('spcp.routes', () => {
       })
     })
 
-    afterAll(async () => await dbHandler.clearDatabase())
+    afterEach(async () => await dbHandler.clearDatabase())
 
     it('should return 400 when SAMLart is not provided as a query param', async () => {
       const response = await request

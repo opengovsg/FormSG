@@ -5,7 +5,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { VfnErrors } from '../../../shared/util/verification'
 
 import * as VerificationService from './verification.service'
-import { ITransaction } from './verification.types'
+import { Transaction } from './verification.types'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -18,7 +18,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const createTransaction: RequestHandler<
   Record<string, string>,
-  ITransaction,
+  Transaction,
   { formId: string }
 > = async (req, res) => {
   try {
@@ -26,7 +26,7 @@ export const createTransaction: RequestHandler<
     const transaction = await VerificationService.createTransaction(formId)
     return transaction
       ? res.status(StatusCodes.CREATED).json(transaction)
-      : res.sendStatus(StatusCodes.OK)
+      : res.status(StatusCodes.OK).json({})
   } catch (error) {
     logger.error({
       message: 'Error creating transaction',

@@ -10,7 +10,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   BounceType,
-  EmailFormField,
+  EmailAdminDataField,
   IEmailFormSchema,
   ISubmissionSchema,
 } from '../../../types'
@@ -364,7 +364,7 @@ export class MailService {
    * @param args.form the form document to retrieve some email data from
    * @param args.submission the submission document to retrieve some email data from
    * @param args.attachments attachments to append to the email, if any
-   * @param args.jsonData the data to use in the data collation tool to be appended to the end of the email
+   * @param args.dataCollationData the data to use in the data collation tool to be appended to the end of the email
    * @param args.formData the form data to display to in the body in table form
    */
   sendSubmissionToAdmin = async ({
@@ -372,15 +372,15 @@ export class MailService {
     form,
     submission,
     attachments,
-    jsonData,
+    dataCollationData,
     formData,
   }: {
     replyToEmails?: string[]
     form: Pick<IEmailFormSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
-    formData: EmailFormField[]
-    jsonData: {
+    formData: EmailAdminDataField[]
+    dataCollationData: {
       question: string
       answer: string | number
     }[]
@@ -391,9 +391,9 @@ export class MailService {
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
 
-    // Add in additional metadata to jsonData.
+    // Add in additional metadata to dataCollationData.
     // Unshift is not used as it mutates the array.
-    const fullJsonData = [
+    const fullDataCollationData = [
       {
         question: 'Reference Number',
         answer: refNo,
@@ -402,7 +402,7 @@ export class MailService {
         question: 'Timestamp',
         answer: submissionTime,
       },
-      ...jsonData,
+      ...dataCollationData,
     ]
 
     const htmlData = {
@@ -410,7 +410,7 @@ export class MailService {
       formTitle,
       refNo,
       submissionTime,
-      jsonData: fullJsonData,
+      dataCollationData: fullDataCollationData,
       formData,
     }
 

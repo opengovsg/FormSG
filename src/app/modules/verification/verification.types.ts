@@ -1,6 +1,8 @@
 import { IVerificationSchema } from '../../../types'
 
-export interface ITransaction {
-  transactionId: IVerificationSchema['_id']
-  expireAt: IVerificationSchema['expireAt']
-}
+export type Transaction =
+  | {
+      transactionId: IVerificationSchema['_id']
+      expireAt: IVerificationSchema['expireAt']
+    }
+  | Record<string, never>

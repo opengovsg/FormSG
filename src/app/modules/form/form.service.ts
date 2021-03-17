@@ -4,6 +4,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { IFormSchema, IPopulatedForm, Status } from '../../../types'
 import getFormModel from '../../models/form.server.model'
+import getSubmissionModel from '../../models/submission.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
@@ -15,6 +16,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
+const SubmissionModel = getSubmissionModel(mongoose)
 
 export const deactivateForm = async (
   formId: string,
@@ -115,5 +117,37 @@ export const isFormPublic = (
       return err(new FormDeletedError())
     case Status.Private:
       return err(new PrivateFormError(form.inactiveMessage, form.title))
+  }
+}
+
+/**
+ * Method to check whether a form has reached submission limits, and deactivate the form if necessary
+ * @param form the form to check
+ * @returns ok(true) if submission is allowed because the form has not reached limits
+ * @returns ok(false) if submission is not allowed because the form has reached limits
+ */
+export const checkFormSubmissionLimitAndDeactivateForm = async (
+  form: IPopulatedForm,
+): Promise<Result<true, PrivateFormError>> => {
+  if (form.submissionLimit !== null) {
+    const currentCount = await SubmissionModel.countDocuments({
+      form: form._id,
+    }).exec()
+
+    if (currentCount >= form.submissionLimit) {
+      logger.info({
+        message: 'Form reached maximum submission count, deactivating.',
+        meta: {
+          form: form._id,
+          action: 'checkFormSubmissionLimitAndDeactivate',
+        },
+      })
+      await deactivateForm(form._id)
+      return err(new PrivateFormError(form.inactiveMessage, form.title))
+    } else {
+      return ok(true)
+    }
+  } else {
+    return ok(true)
   }
 }

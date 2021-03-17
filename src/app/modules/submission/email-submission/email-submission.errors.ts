@@ -56,14 +56,3 @@ export class SubmissionHashError extends ApplicationError {
     super(message)
   }
 }
-
-/**
- * Error while hashing responses in order to save submission hash to database
- */
-export class ConcatSubmissionError extends ApplicationError {
-  constructor(
-    message = 'Error occurred while concatenating responses to attachments',
-  ) {
-    super(message)
-  }
-}

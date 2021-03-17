@@ -14,8 +14,7 @@ type GroupedLogic = Record<string, IConditionSchema[][]>
 type FieldIdSet = Set<IClientFieldSchema['_id']>
 // This module handles logic on both the client side (IFieldSchema[])
 // and server side (FieldResponse[])
-type LogicField = IClientFieldSchema | FieldResponse
-type LogicFieldArray = LogicField[]
+type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
@@ -125,7 +124,7 @@ const getPreventSubmitConditions = (
  * @returns a condition if submission is to prevented, otherwise `undefined`
  */
 export const getLogicUnitPreventingSubmit = (
-  submission: LogicFieldArray,
+  submission: LogicFieldSchemaOrResponse[],
   form: IFormDocument,
   visibleFieldIds?: FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
@@ -164,7 +163,7 @@ const allConditionsExist = (
  * @returns a set of IDs of visible fields in the submission
  */
 export const getVisibleFieldIds = (
-  submission: LogicFieldArray,
+  submission: LogicFieldSchemaOrResponse[],
   form: IFormDocument,
 ): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
@@ -206,7 +205,7 @@ export const getVisibleFieldIds = (
  * @returns true if all the conditions are satisfied, false otherwise
  */
 const isLogicUnitSatisfied = (
-  submission: LogicFieldArray,
+  submission: LogicFieldSchemaOrResponse[],
   logicUnit: IConditionSchema[],
   visibleFieldIds: FieldIdSet,
 ): boolean => {
@@ -221,7 +220,7 @@ const isLogicUnitSatisfied = (
 }
 
 const getCurrentValue = (
-  field: LogicField,
+  field: LogicFieldSchemaOrResponse,
 ): string | null | undefined | string[] => {
   if ('fieldValue' in field) {
     // client
@@ -239,7 +238,7 @@ const getCurrentValue = (
  * @param {String} condition.state - The type of condition
  */
 const isConditionFulfilled = (
-  field: LogicField,
+  field: LogicFieldSchemaOrResponse,
   condition: IConditionSchema,
 ): boolean => {
   if (!field || !condition) {
@@ -307,9 +306,9 @@ const isConditionFulfilled = (
  * @returns the condition field if it exists, `undefined` otherwise
  */
 const findConditionField = (
-  submission: LogicFieldArray,
+  submission: LogicFieldSchemaOrResponse[],
   fieldId: IConditionSchema['field'],
-): LogicField | undefined => {
+): LogicFieldSchemaOrResponse | undefined => {
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
   )

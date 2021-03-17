@@ -14,6 +14,7 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
+import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { aws } from 'src/config/config'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
@@ -361,7 +362,7 @@ describe('admin-form.service', () => {
       // Assert
       expect(actual.isErr()).toEqual(true)
       expect(actual._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(mockErrorString),
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
     })
   })
@@ -518,7 +519,7 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(mockErrorString),
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(createSpy).toHaveBeenCalledWith(expectedParams)
       expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
@@ -763,7 +764,7 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(mockPopulateErrorStr),
+        new DatabaseError(formatErrorRecoveryMessage(mockPopulateErrorStr)),
       )
       expect(mockValidForm.transferOwner).toHaveBeenCalledWith(
         MOCK_CURRENT_OWNER,
@@ -867,7 +868,9 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new DatabasePayloadSizeError(mockErrorString),
+        new DatabasePayloadSizeError(
+          formatErrorRecoveryMessage(mockErrorString),
+        ),
       )
       expect(createSpy).toHaveBeenCalledWith(formParams)
     })
@@ -890,7 +893,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(mockErrorString),
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(createSpy).toHaveBeenCalledWith(formParams)
     })

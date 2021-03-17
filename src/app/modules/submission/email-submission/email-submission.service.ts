@@ -5,9 +5,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   BasicField,
-  EmailData,
-  EmailDataForOneField,
-  EmailFormField,
+  EmailAdminDataField,
   FieldResponse,
   IAttachmentInfo,
   IEmailSubmissionSchema,
@@ -19,10 +17,6 @@ import {
 } from '../../../../types'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import MailService from '../../../services/mail/mail.service'
-import {
-  isProcessedCheckboxResponse,
-  isProcessedTableResponse,
-} from '../../../utils/field-validation/field-validation.guards'
 import { DatabaseError } from '../../core/core.errors'
 import { transformEmails } from '../../form/form.utils'
 import { ResponseModeError, SendAdminEmailError } from '../submission.errors'
@@ -36,7 +30,6 @@ import {
 } from './email-submission.constants'
 import {
   AttachmentTooLargeError,
-  ConcatSubmissionError,
   InvalidFileExtensionError,
   SubmissionHashError,
 } from './email-submission.errors'
@@ -44,76 +37,12 @@ import { SubmissionHash } from './email-submission.types'
 import {
   areAttachmentsMoreThan7MB,
   concatAttachmentsAndResponses,
-  getAnswerForCheckbox,
-  getAnswerRowsForTable,
-  getFormattedResponse,
   getInvalidFileExtensions,
   mapAttachmentsFromResponses,
 } from './email-submission.util'
 
 const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
 const logger = createLoggerWithLabel(module)
-
-/**
- * Creates response and autoreply email data for a single response.
- * Helper function for createEmailData.
- * @param response Processed and validated response for one field
- * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
- * @returns email data for one form field
- */
-const createEmailDataForOneField = (
-  response: ProcessedFieldResponse,
-  hashedFields: Set<string>,
-): EmailDataForOneField[] => {
-  if (isProcessedTableResponse(response)) {
-    return getAnswerRowsForTable(response).map((row) =>
-      getFormattedResponse(row, hashedFields),
-    )
-  } else if (isProcessedCheckboxResponse(response)) {
-    const checkbox = getAnswerForCheckbox(response)
-    return [getFormattedResponse(checkbox, hashedFields)]
-  } else {
-    return [getFormattedResponse(response, hashedFields)]
-  }
-}
-
-/**
- * Creates data to be included in the response and autoreply emails.
- * @param parsedResponses Processed and validated responses
- * @param hashedFields IDs of fields whose responses have been verified by MyInfo hashes
- * @returns email data for admin response and email confirmations
- */
-export const createEmailData = (
-  parsedResponses: ProcessedFieldResponse[],
-  hashedFields: Set<string>,
-): EmailData => {
-  // First, get an array of email data for each response
-  // Each field has an array of email data to accommodate table fields,
-  // which have multiple rows of data per field. Hence flatten and maintain
-  // the order of responses.
-  return (
-    parsedResponses
-      .flatMap((response) => createEmailDataForOneField(response, hashedFields))
-      // Then reshape such that autoReplyData, jsonData and formData are each arrays
-      .reduce<EmailData>(
-        (acc, dataForOneField) => {
-          if (dataForOneField.autoReplyData) {
-            acc.autoReplyData.push(dataForOneField.autoReplyData)
-          }
-          if (dataForOneField.jsonData) {
-            acc.jsonData.push(dataForOneField.jsonData)
-          }
-          acc.formData.push(dataForOneField.formData)
-          return acc
-        },
-        {
-          autoReplyData: [],
-          jsonData: [],
-          formData: [],
-        },
-      )
-  )
-}
 
 /**
  * Validates that the attachments in a submission do not violate form-level
@@ -166,27 +95,12 @@ export const validateAttachments = (
  * @param attachments Attachments in response
  * @returns okAsync(hash and salt) if hashing was successful
  * @returns errAsync(SubmissionHashError) if error occurred while hashing
- * @returns errAsync(ConcatSubmissionError) if error occurred while concatenating attachments
  */
 export const hashSubmission = (
-  formData: EmailFormField[],
+  formData: EmailAdminDataField[],
   attachments: IAttachmentInfo[],
-): ResultAsync<SubmissionHash, SubmissionHashError | ConcatSubmissionError> => {
-  // TODO (#847): remove this try-catch when we are sure that the shape of formData is correct
-  let baseString: string
-  try {
-    baseString = concatAttachmentsAndResponses(formData, attachments)
-  } catch (error) {
-    logger.error({
-      message:
-        'Error while concatenating attachments and responses for hashing',
-      meta: {
-        action: 'hashSubmission',
-        questions: formData.map((field) => field.question),
-      },
-    })
-    return errAsync(new ConcatSubmissionError())
-  }
+): ResultAsync<SubmissionHash, SubmissionHashError> => {
+  const baseString = concatAttachmentsAndResponses(formData, attachments)
   const salt = crypto.randomBytes(SALT_LENGTH).toString('base64')
   const hashPromise = new Promise<SubmissionHash>((resolve, reject) => {
     crypto.pbkdf2(

@@ -54,13 +54,14 @@ describe('Verification controller', () => {
       expect(MOCK_RES.json).toHaveBeenCalledWith(returnValue)
     })
 
-    it('should correctly return 200 when transaction is not found', async () => {
+    it('should correctly return 200 with empty object when transaction is not created', async () => {
       MockVfnService.createTransaction.mockResolvedValueOnce(null)
       await createTransaction(MOCK_REQ, MOCK_RES, noop)
       expect(MockVfnService.createTransaction).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
+      expect(MOCK_RES.status).toHaveBeenCalledWith(200)
+      expect(MOCK_RES.json).toHaveBeenCalledWith({})
     })
   })
 

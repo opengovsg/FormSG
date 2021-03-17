@@ -1,7 +1,6 @@
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
-import mongoose from 'mongoose'
 
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -9,8 +8,6 @@ import { AuthType, WithForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
 import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
-import { MyInfoNoESrvcIdError } from '../myinfo/myinfo.errors'
-import { MyInfoFactory } from '../myinfo/myinfo.factory'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { SpcpFactory } from './spcp.factory'
@@ -18,7 +15,6 @@ import { JwtName, LoginPageValidationResult } from './spcp.types'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
-  extractFormId,
   mapRouteError,
 } from './spcp.util'
 
@@ -34,11 +30,11 @@ export const handleRedirect: RequestHandler<
   { redirectURL: string } | { message: string },
   unknown,
   {
-    authType: AuthType.SP | AuthType.CP | AuthType.MyInfo
+    authType: AuthType.SP | AuthType.CP
     target: string
     esrvcId: string
   }
-> = async (req, res) => {
+> = (req, res) => {
   const { target, authType, esrvcId } = req.query
   const logMeta = {
     action: 'handleRedirect',
@@ -46,54 +42,6 @@ export const handleRedirect: RequestHandler<
     authType,
     target,
     esrvcId,
-  }
-  // TODO (#1116): remove code accommodating AuthType.MyInfo
-  const payloads = target.split(',')
-  const formId = extractFormId(payloads[0])
-  if (!formId || !mongoose.Types.ObjectId.isValid(formId)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: 'Something went wrong, please refresh and try again.',
-    })
-  }
-  const formResult = await FormService.retrieveFormById(formId)
-  if (formResult.isErr()) {
-    logger.error({
-      message: 'Error while retrieving form to create login redirect URL',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    const { statusCode, errorMessage } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-  const form = formResult.value
-  if (authType === AuthType.MyInfo || form.authType === AuthType.MyInfo) {
-    if (!form.esrvcId) {
-      logger.error({
-        message: 'Form e-service ID missing',
-        meta: logMeta,
-      })
-      const { statusCode, errorMessage } = mapRouteError(
-        new MyInfoNoESrvcIdError(),
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    }
-    return MyInfoFactory.createRedirectURL({
-      formEsrvcId: form.esrvcId,
-      formId,
-      requestedAttributes: form.getUniqueMyInfoAttrs(),
-    })
-      .map((redirectURL) => res.json({ redirectURL }))
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error while creating redirect URL',
-          meta: logMeta,
-          error,
-        })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
   }
   return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
     .map((redirectURL) => {
@@ -120,15 +68,13 @@ export const handleValidate: RequestHandler<
   LoginPageValidationResult | { message: string },
   unknown,
   {
-    authType: AuthType.SP | AuthType.CP | AuthType.MyInfo
+    authType: AuthType.SP | AuthType.CP
     target: string
     esrvcId: string
   }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
-  // TODO (#1116): remove code accommodating AuthType.MyInfo
-  const finalAuthType = authType === AuthType.MyInfo ? AuthType.SP : authType
-  return SpcpFactory.createRedirectUrl(finalAuthType, target, esrvcId)
+  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
     .asyncAndThen(SpcpFactory.fetchLoginPage)
     .andThen(SpcpFactory.validateLoginPage)
     .map((result) => res.status(StatusCodes.OK).json(result))
@@ -237,17 +183,13 @@ export const handleLogin: (
   unknown,
   { SAMLart: string; RelayState: string }
 > = (authType) => async (req, res) => {
-  const { SAMLart: rawSamlArt, RelayState: rawRelayState } = req.query
+  const { SAMLart, RelayState } = req.query
   const logMeta = {
     action: 'handleLogin',
-    samlArt: rawSamlArt,
-    relayState: rawRelayState,
+    samlArt: SAMLart,
+    relayState: RelayState,
   }
-  const parseResult = SpcpFactory.parseOOBParams(
-    rawSamlArt,
-    rawRelayState,
-    authType,
-  )
+  const parseResult = SpcpFactory.parseOOBParams(SAMLart, RelayState, authType)
   if (parseResult.isErr()) {
     logger.error({
       message: 'Invalid SPCP login parameters',
@@ -256,13 +198,7 @@ export const handleLogin: (
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-  const {
-    formId,
-    destination,
-    rememberMe,
-    cookieDuration,
-    samlArt,
-  } = parseResult.value
+  const { formId, destination, rememberMe, cookieDuration } = parseResult.value
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.error({
@@ -286,7 +222,7 @@ export const handleLogin: (
     return res.redirect(destination)
   }
   const jwtResult = await SpcpFactory.getSpcpAttributes(
-    samlArt,
+    SAMLart,
     destination,
     authType,
   )

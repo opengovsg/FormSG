@@ -61,29 +61,29 @@ module.exports = function (app) {
    * @property {object} form.required - the form to be created
    */
 
-  /**
-   * List the forms managed by the user
-   * @route GET /adminform
-   * @group admin - endpoints to manage forms
-   * @produces application/json
-   * @returns {Array.<object>} 200 - the forms managed by the user
-   * @returns {ErrorMessage.model} 400 - error encountered while finding the forms
-   * @security OTP
-   */
-  /**
-   * Create a new form in FormSG
-   * @route POST /adminform
-   * @group admin - endpoints to manage forms
-   * @param {FormCreateRequest.model} form.body.required - the form
-   * @produces application/json
-   * @returns {object} 200 - the created form
-   * @returns {ErrorMessage.model} 400 - invalid input
-   * @returns {ErrorMessage.model} 405 - error encountered while creating the form
-   * @security OTP
-   */
   app
     .route('/adminform')
+    /**
+     * List the forms managed by the user
+     * @route GET /adminform
+     * @group admin - endpoints to manage forms
+     * @produces application/json
+     * @returns {Array.<object>} 200 - the forms managed by the user
+     * @returns {ErrorMessage.model} 400 - error encountered while finding the forms
+     * @security OTP
+     */
     .get(withUserAuthentication, AdminFormController.handleListDashboardForms)
+    /**
+     * Create a new form in FormSG
+     * @route POST /adminform
+     * @group admin - endpoints to manage forms
+     * @param {FormCreateRequest.model} form.body.required - the form
+     * @produces application/json
+     * @returns {object} 200 - the created form
+     * @returns {ErrorMessage.model} 400 - invalid input
+     * @returns {ErrorMessage.model} 405 - error encountered while creating the form
+     * @security OTP
+     */
     .post(
       withUserAuthentication,
       celebrate({
@@ -130,67 +130,68 @@ module.exports = function (app) {
    * @property {number} name.required - the number suffix to apply to the duplicated form
    */
 
-  /**
-   * Return the specified form to the user
-   * @route GET /{formId}/adminform
-   * @group admin - endpoints to manage forms
-   * @param {string} formId.path.required - the form id
-   * @produces application/json
-   * @returns {ErrorMessage.model} 400 - invalid formId
-   * @returns {ErrorMessage.model} 401 - user not logged in
-   * @returns {ErrorMessage.model} 403 - user does not have write permission
-   * @returns {ErrorMessage.model} 404 - form has been archived or form not found
-   * @returns {AdminForm.model} 200 - the form
-   * @security OTP
-   */
-  /**
-   * Update the specified form
-   * @route PUT /{formId}/adminform
-   * @group admin - endpoints to manage forms
-   * @param {string} formId.path.required - the form id
-   * @produces application/json
-   * @returns {ErrorMessage.model} 400 - invalid formId
-   * @returns {ErrorMessage.model} 401 - user not logged in
-   * @returns {ErrorMessage.model} 403 - user does not have write permission
-   * @returns {ErrorMessage.model} 404 - form has been archived or form not found
-   * @returns {ErrorMessage.model} 405 - error encountered while saving the form
-   * @returns {object} 200 - the updated form
-   * @security OTP
-   */
-  /**
-   * Archive the specified form
-   * @route DELETE /{formId}/adminform
-   * @group admin - endpoints to manage forms
-   * @param {string} formId.path.required - the form id
-   * @produces application/json
-   * @returns {ErrorMessage.model} 400 - invalid formId
-   * @returns {ErrorMessage.model} 401 - user not logged in
-   * @returns {ErrorMessage.model} 403 - user does not have delete permission
-   * @returns {ErrorMessage.model} 404 - form has been archived or form not found
-   * @returns {ErrorMessage.model} 405 - error encountered while archiving the form
-   * @returns {object} 200 - the archived form
-   * @security OTP
-   */
-  /**
-   * Duplicate the specified form
-   * @route POST /{formId}/adminform
-   * @group admin - endpoints to manage forms
-   * @param {string} formId.path.required - the form id
-   * @param {DuplicateRequest.model} name.body.required - the suffix to apply to the duplicated form
-   * @produces application/json
-   * @returns {ErrorMessage.model} 400 - error encountered while retrieving the form
-   * @returns {ErrorMessage.model} 401 - user not logged in
-   * @returns {ErrorMessage.model} 403 - user does not have write permission
-   * @returns {ErrorMessage.model} 404 - form has been archived or form not found
-   * @returns {ErrorMessage.model} 405 - error encountered while duplicating the form
-   * @returns {object} 200 - the duplicated form
-   * @security OTP
-   */
+  // Collection of routes that operate on the entire form object
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform')
+    /**
+     * Return the specified form to the user
+     * @route GET /{formId}/adminform
+     * @group admin - endpoints to manage forms
+     * @param {string} formId.path.required - the form id
+     * @produces application/json
+     * @returns {ErrorMessage.model} 400 - invalid formId
+     * @returns {ErrorMessage.model} 401 - user not logged in
+     * @returns {ErrorMessage.model} 403 - user does not have write permission
+     * @returns {ErrorMessage.model} 404 - form has been archived or form not found
+     * @returns {AdminForm.model} 200 - the form
+     * @security OTP
+     */
     .get(withUserAuthentication, AdminFormController.handleGetAdminForm)
+    /**
+     * Update the specified form
+     * @route PUT /{formId}/adminform
+     * @group admin - endpoints to manage forms
+     * @param {string} formId.path.required - the form id
+     * @produces application/json
+     * @returns {ErrorMessage.model} 400 - invalid formId
+     * @returns {ErrorMessage.model} 401 - user not logged in
+     * @returns {ErrorMessage.model} 403 - user does not have write permission
+     * @returns {ErrorMessage.model} 404 - form has been archived or form not found
+     * @returns {ErrorMessage.model} 405 - error encountered while saving the form
+     * @returns {object} 200 - the updated form
+     * @security OTP
+     */
     .put(withUserAuthentication, AdminFormController.handleUpdateForm)
+    /**
+     * Archive the specified form
+     * @route DELETE /{formId}/adminform
+     * @group admin - endpoints to manage forms
+     * @param {string} formId.path.required - the form id
+     * @produces application/json
+     * @returns {ErrorMessage.model} 400 - invalid formId
+     * @returns {ErrorMessage.model} 401 - user not logged in
+     * @returns {ErrorMessage.model} 403 - user does not have delete permission
+     * @returns {ErrorMessage.model} 404 - form has been archived or form not found
+     * @returns {ErrorMessage.model} 405 - error encountered while archiving the form
+     * @returns {object} 200 - the archived form
+     * @security OTP
+     */
     .delete(withUserAuthentication, AdminFormController.handleArchiveForm)
+    /**
+     * Duplicate the specified form
+     * @route POST /{formId}/adminform
+     * @group admin - endpoints to manage forms
+     * @param {string} formId.path.required - the form id
+     * @param {DuplicateRequest.model} name.body.required - the suffix to apply to the duplicated form
+     * @produces application/json
+     * @returns {ErrorMessage.model} 400 - error encountered while retrieving the form
+     * @returns {ErrorMessage.model} 401 - user not logged in
+     * @returns {ErrorMessage.model} 403 - user does not have write permission
+     * @returns {ErrorMessage.model} 404 - form has been archived or form not found
+     * @returns {ErrorMessage.model} 405 - error encountered while duplicating the form
+     * @returns {object} 200 - the duplicated form
+     * @security OTP
+     */
     .post(
       withUserAuthentication,
       celebrate({

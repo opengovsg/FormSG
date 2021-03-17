@@ -8,20 +8,20 @@
     <table
       id="formsg"
       width="100%"
-      style="border-collapse: collapse;"
+      style="border-collapse: collapse"
       cellpadding="5"
     >
       <tbody>
-        <tr style="border-top: 1px solid #eee;">
+        <tr style="border-top: 1px solid #eee">
           <td width="40%"><strong>Reference Number</strong></td>
           <td><%= refNo %></td>
         </tr>
-        <tr style="border-top: 1px solid #eee;">
+        <tr style="border-top: 1px solid #eee">
           <td width="40%"><strong>Timestamp</strong></td>
           <td><%= submissionTime %></td>
         </tr>
         <% formData.forEach(function(fieldTuple) { %>
-        <tr style="border-top: 1px solid #eee;">
+        <tr style="border-top: 1px solid #eee">
           <td width="40%"><strong><%= fieldTuple.question %></strong></td>
           <td>
             <% fieldTuple.answerTemplate.forEach(function(answer) { %> <%=
@@ -41,7 +41,7 @@
       process.
     </p>
     <p>-- Start of JSON --</p>
-    <%= JSON.stringify(jsonData) %>
+    <%= JSON.stringify(dataCollationData) %>
     <p>-- End of JSON --</p>
   </body>
 </html>

@@ -22,7 +22,7 @@ import * as EmailSubmissionService from './email-submission.service'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
-  maskUidOnLastField,
+  SubmissionEmailObj,
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
@@ -81,6 +81,23 @@ export const handleEmailSubmission: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
       return res.status(statusCode).json({ message: errorMessage })
     }
+  }
+
+  // Check that the form has not reached submission limits
+  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
+    form,
+  )
+  if (formSubmissionLimitResult.isErr()) {
+    logger.warn({
+      message:
+        'Attempt to submit form which has just reached submission limits',
+      meta: logMeta,
+      error: formSubmissionLimitResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(
+      formSubmissionLimitResult.error,
+    )
+    return res.status(statusCode).json({ message: errorMessage })
   }
 
   // Validate responses
@@ -169,9 +186,10 @@ export const handleEmailSubmission: RequestHandler<
   }
 
   // Create data for response email as well as email confirmation
-  const emailData = EmailSubmissionService.createEmailData(
+  const emailData = new SubmissionEmailObj(
     parsedResponses,
     hashedFields,
+    authType,
   )
 
   // Save submission to database
@@ -209,7 +227,7 @@ export const handleEmailSubmission: RequestHandler<
       form,
       submission,
       attachments,
-      jsonData: emailData.jsonData,
+      dataCollationData: emailData.dataCollationData,
       formData: emailData.formData,
     },
   )
@@ -242,10 +260,7 @@ export const handleEmailSubmission: RequestHandler<
     parsedResponses,
     submission,
     attachments,
-    autoReplyData:
-      authType === AuthType.CP
-        ? maskUidOnLastField(emailData.autoReplyData)
-        : emailData.autoReplyData,
+    autoReplyData: emailData.autoReplyData,
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',

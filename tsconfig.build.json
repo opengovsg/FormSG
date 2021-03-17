@@ -1,5 +1,11 @@
 // Main tsconfig for building, prevents tests from being compiled.
 {
   "extends": "./tsconfig.json",
-  "exclude": ["tests/", "**/*.spec.ts", "**/__tests__/", "src/public/"],
+  "exclude": [
+    "tests/",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__tests__/",
+    "src/public/"
+  ]
 }

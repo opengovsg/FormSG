@@ -9,7 +9,7 @@ import {
 } from '../../modules/submission/submission.types'
 
 const singleAnswerFieldTypes = basicTypes
-  .filter((field) => !field.answerArray)
+  .filter((field) => !field.answerArray && field.name !== BasicField.Attachment)
   .map((f) => f.name)
 
 export const isProcessedSingleAnswerResponse = (
@@ -61,9 +61,9 @@ export const isProcessedAttachmentResponse = (
 ): response is ProcessedAttachmentResponse => {
   return (
     response.fieldType === BasicField.Attachment &&
-    'filename' in response &&
-    typeof response.filename === 'string' &&
     'answer' in response &&
     typeof response.answer === 'string'
+    // No check for response.filename as response.filename is generated only when actual file is uploaded
+    // Hence hidden attachment fields - which still return empty response - will not have response.filename property
   )
 }

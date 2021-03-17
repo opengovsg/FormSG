@@ -1,13 +1,11 @@
 import { celebrate, Joi } from 'celebrate'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { StatusCodes } from 'http-status-codes'
 import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   BasicField,
-  EmailData,
   FieldResponse,
   ResWithHashedFields,
   WithAttachments,
@@ -16,11 +14,7 @@ import {
 } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
-import {
-  ProcessedCheckboxResponse,
-  ProcessedFieldResponse,
-  ProcessedSingleAnswerResponse,
-} from '../submission.types'
+import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
 import * as EmailSubmissionService from './email-submission.service'
@@ -28,6 +22,7 @@ import { WithAdminEmailData } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
+  SubmissionEmailObj,
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
@@ -46,44 +41,16 @@ export const prepareEmailSubmission: RequestHandler<
 > = (req, res, next) => {
   const hashedFields =
     (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
-  let emailData: EmailData
-  // TODO (#847): remove when we are sure of the shape of responses
-  try {
-    emailData = EmailSubmissionService.createEmailData(
-      req.body.parsedResponses,
-      hashedFields,
-    )
-  } catch (error) {
-    logger.error({
-      message: 'Failed to create email data',
-      meta: {
-        action: 'prepareEmailSubmission',
-        ...createReqMeta(req),
-        responseMetaData: req.body.parsedResponses.map((response) => ({
-          question: response?.question,
-          // Cast just for logging purposes
-          answerType: typeof (response as ProcessedSingleAnswerResponse)
-            ?.answer,
-          isAnswerTruthy: !!(response as ProcessedSingleAnswerResponse)?.answer,
-          isAnswerArrayAnArray: Array.isArray(
-            (response as ProcessedCheckboxResponse)?.answerArray,
-          ),
-          isAnswerArrayTruthy: !!(response as ProcessedCheckboxResponse)
-            ?.answerArray,
-          _id: response?._id,
-          fieldType: response?.fieldType,
-        })),
-      },
-      error,
-    })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'There was something wrong with your submission. Please refresh and try again.',
-    })
-  }
+  const { form } = req as WithForm<typeof req>
+  const emailData = new SubmissionEmailObj(
+    req.body.parsedResponses,
+    hashedFields,
+    form.authType,
+  )
   // eslint-disable-next-line @typescript-eslint/no-extra-semi
   ;(req as WithEmailData<typeof req>).autoReplyData = emailData.autoReplyData
-  ;(req as WithEmailData<typeof req>).jsonData = emailData.jsonData
+  ;(req as WithEmailData<typeof req>).dataCollationData =
+    emailData.dataCollationData
   ;(req as WithEmailData<typeof req>).formData = emailData.formData
   return next()
 }
@@ -182,7 +149,7 @@ export const validateEmailSubmission: RequestHandler<
  * @param req - Express request object
  * @param req.form - form object from req
  * @param req.formData - the submission for the form
- * @param req.jsonData - data to be included in JSON section of email
+ * @param req.dataCollationData - data to be included in JSON section of email
  * @param req.submission - submission which was saved to database
  * @param req.attachments - submitted attachments, parsed by
  * exports.receiveSubmission
@@ -198,7 +165,7 @@ export const sendAdminEmail: RequestHandler<
   const {
     form,
     formData,
-    jsonData,
+    dataCollationData,
     submission,
     attachments,
   } = req as WithAdminEmailData<typeof req>
@@ -220,7 +187,7 @@ export const sendAdminEmail: RequestHandler<
     form,
     submission,
     attachments,
-    jsonData,
+    dataCollationData,
     formData,
   })
     .map(() => next())

@@ -1,12 +1,18 @@
 import {
-  AddressType,
-  BasicField as MyInfoBasicField,
-  FieldWithCodeAndDesc,
   MyInfoAddress,
+  MyInfoAddressType,
+  MyInfoCodeField,
+  MyInfoNotApplicable,
   MyInfoOccupation,
   MyInfoPhoneNumber,
+  MyInfoSource,
+  MyInfoValueField,
   MyInfoVehicle,
 } from '@opengovsg/myinfo-gov-client'
+
+import { createLoggerWithLabel } from '../../../config/logger'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Formats MyInfo attribute as phone number
@@ -31,24 +37,61 @@ export const formatPhoneNumber = (
  * @returns Formatted address if minimally the `block`, `street`, `country`,and `postal` values are not empty in {@link addr}. Else return empty string.
  */
 export const formatAddress = (addr: MyInfoAddress | undefined): string => {
-  if (!addr || addr.unavailable) {
+  if (!addr || addr.source === MyInfoSource.NotApplicable || addr.unavailable) {
     return ''
   }
 
-  if (addr.type !== AddressType.Singapore) {
-    //workaround - AddressType.Unformatted should be the string "UNFORMATTED" not "Unformatted"
-    let result = ''
-    if (addr.line1?.value) {
-      result += addr.line1.value
+  if (addr.type !== MyInfoAddressType.Singapore) {
+    const { line1, line2 } = addr
+    if (!line1 || !line2) {
+      logger.warn({
+        message: 'Missing keys from MyInfo address',
+        meta: {
+          action: 'formatAddress',
+          isAddrTypeDefined: !!addr.type,
+          isLine1Defined: !!line1,
+          isLine2Defined: !!line2,
+        },
+      })
+      return ''
     }
-    if (addr.line2?.value) {
-      result += ', ' + addr.line2.value
+    let result = ''
+    if (line1.value) {
+      result += line1.value
+    }
+    if (line2.value) {
+      result += ', ' + line2.value
     }
     return result
   }
 
   // Structured Singapore address
   const { building, block, street, floor, unit, country, postal } = addr
+
+  if (
+    !building ||
+    !block ||
+    !street ||
+    !floor ||
+    !unit ||
+    !country ||
+    !postal
+  ) {
+    logger.warn({
+      message: 'Missing keys from MyInfo address',
+      meta: {
+        action: 'formatAddress',
+        isBuildingDefined: !!building,
+        isBlockDefined: !!block,
+        isStreetDefined: !!street,
+        isFloorDefined: !!floor,
+        isUnitDefined: !!unit,
+        isCountryDefined: !!country,
+        isPostalDefined: !!postal,
+      },
+    })
+    return ''
+  }
 
   // Create an array of data in the order:
   // 1. building (if available),
@@ -59,25 +102,25 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
   // 6. postal
   const buildingBlocks: string[] = []
 
-  if (building?.value) {
+  if (building.value) {
     buildingBlocks.push(`${building.value},`)
   }
-  if (block?.value) {
+  if (block.value) {
     buildingBlocks.push(block.value)
   }
-  if (street?.value) {
+  if (street.value) {
     buildingBlocks.push(`${street.value},`)
   }
 
-  if (floor?.value && unit?.value) {
+  if (floor.value && unit.value) {
     buildingBlocks.push(`#${floor.value}-${unit.value},`)
   }
 
-  if (country?.desc) {
+  if (country.desc) {
     buildingBlocks.push(country.desc)
   }
 
-  if (postal?.value) {
+  if (postal.value) {
     buildingBlocks.push(postal.value)
   }
 
@@ -91,9 +134,14 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
  * @param field Field to format
  */
 export const formatDescriptionField = (
-  field: FieldWithCodeAndDesc | undefined,
+  field: MyInfoCodeField | MyInfoNotApplicable | undefined,
 ): string => {
-  if (!field || field.unavailable) return ''
+  if (
+    !field ||
+    field.source === MyInfoSource.NotApplicable ||
+    field.unavailable
+  )
+    return ''
   return field.desc
 }
 
@@ -103,9 +151,14 @@ export const formatDescriptionField = (
  * @param field Field to format
  */
 export const formatBasicField = (
-  field: MyInfoBasicField | undefined,
+  field: MyInfoValueField | MyInfoNotApplicable | undefined,
 ): string => {
-  if (!field || field.unavailable) return ''
+  if (
+    !field ||
+    field.source === MyInfoSource.NotApplicable ||
+    field.unavailable
+  )
+    return ''
   return field.value
 }
 
@@ -148,11 +201,17 @@ export const formatOccupation = (
  * Possible values are 'Live', 'Approved'.
  */
 export const formatWorkpassStatus = (
-  field: MyInfoBasicField | undefined,
+  field: MyInfoValueField | MyInfoNotApplicable | undefined,
 ): string => {
   // Field value should always be a string, but check for type safety since
   // string methods need to be called
-  if (!field || field.unavailable || typeof field.value !== 'string') return ''
+  if (
+    !field ||
+    field.source === MyInfoSource.NotApplicable ||
+    field.unavailable ||
+    typeof field.value !== 'string'
+  )
+    return ''
   // Change to title case
   const originalValue = field.value
   return (

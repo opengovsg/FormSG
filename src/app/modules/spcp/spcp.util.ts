@@ -9,9 +9,7 @@ import {
   MapRouteError,
   SPCPFieldTitle,
 } from '../../../types'
-import { DatabaseError, MissingFeatureError } from '../core/core.errors'
-import { FormNotFoundError } from '../form/form.errors'
-import { MyInfoNoESrvcIdError } from '../myinfo/myinfo.errors'
+import { MissingFeatureError } from '../core/core.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
 import {
@@ -240,23 +238,6 @@ export const mapRouteError: MapRouteError = (
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
           'Something went wrong with your login. Please try logging in and submitting again.',
-      }
-    // TODO (#1116): remove the following cases, which accommodate AuthType MyInfo
-    case FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: 'This form is no longer available.',
-      }
-    case MyInfoNoESrvcIdError:
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        errorMessage:
-          'This form is not registered with MyInfo. Please contact the form administrator.',
-      }
-    case DatabaseError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
       }
     default:
       logger.error({

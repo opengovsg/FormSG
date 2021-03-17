@@ -22,9 +22,14 @@
         "ecmaFeatures": {
           "modules": true
         },
-        "project": "./tsconfig.json"
+        "project": "tsconfig.json"
       },
-      "plugins": ["@typescript-eslint", "import", "simple-import-sort", "typesafe"],
+      "plugins": [
+        "@typescript-eslint",
+        "import",
+        "simple-import-sort",
+        "typesafe"
+      ],
       "extends": ["plugin:@typescript-eslint/recommended"],
       "rules": {
         // Rules for auto sort of imports

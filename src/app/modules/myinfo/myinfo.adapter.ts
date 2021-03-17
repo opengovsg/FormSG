@@ -269,8 +269,8 @@ export class MyInfoData {
         const data = this.#personData[attr]
         return (
           !!data &&
-          !data.unavailable &&
-          data.source === MyInfoSource.GovtVerified
+          data.source === MyInfoSource.GovtVerified &&
+          !data.unavailable
         )
       }
       // Fields required to always be editable according to MyInfo docs

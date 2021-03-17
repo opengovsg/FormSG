@@ -1,18 +1,21 @@
 'use strict'
 
+const axios = require('axios').default
 const {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } = require('shared/constants')
+const { uploadLogo } = require('../../../../services/FileHandlerService')
 const { FormLogoState } = require('../../../../../types')
 const { getFormLogo } = require('../../helpers/logo')
+
+const CancelToken = axios.CancelToken
 
 angular
   .module('forms')
   .controller('EditStartPageController', [
     '$uibModalInstance',
     'ColorThemes',
-    'FileHandler',
     '$q',
     'myform',
     'updateField',
@@ -22,11 +25,11 @@ angular
 function EditStartPageController(
   $uibModalInstance,
   ColorThemes,
-  FileHandler,
   $q,
   myform,
   updateField,
 ) {
+  let source
   const vm = this
 
   vm.maxLogoSize = MAX_UPLOAD_FILE_SIZE
@@ -81,7 +84,13 @@ function EditStartPageController(
    */
   vm.beforeResizing = () => {
     vm.uploading = true
-    vm.shouldCancelUpload = $q.defer() // Will cancel the upload on resolve
+    vm.cancelUpload()
+  }
+
+  vm.cancelUpload = () => {
+    if (source) {
+      source.cancel()
+    }
   }
 
   /**
@@ -110,8 +119,15 @@ function EditStartPageController(
       }
     } else if (logo) {
       vm.uploadError = null
+      source = CancelToken.source()
 
-      FileHandler.uploadLogo(logo, vm.myform._id, vm.shouldCancelUpload.promise)
+      $q.when(
+        uploadLogo({
+          image: logo,
+          formId: vm.myform._id,
+          cancelToken: source.token,
+        }),
+      )
         .then((result) => {
           vm.myform.startPage.logo = {
             state: FormLogoState.Custom,
@@ -127,12 +143,12 @@ function EditStartPageController(
           // On error, we explicitly clear the files stored in the model, as the library does not always automatically do this
           vm.uploaded.file = ''
 
-          if (uploadError.xhrStatus === 'abort') {
+          if (axios.isCancel(uploadError)) {
             vm.uploadError = `Upload cancelled. Please try again!`
-            return
+          } else {
+            console.error(uploadError)
+            vm.uploadError = 'Upload error. Please try again!'
           }
-          console.error(uploadError)
-          vm.uploadError = 'Upload error. Please try again!'
           vm.removeLogo()
         })
         .finally(() => {

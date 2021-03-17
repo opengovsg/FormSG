@@ -8,6 +8,15 @@ import {
   DatabaseValidationError,
 } from '../modules/core/core.errors'
 
+/**
+ * Exported for testing.
+ * Format error recovery message to be returned to client.
+ * @param errMsg the error message
+ */
+export const formatErrorRecoveryMessage = (errMsg: string): string => {
+  return `Error: [${errMsg}]. Please refresh and try again. If you still need help, email us at form@open.gov.sg.`
+}
+
 export const getMongoErrorMessage = (
   err?: unknown,
   // Default error message if no more specific error
@@ -21,9 +30,11 @@ export const getMongoErrorMessage = (
   if (err instanceof MongoError) {
     switch (err.code) {
       case 10334: // BSONObj size invalid error
-        return 'Your form is too large to be supported by the system.'
+        return formatErrorRecoveryMessage(
+          'Your form is too large to be supported by the system.',
+        )
       default:
-        return defaultErrorMessage
+        return formatErrorRecoveryMessage(defaultErrorMessage)
     }
   }
 
@@ -34,18 +45,20 @@ export const getMongoErrorMessage = (
       .map((err) => err.message)
       .join(', ')
 
-    return joinedMessage ?? err.message ?? defaultErrorMessage
+    return formatErrorRecoveryMessage(
+      joinedMessage ?? err.message ?? defaultErrorMessage,
+    )
   }
 
   if (err instanceof MongooseError || err instanceof Error) {
-    return err.message ?? defaultErrorMessage
+    return formatErrorRecoveryMessage(err.message ?? defaultErrorMessage)
   }
 
   if (typeof err === 'string') {
-    return err ?? defaultErrorMessage
+    return formatErrorRecoveryMessage(err ?? defaultErrorMessage)
   }
 
-  return defaultErrorMessage
+  return formatErrorRecoveryMessage(defaultErrorMessage)
 }
 
 /**

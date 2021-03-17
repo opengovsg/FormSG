@@ -4,7 +4,7 @@ import { mocked } from 'ts-jest/utils'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import config from 'src/config/config'
-import { AuthType, IFormSchema } from 'src/types'
+import { AuthType } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -78,22 +78,12 @@ describe('spcp.controller', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('handleRedirect', () => {
-    beforeEach(() => {
-      MockFormService.retrieveFormById.mockReturnValueOnce(
-        okAsync(MOCK_SP_FORM as IFormSchema),
-      )
-    })
-
-    it('should return the redirect URL correctly', async () => {
+    it('should return the redirect URL correctly', () => {
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
       )
 
-      await SpcpController.handleRedirect(
-        MOCK_REDIRECT_REQ,
-        MOCK_RESPONSE,
-        jest.fn(),
-      )
+      SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
 
       expect(MockSpcpFactory.createRedirectUrl).toHaveBeenCalledWith(
         AuthType.SP,
@@ -106,16 +96,12 @@ describe('spcp.controller', () => {
       })
     })
 
-    it('should return 500 if auth client throws an error', async () => {
+    it('should return 500 if auth client throws an error', () => {
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
         err(new CreateRedirectUrlError()),
       )
 
-      await SpcpController.handleRedirect(
-        MOCK_REDIRECT_REQ,
-        MOCK_RESPONSE,
-        jest.fn(),
-      )
+      SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
 
       expect(MockSpcpFactory.createRedirectUrl).toHaveBeenCalledWith(
         AuthType.SP,
@@ -130,12 +116,6 @@ describe('spcp.controller', () => {
   })
 
   describe('handleValidate', () => {
-    beforeEach(() => {
-      MockFormService.retrieveFormById.mockReturnValue(
-        okAsync(MOCK_SP_FORM as IFormSchema),
-      )
-    })
-
     it('should return 200 with isValid true if validation passes', async () => {
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
         ok(MOCK_REDIRECT_URL),
