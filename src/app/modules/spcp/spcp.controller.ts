@@ -51,8 +51,7 @@ export const handleRedirect: RequestHandler<
   // TODO (private #123): remove checking of form ID against CorpPass cloud test form
   const payloads = target.split(',')
   const formId = extractFormId(payloads[0])
-  const useCpCloud =
-    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === formId
+  const useCpCloud = spcpFeature.props?.cpCloudFormId === formId
   return SpcpFactory.createRedirectUrl(authType, target, esrvcId, useCpCloud)
     .map((redirectURL) => {
       return res.status(StatusCodes.OK).json({ redirectURL })
@@ -84,8 +83,7 @@ export const handleValidate: RequestHandler<
   }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
-  const useCpCloud =
-    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === target
+  const useCpCloud = spcpFeature.props?.cpCloudFormId === target
   return SpcpFactory.createRedirectUrl(authType, target, esrvcId, useCpCloud)
     .asyncAndThen(SpcpFactory.fetchLoginPage)
     .andThen(SpcpFactory.validateLoginPage)
@@ -125,8 +123,7 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
   // No action needed if JWT is missing, just means user is not logged in
   if (jwtResult.isErr()) return next()
 
-  const useCpCloud =
-    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === String(_id)
+  const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
   return SpcpFactory.extractJwtPayload(jwtResult.value, authType, useCpCloud)
     .map(({ userName }) => {
       res.locals.spcpSession = { userName }
@@ -159,8 +156,7 @@ export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
   const { authType, _id } = (req as WithForm<typeof req>).form
   if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
 
-  const useCpCloud =
-    spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === String(_id)
+  const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
   return SpcpFactory.extractJwt(req.cookies, authType)
     .asyncAndThen((jwt) =>
       SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
@@ -239,9 +235,7 @@ export const handleLogin: (
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
-  const useCpCloud =
-    spcpFeature.isEnabled &&
-    spcpFeature.props?.cpCloudFormId === String(form._id)
+  const useCpCloud = spcpFeature.props?.cpCloudFormId === String(form._id)
   const jwtResult = await SpcpFactory.getSpcpAttributes(
     SAMLart,
     destination,

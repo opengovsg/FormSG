@@ -132,8 +132,7 @@ export const handleEmailSubmission: RequestHandler<
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
   if (authType === AuthType.SP || authType === AuthType.CP) {
-    const useCpCloud =
-      spcpFeature.isEnabled && spcpFeature.props?.cpCloudFormId === formId
+    const useCpCloud = spcpFeature.props?.cpCloudFormId === formId
     // Verify NRIC and/or UEN
     const jwtPayloadResult = await SpcpFactory.extractJwt(
       req.cookies,
