@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 
 import getFormModel, {
   FORM_PUBLIC_FIELDS,
+  FORM_SETTING_FIELDS,
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
@@ -1321,17 +1322,7 @@ describe('Form Model', () => {
         const actual = emailForm.getSettings()
 
         // Assert
-        const expected = pick(emailForm, [
-          'authType',
-          'emails',
-          'esrvcId',
-          'hasCaptcha',
-          'inactiveMessage',
-          'status',
-          'submissionLimit',
-          'title',
-          'webhook',
-        ])
+        const expected = pick(emailForm, FORM_SETTING_FIELDS)
         expect(actual).toEqual(expected)
       })
 

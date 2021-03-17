@@ -66,7 +66,7 @@ import getUserModel from './user.server.model'
 export const FORM_SCHEMA_ID = 'Form'
 
 // Exported for testing.
-export const FORM_PUBLIC_FIELDS = [
+export const FORM_PUBLIC_FIELDS: (keyof PublicFormValues)[] = [
   'admin',
   'authType',
   'endPage',
@@ -80,6 +80,18 @@ export const FORM_PUBLIC_FIELDS = [
   'title',
   '_id',
   'responseMode',
+]
+
+export const FORM_SETTING_FIELDS: (keyof FormSettings)[] = [
+  'authType',
+  'emails',
+  'esrvcId',
+  'hasCaptcha',
+  'inactiveMessage',
+  'status',
+  'submissionLimit',
+  'title',
+  'webhook',
 ]
 
 const bson = new BSON([
@@ -449,17 +461,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.methods.getSettings = function (
     this: IFormDocument,
   ): FormSettings {
-    return pick(this, [
-      'authType',
-      'emails',
-      'esrvcId',
-      'hasCaptcha',
-      'inactiveMessage',
-      'status',
-      'submissionLimit',
-      'title',
-      'webhook',
-    ])
+    return pick(this, FORM_SETTING_FIELDS)
   }
 
   // Archives form.
