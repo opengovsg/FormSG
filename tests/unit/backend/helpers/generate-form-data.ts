@@ -16,6 +16,7 @@ import {
   ICheckboxField,
   ICheckboxFieldSchema,
   ICheckboxResponse,
+  IColumn,
   IDecimalFieldSchema,
   IDropdownField,
   IField,
@@ -23,15 +24,17 @@ import {
   IImageFieldSchema,
   IMobileField,
   IMobileFieldSchema,
+  IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
+  ITableField,
   ITableFieldSchema,
 } from 'src/types'
 
 export const generateDefaultField = (
   fieldType: BasicField,
   customParams?: Partial<
-    IField | IAttachmentField | ICheckboxField | IMobileField
+    IField | IAttachmentField | ICheckboxField | IMobileField | ITableField
   >,
 ): IFieldSchema => {
   const defaultParams = {
@@ -47,6 +50,7 @@ export const generateDefaultField = (
     case BasicField.Table:
       return {
         minimumRows: 1,
+        addMoreRows: false,
         columns: [
           {
             title: 'Test Column Title 1',
@@ -286,3 +290,34 @@ export const generateNewTableResponse = (
   isVisible: true,
   ...customParams,
 })
+
+export const generateTableDropdownColumn = (
+  customParams?: Partial<IDropdownField>,
+): IColumn => {
+  return {
+    title: 'some title',
+    columnType: BasicField.Dropdown,
+    required: true,
+    _id: new ObjectId().toHexString(),
+    fieldOptions: ['a', 'b', 'c'],
+    ...customParams,
+  } as IColumn
+}
+
+export const generateTableShortTextColumn = (
+  customParams?: Partial<IShortTextField>,
+): IColumn => {
+  return {
+    title: 'some title',
+    columnType: BasicField.ShortText,
+    required: true,
+    _id: new ObjectId().toHexString(),
+    ValidationOptions: {
+      customMax: null,
+      customMin: null,
+      customVal: null,
+      selectedValidation: null,
+    },
+    ...customParams,
+  } as IColumn
+}
