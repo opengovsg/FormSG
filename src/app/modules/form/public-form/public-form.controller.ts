@@ -172,6 +172,13 @@ export const handleRedirect: RequestHandler<
   })
 }
 
+/**
+ * Handler for GET /:formId/publicform endpoint
+ * @returns 200 if the form exists
+ * @returns 404 if form with formId does not exist or is private
+ * @returns 410 if form has been archived
+ * @returns 500 if database error occurs or if the type of error is unknown
+ */
 export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   req,
   res,
@@ -201,92 +208,104 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   const form = formResult.value
   const { authType } = form
 
-  // Form is valid, check for SPCP/MyInfo data.
-  const spcpSessionResult = (
-    await SpcpFactory.getSpcpSession(authType, req.cookies)
-  ).map(({ userName }) => ({ userName }))
+  // Shows the client a form based on how they are authorized
+  // If the client is MyInfo, we have to prefill the form
+  switch (authType) {
+    case AuthType.SP:
+    case AuthType.CP: {
+      // Form is valid, check for SPCP/MyInfo data.
+      const spcpSessionResult = (
+        await SpcpFactory.getSpcpSession(authType, req.cookies)
+      ).map(({ userName }) => ({ userName }))
 
-  const validatedMyInfoForm = await validateMyInfoForm(form)
+      if (spcpSessionResult.isErr()) {
+        const { error } = spcpSessionResult
+        logger.error({
+          message: 'Error getting public form',
+          meta: {
+            action: 'handleGetPublicForm',
+            ...createReqMeta(req),
+            formId,
+          },
+          error,
+        })
+        return res.json({
+          form: form.getPublicView(),
+        })
+      }
 
-  // NOTE: This function is called only when MyInfo verification fails.
-  // Hence, myInfoError is awlays true when there is a spcp session result
-  const generateSPCPResponse = () => {
-    if (spcpSessionResult.isOk()) {
       const spcpSession = spcpSessionResult.value
+
       return res.json({
         form: form.getPublicView(),
         spcpSession,
+      })
+    }
+
+    case AuthType.MyInfo: {
+      const validatedMyInfoForm = await validateMyInfoForm(form)
+      const myInfoCookie = extractMyInfoCookie(req.cookies)
+      const requestedAttributes = form.getUniqueMyInfoAttrs()
+
+      if (myInfoCookie.isErr() || validatedMyInfoForm.isErr()) {
+        return res.json({
+          form: form.getPublicView(),
+          myInfoError: true,
+        })
+      }
+
+      const errorResponse = res.json({
+        form: form.getPublicView(),
         myInfoError: true,
       })
-    } else {
-      const { error } = spcpSessionResult
-      logger.error({
-        message: 'Error getting public form',
-        meta: {
-          action: 'handleGetPublicForm',
-          ...createReqMeta(req),
-          formId,
-        },
-        error,
-      })
+
+      const cookiePayload = myInfoCookie.value
+
+      if (cookiePayload.state !== MyInfoCookieState.Success) {
+        return errorResponse
+      }
+      // eslint-disable-next-line typesafe/no-await-without-trycatch
+      const formResponse = await validateMyInfoForm(form)
+        .asyncAndThen((form) =>
+          MyInfoFactory.fetchMyInfoPersonData(
+            cookiePayload.accessToken,
+            requestedAttributes,
+            form.esrvcId,
+          ),
+        )
+        .andThen((myInfoData) =>
+          MyInfoFactory.prefillMyInfoFields(
+            myInfoData,
+            form.toJSON().form_fields,
+          ).map((formFields) => ({
+            formFields,
+            spcpSession: { userName: myInfoData.getUinFin() },
+          })),
+        )
+        .map(async (form) => {
+          // eslint-disable-next-line typesafe/no-await-without-trycatch
+          await MyInfoFactory.saveMyInfoHashes(
+            form.spcpSession.userName,
+            formId,
+            form.formFields,
+          )
+          return form
+        })
+        .map(({ spcpSession, formFields }) =>
+          res.json({
+            form: _.set(form, 'form_fields', formFields),
+            spcpSession,
+          }),
+        )
+
+      if (formResponse.isOk()) {
+        return formResponse.value
+      }
+      return errorResponse
+    }
+    default:
       return res.json({
         form: form.getPublicView(),
       })
-    }
   }
-
-  const myInfoCookie = extractMyInfoCookie(req.cookies)
-
-  if (
-    authType !== AuthType.MyInfo ||
-    myInfoCookie.isErr() ||
-    validatedMyInfoForm.isErr()
-  ) {
-    return generateSPCPResponse()
-  }
-
-  const cookiePayload = myInfoCookie.value
-  const requestedAttributes = form.getUniqueMyInfoAttrs()
-
-  if (cookiePayload.state === MyInfoCookieState.Success) {
-    // eslint-disable-next-line typesafe/no-await-without-trycatch
-    const formResponse = await validateMyInfoForm(form)
-      .asyncAndThen((form) =>
-        MyInfoFactory.fetchMyInfoPersonData(
-          cookiePayload.accessToken,
-          requestedAttributes,
-          form.esrvcId,
-        ),
-      )
-      .andThen((myInfoData) =>
-        MyInfoFactory.prefillMyInfoFields(
-          myInfoData,
-          form.toJSON().form_fields,
-        ).map((formFields) => ({
-          formFields,
-          spcpSession: { userName: myInfoData.getUinFin() },
-        })),
-      )
-      .map(async (form) => {
-        // eslint-disable-next-line typesafe/no-await-without-trycatch
-        await MyInfoFactory.saveMyInfoHashes(
-          form.spcpSession.userName,
-          formId,
-          form.formFields,
-        )
-        return form
-      })
-      .map(({ spcpSession, formFields }) =>
-        res.json({
-          form: _.set(form, 'form_fields', formFields),
-          spcpSession,
-        }),
-      )
-
-    if (formResponse.isOk()) {
-      return formResponse.value
-    }
-    return generateSPCPResponse()
-  }
-  return generateSPCPResponse()
 }
