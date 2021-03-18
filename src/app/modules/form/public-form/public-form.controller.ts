@@ -247,17 +247,14 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
       const myInfoCookie = extractMyInfoCookie(req.cookies)
       const requestedAttributes = form.getUniqueMyInfoAttrs()
 
-      if (myInfoCookie.isErr() || validatedMyInfoForm.isErr()) {
-        return res.json({
-          form: form.getPublicView(),
-          myInfoError: true,
-        })
-      }
-
       const errorResponse = res.json({
         form: form.getPublicView(),
         myInfoError: true,
       })
+
+      if (myInfoCookie.isErr() || validatedMyInfoForm.isErr()) {
+        return errorResponse
+      }
 
       const cookiePayload = myInfoCookie.value
 
