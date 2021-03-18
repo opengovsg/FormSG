@@ -10,7 +10,6 @@ import { AuthType } from '../../../types'
 import { ApplicationError } from '../core/core.errors'
 
 import {
-  AuthTypeMismatchError,
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidJwtError,
@@ -202,9 +201,22 @@ export class SpcpService {
   ): Result<string, MissingJwtError> {
     const jwtName = authType === AuthType.SP ? JwtName.SP : JwtName.CP
     const cookie = cookies[jwtName]
+
     if (!cookie) {
-      return err(new MissingJwtError())
+      const error = new MissingJwtError()
+      const logMeta = {
+        action: 'extractJWT',
+        authType,
+        cookies,
+      }
+      logger.error({
+        message: 'Failed to extract SPCP jwt cookie',
+        meta: logMeta,
+        error,
+      })
+      return err(error)
     }
+
     return ok(cookie)
   }
 
@@ -404,27 +416,11 @@ export class SpcpService {
    * @return errAsync(error) the kind of error encountered
    */
   getSpcpSession(
-    authType: AuthType,
+    authType: AuthType.SP | AuthType.CP,
     cookies: SpcpCookies,
   ): ResultAsync<JwtPayload, VerifyJwtError | InvalidJwtError> {
-    if (authType === AuthType.SP || authType === AuthType.CP) {
-      return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
-        this.extractJwtPayload(jwtResult, authType),
-      )
-    }
-
-    const error = new AuthTypeMismatchError(authType)
-    const logMeta = {
-      action: 'getSpcpSession',
-      authType,
-    }
-
-    logger.error({
-      message: 'Failed to obtain spcp session info from cookies',
-      meta: logMeta,
-      error,
-    })
-
-    return errAsync(error)
+    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
+      this.extractJwtPayload(jwtResult, authType),
+    )
   }
 }
