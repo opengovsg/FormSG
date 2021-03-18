@@ -264,13 +264,3 @@ export type FormMetaView = Pick<
 > & {
   admin: IPopulatedUser
 }
-
-/**
- * Type guard for whether a populated form is email mode
- * @param form Form document to check
- */
-export const isEmailModeForm = (
-  form: IPopulatedForm,
-): form is IPopulatedEmailForm => {
-  return form.responseMode === ResponseMode.Email
-}

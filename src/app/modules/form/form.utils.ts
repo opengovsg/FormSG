@@ -1,6 +1,7 @@
 import {
   IEncryptedFormSchema,
   IFormSchema,
+  IPopulatedEmailForm,
   IPopulatedForm,
   Permission,
   ResponseMode,
@@ -64,4 +65,14 @@ export const getCollabEmailsWithPermission = (
     }
     return acc
   }, [])
+}
+
+/**
+ * Type guard for whether a populated form is email mode
+ * @param form Form document to check
+ */
+export const isEmailModeForm = (
+  form: IPopulatedForm,
+): form is IPopulatedEmailForm => {
+  return form.responseMode === ResponseMode.Email
 }
