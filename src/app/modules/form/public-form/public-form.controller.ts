@@ -206,6 +206,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   }
 
   const form = formResult.value
+  const publicFormView = form.getPublicView()
   const { authType } = form
 
   // Shows the client a form based on how they are authorized
@@ -214,32 +215,35 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     case AuthType.SP:
     case AuthType.CP: {
       // Form is valid, check for SPCP/MyInfo data.
-      const spcpSessionResult = (
-        await SpcpFactory.getSpcpSession(authType, req.cookies)
-      ).map(({ userName }) => ({ userName }))
-
-      if (spcpSessionResult.isErr()) {
-        const { error } = spcpSessionResult
-        logger.error({
-          message: 'Error getting public form',
-          meta: {
-            action: 'handleGetPublicForm',
-            ...createReqMeta(req),
-            formId,
-          },
-          error,
+      // eslint-disable-next-line typesafe/no-await-without-trycatch
+      const spcpResponseResult = await SpcpFactory.getSpcpSession(
+        authType,
+        req.cookies,
+      )
+        .map(({ userName }) =>
+          res.json({
+            form: publicFormView,
+            spcpSession: { userName },
+          }),
+        )
+        .mapErr((error) => {
+          logger.error({
+            message: 'Error getting public form',
+            meta: {
+              action: 'handleGetPublicForm',
+              ...createReqMeta(req),
+              formId,
+            },
+            error,
+          })
+          return res.json({
+            form: publicFormView,
+          })
         })
-        return res.json({
-          form: form.getPublicView(),
-        })
-      }
 
-      const spcpSession = spcpSessionResult.value
-
-      return res.json({
-        form: form.getPublicView(),
-        spcpSession,
-      })
+      return spcpResponseResult.isOk()
+        ? spcpResponseResult.value
+        : spcpResponseResult.error
     }
 
     case AuthType.MyInfo: {
@@ -248,7 +252,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
       const requestedAttributes = form.getUniqueMyInfoAttrs()
 
       const errorResponse = res.json({
-        form: form.getPublicView(),
+        form: publicFormView,
         myInfoError: true,
       })
 
@@ -302,7 +306,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     }
     default:
       return res.json({
-        form: form.getPublicView(),
+        form: publicFormView,
       })
   }
 }
