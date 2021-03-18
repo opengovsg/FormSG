@@ -533,7 +533,7 @@ export const updateFormSettings = (
       message: 'Attempted to update form emails on an encrypt mode form',
       meta: {
         action: 'updateFormSettings',
-        originalFormId: originalForm._id,
+        formId: originalForm._id,
         // Body is not logged in case sensitive data such as emails are stored.
       },
     })
@@ -570,7 +570,7 @@ export const updateFormSettings = (
       message: 'Error encountered while updating form',
       meta: {
         action: 'updateFormSettings',
-        originalFormId: originalForm._id,
+        formId: originalForm._id,
         // Body is not logged in case sensitive data such as emails are stored.
       },
       error,
