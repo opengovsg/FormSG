@@ -2,8 +2,14 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { MapRouteError } from '../../../../types/routing'
+import {
+  CaptchaConnectionError,
+  MissingCaptchaError,
+  VerifyCaptchaError,
+} from '../../../services/captcha/captcha.errors'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
+import { FormDeletedError, PrivateFormError } from '../../form/form.errors'
 import {
   ConflictError,
   InvalidEncodingError,
@@ -21,6 +27,32 @@ const logger = createLoggerWithLabel(module)
  */
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
+    case FormDeletedError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage: '',
+      }
+    case PrivateFormError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: '',
+      }
+    case CaptchaConnectionError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not verify captcha. Please submit again in a few minutes.',
+      }
+    case VerifyCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was incorrect. Please submit again.',
+      }
+    case MissingCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was missing. Please refresh and submit again.',
+      }
     case MalformedParametersError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,

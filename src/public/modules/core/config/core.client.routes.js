@@ -1,5 +1,7 @@
 'use strict'
 
+const Analytics = require('../../../services/AnalyticsService')
+
 angular.module('core').config([
   '$urlRouterProvider',
   '$stateProvider',
@@ -18,6 +20,14 @@ angular.module('core').config([
       templateUrl: 'modules/core/views/landing.client.view.html',
       controller: 'LandingPageController',
       controllerAs: 'vm',
+      resolve: {
+        AnalyticStats: [
+          '$q',
+          function ($q) {
+            return $q.resolve(Analytics.getLandingPageStatistics())
+          },
+        ],
+      },
     })
   },
 ])

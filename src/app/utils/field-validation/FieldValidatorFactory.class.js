@@ -1,8 +1,4 @@
-const {
-  TableValidator,
-  YesNoValidator,
-  BaseFieldValidator,
-} = require('./validators')
+const { TableValidator, BaseFieldValidator } = require('./validators')
 
 const myInfoTypes = require('../../../shared/resources/myinfo').types
 /**
@@ -31,6 +27,7 @@ class FieldValidatorFactory {
       case 'textfield': // short text
       case 'textarea': // long text
       case 'nric':
+      case 'yes_no':
       case 'homeno':
       case 'checkbox':
       case 'rating':
@@ -45,8 +42,6 @@ class FieldValidatorFactory {
         throw new Error(`${fieldType} has been migrated to TypeScript`)
       case 'table':
         return new TableValidator(...arguments)
-      case 'yes_no':
-        return new YesNoValidator(...arguments)
       default:
         // Checks if answer is optional or required, but will throw an error when there is an answer
         // since _isFilledAnswerValid is not implemented

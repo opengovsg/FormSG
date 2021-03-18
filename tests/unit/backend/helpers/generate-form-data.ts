@@ -21,6 +21,8 @@ import {
   IField,
   IFieldSchema,
   IImageFieldSchema,
+  IMobileField,
+  IMobileFieldSchema,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
   ITableFieldSchema,
@@ -28,7 +30,9 @@ import {
 
 export const generateDefaultField = (
   fieldType: BasicField,
-  customParams?: Partial<IField | IAttachmentField | ICheckboxField>,
+  customParams?: Partial<
+    IField | IAttachmentField | ICheckboxField | IMobileField
+  >,
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
@@ -108,6 +112,13 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IDecimalFieldSchema
+    case BasicField.Mobile:
+      return {
+        ...defaultParams,
+        allowIntlNumbers: false,
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as IMobileFieldSchema
     default:
       return {
         ...defaultParams,

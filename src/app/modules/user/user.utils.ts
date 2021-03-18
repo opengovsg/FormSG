@@ -19,6 +19,11 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
+    case CoreErrors.MissingFeatureError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: 'Sms feature unavailable',
+      }
     case UserErrors.InvalidOtpError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
@@ -26,6 +31,7 @@ export const mapRouteError = (
       }
     case UserErrors.MissingUserError:
     case SmsErrors.SmsSendError:
+    case SmsErrors.InvalidNumberError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
