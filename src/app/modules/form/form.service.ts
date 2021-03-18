@@ -37,8 +37,9 @@ const SubmissionModel = getSubmissionModel(mongoose)
 /**
  * Deactivates a given form by its id
  * @param formId the id of the form to deactivate
- * @returns Promise the db object of the form if the form is successfully deactivated
- * @returns null if an error is thrown while deactivating
+ * @returns ok(true) if the form has been deactivated successfully
+ * @returns err(PossibleDatabaseError) if an error occurred while trying to deactivate the form
+ * @returns err(FormNotFoundError) if there is no form with the given formId
  */
 export const deactivateForm = (
   formId: string,
@@ -166,7 +167,9 @@ export const isFormPublic = (
  * Method to check whether a form has reached submission limits, and deactivate the form if necessary
  * @param form the form to check
  * @returns okAsync(form) if submission is allowed because the form has not reached limits
- * @returns errAsync(error) if submission is not allowed because the form has reached limits or if an error occurs while counting the documents
+ * @returns errAsync(PossibleDatabaseError) if an error occurred while querying the database for the specified form
+ * @returns errAsync(FormNotFoundError) if the form has exceeded the submission limits but could not be found and deactivated
+ * @returns errAsync(PrivateFormError) if the count of the form has been exceeded and the form has been deactivated
  */
 export const checkFormSubmissionLimitAndDeactivateForm = (
   form: IPopulatedForm,

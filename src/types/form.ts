@@ -208,6 +208,8 @@ export interface IFormDocument extends IFormSchema {
   authType: NonNullable<IFormSchema['authType']>
   status: NonNullable<IFormSchema['status']>
   inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
+  // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.
+  // Hence, using Exclude here over NonNullable.
   submissionLimit: Exclude<IFormSchema['submissionLimit'], undefined>
   isListed: NonNullable<IFormSchema['isListed']>
   form_fields: NonNullable<IFormSchema['form_fields']>
