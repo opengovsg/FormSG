@@ -1,8 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { SettingsUpdateDto } from '../../../../shared/typings/form'
 import { AuthType, Status } from '../../../../types'
+import { SettingsUpdateDto } from '../../../../types/api'
 import { withUserAuthentication } from '../../../modules/auth/auth.middlewares'
 import { handleUpdateSettings } from '../../../modules/form/admin-form/admin-form.controller'
 

@@ -18,7 +18,6 @@ import * as UserService from 'src/app/modules/user/user.service'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { aws } from 'src/config/config'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
-import { SettingsUpdateDto } from 'src/shared/typings/form'
 import {
   AuthType,
   BasicField,
@@ -36,6 +35,7 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
+import { SettingsUpdateDto } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 

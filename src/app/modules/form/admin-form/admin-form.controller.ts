@@ -5,8 +5,6 @@ import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { ErrorDto } from '../../../../shared/typings/core'
-import { SettingsUpdateDto } from '../../../../shared/typings/form'
 import {
   AuthType,
   FormSettings,
@@ -14,6 +12,7 @@ import {
   IPopulatedForm,
   WithForm,
 } from '../../../../types'
+import { ErrorDto, SettingsUpdateDto } from '../../../../types/api'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {

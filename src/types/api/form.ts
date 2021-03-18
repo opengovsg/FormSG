@@ -1,3 +1,3 @@
-import { FormSettings } from 'src/types'
+import { FormSettings } from '../form'
 
 export type SettingsUpdateDto = Partial<FormSettings>

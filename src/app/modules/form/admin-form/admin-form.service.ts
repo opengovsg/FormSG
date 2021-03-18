@@ -10,7 +10,6 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
-import { SettingsUpdateDto } from '../../../../shared/typings/form'
 import {
   AuthType,
   FormLogoState,
@@ -25,6 +24,7 @@ import {
   ResponseMode,
   SpcpLocals,
 } from '../../../../types'
+import { SettingsUpdateDto } from '../../../../types/api'
 import getFormModel from '../../../models/form.server.model'
 import {
   getMongoErrorMessage,

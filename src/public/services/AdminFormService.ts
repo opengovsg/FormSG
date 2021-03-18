@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import { SettingsUpdateDto } from '../../shared/typings/form'
 import { FormSettings } from '../../types'
+import { SettingsUpdateDto } from '../../types/api'
 
 const ADMIN_FORM_ENDPOINT = '/api/v3/admin/form'
 
