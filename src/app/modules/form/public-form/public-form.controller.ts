@@ -1,12 +1,14 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
+// import { err, ok } from 'neverthrow'
 import querystring from 'querystring'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
+// import { MyInfoCookieStateError } from '../../myinfo/myinfo.errors'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import { MyInfoCookieState } from '../../myinfo/myinfo.types'
 import {
@@ -247,7 +249,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     }
 
     case AuthType.MyInfo: {
-      const validatedMyInfoForm = await validateMyInfoForm(form)
+      const validatedMyInfoForm = validateMyInfoForm(form)
       const myInfoCookie = extractMyInfoCookie(req.cookies)
       const requestedAttributes = form.getUniqueMyInfoAttrs()
 
@@ -259,14 +261,55 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
       if (myInfoCookie.isErr() || validatedMyInfoForm.isErr()) {
         return errorResponse
       }
-
       const cookiePayload = myInfoCookie.value
 
       if (cookiePayload.state !== MyInfoCookieState.Success) {
         return errorResponse
       }
+
+      //   const result = extractMyInfoCookie(req.cookies)
+      //     .map((cookiePayload) =>
+      //       cookiePayload.state === MyInfoCookieState.Success
+      //         ? cookiePayload
+      //         : new MyInfoCookieStateError(),
+      //     )
+      //     .asyncAndThen((cookiePayload) =>
+      //       validateMyInfoForm(form)
+      //         .asyncAndThen((form) =>
+      //           MyInfoFactory.fetchMyInfoPersonData(
+      //             cookiePayload.accessToken,
+      //             requestedAttributes,
+      //             form.esrvcId,
+      //           ),
+      //         )
+      //         .andThen((myInfoData) =>
+      //           MyInfoFactory.prefillMyInfoFields(
+      //             myInfoData,
+      //             form.toJSON().form_fields,
+      //           ).map((formFields) => ({
+      //             formFields,
+      //             spcpSession: { userName: myInfoData.getUinFin() },
+      //           })),
+      //         )
+      //         .map(async (form) => {
+      //           // eslint-disable-next-line typesafe/no-await-without-trycatch
+      //           await MyInfoFactory.saveMyInfoHashes(
+      //             form.spcpSession.userName,
+      //             formId,
+      //             form.formFields,
+      //           )
+      //           return form
+      //         })
+      //         .map(({ spcpSession, formFields }) =>
+      //           res.json({
+      //             form: _.set(form, 'form_fields', formFields),
+      //             spcpSession,
+      //           }),
+      //         ),
+      //     )
+
       // eslint-disable-next-line typesafe/no-await-without-trycatch
-      const formResponse = await validateMyInfoForm(form)
+      const formResponse = validateMyInfoForm(form)
         .asyncAndThen((form) =>
           MyInfoFactory.fetchMyInfoPersonData(
             cookiePayload.accessToken,
