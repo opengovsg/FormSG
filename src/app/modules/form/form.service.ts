@@ -219,23 +219,6 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
   })
 }
 
-/**
- * Method to retrieve a fully populated form that is public
- * @param formId the id of the form to retrieve
- * @returns okAsync(form) if the form was retrieved successfully
- * @returns errAsync(error) the kind of error resulting from unsuccessful retrieval
- */
-export const retrievePublicFormById = (
-  formId: string,
-): ResultAsync<
-  IPopulatedForm,
-  FormNotFoundError | DatabaseError | FormDeletedError | PrivateFormError
-> => {
-  return retrieveFullFormById(formId).andThen((form) =>
-    isFormPublic(form).map(() => form),
-  )
-}
-
 export const getFormModelByResponseMode = (
   responseMode: ResponseMode,
 ): IEmailFormModel | IEncryptedFormModel => {
