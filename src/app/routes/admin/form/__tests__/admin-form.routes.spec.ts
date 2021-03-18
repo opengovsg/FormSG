@@ -34,7 +34,7 @@ describe('admin-form.routes', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('PATCH /form/:formId/settings', () => {
+  describe('PATCH /admin/form/:formId/settings', () => {
     it('should return 200 with latest form settings on successful update for email mode forms', async () => {
       // Arrange
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
