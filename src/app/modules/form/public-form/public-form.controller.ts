@@ -11,13 +11,13 @@ import {
   MYINFO_COOKIE_NAME,
   MYINFO_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
-import { MyInfoCookieStateError } from '../../myinfo/myinfo.errors'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import {
   extractMyInfoCookie,
   extractSuccessfulCookie,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { MissingJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -214,8 +214,9 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   const publicFormView = form.getPublicView()
   const { authType } = form
 
-  // Shows the client a form based on how they are authorized
-  // If the client is MyInfo, we have to prefill the form
+  // NOTE: Once there is a valid form retrieved from the database,
+  // the client should always get a 200 response with the form's public view.
+  // Additional errors should be tagged onto the response object like myInfoError.
   switch (authType) {
     case AuthType.SP:
     case AuthType.CP: {
@@ -228,15 +229,19 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
           }),
         )
         .mapErr((error) => {
-          logger.error({
-            message: 'Error getting public form',
-            meta: {
-              action: 'handleGetPublicForm',
-              ...createReqMeta(req),
-              formId,
-            },
-            error,
-          })
+          // NOTE: Only log if there is no jwt present on the request.
+          // This is because clients can be members of the pubilc and hence, have no jwt.
+          if (!(error instanceof MissingJwtError)) {
+            logger.error({
+              message: 'Error getting public form',
+              meta: {
+                action: 'handleGetPublicForm',
+                ...createReqMeta(req),
+                formId,
+              },
+              error,
+            })
+          }
           return res.json({
             form: publicFormView,
           })
@@ -244,74 +249,76 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     }
 
     case AuthType.MyInfo: {
-      // TODO: shift this out so that the call is FormService.getUniqueMyInfoAttrs(form)
       const requestedAttributes = form.getUniqueMyInfoAttrs()
 
       // 1. Validate the cookie and myInfo form
-      // 2. Fetch myInfo data and fill the form based on the result
-      // 3. Hash and save to database
-      // 4. Return result if successful otherwise, clear cookies and return default response
-      // eslint-disable-next-line typesafe/no-await-without-trycatch
-      return extractMyInfoCookie(req.cookies)
-        .andThen((cookiePayload) =>
-          // Transform into an error because no meaningful work can be done on a errored cookie
-          extractSuccessfulCookie(cookiePayload).mapErr(
-            () => new MyInfoCookieStateError(),
-          ),
-        )
-        .asyncAndThen((cookiePayload) =>
-          validateMyInfoForm(form).asyncAndThen((form) =>
-            MyInfoFactory.fetchMyInfoPersonData(
-              cookiePayload.accessToken,
-              requestedAttributes,
-              form.esrvcId,
+      return (
+        extractMyInfoCookie(req.cookies)
+          .andThen((cookiePayload) => extractSuccessfulCookie(cookiePayload))
+          .asyncAndThen((cookiePayload) =>
+            validateMyInfoForm(form).asyncAndThen((form) =>
+              MyInfoFactory.fetchMyInfoPersonData(
+                cookiePayload.accessToken,
+                requestedAttributes,
+                form.esrvcId,
+              ),
             ),
-          ),
-        )
-        .andThen((myInfoData) =>
-          MyInfoFactory.prefillMyInfoFields(
-            myInfoData,
-            form.toJSON().form_fields,
-          ).map((formFields) => ({
-            formFields,
-            spcpSession: { userName: myInfoData.getUinFin() },
-          })),
-        )
-        .andThen((form) =>
-          // eslint-disable-next-line typesafe/no-await-without-trycatch
-          MyInfoFactory.saveMyInfoHashes(
-            form.spcpSession.userName,
-            formId,
-            form.formFields,
-          ).map(() => form),
-        )
-        .map(({ spcpSession, formFields }) =>
-          res.json({
-            form: _.set(form, 'form_fields', formFields),
-            spcpSession,
-          }),
-        )
-        .mapErr((error) => {
-          logger.error({
-            message: error.message,
-            meta: {
-              action: 'handlePublicForm',
-              ...createReqMeta(req),
-              formId: formId,
-              esrvcId: form.esrvcId,
-              requestedAttributes,
-            },
-            error,
-          })
-          return res
-            .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
-            .json({
-              form: publicFormView,
-              myInfoError: true,
+          )
+          // 2. Fetch myInfo data and fill the form based on the result
+          .andThen((myInfoData) =>
+            MyInfoFactory.prefillMyInfoFields(
+              myInfoData,
+              form.toJSON().form_fields,
+            ).map((formFields) => ({
+              formFields,
+              spcpSession: { userName: myInfoData.getUinFin() },
+            })),
+          )
+          // 3. Hash and save to database
+          .andThen((form) =>
+            MyInfoFactory.saveMyInfoHashes(
+              form.spcpSession.userName,
+              formId,
+              form.formFields,
+            ).map(
+              // NOTE: Passthrough as form is needed in the pipeline
+              () => form,
+            ),
+          )
+          // 4. Return result if successful otherwise, clear cookies and return default response
+          .map(({ spcpSession, formFields }) =>
+            res.json({
+              form: _.set(form, 'form_fields', formFields),
+              spcpSession,
+            }),
+          )
+          .mapErr((error) => {
+            logger.error({
+              message: error.message,
+              meta: {
+                action: 'handlePublicForm',
+                ...createReqMeta(req),
+                formId: formId,
+                esrvcId: form.esrvcId,
+                requestedAttributes,
+              },
+              error,
             })
-        })
+            return (
+              res
+                // NOTE: No need for cookie if data could not be retrieved
+                .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+                .json({
+                  form: publicFormView,
+                  myInfoError: true,
+                })
+            )
+          })
+      )
     }
     default:
+      // NOTE: Client did not choose any form of authentication.
+      // Only return the public form view back to the client
       return res.json({
         form: publicFormView,
       })
