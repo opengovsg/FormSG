@@ -254,8 +254,8 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<FormMetaView[]>
 }
 
-export type IEncryptedFormModel = Merge<IFormModel, Model<IEncryptedFormSchema>>
-export type IEmailFormModel = Merge<IFormModel, Model<IEmailFormSchema>>
+export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
+export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
 /** Typing for the shape of the important meta subset for form document. */
 export type FormMetaView = Pick<

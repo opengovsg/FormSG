@@ -2,8 +2,18 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IFormSchema, IPopulatedForm, Status } from '../../../types'
-import getFormModel from '../../models/form.server.model'
+import {
+  IEmailFormModel,
+  IEncryptedFormModel,
+  IFormSchema,
+  IPopulatedForm,
+  ResponseMode,
+  Status,
+} from '../../../types'
+import getFormModel, {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
@@ -16,6 +26,8 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
+const EmailFormModel = getEmailFormModel(mongoose)
+const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 
 export const deactivateForm = async (
@@ -149,5 +161,16 @@ export const checkFormSubmissionLimitAndDeactivateForm = async (
     }
   } else {
     return ok(true)
+  }
+}
+
+export const getFormModelByResponseMode = (
+  form: IFormSchema | IPopulatedForm,
+): IEmailFormModel | IEncryptedFormModel => {
+  switch (form.responseMode) {
+    case ResponseMode.Email:
+      return EmailFormModel
+    case ResponseMode.Encrypt:
+      return EncryptedFormModel
   }
 }

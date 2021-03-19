@@ -1,5 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, merge, omit, set } from 'lodash'
+import { assignIn, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
@@ -26,6 +26,7 @@ import {
 } from '../../../../types'
 import { SettingsUpdateDto } from '../../../../types/api'
 import getFormModel from '../../../models/form.server.model'
+import { dotifyObject } from '../../../utils/dotify-object'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -40,6 +41,7 @@ import {
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
+import { getFormModelByResponseMode } from '../form.service'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -520,6 +522,7 @@ export const updateFormSettings = (
   body: SettingsUpdateDto,
 ): ResultAsync<
   FormSettings,
+  | FormNotFoundError
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
@@ -542,40 +545,30 @@ export const updateFormSettings = (
     )
   }
 
-  const updateKeys = Object.keys(body) as (keyof SettingsUpdateDto)[]
-  const newForm = updateKeys.reduce((accumulatedForm, key) => {
-    switch (key) {
-      // Non-object patches, assign key to form.
-      case 'authType':
-      case 'emails':
-      case 'esrvcId':
-      case 'hasCaptcha':
-      case 'inactiveMessage':
-      case 'status':
-      case 'submissionLimit':
-      case 'title': {
-        set(accumulatedForm, key, body[key])
-        return accumulatedForm
-      }
-      // Object patches, deep mutate.
-      case 'webhook': {
-        merge(accumulatedForm[key], body[key])
-        return accumulatedForm
-      }
+  const dotifiedSettingsToUpdate = dotifyObject(body)
+  const ModelToUse = getFormModelByResponseMode(originalForm)
+
+  return ResultAsync.fromPromise(
+    ModelToUse.findByIdAndUpdate(originalForm._id, dotifiedSettingsToUpdate, {
+      new: true,
+    }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form',
+        meta: {
+          action: 'updateFormSettings',
+          formId: originalForm._id,
+          // Body is not logged in case sensitive data such as emails are stored.
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
     }
-  }, originalForm)
-
-  return ResultAsync.fromPromise(newForm.save(), (error) => {
-    logger.error({
-      message: 'Error encountered while updating form',
-      meta: {
-        action: 'updateFormSettings',
-        formId: originalForm._id,
-        // Body is not logged in case sensitive data such as emails are stored.
-      },
-      error,
-    })
-
-    return transformMongoError(error)
-  }).map((updatedForm) => updatedForm.getSettings())
+    return okAsync(updatedForm.getSettings())
+  })
 }
