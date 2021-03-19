@@ -5,7 +5,10 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import getFormModel from 'src/app/models/form.server.model'
+import getFormModel, {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
 import {
   DatabaseConflictError,
   DatabaseError,
@@ -65,6 +68,8 @@ import {
 import * as AdminFormUtils from '../admin-form.utils'
 
 const FormModel = getFormModel(mongoose)
+const EmailFormModel = getEmailFormModel(mongoose)
+const EncryptFormModel = getEncryptedFormModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = mocked(UserService)
@@ -1078,32 +1083,77 @@ describe('admin-form.service', () => {
       getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
     } as unknown) as IFormDocument
 
-    const formSaveSpy = jest.fn().mockResolvedValue(MOCK_UPDATED_FORM)
-    const MOCK_INITIAL_FORM = mocked(({
+    const MOCK_EMAIL_FORM = mocked(({
+      _id: new ObjectId(),
       status: Status.Public,
-      save: formSaveSpy,
+      responseMode: ResponseMode.Email,
     } as unknown) as IPopulatedForm)
+    const MOCK_ENCRYPT_FORM = mocked(({
+      _id: new ObjectId(),
+      status: Status.Public,
+      responseMode: ResponseMode.Encrypt,
+    } as unknown) as IPopulatedForm)
+
+    const EMAIL_UPDATE_SPY = jest
+      .spyOn(EmailFormModel, 'findByIdAndUpdate')
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      .mockReturnValue({
+        exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
+      })
+    const ENCRYPT_UPDATE_SPY = jest
+      .spyOn(EncryptFormModel, 'findByIdAndUpdate')
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      .mockReturnValue({
+        exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
+      })
 
     beforeEach(() => jest.clearAllMocks())
 
-    it('should return updated form settings when successfully updating settings', async () => {
+    it('should return updated form settings when successfully updating email form settings', async () => {
       // Arrange
       const settingsToUpdate: SettingsUpdateDto = {
         status: Status.Private,
         title: 'new title',
       }
+
       // Act
       const actualResult = await updateFormSettings(
-        MOCK_INITIAL_FORM,
+        MOCK_EMAIL_FORM,
         settingsToUpdate,
       )
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
-      expect(formSaveSpy).toHaveBeenCalledTimes(1)
-      // Before invoking .save, should have become a new form with updated settings.
-      expect(formSaveSpy.mock.instances[0]).toEqual(
-        expect.objectContaining(settingsToUpdate),
+      expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_EMAIL_FORM._id,
+        settingsToUpdate,
+        { new: true, runValidators: true },
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return updated form settings when successfully updating encrypt form settings', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        webhook: {
+          url: 'https://example.com',
+        },
+      }
+      // Act
+      const actualResult = await updateFormSettings(
+        MOCK_ENCRYPT_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_ENCRYPT_FORM._id,
+        // Should be dotified
+        { 'webhook.url': 'https://example.com' },
+        { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
@@ -1127,24 +1177,29 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new MalformedParametersError('Settings update parameters are invalid.'),
       )
-      expect(formSaveSpy).not.toHaveBeenCalled()
+      expect(EMAIL_UPDATE_SPY).not.toHaveBeenCalled()
+      expect(ENCRYPT_UPDATE_SPY).not.toHaveBeenCalled()
     })
 
-    it('should return DatabaseValidationError when validation error occurs whilst saving', async () => {
+    it('should return DatabaseValidationError when validation error occurs whilst updating', async () => {
       // Arrange
       const settingsToUpdate: SettingsUpdateDto = {
         title: 'does not matter',
       }
       // Mock database error
-      formSaveSpy.mockRejectedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        new mongoose.Error.ValidationError({ errors: 'some error' }),
-      )
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      ENCRYPT_UPDATE_SPY.mockReturnValueOnce({
+        exec: jest.fn().mockRejectedValue(
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          new mongoose.Error.ValidationError({ errors: 'some error' }),
+        ),
+      })
 
       // Act
       const actualResult = await updateFormSettings(
-        MOCK_INITIAL_FORM,
+        MOCK_ENCRYPT_FORM,
         settingsToUpdate,
       )
 
@@ -1152,10 +1207,10 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
         DatabaseValidationError,
       )
-      expect(formSaveSpy).toHaveBeenCalledTimes(1)
-      // Before invoking .save, should have become a new form with updated settings.
-      expect(formSaveSpy.mock.instances[0]).toEqual(
-        expect.objectContaining(settingsToUpdate),
+      expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_ENCRYPT_FORM._id,
+        settingsToUpdate,
+        { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
     })

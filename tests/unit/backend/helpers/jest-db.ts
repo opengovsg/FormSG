@@ -164,7 +164,7 @@ const insertEmailForm = async ({
   })
 
   return {
-    form,
+    form: form as IEmailFormSchema,
     user,
     agency,
   }
@@ -208,7 +208,7 @@ const insertEncryptForm = async ({
   })
 
   return {
-    form,
+    form: form as IEncryptedFormSchema,
     user,
     agency,
   }

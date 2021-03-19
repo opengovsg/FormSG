@@ -4,7 +4,6 @@ import mongoose from 'mongoose'
 
 import getFormModel, {
   FORM_PUBLIC_FIELDS,
-  FORM_SETTING_FIELDS,
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
@@ -1305,45 +1304,6 @@ describe('Form Model', () => {
             },
           }),
         )
-      })
-    })
-
-    describe('getSettings', () => {
-      it('should correctly return settings of email form', async () => {
-        // Arrange
-        const emailForm = await Form.create({
-          admin: populatedAdmin._id,
-          responseMode: ResponseMode.Email,
-          title: 'mock email form',
-          emails: [populatedAdmin.email],
-        })
-
-        // Act
-        const actual = emailForm.getSettings()
-
-        // Assert
-        const expected = pick(emailForm, FORM_SETTING_FIELDS)
-        expect(actual).toEqual(expected)
-      })
-
-      it('should correctly return settings of storage mode forms', async () => {
-        // Arrange
-        const encryptForm = await Form.create({
-          admin: populatedAdmin._id,
-          responseMode: ResponseMode.Encrypt,
-          webhook: {
-            url: 'https://example.com',
-          },
-          title: 'mock encrypt form electric boogaloo',
-          publicKey: 'some public key again',
-        })
-
-        // Act
-        const actual = encryptForm.getSettings()
-
-        // Assert
-        const expected = pick(encryptForm, FORM_SETTING_FIELDS)
-        expect(actual).toEqual(expected)
       })
     })
   })

@@ -551,6 +551,7 @@ export const updateFormSettings = (
   return ResultAsync.fromPromise(
     ModelToUse.findByIdAndUpdate(originalForm._id, dotifiedSettingsToUpdate, {
       new: true,
+      runValidators: true,
     }).exec(),
     (error) => {
       logger.error({
