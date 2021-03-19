@@ -44,15 +44,19 @@ export enum MyInfoCookieState {
   Error = 'error',
 }
 
+export type MyInfoSuccessfulCookiePayload = {
+  accessToken: string
+  usedCount: number
+  state: MyInfoCookieState.Success
+}
+
+export type MyInfoErroredCookiePayload = {
+  state: Exclude<MyInfoCookieState, MyInfoCookieState.Success>
+}
+
 export type MyInfoCookiePayload =
-  | {
-      accessToken: string
-      usedCount: number
-      state: MyInfoCookieState.Success
-    }
-  | {
-      state: Exclude<MyInfoCookieState, MyInfoCookieState.Success>
-    }
+  | MyInfoSuccessfulCookiePayload
+  | MyInfoErroredCookiePayload
 
 /**
  * The stringified properties included in the state sent to MyInfo.

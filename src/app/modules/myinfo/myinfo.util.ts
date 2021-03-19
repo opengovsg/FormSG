@@ -41,8 +41,10 @@ import {
   MyInfoComparePromises,
   MyInfoCookiePayload,
   MyInfoCookieState,
+  MyInfoErroredCookiePayload,
   MyInfoHashPromises,
   MyInfoRelayState,
+  MyInfoSuccessfulCookiePayload,
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
@@ -358,6 +360,18 @@ export const extractMyInfoCookie = (
   }
   return err(new MyInfoMissingAccessTokenError())
 }
+
+/**
+ * Checks if myInfoCookie is successful and returns the result.
+ * This function acts as a discriminator so that the type of the cookie is encoded in its type
+ * @param cookie the cookie to
+ * @returns ok(cookie) the successful myInfoCookie
+ * @returns err(cookie) the errored cookie
+ */
+export const extractSuccessfulCookie = (
+  cookie: MyInfoCookiePayload,
+): Result<MyInfoSuccessfulCookiePayload, MyInfoErroredCookiePayload> =>
+  cookie.state === MyInfoCookieState.Success ? ok(cookie) : err(cookie)
 
 /**
  * Extracts access token from a MyInfo cookie
