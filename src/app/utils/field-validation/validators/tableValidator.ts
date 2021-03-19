@@ -1,15 +1,16 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
-import { unzip } from 'lodash'
 
-import {
-  BasicField,
-  IColumnSchema,
-  ITableFieldSchema,
-} from '../../../../types/field'
+import { BasicField, ITableFieldSchema } from '../../../../types/field'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
-import { ProcessedTableResponse } from '../../../modules/submission/submission.types'
+import {
+  ProcessedSingleAnswerResponse,
+  ProcessedTableResponse,
+} from '../../../modules/submission/submission.types'
+import { createAnswerFieldFromColumn } from '../answerField.factory'
 import { validateField } from '..'
+
+const ALLOWED_COLUMN_TYPES = [BasicField.ShortText, BasicField.Dropdown]
 
 type TableValidator = ResponseValidator<ProcessedTableResponse>
 type TableValidatorConstructor = (
@@ -82,53 +83,46 @@ const makeRowLengthValidator: TableValidatorConstructor = (tableField) => (
 }
 
 /**
+ * Returns a validation function that checks that the columns only have allowed types
+ */
+
+const makeColumnTypeValidator: TableValidatorConstructor = (tableField) => (
+  response,
+) => {
+  const { columns } = tableField
+  return columns.every((column) =>
+    ALLOWED_COLUMN_TYPES.includes(column.columnType),
+  )
+    ? right(response)
+    : left(`TableValidator:\tanswer has columns with non-allowed types`)
+}
+
+/**
  * Returns a validation function that applies
  * the correct validator for each column based on its type.
  */
+
 const makeColumnValidator: TableValidatorConstructor = (tableField) => (
   response,
 ) => {
   const { answerArray, isVisible, _id } = response
   const { columns } = tableField
 
-  const cols = unzip(answerArray)
-  return columns.every((columnFormField, i) => {
-    return cols[i].every((answer) => {
-      if (
-        columnFormField.columnType !== BasicField.ShortText &&
-        columnFormField.columnType !== BasicField.Dropdown
-      ) {
-        return false
-      }
-
-      // Inject properties so that columnField can be passed into validateField
-      type ColumnFormFieldWithProperties<T> = T & {
-        getQuestion: { (): string }
-        description: string
-        disabled: boolean
-        fieldType: BasicField
-      }
-
-      const columnField = columnFormField
-      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).disabled = false
-      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).description =
-        'some description'
-      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).fieldType =
-        columnFormField.columnType
-      ;(columnField as ColumnFormFieldWithProperties<IColumnSchema>).getQuestion = () =>
-        'some question'
-
-      const columnResponse = {
+  return answerArray.every((row) => {
+    return row.every((answer, i) => {
+      const answerField = createAnswerFieldFromColumn(columns[i])
+      const answerResponse: ProcessedSingleAnswerResponse = {
         answer,
         isVisible,
-        fieldType: columnFormField.columnType,
+        fieldType: answerField.fieldType,
         _id,
-        question: columnFormField.title,
+        question: answerField.title,
       }
+
       return validateField(
-        columnField._id,
-        columnField as ColumnFormFieldWithProperties<IColumnSchema>,
-        columnResponse,
+        answerField._id || 'Table field validation',
+        answerField,
+        answerResponse,
       ).isOk()
     })
   })
@@ -147,5 +141,6 @@ export const constructTableValidator: TableValidatorConstructor = (
     chain(makeAddMoreRowsValidator(tableField)),
     chain(makeMaximumRowsValidator(tableField)),
     chain(makeRowLengthValidator(tableField)),
+    chain(makeColumnTypeValidator(tableField)),
     chain(makeColumnValidator(tableField)),
   )

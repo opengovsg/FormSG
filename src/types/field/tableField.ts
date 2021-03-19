@@ -8,9 +8,9 @@ import { BasicField } from './fieldTypes'
 export interface IColumn {
   title: string
   required: boolean
-  // Allow all BasicFields, but pre-validate hook will block non-dropdown/
+  // Pre-validate hook will block non-dropdown/
   // non-textfield types.
-  columnType: BasicField
+  columnType: BasicField.ShortText | BasicField.Dropdown
 }
 export interface IColumnSchema extends IColumn, Document {
   /** Returns the top level document of this sub-document. */
