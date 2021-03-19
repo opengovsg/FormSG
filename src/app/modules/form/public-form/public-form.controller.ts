@@ -1,18 +1,21 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
-// import { err, ok } from 'neverthrow'
 import querystring from 'querystring'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
-// import { MyInfoCookieStateError } from '../../myinfo/myinfo.errors'
+import {
+  MYINFO_COOKIE_NAME,
+  MYINFO_COOKIE_OPTIONS,
+} from '../../myinfo/myinfo.constants'
+import { MyInfoCookieStateError } from '../../myinfo/myinfo.errors'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
-import { MyInfoCookieState } from '../../myinfo/myinfo.types'
 import {
   extractMyInfoCookie,
+  extractSuccessfulCookie,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
@@ -217,11 +220,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     case AuthType.SP:
     case AuthType.CP: {
       // Form is valid, check for SPCP/MyInfo data.
-      // eslint-disable-next-line typesafe/no-await-without-trycatch
-      const spcpResponseResult = await SpcpFactory.getSpcpSession(
-        authType,
-        req.cookies,
-      )
+      return SpcpFactory.getSpcpSession(authType, req.cookies)
         .map(({ userName }) =>
           res.json({
             form: publicFormView,
@@ -242,79 +241,31 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
             form: publicFormView,
           })
         })
-
-      return spcpResponseResult.isOk()
-        ? spcpResponseResult.value
-        : spcpResponseResult.error
     }
 
     case AuthType.MyInfo: {
-      const validatedMyInfoForm = validateMyInfoForm(form)
-      const myInfoCookie = extractMyInfoCookie(req.cookies)
+      // TODO: shift this out so that the call is FormService.getUniqueMyInfoAttrs(form)
       const requestedAttributes = form.getUniqueMyInfoAttrs()
 
-      const errorResponse = res.json({
-        form: publicFormView,
-        myInfoError: true,
-      })
-
-      if (myInfoCookie.isErr() || validatedMyInfoForm.isErr()) {
-        return errorResponse
-      }
-      const cookiePayload = myInfoCookie.value
-
-      if (cookiePayload.state !== MyInfoCookieState.Success) {
-        return errorResponse
-      }
-
-      //   const result = extractMyInfoCookie(req.cookies)
-      //     .map((cookiePayload) =>
-      //       cookiePayload.state === MyInfoCookieState.Success
-      //         ? cookiePayload
-      //         : new MyInfoCookieStateError(),
-      //     )
-      //     .asyncAndThen((cookiePayload) =>
-      //       validateMyInfoForm(form)
-      //         .asyncAndThen((form) =>
-      //           MyInfoFactory.fetchMyInfoPersonData(
-      //             cookiePayload.accessToken,
-      //             requestedAttributes,
-      //             form.esrvcId,
-      //           ),
-      //         )
-      //         .andThen((myInfoData) =>
-      //           MyInfoFactory.prefillMyInfoFields(
-      //             myInfoData,
-      //             form.toJSON().form_fields,
-      //           ).map((formFields) => ({
-      //             formFields,
-      //             spcpSession: { userName: myInfoData.getUinFin() },
-      //           })),
-      //         )
-      //         .map(async (form) => {
-      //           // eslint-disable-next-line typesafe/no-await-without-trycatch
-      //           await MyInfoFactory.saveMyInfoHashes(
-      //             form.spcpSession.userName,
-      //             formId,
-      //             form.formFields,
-      //           )
-      //           return form
-      //         })
-      //         .map(({ spcpSession, formFields }) =>
-      //           res.json({
-      //             form: _.set(form, 'form_fields', formFields),
-      //             spcpSession,
-      //           }),
-      //         ),
-      //     )
-
+      // 1. Validate the cookie and myInfo form
+      // 2. Fetch myInfo data and fill the form based on the result
+      // 3. Hash and save to database
+      // 4. Return result if successful otherwise, clear cookies and return default response
       // eslint-disable-next-line typesafe/no-await-without-trycatch
-      const formResponse = validateMyInfoForm(form)
-        .asyncAndThen((form) =>
-          MyInfoFactory.fetchMyInfoPersonData(
-            cookiePayload.accessToken,
-            requestedAttributes,
-            form.esrvcId,
+      return extractMyInfoCookie(req.cookies)
+        .andThen((cookiePayload) =>
+          // Transform into an error because no meaningful work can be done on a errored cookie
+          extractSuccessfulCookie(cookiePayload).mapErr(
+            () => new MyInfoCookieStateError(),
+          ),
+        )
+        .asyncAndThen((cookiePayload) =>
+          validateMyInfoForm(form).asyncAndThen((form) =>
+            MyInfoFactory.fetchMyInfoPersonData(
+              cookiePayload.accessToken,
+              requestedAttributes,
+              form.esrvcId,
+            ),
           ),
         )
         .andThen((myInfoData) =>
@@ -326,26 +277,39 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
             spcpSession: { userName: myInfoData.getUinFin() },
           })),
         )
-        .map(async (form) => {
+        .andThen((form) =>
           // eslint-disable-next-line typesafe/no-await-without-trycatch
-          await MyInfoFactory.saveMyInfoHashes(
+          MyInfoFactory.saveMyInfoHashes(
             form.spcpSession.userName,
             formId,
             form.formFields,
-          )
-          return form
-        })
+          ).map(() => form),
+        )
         .map(({ spcpSession, formFields }) =>
           res.json({
             form: _.set(form, 'form_fields', formFields),
             spcpSession,
           }),
         )
-
-      if (formResponse.isOk()) {
-        return formResponse.value
-      }
-      return errorResponse
+        .mapErr((error) => {
+          logger.error({
+            message: error.message,
+            meta: {
+              action: 'handlePublicForm',
+              ...createReqMeta(req),
+              formId: formId,
+              esrvcId: form.esrvcId,
+              requestedAttributes,
+            },
+            error,
+          })
+          return res
+            .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+            .json({
+              form: publicFormView,
+              myInfoError: true,
+            })
+        })
     }
     default:
       return res.json({
