@@ -20,7 +20,7 @@ import {
   PossibleDatabaseError,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
-import { DatabaseError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 import {
   FormDeletedError,
@@ -147,12 +147,16 @@ export const retrieveFormById = (
  * Method to ensure given form is available to the public.
  * @param form the form to check
  * @returns ok(true) if form is public
+ * @returns err(ApplicationError) if form has an invalid state
  * @returns err(FormDeletedError) if form has been deleted
  * @returns err(PrivateFormError) if form is private, the message will be the form inactive message
  */
 export const isFormPublic = (
   form: IPopulatedForm,
-): Result<true, FormDeletedError | PrivateFormError> => {
+): Result<true, FormDeletedError | PrivateFormError | ApplicationError> => {
+  if (!form.status) {
+    return err(new ApplicationError())
+  }
   switch (form.status) {
     case Status.Public:
       return ok(true)
