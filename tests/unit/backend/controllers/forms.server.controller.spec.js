@@ -39,6 +39,7 @@ describe('Form Controller', () => {
       },
       headers: {},
       ip: '127.0.0.1',
+      get: () => this.ip,
     }
   })
 
@@ -61,6 +62,7 @@ describe('Form Controller', () => {
         form: expectedForm,
         spcpSession: res.locals.spcpSession,
         myInfoError: res.locals.myInfoError,
+        isIntranetUser: false,
       })
     })
   })
@@ -98,6 +100,7 @@ describe('Form Controller', () => {
         form: expectedForm,
         spcpSession: res.locals.spcpSession,
         myInfoError: res.locals.myInfoError,
+        isIntranetUser: false,
       })
     })
   })

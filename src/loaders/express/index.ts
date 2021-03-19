@@ -26,6 +26,7 @@ import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
 import { API_V3_ROOT_ROUTE, ApiRouter } from '../../app/routes/api.routes'
+import * as IntranetMiddleware from '../../app/services/intranet/intranet.middleware'
 import config from '../../config/config'
 
 import errorHandlerMiddlewares from './error-handler'
@@ -137,6 +138,9 @@ const loadExpressApp = async (connection: Connection) => {
 
   // setup express-device
   app.use(device.capture({ parseUserAgent: true }))
+
+  // Log intranet usage
+  app.use(IntranetMiddleware.logIntranetUsage)
 
   // Mount all API endpoints
   apiRoutes.forEach(function (routeFunction) {

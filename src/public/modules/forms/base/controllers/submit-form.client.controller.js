@@ -10,10 +10,18 @@ angular
     '$window',
     '$document',
     'GTag',
+    'Toastr',
     SubmitFormController,
   ])
 
-function SubmitFormController(FormData, SpcpSession, $window, $document, GTag) {
+function SubmitFormController(
+  FormData,
+  SpcpSession,
+  $window,
+  $document,
+  GTag,
+  Toastr,
+) {
   const vm = this
 
   // The form attribute of the FormData object contains the form fields, logic etc
@@ -31,6 +39,14 @@ function SubmitFormController(FormData, SpcpSession, $window, $document, GTag) {
   vm.myform.isTemplate = Boolean(FormData.isTemplate)
   vm.myform.isPreview = Boolean(FormData.isPreview)
   vm.myInfoError = Boolean(FormData.myInfoError)
+  if (
+    FormData.isIntranetUser &&
+    ['SP', 'CP', 'MyInfo'].includes(vm.myform.authType)
+  ) {
+    Toastr.permanentError(
+      'SingPass/CorpPass login is not supported from WOG Intranet. Please use an Internet-enabled device to submit this form.',
+    )
+  }
   vm.logoUrl = getFormLogo(vm.myform)
 
   // Show banner content if available
