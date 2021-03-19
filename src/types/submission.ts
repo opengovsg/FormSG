@@ -46,9 +46,7 @@ export interface WebhookView {
   data: WebhookData
 }
 
-export interface ISubmissionSchema extends ISubmission, Document {
-  getWebhookView(): WebhookView | null
-}
+export interface ISubmissionSchema extends ISubmission, Document {}
 
 export type FindFormsWithSubsAboveResult = {
   _id: IFormSchema['_id']
@@ -71,7 +69,7 @@ export interface IEmailSubmission extends ISubmission {
   version: never
   attachmentMetadata: never
   webhookResponses: never
-  getWebhookView(): WebhookView | null
+  getWebhookView(): null
 }
 
 export type IEmailSubmissionSchema = IEmailSubmission & ISubmissionSchema
@@ -86,7 +84,7 @@ export interface IEncryptedSubmission extends ISubmission {
   version: number
   attachmentMetadata?: Map<string, string>
   webhookResponses?: IWebhookResponse[]
-  getWebhookView(): WebhookView | null
+  getWebhookView(): WebhookView
 }
 
 export type IEncryptedSubmissionSchema = IEncryptedSubmission &
