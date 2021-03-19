@@ -165,6 +165,16 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       formId: string,
       submissionId: string,
     ): Promise<SubmissionData | null>
+
+    /**
+     * Adds a record of a webhook response to a submission
+     * @param submissionId ID of submission to update
+     * @param webhookResponse Response data to push
+     */
+    addWebhookResponse(
+      submissionId: string,
+      webhookResponse: IWebhookResponse,
+    ): Promise<IEncryptedSubmissionSchema | null>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

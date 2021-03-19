@@ -1,8 +1,11 @@
+import { AxiosResponse } from 'axios'
 import { promises as dns } from 'dns'
 import ip from 'ip'
 
 import config from '../../../config/config'
+import { stringifySafe } from '../../../shared/util/stringify-safe'
 import { isValidHttpsUrl } from '../../../shared/util/url-validation'
+import { IWebhookResponse } from '../../../types'
 
 import { WebhookValidationError } from './webhook.errors'
 
@@ -60,3 +63,16 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
       })
   })
 }
+
+/**
+ * Formats a response object for update in the Submissions collection
+ * @param {response} response Response object returned by axios
+ */
+export const formatWebhookResponse = (
+  response?: AxiosResponse<unknown>,
+): IWebhookResponse['response'] => ({
+  status: response?.status ?? 0,
+  statusText: response?.statusText ?? '',
+  headers: stringifySafe(response?.headers) ?? '',
+  data: stringifySafe(response?.data) ?? '',
+})

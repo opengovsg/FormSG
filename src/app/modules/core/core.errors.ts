@@ -23,6 +23,12 @@ export class ApplicationError extends Error {
   }
 }
 
+export type PossibleDatabaseError =
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+
 export class DatabaseError extends ApplicationError {
   constructor(message?: string) {
     super(message)

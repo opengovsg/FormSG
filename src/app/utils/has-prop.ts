@@ -6,9 +6,8 @@
  */
 
 export const hasProp = <K extends string>(
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  obj: object | Record<string, unknown>,
+  obj: unknown,
   prop: K,
 ): obj is Record<K, unknown> => {
-  return prop in obj
+  return typeof obj === 'object' && obj !== null && prop in obj
 }

@@ -11,6 +11,7 @@ import {
   IEncryptSubmissionModel,
   ISubmissionModel,
   ISubmissionSchema,
+  IWebhookResponse,
   IWebhookResponseSchema,
   MyInfoAttribute,
   SubmissionCursorData,
@@ -183,6 +184,18 @@ EncryptSubmissionSchema.methods.getWebhookView = function (
   return {
     data: webhookData,
   }
+}
+
+EncryptSubmissionSchema.statics.addWebhookResponse = function (
+  this: IEncryptSubmissionModel,
+  submissionId: string,
+  webhookResponse: IWebhookResponse,
+): Promise<IEncryptedSubmissionSchema | null> {
+  return this.findOneAndUpdate(
+    { _id: submissionId },
+    { $push: { webhookResponses: webhookResponse } },
+    { new: true, setDefaultsOnInsert: true, runValidators: true },
+  ).exec()
 }
 
 EncryptSubmissionSchema.statics.findSingleMetadata = function (
