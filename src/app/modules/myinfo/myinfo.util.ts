@@ -41,7 +41,6 @@ import {
   MyInfoComparePromises,
   MyInfoCookiePayload,
   MyInfoCookieState,
-  MyInfoErroredCookiePayload,
   MyInfoHashPromises,
   MyInfoRelayState,
   MyInfoSuccessfulCookiePayload,
@@ -370,8 +369,10 @@ export const extractMyInfoCookie = (
  */
 export const extractSuccessfulCookie = (
   cookie: MyInfoCookiePayload,
-): Result<MyInfoSuccessfulCookiePayload, MyInfoErroredCookiePayload> =>
-  cookie.state === MyInfoCookieState.Success ? ok(cookie) : err(cookie)
+): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieStateError> =>
+  cookie.state === MyInfoCookieState.Success
+    ? ok(cookie)
+    : err(new MyInfoCookieStateError())
 
 /**
  * Extracts access token from a MyInfo cookie

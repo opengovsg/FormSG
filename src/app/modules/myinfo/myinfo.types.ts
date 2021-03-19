@@ -50,13 +50,9 @@ export type MyInfoSuccessfulCookiePayload = {
   state: MyInfoCookieState.Success
 }
 
-export type MyInfoErroredCookiePayload = {
-  state: Exclude<MyInfoCookieState, MyInfoCookieState.Success>
-}
-
 export type MyInfoCookiePayload =
   | MyInfoSuccessfulCookiePayload
-  | MyInfoErroredCookiePayload
+  | { state: Exclude<MyInfoCookieState, MyInfoCookieState.Success> }
 
 /**
  * The stringified properties included in the state sent to MyInfo.
