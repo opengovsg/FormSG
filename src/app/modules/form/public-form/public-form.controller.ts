@@ -298,7 +298,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
               meta: {
                 action: 'handlePublicForm',
                 ...createReqMeta(req),
-                formId: formId,
+                formId,
                 esrvcId: form.esrvcId,
                 requestedAttributes,
               },
