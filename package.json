@@ -230,7 +230,7 @@
     "maildev": "^1.1.0",
     "mini-css-extract-plugin": "^0.5.0",
     "mockdate": "^3.0.3",
-    "mockingoose": "^2.13.2",
+    "mockingoose": "^2.15.1",
     "mongodb-memory-server-core": "^6.9.6",
     "ngrok": "^3.4.1",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
