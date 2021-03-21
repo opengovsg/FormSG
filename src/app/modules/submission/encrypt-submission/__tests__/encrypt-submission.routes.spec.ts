@@ -18,8 +18,6 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
-const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
-const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
 // TODO (#149): Import router instead of creating it here
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/encrypt'
@@ -97,6 +95,8 @@ const EncryptSubmissionsApp = setupApp('/', EncryptSubmissionsRouter)
 
 describe('encrypt-submission.routes', () => {
   let request: Session
+  const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
+  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
