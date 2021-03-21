@@ -3,12 +3,27 @@ import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import moment from 'moment-timezone'
+import { SetOptional } from 'type-fest'
 
+import FeatureManager, {
+  FeatureNames,
+} from '../../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { WithForm } from '../../../../types'
+import {
+  AuthType,
+  ResWithHashedFields,
+  ResWithUinFin,
+  WithForm,
+  WithParsedResponses,
+} from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
+import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
+import { SpcpFactory } from '../../spcp/spcp.factory'
+import { getProcessedResponses } from '../submission.service'
 
 import {
   getEncryptedSubmissionData,
@@ -18,9 +33,13 @@ import {
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from './encrypt-submission.service'
+import { EncryptSubmissionBody } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
+
+// TODO (private #123): remove checking of form ID against CorpPass cloud test form
+const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
 export const handleEncryptedSubmission: RequestHandler = async (
   req,
@@ -101,6 +120,110 @@ export const handleEncryptedSubmission: RequestHandler = async (
       isPageFound: true,
       formTitle: form.title,
     })
+  }
+
+  // Validate encrypted submission
+  const { encryptedContent, responses } = req.body
+  const encryptedEncodingResult = await checkIsEncryptedEncoding(
+    encryptedContent,
+  )
+  if (encryptedEncodingResult.isErr()) {
+    logger.error({
+      message: 'Error verifying content has encrypted encoding.',
+      meta: logMeta,
+      error: encryptedEncodingResult.error,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      encryptedEncodingResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  // Process encrypted submission
+  const processedResponsesResult = await getProcessedResponses(form, responses)
+  if (processedResponsesResult.isErr()) {
+    logger.error({
+      message: 'Error processing encrypted submission.',
+      meta: logMeta,
+      error: processedResponsesResult.error,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      processedResponsesResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+  const processedResponses = processedResponsesResult.value
+  // eslint-disable-next-line @typescript-eslint/no-extra-semi
+  ;(req.body as WithParsedResponses<
+    typeof req.body
+  >).parsedResponses = processedResponses
+  // Prevent downstream functions from using responses by deleting it.
+  delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
+
+  // Checks if user is SPCP-authenticated before allowing submission
+  const { authType, _id } = form
+  if (authType === AuthType.SP || authType === AuthType.CP) {
+    const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
+    const spcpResult = await SpcpFactory.extractJwt(
+      req.cookies,
+      authType,
+    ).asyncAndThen((jwt) =>
+      SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
+    )
+    if (spcpResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(spcpResult.error)
+      logger.error({
+        message: 'Failed to verify JWT with auth client',
+        meta: logMeta,
+        error: spcpResult.error,
+      })
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: true,
+      })
+    }
+    res.locals.uinFin = spcpResult.value.userName
+    res.locals.userInfo = spcpResult.value.userInfo
+  }
+
+  // validating that submitted MyInfo field values match the values
+  // originally retrieved from MyInfo.
+  const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin
+  const requestedAttributes = form.getUniqueMyInfoAttrs()
+  if (authType === AuthType.SP && requestedAttributes.length > 0) {
+    if (!uinFin) {
+      return res.status(StatusCodes.UNAUTHORIZED).send({
+        message: 'Please log in to SingPass and try again.',
+        spcpSubmissionFailure: true,
+      })
+    }
+    const myinfoResult = await MyInfoFactory.fetchMyInfoHashes(
+      uinFin,
+      formId,
+    ).andThen((hashes) =>
+      MyInfoFactory.checkMyInfoHashes(req.body.parsedResponses, hashes),
+    )
+    if (myinfoResult.isErr()) {
+      logger.error({
+        message: 'Error verifying MyInfo hashes',
+        meta: logMeta,
+        error: myinfoResult.error,
+      })
+      const { statusCode, errorMessage } = mapVerifyMyInfoError(
+        myinfoResult.error,
+      )
+      return res.status(statusCode).send({
+        message: errorMessage,
+        spcpSubmissionFailure: true,
+      })
+    }
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(res as ResWithHashedFields<typeof res>).locals.hashedFields =
+      myinfoResult.value
   }
 
   return next()
