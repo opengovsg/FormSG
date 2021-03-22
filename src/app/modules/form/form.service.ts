@@ -165,9 +165,9 @@ export const checkFormSubmissionLimitAndDeactivateForm = async (
 }
 
 export const getFormModelByResponseMode = (
-  form: IFormSchema | IPopulatedForm,
+  responseMode: ResponseMode,
 ): IEmailFormModel | IEncryptedFormModel => {
-  switch (form.responseMode) {
+  switch (responseMode) {
     case ResponseMode.Email:
       return EmailFormModel
     case ResponseMode.Encrypt:

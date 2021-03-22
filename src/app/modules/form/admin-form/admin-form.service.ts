@@ -527,7 +527,7 @@ export const updateFormSettings = (
   | DatabasePayloadSizeError
 > => {
   const dotifiedSettingsToUpdate = dotifyObject(body)
-  const ModelToUse = getFormModelByResponseMode(originalForm)
+  const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 
   return ResultAsync.fromPromise(
     ModelToUse.findByIdAndUpdate(originalForm._id, dotifiedSettingsToUpdate, {
