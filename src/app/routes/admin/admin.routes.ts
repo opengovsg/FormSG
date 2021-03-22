@@ -4,4 +4,4 @@ import { AdminFormRouter } from './form/admin-form.routes'
 
 export const AdminRouter = Router()
 
-AdminRouter.use('/form', AdminFormRouter)
+AdminRouter.use('/forms', AdminFormRouter)

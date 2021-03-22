@@ -15,7 +15,7 @@ import { AdminFormRouter } from '../admin-form.routes'
 
 const UserModel = getUserModel(mongoose)
 
-const app = setupApp('/admin/form', AdminFormRouter, {
+const app = setupApp('/admin/forms', AdminFormRouter, {
   setupWithAuth: true,
 })
 
