@@ -11,13 +11,12 @@ import {
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
-  isEmailModeForm,
   ResponseMode,
   SubmissionType,
 } from '../../../../types'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import { DatabaseError } from '../../core/core.errors'
-import { transformEmails } from '../../form/form.utils'
+import { isEmailModeForm, transformEmails } from '../../form/form.utils'
 import { ResponseModeError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
 

@@ -147,6 +147,19 @@ export interface IForm {
   emails?: string[] | string
 }
 
+export type FormSettings = Pick<
+  IFormDocument,
+  | 'authType'
+  | 'emails'
+  | 'esrvcId'
+  | 'hasCaptcha'
+  | 'inactiveMessage'
+  | 'status'
+  | 'submissionLimit'
+  | 'title'
+  | 'webhook'
+>
+
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Returns the dashboard form view of the form.
@@ -155,6 +168,10 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    */
   getDashboardView(admin: IPopulatedUser): FormMetaView
   getUniqueMyInfoAttrs(): MyInfoAttribute[]
+  /**
+   * Retrieve form settings.
+   */
+  getSettings(): FormSettings
   /**
    * Archives form.
    * @returns form that has been archived
@@ -237,8 +254,8 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<FormMetaView[]>
 }
 
-export type IEncryptedFormModel = Merge<IFormModel, Model<IEncryptedFormSchema>>
-export type IEmailFormModel = Merge<IFormModel, Model<IEmailFormSchema>>
+export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
+export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
 /** Typing for the shape of the important meta subset for form document. */
 export type FormMetaView = Pick<
@@ -246,14 +263,4 @@ export type FormMetaView = Pick<
   'title' | 'lastModified' | 'status' | '_id' | 'responseMode'
 > & {
   admin: IPopulatedUser
-}
-
-/**
- * Type guard for whether a populated form is email mode
- * @param form Form document to check
- */
-export const isEmailModeForm = (
-  form: IPopulatedForm,
-): form is IPopulatedEmailForm => {
-  return form.responseMode === ResponseMode.Email
 }

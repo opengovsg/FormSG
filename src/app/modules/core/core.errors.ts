@@ -47,8 +47,8 @@ export class DatabasePayloadSizeError extends ApplicationError {
   }
 }
 export class MalformedParametersError extends ApplicationError {
-  constructor(message: string) {
-    super(message)
+  constructor(message: string, meta?: unknown) {
+    super(message, meta)
   }
 }
 

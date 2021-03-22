@@ -25,6 +25,7 @@ import { SubmissionRouter } from '../../app/modules/submission/submission.routes
 import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
+import { API_V3_ROOT_ROUTE, ApiRouter } from '../../app/routes/api.routes'
 import * as IntranetMiddleware from '../../app/services/intranet/intranet.middleware'
 import config from '../../config/config'
 
@@ -162,6 +163,9 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/corppass/login', CorppassLoginRouter)
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
+
+  // New routes in preparation for API refactor.
+  app.use(API_V3_ROOT_ROUTE, ApiRouter)
 
   app.use(sentryMiddlewares())
 
