@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
-import { AdminFormRouter } from './form/admin-form.routes'
+import { AdminFormsRouter } from './forms'
 
 export const AdminRouter = Router()
 
-AdminRouter.use('/forms', AdminFormRouter)
+AdminRouter.use('/forms', AdminFormsRouter)
