@@ -1,18 +1,18 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { AuthType, Status } from '../../../../types'
-import { SettingsUpdateDto } from '../../../../types/api'
-import { withUserAuthentication } from '../../../modules/auth/auth.middlewares'
-import { handleUpdateSettings } from '../../../modules/form/admin-form/admin-form.controller'
+import { AuthType, Status } from '../../../../../../types'
+import { SettingsUpdateDto } from '../../../../../../types/api'
+import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
+import { handleUpdateSettings } from '../../../../../modules/form/admin-form/admin-form.controller'
 
-export const AdminFormRouter = Router()
+export const AdminFormsRouter = Router()
 
 // All routes in this handler should be protected by authentication.
-AdminFormRouter.use(withUserAuthentication)
+AdminFormsRouter.use(withUserAuthentication)
 
 /**
- * Joi validator for PATCH /form/:formId/settings route.
+ * Joi validator for PATCH /forms/:formId/settings route.
  */
 const updateSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<SettingsUpdateDto>({
@@ -35,7 +35,7 @@ const updateSettingsValidator = celebrate({
 
 /**
  * Update form settings according to given subset of settings.
- * @route PATCH /admin/form/:formId/settings
+ * @route PATCH /admin/forms/:formId/settings
  * @group admin
  * @param body the subset of settings to patch
  * @produces application/json
@@ -52,7 +52,7 @@ const updateSettingsValidator = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-AdminFormRouter.route('/:formId([a-fA-F0-9]{24})/settings').patch(
+AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/settings').patch(
   updateSettingsValidator,
   handleUpdateSettings,
 )

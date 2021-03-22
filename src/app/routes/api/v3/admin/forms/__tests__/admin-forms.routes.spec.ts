@@ -11,11 +11,11 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { AdminFormRouter } from '../admin-form.routes'
+import { AdminFormsRouter } from '../admin-forms.routes'
 
 const UserModel = getUserModel(mongoose)
 
-const app = setupApp('/admin/form', AdminFormRouter, {
+const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })
 
@@ -34,7 +34,7 @@ describe('admin-form.routes', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('PATCH /admin/form/:formId/settings', () => {
+  describe('PATCH /admin/forms/:formId/settings', () => {
     it('should return 200 with latest form settings on successful update for email mode forms', async () => {
       // Arrange
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
@@ -47,7 +47,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${formToUpdate._id}/settings`)
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
         .send(settingsToUpdate)
 
       // Assert
@@ -76,7 +76,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${formToUpdate._id}/settings`)
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
         .send(settingsToUpdate)
 
       // Assert
@@ -101,7 +101,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${form._id}/settings`)
+        .patch(`/admin/forms/${form._id}/settings`)
         .send({})
 
       // Assert
@@ -124,7 +124,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${form._id}/settings`)
+        .patch(`/admin/forms/${form._id}/settings`)
         .send(emailUpdateSettings)
 
       // Assert
@@ -140,7 +140,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await request
-        .patch(`/admin/form/${form._id}/settings`)
+        .patch(`/admin/forms/${form._id}/settings`)
         .send({})
 
       expect(response.status).toEqual(401)
@@ -164,7 +164,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${form._id}/settings`)
+        .patch(`/admin/forms/${form._id}/settings`)
         .send(settingsToUpdate)
 
       // Assert
@@ -187,7 +187,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${invalidFormId}/settings`)
+        .patch(`/admin/forms/${invalidFormId}/settings`)
         .send(settingsToUpdate)
 
       // Assert
@@ -210,7 +210,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${form._id}/settings`)
+        .patch(`/admin/forms/${form._id}/settings`)
         .send(settingsToUpdate)
 
       // Assert
@@ -234,7 +234,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${form._id}/settings`)
+        .patch(`/admin/forms/${form._id}/settings`)
         .send(settingsToUpdate)
 
       // Assert
@@ -255,7 +255,7 @@ describe('admin-form.routes', () => {
 
       // Act
       const response = await session
-        .patch(`/admin/form/${form._id}/settings`)
+        .patch(`/admin/forms/${form._id}/settings`)
         .send(settingsToUpdate)
 
       // Assert
