@@ -1,4 +1,4 @@
-import { err, errAsync } from 'neverthrow'
+import { errAsync } from 'neverthrow'
 
 import featureManager, { FeatureNames } from '../../../config/feature-manager'
 import { MissingFeatureError } from '../core/core.errors'
@@ -28,7 +28,7 @@ export const createVerificationFactory = ({
     getTransactionMetadata: () => errAsync(error),
     getTransaction: () => errAsync(error),
     resetFieldForTransaction: () => errAsync(error),
-    sendNewOtp: () => Promise.resolve(err(error)),
+    sendNewOtp: () => errAsync(error),
     verifyOtp: () => errAsync(error),
   }
 }

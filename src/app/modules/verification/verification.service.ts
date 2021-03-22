@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -188,27 +188,23 @@ export const resetFieldForTransaction = (
  * @param fieldId
  * @param answer
  */
-export const sendNewOtp = async (
+export const sendNewOtp = (
   transactionId: string,
   fieldId: string,
   answer: string,
-  // ResultAsync typed as Promise to allow use of await, which
-  // prevents excessive nesting of .andThen
-): Promise<
-  Result<
-    IVerificationSchema,
-    | TransactionNotFoundError
-    | DatabaseError
-    | FieldNotFoundInTransactionError
-    | TransactionExpiredError
-    | OtpHashingError
-    | WaitForOtpError
-    | MalformedParametersError
-    | SmsSendError
-    | InvalidNumberError
-    | MailSendError
-    | NonVerifiedFieldTypeError
-  >
+): ResultAsync<
+  IVerificationSchema,
+  | TransactionNotFoundError
+  | DatabaseError
+  | FieldNotFoundInTransactionError
+  | TransactionExpiredError
+  | OtpHashingError
+  | WaitForOtpError
+  | MalformedParametersError
+  | SmsSendError
+  | InvalidNumberError
+  | MailSendError
+  | NonVerifiedFieldTypeError
 > => {
   const logMeta = {
     action: 'sendNewOtp',
@@ -216,97 +212,82 @@ export const sendNewOtp = async (
     fieldId,
   }
   const otp = generateOtp()
-  const transactionResult = await getTransaction(transactionId)
-  if (transactionResult.isErr()) {
-    const error = transactionResult.error
-    logger.error({
-      message: 'Error while retrieving transaction to send new OTP',
-      meta: logMeta,
-      error,
-    })
-    // The error is already typed correctly, just pass it upwards
-    return errAsync(error)
-  }
-  const transaction = transactionResult.value
+  return getTransaction(transactionId).andThen((transaction) => {
+    if (isTransactionExpired(transaction)) {
+      logger.warn({
+        message: 'OTP cannot be sent as transaction has expired',
+        meta: logMeta,
+      })
+      return errAsync(new TransactionExpiredError())
+    }
 
-  if (isTransactionExpired(transaction)) {
-    logger.warn({
-      message: 'OTP cannot be sent as transaction has expired',
-      meta: logMeta,
-    })
-    return errAsync(new TransactionExpiredError())
-  }
+    const field = transaction.getField(fieldId)
+    if (!field) {
+      logger.warn({
+        message: 'Field ID not found for transaction',
+        meta: logMeta,
+      })
+      return errAsync(new FieldNotFoundInTransactionError())
+    }
 
-  const field = transaction.getField(fieldId)
-  if (!field) {
-    logger.warn({
-      message: 'Field ID not found for transaction',
-      meta: logMeta,
-    })
-    return errAsync(new FieldNotFoundInTransactionError())
-  }
+    if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
+      logger.warn({
+        message: 'OTP requested before waiting time elapsed',
+        meta: logMeta,
+      })
+      return errAsync(new WaitForOtpError())
+    }
 
-  if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
-    logger.warn({
-      message: 'OTP requested before waiting time elapsed',
-      meta: logMeta,
-    })
-    return errAsync(new WaitForOtpError())
-  }
-
-  const hashedOtpResult = await ResultAsync.fromPromise(
-    bcrypt.hash(otp, SALT_ROUNDS),
-    (error) => {
+    return ResultAsync.fromPromise(bcrypt.hash(otp, SALT_ROUNDS), (error) => {
       logger.error({
         message: 'Error while hashing new OTP',
         meta: logMeta,
         error,
       })
       return new OtpHashingError()
-    },
-  )
-  if (hashedOtpResult.isErr()) return errAsync(hashedOtpResult.error)
-  const hashedOtp = hashedOtpResult.value
+    }).andThen((hashedOtp) => {
+      const signedData = formsgSdk.verification.generateSignature({
+        transactionId,
+        formId: transaction.formId,
+        fieldId,
+        answer,
+      })
 
-  const signedData = formsgSdk.verification.generateSignature({
-    transactionId,
-    formId: transaction.formId,
-    fieldId,
-    answer,
-  })
-
-  return sendOtpForField(transaction.formId, field, answer, otp)
-    .andThen(() =>
-      ResultAsync.fromPromise(
-        transaction.updateDataForField({
-          fieldId,
-          hashCreatedAt: new Date(),
-          hashRetries: 0,
-          hashedOtp,
-          signedData,
-        }),
-        (error) => {
-          logger.error({
-            message: 'Error while updating transaction data after sending OTP',
-            meta: logMeta,
-            error,
-          })
-          return new DatabaseError(getMongoErrorMessage(error))
-        },
-      ),
-    )
-    .andThen((newTransaction) => {
-      // transaction.updateDataForField may return null if the field ID does not exist.
-      // We already checked that the field ID exists, but guard this case for safety.
-      if (!newTransaction) {
-        logger.warn({
-          message: 'Field ID not found for transaction',
-          meta: logMeta,
+      return sendOtpForField(transaction.formId, field, answer, otp)
+        .andThen(() =>
+          ResultAsync.fromPromise(
+            transaction.updateDataForField({
+              fieldId,
+              hashCreatedAt: new Date(),
+              hashRetries: 0,
+              hashedOtp,
+              signedData,
+            }),
+            (error) => {
+              logger.error({
+                message:
+                  'Error while updating transaction data after sending OTP',
+                meta: logMeta,
+                error,
+              })
+              return new DatabaseError(getMongoErrorMessage(error))
+            },
+          ),
+        )
+        .andThen((newTransaction) => {
+          // transaction.updateDataForField may return null if the field ID does not exist.
+          // We already checked that the field ID exists, but guard this case for safety.
+          if (!newTransaction) {
+            logger.warn({
+              message: 'Field ID not found for transaction',
+              meta: logMeta,
+            })
+            return errAsync(new FieldNotFoundInTransactionError())
+          }
+          return okAsync(newTransaction)
         })
-        return errAsync(new FieldNotFoundInTransactionError())
-      }
-      return okAsync(newTransaction)
     })
+  })
 }
 
 /**
