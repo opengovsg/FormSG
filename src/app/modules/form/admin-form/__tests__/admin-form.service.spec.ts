@@ -14,7 +14,6 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-  MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
@@ -1156,29 +1155,6 @@ describe('admin-form.service', () => {
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
-    })
-
-    it('should return MalformedParametersError when updating emails for an encrypt mode form', async () => {
-      // Arrange
-      const mockEncryptModeForm = {
-        responseMode: ResponseMode.Encrypt,
-      } as IPopulatedForm
-      const settingsToUpdate: SettingsUpdateDto = {
-        // Updating email.
-        emails: 'test@example.com',
-      }
-      // Act
-      const actualResult = await updateFormSettings(
-        mockEncryptModeForm,
-        settingsToUpdate,
-      )
-
-      // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new MalformedParametersError('Settings update parameters are invalid.'),
-      )
-      expect(EMAIL_UPDATE_SPY).not.toHaveBeenCalled()
-      expect(ENCRYPT_UPDATE_SPY).not.toHaveBeenCalled()
     })
 
     it('should return DatabaseValidationError when validation error occurs whilst updating', async () => {

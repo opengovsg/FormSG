@@ -113,24 +113,24 @@ describe('admin-form.routes', () => {
       )
     })
 
-    it('should return 400 when attempting to update emails of an encrypt mode form', async () => {
+    it('should return 200 with no setting changes when attempting to update emails of an encrypt mode form', async () => {
       // Arrange
       const { form, user } = await dbHandler.insertEncryptForm()
       const session = await createAuthedSession(user.email, request)
-      const invalidModelSettings: SettingsUpdateDto = {
+      const originalFormSettings = form.getSettings()
+      const emailUpdateSettings: SettingsUpdateDto = {
         emails: 'test@example.com',
       }
 
       // Act
       const response = await session
         .patch(`/admin/form/${form._id}/settings`)
-        .send(invalidModelSettings)
+        .send(emailUpdateSettings)
 
       // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Settings update parameters are invalid.',
-      })
+      expect(response.status).toEqual(200)
+      // Should have no changes
+      expect(response.body).toEqual(originalFormSettings)
     })
 
     it('should return 401 when user is not logged in', async () => {

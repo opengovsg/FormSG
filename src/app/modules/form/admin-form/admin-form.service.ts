@@ -21,7 +21,6 @@ import {
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
-  ResponseMode,
   SpcpLocals,
 } from '../../../../types'
 import { SettingsUpdateDto } from '../../../../types/api'
@@ -36,7 +35,6 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-  MalformedParametersError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
@@ -527,24 +525,7 @@ export const updateFormSettings = (
   | DatabaseValidationError
   | DatabaseConflictError
   | DatabasePayloadSizeError
-  | MalformedParametersError
 > => {
-  // If non-empty string or even if any array is passed in, return with error if
-  // form is encrypt mode.
-  if (originalForm.responseMode === ResponseMode.Encrypt && !!body.emails) {
-    logger.error({
-      message: 'Attempted to update form emails on an encrypt mode form',
-      meta: {
-        action: 'updateFormSettings',
-        formId: originalForm._id,
-        // Body is not logged in case sensitive data such as emails are stored.
-      },
-    })
-    return errAsync(
-      new MalformedParametersError('Settings update parameters are invalid.'),
-    )
-  }
-
   const dotifiedSettingsToUpdate = dotifyObject(body)
   const ModelToUse = getFormModelByResponseMode(originalForm)
 
