@@ -8,7 +8,6 @@ import * as VerificationService from './verification.service'
 interface IVerifiedFieldsFactory {
   createTransaction: typeof VerificationService.createTransaction
   getTransactionMetadata: typeof VerificationService.getTransactionMetadata
-  getTransaction: typeof VerificationService.getTransaction
   resetFieldForTransaction: typeof VerificationService.resetFieldForTransaction
   sendNewOtp: typeof VerificationService.sendNewOtp
   verifyOtp: typeof VerificationService.verifyOtp
@@ -26,7 +25,6 @@ export const createVerificationFactory = ({
   return {
     createTransaction: () => errAsync(error),
     getTransactionMetadata: () => errAsync(error),
-    getTransaction: () => errAsync(error),
     resetFieldForTransaction: () => errAsync(error),
     sendNewOtp: () => errAsync(error),
     verifyOtp: () => errAsync(error),
