@@ -1,10 +1,10 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { AuthType, Status } from '../../../../types'
-import { SettingsUpdateDto } from '../../../../types/api'
-import { withUserAuthentication } from '../../../modules/auth/auth.middlewares'
-import { handleUpdateSettings } from '../../../modules/form/admin-form/admin-form.controller'
+import { AuthType, Status } from '../../../../../../types'
+import { SettingsUpdateDto } from '../../../../../../types/api'
+import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
+import { handleUpdateSettings } from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsRouter = Router()
 
