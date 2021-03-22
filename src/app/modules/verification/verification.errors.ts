@@ -64,15 +64,6 @@ export class WrongOtpError extends ApplicationError {
 }
 
 /**
- * Error while hashing data for OTP verification.
- */
-export class OtpHashingError extends ApplicationError {
-  constructor(message = 'Error occurred while hashing OTP') {
-    super(message)
-  }
-}
-
-/**
  * OTP requested too soon after previous request.
  */
 export class WaitForOtpError extends ApplicationError {

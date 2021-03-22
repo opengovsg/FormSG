@@ -79,51 +79,6 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return this.fields.find((field) => field._id === fieldId)
   }
 
-  VerificationSchema.methods.updateDataForField = async function (
-    this: IVerificationSchema,
-    updateData: UpdateFieldData,
-  ): Promise<IVerificationSchema | null> {
-    const field = this.getField(updateData.fieldId)
-    if (!field) return null
-
-    if (updateData.hashCreatedAt !== undefined) {
-      field.hashCreatedAt = updateData.hashCreatedAt
-    }
-    if (updateData.hashRetries !== undefined) {
-      field.hashRetries = updateData.hashRetries
-    }
-    if (updateData.hashedOtp !== undefined) {
-      field.hashedOtp = updateData.hashedOtp
-    }
-    if (updateData.signedData !== undefined) {
-      field.signedData = updateData.signedData
-    }
-    return this.save()
-  }
-
-  VerificationSchema.methods.incrementFieldRetries = async function (
-    this: IVerificationSchema,
-    fieldId: string,
-  ): Promise<IVerificationSchema | null> {
-    const field = this.getField(fieldId)
-    if (!field) return null
-    field.hashRetries = (field.hashRetries ?? 0) + 1
-    return this.save()
-  }
-
-  VerificationSchema.methods.resetField = async function (
-    this: IVerificationSchema,
-    fieldId: string,
-  ): Promise<IVerificationSchema | null> {
-    return this.updateDataForField({
-      fieldId,
-      hashCreatedAt: null,
-      hashedOtp: null,
-      signedData: null,
-      hashRetries: 0,
-    })
-  }
-
   // Static methods
   // Method to return non-sensitive fields
   VerificationSchema.statics.getPublicViewById = async function (
@@ -147,6 +102,80 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
       formId: form._id,
       fields,
     })
+  }
+
+  VerificationSchema.statics.incrementFieldRetries = async function (
+    this: IVerificationModel,
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: transactionId,
+        'fields._id': fieldId,
+      },
+      {
+        $inc: {
+          'fields.$.hashRetries': 1,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
+  }
+
+  VerificationSchema.statics.resetField = async function (
+    this: IVerificationModel,
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: transactionId,
+        'fields._id': fieldId,
+      },
+      {
+        $set: {
+          'fields.$.hashCreatedAt': null,
+          'fields.$.hashedOtp': null,
+          'fields.$.signedData': null,
+          'fields.$.hashRetries': 0,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
+  }
+
+  VerificationSchema.statics.updateHashForField = async function (
+    this: IVerificationModel,
+    updateData: UpdateFieldData,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: updateData.transactionId,
+        'fields._id': updateData.fieldId,
+      },
+      {
+        $set: {
+          'fields.$.hashCreatedAt': new Date(),
+          'fields.$.hashedOtp': updateData.hashedOtp,
+          'fields.$.signedData': updateData.signedData,
+          'fields.$.hashRetries': 0,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
   }
 
   const VerificationModel = db.model<IVerificationSchema, IVerificationModel>(

@@ -26,11 +26,10 @@ export interface IVerification {
 }
 
 export type UpdateFieldData = {
+  transactionId: string
   fieldId: string
-  hashCreatedAt?: Date | null
-  hashedOtp?: string | null
-  signedData?: string | null
-  hashRetries?: number
+  hashedOtp: string
+  signedData: string
 }
 
 export interface IVerificationSchema
@@ -38,11 +37,7 @@ export interface IVerificationSchema
     Document,
     PublicView<PublicTransaction> {
   getField(fieldId: string): IVerificationFieldSchema | undefined
-  updateDataForField(
-    updateData: UpdateFieldData,
-  ): Promise<IVerificationSchema | null>
   incrementFieldRetries(fieldId: string): Promise<IVerificationSchema | null>
-  resetField(fieldId: string): Promise<IVerificationSchema | null>
 }
 
 // Keep in sync with VERIFICATION_PUBLIC_FIELDS
@@ -57,5 +52,12 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   ): Promise<PublicTransaction | null>
   createTransactionFromForm(
     form: IFormSchema,
+  ): Promise<IVerificationSchema | null>
+  resetField(
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null>
+  updateHashForField(
+    updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null>
 }
