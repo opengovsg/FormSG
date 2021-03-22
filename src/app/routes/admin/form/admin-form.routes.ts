@@ -6,7 +6,6 @@ import { SettingsUpdateDto } from '../../../../types/api'
 import { withUserAuthentication } from '../../../modules/auth/auth.middlewares'
 import { handleUpdateSettings } from '../../../modules/form/admin-form/admin-form.controller'
 
-export const ADMIN_FORM_NESTED_ROUTE = '/form'
 export const AdminFormRouter = Router()
 
 // All routes in this handler should be protected by authentication.

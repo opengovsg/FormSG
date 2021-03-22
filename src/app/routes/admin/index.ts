@@ -1,1 +1,1 @@
-export { AdminRouter, ADMIN_NESTED_ROUTE } from './admin.routes'
+export { AdminRouter } from './admin.routes'
