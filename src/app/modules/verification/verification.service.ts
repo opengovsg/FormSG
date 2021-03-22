@@ -46,6 +46,9 @@ const logger = createLoggerWithLabel(module)
 /**
  *  Creates a transaction for a form that has verifiable fields
  * @param formId
+ * @returns ok(created transaction or null) if form has no verifiable fields.
+ * @returns err(FormNotFoundError) when form does not exist
+ * @returns err(DatabaseError) when database read/write errors
  */
 export const createTransaction = (
   formId: string,
@@ -75,6 +78,9 @@ export const createTransaction = (
 /**
  *  Retrieves a transaction's metadata by id
  * @param transactionId
+ * @returns ok(transaction metadata)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(DatabaseError) when database read/write errors
  */
 export const getTransactionMetadata = (
   transactionId: string,
@@ -106,8 +112,12 @@ export const getTransactionMetadata = (
 }
 
 /**
- * Retrieves an entire transaction
+ * Retrieves an entire transaction and validates that it is not expired
  * @param transactionId
+ * @returns ok(transaction)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(DatabaseError) when database read/write errors
  */
 const getValidTransaction = (
   transactionId: string,
@@ -116,7 +126,7 @@ const getValidTransaction = (
   TransactionNotFoundError | DatabaseError | TransactionExpiredError
 > => {
   const logMeta = {
-    action: 'getTransaction',
+    action: 'getValidTransaction',
     transactionId,
   }
   return ResultAsync.fromPromise(
@@ -148,6 +158,13 @@ const getValidTransaction = (
   })
 }
 
+/**
+ * Extracts an individual field's data from a transaction document.
+ * @param transaction Transaction document
+ * @param fieldId ID of field to find
+ * @returns ok(field) when field exists
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ */
 const getFieldFromTransaction = (
   transaction: IVerificationSchema,
   fieldId: string,
@@ -168,9 +185,13 @@ const getFieldFromTransaction = (
 }
 
 /**
- *  Sets signedData, hashedOtp, hashCreatedAt to null for that field in that transaction
- *  @param transaction
- *  @param fieldId
+ * Sets signedData, hashedOtp, hashCreatedAt to null for that field in that transaction
+ * @param transactionId
+ * @param fieldId
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(DatabaseError) when database read/write errors
  */
 export const resetFieldForTransaction = (
   transactionId: string,
@@ -220,10 +241,23 @@ export const resetFieldForTransaction = (
 }
 
 /**
- *  Generates hashed otp and signed data for the given transaction, fieldId, and answer
- * @param transaction
+ * Sends OTP and updates database record for the given transaction, fieldId, and answer
+ * @param transactionId
  * @param fieldId
- * @param answer
+ * @param recipient Phone number for verified mobile field, or email address for verified email
+ * @param otp Input OTP to be sent
+ * @param hashedOtp Hash of input OTP to be saved
+ * @returns ok(updated transaction document)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(WaitForOtpError) when waiting time for new OTP has not elapsed
+ * @returns err(MalformedParametersError) when form data to send SMS OTP cannot be retrieved
+ * @returns err(SmsSendError) when attempt to send OTP SMS fails
+ * @returns err(InvalidNumberError) when SMS recipient is invalid
+ * @returns err(MailSendError) when attempt to send OTP email fails
+ * @returns err(NonVerifiedFieldTypeError) when field's fieldType is not verified
+ * @returns err(DatabaseError) when database read/write errors
  */
 export const sendNewOtp = ({
   transactionId,
@@ -303,9 +337,19 @@ export const sendNewOtp = ({
 
 /**
  * Compares the given otp. If correct, returns signedData, else returns an error
- * @param transaction
+ * @param transactionId
  * @param fieldId
  * @param inputOtp
+ * @returns ok(signedData of field) when OTP is correct
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(MissingHashDataError) when field exists but data on hash is missing
+ * @returns err(OtpExpiredError) when OTP has expired
+ * @returns err(OtpRetryExceededError) when OTP has been retried too many times
+ * @returns err(WrongOtpError) when OTP is wrong
+ * @returns err(HashingError) when error occurs while hashing input OTP for comparison
+ * @returns err(DatabaseError) when database read/write errors
  */
 export const verifyOtp = (
   transactionId: string,
@@ -386,10 +430,8 @@ export const verifyOtp = (
 
 /**
  * Send otp to recipient
- *
  * @param formId
  * @param field
- * @param field.fieldType
  * @param recipient
  * @param otp
  */
