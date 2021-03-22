@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MapRouteError } from '../../../types/routing'
 import * as MailErrors from '../../services/mail/mail.errors'
+import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 
 import * as AuthErrors from './auth.errors'
@@ -28,7 +29,7 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
         errorMessage: error.message,
       }
     case MailErrors.MailSendError:
-    case CoreErrors.ApplicationError:
+    case HashingError:
     case CoreErrors.DatabaseError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
