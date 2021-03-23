@@ -38,10 +38,7 @@ function FormFeedback($q, $http) {
         deferred.resolve('Successfully posted feedback.')
         return deferred.promise
       }
-      let resUrl = fixParamsToUrl(
-        params,
-        resourceUrl,
-      )
+      let resUrl = fixParamsToUrl(params, resourceUrl)
       $http.post(resUrl, body).then(
         function () {
           deferred.resolve('Successfully posted feedback.')
