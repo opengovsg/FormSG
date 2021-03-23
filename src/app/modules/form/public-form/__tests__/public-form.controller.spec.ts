@@ -1,3 +1,4 @@
+import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson-ext'
 import _, { merge } from 'lodash'
 import mongoose from 'mongoose'
@@ -8,14 +9,12 @@ import { mocked } from 'ts-jest/utils'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import {
-  MyInfoCookieState,
-  MyInfoSuccessfulCookiePayload,
-} from 'src/app/modules/myinfo/myinfo.types'
-import * as myInfoUtils from 'src/app/modules/myinfo/myinfo.util'
+import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
+import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
 import { JwtPayload } from 'src/app/modules/spcp/spcp.types'
 import {
   AuthType,
+  IMyInfoHashSchema,
   IPopulatedForm,
   IPopulatedUser,
   MyInfoAttribute,
@@ -25,11 +24,7 @@ import {
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as AuthService from '../../../auth/auth.service'
-import {
-  MyInfoCookieStateError,
-  MyInfoMissingAccessTokenError,
-  MyInfoNoESrvcIdError,
-} from '../../../myinfo/myinfo.errors'
+import { MyInfoFactory } from '../../../myinfo/myinfo.factory'
 import { MissingJwtError } from '../../../spcp/spcp.errors'
 import { SpcpFactory } from '../../../spcp/spcp.factory'
 import {
@@ -47,13 +42,13 @@ jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
 jest.mock('../../../spcp/spcp.factory')
-jest.mock('src/app/modules/myinfo/myinfo.util')
+jest.mock('../../../myinfo/myinfo.factory')
 
 const MockFormService = mocked(FormService)
 const MockPublicFormService = mocked(PublicFormService)
 const MockAuthService = mocked(AuthService)
 const MockSpcpFactory = mocked(SpcpFactory)
-const MockMyInfoUtils = mocked(myInfoUtils)
+const MockMyInfoFactory = mocked(MyInfoFactory)
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 
@@ -437,7 +432,8 @@ describe('public-form.controller', () => {
     const BASE_FORM = {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
-      title: 'Mock',
+      title: MOCK_SCRUBBED_FORM.title,
+      toJSON: jest.fn().mockReturnValue(MOCK_SCRUBBED_FORM),
       getUniqueMyInfoAttrs: jest.fn().mockReturnValue([MyInfoAttribute.Name]),
       getPublicView: jest.fn().mockReturnValue(MOCK_SCRUBBED_FORM),
     }
@@ -446,6 +442,19 @@ describe('public-form.controller', () => {
       params: {
         formId: MOCK_FORM_ID,
       },
+    })
+
+    const MOCK_MYINFO_COOKIE = {
+      accessToken: 'cookie',
+      usedCount: 0,
+      state: MyInfoCookieState.Success,
+    }
+
+    const MOCK_REQ_WITH_COOKIES = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      others: { cookies: { MyInfoCookie: MOCK_MYINFO_COOKIE } },
     })
 
     // Success
@@ -559,17 +568,12 @@ describe('public-form.controller', () => {
           authType: AuthType.MyInfo,
         }) as unknown) as MockedObject<IPopulatedForm>
         const MOCK_RES = expressHandler.mockResponse()
-        const MOCK_MYINFO_COOKIE = {
-          accessToken: 'cookie',
-          usedCount: 0,
-          state: MyInfoCookieState.Success,
-        }
-        const MOCK_REQ_WITH_COOKIES = expressHandler.mockRequest({
-          params: {
-            formId: MOCK_FORM_ID,
-          },
-          others: { cookies: { MyInfoCookie: MOCK_MYINFO_COOKIE } },
-        })
+        const MOCK_CLEAR_COOKIE = jest.fn().mockReturnValueOnce(MOCK_RES)
+        const MOCK_INITIAL_RES = _.set(
+          MOCK_RES,
+          'clearCookie',
+          MOCK_CLEAR_COOKIE,
+        )
 
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
@@ -577,23 +581,28 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
-        MockMyInfoUtils.extractMyInfoCookie.mockReturnValueOnce(
-          ok(MOCK_MYINFO_COOKIE),
-        )
-        MockMyInfoUtils.extractSuccessfulCookie.mockReturnValueOnce(
-          ok(MOCK_MYINFO_COOKIE as MyInfoSuccessfulCookiePayload),
-        )
+        MockMyInfoFactory.prefillMyInfoFields.mockReturnValueOnce(ok([]))
+        MockMyInfoFactory.extractMyInfoData.mockReturnValueOnce(
+          okAsync(new MyInfoData({ uinFin: 'i am a fish' } as IPersonResponse)),
+        ),
+          MockMyInfoFactory.saveMyInfoHashes.mockReturnValueOnce(
+            okAsync({
+              uinFin: 'hello world',
+            } as IMyInfoHashSchema),
+          )
 
         // Act
         await PublicFormController.handleGetPublicForm(
           MOCK_REQ_WITH_COOKIES,
-          MOCK_RES,
+          MOCK_INITIAL_RES,
           jest.fn(),
         )
 
         // Assert
+        expect(MockMyInfoFactory.saveMyInfoHashes).toHaveBeenCalled()
         expect(MOCK_RES.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_AUTH_FORM.getPublicView(),
+          spcpSession: { userName: 'i am a fish' },
         })
       })
     })
@@ -628,19 +637,9 @@ describe('public-form.controller', () => {
           MOCK_CLEAR_COOKIE,
         )
 
-        MockAuthService.getFormIfPublic.mockReturnValue(
-          okAsync(MOCK_MYINFO_FORM),
-        )
-        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValue(
-          okAsync(MOCK_MYINFO_FORM),
-        )
-        MockMyInfoUtils.extractMyInfoCookie.mockReturnValueOnce(
-          err(new MyInfoMissingAccessTokenError()),
-        )
-
         // Act
         await PublicFormController.handleGetPublicForm(
-          _.set(MOCK_REQ, 'cookies', {}),
+          MOCK_REQ_WITH_COOKIES,
           // NOTE: This is done because the calls to .json and .clearCookie are chained
           MOCK_INITIAL_RES,
           jest.fn(),
@@ -665,16 +664,9 @@ describe('public-form.controller', () => {
           MOCK_CLEAR_COOKIE,
         )
 
-        MockMyInfoUtils.extractMyInfoCookie.mockReturnValueOnce(
-          ok({ state: MyInfoCookieState.Error }),
-        )
-        MockMyInfoUtils.extractSuccessfulCookie.mockReturnValueOnce(
-          err(new MyInfoCookieStateError()),
-        )
-
         // Act
         await PublicFormController.handleGetPublicForm(
-          _.set(MOCK_REQ, 'cookies', { accessToken: 'cookie monster?' }),
+          MOCK_REQ_WITH_COOKIES,
           // NOTE: This is done because the calls to .json and .clearCookie are chained
           MOCK_INITIAL_RES,
           jest.fn(),
@@ -699,19 +691,9 @@ describe('public-form.controller', () => {
           MOCK_CLEAR_COOKIE,
         )
 
-        MockMyInfoUtils.extractMyInfoCookie.mockReturnValueOnce(
-          ok({ state: MyInfoCookieState.Error }),
-        )
-        MockMyInfoUtils.extractSuccessfulCookie.mockReturnValueOnce(
-          err(new MyInfoCookieStateError()),
-        )
-        MockMyInfoUtils.validateMyInfoForm.mockReturnValueOnce(
-          err(new MyInfoNoESrvcIdError()),
-        )
-
         // Act
         await PublicFormController.handleGetPublicForm(
-          _.set(MOCK_REQ, 'cookies', { accessToken: 'cookie monster?' }),
+          MOCK_REQ_WITH_COOKIES,
           // NOTE: This is done because the calls to .json and .clearCookie are chained
           _.set(MOCK_INITIAL_RES, 'clearCookie', MOCK_CLEAR_COOKIE),
           jest.fn(),
