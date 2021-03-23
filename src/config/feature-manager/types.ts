@@ -10,6 +10,7 @@ export enum FeatureNames {
   SpcpMyInfo = 'spcp-myinfo',
   VerifiedFields = 'verified-fields',
   WebhookVerifiedContent = 'webhook-verified-content',
+  Intranet = 'intranet',
 }
 
 export interface IAggregateStats {
@@ -68,6 +69,10 @@ export interface IMyInfoConfig {
   myInfoCertPath: string
   myInfoClientId: string
   myInfoClientSecret: string
+  // TODO (private #123): remove these keys
+  cpCloudFormId: string
+  cpCloudEndpoint: string
+  cpCloudCertPath: string
 }
 
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
@@ -80,6 +85,10 @@ export interface IWebhookVerifiedContent {
   signingSecretKey: string
 }
 
+export interface IIntranet {
+  intranetIpListPath: string
+}
+
 export interface IFeatureManager {
   [FeatureNames.AggregateStats]: IAggregateStats
   [FeatureNames.Captcha]: ICaptcha
@@ -89,6 +98,7 @@ export interface IFeatureManager {
   [FeatureNames.SpcpMyInfo]: ISpcpMyInfo
   [FeatureNames.VerifiedFields]: IVerifiedFields
   [FeatureNames.WebhookVerifiedContent]: IWebhookVerifiedContent
+  [FeatureNames.Intranet]: IIntranet
 }
 
 export interface RegisteredFeature<T extends FeatureNames> {

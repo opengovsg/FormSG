@@ -19,8 +19,10 @@ import * as SubmissionService from 'src/app/modules/submission/submission.servic
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import { EditFieldActions } from 'src/shared/constants'
 import {
+  AuthType,
   BasicField,
   FormMetaView,
+  FormSettings,
   IForm,
   IFormSchema,
   IPopulatedForm,
@@ -28,6 +30,7 @@ import {
   IUserSchema,
   PublicForm,
   ResponseMode,
+  Status,
 } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
@@ -4406,6 +4409,379 @@ describe('admin-form.controller', () => {
       })
       expect(updateFormSpy).toHaveBeenCalledTimes(1)
       expect(editFormFieldSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleUpdateSettings', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      body: {
+        status: Status.Private,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    it('should return 200 with updated settings successfully', async () => {
+      // Arrange
+      const mockUpdatedSettings: FormSettings = {
+        authType: AuthType.NIL,
+        hasCaptcha: false,
+        inactiveMessage: 'some inactive message',
+        status: Status.Private,
+        submissionLimit: 42069,
+        title: 'new title',
+        webhook: {
+          url: '',
+        },
+      }
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.updateFormSettings.mockReturnValueOnce(
+        okAsync(mockUpdatedSettings),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(mockUpdatedSettings)
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.body,
+      )
+    })
+
+    it('should return 403 when current user does not have permissions to update form settings', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form to update settings for cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'nope'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).not.toHaveBeenCalled()
+    })
+
+    it('should return 409 when version conflict occurs whilst saving form settings', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'some conflict happened'
+      MockAdminFormService.updateFormSettings.mockReturnValueOnce(
+        errAsync(new DatabaseConflictError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.body,
+      )
+    })
+
+    it('should return 410 when updating settings of archived form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'already deleted'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).not.toHaveBeenCalled()
+    })
+
+    it('should return 413 when updating settings causes form to be too large to be saved in the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'payload too large'
+      MockAdminFormService.updateFormSettings.mockReturnValueOnce(
+        errAsync(new DatabasePayloadSizeError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(413)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.body,
+      )
+    })
+
+    it('should return 422 when an invalid patch is attempted on settings', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'invalid update to form shape'
+      MockAdminFormService.updateFormSettings.mockReturnValueOnce(
+        errAsync(new DatabaseValidationError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.body,
+      )
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'user not in session??!!'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(MockAdminFormService.updateFormSettings).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when generic database error occurs during settings update', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'some database error bam'
+      MockAdminFormService.updateFormSettings.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateSettings(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.body,
+      )
     })
   })
 })

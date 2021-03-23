@@ -1,8 +1,11 @@
+import { Result } from 'neverthrow'
+
 import {
   IBounceNotification,
   IDeliveryNotification,
   IEmailNotification,
 } from '../../../types'
+import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 
 import { UserWithContactNumber } from './bounce.types'
 /**
@@ -67,18 +70,18 @@ export const isDeliveryNotification = (
 
 /**
  * Filters the given SMS recipients to only those which were sent succesfully
- * @param smsResults Array of Promise.allSettled results
+ * @param smsResults Array of sms results
  * @param smsRecipients Recipients who were SMSed. This array must correspond
  * exactly to smsResults, i.e. the result at smsResults[i] corresponds
  * to the result of the attempt to SMS smsRecipients[i]
  * @returns the contact details of SMSes sent successfully
  */
 export const extractSuccessfulSmsRecipients = (
-  smsResults: PromiseSettledResult<boolean>[],
+  smsResults: Result<true, unknown>[],
   smsRecipients: UserWithContactNumber[],
 ): UserWithContactNumber[] => {
   return smsResults.reduce<UserWithContactNumber[]>((acc, result, index) => {
-    if (result.status === 'fulfilled') {
+    if (result.isOk()) {
       acc.push(smsRecipients[index])
     }
     return acc
@@ -91,12 +94,15 @@ export const extractSuccessfulSmsRecipients = (
  * @returns Array of errors
  */
 export const extractSmsErrors = (
-  smsResults: PromiseSettledResult<boolean>[],
-): PromiseRejectedResult['reason'][] => {
-  return smsResults.reduce<PromiseRejectedResult['reason'][]>((acc, result) => {
-    if (result.status === 'rejected') {
-      acc.push(result.reason)
-    }
-    return acc
-  }, [])
+  smsResults: Result<true, SmsSendError | InvalidNumberError>[],
+): (SmsSendError | InvalidNumberError)[] => {
+  return smsResults.reduce<(SmsSendError | InvalidNumberError)[]>(
+    (acc, result) => {
+      if (result.isErr()) {
+        acc.push(result.error)
+      }
+      return acc
+    },
+    [],
+  )
 }

@@ -12,6 +12,7 @@ import {
   WithEmailData,
   WithForm,
 } from '../../../../types'
+import MailService from '../../../services/mail/mail.service'
 import { createReqMeta } from '../../../utils/request'
 import { getProcessedResponses } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
@@ -180,7 +181,7 @@ export const sendAdminEmail: RequestHandler<
     message: 'Sending admin mail',
     meta: logMeta,
   })
-  return EmailSubmissionService.sendSubmissionToAdmin({
+  return MailService.sendSubmissionToAdmin({
     replyToEmails: EmailSubmissionService.extractEmailAnswers(
       req.body.parsedResponses,
     ),

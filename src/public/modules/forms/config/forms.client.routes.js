@@ -125,7 +125,7 @@ angular.module('forms').config([
           'settings@viewForm': {
             template: `<settings-form-directive
               myform="myform"
-              update-form="updateForm(update)">
+              update-form-settings="updateFormSettings(settingsToUpdate)"
               </settings-form-directive>`,
           },
           'build@viewForm': {

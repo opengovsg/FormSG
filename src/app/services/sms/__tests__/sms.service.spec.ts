@@ -2,11 +2,13 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
+import { MalformedParametersError } from 'src/app/modules/core/core.errors'
 import { VfnErrors } from 'src/shared/util/verification'
 import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { InvalidNumberError } from '../sms.errors'
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'
 import {
@@ -110,11 +112,11 @@ describe('sms.service', () => {
     })
 
     it('should log failure when sending fails', async () => {
+      // Arrange
       const expectedMessage = renderFormDeactivatedSms(MOCK_FORM_TITLE)
-      const expectedError = new Error(VfnErrors.InvalidMobileNumber)
-      expectedError.name = VfnErrors.SendOtpFailed
 
-      const resultPromise = SmsService.sendFormDeactivatedSms(
+      // Act
+      const actualResult = await SmsService.sendFormDeactivatedSms(
         {
           recipient: TWILIO_TEST_NUMBER,
           adminEmail: MOCK_ADMIN_EMAIL,
@@ -126,7 +128,8 @@ describe('sms.service', () => {
         MOCK_INVALID_CONFIG,
       )
 
-      await expect(resultPromise).rejects.toThrowError(expectedError)
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
       expect(twilioFailureSpy).toHaveBeenCalledWith({
         to: TWILIO_TEST_NUMBER,
         body: expectedMessage,
@@ -189,11 +192,11 @@ describe('sms.service', () => {
     })
 
     it('should log failure when sending fails', async () => {
+      // Arrange
       const expectedMessage = renderBouncedSubmissionSms(MOCK_FORM_TITLE)
-      const expectedError = new Error(VfnErrors.InvalidMobileNumber)
-      expectedError.name = VfnErrors.SendOtpFailed
 
-      const resultPromise = SmsService.sendBouncedSubmissionSms(
+      // Act
+      const actualResult = await SmsService.sendBouncedSubmissionSms(
         {
           recipient: TWILIO_TEST_NUMBER,
           adminEmail: MOCK_ADMIN_EMAIL,
@@ -205,7 +208,8 @@ describe('sms.service', () => {
         MOCK_INVALID_CONFIG,
       )
 
-      await expect(resultPromise).rejects.toThrowError(expectedError)
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
       expect(twilioFailureSpy).toHaveBeenCalledWith({
         to: TWILIO_TEST_NUMBER,
         body: expectedMessage,
@@ -250,28 +254,13 @@ describe('sms.service', () => {
       }
     })
 
-    it('should throw error when retrieved otpData is null', async () => {
+    it('should return MalformedParametersError error when retrieved otpData is null', async () => {
       // Arrange
       // Return null on Form method
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(null)
 
       // Act
-      const actualPromise = SmsService.sendVerificationOtp(
-        /* recipient= */ TWILIO_TEST_NUMBER,
-        /* otp= */ '111111',
-        /* formId= */ testForm._id,
-        /* defaultConfig= */ MOCK_VALID_CONFIG,
-      )
-
-      await expect(actualPromise).rejects.toThrowError()
-    })
-
-    it('should log and send verification OTP when sending has no errors', async () => {
-      // Arrange
-      jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
-
-      // Act
-      const actualPromise = SmsService.sendVerificationOtp(
+      const actualResult = await SmsService.sendVerificationOtp(
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
@@ -279,8 +268,27 @@ describe('sms.service', () => {
       )
 
       // Assert
-      // Should resolve to true
-      await expect(actualPromise).resolves.toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new MalformedParametersError(
+          `Unable to retrieve otpData from ${testForm._id}`,
+        ),
+      )
+    })
+
+    it('should log and send verification OTP when sending has no errors', async () => {
+      // Arrange
+      jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
+
+      // Act
+      const actualResult = await SmsService.sendVerificationOtp(
+        /* recipient= */ TWILIO_TEST_NUMBER,
+        /* otp= */ '111111',
+        /* formId= */ testForm._id,
+        /* defaultConfig= */ MOCK_VALID_CONFIG,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Logging should also have happened.
       const expectedLogParams = {
         smsData: mockOtpData,
@@ -291,12 +299,12 @@ describe('sms.service', () => {
       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
     })
 
-    it('should log failure and throw error when verification OTP fails to send', async () => {
+    it('should log failure and return InvalidNumberError when verification OTP fails to send due to invalid number', async () => {
       // Arrange
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
 
       // Act
-      const actualPromise = SmsService.sendVerificationOtp(
+      const actualResult = await SmsService.sendVerificationOtp(
         /* recipient= */ TWILIO_TEST_NUMBER,
         /* otp= */ '111111',
         /* formId= */ testForm._id,
@@ -304,10 +312,7 @@ describe('sms.service', () => {
       )
 
       // Assert
-      const expectedError = new Error(VfnErrors.InvalidMobileNumber)
-      expectedError.name = VfnErrors.SendOtpFailed
-
-      await expect(actualPromise).rejects.toThrow(expectedError)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
       // Logging should also have happened.
       const expectedLogParams = {
         smsData: mockOtpData,

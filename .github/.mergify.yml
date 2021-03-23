@@ -1,0 +1,9 @@
+pull_request_rules:
+  - name: Merge dependency upgrades when tests pass
+    conditions:
+      - 'author=dependabot[bot]'
+      - '#check-failure=0'
+      - 'title~=bump [^\s]+ from ([\d]+)\..+ to \1\.'
+    actions:
+      merge:
+        method: squash

@@ -1,8 +1,10 @@
 import bcrypt from 'bcrypt'
 import _ from 'lodash'
 import mongoose from 'mongoose'
+import { errAsync, ResultAsync } from 'neverthrow'
 
 import formsgSdk from '../../../config/formsg-sdk'
+import { createLoggerWithLabel } from '../../../config/logger'
 import * as VfnUtils from '../../../shared/util/verification'
 import {
   IEmailFieldSchema,
@@ -14,11 +16,21 @@ import {
 } from '../../../types'
 import getFormModel from '../../models/form.server.model'
 import getVerificationModel from '../../models/verification.server.model'
+import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
+import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { generateOtp } from '../../utils/otp'
+import {
+  ApplicationError,
+  DatabaseError,
+  MalformedParametersError,
+} from '../core/core.errors'
 
 import { Transaction } from './verification.types'
+
+const logger = createLoggerWithLabel(module)
 
 const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
@@ -149,22 +161,42 @@ export const getNewOtp = async (
       fieldId,
       answer,
     })
-    try {
-      await sendOTPForField(formId, field, answer, otp)
-    } catch (err) {
-      throwError(err.message, VfnErrors.SendOtpFailed)
-    }
-    await Verification.updateOne(
-      { _id: transactionId, 'fields._id': fieldId },
-      {
-        $set: {
-          'fields.$.hashCreatedAt': hashCreatedAt,
-          'fields.$.hashedOtp': hashedOtp,
-          'fields.$.signedData': signedData,
-          'fields.$.hashRetries': 0,
-        },
-      },
-    )
+
+    await sendOtpForField(formId, field, answer, otp)
+      .andThen(() => {
+        return ResultAsync.fromPromise(
+          Verification.updateOne(
+            { _id: transactionId, 'fields._id': fieldId },
+            {
+              $set: {
+                'fields.$.hashCreatedAt': hashCreatedAt,
+                'fields.$.hashedOtp': hashedOtp,
+                'fields.$.signedData': signedData,
+                'fields.$.hashRetries': 0,
+              },
+            },
+          ).exec(),
+          (error) => {
+            logger.error({
+              message:
+                'Database error occurred whilst updating verification document',
+              meta: {
+                action: 'getNewOtp',
+                formId,
+                fieldId,
+                transactionId,
+              },
+              error,
+            })
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        )
+        // TODO(#941): Properly handle error in controller instead of throwing.
+        // Throwing is currently done to keep old behaviour consistent
+      })
+      .mapErr((err) => {
+        throwError(err.message, VfnErrors.SendOtpFailed)
+      })
   }
 }
 
@@ -252,12 +284,20 @@ const isFieldVerifiable = (field: IFieldSchema): boolean => {
  * @param recipient
  * @param otp
  */
-const sendOTPForField = async (
+const sendOtpForField = (
   formId: string,
   field: IVerificationFieldSchema,
   recipient: string,
   otp: string,
-): Promise<boolean> => {
+): ResultAsync<
+  true,
+  | DatabaseError
+  | MalformedParametersError
+  | SmsSendError
+  | InvalidNumberError
+  | MailSendError
+  | ApplicationError
+> => {
   const { fieldType } = field
   switch (fieldType) {
     case 'mobile':
@@ -267,7 +307,12 @@ const sendOTPForField = async (
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
     default:
-      throw new Error(`sendOTPForField: ${fieldType} is unsupported`)
+      return errAsync(
+        new ApplicationError(
+          'Unsupported field type passed to sendOtpForField',
+          { fieldType },
+        ),
+      )
   }
 }
 

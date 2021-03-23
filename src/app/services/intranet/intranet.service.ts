@@ -1,0 +1,48 @@
+import fs from 'fs'
+import { ok, Result } from 'neverthrow'
+
+import { IIntranet } from '../../../config/feature-manager'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { ApplicationError } from '../../modules/core/core.errors'
+
+const logger = createLoggerWithLabel(module)
+
+/**
+ * Handles intranet functionality based on a given list of intranet IPs.
+ */
+export class IntranetService {
+  /**
+   * List of IP addresses associated with intranet
+   */
+  intranetIps: string[]
+
+  constructor(intranetConfig: IIntranet) {
+    // In future if crucial intranet-specific functionality is implemented,
+    // e.g. intranet-only forms, then this try-catch should be removed so that
+    // an error is thrown if the intranet IP list file does not exist.
+    // For now, the functionality is not crucial, so we can default to an empty array.
+    try {
+      this.intranetIps = fs
+        .readFileSync(intranetConfig.intranetIpListPath)
+        .toString()
+        .split('\n')
+    } catch {
+      logger.warn({
+        message: 'Could not read file containing intranet IPs',
+        meta: {
+          action: 'IntranetService',
+        },
+      })
+      this.intranetIps = []
+    }
+  }
+
+  /**
+   * Checks whether the given IP address is an intranet IP.
+   * @param ip IP address to check
+   * @returns Whether the IP address originated from the intranet
+   */
+  isIntranetIp(ip: string): Result<boolean, ApplicationError> {
+    return ok(this.intranetIps.includes(ip))
+  }
+}

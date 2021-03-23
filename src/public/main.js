@@ -137,7 +137,6 @@ app.requires.push('ngIntlTelInput')
 
 // Core services
 require('./modules/core/services/gtag.client.service.js')
-require('./modules/core/services/analytics.client.service.js')
 require('./modules/core/services/formsgSdk.client.factory')
 
 // Core controllers

@@ -17,6 +17,7 @@ import {
   isRatingField,
   isSectionField,
   isShortTextField,
+  isYesNoField,
 } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
@@ -39,6 +40,7 @@ import { constructRadioButtonValidator } from './validators/radioButtonValidator
 import { constructRatingValidator } from './validators/ratingValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
 import constructTextValidator from './validators/textValidator'
+import { constructYesNoValidator } from './validators/yesNoValidator'
 
 /**
  * Constructs a validation function for a single answer response, using a form field field as a specification.
@@ -71,6 +73,8 @@ export const constructSingleAnswerValidator = (
     return constructDropdownValidator(formField)
   } else if (isEmailField(formField)) {
     return constructEmailValidator(formField)
+  } else if (isYesNoField(formField)) {
+    return constructYesNoValidator()
   }
   return () => left('Unsupported field type')
 }
