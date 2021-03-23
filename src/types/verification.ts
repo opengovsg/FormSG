@@ -37,7 +37,6 @@ export interface IVerificationSchema
     Document,
     PublicView<PublicTransaction> {
   getField(fieldId: string): IVerificationFieldSchema | undefined
-  incrementFieldRetries(fieldId: string): Promise<IVerificationSchema | null>
 }
 
 // Keep in sync with VERIFICATION_PUBLIC_FIELDS
@@ -52,6 +51,10 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   ): Promise<PublicTransaction | null>
   createTransactionFromForm(
     form: IFormSchema,
+  ): Promise<IVerificationSchema | null>
+  incrementFieldRetries(
+    transactionId: string,
+    fieldId: string,
   ): Promise<IVerificationSchema | null>
   resetField(
     transactionId: string,

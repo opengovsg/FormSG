@@ -401,7 +401,7 @@ export const verifyOtp = (
 
       // Important: increment retries before comparing hash
       return ResultAsync.fromPromise(
-        transaction.incrementFieldRetries(fieldId),
+        VerificationModel.incrementFieldRetries(transactionId, fieldId),
         (error) => {
           // We know field exists, so if error occurs then it must be
           // database error
