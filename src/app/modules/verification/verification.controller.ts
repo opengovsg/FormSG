@@ -25,7 +25,7 @@ export const handleCreateTransaction: RequestHandler<
   Transaction | { message: string },
   { formId: string }
 > = async (req, res) => {
-  const { formId } = req.params
+  const { formId } = req.body
   const logMeta = {
     action: 'handleCreateTransaction',
     formId,
