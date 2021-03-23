@@ -125,7 +125,7 @@ export const mapRouteError: MapRouteError = (
     case WrongOtpError:
       return {
         errorMessage: 'Wrong OTP.',
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case WaitForOtpError:
       return {
