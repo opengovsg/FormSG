@@ -147,6 +147,8 @@ export const handleGetOtp: RequestHandler<
         meta: logMeta,
         error,
       })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     })
 }
 
