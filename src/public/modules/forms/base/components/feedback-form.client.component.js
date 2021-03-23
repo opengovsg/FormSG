@@ -24,7 +24,34 @@ function feedbackController(FormFeedback, Toastr) {
   vm.submitFeedback = function () {
     vm.isLoading = true
 
-    if (vm.rating !== null) {
+    if (!vm.isPreview && vm.rating !== null) {
+      const feedback = {
+        rating: vm.rating,
+        comment: vm.comment,
+        isPreview: vm.isPreview,
+      }
+
+      FormFeedback.postFeedback(
+        {
+          formId: vm.formId,
+        },
+        feedback,
+      ).then(
+        function (_response) {
+          vm.isSubmitted = true
+          vm.isLoading = false
+          Toastr.success('Thank you for your submission!')
+        },
+        function (error) {
+          console.error(error)
+          vm.isSubmitted = true
+          vm.isLoading = false
+          Toastr.error(
+            "It's likely your network connectivity is down. Please try again later.",
+          )
+        },
+      )
+    } else {
       vm.isSubmitted = true
       vm.isLoading = false
       Toastr.success('Thank you for your submission!')

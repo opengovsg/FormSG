@@ -29,8 +29,25 @@ class FeedbackCsvGenerator extends CsvGenerator {
 angular.module('forms').factory('FormFeedback', ['$q', '$http', FormFeedback])
 
 function FormFeedback($q, $http) {
+  let resourceUrl = '/:formId/feedback'
   const feedbackAdminUrl = '/:formId/adminform/feedback'
   let feedbackService = {
+    postFeedback: function (params, body) {
+      let resUrl = fixParamsToUrl(
+        params,
+        body.isPreview ? feedbackAdminUrl : resourceUrl,
+      )
+      let deferred = $q.defer()
+      $http.post(resUrl, body).then(
+        function () {
+          deferred.resolve('Successfully posted feedback.')
+        },
+        function (_errorResponse) {
+          deferred.reject('Failed to post feedback.')
+        },
+      )
+      return deferred.promise
+    },
     getFeedback: function (params) {
       let resUrl = fixParamsToUrl(params, feedbackAdminUrl)
       let deferred = $q.defer()
