@@ -252,7 +252,7 @@
     "ts-mock-imports": "^1.3.3",
     "ts-node": "^9.1.1",
     "ts-node-dev": "^1.1.6",
-    "type-fest": "^0.20.2",
+    "type-fest": "^1.0.1",
     "typescript": "^4.1.5",
     "url-loader": "^1.1.2",
     "webpack": "^4.46.0",
