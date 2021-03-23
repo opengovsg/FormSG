@@ -47,7 +47,7 @@ describe('auth.controller', () => {
       expect(mockRes.sendStatus).toBeCalledWith(200)
     })
 
-    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+    it('should return 401 when retrieving agency returns an InvalidDomainError', async () => {
       // Arrange
       const expectedError = new InvalidDomainError()
       const mockRes = expressHandler.mockResponse()
@@ -59,7 +59,7 @@ describe('auth.controller', () => {
       await AuthController.handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.json).toBeCalledWith(expectedError.message)
     })
   })
@@ -91,7 +91,7 @@ describe('auth.controller', () => {
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)
     })
 
-    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+    it('should return 401 when retrieving agency returns InvalidDomainError', async () => {
       // Arrange
       const expectedError = new InvalidDomainError()
       const mockRes = expressHandler.mockResponse()
@@ -103,7 +103,7 @@ describe('auth.controller', () => {
       await AuthController.handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
     })
 
@@ -189,7 +189,7 @@ describe('auth.controller', () => {
       expect(mockRes.json).toBeCalledWith(mockUser.toObject())
     })
 
-    it('should return with ApplicationError status and message when retrieving agency returns an ApplicationError', async () => {
+    it('should return 401 when retrieving agency returns InvalidDomainError', async () => {
       // Arrange
       const expectedError = new InvalidDomainError()
       const mockRes = expressHandler.mockResponse()
@@ -201,7 +201,7 @@ describe('auth.controller', () => {
       await AuthController.handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(expectedError.status)
+      expect(mockRes.status).toBeCalledWith(401)
       expect(mockRes.json).toBeCalledWith(expectedError.message)
     })
 

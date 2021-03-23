@@ -1,5 +1,3 @@
-import { StatusCodes } from 'http-status-codes'
-
 import { ApplicationError } from '../core/core.errors'
 
 /**
@@ -7,7 +5,7 @@ import { ApplicationError } from '../core/core.errors'
  * if the submissionWebhookView is null or the webhookUrl is an invalid URL
  */
 export class WebhookValidationError extends ApplicationError {
-  constructor(message: string, meta?: string) {
-    super(message, StatusCodes.UNPROCESSABLE_ENTITY, meta)
+  constructor(message: string) {
+    super(message)
   }
 }

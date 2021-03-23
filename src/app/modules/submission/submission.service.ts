@@ -65,10 +65,10 @@ const getFilteredResponses = (
       ({ _id }) => _id,
     )
     return err(
-      new ConflictError(
-        'Some form fields are missing',
-        `formId="${form._id}" onlyInForm="${onlyInForm}"`,
-      ),
+      new ConflictError('Some form fields are missing', {
+        formId: form._id,
+        onlyInForm,
+      }),
     )
   }
   return ok(results)
