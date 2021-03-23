@@ -1,5 +1,11 @@
 import { BasicField, IColumnSchema } from '../../../types'
 
+/**
+ * Return type of createAnswerFieldFromColumn().
+ * This is a subset of IFieldSchema (note that the
+ * fieldType is restricted) and allows the result to be
+ * passed into validateField().
+ * */
 type ColumnWithFieldProperties = IColumnSchema & {
   getQuestion: { (): string }
   description: string
@@ -14,11 +20,18 @@ type ColumnWithFieldProperties = IColumnSchema & {
 export const createAnswerFieldFromColumn = (
   column: IColumnSchema,
 ): ColumnWithFieldProperties => {
-  const columnField = column
-  ;(columnField as ColumnWithFieldProperties).disabled = false
-  ;(columnField as ColumnWithFieldProperties).description = 'some description'
-  ;(columnField as ColumnWithFieldProperties).fieldType = column.columnType
-  ;(columnField as ColumnWithFieldProperties).getQuestion = () =>
-    'some question'
+  const columnField = {
+    // Convert mongoose document to object first,
+    // otherwise the values will not be correctly spread
+    ...column.toObject(),
+    disabled: false,
+    description: 'some description',
+    get fieldType() {
+      return column.columnType
+    },
+    getQuestion() {
+      return 'some question'
+    },
+  }
   return columnField as ColumnWithFieldProperties
 }

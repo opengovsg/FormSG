@@ -301,6 +301,17 @@ export const generateTableDropdownColumn = (
     _id: new ObjectId().toHexString(),
     fieldOptions: ['a', 'b', 'c'],
     ...customParams,
+    toObject() {
+      // mock toObject method of mongoose document
+      return {
+        title: 'some title',
+        columnType: BasicField.Dropdown,
+        required: true,
+        _id: new ObjectId().toHexString(),
+        fieldOptions: ['a', 'b', 'c'],
+        ...customParams,
+      }
+    },
   } as IColumn
 }
 
@@ -319,5 +330,21 @@ export const generateTableShortTextColumn = (
       selectedValidation: null,
     },
     ...customParams,
+    toObject() {
+      // mock toObject method of mongoose document
+      return {
+        title: 'some title',
+        columnType: BasicField.ShortText,
+        required: true,
+        _id: new ObjectId().toHexString(),
+        ValidationOptions: {
+          customMax: null,
+          customMin: null,
+          customVal: null,
+          selectedValidation: null,
+        },
+        ...customParams,
+      }
+    },
   } as IColumn
 }
