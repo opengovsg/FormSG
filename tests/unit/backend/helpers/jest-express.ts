@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { Query } from 'express-serve-static-core'
 
-const mockRequest = <P extends Record<string, string>, B, Q = any>({
+const mockRequest = <P, B, Q = any>({
   params,
   body,
   session,
