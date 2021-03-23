@@ -99,18 +99,21 @@ const makeColumnTypeValidator: TableValidatorConstructor = (tableField) => (
 
 /**
  * Returns a validation function that applies
- * the correct validator for each column based on its type.
+ * the correct validator for each table cell.
  */
 
-const makeColumnValidator: TableValidatorConstructor = (tableField) => (
+const makeTableCellValidator: TableValidatorConstructor = (tableField) => (
   response,
 ) => {
   const { answerArray, isVisible, _id } = response
   const { columns } = tableField
+  const answerFieldColumns = columns.map((column) =>
+    createAnswerFieldFromColumn(column),
+  )
 
   return answerArray.every((row) => {
     return row.every((answer, i) => {
-      const answerField = createAnswerFieldFromColumn(columns[i])
+      const answerField = answerFieldColumns[i]
       const answerResponse: ProcessedSingleAnswerResponse = {
         answer,
         isVisible,
@@ -142,5 +145,5 @@ export const constructTableValidator: TableValidatorConstructor = (
     chain(makeMaximumRowsValidator(tableField)),
     chain(makeRowLengthValidator(tableField)),
     chain(makeColumnTypeValidator(tableField)),
-    chain(makeColumnValidator(tableField)),
+    chain(makeTableCellValidator(tableField)),
   )
