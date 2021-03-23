@@ -2,12 +2,13 @@ import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import MailService from 'src/app/services/mail/mail.service'
+import { HashingError } from 'src/app/utils/hash'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
-import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { DatabaseError } from '../../core/core.errors'
 import * as UserService from '../../user/user.service'
 import * as AuthController from '../auth.controller'
 import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
@@ -236,7 +237,7 @@ describe('auth.controller', () => {
       )
       // Mock generic error from verifyLoginOtp.
       MockAuthService.verifyLoginOtp.mockReturnValueOnce(
-        errAsync(new ApplicationError('generic error')),
+        errAsync(new HashingError()),
       )
 
       // Act

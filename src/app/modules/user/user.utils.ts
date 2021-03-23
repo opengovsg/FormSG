@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as SmsErrors from '../../services/sms/sms.errors'
+import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
@@ -36,7 +37,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
-    case CoreErrors.ApplicationError:
+    case HashingError:
     case CoreErrors.DatabaseError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

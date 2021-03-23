@@ -8,6 +8,17 @@ const logger = createLoggerWithLabel(module)
 const DEFAULT_SALT_ROUNDS = 10
 
 /**
+ * Error while hashing data
+ */
+export class HashingError extends ApplicationError {
+  constructor(
+    message = 'Error occurred while processing OTP. Please try again.',
+  ) {
+    super(message)
+  }
+}
+
+/**
  * Neverthrown version of bcrypt.hash.
  * @param dataToHash the data to hash
  * @param logMeta additional metadata for logging, if available
@@ -17,9 +28,10 @@ const DEFAULT_SALT_ROUNDS = 10
 export const hashData = (
   dataToHash: unknown,
   logMeta: Record<string, unknown> = {},
-): ResultAsync<string, ApplicationError> => {
+  saltRounds?: number,
+): ResultAsync<string, HashingError> => {
   return ResultAsync.fromPromise(
-    bcrypt.hash(dataToHash, DEFAULT_SALT_ROUNDS),
+    bcrypt.hash(dataToHash, saltRounds ?? DEFAULT_SALT_ROUNDS),
     (error) => {
       logger.error({
         message: 'bcrypt hash error',
@@ -30,7 +42,7 @@ export const hashData = (
         error,
       })
 
-      return new ApplicationError()
+      return new HashingError()
     },
   )
 }
@@ -47,7 +59,7 @@ export const compareHash = (
   data: unknown,
   encrypted: string,
   logMeta: Record<string, unknown> = {},
-): ResultAsync<boolean, ApplicationError> => {
+): ResultAsync<boolean, HashingError> => {
   return ResultAsync.fromPromise(bcrypt.compare(data, encrypted), (error) => {
     logger.error({
       message: 'bcrypt compare error',
@@ -58,6 +70,6 @@ export const compareHash = (
       error,
     })
 
-    return new ApplicationError()
+    return new HashingError()
   })
 }
