@@ -295,8 +295,6 @@ module.exports = function (app) {
             is: ResponseMode.Encrypt,
             then: Joi.string().required().disallow(''),
           }),
-        // TODO(#792): Remove when frontend has stopped sending isTemplate.
-        isTemplate: Joi.boolean(),
       },
     }),
     AdminFormController.handleCopyTemplateForm,
