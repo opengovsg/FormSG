@@ -8,26 +8,22 @@ import { BasicField } from './fieldTypes'
 export interface IColumn {
   title: string
   required: boolean
-  // Allow all BasicFields, but pre-validate hook will block non-dropdown/
+  // Pre-validate hook will block non-dropdown/
   // non-textfield types.
-  columnType: BasicField
+  columnType: BasicField.ShortText | BasicField.Dropdown
 }
-
-// Manual override since mongoose types don't have generics yet.
-// This is different from the fields since ColumnDocument's parent is the
-// TableField.
 export interface IColumnSchema extends IColumn, Document {
   /** Returns the top level document of this sub-document. */
   ownerDocument(): IFormSchema
   /** Returns this sub-documents parent document. */
-  parent(): ITableFieldSchema
+  parent(): IFormSchema
 }
 
 export interface ITableField extends IField {
   minimumRows: number
   addMoreRows?: boolean
   maximumRows?: number
-  columns: IColumn[]
+  columns: IColumnSchema[]
 }
 
 export interface ITableFieldSchema extends ITableField, IFieldSchema {}

@@ -18,6 +18,7 @@ import {
   IRatingField,
   ISectionFieldSchema,
   IShortTextField,
+  ITableFieldSchema,
   IYesNoField,
 } from '..'
 
@@ -105,4 +106,10 @@ export const isDropdownField = (
 
 export const isNumberField = (formField: IField): formField is INumberField => {
   return formField.fieldType === BasicField.Number
+}
+
+export const isTableField = (
+  formField: IField,
+): formField is ITableFieldSchema => {
+  return formField.fieldType === BasicField.Table
 }

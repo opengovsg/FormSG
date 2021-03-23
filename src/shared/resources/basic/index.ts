@@ -123,3 +123,10 @@ export const types: IBasicFieldType[] = [
     answerArray: true,
   },
 ]
+
+/**
+ * Array of BasicFields which are not included in the form response (e.g. statement)
+ */
+export const FIELDS_TO_REJECT: BasicField[] = types
+  .filter((f) => !f.submitted)
+  .map((f) => f.name)

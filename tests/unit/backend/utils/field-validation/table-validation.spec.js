@@ -18,22 +18,39 @@ describe('Table validation', () => {
     }
     return table
   }
+
   const makeDropdownColumn = (fieldOptions, options) => {
-    return {
+    const column = {
       columnType: 'dropdown',
       required: true,
       _id: '5dd6488dae2ba0d11f2e6e30',
       fieldOptions,
       ...options,
+      toObject() {
+        return
+      },
     }
+    spyOn(column, 'toObject').and.returnValue(column) // mock toObject method of mongoose document
+    return column
   }
   const makeTextFieldColumn = (options) => {
-    return {
+    const column = {
       columnType: 'textfield',
       required: true,
       _id: '5dd64c2497d7540392def29c',
+      ValidationOptions: {
+        customMax: null,
+        customMin: null,
+        customVal: null,
+        selectedValidation: null,
+      },
       ...options,
+      toObject() {
+        return
+      },
     }
+    spyOn(column, 'toObject').and.returnValue(column)
+    return column
   }
   const makeTableResponse = (fieldId, answerArray) => {
     const response = {

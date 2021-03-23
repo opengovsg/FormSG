@@ -17,6 +17,7 @@ import {
   isRatingField,
   isSectionField,
   isShortTextField,
+  isTableField,
   isYesNoField,
 } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
@@ -24,6 +25,7 @@ import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedSingleAnswerResponse,
+  ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
 import { constructAttachmentValidator } from './validators/attachmentValidator'
@@ -39,6 +41,7 @@ import { constructNumberValidator } from './validators/numberValidator'
 import { constructRadioButtonValidator } from './validators/radioButtonValidator'
 import { constructRatingValidator } from './validators/ratingValidator'
 import { constructSectionValidator } from './validators/sectionValidator'
+import { constructTableValidator } from './validators/tableValidator'
 import constructTextValidator from './validators/textValidator'
 import { constructYesNoValidator } from './validators/yesNoValidator'
 
@@ -95,6 +98,15 @@ export const constructCheckboxFieldValidator = (
 ): ResponseValidator<ProcessedCheckboxResponse> => {
   if (isCheckboxField(formField)) {
     return constructCheckboxValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructTableFieldValidator = (
+  formField: IField,
+): ResponseValidator<ProcessedTableResponse> => {
+  if (isTableField(formField)) {
+    return constructTableValidator(formField)
   }
   return () => left('Unsupported field type')
 }
