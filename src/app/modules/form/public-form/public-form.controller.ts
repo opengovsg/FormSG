@@ -12,11 +12,6 @@ import {
   MYINFO_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
-import {
-  extractMyInfoCookie,
-  extractSuccessfulCookie,
-  validateMyInfoForm,
-} from '../../myinfo/myinfo.util'
 import { MissingJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { PrivateFormError } from '../form.errors'
@@ -251,20 +246,10 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     case AuthType.MyInfo: {
       const requestedAttributes = form.getUniqueMyInfoAttrs()
 
-      // 1. Validate the cookie and myInfo form
       return (
-        extractMyInfoCookie(req.cookies)
-          .andThen((cookiePayload) => extractSuccessfulCookie(cookiePayload))
-          .asyncAndThen((cookiePayload) =>
-            validateMyInfoForm(form).asyncAndThen((form) =>
-              MyInfoFactory.fetchMyInfoPersonData(
-                cookiePayload.accessToken,
-                requestedAttributes,
-                form.esrvcId,
-              ),
-            ),
-          )
-          // 2. Fetch myInfo data and fill the form based on the result
+        // 1. Validate form and extract myInfoData
+        MyInfoFactory.extractMyInfoData(form, req.cookies)
+          // 2. Fill the form based on the result
           .andThen((myInfoData) =>
             MyInfoFactory.prefillMyInfoFields(
               myInfoData,
