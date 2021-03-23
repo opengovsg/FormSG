@@ -10,6 +10,7 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  IPopulatedForm,
   MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
@@ -17,12 +18,16 @@ import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MyInfoData } from './myinfo.adapter'
 import {
+  MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
+  MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
+  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoNoESrvcIdError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
@@ -82,6 +87,20 @@ interface IMyInfoFactory {
   extractUinFin: (
     accessToken: string,
   ) => Result<string, MyInfoInvalidAccessTokenError | MissingFeatureError>
+
+  extractMyInfoData: (
+    form: IPopulatedForm,
+    cookies: Record<string, unknown>,
+  ) => ResultAsync<
+    MyInfoData,
+    | MyInfoMissingAccessTokenError
+    | MyInfoCookieStateError
+    | MyInfoNoESrvcIdError
+    | MyInfoAuthTypeError
+    | MyInfoCircuitBreakerError
+    | MyInfoFetchError
+    | MissingFeatureError
+  >
 }
 
 export const createMyInfoFactory = ({
@@ -100,6 +119,7 @@ export const createMyInfoFactory = ({
       createRedirectURL: () => err(error),
       parseMyInfoRelayState: () => err(error),
       extractUinFin: () => err(error),
+      extractMyInfoData: () => errAsync(error),
     }
   }
   return new MyInfoService({

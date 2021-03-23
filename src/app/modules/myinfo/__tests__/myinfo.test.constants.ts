@@ -8,9 +8,13 @@ import { ObjectId } from 'bson'
 import { merge, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/config/feature-manager'
-import { Environment, IFormSchema, MyInfoAttribute } from 'src/types'
+import { AuthType, Environment, IFormSchema, MyInfoAttribute } from 'src/types'
 
-import { IMyInfoServiceConfig } from '../myinfo.types'
+import {
+  IMyInfoServiceConfig,
+  MyInfoCookieState,
+  MyInfoSuccessfulCookiePayload,
+} from '../myinfo.types'
 
 export const MOCK_MYINFO_DATA = {
   name: {
@@ -144,6 +148,12 @@ export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
 export const MOCK_MYINFO_FORM = ({
   _id: MOCK_FORM_ID,
   esrvcId: MOCK_ESRVC_ID,
-  authType: 'MyInfo',
+  authType: AuthType.MyInfo,
   getUniqueMyInfoAttrs: () => MOCK_REQUESTED_ATTRS,
 } as unknown) as IFormSchema
+
+export const MOCK_SUCCESSFUL_COOKIE: MyInfoSuccessfulCookiePayload = {
+  accessToken: MOCK_ACCESS_TOKEN,
+  usedCount: 0,
+  state: MyInfoCookieState.Success,
+}

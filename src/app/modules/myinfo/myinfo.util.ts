@@ -375,6 +375,23 @@ export const extractSuccessfulCookie = (
     : err(new MyInfoCookieStateError())
 
 /**
+ * Extracts a successful myInfoCookie from a request's cookies
+ * @param cookies Cookies in a request
+ * @return ok(cookie) the successful myInfoCookie
+ * @return err(MyInfoMissingAccessTokenError) if myInfoCookie is not present on the request
+ * @return err(MyInfoCookieStateError) if the extracted myInfoCookie was in an error state
+ */
+export const extractSuccessfulMyInfoCookie = (
+  cookies: Record<string, unknown>,
+): Result<
+  MyInfoSuccessfulCookiePayload,
+  MyInfoCookieStateError | MyInfoMissingAccessTokenError
+> =>
+  extractMyInfoCookie(cookies).andThen((cookiePayload) =>
+    extractSuccessfulCookie(cookiePayload),
+  )
+
+/**
  * Extracts access token from a MyInfo cookie
  * @param cookie Cookie from which access token should be extracted
  */

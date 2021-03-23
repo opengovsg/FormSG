@@ -10,6 +10,7 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  IPopulatedForm,
   MyInfoAttribute,
 } from 'src/types'
 
@@ -21,6 +22,7 @@ import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
   MyInfoInvalidAccessTokenError,
+  MyInfoMissingAccessTokenError,
   MyInfoParseRelayStateError,
 } from '../myinfo.errors'
 import { IPossiblyPrefilledField, MyInfoRelayState } from '../myinfo.types'
@@ -35,11 +37,13 @@ import {
   MOCK_HASHED_FIELD_IDS,
   MOCK_HASHES,
   MOCK_MYINFO_DATA,
+  MOCK_MYINFO_FORM,
   MOCK_POPULATED_FORM_FIELDS,
   MOCK_REDIRECT_URL,
   MOCK_REQUESTED_ATTRS,
   MOCK_RESPONSES,
   MOCK_SERVICE_PARAMS,
+  MOCK_SUCCESSFUL_COOKIE,
   MOCK_UINFIN,
 } from './myinfo.test.constants'
 
@@ -433,6 +437,46 @@ describe('MyInfoService', () => {
       expect(result._unsafeUnwrapErr()).toEqual(
         new MyInfoInvalidAccessTokenError(),
       )
+    })
+  })
+
+  describe('validateAndFillFormWithMyInfoData', () => {
+    // NOTE: Mocks the underlying circuit breaker implementation to avoid network calls
+    beforeEach(() => {
+      myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
+    })
+
+    it('should return myInfo data when the provided form and cookie is valid', async () => {
+      // Arrange
+      const mockReturnedParams = {
+        uinFin: MOCK_UINFIN,
+        data: MOCK_MYINFO_DATA,
+      }
+
+      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
+
+      // Act
+      const result = await myInfoService.extractMyInfoData(
+        MOCK_MYINFO_FORM as IPopulatedForm,
+        { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
+      )
+
+      // Assert
+      expect(result._unsafeUnwrap()).toEqual(new MyInfoData(mockReturnedParams))
+    })
+
+    it('should not validate the form if the cookie does not exist', async () => {
+      // Arrange
+      const expected = new MyInfoMissingAccessTokenError()
+
+      // Act
+      const result = await myInfoService.extractMyInfoData(
+        MOCK_MYINFO_FORM as IPopulatedForm,
+        {},
+      )
+
+      // Assert
+      expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
   })
 })

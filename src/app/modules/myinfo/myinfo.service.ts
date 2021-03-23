@@ -16,9 +16,10 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  IPopulatedForm,
   MyInfoAttribute,
 } from '../../../types'
-import { DatabaseError } from '../core/core.errors'
+import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
@@ -28,12 +29,16 @@ import {
   MYINFO_ROUTER_PREFIX,
 } from './myinfo.constants'
 import {
+  MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
+  MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
+  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoNoESrvcIdError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
@@ -45,8 +50,10 @@ import {
 import {
   compareHashedValues,
   createRelayState,
+  extractSuccessfulMyInfoCookie,
   hashFieldValues,
   isMyInfoRelayState,
+  validateMyInfoForm,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -450,5 +457,45 @@ export class MyInfoService {
         return new MyInfoInvalidAccessTokenError()
       },
     )()
+  }
+
+  /**
+   * Extracts myInfo data using the provided form and the cookies of the request
+   * @param form the form to validate
+   * @param cookies cookies of the request
+   * @returns ok(MyInfoData) if the form has been validated successfully
+   * @returns err(MyInfoMissingAccessTokenError) if no myInfoCookie was found on the request
+   * @returns err(MyInfoCookieStateError) if cookie was not successful
+   * @returns err(MyInfoNoESrvcIdError) if form has no eserviceId
+   * @returns err(MyInfoAuthTypeError) if the client was not authenticated using MyInfo
+   * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
+   * @returns err(MyInfoFetchError) if validated but the data could not be retrieved
+   * @returns err(MissingFeatureError) if using an outdated version that does not support myInfo
+   */
+  extractMyInfoData(
+    form: IPopulatedForm,
+    cookies: Record<string, unknown>,
+  ): ResultAsync<
+    MyInfoData,
+    | MyInfoMissingAccessTokenError
+    | MyInfoCookieStateError
+    | MyInfoNoESrvcIdError
+    | MyInfoAuthTypeError
+    | MyInfoCircuitBreakerError
+    | MyInfoFetchError
+    | MissingFeatureError
+  > {
+    const requestedAttributes = form.getUniqueMyInfoAttrs()
+    return extractSuccessfulMyInfoCookie(
+      cookies,
+    ).asyncAndThen((cookiePayload) =>
+      validateMyInfoForm(form).asyncAndThen((form) =>
+        this.fetchMyInfoPersonData(
+          cookiePayload.accessToken,
+          requestedAttributes,
+          form.esrvcId,
+        ),
+      ),
+    )
   }
 }
