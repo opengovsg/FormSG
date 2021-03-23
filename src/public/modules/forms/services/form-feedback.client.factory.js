@@ -36,17 +36,17 @@ function FormFeedback($q, $http) {
       let deferred = $q.defer()
       if (body.isPreview) {
         deferred.resolve('Successfully posted feedback.')
-        return deferred.promise
+      } else {
+        let resUrl = fixParamsToUrl(params, resourceUrl)
+        $http.post(resUrl, body).then(
+          function () {
+            deferred.resolve('Successfully posted feedback.')
+          },
+          function (_errorResponse) {
+            deferred.reject('Failed to post feedback.')
+          },
+        )
       }
-      let resUrl = fixParamsToUrl(params, resourceUrl)
-      $http.post(resUrl, body).then(
-        function () {
-          deferred.resolve('Successfully posted feedback.')
-        },
-        function (_errorResponse) {
-          deferred.reject('Failed to post feedback.')
-        },
-      )
       return deferred.promise
     },
     getFeedback: function (params) {
