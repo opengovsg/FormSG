@@ -1,6 +1,9 @@
 import { errAsync } from 'neverthrow'
 
-import featureManager, { FeatureNames } from '../../../config/feature-manager'
+import featureManager, {
+  FeatureNames,
+  RegisteredFeature,
+} from '../../../config/feature-manager'
 import { MissingFeatureError } from '../core/core.errors'
 
 import * as VerificationService from './verification.service'
@@ -15,10 +18,9 @@ interface IVerifiedFieldsFactory {
 
 export const createVerificationFactory = ({
   isEnabled,
-}: {
-  isEnabled: boolean
-}): IVerifiedFieldsFactory => {
-  if (isEnabled) {
+  props,
+}: RegisteredFeature<FeatureNames.VerifiedFields>): IVerifiedFieldsFactory => {
+  if (isEnabled && props) {
     return VerificationService
   }
   const error = new MissingFeatureError(FeatureNames.VerifiedFields)
