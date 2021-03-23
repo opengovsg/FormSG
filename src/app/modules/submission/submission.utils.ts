@@ -1,9 +1,9 @@
 import { keyBy } from 'lodash'
 
+import { FIELDS_TO_REJECT } from '../../../shared/resources/basic'
 import { BasicField, IFieldSchema, ResponseMode } from '../../../types'
 import { isEmailField } from '../../../types/field/utils/guards'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
-import { FIELDS_TO_REJECT } from '../../utils/field-validation/config'
 
 import { ProcessedFieldResponse } from './submission.types'
 

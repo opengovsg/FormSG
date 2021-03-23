@@ -9,6 +9,7 @@ import {
   ProcessedTableResponse,
 } from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { FIELDS_TO_REJECT } from '../../../shared/resources/basic'
 import { IFieldSchema, ITableFieldSchema } from '../../../types/field'
 import { isTableField } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
@@ -20,7 +21,6 @@ import {
   constructSingleAnswerValidator,
   constructTableFieldValidator,
 } from './answerValidator.factory'
-import { FIELDS_TO_REJECT } from './config'
 import {
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
