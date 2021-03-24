@@ -11,6 +11,7 @@ import * as VerificationService from './verification.service'
 interface IVerifiedFieldsFactory {
   createTransaction: typeof VerificationService.createTransaction
   getTransactionMetadata: typeof VerificationService.getTransactionMetadata
+  resetFieldForTransaction: typeof VerificationService.resetFieldForTransaction
 }
 
 export const createVerificationFactory = ({
@@ -24,6 +25,7 @@ export const createVerificationFactory = ({
   return {
     createTransaction: () => errAsync(error),
     getTransactionMetadata: () => errAsync(error),
+    resetFieldForTransaction: () => errAsync(error),
   }
 }
 

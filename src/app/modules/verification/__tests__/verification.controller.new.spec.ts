@@ -13,7 +13,11 @@ import expressHandler from '../../../../../tests/unit/backend/helpers/jest-expre
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as VerificationController from '../verification.controller'
-import { TransactionNotFoundError } from '../verification.errors'
+import {
+  FieldNotFoundInTransactionError,
+  TransactionExpiredError,
+  TransactionNotFoundError,
+} from '../verification.errors'
 import { VerificationFactory } from '../verification.factory'
 import getVerificationModel from '../verification.model'
 
@@ -25,6 +29,7 @@ const MockVerificationFactory = mocked(VerificationFactory, true)
 describe('Verification controller', () => {
   const MOCK_FORM_ID = new ObjectId().toHexString()
   const MOCK_TRANSACTION_ID = new ObjectId().toHexString()
+  const MOCK_FIELD_ID = new ObjectId().toHexString()
   let mockTransaction: IVerificationSchema
   let mockRes: Response
 
@@ -197,6 +202,112 @@ describe('Verification controller', () => {
       expect(
         MockVerificationFactory.getTransactionMetadata,
       ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+  })
+
+  describe('handleResetField', () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: { fieldId: MOCK_FIELD_ID },
+      params: { transactionId: MOCK_TRANSACTION_ID },
+    })
+
+    it('should correctly call service when params are valid', async () => {
+      MockVerificationFactory.resetFieldForTransaction.mockReturnValueOnce(
+        okAsync(mockTransaction),
+      )
+
+      await VerificationController.handleResetField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(
+        MockVerificationFactory.resetFieldForTransaction,
+      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+    })
+
+    it('should return 404 when transaction is not found', async () => {
+      MockVerificationFactory.resetFieldForTransaction.mockReturnValueOnce(
+        errAsync(new TransactionNotFoundError()),
+      )
+
+      await VerificationController.handleResetField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(
+        MockVerificationFactory.resetFieldForTransaction,
+      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 404 when field is not found', async () => {
+      MockVerificationFactory.resetFieldForTransaction.mockReturnValueOnce(
+        errAsync(new FieldNotFoundInTransactionError()),
+      )
+
+      await VerificationController.handleResetField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(
+        MockVerificationFactory.resetFieldForTransaction,
+      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when transaction has expired', async () => {
+      MockVerificationFactory.resetFieldForTransaction.mockReturnValueOnce(
+        errAsync(new TransactionExpiredError()),
+      )
+
+      await VerificationController.handleResetField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(
+        MockVerificationFactory.resetFieldForTransaction,
+      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 500 when database error occurs', async () => {
+      MockVerificationFactory.resetFieldForTransaction.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
+
+      await VerificationController.handleResetField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(
+        MockVerificationFactory.resetFieldForTransaction,
+      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )

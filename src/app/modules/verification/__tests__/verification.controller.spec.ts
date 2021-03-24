@@ -4,11 +4,7 @@ import { mocked } from 'ts-jest/utils'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import {
-  getNewOtp,
-  resetFieldInTransaction,
-  verifyOtp,
-} from '../verification.controller'
+import { getNewOtp, verifyOtp } from '../verification.controller'
 import getVerificationModel from '../verification.model'
 import * as VfnService from '../verification.service'
 
@@ -29,44 +25,6 @@ const sendOtpError = 'SEND_OTP_FAILED'
 const invalidOtpError = 'INVALID_OTP'
 
 describe('Verification controller', () => {
-  describe('resetFieldInTransaction', () => {
-    const MOCK_REQ = expressHandler.mockRequest({
-      body: { fieldId: MOCK_FIELD_ID },
-      params: { transactionId: MOCK_TRANSACTION_ID },
-    })
-    afterEach(() => jest.clearAllMocks())
-
-    it('should correctly call service when params are valid', async () => {
-      const transaction = new Verification({ formId: new ObjectId() })
-      MockVfnService.getTransaction.mockReturnValueOnce(
-        Promise.resolve(transaction),
-      )
-      await resetFieldInTransaction(MOCK_REQ, MOCK_RES, noop)
-      expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-      )
-      expect(MockVfnService.resetFieldInTransaction).toHaveBeenCalledWith(
-        transaction,
-        MOCK_FIELD_ID,
-      )
-      expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
-    })
-
-    it('should return 404 when service throws error', async () => {
-      MockVfnService.getTransaction.mockImplementationOnce(() => {
-        const error = new Error(notFoundError)
-        error.name = notFoundError
-        throw error
-      })
-      await resetFieldInTransaction(MOCK_REQ, MOCK_RES, noop)
-      expect(MockVfnService.getTransaction).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-      )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(404)
-      expect(MOCK_RES.json).toHaveBeenCalledWith(notFoundError)
-    })
-  })
-
   describe('getNewOtp', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       body: { fieldId: MOCK_FIELD_ID, answer: MOCK_ANSWER },
