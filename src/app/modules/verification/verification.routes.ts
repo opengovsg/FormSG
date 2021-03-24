@@ -18,7 +18,7 @@ VfnRouter.post(
 )
 
 VfnRouter.get(
-  '/:transactionId',
+  '/:transactionId([a-fA-F0-9]{24})',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
@@ -28,7 +28,7 @@ VfnRouter.get(
 )
 
 VfnRouter.post(
-  '/:transactionId/reset',
+  '/:transactionId([a-fA-F0-9]{24})/reset',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
@@ -41,7 +41,7 @@ VfnRouter.post(
 )
 
 VfnRouter.post(
-  '/:transactionId/otp',
+  '/:transactionId([a-fA-F0-9]{24})/otp',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
@@ -55,7 +55,7 @@ VfnRouter.post(
 )
 
 VfnRouter.post(
-  '/:transactionId/otp/verify',
+  '/:transactionId([a-fA-F0-9]{24})/otp/verify',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
