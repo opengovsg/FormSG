@@ -105,6 +105,32 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     })
   }
 
+  VerificationSchema.statics.resetField = async function (
+    this: IVerificationModel,
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: transactionId,
+        'fields._id': fieldId,
+      },
+      {
+        $set: {
+          'fields.$.hashCreatedAt': null,
+          'fields.$.hashedOtp': null,
+          'fields.$.signedData': null,
+          'fields.$.hashRetries': 0,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
+  }
+
   const VerificationModel = db.model<IVerificationSchema, IVerificationModel>(
     VERIFICATION_SCHEMA_ID,
     VerificationSchema,

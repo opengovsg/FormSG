@@ -62,4 +62,8 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   createTransactionFromForm(
     form: IFormSchema,
   ): Promise<IVerificationSchema | null>
+  resetField(
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null>
 }
