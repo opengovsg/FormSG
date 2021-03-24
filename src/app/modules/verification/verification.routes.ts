@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import verifiedFieldsFactory from './verification.factory'
+import { verificationMiddleware } from './verification.factory'
 
 export const VfnRouter = Router()
 
@@ -14,7 +14,7 @@ VfnRouter.post(
       formId: formatOfId,
     }),
   }),
-  verifiedFieldsFactory.createTransaction,
+  verificationMiddleware.createTransaction,
 )
 
 VfnRouter.get(
@@ -24,7 +24,7 @@ VfnRouter.get(
       transactionId: formatOfId,
     }),
   }),
-  verifiedFieldsFactory.getTransactionMetadata,
+  verificationMiddleware.getTransactionMetadata,
 )
 
 VfnRouter.post(
@@ -37,7 +37,7 @@ VfnRouter.post(
       fieldId: formatOfId,
     }),
   }),
-  verifiedFieldsFactory.resetFieldInTransaction,
+  verificationMiddleware.resetFieldInTransaction,
 )
 
 VfnRouter.post(
@@ -51,7 +51,7 @@ VfnRouter.post(
       answer: Joi.string().required(),
     }),
   }),
-  verifiedFieldsFactory.getNewOtp,
+  verificationMiddleware.getNewOtp,
 )
 
 VfnRouter.post(
@@ -68,5 +68,5 @@ VfnRouter.post(
         .message('Please enter a valid OTP'),
     }),
   }),
-  verifiedFieldsFactory.verifyOtp,
+  verificationMiddleware.verifyOtp,
 )
