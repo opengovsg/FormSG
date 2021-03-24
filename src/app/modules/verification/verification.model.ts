@@ -1,7 +1,7 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import * as vfnConstants from '../../../shared/util/verification'
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   IFormSchema,
   IVerificationFieldSchema,
@@ -12,9 +12,8 @@ import {
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-import { extractTransactionFields } from './verification.util'
+import { extractTransactionFields, getExpiryDate } from './verification.util'
 
-const { getExpiryDate } = vfnConstants
 const VERIFICATION_SCHEMA_ID = 'Verification'
 
 export const VERIFICATION_PUBLIC_FIELDS = ['formId', 'expireAt', '_id']
@@ -42,8 +41,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     },
     expireAt: {
       type: Date,
-      default: () =>
-        getExpiryDate(vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS),
+      default: () => getExpiryDate(TRANSACTION_EXPIRE_AFTER_SECONDS),
     },
     fields: {
       type: [VerificationFieldSchema],
