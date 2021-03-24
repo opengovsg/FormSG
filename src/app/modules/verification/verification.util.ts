@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
+  HASH_EXPIRE_AFTER_SECONDS,
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
 } from '../../../shared/util/verification'
@@ -81,6 +82,16 @@ export const isTransactionExpired = (
 ): boolean => {
   const currentDate = new Date()
   return transaction.expireAt < currentDate
+}
+
+/**
+ * Checks if HASH_EXPIRE_AFTER_SECONDS has elapsed since the field's hash was created - ie hash has expired
+ * @param hashCreatedAt
+ */
+export const isOtpExpired = (hashCreatedAt: Date): boolean => {
+  const currentDate = new Date()
+  const expireAt = getExpiryDate(HASH_EXPIRE_AFTER_SECONDS, hashCreatedAt)
+  return expireAt < currentDate
 }
 
 /**
