@@ -17,8 +17,10 @@ import {
   ICheckboxFieldSchema,
   ICheckboxResponse,
   IColumn,
+  IDateField,
   IDecimalFieldSchema,
   IDropdownField,
+  IDropdownFieldSchema,
   IField,
   IFieldSchema,
   IImageFieldSchema,
@@ -111,6 +113,13 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IShortTextFieldSchema
+    case BasicField.Dropdown:
+      return {
+        ...defaultParams,
+        fieldOptions: ['Option 1', 'Option 2'],
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as IDropdownFieldSchema
     case BasicField.Decimal:
       return {
         ...defaultParams,
