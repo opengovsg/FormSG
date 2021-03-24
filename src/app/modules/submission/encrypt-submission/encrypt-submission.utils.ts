@@ -57,12 +57,12 @@ export const mapRouteError: MapRouteError = (error) => {
     case FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
-        errorMessage: '',
+        errorMessage: error.message,
       }
     case PrivateFormError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: '',
+        errorMessage: error.message,
       }
     case CaptchaConnectionError:
       return {
