@@ -106,6 +106,29 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     })
   }
 
+  VerificationSchema.statics.incrementFieldRetries = async function (
+    this: IVerificationModel,
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: transactionId,
+        'fields._id': fieldId,
+      },
+      {
+        $inc: {
+          'fields.$.hashRetries': 1,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
+  }
+
   VerificationSchema.statics.resetField = async function (
     this: IVerificationModel,
     transactionId: string,

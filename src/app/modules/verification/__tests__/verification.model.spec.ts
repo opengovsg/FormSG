@@ -326,6 +326,69 @@ describe('Verification Model', () => {
       })
     })
 
+    describe('incrementFieldRetries', () => {
+      it('should increment retries for the field and return the new document', async () => {
+        const field = {
+          ...generateFieldParams(),
+          signedData: 'mockSignedData',
+          hashedOtp: 'mockHashedOtp',
+          hashCreatedAt: new Date(),
+        }
+        const transaction = await VerificationModel.create({
+          ...VFN_PARAMS,
+          fields: [field],
+        })
+
+        const result = await VerificationModel.incrementFieldRetries(
+          String(transaction._id),
+          String(field._id),
+        )
+
+        expect(result!.fields[0].hashRetries).toEqual(field.hashRetries + 1)
+        expect(result!.fields[0].signedData).toEqual(field.signedData)
+        expect(result!.fields[0].hashedOtp).toEqual(field.hashedOtp)
+        expect(result!.fields[0].hashCreatedAt).toEqual(field.hashCreatedAt)
+        expect(result!.formId).toEqual(transaction.formId)
+      })
+
+      it('should increment retries only for the given field ID', async () => {
+        const field1 = generateFieldParams()
+        const field2 = generateFieldParams()
+        const transaction = await VerificationModel.create({
+          ...VFN_PARAMS,
+          fields: [field1, field2],
+        })
+
+        const result = await VerificationModel.incrementFieldRetries(
+          String(transaction._id),
+          String(field1._id),
+        )
+
+        // field1 should be incremented
+        expect(result!.fields[0].hashRetries).toEqual(field1.hashRetries + 1)
+        expect(result!.fields[0].signedData).toEqual(field1.signedData)
+        expect(result!.fields[0].hashedOtp).toEqual(field1.hashedOtp)
+        expect(result!.fields[0].hashCreatedAt).toEqual(field1.hashCreatedAt)
+
+        // field2 should be unchanged
+        expect(result!.fields[1].hashRetries).toEqual(field2.hashRetries)
+        expect(result!.fields[1].signedData).toEqual(field2.signedData)
+        expect(result!.fields[1].hashedOtp).toEqual(field2.hashedOtp)
+        expect(result!.fields[1].hashCreatedAt).toEqual(field2.hashCreatedAt)
+
+        expect(result!.formId).toEqual(transaction.formId)
+      })
+
+      it('should return null when the transaction ID is not found', async () => {
+        const result = await VerificationModel.incrementFieldRetries(
+          new ObjectId().toHexString(),
+          new ObjectId().toHexString(),
+        )
+
+        expect(result).toBeNull()
+      })
+    })
+
     describe('resetField', () => {
       it('should reset the field and return the new document', async () => {
         const field = {
