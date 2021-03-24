@@ -19,7 +19,10 @@ const VerificationModel = getVerificationModel(mongoose)
 
 describe('Verification Model', () => {
   beforeAll(async () => await dbHandler.connect())
-  beforeEach(async () => await dbHandler.clearDatabase())
+  afterEach(async () => {
+    await dbHandler.clearDatabase()
+    jest.clearAllMocks()
+  })
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('Schema', () => {
