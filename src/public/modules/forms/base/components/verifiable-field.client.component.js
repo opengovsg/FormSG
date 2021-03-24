@@ -244,6 +244,10 @@ function verifiableFieldController($q, $timeout, $interval) {
   }
 
   const getErrorMessage = (err) => {
+    // TODO (#941): keep only this code, remove switch case for custom strings
+    const serverErrorMsg = get(err, 'response.data.message')
+    if (serverErrorMsg) return serverErrorMsg
+
     // So that switch case works for both axios error objects and string objects.
     const error = get(err, 'response.data', err)
     let errMessage = ''
