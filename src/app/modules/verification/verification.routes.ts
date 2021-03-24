@@ -2,7 +2,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as VerificationController from './verification.controller'
-import { verificationMiddleware } from './verification.factory'
+import { verificationMiddleware } from './verification.middleware'
 
 export const VfnRouter = Router()
 
