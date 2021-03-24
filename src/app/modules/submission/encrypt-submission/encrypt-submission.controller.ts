@@ -114,8 +114,13 @@ export const handleEncryptedSubmission: RequestHandler = async (
  * @security session
  *
  * @returns 200 with stream of encrypted responses
+ * @returns 400 if form is not an encrypt mode form
  * @returns 400 if req.query.startDate or req.query.endDate is malformed
- * @returns 500 if any errors occurs in stream pipeline
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
 export const handleStreamEncryptedResponses: RequestHandler<
   { formId: string },
