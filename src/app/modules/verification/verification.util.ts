@@ -93,12 +93,9 @@ export const isOtpWaitTimeElapsed = (hashCreatedAt: Date | null): boolean => {
   // No hash created yet, so no wait time
   if (!hashCreatedAt) return true
 
-  const expireAtMs = getExpiryDate(
-    WAIT_FOR_OTP_SECONDS,
-    hashCreatedAt,
-  ).getTime()
-  const currentMs = Date.now()
-  return Math.ceil((expireAtMs - currentMs) / 1000) > 0
+  const elapseAt = getExpiryDate(WAIT_FOR_OTP_SECONDS, hashCreatedAt)
+  const currentDate = new Date()
+  return currentDate > elapseAt
 }
 
 export const mapRouteError: MapRouteError = (
