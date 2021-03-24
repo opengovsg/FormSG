@@ -2,7 +2,8 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
+
 import {
   createTransaction,
   getNewOtp,
