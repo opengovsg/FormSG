@@ -27,6 +27,7 @@ import {
   IMobileField,
   IMobileFieldSchema,
   INumberField,
+  IRatingField,
   IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
@@ -44,6 +45,7 @@ export const generateDefaultField = (
     | ITableField
     | IDateField
     | INumberField
+    | IRatingField
   >,
 ): IFieldSchema => {
   const defaultParams = {
