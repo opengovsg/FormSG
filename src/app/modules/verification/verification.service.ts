@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import _ from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -28,13 +28,14 @@ import {
   MalformedParametersError,
 } from '../core/core.errors'
 
+import { TransactionNotFoundError } from './verification.errors'
 import getVerificationModel from './verification.model'
 import { Transaction } from './verification.types'
 
 const logger = createLoggerWithLabel(module)
 
 const Form = getFormModel(mongoose)
-const Verification = getVerificationModel(mongoose)
+const VerificationModel = getVerificationModel(mongoose)
 
 const {
   HASH_EXPIRE_AFTER_SECONDS,
@@ -60,7 +61,7 @@ export const createTransaction = async (
 
   const fields = initializeVerifiableFields(form)
   if (!_.isEmpty(fields)) {
-    const verification = new Verification({ formId, fields })
+    const verification = new VerificationModel({ formId, fields })
     const doc = await verification.save()
     return { transactionId: doc._id, expireAt: doc.expireAt }
   }
@@ -70,15 +71,37 @@ export const createTransaction = async (
 /**
  *  Retrieves a transaction's metadata by id
  * @param transactionId
+ * @returns ok(transaction metadata)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(DatabaseError) when database read/write errors
  */
-export const getTransactionMetadata = async (
+export const getTransactionMetadata = (
   transactionId: string,
-): Promise<PublicTransaction> => {
-  const transaction = await Verification.getPublicViewById(transactionId)
-  if (transaction === null) {
-    return throwError(VfnErrors.TransactionNotFound)
+): ResultAsync<PublicTransaction, TransactionNotFoundError | DatabaseError> => {
+  const logMeta = {
+    action: 'getTransactionMetadata',
+    transactionId,
   }
-  return transaction
+  return ResultAsync.fromPromise(
+    VerificationModel.getPublicViewById(transactionId),
+    (error) => {
+      logger.error({
+        message: 'Error while retrieving transaction metadata',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((transaction) => {
+    if (!transaction) {
+      logger.error({
+        message: 'Transaction ID does not exist',
+        meta: logMeta,
+      })
+      return errAsync(new TransactionNotFoundError())
+    }
+    return okAsync(transaction)
+  })
 }
 
 /**
@@ -88,7 +111,7 @@ export const getTransactionMetadata = async (
 export const getTransaction = async (
   transactionId: string,
 ): Promise<IVerificationSchema> => {
-  const transaction = await Verification.findById(transactionId)
+  const transaction = await VerificationModel.findById(transactionId)
   if (!transaction) {
     return throwError(VfnErrors.TransactionNotFound)
   }
@@ -105,7 +128,7 @@ export const resetFieldInTransaction = async (
   fieldId: string,
 ): Promise<void> => {
   const { _id: transactionId } = transaction
-  const { n } = await Verification.updateOne(
+  const { n } = await VerificationModel.updateOne(
     { _id: transactionId, 'fields._id': fieldId },
     {
       $set: {
@@ -163,7 +186,7 @@ export const getNewOtp = async (
     await sendOtpForField(formId, field, answer, otp)
       .andThen(() => {
         return ResultAsync.fromPromise(
-          Verification.updateOne(
+          VerificationModel.updateOne(
             { _id: transactionId, 'fields._id': fieldId },
             {
               $set: {
@@ -224,7 +247,7 @@ export const verifyOtp = async (
     !isHashedOtpExpired(hashCreatedAt) &&
     NUM_OTP_RETRIES > hashRetries!
   ) {
-    await Verification.updateOne(
+    await VerificationModel.updateOne(
       { _id: transaction._id, 'fields._id': fieldId },
       {
         $set: {
