@@ -24,6 +24,7 @@ import {
   IField,
   IFieldSchema,
   IImageFieldSchema,
+  ILongTextField,
   IMobileField,
   IMobileFieldSchema,
   INumberField,
@@ -46,6 +47,8 @@ export const generateDefaultField = (
     | IDateField
     | INumberField
     | IRatingField
+    | IShortTextField
+    | ILongTextField
   >,
 ): IFieldSchema => {
   const defaultParams = {
