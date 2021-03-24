@@ -70,6 +70,13 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return pick(this, VERIFICATION_PUBLIC_FIELDS) as PublicTransaction
   }
 
+  VerificationSchema.methods.getField = function (
+    this: IVerificationSchema,
+    fieldId: string,
+  ): IVerificationFieldSchema | undefined {
+    return this.fields.find((field) => field._id === fieldId)
+  }
+
   // Static methods
   // Method to return non-sensitive fields
   VerificationSchema.statics.getPublicViewById = async function (

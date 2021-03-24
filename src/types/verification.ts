@@ -28,7 +28,10 @@ export interface IVerification {
 export interface IVerificationSchema
   extends IVerification,
     Document,
-    PublicView<PublicTransaction> {}
+    PublicView<PublicTransaction> {
+  getField(fieldId: string): IVerificationFieldSchema | undefined
+  getPublicView(): PublicTransaction
+}
 
 // Keep in sync with VERIFICATION_PUBLIC_FIELDS
 export type PublicTransaction = Pick<
