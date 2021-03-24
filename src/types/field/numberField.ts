@@ -8,9 +8,9 @@ export enum NumberSelectedValidation {
 }
 
 export type NumberValidationOptions = {
-  customMax: number
-  customMin: number
-  customVal: number
+  customMax: number | null
+  customMin: number | null
+  customVal: number | null
   selectedValidation: NumberSelectedValidation | null
 }
 

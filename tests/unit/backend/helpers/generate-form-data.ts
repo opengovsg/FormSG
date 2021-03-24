@@ -26,6 +26,7 @@ import {
   IImageFieldSchema,
   IMobileField,
   IMobileFieldSchema,
+  INumberField,
   IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
@@ -42,6 +43,7 @@ export const generateDefaultField = (
     | IMobileField
     | ITableField
     | IDateField
+    | INumberField
   >,
 ): IFieldSchema => {
   const defaultParams = {
