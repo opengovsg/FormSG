@@ -1,8 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { WAIT_FOR_OTP_SECONDS } from '../../../shared/util/verification'
-import { MapRouteError } from '../../../types'
+import {
+  VERIFIED_FIELDTYPES,
+  WAIT_FOR_OTP_SECONDS,
+} from '../../../shared/util/verification'
+import { IFieldSchema, MapRouteError } from '../../../types'
 import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'
@@ -26,6 +29,29 @@ import {
 } from './verification.errors'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Evaluates whether a field is verifiable
+ * @param field
+ */
+const isFieldVerifiable = (field: IFieldSchema): boolean => {
+  return (
+    VERIFIED_FIELDTYPES.includes(field.fieldType) && field.isVerifiable === true
+  )
+}
+
+/**
+ * Gets verifiable fields from form and initializes the values to be stored in a transaction
+ * @param formFields
+ */
+export const extractTransactionFields = (
+  formFields: IFieldSchema[],
+): Pick<IFieldSchema, '_id' | 'fieldType'>[] => {
+  return formFields.filter(isFieldVerifiable).map(({ _id, fieldType }) => ({
+    _id,
+    fieldType,
+  }))
+}
 
 export const mapRouteError: MapRouteError = (
   error,

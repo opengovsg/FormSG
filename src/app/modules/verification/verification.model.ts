@@ -3,12 +3,15 @@ import { Mongoose, Schema } from 'mongoose'
 
 import * as vfnConstants from '../../../shared/util/verification'
 import {
+  IFormSchema,
   IVerificationFieldSchema,
   IVerificationModel,
   IVerificationSchema,
   PublicTransaction,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
+
+import { extractTransactionFields } from './verification.util'
 
 const { getExpiryDate } = vfnConstants
 const VERIFICATION_SCHEMA_ID = 'Verification'
@@ -86,6 +89,20 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     const document = await this.findById(id)
     if (!document) return null
     return document.getPublicView()
+  }
+
+  VerificationSchema.statics.createTransactionFromForm = async function (
+    this: IVerificationModel,
+    form: IFormSchema,
+  ): Promise<IVerificationSchema | null> {
+    const { form_fields } = form
+    if (!form_fields) return null
+    const fields = extractTransactionFields(form_fields)
+    if (fields.length === 0) return null
+    return this.create({
+      formId: form._id,
+      fields,
+    })
   }
 
   const VerificationModel = db.model<IVerificationSchema, IVerificationModel>(

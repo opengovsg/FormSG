@@ -54,4 +54,7 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   getPublicViewById(
     id: IVerificationSchema['_id'],
   ): Promise<PublicTransaction | null>
+  createTransactionFromForm(
+    form: IFormSchema,
+  ): Promise<IVerificationSchema | null>
 }
