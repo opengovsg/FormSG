@@ -576,7 +576,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata').get(
-    authEncryptedResponseAccess,
+    withUserAuthentication,
     celebrate({
       [Segments.QUERY]: {
         submissionId: Joi.string().optional(),
