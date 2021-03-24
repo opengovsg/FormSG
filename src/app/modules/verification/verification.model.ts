@@ -8,6 +8,7 @@ import {
   IVerificationModel,
   IVerificationSchema,
   PublicTransaction,
+  UpdateFieldData,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
@@ -120,6 +121,31 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
           'fields.$.hashCreatedAt': null,
           'fields.$.hashedOtp': null,
           'fields.$.signedData': null,
+          'fields.$.hashRetries': 0,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
+  }
+
+  VerificationSchema.statics.updateHashForField = async function (
+    this: IVerificationModel,
+    updateData: UpdateFieldData,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: updateData.transactionId,
+        'fields._id': updateData.fieldId,
+      },
+      {
+        $set: {
+          'fields.$.hashCreatedAt': new Date(),
+          'fields.$.hashedOtp': updateData.hashedOtp,
+          'fields.$.signedData': updateData.signedData,
           'fields.$.hashRetries': 0,
         },
       },

@@ -25,6 +25,13 @@ export interface IVerification {
   fields: IVerificationFieldSchema[]
 }
 
+export type UpdateFieldData = {
+  transactionId: string
+  fieldId: string
+  hashedOtp: string
+  signedData: string
+}
+
 export interface IVerificationSchema
   extends IVerification,
     Document,
@@ -68,5 +75,8 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   resetField(
     transactionId: string,
     fieldId: string,
+  ): Promise<IVerificationSchema | null>
+  updateHashForField(
+    updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null>
 }

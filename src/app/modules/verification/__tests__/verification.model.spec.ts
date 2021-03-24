@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import { BasicField } from 'src/types'
+import { BasicField, UpdateFieldData } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -394,6 +394,96 @@ describe('Verification Model', () => {
           new ObjectId().toHexString(),
           new ObjectId().toHexString(),
         )
+
+        expect(result).toBeNull()
+      })
+    })
+
+    describe('updateHashForField', () => {
+      it('should update the field and return the new document', async () => {
+        const field = {
+          ...generateFieldParams(),
+          signedData: 'mockSignedData',
+          hashedOtp: 'mockHashedOtp',
+          hashCreatedAt: new Date(),
+          hashRetries: 3,
+        }
+        const transaction = await VerificationModel.create({
+          ...VFN_PARAMS,
+          fields: [field],
+        })
+        const updateParams: UpdateFieldData = {
+          fieldId: field._id,
+          transactionId: transaction._id,
+          hashedOtp: 'updatedHashedOtp',
+          signedData: 'updatedSignedData',
+        }
+
+        const result = await VerificationModel.updateHashForField(updateParams)
+
+        expect(result!.fields[0].hashRetries).toEqual(0)
+        expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
+        // Date should be updated, hence should not be the same
+        expect(result!.fields[0].hashCreatedAt).not.toEqual(field.hashCreatedAt)
+        expect(result!.fields[0].signedData).toEqual(updateParams.signedData)
+        expect(result!.fields[0].hashedOtp).toEqual(updateParams.hashedOtp)
+
+        expect(result!.formId).toEqual(transaction.formId)
+      })
+
+      it('should update only the given field ID', async () => {
+        const field1 = {
+          ...generateFieldParams(),
+          signedData: 'mockSignedData',
+          hashedOtp: 'mockHashedOtp',
+          hashCreatedAt: new Date(),
+          hashRetries: 3,
+        }
+        const field2 = {
+          ...generateFieldParams(),
+          signedData: 'mockSignedData2',
+          hashedOtp: 'mockHashedOtp2',
+          hashCreatedAt: new Date(),
+          hashRetries: 2,
+        }
+        const transaction = await VerificationModel.create({
+          ...VFN_PARAMS,
+          fields: [field1, field2],
+        })
+        const updateParams: UpdateFieldData = {
+          fieldId: field1._id,
+          transactionId: transaction._id,
+          hashedOtp: 'updatedHashedOtp',
+          signedData: 'updatedSignedData',
+        }
+
+        const result = await VerificationModel.updateHashForField(updateParams)
+
+        expect(result!.fields[0].hashRetries).toEqual(0)
+        expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
+        // Date should be updated, hence should not be the same
+        expect(result!.fields[0].hashCreatedAt).not.toEqual(
+          field1.hashCreatedAt,
+        )
+        expect(result!.fields[0].signedData).toEqual(updateParams.signedData)
+        expect(result!.fields[0].hashedOtp).toEqual(updateParams.hashedOtp)
+
+        // field2 should remain completely unchanged
+        expect(result!.fields[1].hashRetries).toEqual(field2.hashRetries)
+        expect(result!.fields[1].signedData).toEqual(field2.signedData)
+        expect(result!.fields[1].hashedOtp).toEqual(field2.hashedOtp)
+        expect(result!.fields[1].hashCreatedAt).toEqual(field2.hashCreatedAt)
+
+        expect(result!.formId).toEqual(transaction.formId)
+      })
+
+      it('should return null when the transaction ID is not found', async () => {
+        const result = await VerificationModel.updateHashForField({
+          fieldId: new ObjectId().toHexString(),
+          transactionId: new ObjectId().toHexString(),
+          hashedOtp: 'mockHashedOtp',
+          signedData: 'mockSignedData',
+        })
 
         expect(result).toBeNull()
       })
