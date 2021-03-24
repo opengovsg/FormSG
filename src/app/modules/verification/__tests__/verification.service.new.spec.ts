@@ -1,9 +1,9 @@
 import { ObjectId } from 'bson'
-import { DatabaseError } from 'dist/backend/app/modules/core/core.errors'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import * as FormService from 'src/app/modules/form/form.service'
 import { IFormSchema, IVerificationSchema, PublicTransaction } from 'src/types'
 
