@@ -273,7 +273,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
           // 4. Return result if successful otherwise, clear cookies and return default response
           .map(({ spcpSession, formFields }) =>
             res.json({
-              form: _.set(form, 'form_fields', formFields),
+              form: _.set(publicFormView, 'form_fields', formFields),
               spcpSession,
             }),
           )
