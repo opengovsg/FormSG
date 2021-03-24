@@ -16,7 +16,7 @@ export const VFN_FIELD_DEFAULTS = {
 }
 
 export const generateFieldParams = (
-  customOptions: Partial<IVerificationField> = {},
+  customOptions: Partial<IVerificationField> & { _id?: string } = {},
 ) => {
   const mockParams = {
     fieldType: 'mobile',
