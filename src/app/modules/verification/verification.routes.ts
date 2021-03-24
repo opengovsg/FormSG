@@ -52,7 +52,7 @@ VfnRouter.post(
       answer: Joi.string().required(),
     }),
   }),
-  verificationMiddleware.getNewOtp,
+  VerificationController.handleGetOtp,
 )
 
 VfnRouter.post(

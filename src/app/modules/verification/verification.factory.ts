@@ -12,6 +12,7 @@ interface IVerifiedFieldsFactory {
   createTransaction: typeof VerificationService.createTransaction
   getTransactionMetadata: typeof VerificationService.getTransactionMetadata
   resetFieldForTransaction: typeof VerificationService.resetFieldForTransaction
+  sendNewOtp: typeof VerificationService.sendNewOtp
 }
 
 export const createVerificationFactory = ({
@@ -26,6 +27,7 @@ export const createVerificationFactory = ({
     createTransaction: () => errAsync(error),
     getTransactionMetadata: () => errAsync(error),
     resetFieldForTransaction: () => errAsync(error),
+    sendNewOtp: () => errAsync(error),
   }
 }
 
