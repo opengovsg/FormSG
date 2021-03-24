@@ -6,6 +6,7 @@ import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as VfnUtils from '../../../shared/util/verification'
 import {
+  BasicField,
   IVerificationFieldSchema,
   IVerificationSchema,
   PublicTransaction,
@@ -15,11 +16,7 @@ import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import {
-  ApplicationError,
-  DatabaseError,
-  MalformedParametersError,
-} from '../core/core.errors'
+import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 
@@ -388,10 +385,8 @@ export const verifyOtp = async (
 
 /**
  * Send otp to recipient
- *
  * @param formId
  * @param field
- * @param field.fieldType
  * @param recipient
  * @param otp
  */
@@ -407,23 +402,18 @@ const sendOtpForField = (
   | SmsSendError
   | InvalidNumberError
   | MailSendError
-  | ApplicationError
+  | NonVerifiedFieldTypeError
 > => {
   const { fieldType } = field
   switch (fieldType) {
-    case 'mobile':
+    case BasicField.Mobile:
       // call sms - it should validate the recipient
       return SmsFactory.sendVerificationOtp(recipient, otp, formId)
-    case 'email':
+    case BasicField.Email:
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
     default:
-      return errAsync(
-        new ApplicationError(
-          'Unsupported field type passed to sendOtpForField',
-          { fieldType },
-        ),
-      )
+      return errAsync(new NonVerifiedFieldTypeError(fieldType))
   }
 }
 
