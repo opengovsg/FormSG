@@ -9,11 +9,18 @@ import {
 } from '../../../services/captcha/captcha.errors'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
-import { FormDeletedError, PrivateFormError } from '../../form/form.errors'
+import {
+  ForbiddenFormError,
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../../form/form.errors'
+import { MissingUserError } from '../../user/user.errors'
 import {
   ConflictError,
   InvalidEncodingError,
   ProcessingError,
+  ResponseModeError,
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
@@ -27,15 +34,35 @@ const logger = createLoggerWithLabel(module)
  */
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
+    case MissingUserError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case ResponseModeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case ForbiddenFormError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
     case FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
-        errorMessage: '',
+        errorMessage: error.message,
       }
     case PrivateFormError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: '',
+        errorMessage: error.message,
       }
     case CaptchaConnectionError:
       return {

@@ -1,16 +1,19 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary, Query } from 'express-serve-static-core'
+import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { WithForm } from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
+import { getFormAfterPermissionChecks } from '../../auth/auth.service'
+import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { getPopulatedUserById } from '../../user/user.service'
 
 import {
+  checkFormIsEncryptMode,
   getEncryptedSubmissionData,
   getSubmissionCursor,
   getSubmissionMetadata,
@@ -108,26 +111,47 @@ export const handleEncryptedSubmission: RequestHandler = async (
 
 /**
  * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
+ * @security session
  *
  * @returns 200 with stream of encrypted responses
+ * @returns 400 if form is not an encrypt mode form
  * @returns 400 if req.query.startDate or req.query.endDate is malformed
- * @returns 500 if any errors occurs in stream pipeline
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
 export const handleStreamEncryptedResponses: RequestHandler<
-  ParamsDictionary,
+  { formId: string },
   unknown,
   unknown,
   Query & { startDate?: string; endDate?: string; downloadAttachments: boolean }
 > = async (req, res) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const { formId } = req.params
   const { startDate, endDate } = req.query
 
-  // TODO (#42): Remove typecast once app has migrated away from middlewares.
-  const formId = (req as WithForm<typeof req>).form._id
-
-  const cursorResult = getSubmissionCursor(formId, {
-    startDate,
-    endDate,
-  })
+  // Step 1: Retrieve currently logged in user.
+  // eslint-disable-next-line typesafe/no-await-without-trycatch
+  const cursorResult = await getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Check whether user has read permissions to form
+      getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }),
+    )
+    // Step 3: Check whether form is encrypt mode.
+    .andThen(checkFormIsEncryptMode)
+    // Step 4: Retrieve submissions cursor.
+    .andThen(() =>
+      getSubmissionCursor(formId, {
+        startDate,
+        endDate,
+      }),
+    )
 
   const logMeta = {
     action: 'handleStreamEncryptedResponses',
@@ -137,7 +161,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
 
   if (cursorResult.isErr()) {
     logger.error({
-      message: 'Given date query params are malformed',
+      message: 'Error occurred whilst retrieving submission cursor',
       meta: logMeta,
       error: cursorResult.error,
     })
