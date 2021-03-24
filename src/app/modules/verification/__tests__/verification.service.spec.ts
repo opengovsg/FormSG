@@ -375,8 +375,8 @@ describe('Verification service', () => {
 
     it('should return WaitForOtpError when OTP waiting time has not elapsed', async () => {
       const expiredOtpField = generateFieldParams({
-        // Hash created 15min ago
-        hashCreatedAt: new Date(Date.now() - 15 * 60 * 1000),
+        // Hash created 5 seconds ago
+        hashCreatedAt: new Date(Date.now() - 5 * 1000),
       })
       const expiredOtpTransaction = await VerificationModel.create({
         formId: mockFormId,
