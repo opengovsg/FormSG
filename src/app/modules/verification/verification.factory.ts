@@ -9,6 +9,7 @@ import { MissingFeatureError } from '../core/core.errors'
 import * as VerificationService from './verification.service'
 
 interface IVerifiedFieldsFactory {
+  createTransaction: typeof VerificationService.createTransaction
   getTransactionMetadata: typeof VerificationService.getTransactionMetadata
 }
 
@@ -21,6 +22,7 @@ export const createVerificationFactory = ({
   }
   const error = new MissingFeatureError(FeatureNames.VerifiedFields)
   return {
+    createTransaction: () => errAsync(error),
     getTransactionMetadata: () => errAsync(error),
   }
 }
