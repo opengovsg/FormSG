@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -24,8 +24,13 @@ import {
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 
-import { TransactionNotFoundError } from './verification.errors'
+import {
+  FieldNotFoundInTransactionError,
+  TransactionExpiredError,
+  TransactionNotFoundError,
+} from './verification.errors'
 import getVerificationModel from './verification.model'
+import { isTransactionExpired } from './verification.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -122,29 +127,132 @@ export const getTransaction = async (
 }
 
 /**
- *  Sets signedData, hashedOtp, hashCreatedAt to null for that field in that transaction
- *  @param transaction
- *  @param fieldId
+ * Retrieves an entire transaction and validates that it is not expired
+ * @param transactionId
+ * @returns ok(transaction)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(DatabaseError) when database read/write errors
  */
-export const resetFieldInTransaction = async (
+const getValidTransaction = (
+  transactionId: string,
+): ResultAsync<
+  IVerificationSchema,
+  TransactionNotFoundError | DatabaseError | TransactionExpiredError
+> => {
+  const logMeta = {
+    action: 'getValidTransaction',
+    transactionId,
+  }
+  return ResultAsync.fromPromise(
+    VerificationModel.findById(transactionId).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error while retrieving transaction',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((transaction) => {
+    if (!transaction) {
+      logger.error({
+        message: 'Transaction ID does not exist',
+        meta: logMeta,
+      })
+      return errAsync(new TransactionNotFoundError())
+    }
+    if (isTransactionExpired(transaction)) {
+      logger.warn({
+        message: 'Transaction has expired',
+        meta: logMeta,
+      })
+      return errAsync(new TransactionExpiredError())
+    }
+    return okAsync(transaction)
+  })
+}
+
+/**
+ * Extracts an individual field's data from a transaction document.
+ * @param transaction Transaction document
+ * @param fieldId ID of field to find
+ * @returns ok(field) when field exists
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ */
+const getFieldFromTransaction = (
   transaction: IVerificationSchema,
   fieldId: string,
-): Promise<void> => {
-  const { _id: transactionId } = transaction
-  const { n } = await VerificationModel.updateOne(
-    { _id: transactionId, 'fields._id': fieldId },
-    {
-      $set: {
-        'fields.$.hashCreatedAt': null,
-        'fields.$.hashedOtp': null,
-        'fields.$.signedData': null,
-        'fields.$.hashRetries': 0,
+): Result<IVerificationFieldSchema, FieldNotFoundInTransactionError> => {
+  const field = transaction.getField(fieldId)
+  if (!field) {
+    logger.warn({
+      message: 'Field ID not found for transaction',
+      meta: {
+        action: 'getFieldFromTransaction',
+        transactionId: transaction._id,
+        fieldId,
       },
-    },
-  )
-  if (n === 0) {
-    throwError('Field not found in transaction', VfnErrors.FieldNotFound)
+    })
+    return err(new FieldNotFoundInTransactionError())
   }
+  return ok(field)
+}
+
+/**
+ * Sets signedData, hashedOtp, hashCreatedAt to null for that field in that transaction
+ * @param transactionId
+ * @param fieldId
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(DatabaseError) when database read/write errors
+ */
+export const resetFieldForTransaction = (
+  transactionId: string,
+  fieldId: string,
+): ResultAsync<
+  IVerificationSchema,
+  | TransactionNotFoundError
+  | TransactionExpiredError
+  | FieldNotFoundInTransactionError
+  | DatabaseError
+> => {
+  const logMeta = {
+    action: 'resetFieldForTransaction',
+    transactionId,
+    fieldId,
+  }
+  // Ensure that field ID exists first
+  return (
+    getValidTransaction(transactionId)
+      .andThen((transaction) => getFieldFromTransaction(transaction, fieldId))
+      // Apply atomic update
+      .andThen(() =>
+        ResultAsync.fromPromise(
+          VerificationModel.resetField(transactionId, fieldId),
+          (error) => {
+            logger.error({
+              message: 'Error while resetting field data in transaction',
+              meta: logMeta,
+              error,
+            })
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
+      .andThen((updatedTransaction) => {
+        // Transaction was deleted before update could be applied
+        if (!updatedTransaction) {
+          logger.error({
+            message: 'Transaction with given ID does not exist',
+            meta: logMeta,
+          })
+          return errAsync(new TransactionNotFoundError())
+        }
+        return okAsync(updatedTransaction)
+      })
+  )
 }
 
 /**
@@ -159,10 +267,10 @@ export const getNewOtp = async (
   answer: string,
 ): Promise<void> => {
   // TODO (#317): remove usage of non-null assertion
-  if (isTransactionExpired(transaction.expireAt!)) {
+  if (isDateExpired(transaction.expireAt!)) {
     throwError(VfnErrors.TransactionNotFound)
   }
-  const field = getFieldFromTransaction(transaction, fieldId)
+  const field = getFieldOrUndefined(transaction, fieldId)
   if (!field) {
     return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
   }
@@ -236,10 +344,10 @@ export const verifyOtp = async (
   inputOtp: string,
 ): Promise<string> => {
   // TODO (#317): remove usage of non-null assertion
-  if (isTransactionExpired(transaction.expireAt!)) {
+  if (isDateExpired(transaction.expireAt!)) {
     throwError(VfnErrors.TransactionNotFound)
   }
-  const field = getFieldFromTransaction(transaction, fieldId)
+  const field = getFieldOrUndefined(transaction, fieldId)
   if (!field) {
     return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
   }
@@ -310,7 +418,7 @@ const sendOtpForField = (
  * @param expireAt
  * @returns boolean
  */
-const isTransactionExpired = (expireAt: Date): boolean => {
+const isDateExpired = (expireAt: Date): boolean => {
   const currentDate = new Date()
   return expireAt < currentDate
 }
@@ -351,7 +459,7 @@ const waitToResendOtpSeconds = (hashCreatedAt: Date): number => {
  * @param fieldId
  * @returns verification field
  */
-const getFieldFromTransaction = (
+const getFieldOrUndefined = (
   transaction: IVerificationSchema,
   fieldId: string,
 ): IVerificationFieldSchema | undefined => {

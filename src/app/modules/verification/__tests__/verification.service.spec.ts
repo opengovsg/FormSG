@@ -4,26 +4,19 @@ import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import getFormModel from 'src/app/models/form.server.model'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { generateOtp } from 'src/app/utils/otp'
 import formsgSdk from 'src/config/formsg-sdk'
 import { SALT_ROUNDS } from 'src/shared/util/verification'
-import { BasicField, IUserSchema, IVerificationSchema } from 'src/types'
+import { BasicField, IVerificationSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getVerificationModel from '../verification.model'
-import {
-  getNewOtp,
-  resetFieldInTransaction,
-  verifyOtp,
-} from '../verification.service'
+import { getNewOtp, verifyOtp } from '../verification.service'
 
-const Form = getFormModel(mongoose)
 const Verification = getVerificationModel(mongoose)
-const MOCK_FORM_TITLE = 'Verification service tests'
 
 // Set up mocks
 jest.mock('src/app/utils/otp')
@@ -38,80 +31,11 @@ jest.mock('bcrypt')
 const MockBcrypt = mocked(bcrypt, true)
 
 describe('Verification service', () => {
-  let user: IUserSchema
   beforeAll(async () => {
     await dbHandler.connect()
   })
-  beforeEach(async () => {
-    const preloadedDocuments = await dbHandler.insertFormCollectionReqs({})
-    user = preloadedDocuments.user
-  })
+
   afterAll(async () => await dbHandler.closeDatabase())
-
-  describe('resetFieldInTransaction', () => {
-    afterEach(async () => await dbHandler.clearDatabase())
-
-    it('should reset one field when params are valid', async () => {
-      const testForm = new Form({
-        admin: user,
-        title: MOCK_FORM_TITLE,
-        form_fields: [
-          { fieldType: BasicField.Email, isVerifiable: true },
-          { fieldType: BasicField.Mobile, isVerifiable: true },
-        ],
-      })
-      const formId = testForm._id
-      const hashCreatedAt = new Date()
-      const hashedOtp = 'hash'
-      const signedData = 'signedData'
-      const hashRetries = 1
-      const transaction = new Verification({
-        formId,
-        fields: testForm.form_fields!.map(({ _id, fieldType }) => ({
-          _id,
-          fieldType,
-          hashCreatedAt,
-          hashedOtp,
-          signedData,
-          hashRetries,
-        })),
-      })
-      await transaction.save()
-      await resetFieldInTransaction(transaction, testForm.form_fields![0]._id)
-      const actual = await Verification.findOne({ formId })
-      expect(actual!.fields[0].toObject()).toEqual({
-        _id: String(testForm.form_fields![0]._id),
-        fieldType: testForm.form_fields![0].fieldType,
-        hashCreatedAt: null,
-        hashedOtp: null,
-        signedData: null,
-        hashRetries: 0,
-      })
-      expect(actual!.fields[1].toObject()).toEqual({
-        _id: String(testForm.form_fields![1]._id),
-        fieldType: testForm.form_fields![1].fieldType,
-        hashCreatedAt,
-        hashedOtp,
-        signedData,
-        hashRetries,
-      })
-    })
-
-    it('should throw error when field ID does not exist', async () => {
-      const transaction = new Verification({ formId: new ObjectId() })
-      await transaction.save()
-      return expect(
-        resetFieldInTransaction(transaction, String(new ObjectId())),
-      ).rejects.toThrowError('Field not found in transaction')
-    })
-
-    it('should throw error when transaction ID does not exist', async () => {
-      const transaction = new Verification({ formId: new ObjectId() })
-      return expect(
-        resetFieldInTransaction(transaction, String(new ObjectId())),
-      ).rejects.toThrowError('Field not found in transaction')
-    })
-  })
 
   describe('getNewOtp', () => {
     let transaction: IVerificationSchema, mockAnswer: string, mockOtp: string

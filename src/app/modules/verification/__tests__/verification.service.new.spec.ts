@@ -10,7 +10,11 @@ import { IFormSchema, IVerificationSchema, PublicTransaction } from 'src/types'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormNotFoundError } from '../../form/form.errors'
-import { TransactionNotFoundError } from '../verification.errors'
+import {
+  FieldNotFoundInTransactionError,
+  TransactionExpiredError,
+  TransactionNotFoundError,
+} from '../verification.errors'
 import getVerificationModel from '../verification.model'
 import * as VerificationService from '../verification.service'
 
@@ -136,6 +140,93 @@ describe('Verification service', () => {
 
       expect(getPublicViewByIdSpy).toHaveBeenCalledWith(mockTransactionId)
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
+    })
+  })
+
+  describe('resetFieldForTransaction', () => {
+    let resetFieldSpy: jest.SpyInstance<
+      Promise<IVerificationSchema | null>,
+      [transactionId: string, fieldId: string]
+    >
+
+    beforeEach(() => {
+      resetFieldSpy = jest
+        .spyOn(VerificationModel, 'resetField')
+        .mockResolvedValueOnce(mockTransaction)
+    })
+
+    it('should call VerificationModel.resetField when transaction and field IDs are valid', async () => {
+      const result = await VerificationService.resetFieldForTransaction(
+        mockTransactionId,
+        mockFieldId,
+      )
+
+      expect(resetFieldSpy).toHaveBeenCalledWith(mockTransactionId, mockFieldId)
+      expect(result._unsafeUnwrap()).toEqual(mockTransaction)
+    })
+
+    it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
+      const result = await VerificationService.resetFieldForTransaction(
+        // non-existent transaction ID
+        new ObjectId().toHexString(),
+        mockFieldId,
+      )
+
+      expect(resetFieldSpy).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
+    })
+
+    it('should return TransactionExpiredError when transaction has expired', async () => {
+      const expiredTransaction = await VerificationModel.create({
+        formId: mockFormId,
+        // Expire 25 hours ago
+        expireAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+      })
+
+      const result = await VerificationService.resetFieldForTransaction(
+        expiredTransaction._id,
+        mockFieldId,
+      )
+
+      expect(resetFieldSpy).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(new TransactionExpiredError())
+    })
+
+    it('should return FieldNotFoundInTransactionError when field ID does not exist', async () => {
+      const result = await VerificationService.resetFieldForTransaction(
+        mockTransactionId,
+        // ObjectId which does not exist in mockTransaction
+        new ObjectId().toHexString(),
+      )
+
+      expect(resetFieldSpy).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new FieldNotFoundInTransactionError(),
+      )
+    })
+
+    it('should return TransactionNotFoundError when database update returns null', async () => {
+      resetFieldSpy.mockReset().mockResolvedValueOnce(null)
+
+      const result = await VerificationService.resetFieldForTransaction(
+        mockTransactionId,
+        mockFieldId,
+      )
+
+      expect(resetFieldSpy).toHaveBeenCalledWith(mockTransactionId, mockFieldId)
+      expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
+    })
+
+    it('should return DatabaseError when database update errors', async () => {
+      resetFieldSpy.mockReset().mockRejectedValueOnce('rejected')
+
+      const result = await VerificationService.resetFieldForTransaction(
+        mockTransactionId,
+        mockFieldId,
+      )
+
+      expect(resetFieldSpy).toHaveBeenCalledWith(mockTransactionId, mockFieldId)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
 })
