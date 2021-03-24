@@ -5,7 +5,6 @@ import { mocked } from 'ts-jest/utils'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import {
-  createTransaction,
   getNewOtp,
   resetFieldInTransaction,
   verifyOtp,
@@ -17,7 +16,6 @@ jest.mock('../verification.service')
 const MockVfnService = mocked(VfnService, true)
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
-const MOCK_FORM_ID = 'formId'
 const MOCK_TRANSACTION_ID = 'transactionId'
 const MOCK_FIELD_ID = 'fieldId'
 const MOCK_ANSWER = 'answer'
@@ -31,39 +29,6 @@ const sendOtpError = 'SEND_OTP_FAILED'
 const invalidOtpError = 'INVALID_OTP'
 
 describe('Verification controller', () => {
-  describe('createTransaction', () => {
-    const MOCK_REQ = expressHandler.mockRequest({
-      body: { formId: MOCK_FORM_ID },
-    })
-    afterEach(() => jest.clearAllMocks())
-
-    it('should correctly return transaction when parameters are valid', async () => {
-      const returnValue = {
-        transactionId: 'Bereft of life, it rests in peace',
-        expireAt: new Date(),
-      }
-      MockVfnService.createTransaction.mockReturnValueOnce(
-        Promise.resolve(returnValue),
-      )
-      await createTransaction(MOCK_REQ, MOCK_RES, noop)
-      expect(MockVfnService.createTransaction).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(201)
-      expect(MOCK_RES.json).toHaveBeenCalledWith(returnValue)
-    })
-
-    it('should correctly return 200 with empty object when transaction is not created', async () => {
-      MockVfnService.createTransaction.mockResolvedValueOnce(null)
-      await createTransaction(MOCK_REQ, MOCK_RES, noop)
-      expect(MockVfnService.createTransaction).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(200)
-      expect(MOCK_RES.json).toHaveBeenCalledWith({})
-    })
-  })
-
   describe('resetFieldInTransaction', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       body: { fieldId: MOCK_FIELD_ID },
