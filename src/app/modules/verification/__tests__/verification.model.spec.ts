@@ -9,30 +9,13 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getVerificationModel from '../verification.model'
 
+import {
+  generateFieldParams,
+  VFN_DEFAULTS,
+  VFN_PARAMS,
+} from './verification.test.helpers'
+
 const VerificationModel = getVerificationModel(mongoose)
-
-const VFN_FIELD_DEFAULTS = {
-  signedData: null,
-  hashedOtp: null,
-  hashCreatedAt: null,
-  hashRetries: 0,
-}
-
-const generateFieldParams = () => {
-  const mockParams = {
-    fieldType: 'mockField',
-    _id: String(new ObjectId()),
-  }
-  return merge({}, VFN_FIELD_DEFAULTS, mockParams)
-}
-
-const VFN_PARAMS = {
-  formId: new ObjectId(),
-}
-
-const VFN_DEFAULTS = {
-  fields: [],
-}
 
 describe('Verification Model', () => {
   beforeAll(async () => await dbHandler.connect())
