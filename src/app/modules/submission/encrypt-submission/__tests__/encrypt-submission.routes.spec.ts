@@ -7,6 +7,7 @@ import { mocked } from 'ts-jest/utils'
 import * as encryptSubmissions from 'src/app/controllers/encrypt-submissions.server.controller'
 import * as FormController from 'src/app/controllers/forms.server.controller'
 import * as webhookVerifiedContentFactory from 'src/app/factories/webhook-verified-content.factory'
+import * as EncryptSubmissionController from 'src/app/modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as EncryptSubmissionsMiddleware from 'src/app/modules/submission/encrypt-submission/encrypt-submission.middleware'
 import * as SubmissionsMiddleware from 'src/app/modules/submission/submission.middleware'
 import * as VerifiedContentMiddleware from 'src/app/modules/verified-content/verified-content.middlewares'
@@ -83,7 +84,7 @@ EncryptSubmissionsRouter.post(
     }),
   }),
   FormController.formById,
-  EncryptSubmissionsMiddleware.validateAndProcessEncryptSubmission,
+  EncryptSubmissionController.handleEncryptedSubmission,
   VerifiedContentMiddleware.encryptVerifiedSpcpFields,
   EncryptSubmissionsMiddleware.prepareEncryptSubmission as RequestHandler,
   (encryptSubmissions.saveResponseToDb as unknown) as RequestHandler,
