@@ -16,7 +16,6 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getVerificationModel from '../verification.model'
 import {
-  createTransaction,
   getNewOtp,
   resetFieldInTransaction,
   verifyOtp,
@@ -48,55 +47,6 @@ describe('Verification service', () => {
     user = preloadedDocuments.user
   })
   afterAll(async () => await dbHandler.closeDatabase())
-
-  describe('createTransaction', () => {
-    afterEach(async () => await dbHandler.clearDatabase())
-
-    it('should return null when form_fields does not exist', async () => {
-      const testForm = new Form({
-        admin: user,
-        title: MOCK_FORM_TITLE,
-      })
-      await testForm.save()
-      await expect(createTransaction(testForm._id)).resolves.toBe(null)
-      // Document should not have been created
-      await expect(
-        Verification.findOne({ formId: testForm._id }),
-      ).resolves.toBe(null)
-    })
-
-    it('should return null when there are no verifiable fields', async () => {
-      const testForm = new Form({
-        form_fields: [{ fieldType: BasicField.YesNo }],
-        admin: user,
-        title: MOCK_FORM_TITLE,
-      })
-      await testForm.save()
-      await expect(createTransaction(testForm._id)).resolves.toBe(null)
-      // Document should not have been created
-      await expect(
-        Verification.findOne({ formId: testForm._id }),
-      ).resolves.toBe(null)
-    })
-
-    it('should correctly save and return transaction when it is valid', async () => {
-      const testForm = new Form({
-        form_fields: [{ fieldType: BasicField.Email, isVerifiable: true }],
-        admin: user,
-        title: MOCK_FORM_TITLE,
-      })
-      await testForm.save()
-      const returnedTransaction = await createTransaction(testForm._id)
-      const foundTransaction = await Verification.findOne({
-        formId: testForm._id,
-      })
-      expect(foundTransaction).toBeTruthy()
-      expect(returnedTransaction).toEqual({
-        transactionId: foundTransaction!._id,
-        expireAt: foundTransaction!.expireAt,
-      })
-    })
-  })
 
   describe('resetFieldInTransaction', () => {
     afterEach(async () => await dbHandler.clearDatabase())
