@@ -1,13 +1,12 @@
-import { RequestHandler, Response } from 'express'
+import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { SALT_ROUNDS, VfnErrors } from '../../../shared/util/verification'
+import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { PublicTransaction } from '../../../types'
 import { generateOtpWithHash } from '../../utils/otp'
 
 import { VerificationFactory } from './verification.factory'
-import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
 import { mapRouteError } from './verification.util'
 
@@ -160,54 +159,27 @@ export const handleGetOtp: RequestHandler<
  * @param req
  * @param res
  */
-export const verifyOtp: RequestHandler<
+export const handleVerifyOtp: RequestHandler<
   { transactionId: string },
-  string,
+  string | { message: string },
   { otp: string; fieldId: string }
 > = async (req, res) => {
-  try {
-    const { transactionId } = req.params
-    const { fieldId, otp } = req.body
-    const transaction = await VerificationService.getTransaction(transactionId)
-    const data = await VerificationService.verifyOtp(transaction, fieldId, otp)
-    return res.status(StatusCodes.OK).json(data)
-  } catch (error) {
-    logger.error({
-      message: 'Error verifying OTP',
-      meta: {
-        action: 'verifyOtp',
-      },
-      error,
+  const { transactionId } = req.params
+  const { fieldId, otp } = req.body
+  const logMeta = {
+    action: 'handleVerifyOtp',
+    transactionId,
+    fieldId,
+  }
+  return VerificationFactory.verifyOtp(transactionId, fieldId, otp)
+    .map((signedData) => res.status(StatusCodes.OK).json(signedData))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying OTP',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     })
-    return handleError(error, res)
-  }
-}
-
-/**
- * Returns relevant http status code for different verification failures
- * @param error
- * @param res
- */
-const handleError = (error: Error, res: Response) => {
-  let status = StatusCodes.INTERNAL_SERVER_ERROR
-  let message = error.message
-  switch (error.name) {
-    case VfnErrors.SendOtpFailed:
-      status = StatusCodes.BAD_REQUEST
-      break
-    case VfnErrors.WaitForOtp:
-      status = StatusCodes.ACCEPTED
-      break
-    case VfnErrors.ResendOtp:
-    case VfnErrors.InvalidOtp:
-      status = StatusCodes.UNPROCESSABLE_ENTITY
-      break
-    case VfnErrors.FieldNotFound:
-    case VfnErrors.TransactionNotFound:
-      status = StatusCodes.NOT_FOUND
-      break
-    default:
-      message = 'An error occurred'
-  }
-  return res.status(status).json(message)
 }
