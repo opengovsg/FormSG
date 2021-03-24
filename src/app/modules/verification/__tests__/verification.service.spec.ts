@@ -18,7 +18,6 @@ import getVerificationModel from '../verification.model'
 import {
   createTransaction,
   getNewOtp,
-  getTransactionMetadata,
   resetFieldInTransaction,
   verifyOtp,
 } from '../verification.service'
@@ -95,29 +94,6 @@ describe('Verification service', () => {
       expect(returnedTransaction).toEqual({
         transactionId: foundTransaction!._id,
         expireAt: foundTransaction!.expireAt,
-      })
-    })
-  })
-
-  describe('getTransactionMetadata', () => {
-    afterEach(async () => await dbHandler.clearDatabase())
-
-    it('should throw error when transaction does not exist', async () => {
-      return expect(
-        getTransactionMetadata(String(new ObjectId())),
-      ).rejects.toThrowError('TRANSACTION_NOT_FOUND')
-    })
-
-    it('should correctly return metadata when request is valid', async () => {
-      const formId = new ObjectId()
-      const expireAt = new Date()
-      const testVerification = new Verification({ formId, expireAt })
-      await testVerification.save()
-      const actual = await getTransactionMetadata(testVerification._id)
-      expect(actual).toEqual({
-        _id: testVerification._id,
-        formId,
-        expireAt,
       })
     })
   })
