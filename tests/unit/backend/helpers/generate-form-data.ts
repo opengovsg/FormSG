@@ -34,7 +34,12 @@ import {
 export const generateDefaultField = (
   fieldType: BasicField,
   customParams?: Partial<
-    IField | IAttachmentField | ICheckboxField | IMobileField | ITableField
+    | IField
+    | IAttachmentField
+    | ICheckboxField
+    | IMobileField
+    | ITableField
+    | IDateField
   >,
 ): IFieldSchema => {
   const defaultParams = {
