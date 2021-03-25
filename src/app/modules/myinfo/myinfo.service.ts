@@ -20,6 +20,7 @@ import {
   MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { IPublicFormView } from '../form/public-form/public-form.types'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
@@ -31,6 +32,7 @@ import {
 import {
   MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
+  MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
@@ -48,6 +50,7 @@ import {
   MyInfoParsedRelayState,
 } from './myinfo.types'
 import {
+  checkMyInfoCookieUsedCount,
   compareHashedValues,
   createRelayState,
   extractSuccessfulMyInfoCookie,
@@ -466,6 +469,7 @@ export class MyInfoService {
    * @returns ok(MyInfoData) if the form has been validated successfully
    * @returns err(MyInfoMissingAccessTokenError) if no myInfoCookie was found on the request
    * @returns err(MyInfoCookieStateError) if cookie was not successful
+   * @returns err(MyInfoCookieAccessError) if the cookie has already been used before
    * @returns err(MyInfoNoESrvcIdError) if form has no eserviceId
    * @returns err(MyInfoAuthTypeError) if the client was not authenticated using MyInfo
    * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
@@ -484,18 +488,66 @@ export class MyInfoService {
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
     | MissingFeatureError
+    | MyInfoCookieAccessError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
-    return extractSuccessfulMyInfoCookie(
-      cookies,
-    ).asyncAndThen((cookiePayload) =>
-      validateMyInfoForm(form).asyncAndThen((form) =>
-        this.fetchMyInfoPersonData(
-          cookiePayload.accessToken,
-          requestedAttributes,
-          form.esrvcId,
+    return extractSuccessfulMyInfoCookie(cookies)
+      .andThen((myInfoCookie) => checkMyInfoCookieUsedCount(myInfoCookie))
+      .asyncAndThen((cookiePayload) =>
+        validateMyInfoForm(form).asyncAndThen((form) =>
+          this.fetchMyInfoPersonData(
+            cookiePayload.accessToken,
+            requestedAttributes,
+            form.esrvcId,
+          ),
         ),
-      ),
+      )
+  }
+
+  /**
+   * creates a form view with myInfo fields prefilled onto the form
+   * @param form The form to validate and fill
+   * @param cookies The cookies on the request
+   * @returns
+   */
+  createFormWithMyInfo(
+    form: IPopulatedForm,
+    cookies: Record<string, unknown>,
+  ): ResultAsync<
+    IPublicFormView,
+    | MyInfoCookieAccessError
+    | MissingFeatureError
+    | MyInfoFetchError
+    | MyInfoAuthTypeError
+    | MyInfoCircuitBreakerError
+    | DatabaseError
+    | MyInfoMissingAccessTokenError
+    | MyInfoCookieStateError
+    | MyInfoNoESrvcIdError
+  > {
+    return (
+      // 1. Validate form and extract myInfoData
+      this.extractMyInfoData(form, cookies)
+        // 2. Fill the form based on the result
+        .andThen((myInfoData) =>
+          this.prefillMyInfoFields(myInfoData, form.toJSON().form_fields).map(
+            (formFields) => ({
+              form: {
+                ...form.getPublicView(),
+                form_fields: formFields,
+              },
+              spcpSession: { userName: myInfoData.getUinFin() },
+            }),
+          ),
+        )
+        // 3. Hash and save to database
+        .andThen((prefilledForm) =>
+          this.saveMyInfoHashes(
+            prefilledForm.spcpSession.userName,
+            form._id,
+            prefilledForm.form.form_fields,
+          ).map(() => prefilledForm),
+        )
     )
   }
 }

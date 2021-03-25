@@ -28,6 +28,7 @@ import { ProcessedFieldResponse } from '../submission/submission.types'
 import { MYINFO_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoAuthTypeError,
+  MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -390,6 +391,19 @@ export const extractSuccessfulMyInfoCookie = (
   extractMyInfoCookie(cookies).andThen((cookiePayload) =>
     extractSuccessfulCookie(cookiePayload),
   )
+
+/**
+ * checks if a MyInfo cookie has been used
+ * @param myInfoCookie
+ * @returns ok(myInfoCookie) if the cookie has not been used before
+ * @returns err(MyInfoCookieAccessError) if the cookie has been used before
+ */
+export const checkMyInfoCookieUsedCount = (
+  myInfoCookie: MyInfoSuccessfulCookiePayload,
+): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieAccessError> =>
+  myInfoCookie.usedCount <= 0
+    ? ok(myInfoCookie)
+    : err(new MyInfoCookieAccessError())
 
 /**
  * Extracts access token from a MyInfo cookie

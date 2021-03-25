@@ -14,6 +14,7 @@ import {
   MyInfoAttribute,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import { IPublicFormView } from '../form/public-form/public-form.types'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MyInfoData } from './myinfo.adapter'
@@ -101,6 +102,21 @@ interface IMyInfoFactory {
     | MyInfoFetchError
     | MissingFeatureError
   >
+
+  createFormWithMyInfo: (
+    form: IPopulatedForm,
+    cookies: Record<string, unknown>,
+  ) => ResultAsync<
+    IPublicFormView,
+    | MissingFeatureError
+    | MyInfoFetchError
+    | MyInfoAuthTypeError
+    | MyInfoCircuitBreakerError
+    | DatabaseError
+    | MyInfoMissingAccessTokenError
+    | MyInfoCookieStateError
+    | MyInfoNoESrvcIdError
+  >
 }
 
 export const createMyInfoFactory = ({
@@ -120,6 +136,7 @@ export const createMyInfoFactory = ({
       parseMyInfoRelayState: () => err(error),
       extractUinFin: () => err(error),
       extractMyInfoData: () => errAsync(error),
+      createFormWithMyInfo: () => errAsync(error),
     }
   }
   return new MyInfoService({
