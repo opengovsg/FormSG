@@ -6,8 +6,9 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType } from '../../../types'
+import { AuthType, IPopulatedForm } from '../../../types'
 import { ApplicationError } from '../core/core.errors'
+import { IPublicFormView } from '../form/public-form/public-form.types'
 
 import {
   CreateRedirectUrlError,
@@ -18,6 +19,7 @@ import {
   MissingAttributesError,
   MissingJwtError,
   RetrieveAttributesError,
+  SpcpAuthTypeError,
   VerifyJwtError,
 } from './spcp.errors'
 import {
@@ -410,10 +412,10 @@ export class SpcpService {
    * Gets the spcp session info from the auth, cookies
    * @param authType The authentication type of the user
    * @param cookies The spcp cookies set by the redirect
-   * @return okAsync(jwtPayload) if successful
-   * @return errAsync(MissingJwtError) if the specified cookie for the authType (spcp) does not exist
-   * @return errAsync(VerifyJwtError) if the jwt exists but could not be authenticated
-   * @return errAsync(InvalidJwtError) if the jwt exists but the payload is invalid
+   * @return ok(jwtPayload) if successful
+   * @return err(MissingJwtError) if the specified cookie for the authType (spcp) does not exist
+   * @return err(VerifyJwtError) if the jwt exists but could not be authenticated
+   * @return err(InvalidJwtError) if the jwt exists but the payload is invalid
    */
   getSpcpSession(
     authType: AuthType.SP | AuthType.CP,
@@ -425,5 +427,31 @@ export class SpcpService {
     return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
       this.extractJwtPayload(jwtResult, authType),
     )
+  }
+
+  /**
+   * Validates and creates the public form view from the cookies and form of a request
+   * @param form The public form view
+   * @param authType Possible authentication types of the request (SP or CP)
+   * @param cookies Cookies of the request
+   * @return ok(IPublicFormView) The public view of the form with associated session info
+   * @return err(MissingJwtError) if the specified cookie for the authType (spcp) does not exist
+   * @return err(VerifyJwtError) if the jwt exists but could not be authenticated
+   * @return err(InvalidJwtError) if the jwt exists but the payload is invalid
+   * @return err(AuthTypeMismatchError) if the client did not authenticate using SPCP
+   */
+  createFormWithSpcpSession(
+    form: IPopulatedForm,
+    cookies: Record<string, unknown>,
+  ): ResultAsync<
+    IPublicFormView,
+    MissingJwtError | VerifyJwtError | InvalidJwtError | SpcpAuthTypeError
+  > {
+    return form.authType === AuthType.CP || form.authType === AuthType.SP
+      ? this.getSpcpSession(form.authType, cookies).map(({ userName }) => ({
+          form: form.getPublicView(),
+          spcpSession: { userName },
+        }))
+      : errAsync(new SpcpAuthTypeError())
   }
 }

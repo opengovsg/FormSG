@@ -67,6 +67,18 @@ export class AuthTypeMismatchError extends ApplicationError {
 }
 
 /**
+ * Attempt to perform a SPCP-related operation on a form without SPCP
+ * authentication enabled.
+ */
+export class SpcpAuthTypeError extends ApplicationError {
+  constructor(
+    message = 'Spcp function called on form without Spcp authentication type',
+  ) {
+    super(message)
+  }
+}
+
+/**
  * Attributes given by SP/CP did not contain NRIC or entity ID/UID.
  */
 export class MissingAttributesError extends ApplicationError {
