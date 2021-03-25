@@ -1,10 +1,10 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import _ from 'lodash'
+import { okAsync } from 'neverthrow'
 import querystring from 'querystring'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { AuthType } from '../../../../types'
+import { AuthType, FormController } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import {
@@ -12,6 +12,8 @@ import {
   MYINFO_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import { MyInfoCookiePayload } from '../../myinfo/myinfo.types'
+import { extractSuccessfulCookie } from '../../myinfo/myinfo.util'
 import { MissingJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { PrivateFormError } from '../form.errors'
@@ -206,106 +208,59 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   }
 
   const form = formResult.value
-  const publicFormView = form.getPublicView()
+  const publicForm = form.getPublicView()
   const { authType } = form
+
+  // NOTE: Creating a variable to ensure that TS will enforce the type and ensure all keys in AuthType are covered.
+  const formController: FormController<
+    | ReturnType<typeof SpcpFactory.createFormWithSpcpSession>
+    | ReturnType<typeof MyInfoFactory.createFormWithMyInfo>
+  > = {
+    [AuthType.SP]: () =>
+      SpcpFactory.createFormWithSpcpSession(form, req.cookies),
+    [AuthType.CP]: () =>
+      SpcpFactory.createFormWithSpcpSession(form, req.cookies),
+    [AuthType.MyInfo]: () => {
+      return MyInfoFactory.createFormWithMyInfo(form, req.cookies)
+        .andThen((publicForm) => {
+          return extractSuccessfulCookie(req.cookies).map((myInfoCookie) => {
+            const cookiePayload: MyInfoCookiePayload = {
+              ...myInfoCookie,
+              usedCount: myInfoCookie.usedCount + 1,
+            }
+            // NOTE: This is a side effect to set the cookie on the result after it has been successfully prefilled.
+            res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
+            return publicForm
+          })
+        })
+        .mapErr((error) => {
+          // NOTE: This is a side-effect as there is no need for cookie if data could not be retrieved
+          res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+          return error
+        })
+    },
+    [AuthType.NIL]: () => okAsync({ form: form.getPublicView() }),
+  }
 
   // NOTE: Once there is a valid form retrieved from the database,
   // the client should always get a 200 response with the form's public view.
   // Additional errors should be tagged onto the response object like myInfoError.
-  switch (authType) {
-    case AuthType.SP:
-    case AuthType.CP: {
-      // Form is valid, check for SPCP/MyInfo data.
-      return SpcpFactory.getSpcpSession(authType, req.cookies)
-        .map(({ userName }) =>
-          res.json({
-            form: publicFormView,
-            spcpSession: { userName },
-          }),
-        )
-        .mapErr((error) => {
-          // NOTE: Only log if there is no jwt present on the request.
-          // This is because clients can be members of the pubilc and hence, have no jwt.
-          if (!(error instanceof MissingJwtError)) {
-            logger.error({
-              message: 'Error getting public form',
-              meta: {
-                action: 'handleGetPublicForm',
-                ...createReqMeta(req),
-                formId,
-              },
-              error,
-            })
-          }
-          return res.json({
-            form: publicFormView,
-          })
+  return formController[authType]()
+    .map((publicFormView) => res.json(publicFormView))
+    .mapErr((error) => {
+      if (!(error instanceof MissingJwtError)) {
+        logger.error({
+          message: 'Error getting public form',
+          meta: {
+            action: 'handleGetPublicForm',
+            ...createReqMeta(req),
+            formId,
+          },
+          error,
         })
-    }
-
-    case AuthType.MyInfo: {
-      const requestedAttributes = form.getUniqueMyInfoAttrs()
-
-      return (
-        // 1. Validate form and extract myInfoData
-        MyInfoFactory.extractMyInfoData(form, req.cookies)
-          // 2. Fill the form based on the result
-          .andThen((myInfoData) =>
-            MyInfoFactory.prefillMyInfoFields(
-              myInfoData,
-              form.toJSON().form_fields,
-            ).map((formFields) => ({
-              formFields,
-              spcpSession: { userName: myInfoData.getUinFin() },
-            })),
-          )
-          // 3. Hash and save to database
-          .andThen((form) =>
-            MyInfoFactory.saveMyInfoHashes(
-              form.spcpSession.userName,
-              formId,
-              form.formFields,
-            ).map(
-              // NOTE: Passthrough as form is needed in the pipeline
-              () => form,
-            ),
-          )
-          // 4. Return result if successful otherwise, clear cookies and return default response
-          .map(({ spcpSession, formFields }) =>
-            res.json({
-              form: _.set(publicFormView, 'form_fields', formFields),
-              spcpSession,
-            }),
-          )
-          .mapErr((error) => {
-            logger.error({
-              message: error.message,
-              meta: {
-                action: 'handlePublicForm',
-                ...createReqMeta(req),
-                formId,
-                esrvcId: form.esrvcId,
-                requestedAttributes,
-              },
-              error,
-            })
-            return (
-              res
-                // NOTE: No need for cookie if data could not be retrieved
-                .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
-                .json({
-                  form: publicFormView,
-                  myInfoError: true,
-                })
-            )
-          })
-      )
-    }
-    default:
-      // NOTE: Client did not choose any form of authentication.
-      // Only return the public form view back to the client
+      }
       return res.json({
-        form: publicFormView,
+        form: publicForm,
       })
-  }
+    })
 }
