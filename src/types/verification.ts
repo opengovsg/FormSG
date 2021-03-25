@@ -29,7 +29,14 @@ export interface IVerificationSchema
   extends IVerification,
     Document,
     PublicView<PublicTransaction> {
+  /**
+   * Retrieves an individual field in a transaction, or undefined if not found
+   * @param fieldId
+   */
   getField(fieldId: string): IVerificationFieldSchema | undefined
+  /**
+   * Extracts non-sensitive fields from a transaction
+   */
   getPublicView(): PublicTransaction
 }
 
@@ -40,6 +47,10 @@ export type PublicTransaction = Pick<
 >
 
 export interface IVerificationModel extends Model<IVerificationSchema> {
+  /**
+   * Retrieves non-sensitive fields of a transaction, given its ID
+   * @param id Transaction ID
+   */
   getPublicViewById(
     id: IVerificationSchema['_id'],
   ): Promise<PublicTransaction | null>
