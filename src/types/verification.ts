@@ -76,6 +76,10 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
     transactionId: string,
     fieldId: string,
   ): Promise<IVerificationSchema | null>
+  /**
+   * Updates the hash records for a single field
+   * @param updateData Data with which to update field
+   */
   updateHashForField(
     updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null>

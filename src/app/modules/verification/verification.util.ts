@@ -57,6 +57,12 @@ export const extractTransactionFields = (
   }))
 }
 
+/**
+ * Computes an expiry date a given number of seconds after the original date.
+ * @param expireAfterSeconds Seconds to add to date
+ * @param fromDate Original date. Defaults to current date.
+ * @returns Date of expiry
+ */
 export const getExpiryDate = (
   expireAfterSeconds: number,
   fromDate?: Date,
@@ -77,6 +83,13 @@ export const isTransactionExpired = (
   return transaction.expireAt < currentDate
 }
 
+/**
+ * Computes whether the minimum waiting time for an OTP has elapsed. If this
+ * returns true, then a new OTP can be requested.
+ * @param hashCreatedAt When field hash was created
+ * @returns True if wait time has elapsed and hence a new OTP can be requested,
+ * false  otherwise
+ */
 export const isOtpWaitTimeElapsed = (hashCreatedAt: Date | null): boolean => {
   // No hash created yet, so no wait time
   if (!hashCreatedAt) return true
