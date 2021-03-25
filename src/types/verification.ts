@@ -54,6 +54,11 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   getPublicViewById(
     id: IVerificationSchema['_id'],
   ): Promise<PublicTransaction | null>
+  /**
+   * Creates a transaction given a form document. Returns null if the form
+   * has no verifiable fields.
+   * @param form Form document
+   */
   createTransactionFromForm(
     form: IFormSchema,
   ): Promise<IVerificationSchema | null>
