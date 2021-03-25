@@ -62,6 +62,9 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   createTransactionFromForm(
     form: IFormSchema,
   ): Promise<IVerificationSchema | null>
+  /**
+   * Resets the hash records of a single field.
+   */
   resetField(
     transactionId: string,
     fieldId: string,

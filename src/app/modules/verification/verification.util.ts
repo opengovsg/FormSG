@@ -59,8 +59,7 @@ export const extractTransactionFields = (
 
 /**
  * Checks if expireAt is in the past -- ie transaction has expired
- * @param expireAt
- * @returns boolean
+ * @param transaction the transaction document to
  */
 export const isTransactionExpired = (
   transaction: IVerificationSchema,
