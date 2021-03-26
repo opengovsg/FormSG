@@ -15,6 +15,6 @@ export const renderBouncedSubmissionSms = (formTitle: string): string => dedent`
 export const renderVerificationSms = (
   otp: string,
   appHost: string,
-): string => dedent`Use the OTP ${otp} to complete your submission on ${appHost}.
+): string => dedent`Use the OTP ${otp} to submit on ${appHost}.
 
-  If you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`
+  Never share your OTP with anyone else. If you did not request this OTP, you can safely ignore this SMS.`

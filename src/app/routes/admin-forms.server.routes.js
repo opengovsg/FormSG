@@ -613,6 +613,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download').get(
+    withUserAuthentication,
     celebrate({
       [Segments.QUERY]: Joi.object()
         .keys({
@@ -624,7 +625,6 @@ module.exports = function (app) {
         })
         .and('startDate', 'endDate'),
     }),
-    authEncryptedResponseAccess,
     EncryptSubmissionController.handleStreamEncryptedResponses,
   )
 
