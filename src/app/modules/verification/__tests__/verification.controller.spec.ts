@@ -689,7 +689,7 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
 
-    it('should return 400 when OTP is expired', async () => {
+    it('should return 422 when OTP is expired', async () => {
       MockVerificationFactory.verifyOtp
         .mockReset()
         .mockReturnValueOnce(errAsync(new OtpExpiredError()))
@@ -701,11 +701,13 @@ describe('Verification controller', () => {
         otpFieldId,
         MOCK_OTP,
       )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
 
-    it('should return 400 when OTP max retries are exceeded', async () => {
+    it('should return 422 when OTP max retries are exceeded', async () => {
       MockVerificationFactory.verifyOtp
         .mockReset()
         .mockReturnValueOnce(errAsync(new OtpRetryExceededError()))
@@ -717,7 +719,9 @@ describe('Verification controller', () => {
         otpFieldId,
         MOCK_OTP,
       )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
 

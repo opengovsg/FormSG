@@ -123,13 +123,13 @@ export const mapRouteError: MapRouteError = (
     case OtpExpiredError:
       return {
         errorMessage: 'Your OTP has expired, please request for a new one.',
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case OtpRetryExceededError:
       return {
         errorMessage:
           'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case WrongOtpError:
       return {
