@@ -2,19 +2,19 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import getVerificationModel from 'src/app/models/verification.server.model'
+import expressHandler from 'tests/unit/backend/helpers/jest-express'
+
 import {
   createTransaction,
   getNewOtp,
   getTransactionMetadata,
   resetFieldInTransaction,
   verifyOtp,
-} from 'src/app/modules/verification/verification.controller'
-import * as VfnService from 'src/app/modules/verification/verification.service'
+} from '../verification.controller'
+import getVerificationModel from '../verification.model'
+import * as VfnService from '../verification.service'
 
-import expressHandler from '../../helpers/jest-express'
-
-jest.mock('src/app/modules/verification/verification.service')
+jest.mock('../verification.service')
 const MockVfnService = mocked(VfnService, true)
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
