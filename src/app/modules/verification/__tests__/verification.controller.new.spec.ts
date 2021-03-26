@@ -67,7 +67,7 @@ describe('Verification controller', () => {
       await VerificationController.handleCreateTransaction(
         MOCK_REQ,
         mockRes,
-        noop,
+        jest.fn(),
       )
 
       expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
@@ -87,7 +87,7 @@ describe('Verification controller', () => {
       await VerificationController.handleCreateTransaction(
         MOCK_REQ,
         mockRes,
-        noop,
+        jest.fn(),
       )
       expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
         MOCK_FORM_ID,
@@ -104,7 +104,7 @@ describe('Verification controller', () => {
       await VerificationController.handleCreateTransaction(
         MOCK_REQ,
         mockRes,
-        noop,
+        jest.fn(),
       )
 
       expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
@@ -124,7 +124,7 @@ describe('Verification controller', () => {
       await VerificationController.handleCreateTransaction(
         MOCK_REQ,
         mockRes,
-        noop,
+        jest.fn(),
       )
 
       expect(MockVerificationFactory.createTransaction).toHaveBeenCalledWith(
