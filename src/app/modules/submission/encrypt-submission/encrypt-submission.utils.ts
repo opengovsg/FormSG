@@ -19,7 +19,6 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
-import { MissingUserError } from '../../user/user.errors'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
@@ -28,6 +27,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
+import { MissingUserError } from '../../user/user.errors'
 import {
   ConflictError,
   InvalidEncodingError,

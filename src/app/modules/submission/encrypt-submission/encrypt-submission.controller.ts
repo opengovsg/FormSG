@@ -13,7 +13,6 @@ import {
   AuthType,
   ResWithHashedFields,
   ResWithUinFin,
-  WithForm,
   WithParsedResponses,
 } from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
@@ -25,8 +24,8 @@ import * as FormService from '../../form/form.service'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
-import { getProcessedResponses } from '../submission.service'
 import { getPopulatedUserById } from '../../user/user.service'
+import { getProcessedResponses } from '../submission.service'
 
 import {
   checkFormIsEncryptMode,
