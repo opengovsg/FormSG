@@ -128,7 +128,7 @@ export const mapRouteError: MapRouteError = (
     case WaitForOtpError:
       return {
         errorMessage: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case InvalidNumberError:
       return {

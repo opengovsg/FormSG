@@ -436,7 +436,7 @@ describe('Verification controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
 
-    it('should return 400 when OTP waiting time has not elapsed', async () => {
+    it('should return 422 when OTP waiting time has not elapsed', async () => {
       MockVerificationFactory.sendNewOtp
         .mockReset()
         .mockReturnValueOnce(errAsync(new WaitForOtpError()))
@@ -451,7 +451,9 @@ describe('Verification controller', () => {
         hashedOtp: MOCK_HASHED_OTP,
         recipient: MOCK_ANSWER,
       })
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
 
