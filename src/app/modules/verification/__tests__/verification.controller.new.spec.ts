@@ -21,12 +21,9 @@ const VerificationModel = getVerificationModel(mongoose)
 jest.mock('../verification.factory')
 const MockVerificationFactory = mocked(VerificationFactory, true)
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => {}
-const MOCK_FORM_ID = new ObjectId().toHexString()
-const MOCK_TRANSACTION_ID = new ObjectId().toHexString()
-
 describe('Verification controller', () => {
+  const MOCK_FORM_ID = new ObjectId().toHexString()
+  const MOCK_TRANSACTION_ID = new ObjectId().toHexString()
   let mockTransaction: IVerificationSchema
   let mockRes: Response
 
@@ -66,7 +63,7 @@ describe('Verification controller', () => {
       await VerificationController.handleGetTransactionMetadata(
         MOCK_REQ,
         mockRes,
-        noop,
+        jest.fn(),
       )
 
       expect(
@@ -84,7 +81,7 @@ describe('Verification controller', () => {
       await VerificationController.handleGetTransactionMetadata(
         MOCK_REQ,
         mockRes,
-        noop,
+        jest.fn(),
       )
 
       expect(
@@ -104,7 +101,7 @@ describe('Verification controller', () => {
       await VerificationController.handleGetTransactionMetadata(
         MOCK_REQ,
         mockRes,
-        noop,
+        jest.fn(),
       )
 
       expect(
