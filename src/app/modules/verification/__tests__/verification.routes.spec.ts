@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import { StatusCodes } from 'http-status-codes'
+import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
@@ -204,6 +204,7 @@ describe('verification.routes', () => {
         .send({ fieldId: mockEmailFieldId })
 
       expect(response.status).toBe(StatusCodes.OK)
+      expect(response.text).toBe(getReasonPhrase(StatusCodes.OK))
     })
 
     it('should return 200 when transactionId and fieldId for mobile field are valid', async () => {
