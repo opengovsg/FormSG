@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import subMinutes from 'date-fns/subMinutes'
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
@@ -84,7 +85,7 @@ describe('verification.routes', () => {
           _id: mockEmailFieldId,
           // Hash created 1 minute ago, so we can test requesting for new OTP
           // without being rejected due to minimum waiting time
-          hashCreatedAt: new Date(Date.now() - 60 * 1000),
+          hashCreatedAt: subMinutes(Date.now(), 1),
           fieldType: BasicField.Email,
           hashRetries: 0,
           hashedOtp: MOCK_HASHED_OTP,
@@ -94,7 +95,7 @@ describe('verification.routes', () => {
           _id: mockMobileFieldId,
           // Hash created 1 minute ago, so we can test requesting for new OTP
           // without being rejected due to minimum waiting time
-          hashCreatedAt: new Date(Date.now() - 60 * 1000),
+          hashCreatedAt: subMinutes(Date.now(), 1),
           fieldType: BasicField.Mobile,
           hashRetries: 0,
           hashedOtp: MOCK_HASHED_OTP,
