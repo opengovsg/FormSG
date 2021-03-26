@@ -75,10 +75,6 @@ export const mapRouteError: MapRouteError = (
       }
     case FieldNotFoundInTransactionError:
     case TransactionNotFoundError:
-      return {
-        errorMessage: coreErrorMsg,
-        statusCode: StatusCodes.NOT_FOUND,
-      }
     case FormNotFoundError:
       return {
         errorMessage: coreErrorMsg,
