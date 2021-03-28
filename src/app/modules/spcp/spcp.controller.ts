@@ -143,48 +143,6 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
 }
 
 /**
- * Checks if user is SPCP-authenticated before allowing submission
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
-  req,
-  res,
-  next,
-) => {
-  const { authType, _id } = (req as WithForm<typeof req>).form
-  if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
-
-  const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
-  return SpcpFactory.extractJwt(req.cookies, authType)
-    .asyncAndThen((jwt) =>
-      SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
-    )
-    .map(({ userName, userInfo }) => {
-      res.locals.uinFin = userName
-      res.locals.userInfo = userInfo
-      return next()
-    })
-    .mapErr((error) => {
-      const { statusCode, errorMessage } = mapRouteError(error)
-      logger.error({
-        message: 'Failed to verify JWT with auth client',
-        meta: {
-          action: 'isSpcpAuthenticated',
-          ...createReqMeta(req),
-          authType,
-        },
-        error,
-      })
-      return res.status(statusCode).json({
-        message: errorMessage,
-        spcpSubmissionFailure: true,
-      })
-    })
-}
-
-/**
  * Higher-order function which returns an Express handler to handle Singpass
  * and Corppass login requests.
  * @param authType 'SP' or 'CP'

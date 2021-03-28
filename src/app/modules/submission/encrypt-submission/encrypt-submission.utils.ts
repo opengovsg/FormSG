@@ -7,7 +7,11 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
-import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
+import {
+  DatabaseError,
+  MalformedParametersError,
+  MissingFeatureError,
+} from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import {
   ForbiddenFormError,
@@ -15,6 +19,14 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import {
+  CreateRedirectUrlError,
+  FetchLoginPageError,
+  InvalidJwtError,
+  LoginPageValidationError,
+  MissingJwtError,
+  VerifyJwtError,
+} from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
 import {
   ConflictError,
@@ -32,8 +44,35 @@ const logger = createLoggerWithLabel(module)
  * messages.
  * @param error The error to retrieve the status codes and error messages
  */
-export const mapRouteError: MapRouteError = (error) => {
+export const mapRouteError: MapRouteError = (
+  error,
+  coreErrorMessage = 'Sorry, something went wrong. Please try again.',
+) => {
   switch (error.constructor) {
+    case MissingFeatureError:
+    case CreateRedirectUrlError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
+      }
+    case FetchLoginPageError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage: 'Failed to contact SingPass. Please try again.',
+      }
+    case LoginPageValidationError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
+        errorMessage: 'Error while contacting SingPass. Please try again.',
+      }
+    case MissingJwtError:
+    case VerifyJwtError:
+    case InvalidJwtError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage:
+          'Something went wrong with your login. Please try logging in and submitting again.',
+      }
     case MissingUserError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
