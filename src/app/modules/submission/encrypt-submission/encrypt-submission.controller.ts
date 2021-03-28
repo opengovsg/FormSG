@@ -165,6 +165,7 @@ export const handleEncryptedSubmission: RequestHandler = async (
     typeof req.body
   >).parsedResponses = processedResponses
   // Prevent downstream functions from using responses by deleting it.
+  // TODO(#1104): We want to remove the mutability of state that comes with delete.
   delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
@@ -195,6 +196,7 @@ export const handleEncryptedSubmission: RequestHandler = async (
 
   // validating that submitted MyInfo field values match the values
   // originally retrieved from MyInfo.
+  // TODO(frankchn): Roll into a single service call as part of internal refactoring
   const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin
   const requestedAttributes = form.getUniqueMyInfoAttrs()
   if (authType === AuthType.SP && requestedAttributes.length > 0) {
