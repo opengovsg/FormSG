@@ -476,7 +476,7 @@ export class MyInfoService {
    * @returns err(MyInfoFetchError) if validated but the data could not be retrieved
    * @returns err(MissingFeatureError) if using an outdated version that does not support myInfo
    */
-  extractMyInfoData(
+  fetchMyInfoData(
     form: IPopulatedForm,
     cookies: Record<string, unknown>,
   ): ResultAsync<
@@ -527,7 +527,7 @@ export class MyInfoService {
   > {
     return (
       // 1. Validate form and extract myInfoData
-      this.extractMyInfoData(form, cookies)
+      this.fetchMyInfoData(form, cookies)
         // 2. Fill the form based on the result
         .andThen((myInfoData) =>
           this.prefillMyInfoFields(myInfoData, form.toJSON().form_fields).map(

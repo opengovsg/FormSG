@@ -89,7 +89,7 @@ interface IMyInfoFactory {
     accessToken: string,
   ) => Result<string, MyInfoInvalidAccessTokenError | MissingFeatureError>
 
-  extractMyInfoData: (
+  fetchMyInfoData: (
     form: IPopulatedForm,
     cookies: Record<string, unknown>,
   ) => ResultAsync<
@@ -135,7 +135,7 @@ export const createMyInfoFactory = ({
       createRedirectURL: () => err(error),
       parseMyInfoRelayState: () => err(error),
       extractUinFin: () => err(error),
-      extractMyInfoData: () => errAsync(error),
+      fetchMyInfoData: () => errAsync(error),
       createFormWithMyInfo: () => errAsync(error),
     }
   }
