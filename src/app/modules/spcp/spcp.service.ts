@@ -47,8 +47,6 @@ const LOGIN_PAGE_TIMEOUT = 10000 // 10 seconds
 export class SpcpService {
   #singpassAuthClient: SPCPAuthClient
   #corppassAuthClient: SPCPAuthClient
-  // TODO (private #123): remove #corppassCloudAuthClient
-  #corppassCloudAuthClient: SPCPAuthClient
   #spcpProps: ISpcpMyInfo
 
   constructor(props: ISpcpMyInfo) {
@@ -73,51 +71,15 @@ export class SpcpService {
       spcpCert: fs.readFileSync(props.cpIdpCertPath),
       extract: SPCPAuthClient.extract.CORPPASS,
     })
-    // TODO (private #123): remove #corppassCloudAuthClient
-    try {
-      logger.info({
-        message: 'Initialising CorpPass Cloud client',
-        meta: {
-          action: 'SpcpService',
-          idpEndpoint: props.cpCloudEndpoint,
-          spcpCertPath: props.cpCloudCertPath,
-        },
-      })
-      this.#corppassCloudAuthClient = new SPCPAuthClient({
-        partnerEntityId: props.cpPartnerEntityId,
-        idpLoginURL: props.cpIdpLoginUrl,
-        // Note this has been changed to the Cloud endpoint
-        idpEndpoint: props.cpCloudEndpoint,
-        esrvcID: props.cpEsrvcId,
-        appKey: fs.readFileSync(props.cpFormSgKeyPath),
-        appCert: fs.readFileSync(props.cpFormSgCertPath),
-        // Note this has been changed to the Cloud cert
-        spcpCert: fs.readFileSync(props.cpCloudCertPath),
-        extract: SPCPAuthClient.extract.CORPPASS,
-      })
-    } catch {
-      logger.info({
-        message: 'Error while initialising CorpPass Cloud client',
-        meta: {
-          action: 'SpcpService',
-        },
-      })
-      this.#corppassCloudAuthClient = this.#corppassAuthClient
-    }
   }
 
   /**
    * Retrieve the correct auth client.
    * @param authType 'SP' or 'CP'
    */
-  getAuthClient(
-    authType: AuthType.SP | AuthType.CP,
-    useCpCloud: boolean,
-  ): SPCPAuthClient {
+  getAuthClient(authType: AuthType.SP | AuthType.CP): SPCPAuthClient {
     if (authType === AuthType.SP) {
       return this.#singpassAuthClient
-    } else if (useCpCloud) {
-      return this.#corppassCloudAuthClient
     } else {
       return this.#corppassAuthClient
     }
@@ -134,7 +96,6 @@ export class SpcpService {
     authType: AuthType.SP | AuthType.CP,
     target: string,
     esrvcId: string,
-    useCpCloud = false,
   ): Result<string, CreateRedirectUrlError> {
     const logMeta = {
       action: 'createRedirectUrl',
@@ -142,13 +103,7 @@ export class SpcpService {
       target,
       esrvcId,
     }
-    if (useCpCloud) {
-      logger.info({
-        message: 'Using CorpPass Cloud credentials',
-        meta: logMeta,
-      })
-    }
-    const authClient = this.getAuthClient(authType, useCpCloud)
+    const authClient = this.getAuthClient(authType)
     const result = authClient.createRedirectURL(target, esrvcId)
     if (typeof result === 'string') {
       return ok(result)
@@ -260,19 +215,12 @@ export class SpcpService {
   extractJwtPayload(
     jwt: string,
     authType: AuthType.SP | AuthType.CP,
-    useCpCloud = false,
   ): ResultAsync<JwtPayload, VerifyJwtError | InvalidJwtError> {
     const logMeta = {
       action: 'extractJwtPayload',
       authType,
     }
-    if (useCpCloud) {
-      logger.info({
-        message: 'Using CorpPass Cloud credentials',
-        meta: logMeta,
-      })
-    }
-    const authClient = this.getAuthClient(authType, useCpCloud)
+    const authClient = this.getAuthClient(authType)
     return ResultAsync.fromPromise(
       verifyJwtPromise(authClient, jwt),
       (error) => {
@@ -370,7 +318,6 @@ export class SpcpService {
     samlArt: string,
     destination: string,
     authType: AuthType.SP | AuthType.CP,
-    useCpCloud = false,
   ): ResultAsync<Record<string, unknown>, RetrieveAttributesError> {
     const logMeta = {
       action: 'getSpcpAttributes',
@@ -378,13 +325,7 @@ export class SpcpService {
       destination,
       samlArt,
     }
-    if (useCpCloud) {
-      logger.info({
-        message: 'Using CorpPass Cloud credentials',
-        meta: logMeta,
-      })
-    }
-    const authClient = this.getAuthClient(authType, useCpCloud)
+    const authClient = this.getAuthClient(authType)
     return ResultAsync.fromPromise(
       getAttributesPromise(authClient, samlArt, destination),
       (error) => {
@@ -409,17 +350,8 @@ export class SpcpService {
     payload: JwtPayload,
     cookieDuration: number,
     authType: AuthType.SP | AuthType.CP,
-    useCpCloud = false,
   ): Result<string, ApplicationError> {
-    if (useCpCloud) {
-      logger.info({
-        message: 'Using CorpPass Cloud credentials',
-        meta: {
-          action: 'createJWT',
-        },
-      })
-    }
-    const authClient = this.getAuthClient(authType, useCpCloud)
+    const authClient = this.getAuthClient(authType)
     return ok(
       authClient.createJWT(
         payload,
