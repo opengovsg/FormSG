@@ -8,9 +8,6 @@ import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
 import { aws as AwsConfig } from '../../../../config/config'
-import FeatureManager, {
-  FeatureNames,
-} from '../../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
@@ -52,9 +49,6 @@ import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
-
-// TODO (private #123): remove checking of form ID against CorpPass cloud test form
-const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
 export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   const { formId } = req.params
