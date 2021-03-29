@@ -177,15 +177,12 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
-  const { authType, _id } = form
+  const { authType } = form
   if (authType === AuthType.SP || authType === AuthType.CP) {
-    const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
     const spcpResult = await SpcpFactory.extractJwt(
       req.cookies,
       authType,
-    ).asyncAndThen((jwt) =>
-      SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
-    )
+    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
     if (spcpResult.isErr()) {
       const { statusCode, errorMessage } = mapRouteError(spcpResult.error)
       logger.error({

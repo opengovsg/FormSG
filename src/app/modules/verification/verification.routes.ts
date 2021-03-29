@@ -1,7 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { verificationMiddleware } from './verification.factory'
+import * as VerificationController from './verification.controller'
+import { verificationMiddleware } from './verification.middleware'
 
 export const VfnRouter = Router()
 
@@ -24,7 +25,7 @@ VfnRouter.get(
       transactionId: formatOfId,
     }),
   }),
-  verificationMiddleware.getTransactionMetadata,
+  VerificationController.handleGetTransactionMetadata,
 )
 
 VfnRouter.post(

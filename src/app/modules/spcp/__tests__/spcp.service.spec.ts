@@ -64,7 +64,7 @@ describe('spcp.service', () => {
     it('should instantiate auth clients with the correct params', () => {
       const spcpService = new SpcpService(MOCK_PARAMS)
       expect(spcpService).toBeTruthy()
-      expect(MockAuthClient).toHaveBeenCalledTimes(3)
+      expect(MockAuthClient).toHaveBeenCalledTimes(2)
       expect(MockAuthClient).toHaveBeenCalledWith({
         partnerEntityId: MOCK_PARAMS.spPartnerEntityId,
         idpLoginURL: MOCK_PARAMS.spIdpLoginUrl,

@@ -1,5 +1,6 @@
-import { Document, Model, Query } from 'mongoose'
+import { Document, Model } from 'mongoose'
 
+import { PublicView } from './database'
 import { IFormSchema } from './form'
 
 export interface IVerificationField {
@@ -20,14 +21,37 @@ export interface IVerificationFieldSchema
 
 export interface IVerification {
   formId: IFormSchema['_id']
-  expireAt?: Date
+  expireAt: Date
   fields: IVerificationFieldSchema[]
 }
 
-export interface IVerificationSchema extends IVerification, Document {}
+export interface IVerificationSchema
+  extends IVerification,
+    Document,
+    PublicView<PublicTransaction> {
+  /**
+   * Retrieves an individual field in a transaction, or undefined if not found
+   * @param fieldId
+   */
+  getField(fieldId: string): IVerificationFieldSchema | undefined
+  /**
+   * Extracts non-sensitive fields from a transaction
+   */
+  getPublicView(): PublicTransaction
+}
+
+// Keep in sync with VERIFICATION_PUBLIC_FIELDS
+export type PublicTransaction = Pick<
+  IVerificationSchema,
+  'formId' | 'expireAt' | '_id'
+>
 
 export interface IVerificationModel extends Model<IVerificationSchema> {
-  findTransactionMetadata(
+  /**
+   * Retrieves non-sensitive fields of a transaction, given its ID
+   * @param id Transaction ID
+   */
+  getPublicViewById(
     id: IVerificationSchema['_id'],
-  ): Query<Omit<IVerificationSchema, 'fields'>, IVerificationSchema>
+  ): Promise<PublicTransaction | null>
 }
