@@ -768,4 +768,20 @@ describe('spcp.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(new MissingJwtError())
     })
   })
+
+  describe('getSpcpSession', () => {
+    it('should return 200 when there is a valid JWT in the request', async () => {
+      // Arrange
+      const spcpService = new SpcpService(MOCK_PARAMS)
+
+      // Act
+      await spcpService.getSpcpSession(AuthType.SP, MOCK_COOKIES)
+
+      // Assert
+      expect(spcpService.extractJwt).toBeCalled()
+      expect(spcpService.extractJwtPayload).toBeCalled()
+    })
+  })
+
+  //   describe('createFormWithSpcpSession', () => {})
 })
