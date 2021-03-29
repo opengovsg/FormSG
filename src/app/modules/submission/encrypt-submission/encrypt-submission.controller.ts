@@ -5,9 +5,6 @@ import JSONStream from 'JSONStream'
 import moment from 'moment-timezone'
 import { SetOptional } from 'type-fest'
 
-import FeatureManager, {
-  FeatureNames,
-} from '../../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
@@ -40,9 +37,6 @@ import { EncryptSubmissionBody } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
-
-// TODO (private #123): remove checking of form ID against CorpPass cloud test form
-const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
 export const handleEncryptedSubmission: RequestHandler = async (
   req,
@@ -169,15 +163,12 @@ export const handleEncryptedSubmission: RequestHandler = async (
   delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
-  const { authType, _id } = form
+  const { authType } = form
   if (authType === AuthType.SP || authType === AuthType.CP) {
-    const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
     const spcpResult = await SpcpFactory.extractJwt(
       req.cookies,
       authType,
-    ).asyncAndThen((jwt) =>
-      SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
-    )
+    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
     if (spcpResult.isErr()) {
       const { statusCode, errorMessage } = mapRouteError(spcpResult.error)
       logger.error({
