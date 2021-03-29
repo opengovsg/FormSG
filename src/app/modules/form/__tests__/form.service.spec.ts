@@ -245,7 +245,7 @@ describe('FormService', () => {
       expect(actual._unsafeUnwrap()).toEqual(form)
     })
 
-    it('should let requests through when form has not reached submission limit', async () => {
+    it('should return the form when the submission limit is not reached', async () => {
       // Arrange
       const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
         status: Status.Public,

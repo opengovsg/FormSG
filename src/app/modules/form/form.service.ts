@@ -43,7 +43,7 @@ const SubmissionModel = getSubmissionModel(mongoose)
  */
 export const deactivateForm = (
   formId: string,
-): ResultAsync<true, PossibleDatabaseError | FormNotFoundError> => {
+): ResultAsync<IFormSchema, PossibleDatabaseError | FormNotFoundError> => {
   return ResultAsync.fromPromise(FormModel.deactivateById(formId), (error) => {
     logger.error({
       message: 'Error deactivating form by id',
@@ -68,7 +68,7 @@ export const deactivateForm = (
       return errAsync(new FormNotFoundError())
     }
     // Successfully deactivated.
-    return okAsync(true)
+    return okAsync(deactivatedForm)
   })
 }
 
@@ -170,10 +170,10 @@ export const isFormPublic = (
 /**
  * Method to check whether a form has reached submission limits, and deactivate the form if necessary
  * @param form the form to check
- * @returns okAsync(form) if submission is allowed because the form has not reached limits
- * @returns errAsync(PossibleDatabaseError) if an error occurred while querying the database for the specified form
- * @returns errAsync(FormNotFoundError) if the form has exceeded the submission limits but could not be found and deactivated
- * @returns errAsync(PrivateFormError) if the count of the form has been exceeded and the form has been deactivated
+ * @returns ok(form) if submission is allowed because the form has not reached limits
+ * @returns err(PossibleDatabaseError) if an error occurred while querying the database for the specified form
+ * @returns err(FormNotFoundError) if the form has exceeded the submission limits but could not be found and deactivated
+ * @returns err(PrivateFormError) if the count of the form has been exceeded and the form has been deactivated
  */
 export const checkFormSubmissionLimitAndDeactivateForm = (
   form: IPopulatedForm,
@@ -198,7 +198,7 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
         message: 'Error counting documents',
         meta: {
           action: 'checkFormSubmissionLimitAndDeactivateForm',
-          form: formId,
+          formId,
         },
         error,
       })
