@@ -186,25 +186,6 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
       default: null,
       env: 'MYINFO_CLIENT_SECRET',
     },
-    // TODO (private #123): remove these env vars
-    cpCloudFormId: {
-      doc: 'Temporary test form ID for CorpPass Cloud',
-      format: String,
-      default: '60506aff15c0760011f0b14a',
-      env: 'CP_CLOUD_FORM_ID',
-    },
-    cpCloudCertPath: {
-      doc: 'Temporary certificate path for CorpPass Cloud',
-      format: String,
-      default: '/certs/corppass/prod-spcp-cert-cloud.pem',
-      env: 'CP_CLOUD_CERT_PATH',
-    },
-    cpCloudEndpoint: {
-      doc: 'Temporary certificate path for CorpPass Cloud',
-      format: String,
-      default: 'https://oob.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20/soap',
-      env: 'CP_CLOUD_ENDPOINT',
-    },
   },
 }
 

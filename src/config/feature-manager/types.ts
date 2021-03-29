@@ -69,10 +69,6 @@ export interface IMyInfoConfig {
   myInfoCertPath: string
   myInfoClientId: string
   myInfoClientSecret: string
-  // TODO (private #123): remove these keys
-  cpCloudFormId: string
-  cpCloudEndpoint: string
-  cpCloudCertPath: string
 }
 
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
