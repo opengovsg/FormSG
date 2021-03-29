@@ -628,18 +628,17 @@ describe('public-form.controller', () => {
       }) as unknown) as IPopulatedForm
 
       // Setup because this gets invoked at the start of the controller to decide which branch to take
-      beforeAll(() =>
+      beforeAll(() => {
         MockAuthService.getFormIfPublic.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
-        ),
-      )
-      beforeAll(() =>
+        )
+
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
-        ),
-      )
+        )
+      })
 
-      it('should return 200 but the response should have cookies cleared and myInfoError if the request has no cookie', async () => {
+      it('should return 200 but the response should have cookies cleared and myInfoError when the request has no cookie', async () => {
         // Arrange
         // 1. Mock the response and calls
         const MOCK_RES = expressHandler.mockResponse()
@@ -670,7 +669,7 @@ describe('public-form.controller', () => {
         })
       })
 
-      it('should return 200 but the response should have cookies cleared and myInfoError if the cookie cannot be validated', async () => {
+      it('should return 200 but the response should have cookies cleared and myInfoError when the cookie cannot be validated', async () => {
         // Arrange
         // 1. Mock the response and calls
         const MOCK_RES = expressHandler.mockResponse()
@@ -732,7 +731,7 @@ describe('public-form.controller', () => {
         })
       })
 
-      it('should return 200 but the response should have cookies cleared and myInfoError if the form has no eservcId', async () => {
+      it('should return 200 but the response should have cookies cleared and myInfoError when the form has no eservcId', async () => {
         // Arrange
         // 1. Mock the response and calls
         const MOCK_RES = expressHandler.mockResponse()
@@ -763,7 +762,7 @@ describe('public-form.controller', () => {
         })
       })
 
-      it('should return 200 but the response should have cookies cleared and myInfoError if the form could not be filled', async () => {
+      it('should return 200 but the response should have cookies cleared and myInfoError when the form could not be filled', async () => {
         // Arrange
         // 1. Mock the response and calls
         const MOCK_RES = expressHandler.mockResponse()
@@ -847,7 +846,7 @@ describe('public-form.controller', () => {
         ...BASE_FORM,
         authType: AuthType.SP,
       }) as unknown) as MockedObject<IPopulatedForm>
-      it('should return 200 with the form but without a spcpSession', async () => {
+      it('should return 200 with the form but without a spcpSession when the JWT token could not be found', async () => {
         // Arrange
         // 1. Mock the response and calls
         const MOCK_RES = expressHandler.mockResponse()
@@ -880,7 +879,7 @@ describe('public-form.controller', () => {
     })
 
     describe('errors in form retrieval', () => {
-      it('should return 500 if a database error occurs', async () => {
+      it('should return 500 when a database error occurs', async () => {
         // Arrange
         // 1. Mock the response
         const MOCK_RES = expressHandler.mockResponse()
@@ -909,7 +908,7 @@ describe('public-form.controller', () => {
         expect(MOCK_RES.status).toHaveBeenCalledWith(500)
       })
 
-      it('should return 404 if the form is not found', async () => {
+      it('should return 404 when the form is not found', async () => {
         // Arrange
         // 1. Mock the response
         const MOCK_RES = expressHandler.mockResponse()
@@ -938,7 +937,7 @@ describe('public-form.controller', () => {
         expect(MOCK_RES.status).toHaveBeenCalledWith(404)
       })
 
-      it('should return 404 if the form is private and not accessible by the public', async () => {
+      it('should return 404 when the form is private and not accessible by the public', async () => {
         // Arrange
         // 1. Mock the response
         const MOCK_RES = expressHandler.mockResponse()
