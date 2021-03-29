@@ -456,7 +456,7 @@ describe('MyInfoService', () => {
       mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
 
       // Act
-      const result = await myInfoService.extractMyInfoData(
+      const result = await myInfoService.fetchMyInfoData(
         MOCK_MYINFO_FORM as IPopulatedForm,
         { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
       )
@@ -470,7 +470,7 @@ describe('MyInfoService', () => {
       const expected = new MyInfoMissingAccessTokenError()
 
       // Act
-      const result = await myInfoService.extractMyInfoData(
+      const result = await myInfoService.fetchMyInfoData(
         MOCK_MYINFO_FORM as IPopulatedForm,
         {},
       )

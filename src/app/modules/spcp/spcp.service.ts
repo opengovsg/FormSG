@@ -203,21 +203,7 @@ export class SpcpService {
   ): Result<string, MissingJwtError> {
     const jwtName = authType === AuthType.SP ? JwtName.SP : JwtName.CP
     const cookie = cookies[jwtName]
-
-    if (!cookie) {
-      const logMeta = {
-        action: 'extractJWT',
-        authType,
-        cookies,
-      }
-      logger.error({
-        message: 'Failed to extract SPCP jwt cookie',
-        meta: logMeta,
-      })
-      return err(new MissingJwtError())
-    }
-
-    return ok(cookie)
+    return cookie ? ok(cookie) : err(new MissingJwtError())
   }
 
   /**
