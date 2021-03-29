@@ -1,3 +1,7 @@
+import {
+  InvalidJwtError,
+  VerifyJwtError,
+} from 'dist/backend/app/modules/spcp/spcp.errors'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
@@ -13,8 +17,7 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import { MyInfoCookiePayload } from '../../myinfo/myinfo.types'
-import { extractSuccessfulCookie } from '../../myinfo/myinfo.util'
-import { MissingJwtError } from '../../spcp/spcp.errors'
+import { extractSuccessfulMyInfoCookie } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -210,6 +213,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   const form = formResult.value
   const publicForm = form.getPublicView()
   const { authType } = form
+  let myInfoError: boolean
 
   // NOTE: Creating a variable to ensure that TS will enforce the type and ensure all keys in AuthType are covered.
   const formController: FormController<
@@ -223,19 +227,28 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     [AuthType.MyInfo]: () => {
       return MyInfoFactory.createFormWithMyInfo(form, req.cookies)
         .andThen((publicForm) => {
-          return extractSuccessfulCookie(req.cookies).map((myInfoCookie) => {
-            const cookiePayload: MyInfoCookiePayload = {
-              ...myInfoCookie,
-              usedCount: myInfoCookie.usedCount + 1,
-            }
-            // NOTE: This is a side effect to set the cookie on the result after it has been successfully prefilled.
-            res.cookie(MYINFO_COOKIE_NAME, cookiePayload, MYINFO_COOKIE_OPTIONS)
-            return publicForm
-          })
+          return extractSuccessfulMyInfoCookie(req.cookies).map(
+            (myInfoCookie) => {
+              const cookiePayload: MyInfoCookiePayload = {
+                ...myInfoCookie,
+                usedCount: myInfoCookie.usedCount + 1,
+              }
+              // NOTE: This is a side effect to set the cookie on the result after it has been successfully prefilled.
+              res.cookie(
+                MYINFO_COOKIE_NAME,
+                cookiePayload,
+                MYINFO_COOKIE_OPTIONS,
+              )
+              return publicForm
+            },
+          )
         })
         .mapErr((error) => {
           // NOTE: This is a side-effect as there is no need for cookie if data could not be retrieved
           res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+          // NOTE: This is done as a workaround because the type of FormController enforces a uniform return value
+          // but we are required to signal if myInfoError in the event of an error
+          myInfoError = true
           return error
         })
     },
@@ -248,7 +261,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   return formController[authType]()
     .map((publicFormView) => res.json(publicFormView))
     .mapErr((error) => {
-      if (!(error instanceof MissingJwtError)) {
+      if (error instanceof VerifyJwtError || error instanceof InvalidJwtError) {
         logger.error({
           message: 'Error getting public form',
           meta: {
@@ -261,6 +274,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
       }
       return res.json({
         form: publicForm,
+        ...(myInfoError && { myInfoError }),
       })
     })
 }
