@@ -17,13 +17,18 @@ import {
   ICheckboxFieldSchema,
   ICheckboxResponse,
   IColumn,
+  IDateField,
   IDecimalFieldSchema,
   IDropdownField,
+  IDropdownFieldSchema,
   IField,
   IFieldSchema,
   IImageFieldSchema,
+  ILongTextField,
   IMobileField,
   IMobileFieldSchema,
+  INumberField,
+  IRatingField,
   IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
@@ -34,7 +39,16 @@ import {
 export const generateDefaultField = (
   fieldType: BasicField,
   customParams?: Partial<
-    IField | IAttachmentField | ICheckboxField | IMobileField | ITableField
+    | IField
+    | IAttachmentField
+    | ICheckboxField
+    | IMobileField
+    | ITableField
+    | IDateField
+    | INumberField
+    | IRatingField
+    | IShortTextField
+    | ILongTextField
   >,
 ): IFieldSchema => {
   const defaultParams = {
@@ -106,6 +120,13 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IShortTextFieldSchema
+    case BasicField.Dropdown:
+      return {
+        ...defaultParams,
+        fieldOptions: ['Option 1', 'Option 2'],
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as IDropdownFieldSchema
     case BasicField.Decimal:
       return {
         ...defaultParams,
