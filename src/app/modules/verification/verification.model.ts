@@ -1,3 +1,4 @@
+import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
 import * as vfnConstants from '../../../shared/util/verification'
@@ -5,11 +6,14 @@ import {
   IVerificationFieldSchema,
   IVerificationModel,
   IVerificationSchema,
+  PublicTransaction,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 const { getExpiryDate } = vfnConstants
 const VERIFICATION_SCHEMA_ID = 'Verification'
+
+export const VERIFICATION_PUBLIC_FIELDS = ['formId', 'expireAt', '_id']
 
 const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
   _id: {
@@ -59,13 +63,29 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return next()
   })
 
+  // Instance methods
+  VerificationSchema.methods.getPublicView = function (
+    this: IVerificationSchema,
+  ): PublicTransaction {
+    return pick(this, VERIFICATION_PUBLIC_FIELDS) as PublicTransaction
+  }
+
+  VerificationSchema.methods.getField = function (
+    this: IVerificationSchema,
+    fieldId: string,
+  ): IVerificationFieldSchema | undefined {
+    return this.fields.find((field) => field._id === fieldId)
+  }
+
   // Static methods
   // Method to return non-sensitive fields
-  VerificationSchema.statics.findTransactionMetadata = function (
+  VerificationSchema.statics.getPublicViewById = async function (
     this: IVerificationModel,
     id: IVerificationSchema['_id'],
-  ) {
-    return this.findById(id, 'formId expireAt')
+  ): Promise<PublicTransaction | null> {
+    const document = await this.findById(id)
+    if (!document) return null
+    return document.getPublicView()
   }
 
   const VerificationModel = db.model<IVerificationSchema, IVerificationModel>(

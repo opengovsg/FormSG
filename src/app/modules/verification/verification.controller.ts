@@ -3,9 +3,12 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { VfnErrors } from '../../../shared/util/verification'
+import { PublicTransaction } from '../../../types'
 
+import { VerificationFactory } from './verification.factory'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
+import { mapRouteError } from './verification.util'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -38,31 +41,38 @@ export const createTransaction: RequestHandler<
     return handleError(error, res)
   }
 }
+
 /**
  * Returns a transaction's id and expiry time if it exists
  * @param req
  * @param res
  */
-export const getTransactionMetadata: RequestHandler<{
-  transactionId: string
-}> = async (req, res) => {
-  try {
-    const { transactionId } = req.params
-    const transaction = await VerificationService.getTransactionMetadata(
-      transactionId,
-    )
-    return res.status(StatusCodes.OK).json(transaction)
-  } catch (error) {
-    logger.error({
-      message: 'Error retrieving transaction metadata',
-      meta: {
-        action: 'getTransactionMetadata',
-      },
-      error,
-    })
-    return handleError(error, res)
+export const handleGetTransactionMetadata: RequestHandler<
+  {
+    transactionId: string
+  },
+  PublicTransaction | { message: string }
+> = async (req, res) => {
+  const { transactionId } = req.params
+  const logMeta = {
+    action: 'handleGetTransactionMetadata',
+    transactionId,
   }
+  return VerificationFactory.getTransactionMetadata(transactionId)
+    .map((publicTransaction) =>
+      res.status(StatusCodes.OK).json(publicTransaction),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving transaction metadata',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
+
 /**
  *  When user changes the input value in the verifiable field,
  *  we reset the field in the transaction, removing the previously saved signature.

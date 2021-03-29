@@ -7,7 +7,6 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import {
   createTransaction,
   getNewOtp,
-  getTransactionMetadata,
   resetFieldInTransaction,
   verifyOtp,
 } from '../verification.controller'
@@ -62,44 +61,6 @@ describe('Verification controller', () => {
       )
       expect(MOCK_RES.status).toHaveBeenCalledWith(200)
       expect(MOCK_RES.json).toHaveBeenCalledWith({})
-    })
-  })
-
-  describe('getTransactionMetadata', () => {
-    const MOCK_REQ = expressHandler.mockRequest({
-      body: {},
-      params: { transactionId: MOCK_TRANSACTION_ID },
-    })
-    afterEach(() => jest.clearAllMocks())
-
-    it('should correctly return metadata when parameters are valid', async () => {
-      // Coerce type
-      const transaction = ('it' as unknown) as ReturnType<
-        typeof MockVfnService.getTransactionMetadata
-      >
-      MockVfnService.getTransactionMetadata.mockReturnValueOnce(
-        Promise.resolve(transaction),
-      )
-      await getTransactionMetadata(MOCK_REQ, MOCK_RES, noop)
-      expect(MockVfnService.getTransactionMetadata).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-      )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(200)
-      expect(MOCK_RES.json).toHaveBeenCalledWith(transaction)
-    })
-
-    it('should return 404 when service throws error', async () => {
-      MockVfnService.getTransactionMetadata.mockImplementationOnce(() => {
-        const error = new Error(notFoundError)
-        error.name = notFoundError
-        throw error
-      })
-      await getTransactionMetadata(MOCK_REQ, MOCK_RES, noop)
-      expect(MockVfnService.getTransactionMetadata).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-      )
-      expect(MOCK_RES.status).toHaveBeenCalledWith(404)
-      expect(MOCK_RES.json).toHaveBeenCalledWith(notFoundError)
     })
   })
 
