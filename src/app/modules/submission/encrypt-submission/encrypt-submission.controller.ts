@@ -277,6 +277,9 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
           .json({ message: 'Invalid data was found. Please submit again.' })
       }
     }
+
+    // No errors, set local variable to the encrypted string.
+    res.locals.verified = encryptVerifiedContentResult.value
   }
 
   // Save Responses to Database
