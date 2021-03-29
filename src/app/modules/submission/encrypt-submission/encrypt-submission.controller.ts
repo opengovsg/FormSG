@@ -276,10 +276,10 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
           .status(StatusCodes.BAD_REQUEST)
           .json({ message: 'Invalid data was found. Please submit again.' })
       }
+    } else {
+      // No errors, set local variable to the encrypted string.
+      res.locals.verified = encryptVerifiedContentResult.value
     }
-
-    // No errors, set local variable to the encrypted string.
-    res.locals.verified = encryptVerifiedContentResult.value
   }
 
   // Save Responses to Database
