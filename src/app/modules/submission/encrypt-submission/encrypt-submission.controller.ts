@@ -1,10 +1,13 @@
+import crypto from 'crypto'
 import { RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import moment from 'moment-timezone'
+import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
+import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
@@ -12,17 +15,25 @@ import {
   ResWithUinFin,
   WithParsedResponses,
 } from '../../../../types'
+import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
+import { MissingFeatureError } from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { isFormEncryptMode } from '../../form/form.utils'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
-import { getProcessedResponses } from '../submission.service'
+import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
+import { pushData as webhookPushData } from '../../webhook/webhook.service'
+import {
+  getProcessedResponses,
+  sendEmailConfirmations,
+} from '../submission.service'
 
 import {
   checkFormIsEncryptMode,
@@ -37,12 +48,9 @@ import { EncryptSubmissionBody } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
+const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
-export const handleEncryptedSubmission: RequestHandler = async (
-  req,
-  res,
-  next,
-) => {
+export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
     action: 'handleEncryptedSubmission',
@@ -222,7 +230,163 @@ export const handleEncryptedSubmission: RequestHandler = async (
       myinfoResult.value
   }
 
-  return next()
+  // Encrypt Verified SPCP Fields
+  if (!isFormEncryptMode(form)) {
+    logger.error({
+      message:
+        'Trying to encrypt verified SpCp fields on non-encrypt mode form',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message:
+        'Unable to encrypt verified SPCP fields on non storage mode forms',
+    })
+  }
+
+  if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
+    const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
+      { type: form.authType, data: res.locals },
+    ).andThen((verifiedContent) =>
+      VerifiedContentFactory.encryptVerifiedContent({
+        verifiedContent,
+        formPublicKey: form.publicKey,
+      }),
+    )
+
+    if (encryptVerifiedContentResult.isErr()) {
+      const { error } = encryptVerifiedContentResult
+      logger.error({
+        message: 'Unable to encrypt verified content',
+        meta: logMeta,
+        error,
+      })
+
+      // Passthrough if feature is not activated.
+      if (!(error instanceof MissingFeatureError)) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ message: 'Invalid data was found. Please submit again.' })
+      }
+    } else {
+      // No errors, set local variable to the encrypted string.
+      res.locals.verified = encryptVerifiedContentResult.value
+    }
+  }
+
+  // Save Responses to Database
+  // TODO(frankchn): Extract S3 upload functionality to a service
+  const formData = req.body.encryptedContent
+  const attachmentData = req.body.attachments || {}
+  const { verified } = res.locals
+  const attachmentMetadata = new Map()
+  const attachmentUploadPromises = []
+
+  // Object.keys(attachmentData[fieldId].encryptedFile) [ 'submissionPublicKey', 'nonce', 'binary' ]
+  for (const fieldId in attachmentData) {
+    const individualAttachment = JSON.stringify(attachmentData[fieldId])
+
+    const hashStr = crypto
+      .createHash('sha256')
+      .update(individualAttachment)
+      .digest('hex')
+
+    const uploadKey =
+      form._id + '/' + crypto.randomBytes(20).toString('hex') + '/' + hashStr
+
+    attachmentMetadata.set(fieldId, uploadKey)
+    attachmentUploadPromises.push(
+      AwsConfig.s3
+        .upload({
+          Bucket: AwsConfig.attachmentS3Bucket,
+          Key: uploadKey,
+          Body: Buffer.from(individualAttachment),
+        })
+        .promise(),
+    )
+  }
+
+  const submission = new EncryptSubmission({
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    encryptedContent: formData,
+    verifiedContent: verified,
+    attachmentMetadata,
+    version: req.body.version,
+  })
+
+  try {
+    await Promise.all(attachmentUploadPromises)
+  } catch (err) {
+    logger.error({
+      message: 'Attachment upload error',
+      meta: logMeta,
+      error: err,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      submissionId: submission._id,
+      spcpSubmissionFailure: false,
+    })
+  }
+
+  let savedSubmission
+  try {
+    savedSubmission = await submission.save()
+  } catch (err) {
+    logger.error({
+      message: 'Encrypt submission save error',
+      meta: {
+        action: 'onEncryptSubmissionFailure',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      submissionId: submission._id,
+      spcpSubmissionFailure: false,
+    })
+  }
+
+  logger.info({
+    message: 'Saved submission to MongoDB',
+    meta: {
+      ...logMeta,
+      submissionId: savedSubmission._id,
+    },
+  })
+
+  // Fire webhooks if available
+  const webhookUrl = form.webhook?.url
+  const submissionWebhookView = submission.getWebhookView()
+  if (webhookUrl) {
+    // Note that we push data to webhook endpoints on a best effort basis
+    // As such, we should not await on these post requests
+    void webhookPushData(webhookUrl, submissionWebhookView)
+  }
+
+  // Send Email Confirmations
+  res.json({
+    message: 'Form submission successful.',
+    submissionId: submission.id,
+  })
+
+  return sendEmailConfirmations({
+    form,
+    parsedResponses: req.body.parsedResponses,
+    submission: savedSubmission,
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Error while sending email confirmations',
+      meta: {
+        action: 'sendEmailAutoReplies',
+      },
+      error,
+    })
+  })
 }
 
 /**
