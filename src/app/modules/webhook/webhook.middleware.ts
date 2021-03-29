@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, RequestHandler } from 'express'
 
-import { pushData } from './webhook.service'
+import { WebhookFactory } from './webhook.factory'
 import { WebhookRequestLocals } from './webhook.types'
 
 /**
@@ -13,21 +13,18 @@ import { WebhookRequestLocals } from './webhook.types'
  * @param {Express.Response} res Express response object
  * @param {function} next Next middleware
  */
-export const post = (
-  req: Request & WebhookRequestLocals,
-  res: Response,
-  next: NextFunction,
-) => {
-  // TODO: Once we move away from the middleware pattern, there should not be a webhook controller
-  // There should only be a webhook service, which is called within the submission controller
-  // This will also remove the need for retrieval of form/submission from req.
-  const { form, submission } = req
+export const handleWebhook: RequestHandler = (req, _res, next) => {
+  const { form, submission } = req as Request & WebhookRequestLocals
   const webhookUrl = form.webhook?.url
-  const submissionWebhookView = submission.getWebhookView()
   if (webhookUrl) {
     // Note that we push data to webhook endpoints on a best effort basis
     // As such, we should not await on these post requests
-    void pushData(webhookUrl, submissionWebhookView)
+    void WebhookFactory.sendWebhook(
+      submission,
+      webhookUrl,
+    ).andThen((response) =>
+      WebhookFactory.saveWebhookRecord(submission._id, response),
+    )
   }
   return next()
 }
