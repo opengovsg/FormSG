@@ -26,12 +26,13 @@ import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MissingFeatureError } from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { isFormEncryptMode } from '../../form/form.utils'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
-import { pushData } from '../../webhook/webhook.service'
+import { pushData as webhookPushData } from '../../webhook/webhook.service'
 import {
   getProcessedResponses,
   sendEmailConfirmations,
@@ -55,35 +56,7 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 // TODO (private #123): remove checking of form ID against CorpPass cloud test form
 const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
-/**
- * @param {Error} err - the Error to report
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Object} submission - the Mongoose model instance
- * of the submission
- */
-function onEncryptSubmissionFailure(err, req, res, submission) {
-  logger.error({
-    message: 'Encrypt submission error',
-    meta: {
-      action: 'onEncryptSubmissionFailure',
-      ...createReqMeta(req),
-    },
-    error: err,
-  })
-  return res.status(StatusCodes.BAD_REQUEST).json({
-    message:
-      'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-    submissionId: submission._id,
-    spcpSubmissionFailure: false,
-  })
-}
-
-export const handleEncryptedSubmission: RequestHandler = async (
-  req,
-  res,
-  next,
-) => {
+export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
     action: 'handleEncryptedSubmission',
@@ -267,6 +240,18 @@ export const handleEncryptedSubmission: RequestHandler = async (
   }
 
   // Encrypt Verified SPCP Fields
+  if (!isFormEncryptMode(form)) {
+    logger.error({
+      message:
+        'Trying to encrypt verified SpCp fields on non-encrypt mode form',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message:
+        'Unable to encrypt verified SPCP fields on non storage mode forms',
+    })
+  }
+
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
     const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
       { type: form.authType, data: res.locals },
@@ -286,26 +271,18 @@ export const handleEncryptedSubmission: RequestHandler = async (
       })
 
       // Passthrough if feature is not activated.
-      if (error instanceof MissingFeatureError) {
-        return next()
+      if (!(error instanceof MissingFeatureError)) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ message: 'Invalid data was found. Please submit again.' })
       }
-
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
     }
   }
 
-  // Verify Structure of Encrypted Response
-  // Step 1: Add req.body.encryptedContent to req.formData
-  // eslint-disable-next-line @typescript-eslint/no-extra-semi
-  ;(req as WithFormData<typeof req>).formData = req.body.encryptedContent
-  // Step 2: Add req.body.attachments to req.attachmentData
-  ;(req as WithAttachmentsData<typeof req>).attachmentData =
-    req.body.attachments || {}
-
   // Save Responses to Database
-  const { formData, attachmentData } = req
+  // TODO(frankchn): Extract S3 upload functionality to a service
+  const formData = req.body.encryptedContent
+  const attachmentData = req.body.attachments || {}
   const { verified } = res.locals
   const attachmentMetadata = new Map()
   const attachmentUploadPromises = []
@@ -352,14 +329,32 @@ export const handleEncryptedSubmission: RequestHandler = async (
       meta: logMeta,
       error: err,
     })
-    return onEncryptSubmissionFailure(err, req, res, submission)
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      submissionId: submission._id,
+      spcpSubmissionFailure: false,
+    })
   }
 
   let savedSubmission
   try {
     savedSubmission = await submission.save()
   } catch (err) {
-    return onEncryptSubmissionFailure(err, req, res, submission)
+    logger.error({
+      message: 'Encrypt submission save error',
+      meta: {
+        action: 'onEncryptSubmissionFailure',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      submissionId: submission._id,
+      spcpSubmissionFailure: false,
+    })
   }
 
   logger.info({
@@ -369,7 +364,6 @@ export const handleEncryptedSubmission: RequestHandler = async (
       submissionId: savedSubmission._id,
     },
   })
-  req.submission = savedSubmission
 
   // Fire webhooks if available
   const webhookUrl = form.webhook?.url
@@ -377,7 +371,7 @@ export const handleEncryptedSubmission: RequestHandler = async (
   if (webhookUrl) {
     // Note that we push data to webhook endpoints on a best effort basis
     // As such, we should not await on these post requests
-    void pushData(webhookUrl, submissionWebhookView)
+    void webhookPushData(webhookUrl, submissionWebhookView)
   }
 
   // Send Email Confirmations
@@ -389,7 +383,7 @@ export const handleEncryptedSubmission: RequestHandler = async (
   return sendEmailConfirmations({
     form,
     parsedResponses: req.body.parsedResponses,
-    submission: req.submission,
+    submission: savedSubmission,
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',
