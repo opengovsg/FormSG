@@ -326,22 +326,9 @@ module.exports = function (app) {
    * @returns {FeedbackResponse.model} 200 - form feedback was saved
    * @security OTP
    */
-  /**
-   * On preview, mock sending of feedback
-   * @route POST /{formId}/adminform/feedback
-   * @group forms - endpoints to serve forms
-   * @param {string} formId.path.required - the form id
-   * @param {Feedback.model} feedback.body.required - the user's feedback
-   * @consumes application/json
-   * @produces application/json
-   * @returns {string} 400 - form feedback was malformed
-   * @returns {string} 200 - form feedback was received
-   */
-
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
     .get(withUserAuthentication, AdminFormController.handleGetFormFeedbacks)
-    .post(authActiveForm(PermissionLevel.Read), adminForms.passThroughFeedback)
 
   /**
    * Count the number of feedback for a form
