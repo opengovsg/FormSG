@@ -233,7 +233,7 @@
     "mockdate": "^3.0.5",
     "mockingoose": "^2.13.2",
     "mongodb-memory-server-core": "^6.9.6",
-    "ngrok": "^3.4.1",
+    "ngrok": "^4.0.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "prettier": "^2.2.1",
     "proxyquire": "^2.1.3",
