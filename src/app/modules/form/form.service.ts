@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { SetRequired } from 'type-fest'
 
 import { IntranetFactory } from 'src/app/services/intranet/intranet.factory'
 
@@ -10,7 +11,6 @@ import {
   IEncryptedFormModel,
   IFormSchema,
   IPopulatedForm,
-  PublicForm,
   ResponseMode,
   Status,
 } from '../../../types'
@@ -26,10 +26,10 @@ import {
 } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
+import { IPublicFormView } from './public-form/public-form.types'
 import {
   FormDeletedError,
   FormNotFoundError,
-  IntranetAccessError,
   PrivateFormError,
 } from './form.errors'
 
@@ -243,20 +243,47 @@ export const getFormModelByResponseMode = (
 }
 
 /**
- * Checks whether a given form submission is made from within intranet
+ * Checks if a form is accessed from within intranet and sets the property accordingly
  * @param ip The ip of the request
- * @param publicForm The form to check
- * @returns ok(PublicForm) if the form is accessed from the internet
- * @returns err(IntranetAccessError) if the form is accessed from within intranet
+ * @param publicFormView The form to check
+ * @returns ok(PublicFormView) if the form is accessed from the internet
+ * @returns err(ApplicationError) if an error occured while checking if the ip of the request is from the intranet
  */
-export const isFormSubmissionFromIntranet = (
+export const setIsIntranetFormAccess = (
   ip: string,
-  publicForm: PublicForm,
-): Result<PublicForm, IntranetAccessError> => {
-  return IntranetFactory.isIntranetIp(ip).andThen((isIntranetUser) => {
-    return isIntranetUser &&
-      [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(publicForm.authType)
-      ? err(new IntranetAccessError(publicForm._id))
-      : ok(publicForm)
+  publicFormView: IPublicFormView,
+): Result<SetRequired<IPublicFormView, 'isIntranetUser'>, ApplicationError> =>
+  IntranetFactory.isIntranetIp(ip).andThen((isIntranetIp) => {
+    const isIntranetUser =
+      isIntranetIp &&
+      [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(
+        publicFormView.form.authType,
+      )
+    if (isIntranetUser) {
+      logger.warn({
+        message:
+          'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+        meta: {
+          action: 'read',
+          formId: publicFormView.form._id,
+        },
+      })
+    }
+    return ok({ ...publicFormView, isIntranetUser })
   })
-}
+
+/**
+ * Utility method to signify to downstream consumers that the myInfoError property has been set
+ * @param publicFormView The form view to set
+ * @param hasMyInfoError Whether there is a myInfoError
+ * @returns ok(publicFormView) The form with the myInfoError property set
+ * @returns err(never) Should never happen
+ */
+export const setMyInfoError = (
+  publicFormView: IPublicFormView,
+  hasMyInfoError: boolean,
+): Result<SetRequired<IPublicFormView, 'myInfoError'>, never> =>
+  ok({
+    ...publicFormView,
+    myInfoError: hasMyInfoError,
+  })

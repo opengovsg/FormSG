@@ -1,6 +1,5 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import axios from 'axios'
-import { InvalidJwtError } from 'dist/backend/app/modules/spcp/spcp.errors'
 import fs from 'fs'
 import { omit } from 'lodash'
 import { mocked } from 'ts-jest/utils'
@@ -17,6 +16,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
+  InvalidJwtError,
   InvalidOOBParamsError,
   LoginPageValidationError,
   MissingAttributesError,
