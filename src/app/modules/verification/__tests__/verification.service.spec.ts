@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson'
+import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -71,7 +72,7 @@ describe('Verification service', () => {
       formId: mockFormId,
       fields: [mockField],
       // Expire 1 hour in future
-      expireAt: new Date(Date.now() + 60 * 60 * 1000),
+      expireAt: addHours(new Date(), 1),
     })
   })
   afterEach(async () => {
@@ -210,7 +211,7 @@ describe('Verification service', () => {
       const expiredTransaction = await VerificationModel.create({
         formId: mockFormId,
         // Expire 25 hours ago
-        expireAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+        expireAt: subHours(new Date(), 25),
       })
 
       const result = await VerificationService.resetFieldForTransaction(
@@ -332,7 +333,7 @@ describe('Verification service', () => {
       const expiredTransaction = await VerificationModel.create({
         formId: mockFormId,
         // Expire 25 hours ago
-        expireAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+        expireAt: subHours(new Date(), 25),
       })
 
       const result = await VerificationService.sendNewOtp({
@@ -376,12 +377,12 @@ describe('Verification service', () => {
     it('should return WaitForOtpError when OTP waiting time has not elapsed', async () => {
       const expiredOtpField = generateFieldParams({
         // Hash created 5 seconds ago
-        hashCreatedAt: new Date(Date.now() - 5 * 1000),
+        hashCreatedAt: subSeconds(new Date(), 5),
       })
       const expiredOtpTransaction = await VerificationModel.create({
         formId: mockFormId,
         // Expire 1 hour in future
-        expireAt: new Date(Date.now() + 60 * 60 * 1000),
+        expireAt: addHours(new Date(), 1),
         fields: [expiredOtpField],
       })
 
@@ -562,7 +563,7 @@ describe('Verification service', () => {
       const expiredTransaction = await VerificationModel.create({
         formId: mockFormId,
         // Expire 25 hours ago
-        expireAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+        expireAt: subHours(new Date(), 25),
       })
 
       const result = await VerificationService.verifyOtp(
@@ -610,7 +611,7 @@ describe('Verification service', () => {
         hashRetries: 0,
         hashedOtp: MOCK_HASHED_OTP,
         // hash created 15min ago
-        hashCreatedAt: new Date(Date.now() - 15 * 60 * 1000),
+        hashCreatedAt: subMinutes(new Date(), 15),
       })
       const expiredOtpTransaction = await VerificationModel.create({
         formId: mockFormId,
