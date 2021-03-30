@@ -5,7 +5,7 @@ import {
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
-import { merge, zipWith } from 'lodash'
+import { merge, omit, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/config/feature-manager'
 import { AuthType, Environment, IFormSchema, MyInfoAttribute } from 'src/types'
@@ -149,7 +149,18 @@ export const MOCK_MYINFO_FORM = ({
   _id: MOCK_FORM_ID,
   esrvcId: MOCK_ESRVC_ID,
   authType: AuthType.MyInfo,
+  admin: {
+    _id: new ObjectId().toHexString(),
+    agency: new ObjectId().toHexString(),
+  },
   getUniqueMyInfoAttrs: () => MOCK_REQUESTED_ATTRS,
+  getPublicView: function () {
+    return omit(this, 'admin')
+  },
+  toJSON: function () {
+    return this
+  },
+  form_fields: [],
 } as unknown) as IFormSchema
 
 export const MOCK_SUCCESSFUL_COOKIE: MyInfoSuccessfulCookiePayload = {

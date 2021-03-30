@@ -1,7 +1,3 @@
-import {
-  InvalidJwtError,
-  VerifyJwtError,
-} from 'dist/backend/app/modules/spcp/spcp.errors'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
@@ -18,6 +14,7 @@ import {
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import { MyInfoCookiePayload } from '../../myinfo/myinfo.types'
 import { extractSuccessfulMyInfoCookie } from '../../myinfo/myinfo.util'
+import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'

@@ -286,6 +286,7 @@ export class MyInfoService {
     myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): Result<IPossiblyPrefilledField[], never> {
+    console.log(currFormFields)
     const prefilledFields = currFormFields.map((field) => {
       if (!field.myInfo?.attr) return field
 
@@ -505,7 +506,7 @@ export class MyInfoService {
   }
 
   /**
-   * creates a form view with myInfo fields prefilled onto the form
+   * Creates a form view with myInfo fields prefilled onto the form
    * @param form The form to validate and fill
    * @param cookies The cookies on the request
    * @returns

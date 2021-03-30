@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
@@ -17,7 +18,10 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { MyInfoData } from '../myinfo.adapter'
-import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'
+import {
+  MYINFO_CONSENT_PAGE_PURPOSE,
+  MYINFO_COOKIE_NAME,
+} from '../myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
@@ -440,7 +444,7 @@ describe('MyInfoService', () => {
     })
   })
 
-  describe('validateAndFillFormWithMyInfoData', () => {
+  describe('fetchMyInfoData', () => {
     // NOTE: Mocks the underlying circuit breaker implementation to avoid network calls
     beforeEach(() => {
       myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
@@ -476,6 +480,91 @@ describe('MyInfoService', () => {
       )
 
       // Assert
+      expect(result._unsafeUnwrapErr()).toEqual(expected)
+    })
+  })
+
+  describe('createFormWithMyInfo', () => {
+    // NOTE: Mocks the underlying circuit breaker implementation to avoid network calls
+    beforeEach(() => {
+      myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
+    })
+
+    it('should return the filled form when the form and cookies are valid', async () => {
+      // Arrange
+      const mockReturnedParams = {
+        uinFin: MOCK_UINFIN,
+        data: MOCK_MYINFO_DATA,
+      }
+      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
+
+      const expected = {
+        form: MOCK_MYINFO_FORM.getPublicView(),
+        spcpSession: { userName: MOCK_UINFIN },
+      }
+
+      // Spies to ensure that submethods have been called
+      const fetchMyInfoSpy = jest.spyOn(myInfoService, 'fetchMyInfoData')
+      const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
+      const saveMyInfoSpy = jest.spyOn(myInfoService, 'saveMyInfoHashes')
+
+      // Act
+      const result = await myInfoService.createFormWithMyInfo(
+        MOCK_MYINFO_FORM as IPopulatedForm,
+        { [MYINFO_COOKIE_NAME]: MOCK_SUCCESSFUL_COOKIE },
+      )
+
+      // Assert
+      expect(fetchMyInfoSpy).toHaveBeenCalled()
+      expect(prefillMyInfoSpy).toHaveBeenCalled()
+      expect(saveMyInfoSpy).toHaveBeenCalled()
+      expect(result._unsafeUnwrap()).toEqual(expected)
+    })
+
+    it('should return MyInfoMissingAccessTokenError when there are no cookies in the request', async () => {
+      // Arrange
+      const expected = new MyInfoMissingAccessTokenError()
+      const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
+      const saveMyInfoSpy = jest.spyOn(myInfoService, 'saveMyInfoHashes')
+
+      // Act
+      const result = await myInfoService.createFormWithMyInfo(
+        MOCK_MYINFO_FORM as IPopulatedForm,
+        {},
+      )
+
+      // Assert
+      expect(prefillMyInfoSpy).not.toHaveBeenCalled()
+      expect(saveMyInfoSpy).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(expected)
+    })
+
+    it('should return DatabaseError when the form could not be saved to the database', async () => {
+      // Arrange
+      const expected = new DatabaseError(
+        'Failed to save MyInfo hashes to database',
+      )
+      const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
+      const saveMyInfoSpy = jest.spyOn(myInfoService, 'saveMyInfoHashes')
+      const mockReturnedParams = {
+        uinFin: MOCK_UINFIN,
+        data: MOCK_MYINFO_DATA,
+      }
+      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
+
+      jest
+        .spyOn(MyInfoHash, 'updateHashes')
+        .mockRejectedValueOnce(new DatabaseError())
+
+      // Act
+      const result = await myInfoService.createFormWithMyInfo(
+        MOCK_MYINFO_FORM as IPopulatedForm,
+        { [MYINFO_COOKIE_NAME]: MOCK_SUCCESSFUL_COOKIE },
+      )
+
+      // Assert
+      expect(prefillMyInfoSpy).toHaveBeenCalled()
+      expect(saveMyInfoSpy).toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
   })
