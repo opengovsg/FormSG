@@ -157,7 +157,10 @@ const getValidTransaction = (
     if (isTransactionExpired(transaction)) {
       logger.warn({
         message: 'Transaction has expired',
-        meta: logMeta,
+        meta: {
+          ...logMeta,
+          formId: transaction.formId,
+        },
       })
       return errAsync(new TransactionExpiredError())
     }
@@ -184,6 +187,7 @@ const getFieldFromTransaction = (
         action: 'getFieldFromTransaction',
         transactionId: transaction._id,
         fieldId,
+        formId: transaction.formId,
       },
     })
     return err(new FieldNotFoundInTransactionError())
@@ -210,41 +214,43 @@ export const resetFieldForTransaction = (
   | FieldNotFoundInTransactionError
   | PossibleDatabaseError
 > => {
-  const logMeta = {
-    action: 'resetFieldForTransaction',
-    transactionId,
-    fieldId,
-  }
   // Ensure that field ID exists first
-  return (
-    getValidTransaction(transactionId)
-      .andThen((transaction) => getFieldFromTransaction(transaction, fieldId))
-      // Apply atomic update
-      .andThen(() =>
-        ResultAsync.fromPromise(
-          VerificationModel.resetField(transactionId, fieldId),
-          (error) => {
+  return getValidTransaction(transactionId).andThen((transaction) => {
+    const logMeta = {
+      action: 'resetFieldForTransaction',
+      transactionId,
+      fieldId,
+      formId: transaction.formId,
+    }
+    return (
+      getFieldFromTransaction(transaction, fieldId)
+        // Apply atomic update
+        .asyncAndThen(() =>
+          ResultAsync.fromPromise(
+            VerificationModel.resetField(transactionId, fieldId),
+            (error) => {
+              logger.error({
+                message: 'Error while resetting field data in transaction',
+                meta: logMeta,
+                error,
+              })
+              return transformMongoError(error)
+            },
+          ),
+        )
+        .andThen((updatedTransaction) => {
+          // Transaction was deleted before update could be applied
+          if (!updatedTransaction) {
             logger.error({
-              message: 'Error while resetting field data in transaction',
+              message: 'Transaction with given ID does not exist',
               meta: logMeta,
-              error,
             })
-            return transformMongoError(error)
-          },
-        ),
-      )
-      .andThen((updatedTransaction) => {
-        // Transaction was deleted before update could be applied
-        if (!updatedTransaction) {
-          logger.error({
-            message: 'Transaction with given ID does not exist',
-            meta: logMeta,
-          })
-          return errAsync(new TransactionNotFoundError())
-        }
-        return okAsync(updatedTransaction)
-      })
-  )
+            return errAsync(new TransactionNotFoundError())
+          }
+          return okAsync(updatedTransaction)
+        })
+    )
+  })
 }
 
 /**
@@ -285,13 +291,14 @@ export const sendNewOtp = ({
   | MailSendError
   | NonVerifiedFieldTypeError
 > => {
-  const logMeta = {
-    action: 'sendNewOtp',
-    transactionId,
-    fieldId,
-  }
-  return getValidTransaction(transactionId).andThen((transaction) =>
-    getFieldFromTransaction(transaction, fieldId)
+  return getValidTransaction(transactionId).andThen((transaction) => {
+    const logMeta = {
+      action: 'sendNewOtp',
+      transactionId,
+      fieldId,
+      formId: transaction.formId,
+    }
+    return getFieldFromTransaction(transaction, fieldId)
       .asyncAndThen((field) => {
         if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
           logger.warn({
@@ -338,8 +345,8 @@ export const sendNewOtp = ({
           return errAsync(new TransactionNotFoundError())
         }
         return okAsync(newTransaction)
-      }),
-  )
+      })
+  })
 }
 
 /**
@@ -374,13 +381,14 @@ export const verifyOtp = (
   | WrongOtpError
   | HashingError
 > => {
-  const logMeta = {
-    action: 'verifyOtp',
-    transactionId,
-    fieldId,
-  }
   return getValidTransaction(transactionId).andThen((transaction) =>
     getFieldFromTransaction(transaction, fieldId).asyncAndThen((field) => {
+      const logMeta = {
+        action: 'verifyOtp',
+        transactionId,
+        fieldId,
+        formId: transaction.formId,
+      }
       const { hashedOtp, hashCreatedAt, signedData, hashRetries } = field
       if (!hashedOtp || !hashCreatedAt || !signedData) {
         logger.warn({
