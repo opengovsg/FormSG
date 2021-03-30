@@ -2,8 +2,6 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { SetRequired } from 'type-fest'
 
-import { IntranetFactory } from 'src/app/services/intranet/intranet.factory'
-
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   AuthType,
@@ -19,6 +17,7 @@ import getFormModel, {
   getEncryptedFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
+import { IntranetFactory } from '../../services/intranet/intranet.factory'
 import {
   getMongoErrorMessage,
   PossibleDatabaseError,
