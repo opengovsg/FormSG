@@ -15,7 +15,10 @@ import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'
 import {
+  DatabaseConflictError,
   DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
   MalformedParametersError,
   MissingFeatureError,
 } from '../core/core.errors'
@@ -152,9 +155,22 @@ export const mapRouteError: MapRouteError = (
     case MailSendError:
     case NonVerifiedFieldTypeError:
     case MissingHashDataError:
+    case DatabaseValidationError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.BAD_REQUEST,
+      }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
+        // Message is injected internally
+        errorMessage: error.message,
+      }
+    case DatabaseConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        // Message is injected internally
+        errorMessage: error.message,
       }
     case FieldNotFoundInTransactionError:
     case TransactionNotFoundError:

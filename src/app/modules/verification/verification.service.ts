@@ -14,9 +14,13 @@ import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
+import { transformMongoError } from '../../utils/handle-mongo-error'
 import { compareHash, HashingError } from '../../utils/hash'
-import { DatabaseError, MalformedParametersError } from '../core/core.errors'
+import {
+  DatabaseError,
+  MalformedParametersError,
+  PossibleDatabaseError,
+} from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 
@@ -48,13 +52,13 @@ const VerificationModel = getVerificationModel(mongoose)
  * @param formId
  * @returns ok(created transaction or null) if form has no verifiable fields.
  * @returns err(FormNotFoundError) when form does not exist
- * @returns err(DatabaseError) when database read/write errors
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
 export const createTransaction = (
   formId: string,
 ): ResultAsync<
   IVerificationSchema | null,
-  FormNotFoundError | DatabaseError
+  FormNotFoundError | PossibleDatabaseError
 > => {
   const logMeta = {
     action: 'createTransaction',
@@ -69,7 +73,7 @@ export const createTransaction = (
           meta: logMeta,
           error,
         })
-        return new DatabaseError(getMongoErrorMessage(error))
+        return transformMongoError(error)
       },
     ),
   )
@@ -80,11 +84,14 @@ export const createTransaction = (
  * @param transactionId
  * @returns ok(transaction metadata)
  * @returns err(TransactionNotFoundError) when transaction ID does not exist
- * @returns err(DatabaseError) when database read/write errors
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
 export const getTransactionMetadata = (
   transactionId: string,
-): ResultAsync<PublicTransaction, TransactionNotFoundError | DatabaseError> => {
+): ResultAsync<
+  PublicTransaction,
+  TransactionNotFoundError | PossibleDatabaseError
+> => {
   const logMeta = {
     action: 'getTransactionMetadata',
     transactionId,
@@ -97,7 +104,7 @@ export const getTransactionMetadata = (
         meta: logMeta,
         error,
       })
-      return new DatabaseError(getMongoErrorMessage(error))
+      return transformMongoError(error)
     },
   ).andThen((transaction) => {
     if (!transaction) {
@@ -117,13 +124,13 @@ export const getTransactionMetadata = (
  * @returns ok(transaction)
  * @returns err(TransactionNotFoundError) when transaction ID does not exist
  * @returns err(TransactionExpiredError) when transaction is expired
- * @returns err(DatabaseError) when database read/write errors
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
 const getValidTransaction = (
   transactionId: string,
 ): ResultAsync<
   IVerificationSchema,
-  TransactionNotFoundError | DatabaseError | TransactionExpiredError
+  TransactionNotFoundError | PossibleDatabaseError | TransactionExpiredError
 > => {
   const logMeta = {
     action: 'getValidTransaction',
@@ -137,7 +144,7 @@ const getValidTransaction = (
         meta: logMeta,
         error,
       })
-      return new DatabaseError(getMongoErrorMessage(error))
+      return transformMongoError(error)
     },
   ).andThen((transaction) => {
     if (!transaction) {
@@ -191,7 +198,7 @@ const getFieldFromTransaction = (
  * @returns err(TransactionNotFoundError) when transaction ID does not exist
  * @returns err(TransactionExpiredError) when transaction is expired
  * @returns err(FieldNotFoundInTransactionError) when field does not exist
- * @returns err(DatabaseError) when database read/write errors
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
 export const resetFieldForTransaction = (
   transactionId: string,
@@ -201,7 +208,7 @@ export const resetFieldForTransaction = (
   | TransactionNotFoundError
   | TransactionExpiredError
   | FieldNotFoundInTransactionError
-  | DatabaseError
+  | PossibleDatabaseError
 > => {
   const logMeta = {
     action: 'resetFieldForTransaction',
@@ -222,7 +229,7 @@ export const resetFieldForTransaction = (
               meta: logMeta,
               error,
             })
-            return new DatabaseError(getMongoErrorMessage(error))
+            return transformMongoError(error)
           },
         ),
       )
@@ -257,7 +264,7 @@ export const resetFieldForTransaction = (
  * @returns err(InvalidNumberError) when SMS recipient is invalid
  * @returns err(MailSendError) when attempt to send OTP email fails
  * @returns err(NonVerifiedFieldTypeError) when field's fieldType is not verified
- * @returns err(DatabaseError) when database read/write errors
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
 export const sendNewOtp = ({
   transactionId,
@@ -268,7 +275,7 @@ export const sendNewOtp = ({
 }: SendOtpParams): ResultAsync<
   IVerificationSchema,
   | TransactionNotFoundError
-  | DatabaseError
+  | PossibleDatabaseError
   | FieldNotFoundInTransactionError
   | TransactionExpiredError
   | WaitForOtpError
@@ -317,7 +324,7 @@ export const sendNewOtp = ({
               meta: logMeta,
               error,
             })
-            return new DatabaseError(getMongoErrorMessage(error))
+            return transformMongoError(error)
           },
         )
       })
@@ -349,7 +356,7 @@ export const sendNewOtp = ({
  * @returns err(OtpRetryExceededError) when OTP has been retried too many times
  * @returns err(WrongOtpError) when OTP is wrong
  * @returns err(HashingError) when error occurs while hashing input OTP for comparison
- * @returns err(DatabaseError) when database read/write errors
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
 export const verifyOtp = (
   transactionId: string,
@@ -358,7 +365,7 @@ export const verifyOtp = (
 ): ResultAsync<
   string,
   | TransactionNotFoundError
-  | DatabaseError
+  | PossibleDatabaseError
   | FieldNotFoundInTransactionError
   | TransactionExpiredError
   | MissingHashDataError
@@ -410,7 +417,7 @@ export const verifyOtp = (
             meta: logMeta,
             error,
           })
-          return new DatabaseError(getMongoErrorMessage(error))
+          return transformMongoError(error)
         },
       )
         .andThen(() => compareHash(inputOtp, hashedOtp))
