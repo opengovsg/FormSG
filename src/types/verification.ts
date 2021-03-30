@@ -5,10 +5,10 @@ import { IFormSchema } from './form'
 
 export interface IVerificationField {
   fieldType: string
-  signedData?: string | null
-  hashedOtp?: string | null
-  hashCreatedAt?: Date | null
-  hashRetries?: number
+  signedData: string | null
+  hashedOtp: string | null
+  hashCreatedAt: Date | null
+  hashRetries: number
 }
 
 export interface IVerificationFieldSchema
@@ -23,6 +23,13 @@ export interface IVerification {
   formId: IFormSchema['_id']
   expireAt: Date
   fields: IVerificationFieldSchema[]
+}
+
+export type UpdateFieldData = {
+  transactionId: string
+  fieldId: string
+  hashedOtp: string
+  signedData: string
 }
 
 export interface IVerificationSchema
@@ -68,5 +75,12 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   resetField(
     transactionId: string,
     fieldId: string,
+  ): Promise<IVerificationSchema | null>
+  /**
+   * Updates the hash records for a single field
+   * @param updateData Data with which to update field
+   */
+  updateHashForField(
+    updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null>
 }

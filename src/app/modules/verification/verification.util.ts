@@ -58,6 +58,21 @@ export const extractTransactionFields = (
 }
 
 /**
+ * Computes an expiry date a given number of seconds after the original date.
+ * @param expireAfterSeconds Seconds to add to date
+ * @param fromDate Original date. Defaults to current date.
+ * @returns Date of expiry
+ */
+export const getExpiryDate = (
+  expireAfterSeconds: number,
+  fromDate?: Date,
+): Date => {
+  const expireAt = fromDate ? new Date(fromDate) : new Date()
+  expireAt.setTime(expireAt.getTime() + expireAfterSeconds * 1000)
+  return expireAt
+}
+
+/**
  * Checks if expireAt is in the past -- ie transaction has expired
  * @param transaction the transaction document to
  */
@@ -66,6 +81,22 @@ export const isTransactionExpired = (
 ): boolean => {
   const currentDate = new Date()
   return transaction.expireAt < currentDate
+}
+
+/**
+ * Computes whether the minimum waiting time for an OTP has elapsed. If this
+ * returns true, then a new OTP can be requested.
+ * @param hashCreatedAt When field hash was created
+ * @returns True if wait time has elapsed and hence a new OTP can be requested,
+ * false  otherwise
+ */
+export const isOtpWaitTimeElapsed = (hashCreatedAt: Date | null): boolean => {
+  // No hash created yet, so no wait time
+  if (!hashCreatedAt) return true
+
+  const elapseAt = getExpiryDate(WAIT_FOR_OTP_SECONDS, hashCreatedAt)
+  const currentDate = new Date()
+  return currentDate > elapseAt
 }
 
 export const mapRouteError: MapRouteError = (
@@ -97,7 +128,7 @@ export const mapRouteError: MapRouteError = (
     case WaitForOtpError:
       return {
         errorMessage: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case InvalidNumberError:
       return {

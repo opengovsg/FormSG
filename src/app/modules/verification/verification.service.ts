@@ -6,6 +6,7 @@ import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as VfnUtils from '../../../shared/util/verification'
 import {
+  BasicField,
   IVerificationFieldSchema,
   IVerificationSchema,
   PublicTransaction,
@@ -15,34 +16,26 @@ import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { generateOtp } from '../../utils/otp'
-import {
-  ApplicationError,
-  DatabaseError,
-  MalformedParametersError,
-} from '../core/core.errors'
+import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 
 import {
   FieldNotFoundInTransactionError,
+  NonVerifiedFieldTypeError,
   TransactionExpiredError,
   TransactionNotFoundError,
+  WaitForOtpError,
 } from './verification.errors'
 import getVerificationModel from './verification.model'
-import { isTransactionExpired } from './verification.util'
+import { SendOtpParams } from './verification.types'
+import { isOtpWaitTimeElapsed, isTransactionExpired } from './verification.util'
 
 const logger = createLoggerWithLabel(module)
 
 const VerificationModel = getVerificationModel(mongoose)
 
-const {
-  HASH_EXPIRE_AFTER_SECONDS,
-  NUM_OTP_RETRIES,
-  SALT_ROUNDS,
-  VfnErrors,
-  WAIT_FOR_OTP_SECONDS,
-} = VfnUtils
+const { HASH_EXPIRE_AFTER_SECONDS, NUM_OTP_RETRIES, VfnErrors } = VfnUtils
 
 /**
  *  Creates a transaction for a form that has verifiable fields
@@ -256,80 +249,98 @@ export const resetFieldForTransaction = (
 }
 
 /**
- *  Generates hashed otp and signed data for the given transaction, fieldId, and answer
- * @param transaction
+ * Sends OTP and updates database record for the given transaction, fieldId, and answer
+ * @param transactionId
  * @param fieldId
- * @param answer
+ * @param recipient Phone number for verified mobile field, or email address for verified email
+ * @param otp Input OTP to be sent
+ * @param hashedOtp Hash of input OTP to be saved
+ * @returns ok(updated transaction document)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(WaitForOtpError) when waiting time for new OTP has not elapsed
+ * @returns err(MalformedParametersError) when form data to send SMS OTP cannot be retrieved
+ * @returns err(SmsSendError) when attempt to send OTP SMS fails
+ * @returns err(InvalidNumberError) when SMS recipient is invalid
+ * @returns err(MailSendError) when attempt to send OTP email fails
+ * @returns err(NonVerifiedFieldTypeError) when field's fieldType is not verified
+ * @returns err(DatabaseError) when database read/write errors
  */
-export const getNewOtp = async (
-  transaction: IVerificationSchema,
-  fieldId: string,
-  answer: string,
-): Promise<void> => {
-  // TODO (#317): remove usage of non-null assertion
-  if (isDateExpired(transaction.expireAt!)) {
-    throwError(VfnErrors.TransactionNotFound)
+export const sendNewOtp = ({
+  transactionId,
+  fieldId,
+  recipient,
+  otp,
+  hashedOtp,
+}: SendOtpParams): ResultAsync<
+  IVerificationSchema,
+  | TransactionNotFoundError
+  | DatabaseError
+  | FieldNotFoundInTransactionError
+  | TransactionExpiredError
+  | WaitForOtpError
+  | MalformedParametersError
+  | SmsSendError
+  | InvalidNumberError
+  | MailSendError
+  | NonVerifiedFieldTypeError
+> => {
+  const logMeta = {
+    action: 'sendNewOtp',
+    transactionId,
+    fieldId,
   }
-  const field = getFieldOrUndefined(transaction, fieldId)
-  if (!field) {
-    return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
-  }
-  const { _id: transactionId, formId } = transaction
-  // TODO (#317): remove usage of non-null assertion
-  const waitForSeconds = waitToResendOtpSeconds(field.hashCreatedAt!)
-  if (waitForSeconds > 0) {
-    return throwError(
-      `Wait for ${waitForSeconds} seconds before requesting for a new otp`,
-      VfnErrors.WaitForOtp,
-    )
-  } else {
-    const hashCreatedAt = new Date()
-    const otp = generateOtp()
-    const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS)
+  return getValidTransaction(transactionId).andThen((transaction) =>
+    getFieldFromTransaction(transaction, fieldId)
+      .asyncAndThen((field) => {
+        if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
+          logger.warn({
+            message: 'OTP requested before waiting time elapsed',
+            meta: logMeta,
+          })
+          return errAsync(new WaitForOtpError())
+        }
 
-    const signedData = formsgSdk.verification.generateSignature!({
-      transactionId,
-      formId,
-      fieldId,
-      answer,
-    })
-
-    await sendOtpForField(formId, field, answer, otp)
+        return sendOtpForField(transaction.formId, field, recipient, otp)
+      })
       .andThen(() => {
+        const signedData = formsgSdk.verification.generateSignature({
+          transactionId,
+          formId: transaction.formId,
+          fieldId,
+          answer: recipient,
+        })
         return ResultAsync.fromPromise(
-          VerificationModel.updateOne(
-            { _id: transactionId, 'fields._id': fieldId },
-            {
-              $set: {
-                'fields.$.hashCreatedAt': hashCreatedAt,
-                'fields.$.hashedOtp': hashedOtp,
-                'fields.$.signedData': signedData,
-                'fields.$.hashRetries': 0,
-              },
-            },
-          ).exec(),
+          VerificationModel.updateHashForField({
+            fieldId,
+            hashedOtp,
+            signedData,
+            transactionId,
+          }),
           (error) => {
             logger.error({
               message:
-                'Database error occurred whilst updating verification document',
-              meta: {
-                action: 'getNewOtp',
-                formId,
-                fieldId,
-                transactionId,
-              },
+                'Error while updating transaction data after sending OTP',
+              meta: logMeta,
               error,
             })
             return new DatabaseError(getMongoErrorMessage(error))
           },
         )
-        // TODO(#941): Properly handle error in controller instead of throwing.
-        // Throwing is currently done to keep old behaviour consistent
       })
-      .mapErr((err) => {
-        throwError(err.message, VfnErrors.SendOtpFailed)
-      })
-  }
+      .andThen((newTransaction) => {
+        // Transaction deleted before update could be applied
+        if (!newTransaction) {
+          logger.warn({
+            message: 'Transaction with given ID not found',
+            meta: logMeta,
+          })
+          return errAsync(new TransactionNotFoundError())
+        }
+        return okAsync(newTransaction)
+      }),
+  )
 }
 
 /**
@@ -374,10 +385,8 @@ export const verifyOtp = async (
 
 /**
  * Send otp to recipient
- *
  * @param formId
  * @param field
- * @param field.fieldType
  * @param recipient
  * @param otp
  */
@@ -393,23 +402,18 @@ const sendOtpForField = (
   | SmsSendError
   | InvalidNumberError
   | MailSendError
-  | ApplicationError
+  | NonVerifiedFieldTypeError
 > => {
   const { fieldType } = field
   switch (fieldType) {
-    case 'mobile':
+    case BasicField.Mobile:
       // call sms - it should validate the recipient
       return SmsFactory.sendVerificationOtp(recipient, otp, formId)
-    case 'email':
+    case BasicField.Email:
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
     default:
-      return errAsync(
-        new ApplicationError(
-          'Unsupported field type passed to sendOtpForField',
-          { fieldType },
-        ),
-      )
+      return errAsync(new NonVerifiedFieldTypeError(fieldType))
   }
 }
 
@@ -434,23 +438,6 @@ const isHashedOtpExpired = (hashCreatedAt: Date): boolean => {
     hashCreatedAt,
   )
   return expireAt < currentDate
-}
-
-/**
- * Checks how many seconds remain before a new otp can be generated
- * @param hashCreatedAt
- */
-const waitToResendOtpSeconds = (hashCreatedAt: Date): number => {
-  if (!hashCreatedAt) {
-    // Hash has not been created
-    return 0
-  }
-  const expireAtMs = VfnUtils.getExpiryDate(
-    WAIT_FOR_OTP_SECONDS,
-    hashCreatedAt,
-  ).getTime()
-  const currentMs = Date.now()
-  return Math.ceil((expireAtMs - currentMs) / 1000)
 }
 
 /**

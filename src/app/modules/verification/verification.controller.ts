@@ -2,8 +2,9 @@ import { RequestHandler, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { VfnErrors } from '../../../shared/util/verification'
+import { SALT_ROUNDS, VfnErrors } from '../../../shared/util/verification'
 import { PublicTransaction } from '../../../types'
+import { generateOtpWithHash } from '../../utils/otp'
 
 import { VerificationFactory } from './verification.factory'
 import * as VerificationService from './verification.service'
@@ -118,28 +119,40 @@ export const handleResetField: RequestHandler<
  * @param req
  * @param res
  */
-export const getNewOtp: RequestHandler<
+export const handleGetOtp: RequestHandler<
   { transactionId: string },
-  string,
+  { message: string },
   { answer: string; fieldId: string }
 > = async (req, res) => {
-  try {
-    const { transactionId } = req.params
-    const { answer, fieldId } = req.body
-    const transaction = await VerificationService.getTransaction(transactionId)
-    await VerificationService.getNewOtp(transaction, fieldId, answer)
-    return res.sendStatus(StatusCodes.CREATED)
-  } catch (error) {
-    logger.error({
-      message: 'Error retrieving new OTP',
-      meta: {
-        action: 'getNewOtp',
-      },
-      error,
-    })
-    return handleError(error, res)
+  const { transactionId } = req.params
+  const { answer, fieldId } = req.body
+  const logMeta = {
+    action: 'handleGetOtp',
+    transactionId,
+    fieldId,
   }
+  return generateOtpWithHash(logMeta, SALT_ROUNDS)
+    .andThen(({ otp, hashedOtp }) =>
+      VerificationFactory.sendNewOtp({
+        fieldId,
+        hashedOtp,
+        otp,
+        recipient: answer,
+        transactionId,
+      }),
+    )
+    .map(() => res.sendStatus(StatusCodes.CREATED))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error creating new OTP',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
+
 /**
  * When user submits their otp for the field, the otp is validated.
  * If it is correct, we return the signature that was saved.
@@ -169,6 +182,7 @@ export const verifyOtp: RequestHandler<
     return handleError(error, res)
   }
 }
+
 /**
  * Returns relevant http status code for different verification failures
  * @param error
