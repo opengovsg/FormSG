@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { PublicTransaction } from '../../../types'
+import { ErrorDto } from '../../../types/api'
 import { generateOtpWithHash } from '../../utils/otp'
 
 import { VerificationFactory } from './verification.factory'
@@ -22,7 +23,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleCreateTransaction: RequestHandler<
   never,
-  Transaction | { message: string },
+  Transaction | ErrorDto,
   { formId: string }
 > = async (req, res) => {
   const { formId } = req.body
@@ -59,7 +60,7 @@ export const handleGetTransactionMetadata: RequestHandler<
   {
     transactionId: string
   },
-  PublicTransaction | { message: string }
+  PublicTransaction | ErrorDto
 > = async (req, res) => {
   const { transactionId } = req.params
   const logMeta = {
@@ -89,7 +90,7 @@ export const handleGetTransactionMetadata: RequestHandler<
  */
 export const handleResetField: RequestHandler<
   { transactionId: string },
-  { message: string },
+  ErrorDto,
   { fieldId: string }
 > = async (req, res) => {
   const { transactionId } = req.params
@@ -120,7 +121,7 @@ export const handleResetField: RequestHandler<
  */
 export const handleGetOtp: RequestHandler<
   { transactionId: string },
-  { message: string },
+  ErrorDto,
   { answer: string; fieldId: string }
 > = async (req, res) => {
   const { transactionId } = req.params
@@ -161,7 +162,7 @@ export const handleGetOtp: RequestHandler<
  */
 export const handleVerifyOtp: RequestHandler<
   { transactionId: string },
-  string | { message: string },
+  string | ErrorDto,
   { otp: string; fieldId: string }
 > = async (req, res) => {
   const { transactionId } = req.params
