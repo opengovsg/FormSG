@@ -5,7 +5,11 @@ import {
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
 } from '../../../shared/util/verification'
-import { IFieldSchema, MapRouteError } from '../../../types'
+import {
+  IFieldSchema,
+  IVerificationSchema,
+  MapRouteError,
+} from '../../../types'
 import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'
@@ -51,6 +55,17 @@ export const extractTransactionFields = (
     _id,
     fieldType,
   }))
+}
+
+/**
+ * Checks if expireAt is in the past -- ie transaction has expired
+ * @param transaction the transaction document to
+ */
+export const isTransactionExpired = (
+  transaction: IVerificationSchema,
+): boolean => {
+  const currentDate = new Date()
+  return transaction.expireAt < currentDate
 }
 
 export const mapRouteError: MapRouteError = (

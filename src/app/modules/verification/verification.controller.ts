@@ -87,28 +87,31 @@ export const handleGetTransactionMetadata: RequestHandler<
  * @param req
  * @param res
  */
-export const resetFieldInTransaction: RequestHandler<
+export const handleResetField: RequestHandler<
   { transactionId: string },
-  string,
+  { message: string },
   { fieldId: string }
 > = async (req, res) => {
-  try {
-    const { transactionId } = req.params
-    const { fieldId } = req.body
-    const transaction = await VerificationService.getTransaction(transactionId)
-    await VerificationService.resetFieldInTransaction(transaction, fieldId)
-    return res.sendStatus(StatusCodes.OK)
-  } catch (error) {
-    logger.error({
-      message: 'Error resetting field in transaction',
-      meta: {
-        action: 'resetFieldInTransaction',
-      },
-      error,
-    })
-    return handleError(error, res)
+  const { transactionId } = req.params
+  const { fieldId } = req.body
+  const logMeta = {
+    action: 'handleResetField',
+    transactionId,
+    fieldId,
   }
+  return VerificationFactory.resetFieldForTransaction(transactionId, fieldId)
+    .map(() => res.sendStatus(StatusCodes.OK))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error resetting field in transaction',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
+
 /**
  * When user requests to verify a field, an otp is generated.
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.

@@ -38,7 +38,7 @@ VfnRouter.post(
       fieldId: formatOfId,
     }),
   }),
-  verificationMiddleware.resetFieldInTransaction,
+  VerificationController.handleResetField,
 )
 
 VfnRouter.post(
