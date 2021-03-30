@@ -1,8 +1,5 @@
 import { Request, RequestHandler } from 'express'
 
-import FeatureManager, {
-  FeatureNames,
-} from '../../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType, FieldResponse } from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
@@ -30,9 +27,6 @@ import {
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
-
-// TODO (private #123): remove checking of form ID against CorpPass cloud test form
-const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
 export const handleEmailSubmission: RequestHandler<
   { formId: string },
@@ -133,14 +127,11 @@ export const handleEmailSubmission: RequestHandler<
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
   if (authType === AuthType.SP || authType === AuthType.CP) {
-    const useCpCloud = spcpFeature.props?.cpCloudFormId === formId
     // Verify NRIC and/or UEN
     const jwtPayloadResult = await SpcpFactory.extractJwt(
       req.cookies,
       authType,
-    ).asyncAndThen((jwt) =>
-      SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
-    )
+    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
     if (jwtPayloadResult.isErr()) {
       logger.error({
         message: 'Failed to verify JWT with auth client',

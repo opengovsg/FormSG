@@ -1,65 +1,55 @@
-const {
-  validateField,
-} = require('../../../../../dist/backend/app/utils/field-validation')
-const {
-  ValidateFieldError,
-} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { validateField } from 'src/app/utils/field-validation'
+import { BasicField } from 'src/types'
+import { RatingShape } from 'src/types/field/ratingField'
+
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+} from '../../helpers/generate-form-data'
+
 describe('Rating field validation', () => {
   it('should allow answer within range', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      isVisible: true,
-      fieldType: 'rating',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '4',
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with valid maximum (inclusive)', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      isVisible: true,
-      fieldType: 'rating',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '5',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow number with invalid maximum', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      isVisible: true,
-      fieldType: 'rating',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '6',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -68,60 +58,46 @@ describe('Rating field validation', () => {
   })
 
   it('should allow number with valid minimum (inclusive)', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      isVisible: true,
-      fieldType: 'rating',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '1',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with optional answer', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
+    const formField = generateDefaultField(BasicField.Rating, {
       required: false,
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      isVisible: true,
-      fieldType: 'rating',
-      answer: '5',
-    }
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
+      answer: '4',
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow negative answers', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      isVisible: true,
-      fieldType: 'rating',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '-1',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -130,20 +106,15 @@ describe('Rating field validation', () => {
   })
 
   it('should disallow leading zeroes in answer', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      isVisible: true,
-      answer: '03',
-    }
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
+      answer: '04',
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -152,40 +123,31 @@ describe('Rating field validation', () => {
   })
 
   it('should allow empty answer if optional', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
+    const formField = generateDefaultField(BasicField.Rating, {
       required: false,
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow empty answer if required', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -193,20 +155,16 @@ describe('Rating field validation', () => {
     )
   })
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      required: true,
+    const formField = generateDefaultField(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
+        shape: RatingShape.Heart,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'rating',
-      isVisible: false,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Rating, {
       answer: '5',
-    }
+      isVisible: false,
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(

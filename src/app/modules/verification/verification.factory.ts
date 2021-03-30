@@ -13,7 +13,7 @@ interface IVerifiedFieldsFactory {
   verifyOtp: RequestHandler<{ transactionId: string }>
 }
 
-const verifiedFieldsFactory = ({
+const verificationMiddlewareFactory = ({
   isEnabled,
 }: {
   isEnabled: boolean
@@ -43,6 +43,6 @@ const verifiedFieldsFactory = ({
   }
 }
 
-export default verifiedFieldsFactory(
+export const verificationMiddleware = verificationMiddlewareFactory(
   featureManager.get(FeatureNames.VerifiedFields),
 )

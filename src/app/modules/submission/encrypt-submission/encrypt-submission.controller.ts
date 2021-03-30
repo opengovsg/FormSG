@@ -1,16 +1,31 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary, Query } from 'express-serve-static-core'
+import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import moment from 'moment-timezone'
+import { SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { WithForm } from '../../../../types'
+import {
+  AuthType,
+  ResWithHashedFields,
+  ResWithUinFin,
+  WithParsedResponses,
+} from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
+import { getFormAfterPermissionChecks } from '../../auth/auth.service'
+import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
+import { SpcpFactory } from '../../spcp/spcp.factory'
+import { getPopulatedUserById } from '../../user/user.service'
+import { getProcessedResponses } from '../submission.service'
 
 import {
+  checkFormIsEncryptMode,
   getEncryptedSubmissionData,
   getSubmissionCursor,
   getSubmissionMetadata,
@@ -18,6 +33,7 @@ import {
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from './encrypt-submission.service'
+import { EncryptSubmissionBody } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -103,31 +119,155 @@ export const handleEncryptedSubmission: RequestHandler = async (
     })
   }
 
+  // Validate encrypted submission
+  const { encryptedContent, responses } = req.body
+  const encryptedEncodingResult = await checkIsEncryptedEncoding(
+    encryptedContent,
+  )
+  if (encryptedEncodingResult.isErr()) {
+    logger.error({
+      message: 'Error verifying content has encrypted encoding.',
+      meta: logMeta,
+      error: encryptedEncodingResult.error,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      encryptedEncodingResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  // Process encrypted submission
+  const processedResponsesResult = await getProcessedResponses(form, responses)
+  if (processedResponsesResult.isErr()) {
+    logger.error({
+      message: 'Error processing encrypted submission.',
+      meta: logMeta,
+      error: processedResponsesResult.error,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      processedResponsesResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+  const processedResponses = processedResponsesResult.value
+  // eslint-disable-next-line @typescript-eslint/no-extra-semi
+  ;(req.body as WithParsedResponses<
+    typeof req.body
+  >).parsedResponses = processedResponses
+  // Prevent downstream functions from using responses by deleting it.
+  // TODO(#1104): We want to remove the mutability of state that comes with delete.
+  delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
+
+  // Checks if user is SPCP-authenticated before allowing submission
+  const { authType } = form
+  if (authType === AuthType.SP || authType === AuthType.CP) {
+    const spcpResult = await SpcpFactory.extractJwt(
+      req.cookies,
+      authType,
+    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
+    if (spcpResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(spcpResult.error)
+      logger.error({
+        message: 'Failed to verify JWT with auth client',
+        meta: logMeta,
+        error: spcpResult.error,
+      })
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: true,
+      })
+    }
+    res.locals.uinFin = spcpResult.value.userName
+    res.locals.userInfo = spcpResult.value.userInfo
+  }
+
+  // validating that submitted MyInfo field values match the values
+  // originally retrieved from MyInfo.
+  // TODO(frankchn): Roll into a single service call as part of internal refactoring
+  const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin
+  const requestedAttributes = form.getUniqueMyInfoAttrs()
+  if (authType === AuthType.SP && requestedAttributes.length > 0) {
+    if (!uinFin) {
+      return res.status(StatusCodes.UNAUTHORIZED).send({
+        message: 'Please log in to SingPass and try again.',
+        spcpSubmissionFailure: true,
+      })
+    }
+    const myinfoResult = await MyInfoFactory.fetchMyInfoHashes(
+      uinFin,
+      formId,
+    ).andThen((hashes) =>
+      MyInfoFactory.checkMyInfoHashes(req.body.parsedResponses, hashes),
+    )
+    if (myinfoResult.isErr()) {
+      logger.error({
+        message: 'Error verifying MyInfo hashes',
+        meta: logMeta,
+        error: myinfoResult.error,
+      })
+      const { statusCode, errorMessage } = mapVerifyMyInfoError(
+        myinfoResult.error,
+      )
+      return res.status(statusCode).send({
+        message: errorMessage,
+        spcpSubmissionFailure: true,
+      })
+    }
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(res as ResWithHashedFields<typeof res>).locals.hashedFields =
+      myinfoResult.value
+  }
+
   return next()
 }
 
 /**
  * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
+ * @security session
  *
  * @returns 200 with stream of encrypted responses
+ * @returns 400 if form is not an encrypt mode form
  * @returns 400 if req.query.startDate or req.query.endDate is malformed
- * @returns 500 if any errors occurs in stream pipeline
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
 export const handleStreamEncryptedResponses: RequestHandler<
-  ParamsDictionary,
+  { formId: string },
   unknown,
   unknown,
   Query & { startDate?: string; endDate?: string; downloadAttachments: boolean }
 > = async (req, res) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const { formId } = req.params
   const { startDate, endDate } = req.query
 
-  // TODO (#42): Remove typecast once app has migrated away from middlewares.
-  const formId = (req as WithForm<typeof req>).form._id
-
-  const cursorResult = getSubmissionCursor(formId, {
-    startDate,
-    endDate,
-  })
+  // Step 1: Retrieve currently logged in user.
+  // eslint-disable-next-line typesafe/no-await-without-trycatch
+  const cursorResult = await getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Check whether user has read permissions to form
+      getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }),
+    )
+    // Step 3: Check whether form is encrypt mode.
+    .andThen(checkFormIsEncryptMode)
+    // Step 4: Retrieve submissions cursor.
+    .andThen(() =>
+      getSubmissionCursor(formId, {
+        startDate,
+        endDate,
+      }),
+    )
 
   const logMeta = {
     action: 'handleStreamEncryptedResponses',
@@ -137,7 +277,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
 
   if (cursorResult.isErr()) {
     logger.error({
-      message: 'Given date query params are malformed',
+      message: 'Error occurred whilst retrieving submission cursor',
       meta: logMeta,
       error: cursorResult.error,
     })

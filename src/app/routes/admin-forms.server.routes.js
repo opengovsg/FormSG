@@ -295,8 +295,6 @@ module.exports = function (app) {
             is: ResponseMode.Encrypt,
             then: Joi.string().required().disallow(''),
           }),
-        // TODO(#792): Remove when frontend has stopped sending isTemplate.
-        isTemplate: Joi.boolean(),
       },
     }),
     AdminFormController.handleCopyTemplateForm,
@@ -328,22 +326,9 @@ module.exports = function (app) {
    * @returns {FeedbackResponse.model} 200 - form feedback was saved
    * @security OTP
    */
-  /**
-   * On preview, mock sending of feedback
-   * @route POST /{formId}/adminform/feedback
-   * @group forms - endpoints to serve forms
-   * @param {string} formId.path.required - the form id
-   * @param {Feedback.model} feedback.body.required - the user's feedback
-   * @consumes application/json
-   * @produces application/json
-   * @returns {string} 400 - form feedback was malformed
-   * @returns {string} 200 - form feedback was received
-   */
-
   app
     .route('/:formId([a-fA-F0-9]{24})/adminform/feedback')
     .get(withUserAuthentication, AdminFormController.handleGetFormFeedbacks)
-    .post(authActiveForm(PermissionLevel.Read), adminForms.passThroughFeedback)
 
   /**
    * Count the number of feedback for a form
@@ -615,6 +600,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/download').get(
+    withUserAuthentication,
     celebrate({
       [Segments.QUERY]: Joi.object()
         .keys({
@@ -626,7 +612,6 @@ module.exports = function (app) {
         })
         .and('startDate', 'endDate'),
     }),
-    authEncryptedResponseAccess,
     EncryptSubmissionController.handleStreamEncryptedResponses,
   )
 

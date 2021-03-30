@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import verifiedFieldsFactory from './verification.factory'
+import { verificationMiddleware } from './verification.factory'
 
 export const VfnRouter = Router()
 
@@ -14,21 +14,21 @@ VfnRouter.post(
       formId: formatOfId,
     }),
   }),
-  verifiedFieldsFactory.createTransaction,
+  verificationMiddleware.createTransaction,
 )
 
 VfnRouter.get(
-  '/:transactionId',
+  '/:transactionId([a-fA-F0-9]{24})',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
     }),
   }),
-  verifiedFieldsFactory.getTransactionMetadata,
+  verificationMiddleware.getTransactionMetadata,
 )
 
 VfnRouter.post(
-  '/:transactionId/reset',
+  '/:transactionId([a-fA-F0-9]{24})/reset',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
@@ -37,11 +37,11 @@ VfnRouter.post(
       fieldId: formatOfId,
     }),
   }),
-  verifiedFieldsFactory.resetFieldInTransaction,
+  verificationMiddleware.resetFieldInTransaction,
 )
 
 VfnRouter.post(
-  '/:transactionId/otp',
+  '/:transactionId([a-fA-F0-9]{24})/otp',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
@@ -51,11 +51,11 @@ VfnRouter.post(
       answer: Joi.string().required(),
     }),
   }),
-  verifiedFieldsFactory.getNewOtp,
+  verificationMiddleware.getNewOtp,
 )
 
 VfnRouter.post(
-  '/:transactionId/otp/verify',
+  '/:transactionId([a-fA-F0-9]{24})/otp/verify',
   celebrate({
     [Segments.PARAMS]: Joi.object({
       transactionId: formatOfId,
@@ -68,5 +68,5 @@ VfnRouter.post(
         .message('Please enter a valid OTP'),
     }),
   }),
-  verifiedFieldsFactory.verifyOtp,
+  verificationMiddleware.verifyOtp,
 )

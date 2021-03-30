@@ -1,74 +1,60 @@
-const {
-  validateField,
-} = require('../../../../../dist/backend/app/utils/field-validation')
-const {
-  ValidateFieldError,
-} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { validateField } from 'src/app/utils/field-validation'
+import { BasicField, NumberSelectedValidation } from 'src/types'
+
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+} from '../../helpers/generate-form-data'
+
 describe('Number field validation', () => {
   it('should allow number with valid maximum', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Maximum',
+        selectedValidation: NumberSelectedValidation.Max,
         customMin: null,
         customMax: 2,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '5',
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with valid maximum (inclusive)', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Maximum',
+        selectedValidation: NumberSelectedValidation.Max,
         customMin: null,
         customMax: 2,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '55',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow number with invalid maximum', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Maximum',
+        selectedValidation: NumberSelectedValidation.Max,
         customMin: null,
         customMax: 2,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '555',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -77,92 +63,68 @@ describe('Number field validation', () => {
   })
 
   it('should allow number with valid minimum', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Minimum',
+        selectedValidation: NumberSelectedValidation.Min,
         customMin: 2,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '555',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with valid minimum (inclusive)', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Minimum',
+        selectedValidation: NumberSelectedValidation.Min,
         customMin: 2,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '55',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with valid exact', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Exact',
+        selectedValidation: NumberSelectedValidation.Exact,
         customMin: null,
         customMax: null,
         customVal: 2,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '55',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow number with invalid exact', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Exact',
+        selectedValidation: NumberSelectedValidation.Exact,
         customMin: null,
         customMax: null,
         customVal: 2,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '5',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -171,161 +133,120 @@ describe('Number field validation', () => {
   })
 
   it('should allow number with maximum left undefined', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Maximum',
+        selectedValidation: NumberSelectedValidation.Max,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '55',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with minimum left undefined', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Minimum',
+        selectedValidation: NumberSelectedValidation.Min,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '55',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with exact undefined', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: 'Exact',
+        selectedValidation: NumberSelectedValidation.Exact,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '55',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with no custom validation', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: true,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '55',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow number with optional answer', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: false,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
-      answer: '',
-    }
+      required: false,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
+      answer: '55',
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow answer to be zero', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: false,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '0',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow negative answers', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: false,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
-      answer: '-5',
-    }
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
+      answer: '-55',
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -334,45 +255,34 @@ describe('Number field validation', () => {
   })
 
   it('should allow leading zeroes in answer', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: false,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
       answer: '05',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'number',
-      required: false,
+    const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
         customMin: null,
         customMax: null,
         customVal: null,
       },
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'number',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Number, {
+      answer: '2',
       isVisible: false,
-      answer: '05',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(

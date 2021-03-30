@@ -1,4 +1,4 @@
-import { Document } from 'mongoose'
+import { Document, Model, Query } from 'mongoose'
 
 import { IFormSchema } from './form'
 
@@ -25,3 +25,9 @@ export interface IVerification {
 }
 
 export interface IVerificationSchema extends IVerification, Document {}
+
+export interface IVerificationModel extends Model<IVerificationSchema> {
+  findTransactionMetadata(
+    id: IVerificationSchema['_id'],
+  ): Query<Omit<IVerificationSchema, 'fields'>, IVerificationSchema>
+}
