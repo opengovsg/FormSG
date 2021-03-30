@@ -46,6 +46,16 @@ export class DatabasePayloadSizeError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Union of all possible database errors
+ */
+export type PossibleDatabaseError =
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+
 export class MalformedParametersError extends ApplicationError {
   constructor(message: string, meta?: unknown) {
     super(message, meta)

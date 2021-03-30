@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
+  HASH_EXPIRE_AFTER_SECONDS,
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
 } from '../../../shared/util/verification'
@@ -14,7 +15,10 @@ import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'
 import {
+  DatabaseConflictError,
   DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
   MalformedParametersError,
   MissingFeatureError,
 } from '../core/core.errors'
@@ -84,6 +88,16 @@ export const isTransactionExpired = (
 }
 
 /**
+ * Checks if HASH_EXPIRE_AFTER_SECONDS has elapsed since the field's hash was created - ie hash has expired
+ * @param hashCreatedAt
+ */
+export const isOtpExpired = (hashCreatedAt: Date): boolean => {
+  const currentDate = new Date()
+  const expireAt = getExpiryDate(HASH_EXPIRE_AFTER_SECONDS, hashCreatedAt)
+  return expireAt < currentDate
+}
+
+/**
  * Computes whether the minimum waiting time for an OTP has elapsed. If this
  * returns true, then a new OTP can be requested.
  * @param hashCreatedAt When field hash was created
@@ -112,13 +126,13 @@ export const mapRouteError: MapRouteError = (
     case OtpExpiredError:
       return {
         errorMessage: 'Your OTP has expired, please request for a new one.',
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case OtpRetryExceededError:
       return {
         errorMessage:
           'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
       }
     case WrongOtpError:
       return {
@@ -141,9 +155,22 @@ export const mapRouteError: MapRouteError = (
     case MailSendError:
     case NonVerifiedFieldTypeError:
     case MissingHashDataError:
+    case DatabaseValidationError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.BAD_REQUEST,
+      }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
+        // Message is injected internally
+        errorMessage: error.message,
+      }
+    case DatabaseConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        // Message is injected internally
+        errorMessage: error.message,
       }
     case FieldNotFoundInTransactionError:
     case TransactionNotFoundError:
