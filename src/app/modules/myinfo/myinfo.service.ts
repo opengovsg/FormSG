@@ -286,7 +286,6 @@ export class MyInfoService {
     myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): Result<IPossiblyPrefilledField[], never> {
-    console.log(currFormFields)
     const prefilledFields = currFormFields.map((field) => {
       if (!field.myInfo?.attr) return field
 

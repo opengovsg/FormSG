@@ -5,7 +5,7 @@ import querystring from 'querystring'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType, FormController } from '../../../../types'
-import { createReqMeta } from '../../../utils/request'
+import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import {
   MYINFO_COOKIE_NAME,
@@ -16,7 +16,7 @@ import { MyInfoCookiePayload } from '../../myinfo/myinfo.types'
 import { extractSuccessfulMyInfoCookie } from '../../myinfo/myinfo.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
-import { PrivateFormError } from '../form.errors'
+import { IntranetAccessError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
@@ -210,7 +210,7 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   const form = formResult.value
   const publicForm = form.getPublicView()
   const { authType } = form
-  let myInfoError: boolean
+  let myInfoError = false
 
   // NOTE: Creating a variable to ensure that TS will enforce the type and ensure all keys in AuthType are covered.
   const formController: FormController<
@@ -255,23 +255,55 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
   // NOTE: Once there is a valid form retrieved from the database,
   // the client should always get a 200 response with the form's public view.
   // Additional errors should be tagged onto the response object like myInfoError.
-  return formController[authType]()
-    .map((publicFormView) => res.json(publicFormView))
-    .mapErr((error) => {
-      if (error instanceof VerifyJwtError || error instanceof InvalidJwtError) {
-        logger.error({
-          message: 'Error getting public form',
-          meta: {
-            action: 'handleGetPublicForm',
-            ...createReqMeta(req),
-            formId,
-          },
-          error,
+  return (
+    formController[authType]()
+      // inject isIntranetUser here
+      .andThen((publicFormView) =>
+        // Checks if a form submission is made over intranet and passes through if it is
+        FormService.isFormSubmissionFromIntranet(
+          getRequestIp(req),
+          publicForm,
+        ).map(() => ({ ...publicFormView, isIntranetUser: false })),
+      )
+      .map((publicFormView) =>
+        res.json({
+          ...publicFormView,
+          myInfoError: false,
+        }),
+      )
+      .mapErr((error) => {
+        if (
+          error instanceof VerifyJwtError ||
+          error instanceof InvalidJwtError
+        ) {
+          logger.error({
+            message: 'Error getting public form',
+            meta: {
+              action: 'handleGetPublicForm',
+              ...createReqMeta(req),
+              formId,
+            },
+            error,
+          })
+        }
+        const isIntranetUser = error instanceof IntranetAccessError
+        if (isIntranetUser) {
+          logger.warn({
+            message:
+              'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+            meta: {
+              action: 'read',
+              formId,
+            },
+            error,
+          })
+        }
+
+        return res.json({
+          form: publicForm,
+          myInfoError,
+          isIntranetUser,
         })
-      }
-      return res.json({
-        form: publicForm,
-        ...(myInfoError && { myInfoError }),
       })
-    })
+  )
 }

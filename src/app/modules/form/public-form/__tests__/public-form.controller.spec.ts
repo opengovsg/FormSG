@@ -474,6 +474,12 @@ describe('public-form.controller', () => {
         rememberMe: false,
       }
 
+      beforeEach(() =>
+        MockFormService.isFormSubmissionFromIntranet.mockImplementationOnce(
+          (_, publicForm) => ok(publicForm),
+        ),
+      )
+
       it('should return 200 when there is no AuthType on the request', async () => {
         // Arrange
         const MOCK_NIL_AUTH_FORM = (mocked({
@@ -499,6 +505,8 @@ describe('public-form.controller', () => {
         // Assert
         expect(MOCK_RES.json).toHaveBeenCalledWith({
           form: MOCK_NIL_AUTH_FORM.getPublicView(),
+          isIntranetUser: false,
+          myInfoError: false,
         })
       })
 
@@ -540,6 +548,8 @@ describe('public-form.controller', () => {
           spcpSession: {
             userName: MOCK_JWT_PAYLOAD.userName,
           },
+          isIntranetUser: false,
+          myInfoError: false,
         })
       })
 
@@ -581,6 +591,8 @@ describe('public-form.controller', () => {
           spcpSession: {
             userName: MOCK_JWT_PAYLOAD.userName,
           },
+          isIntranetUser: false,
+          myInfoError: false,
         })
       })
 
@@ -625,6 +637,8 @@ describe('public-form.controller', () => {
         expect(MOCK_RES.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_AUTH_FORM.getPublicView(),
           spcpSession: { userName: MOCK_MYINFO_DATA.getUinFin() },
+          isIntranetUser: false,
+          myInfoError: false,
         })
       })
     })
@@ -645,6 +659,10 @@ describe('public-form.controller', () => {
 
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
+        )
+
+        MockFormService.isFormSubmissionFromIntranet.mockImplementationOnce(
+          (_, publicForm) => ok(publicForm),
         )
       })
 

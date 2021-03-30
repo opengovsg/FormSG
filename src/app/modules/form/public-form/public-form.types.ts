@@ -27,5 +27,4 @@ interface PossiblyPrefilledPublicForm extends Omit<PublicForm, 'form_fields'> {
 export interface IPublicFormView {
   form: PossiblyPrefilledPublicForm
   spcpSession?: { userName: string }
-  myInfoError?: boolean
 }
