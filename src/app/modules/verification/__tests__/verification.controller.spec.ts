@@ -347,13 +347,13 @@ describe('Verification controller', () => {
     })
 
     beforeEach(() => {
-      MockOtpUtils.generateOtpWithHash.mockReturnValueOnce(
+      MockOtpUtils.generateOtpWithHash.mockReturnValue(
         okAsync({
           otp: MOCK_OTP,
           hashedOtp: MOCK_HASHED_OTP,
         }),
       )
-      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+      MockVerificationFactory.sendNewOtp.mockReturnValue(
         okAsync(mockTransaction),
       )
     })
@@ -373,9 +373,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 404 when transaction is not found', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new TransactionNotFoundError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new TransactionNotFoundError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -392,9 +392,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when transaction has expired', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new TransactionExpiredError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new TransactionExpiredError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -411,9 +411,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 404 when field ID is not found', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new FieldNotFoundInTransactionError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new FieldNotFoundInTransactionError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -430,9 +430,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when error occurs while hashing', async () => {
-      MockOtpUtils.generateOtpWithHash
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new HashingError()))
+      MockOtpUtils.generateOtpWithHash.mockReturnValueOnce(
+        errAsync(new HashingError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -445,9 +445,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP waiting time has not elapsed', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new WaitForOtpError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new WaitForOtpError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -466,9 +466,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when form SMS parameters are malformed', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new MalformedParametersError('')))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new MalformedParametersError('')),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -485,9 +485,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when SMS sending errors', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new SmsSendError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new SmsSendError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -504,9 +504,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when phone number is invalid', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new InvalidNumberError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new InvalidNumberError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -523,9 +523,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when email sending errors', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new MailSendError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new MailSendError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -542,9 +542,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when field type is not verifiable', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new NonVerifiedFieldTypeError('')))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new NonVerifiedFieldTypeError('')),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -561,9 +561,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when database error occurs', async () => {
-      MockVerificationFactory.sendNewOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
+      MockVerificationFactory.sendNewOtp.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
@@ -628,9 +628,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 404 when transaction is not found', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new TransactionNotFoundError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new TransactionNotFoundError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -644,9 +644,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when transaction is expired', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new TransactionExpiredError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new TransactionExpiredError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -660,9 +660,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 404 when field is not found in transaction', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new FieldNotFoundInTransactionError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new FieldNotFoundInTransactionError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -676,9 +676,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when hash data is not found', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new MissingHashDataError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new MissingHashDataError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -692,9 +692,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP is expired', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new OtpExpiredError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new OtpExpiredError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -710,9 +710,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP max retries are exceeded', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new OtpRetryExceededError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new OtpRetryExceededError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -728,9 +728,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP is wrong', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new WrongOtpError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new WrongOtpError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -746,9 +746,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when error occurs while hashing OTP', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new HashingError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new HashingError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
@@ -764,9 +764,9 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when database error occurs', async () => {
-      MockVerificationFactory.verifyOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
+      MockVerificationFactory.verifyOtp.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 

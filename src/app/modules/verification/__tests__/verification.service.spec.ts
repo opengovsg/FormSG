@@ -91,10 +91,10 @@ describe('Verification service', () => {
     >
 
     beforeEach(() => {
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(mockForm))
+      MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
       createTransactionFromFormSpy = jest
         .spyOn(VerificationModel, 'createTransactionFromForm')
-        .mockResolvedValueOnce(mockTransaction)
+        .mockResolvedValue(mockTransaction)
     })
 
     it('should call VerificationModel.createTransactionFromForm when form is retrieved successfully', async () => {
@@ -108,9 +108,9 @@ describe('Verification service', () => {
     })
 
     it('should forward the error returned when form cannot be retrieved', async () => {
-      MockFormService.retrieveFormById
-        .mockReset()
-        .mockReturnValueOnce(errAsync(new FormNotFoundError()))
+      MockFormService.retrieveFormById.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
+      )
 
       const result = await VerificationService.createTransaction(mockForm._id)
 
@@ -122,7 +122,7 @@ describe('Verification service', () => {
     })
 
     it('should return DatabaseError when error occurs while creating transaction', async () => {
-      createTransactionFromFormSpy.mockReset().mockRejectedValueOnce('rejected')
+      createTransactionFromFormSpy.mockRejectedValueOnce('rejected')
 
       const result = await VerificationService.createTransaction(mockForm._id)
 
@@ -149,7 +149,7 @@ describe('Verification service', () => {
       }
       getPublicViewByIdSpy = jest
         .spyOn(VerificationModel, 'getPublicViewById')
-        .mockResolvedValueOnce(mockPublicView)
+        .mockResolvedValue(mockPublicView)
     })
 
     it('should call VerificationModel.getPublicViewById and return the result', async () => {
@@ -162,7 +162,7 @@ describe('Verification service', () => {
     })
 
     it('should call VerificationModel.getPublicViewById and return TransactionNotFoundError when result is null', async () => {
-      getPublicViewByIdSpy.mockReset().mockResolvedValueOnce(null)
+      getPublicViewByIdSpy.mockResolvedValueOnce(null)
 
       const result = await VerificationService.getTransactionMetadata(
         mockTransactionId,
@@ -182,7 +182,7 @@ describe('Verification service', () => {
     beforeEach(() => {
       resetFieldSpy = jest
         .spyOn(VerificationModel, 'resetField')
-        .mockResolvedValueOnce(mockTransaction)
+        .mockResolvedValue(mockTransaction)
     })
 
     it('should call VerificationModel.resetField when transaction and field IDs are valid', async () => {
@@ -236,7 +236,7 @@ describe('Verification service', () => {
     })
 
     it('should return TransactionNotFoundError when database update returns null', async () => {
-      resetFieldSpy.mockReset().mockResolvedValueOnce(null)
+      resetFieldSpy.mockResolvedValueOnce(null)
 
       const result = await VerificationService.resetFieldForTransaction(
         mockTransactionId,
@@ -248,7 +248,7 @@ describe('Verification service', () => {
     })
 
     it('should return DatabaseError when database update errors', async () => {
-      resetFieldSpy.mockReset().mockRejectedValueOnce('rejected')
+      resetFieldSpy.mockRejectedValueOnce('rejected')
 
       const result = await VerificationService.resetFieldForTransaction(
         mockTransactionId,
@@ -269,10 +269,10 @@ describe('Verification service', () => {
     beforeEach(() => {
       updateHashSpy = jest
         .spyOn(VerificationModel, 'updateHashForField')
-        .mockResolvedValueOnce(mockTransaction)
-      MockSmsFactory.sendVerificationOtp.mockReturnValueOnce(okAsync(true))
-      MockMailService.sendVerificationOtp.mockReturnValueOnce(okAsync(true))
-      MockFormsgSdk.verification.generateSignature.mockReturnValueOnce(
+        .mockResolvedValue(mockTransaction)
+      MockSmsFactory.sendVerificationOtp.mockReturnValue(okAsync(true))
+      MockMailService.sendVerificationOtp.mockReturnValue(okAsync(true))
+      MockFormsgSdk.verification.generateSignature.mockReturnValue(
         MOCK_SIGNED_DATA,
       )
     })
@@ -404,9 +404,7 @@ describe('Verification service', () => {
 
     it('should forward errors returned by MailService.sendVerificationOtp', async () => {
       const error = new MailSendError()
-      MockMailService.sendVerificationOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(error))
+      MockMailService.sendVerificationOtp.mockReturnValueOnce(errAsync(error))
       const field = generateFieldParams({
         fieldType: BasicField.Email,
       })
@@ -436,9 +434,7 @@ describe('Verification service', () => {
 
     it('should forward errors returned by SmsFactory.sendVerificationOtp', async () => {
       const error = new SmsSendError()
-      MockSmsFactory.sendVerificationOtp
-        .mockReset()
-        .mockReturnValueOnce(errAsync(error))
+      MockSmsFactory.sendVerificationOtp.mockReturnValueOnce(errAsync(error))
       const field = generateFieldParams({
         fieldType: BasicField.Mobile,
       })
@@ -468,7 +464,7 @@ describe('Verification service', () => {
     })
 
     it('should return TransactionNotFoundError when database update returns null', async () => {
-      updateHashSpy.mockReset().mockResolvedValueOnce(null)
+      updateHashSpy.mockResolvedValueOnce(null)
 
       const result = await VerificationService.sendNewOtp({
         transactionId: mockTransactionId,
@@ -514,8 +510,8 @@ describe('Verification service', () => {
     beforeEach(async () => {
       incrementRetriesSpy = jest
         .spyOn(VerificationModel, 'incrementFieldRetries')
-        .mockResolvedValueOnce(mockTransaction)
-      MockHashUtils.compareHash.mockReturnValueOnce(okAsync(true))
+        .mockResolvedValue(mockTransaction)
+      MockHashUtils.compareHash.mockReturnValue(okAsync(true))
       verifyOtpTransaction = await VerificationModel.create({
         formId: mockFormId,
         fields: [
@@ -652,7 +648,7 @@ describe('Verification service', () => {
     })
 
     it('should return DatabaseError when database update errors', async () => {
-      incrementRetriesSpy.mockReset().mockRejectedValueOnce('rejected')
+      incrementRetriesSpy.mockRejectedValueOnce('rejected')
 
       const result = await VerificationService.verifyOtp(
         verifyOtpTransactionId,
@@ -668,7 +664,7 @@ describe('Verification service', () => {
     })
 
     it('should return WrongOtpError when OTP is wrong', async () => {
-      MockHashUtils.compareHash.mockReset().mockReturnValueOnce(okAsync(false))
+      MockHashUtils.compareHash.mockReturnValueOnce(okAsync(false))
 
       const result = await VerificationService.verifyOtp(
         verifyOtpTransactionId,
