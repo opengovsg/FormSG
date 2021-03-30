@@ -1,12 +1,16 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { IntranetFactory } from 'src/app/services/intranet/intranet.factory'
+
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
+  AuthType,
   IEmailFormModel,
   IEncryptedFormModel,
   IFormSchema,
   IPopulatedForm,
+  PublicForm,
   ResponseMode,
   Status,
 } from '../../../types'
@@ -25,6 +29,7 @@ import { ApplicationError, DatabaseError } from '../core/core.errors'
 import {
   FormDeletedError,
   FormNotFoundError,
+  IntranetAccessError,
   PrivateFormError,
 } from './form.errors'
 
@@ -235,4 +240,23 @@ export const getFormModelByResponseMode = (
     case ResponseMode.Encrypt:
       return EncryptedFormModel
   }
+}
+
+/**
+ * Checks whether a given form submission is made from within intranet
+ * @param ip The ip of the request
+ * @param publicForm The form to check
+ * @returns ok(PublicForm) if the form is accessed from the internet
+ * @returns err(IntranetAccessError) if the form is accessed from within intranet
+ */
+export const isFormSubmissionFromIntranet = (
+  ip: string,
+  publicForm: PublicForm,
+): Result<PublicForm, IntranetAccessError> => {
+  return IntranetFactory.isIntranetIp(ip).andThen((isIntranetUser) => {
+    return isIntranetUser &&
+      [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(publicForm.authType)
+      ? err(new IntranetAccessError(publicForm._id))
+      : ok(publicForm)
+  })
 }

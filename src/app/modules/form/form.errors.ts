@@ -51,3 +51,12 @@ export class TransferOwnershipError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Error to be returned when a Spcp/MyInfo forms is accessed from intranet
+ */
+export class IntranetAccessError extends ApplicationError {
+  constructor(formId: string) {
+    super(`Form with id: ${formId} was accessed from intranet`)
+  }
+}
