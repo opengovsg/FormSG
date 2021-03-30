@@ -11,6 +11,7 @@ import { Transaction } from './verification.types'
 import { mapRouteError } from './verification.util'
 
 const logger = createLoggerWithLabel(module)
+
 /**
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
@@ -19,27 +20,34 @@ const logger = createLoggerWithLabel(module)
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const createTransaction: RequestHandler<
-  Record<string, string>,
-  Transaction,
+export const handleCreateTransaction: RequestHandler<
+  never,
+  Transaction | { message: string },
   { formId: string }
 > = async (req, res) => {
-  try {
-    const { formId } = req.body
-    const transaction = await VerificationService.createTransaction(formId)
-    return transaction
-      ? res.status(StatusCodes.CREATED).json(transaction)
-      : res.status(StatusCodes.OK).json({})
-  } catch (error) {
-    logger.error({
-      message: 'Error creating transaction',
-      meta: {
-        action: 'createTransaction',
-      },
-      error,
-    })
-    return handleError(error, res)
+  const { formId } = req.body
+  const logMeta = {
+    action: 'handleCreateTransaction',
+    formId,
   }
+  return VerificationFactory.createTransaction(formId)
+    .map((transaction) => {
+      return transaction
+        ? res.status(StatusCodes.CREATED).json({
+            expireAt: transaction.expireAt,
+            transactionId: transaction._id,
+          })
+        : res.status(StatusCodes.OK).json({})
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error creating transaction',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**

@@ -15,7 +15,7 @@ VfnRouter.post(
       formId: formatOfId,
     }),
   }),
-  verificationMiddleware.createTransaction,
+  VerificationController.handleCreateTransaction,
 )
 
 VfnRouter.get(

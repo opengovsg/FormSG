@@ -2,6 +2,9 @@ import { ObjectId } from 'bson'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
+import { BasicField } from 'src/types'
+
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import getVerificationModel from '../verification.model'
@@ -174,6 +177,152 @@ describe('Verification Model', () => {
           new ObjectId().toHexString(),
         )
         expect(actual).toBeNull()
+      })
+    })
+
+    describe('createTransactionFromForm', () => {
+      describe('Email mode forms', () => {
+        it('should return null when there are no verifiable fields', async () => {
+          const { form } = await dbHandler.insertEmailForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                generateDefaultField(BasicField.Number),
+                // Email and mobile fields, but with isVerifiable undefined
+                generateDefaultField(BasicField.Email),
+                generateDefaultField(BasicField.Mobile),
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeNull()
+        })
+
+        it('should create transaction correctly when there is one verifiable field', async () => {
+          const verifiableField = generateDefaultField(BasicField.Email, {
+            isVerifiable: true,
+          })
+          const { form } = await dbHandler.insertEmailForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                verifiableField,
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeTruthy()
+          expect(result!.formId).toEqual(form._id)
+          expect(result!.fields[0]._id).toEqual(verifiableField._id)
+          expect(result!.fields[0].fieldType).toEqual(verifiableField.fieldType)
+        })
+
+        it('should create transaction correctly when there are multiple verifiable fields', async () => {
+          const verifiableField1 = generateDefaultField(BasicField.Email, {
+            isVerifiable: true,
+          })
+          const verifiableField2 = generateDefaultField(BasicField.Mobile, {
+            isVerifiable: true,
+          })
+          const { form } = await dbHandler.insertEmailForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                verifiableField1,
+                verifiableField2,
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeTruthy()
+          expect(result!.formId).toEqual(form._id)
+          expect(result!.fields[0]._id).toEqual(verifiableField1._id)
+          expect(result!.fields[0].fieldType).toEqual(
+            verifiableField1.fieldType,
+          )
+          expect(result!.fields[1]._id).toEqual(verifiableField2._id)
+          expect(result!.fields[1].fieldType).toEqual(
+            verifiableField2.fieldType,
+          )
+        })
+      })
+
+      describe('Storage mode forms', () => {
+        it('should return null when there are no verifiable fields', async () => {
+          const { form } = await dbHandler.insertEncryptForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                generateDefaultField(BasicField.Number),
+                // Email and mobile fields, but with isVerifiable undefined
+                generateDefaultField(BasicField.Email),
+                generateDefaultField(BasicField.Mobile),
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeNull()
+        })
+
+        it('should create transaction correctly when there is one verifiable field', async () => {
+          const verifiableField = generateDefaultField(BasicField.Email, {
+            isVerifiable: true,
+          })
+          const { form } = await dbHandler.insertEncryptForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                verifiableField,
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeTruthy()
+          expect(result!.formId).toEqual(form._id)
+          expect(result!.fields[0]._id).toEqual(verifiableField._id)
+          expect(result!.fields[0].fieldType).toEqual(verifiableField.fieldType)
+        })
+
+        it('should create transaction correctly when there are multiple verifiable fields', async () => {
+          const verifiableField1 = generateDefaultField(BasicField.Email, {
+            isVerifiable: true,
+          })
+          const verifiableField2 = generateDefaultField(BasicField.Mobile, {
+            isVerifiable: true,
+          })
+          const { form } = await dbHandler.insertEncryptForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                verifiableField1,
+                verifiableField2,
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeTruthy()
+          expect(result!.formId).toEqual(form._id)
+          expect(result!.fields[0]._id).toEqual(verifiableField1._id)
+          expect(result!.fields[0].fieldType).toEqual(
+            verifiableField1.fieldType,
+          )
+          expect(result!.fields[1]._id).toEqual(verifiableField2._id)
+          expect(result!.fields[1].fieldType).toEqual(
+            verifiableField2.fieldType,
+          )
+        })
       })
     })
   })

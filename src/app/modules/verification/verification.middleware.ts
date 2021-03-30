@@ -6,7 +6,6 @@ import featureManager, { FeatureNames } from '../../../config/feature-manager'
 import * as verification from './verification.controller'
 
 interface IVerifiedFieldsMiddleware {
-  createTransaction: RequestHandler
   resetFieldInTransaction: RequestHandler<{ transactionId: string }>
   getNewOtp: RequestHandler<{ transactionId: string }>
   verifyOtp: RequestHandler<{ transactionId: string }>
@@ -19,7 +18,6 @@ const verificationMiddlewareFactory = ({
 }): IVerifiedFieldsMiddleware => {
   if (isEnabled) {
     return {
-      createTransaction: verification.createTransaction,
       resetFieldInTransaction: verification.resetFieldInTransaction,
       getNewOtp: verification.getNewOtp,
       verifyOtp: verification.verifyOtp,
@@ -27,8 +25,6 @@ const verificationMiddlewareFactory = ({
   } else {
     const errMsg = 'Verified fields feature is not enabled'
     return {
-      createTransaction: (req, res) =>
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       resetFieldInTransaction: (req, res) =>
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: errMsg }),
       getNewOtp: (req, res) =>

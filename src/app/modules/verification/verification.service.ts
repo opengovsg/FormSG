@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt'
-import _ from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -7,15 +6,10 @@ import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as VfnUtils from '../../../shared/util/verification'
 import {
-  IEmailFieldSchema,
-  IFieldSchema,
-  IFormSchema,
-  IMobileFieldSchema,
   IVerificationFieldSchema,
   IVerificationSchema,
   PublicTransaction,
 } from '../../../types'
-import getFormModel from '../../models/form.server.model'
 import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
@@ -27,21 +21,20 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from '../core/core.errors'
+import { FormNotFoundError } from '../form/form.errors'
+import * as FormService from '../form/form.service'
 
 import { TransactionNotFoundError } from './verification.errors'
 import getVerificationModel from './verification.model'
-import { Transaction } from './verification.types'
 
 const logger = createLoggerWithLabel(module)
 
-const Form = getFormModel(mongoose)
 const VerificationModel = getVerificationModel(mongoose)
 
 const {
   HASH_EXPIRE_AFTER_SECONDS,
   NUM_OTP_RETRIES,
   SALT_ROUNDS,
-  VERIFIED_FIELDTYPES,
   VfnErrors,
   WAIT_FOR_OTP_SECONDS,
 } = VfnUtils
@@ -49,23 +42,33 @@ const {
 /**
  *  Creates a transaction for a form that has verifiable fields
  * @param formId
+ * @returns ok(created transaction or null) if form has no verifiable fields.
+ * @returns err(FormNotFoundError) when form does not exist
+ * @returns err(DatabaseError) when database read/write errors
  */
-export const createTransaction = async (
+export const createTransaction = (
   formId: string,
-): Promise<Transaction | null> => {
-  const form = await Form.findById(formId)
-
-  if (!form) {
-    return null
+): ResultAsync<
+  IVerificationSchema | null,
+  FormNotFoundError | DatabaseError
+> => {
+  const logMeta = {
+    action: 'createTransaction',
+    formId,
   }
-
-  const fields = initializeVerifiableFields(form)
-  if (!_.isEmpty(fields)) {
-    const verification = new VerificationModel({ formId, fields })
-    const doc = await verification.save()
-    return { transactionId: doc._id, expireAt: doc.expireAt }
-  }
-  return null
+  return FormService.retrieveFormById(formId).andThen((form) =>
+    ResultAsync.fromPromise(
+      VerificationModel.createTransactionFromForm(form),
+      (error) => {
+        logger.error({
+          message: 'Error while creating transaction',
+          meta: logMeta,
+          error,
+        })
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    ),
+  )
 }
 
 /**
@@ -259,41 +262,6 @@ export const verifyOtp = async (
     return validOtp ? signedData! : throwError(VfnErrors.InvalidOtp)
   }
   return throwError(VfnErrors.ResendOtp)
-}
-
-/**
- * Gets verifiable fields from form and initializes the values to be stored in a transaction
- * @param form
- */
-const initializeVerifiableFields = (
-  form: IFormSchema,
-): Pick<IFieldSchema, '_id' | 'fieldType'>[] => {
-  return _.get(form, 'form_fields', [])
-    .filter(isFieldVerifiable)
-    .map(({ _id, fieldType }) => {
-      return {
-        _id,
-        fieldType,
-      }
-    })
-}
-
-/**
- * Whether a field is of a type that can be verified.
- * @param field
- */
-const isPossiblyVerifiable = (
-  field: IFieldSchema,
-): field is IEmailFieldSchema | IMobileFieldSchema => {
-  return VERIFIED_FIELDTYPES.includes(field.fieldType)
-}
-
-/**
- * Evaluates whether a field is verifiable
- * @param field
- */
-const isFieldVerifiable = (field: IFieldSchema): boolean => {
-  return isPossiblyVerifiable(field) && field.isVerifiable === true
 }
 
 /**
