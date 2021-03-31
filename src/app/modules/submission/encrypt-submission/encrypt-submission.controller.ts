@@ -3,7 +3,6 @@ import { RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
@@ -47,7 +46,10 @@ import {
   transformAttachmentMetaStream,
 } from './encrypt-submission.service'
 import { EncryptSubmissionBody } from './encrypt-submission.types'
-import { mapRouteError } from './encrypt-submission.utils'
+import {
+  createEncryptedSubmissionDto,
+  mapRouteError,
+} from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -561,20 +563,9 @@ export const handleGetEncryptedResponse: RequestHandler<
         return transformAttachmentMetasToSignedUrls(
           submissionData.attachmentMetadata,
           urlExpiry,
-        ).map((presignedUrls) => {
-          // Successfully retrieved both submission and transforming presigned
-          // URLs, create and return new DTO.
-          const responseData: EncryptedSubmissionDto = {
-            refNo: submissionData._id,
-            submissionTime: moment(submissionData.created)
-              .tz('Asia/Singapore')
-              .format('ddd, D MMM YYYY, hh:mm:ss A'),
-            content: submissionData.encryptedContent,
-            verified: submissionData.verifiedContent,
-            attachmentMetadata: presignedUrls,
-          }
-          return responseData
-        })
+        ).map((presignedUrls) =>
+          createEncryptedSubmissionDto(submissionData, presignedUrls),
+        )
       })
       .map((responseData) => res.json(responseData))
       .mapErr((error) => {
