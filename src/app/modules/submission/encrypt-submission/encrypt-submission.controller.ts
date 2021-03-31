@@ -3,7 +3,6 @@ import { RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
@@ -11,10 +10,12 @@ import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
+  EncryptedSubmissionDto,
   ResWithHashedFields,
   ResWithUinFin,
   WithParsedResponses,
 } from '../../../../types'
+import { ErrorDto } from '../../../../types/api'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
@@ -45,7 +46,10 @@ import {
   transformAttachmentMetaStream,
 } from './encrypt-submission.service'
 import { EncryptSubmissionBody } from './encrypt-submission.types'
-import { mapRouteError } from './encrypt-submission.utils'
+import {
+  createEncryptedSubmissionDto,
+  mapRouteError,
+} from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -519,80 +523,69 @@ export const handleStreamEncryptedResponses: RequestHandler<
  * Handler for GET /:formId/adminform/submissions
  *
  * @returns 200 with encrypted submission data response
- * @returns 404 if submissionId cannot be found in the database
- * @returns 500 if any errors occurs in database query or generating signed URL
+ * @returns 400 when form is not an encrypt mode form
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when submissionId cannot be found in the database
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when any errors occurs in database query or generating signed URL
  */
 export const handleGetEncryptedResponse: RequestHandler<
   { formId: string },
-  unknown,
+  EncryptedSubmissionDto | ErrorDto,
   unknown,
   { submissionId: string }
 > = async (req, res) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { submissionId } = req.query
   const { formId } = req.params
 
-  const logMeta = {
-    action: 'handleGetEncryptedResponse',
-    submissionId,
-    formId,
-  }
+  return (
+    // Step 1: Retrieve logged in user.
+    getPopulatedUserById(sessionUserId)
+      // Step 2: Check whether user has read permissions to form.
+      .andThen((user) =>
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Check whether form is encrypt mode.
+      .andThen(checkFormIsEncryptMode)
+      // Step 4: Is encrypt mode form, retrieve submission data.
+      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
+      // Step 5: Retrieve presigned URLs for attachments.
+      .andThen((submissionData) => {
+        // Remaining login duration in seconds.
+        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
+        return transformAttachmentMetasToSignedUrls(
+          submissionData.attachmentMetadata,
+          urlExpiry,
+        ).map((presignedUrls) =>
+          createEncryptedSubmissionDto(submissionData, presignedUrls),
+        )
+      })
+      .map((responseData) => res.json(responseData))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: {
+            action: 'handleGetEncryptedResponse',
+            submissionId,
+            formId,
+            ...createReqMeta(req),
+          },
+          error,
+        })
 
-  // Step 1: Retrieve submission.
-  const submissionResult = await getEncryptedSubmissionData(
-    formId,
-    submissionId,
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
   )
-
-  if (submissionResult.isErr()) {
-    logger.error({
-      message: 'Failure retrieving encrypted submission from database',
-      meta: logMeta,
-      error: submissionResult.error,
-    })
-
-    const { statusCode, errorMessage } = mapRouteError(submissionResult.error)
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  // Step 2: Retrieve presigned URLs for attachments.
-  const submission = submissionResult.value
-  // Remaining login duration in seconds.
-  const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
-  const presignedUrlsResult = await transformAttachmentMetasToSignedUrls(
-    submission.attachmentMetadata,
-    urlExpiry,
-  )
-
-  if (presignedUrlsResult.isErr()) {
-    logger.error({
-      message: 'Failure transforming attachment metadata into presigned URLs',
-      meta: logMeta,
-      error: presignedUrlsResult.error,
-    })
-
-    const { statusCode, errorMessage } = mapRouteError(
-      presignedUrlsResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  // Successfully retrieved both submission and transforming presigned URLs,
-  // return to client.
-  const responseData = {
-    refNo: submission._id,
-    submissionTime: moment(submission.created)
-      .tz('Asia/Singapore')
-      .format('ddd, D MMM YYYY, hh:mm:ss A'),
-    content: submission.encryptedContent,
-    verified: submission.verifiedContent,
-    attachmentMetadata: presignedUrlsResult.value,
-  }
-
-  return res.json(responseData)
 }
 
 /**
