@@ -121,9 +121,9 @@ export const getAuthTypeHandlerForForm = (authType: AuthType) => (
     | typeof SpcpFactory.createFormWithSpcpSession
     | typeof MyInfoFactory.createFormWithMyInfo
   > = {
-    [AuthType.SP]: SpcpFactory.createFormWithSpcpSession,
-    [AuthType.CP]: SpcpFactory.createFormWithSpcpSession,
-    [AuthType.MyInfo]: MyInfoFactory.createFormWithMyInfo,
+    [AuthType.SP]: () => SpcpFactory.createFormWithSpcpSession(form, cookies),
+    [AuthType.CP]: () => SpcpFactory.createFormWithSpcpSession(form, cookies),
+    [AuthType.MyInfo]: () => MyInfoFactory.createFormWithMyInfo(form, cookies),
     [AuthType.NIL]: (form: IPopulatedForm) =>
       okAsync({ form: form.getPublicView() }),
   }
