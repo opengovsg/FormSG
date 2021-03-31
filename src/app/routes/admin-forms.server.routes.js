@@ -41,15 +41,6 @@ let authActiveForm = (requiredPermission) => [
   auth.verifyPermission(requiredPermission),
 ]
 
-/**
- * Ensures that user has read permissions,form is encrypt-mode and
- * form admin is encrypt beta-enabled.
- */
-const authEncryptedResponseAccess = [
-  authActiveForm(PermissionLevel.Read),
-  adminForms.isFormEncryptMode,
-]
-
 module.exports = function (app) {
   /**
    * @typedef ErrorMessage
