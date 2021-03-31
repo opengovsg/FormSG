@@ -59,24 +59,21 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleListDashboardForms: RequestHandler = async (req, res) => {
   const authedUserId = (req.session as Express.AuthedSession).user._id
-  const dashboardResult = await getDashboardForms(authedUserId)
 
-  if (dashboardResult.isErr()) {
-    const { error } = dashboardResult
-    logger.error({
-      message: 'Error listing dashboard forms',
-      meta: {
-        action: 'handleListDashboardForms',
-        userId: authedUserId,
-      },
-      error,
+  return getDashboardForms(authedUserId)
+    .map((dashboardView) => res.json(dashboardView))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error listing dashboard forms',
+        meta: {
+          action: 'handleListDashboardForms',
+          userId: authedUserId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  // Success.
-  return res.json(dashboardResult.value)
 }
 
 /**
