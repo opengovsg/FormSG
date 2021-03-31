@@ -575,6 +575,7 @@ export const handleGetEncryptedResponse: RequestHandler<
             action: 'handleGetEncryptedResponse',
             submissionId,
             formId,
+            ...createReqMeta(req),
           },
           error,
         })
