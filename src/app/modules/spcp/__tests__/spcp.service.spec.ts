@@ -244,7 +244,7 @@ describe('spcp.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
     })
 
-    it('should return InvalidJWTError when SP JWT has invalid shape', async () => {
+    it('should return InvalidJwtError when SP JWT has invalid shape', async () => {
       // Arrange
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
@@ -281,7 +281,7 @@ describe('spcp.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
     })
 
-    it('should return InvalidJWTError when CorpPass JWT has invalid shape', async () => {
+    it('should return InvalidJwtError when CorpPass JWT has invalid shape', async () => {
       // Arrange
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
@@ -863,7 +863,7 @@ describe('spcp.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
 
-    it('should return InvalidJWTError when the client authenticates using SP and the JWT has wrong shape', async () => {
+    it('should return InvalidJwtError when the client authenticates using SP and the JWT has wrong shape', async () => {
       // Arrange
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
@@ -880,7 +880,7 @@ describe('spcp.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
 
-    it('should return VerifyJWTError when the client authenticates using CP and the JWT has wrong shape', async () => {
+    it('should return VerifyJwtError when the client authenticates using CP and the JWT has wrong shape', async () => {
       // Arrange
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
@@ -896,7 +896,7 @@ describe('spcp.service', () => {
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
-    it('should return InvalidJWTError when the client authenticates using SP and the JWT has invalid shape', async () => {
+    it('should return InvalidJwtError when the client authenticates using SP and the JWT has invalid shape', async () => {
       // Arrange
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
@@ -911,7 +911,7 @@ describe('spcp.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
 
-    it('should return InvalidJWTError when the client authenticates using CP and the JWT has invalid shape', async () => {
+    it('should return InvalidJwtError when the client authenticates using CP and the JWT has invalid shape', async () => {
       // Arrange
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
