@@ -675,6 +675,17 @@ export const handleDuplicateAdminForm: RequestHandler<
   )
 }
 
+/**
+ * Handler for GET /:formId/adminform/template
+ * @security session
+ *
+ * @returns 200 with target form's public view
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
 export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
   req,
   res,

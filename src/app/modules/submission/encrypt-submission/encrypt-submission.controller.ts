@@ -522,6 +522,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
 
 /**
  * Handler for GET /:formId/adminform/submissions
+ * @security session
  *
  * @returns 200 with encrypted submission data response
  * @returns 400 when form is not an encrypt mode form
