@@ -646,9 +646,10 @@ export const handleGetMetadata: RequestHandler<
         // Step 4a: Retrieve specific submission id.
         if (submissionId) {
           return getSubmissionMetadata(formId, submissionId).map((metadata) => {
-            return metadata
+            const metadataList: SubmissionMetadataList = metadata
               ? { metadata: [metadata], count: 1 }
               : { metadata: [], count: 0 }
+            return metadataList
           })
         }
         // Step 4b: Retrieve all submissions of given form id.
