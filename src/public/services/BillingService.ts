@@ -2,7 +2,8 @@ import axios from 'axios'
 
 import { LoginStatistic } from 'src/types/login'
 
-const BILLING_ENDPOINT = '/billing'
+// Exported for testing
+export const BILLING_ENDPOINT = '/billing'
 type BillingResult = LoginStatistic
 
 /**
