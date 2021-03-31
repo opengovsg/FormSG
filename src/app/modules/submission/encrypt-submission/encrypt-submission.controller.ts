@@ -11,10 +11,12 @@ import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
+  EncryptedSubmissionDto,
   ResWithHashedFields,
   ResWithUinFin,
   WithParsedResponses,
 } from '../../../../types'
+import { ErrorDto } from '../../../../types/api'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
@@ -524,75 +526,69 @@ export const handleStreamEncryptedResponses: RequestHandler<
  */
 export const handleGetEncryptedResponse: RequestHandler<
   { formId: string },
-  unknown,
+  EncryptedSubmissionDto | ErrorDto,
   unknown,
   { submissionId: string }
 > = async (req, res) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { submissionId } = req.query
   const { formId } = req.params
 
-  const logMeta = {
-    action: 'handleGetEncryptedResponse',
-    submissionId,
-    formId,
-  }
+  return (
+    // Step 1: Retrieve logged in user.
+    getPopulatedUserById(sessionUserId)
+      // Step 2: Check whether user has read permissions to form.
+      .andThen((user) =>
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Check whether form is encrypt mode.
+      .andThen(checkFormIsEncryptMode)
+      // Step 4: Is encrypt mode form, retrieve submission data.
+      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
+      // Step 5: Retrieve presigned URLs for attachments.
+      .andThen((submissionData) => {
+        // Remaining login duration in seconds.
+        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
+        return transformAttachmentMetasToSignedUrls(
+          submissionData.attachmentMetadata,
+          urlExpiry,
+        ).map((presignedUrls) => {
+          // Successfully retrieved both submission and transforming presigned
+          // URLs, create and return new DTO.
+          const responseData: EncryptedSubmissionDto = {
+            refNo: submissionData._id,
+            submissionTime: moment(submissionData.created)
+              .tz('Asia/Singapore')
+              .format('ddd, D MMM YYYY, hh:mm:ss A'),
+            content: submissionData.encryptedContent,
+            verified: submissionData.verifiedContent,
+            attachmentMetadata: presignedUrls,
+          }
+          return responseData
+        })
+      })
+      .map((responseData) => res.json(responseData))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: {
+            action: 'handleGetEncryptedResponse',
+            submissionId,
+            formId,
+          },
+          error,
+        })
 
-  // Step 1: Retrieve submission.
-  const submissionResult = await getEncryptedSubmissionData(
-    formId,
-    submissionId,
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
   )
-
-  if (submissionResult.isErr()) {
-    logger.error({
-      message: 'Failure retrieving encrypted submission from database',
-      meta: logMeta,
-      error: submissionResult.error,
-    })
-
-    const { statusCode, errorMessage } = mapRouteError(submissionResult.error)
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  // Step 2: Retrieve presigned URLs for attachments.
-  const submission = submissionResult.value
-  // Remaining login duration in seconds.
-  const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
-  const presignedUrlsResult = await transformAttachmentMetasToSignedUrls(
-    submission.attachmentMetadata,
-    urlExpiry,
-  )
-
-  if (presignedUrlsResult.isErr()) {
-    logger.error({
-      message: 'Failure transforming attachment metadata into presigned URLs',
-      meta: logMeta,
-      error: presignedUrlsResult.error,
-    })
-
-    const { statusCode, errorMessage } = mapRouteError(
-      presignedUrlsResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  // Successfully retrieved both submission and transforming presigned URLs,
-  // return to client.
-  const responseData = {
-    refNo: submission._id,
-    submissionTime: moment(submission.created)
-      .tz('Asia/Singapore')
-      .format('ddd, D MMM YYYY, hh:mm:ss A'),
-    content: submission.encryptedContent,
-    verified: submission.verifiedContent,
-    attachmentMetadata: presignedUrlsResult.value,
-  }
-
-  return res.json(responseData)
 }
 
 /**
