@@ -1,10 +1,9 @@
 import axios from 'axios'
 
-import { LoginStatistic } from 'src/types/login'
+import { BillingInformationDto } from '../../types/api/billing'
 
 // Exported for testing
 export const BILLING_ENDPOINT = '/billing'
-type BillingResult = LoginStatistic
 
 /**
  * Gets the billing information for the given month and year
@@ -17,9 +16,9 @@ export const getBillingInfo = (
   yr: string,
   mth: string,
   esrvcId: string,
-): Promise<BillingResult> =>
-  axios
-    .get(BILLING_ENDPOINT, {
+): Promise<BillingInformationDto> => {
+  return axios
+    .get<BillingInformationDto>(BILLING_ENDPOINT, {
       params: {
         yr,
         mth,
@@ -27,3 +26,4 @@ export const getBillingInfo = (
       },
     })
     .then(({ data }) => data)
+}

@@ -4,6 +4,11 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  BillingInformationDto,
+  BillingQueryDto,
+  ErrorDto,
+} from '../../../types/api'
 import { createReqMeta } from '../../utils/request'
 
 import { BillingFactory } from './billing.factory'
@@ -20,13 +25,9 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleGetBillInfo: RequestHandler<
   ParamsDictionary,
+  ErrorDto | BillingInformationDto,
   unknown,
-  unknown,
-  {
-    esrvcId: string
-    yr: string
-    mth: string
-  }
+  BillingQueryDto
 > = async (req, res) => {
   const { esrvcId, mth, yr } = req.query
   const authedUser = (req.session as Express.AuthedSession).user
