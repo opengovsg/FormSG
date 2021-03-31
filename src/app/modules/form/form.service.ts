@@ -251,14 +251,16 @@ export const getFormModelByResponseMode = (
 export const setIsIntranetFormAccess = (
   ip: string,
   publicFormView: IPublicFormView,
-): Result<SetRequired<IPublicFormView, 'isIntranetUser'>, ApplicationError> =>
-  IntranetFactory.isIntranetIp(ip).andThen((isIntranetIp) => {
-    const isIntranetUser =
-      isIntranetIp &&
+): Result<SetRequired<IPublicFormView, 'isIntranetUser'>, ApplicationError> => {
+  return IntranetFactory.isIntranetIp(ip).andThen((isIntranetUser) => {
+    // Warn if form is being accessed from within intranet
+    // and the form has authentication set
+    if (
+      isIntranetUser &&
       [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(
         publicFormView.form.authType,
       )
-    if (isIntranetUser) {
+    ) {
       logger.warn({
         message:
           'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
@@ -270,19 +272,4 @@ export const setIsIntranetFormAccess = (
     }
     return ok({ ...publicFormView, isIntranetUser })
   })
-
-/**
- * Utility method to signify to downstream consumers that the myInfoError property has been set
- * @param publicFormView The form view to set
- * @param hasMyInfoError Whether there is a myInfoError
- * @returns ok(publicFormView) The form with the myInfoError property set
- * @returns err(never) Should never happen
- */
-export const setMyInfoError = (
-  publicFormView: IPublicFormView,
-  hasMyInfoError: boolean,
-): Result<SetRequired<IPublicFormView, 'myInfoError'>, never> =>
-  ok({
-    ...publicFormView,
-    myInfoError: hasMyInfoError,
-  })
+}
