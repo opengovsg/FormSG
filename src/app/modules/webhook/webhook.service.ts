@@ -3,9 +3,6 @@ import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { transformMongoError } from 'src/app/utils/handle-mongo-error'
-import { hasProp } from 'src/app/utils/has-prop'
-
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -14,6 +11,8 @@ import {
   IWebhookResponse,
 } from '../../../types'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
+import { transformMongoError } from '../../utils/handle-mongo-error'
+import { hasProp } from '../../utils/has-prop'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
