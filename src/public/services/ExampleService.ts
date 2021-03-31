@@ -6,7 +6,7 @@ import {
   SingleFormResult,
 } from '../../app/modules/examples/examples.types'
 
-const EXAMPLES_ENDPOINT = '/examples'
+export const EXAMPLES_ENDPOINT = '/examples'
 
 type ExampleFormsResult = QueryPageResult | QueryPageResultWithTotal
 // NOTE: Renaming for clarity that this type refers to an example
