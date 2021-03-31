@@ -268,18 +268,9 @@ export type FormMetaView = Pick<
 }
 
 /**
- * Type guard for whether a populated form is email mode
- * @param form Form document to check
- */
-export const isEmailModeForm = (
-  form: IPopulatedForm,
-): form is IPopulatedEmailForm => {
-  return form.responseMode === ResponseMode.Email
-}
-
-/**
- * Mapping type between authType into an output function to ensure that the indexed type has transformations for all forms
+ * Mapping type between authType into an output function to ensure that the indexed type has transformations for all forms.
+ * F is a function type that maps authType into the output
  */
 export type FormController<F> = {
-  [K in keyof typeof AuthType]: () => F
+  [K in keyof typeof AuthType]: F
 }

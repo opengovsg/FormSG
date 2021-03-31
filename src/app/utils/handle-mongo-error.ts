@@ -99,3 +99,15 @@ export const transformMongoError = (error: unknown): PossibleDatabaseError => {
 
   return new DatabaseError(errorMessage)
 }
+
+export const isMongoError = (error: Error): boolean => {
+  switch (error.constructor) {
+    case DatabaseConflictError:
+    case DatabaseError:
+    case DatabasePayloadSizeError:
+    case DatabaseValidationError:
+      return true
+    default:
+      return false
+  }
+}

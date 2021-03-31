@@ -2,10 +2,17 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { IFormFeedbackSchema } from '../../../../types'
+import {
+  AuthType,
+  FormController,
+  IFormFeedbackSchema,
+  IPopulatedForm,
+} from '../../../../types'
 import getFormModel from '../../../models/form.server.model'
 import getFormFeedbackModel from '../../../models/form_feedback.server.model'
 import { DatabaseError } from '../../core/core.errors'
+import { MyInfoFactory } from '../../myinfo/myinfo.factory'
+import { SpcpFactory } from '../../spcp/spcp.factory'
 import { FormNotFoundError } from '../form.errors'
 
 import { Metatags } from './public-form.types'
@@ -101,4 +108,25 @@ export const createMetatags = ({
     }
     return okAsync(metatags)
   })
+}
+
+export const getAuthTypeHandlerForForm = (authType: AuthType) => (
+  form: IPopulatedForm,
+  cookies: Record<string, unknown>,
+):
+  | ReturnType<typeof SpcpFactory.createFormWithSpcpSession>
+  | ReturnType<typeof MyInfoFactory.createFormWithMyInfo> => {
+  // NOTE: This object is created to ensure that all cases are checked
+  const AuthTypeHandler: FormController<
+    | typeof SpcpFactory.createFormWithSpcpSession
+    | typeof MyInfoFactory.createFormWithMyInfo
+  > = {
+    [AuthType.SP]: SpcpFactory.createFormWithSpcpSession,
+    [AuthType.CP]: SpcpFactory.createFormWithSpcpSession,
+    [AuthType.MyInfo]: MyInfoFactory.createFormWithMyInfo,
+    [AuthType.NIL]: (form: IPopulatedForm) =>
+      okAsync({ form: form.getPublicView() }),
+  }
+
+  return AuthTypeHandler[authType](form, cookies)
 }

@@ -28,5 +28,5 @@ export interface IPublicFormView {
   form: PossiblyPrefilledPublicForm
   spcpSession?: { userName: string }
   isIntranetUser?: boolean
-  myInfoError?: boolean
+  myInfoError?: true
 }
