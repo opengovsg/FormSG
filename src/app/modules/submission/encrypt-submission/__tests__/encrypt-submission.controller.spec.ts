@@ -1,10 +1,11 @@
 import { ObjectId } from 'bson-ext'
-import { err, errAsync, okAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
+import { PermissionLevel } from 'src/app/modules/form/admin-form/admin-form.types'
 import {
   ForbiddenFormError,
   FormDeletedError,
@@ -13,6 +14,7 @@ import {
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import {
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
   ResponseMode,
@@ -44,12 +46,28 @@ describe('encrypt-submission.controller', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('handleGetEncryptedResponse', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER_ID = new ObjectId().toHexString()
+
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
     const MOCK_REQ = expressHandler.mockRequest({
-      params: { formId: 'mockFormId' },
+      params: { formId: MOCK_FORM_ID },
       query: { submissionId: 'mockSubmissionId' },
       session: {
         cookie: {
           maxAge: 20000,
+        },
+        user: {
+          _id: MOCK_USER_ID,
         },
       },
     })
@@ -69,6 +87,15 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Mock service responses.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
+        ok(MOCK_FORM as IPopulatedEncryptedForm),
+      )
       MockEncryptSubService.getEncryptedSubmissionData.mockReturnValueOnce(
         okAsync(mockSubData),
       )
@@ -88,10 +115,32 @@ describe('encrypt-submission.controller', () => {
         attachmentMetadata: mockSignedUrls,
       }
       expect(mockRes.json).toHaveBeenCalledWith(expected)
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
+        MOCK_FORM,
+      )
     })
 
     it('should return 404 when submissionId cannot be found in the database', async () => {
       // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
+        ok(MOCK_FORM as IPopulatedEncryptedForm),
+      )
       const mockErrorString = 'not found'
       MockEncryptSubService.getEncryptedSubmissionData.mockReturnValueOnce(
         errAsync(new SubmissionNotFoundError(mockErrorString)),
@@ -104,10 +153,32 @@ describe('encrypt-submission.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
+        MOCK_FORM,
+      )
     })
 
-    it('should return 500 when database error occurs', async () => {
+    it('should return 500 when database error occurs whilst retrieving submission data', async () => {
       // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
+        ok(MOCK_FORM as IPopulatedEncryptedForm),
+      )
       const mockErrorString = 'database error occurred'
       MockEncryptSubService.getEncryptedSubmissionData.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
@@ -120,10 +191,32 @@ describe('encrypt-submission.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
+        MOCK_FORM,
+      )
     })
 
-    it('should return 500 when error occurs when generating presigned URLs', async () => {
+    it('should return 500 when error occurs whilst generating presigned URLs', async () => {
       // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
+        ok(MOCK_FORM as IPopulatedEncryptedForm),
+      )
       const mockErrorString = 'presigned url error occured'
       MockEncryptSubService.getEncryptedSubmissionData.mockReturnValueOnce(
         okAsync({} as SubmissionData),
@@ -140,6 +233,19 @@ describe('encrypt-submission.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
+        MOCK_FORM,
+      )
     })
   })
 
