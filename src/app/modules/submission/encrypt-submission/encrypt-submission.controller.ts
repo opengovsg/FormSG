@@ -13,6 +13,7 @@ import {
   EncryptedSubmissionDto,
   ResWithHashedFields,
   ResWithUinFin,
+  SubmissionMetadataList,
   WithParsedResponses,
 } from '../../../../types'
 import { ErrorDto } from '../../../../types/api'
@@ -593,14 +594,20 @@ export const handleGetEncryptedResponse: RequestHandler<
  *
  * @returns 200 with single submission metadata if query.submissionId is provided
  * @returns 200 with list of submission metadata with total count (and optional offset if query.page is provided) if query.submissionId is not provided
+ * @returns 400 if form is not an encrypt mode form
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs whilst querying database
  */
 export const handleGetMetadata: RequestHandler<
   { formId: string },
-  unknown,
+  SubmissionMetadataList | ErrorDto,
   unknown,
   Query & { page?: number; submissionId?: string }
 > = async (req, res) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
   const { page, submissionId } = req.query
 
@@ -612,14 +619,34 @@ export const handleGetMetadata: RequestHandler<
     ...createReqMeta(req),
   }
 
-  // Specific query.
-  if (submissionId) {
-    return getSubmissionMetadata(formId, submissionId)
-      .map((metadata) => {
-        return metadata
-          ? res.json({ metadata: [metadata], count: 1 })
-          : res.json({ metadata: [], count: 0 })
+  return (
+    // Step 1: Retrieve logged in user.
+    getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has read permissions to form.
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Check whether form is encrypt mode.
+      .andThen(checkFormIsEncryptMode)
+      // Step 4: Retrieve submission metadata.
+      .andThen(() => {
+        // Step 4a: Retrieve specific submission id.
+        if (submissionId) {
+          return getSubmissionMetadata(formId, submissionId).map((metadata) => {
+            const metadataList: SubmissionMetadataList = metadata
+              ? { metadata: [metadata], count: 1 }
+              : { metadata: [], count: 0 }
+            return metadataList
+          })
+        }
+        // Step 4b: Retrieve all submissions of given form id.
+        return getSubmissionMetadataList(formId, page)
       })
+      .map((metadataList) => res.json(metadataList))
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving metadata from database',
@@ -632,21 +659,5 @@ export const handleGetMetadata: RequestHandler<
           message: errorMessage,
         })
       })
-  }
-
-  // General query
-  return getSubmissionMetadataList(formId, page)
-    .map((result) => res.json(result))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Failure retrieving metadata list from database',
-        meta: logMeta,
-        error,
-      })
-
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    })
+  )
 }

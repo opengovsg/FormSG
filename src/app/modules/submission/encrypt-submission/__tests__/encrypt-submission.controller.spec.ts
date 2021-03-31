@@ -341,6 +341,27 @@ describe('encrypt-submission.controller', () => {
 
   describe('handleGetMetadata', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER_ID = new ObjectId().toHexString()
+
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    beforeEach(() => {
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValue(
+        ok(MOCK_FORM as IPopulatedEncryptedForm),
+      )
+    })
 
     it('should return 200 with single submission metadata when query.submissionId is provided and can be found', async () => {
       // Arrange
@@ -349,6 +370,11 @@ describe('encrypt-submission.controller', () => {
         params: { formId: MOCK_FORM_ID },
         query: {
           submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -388,6 +414,11 @@ describe('encrypt-submission.controller', () => {
         query: {
           submissionId: mockSubmissionId,
         },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
       })
       const mockRes = expressHandler.mockResponse()
       // Mock service result.
@@ -419,6 +450,11 @@ describe('encrypt-submission.controller', () => {
         query: {
           page: 20,
         },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
       })
       const mockRes = expressHandler.mockResponse()
       // Mock service result.
@@ -432,7 +468,6 @@ describe('encrypt-submission.controller', () => {
         ] as SubmissionMetadata[],
         count: 32,
       }
-
       MockEncryptSubService.getSubmissionMetadataList.mockReturnValueOnce(
         okAsync(expectedMetadataList),
       )
@@ -448,6 +483,189 @@ describe('encrypt-submission.controller', () => {
       expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
     })
 
+    it('should return 400 if form is not an encrypt mode form', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedError = new ResponseModeError(
+        ResponseMode.Encrypt,
+        ResponseMode.Email,
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
+        err(expectedError),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 when user does not have read permissions for form', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedError = new ForbiddenFormError('no access')
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedError = new FormNotFoundError('not found')
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should 410 when form is already archived', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedError = new FormDeletedError('already archived')
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when user in session cannot be retrieved', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const expectedError = new MissingUserError('user is not found')
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await handleGetMetadata(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(
+        MockEncryptSubService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(MockEncryptSubService.getSubmissionMetadata).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubService.getSubmissionMetadataList,
+      ).not.toHaveBeenCalled()
+    })
+
     it('should return 500 when database errors occurs for single metadata retrieval', async () => {
       // Arrange
       const mockSubmissionId = new ObjectId().toHexString()
@@ -455,6 +673,11 @@ describe('encrypt-submission.controller', () => {
         params: { formId: MOCK_FORM_ID },
         query: {
           submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
         },
       })
       const mockErrorString = 'error retrieving metadata'
@@ -487,6 +710,11 @@ describe('encrypt-submission.controller', () => {
         params: { formId: MOCK_FORM_ID },
         query: {
           page: 1,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
         },
       })
       const mockErrorString = 'error retrieving metadata list'

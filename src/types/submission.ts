@@ -23,6 +23,10 @@ export type EncryptedSubmissionDto = {
   attachmentMetadata: Record<string, string>
 }
 
+export type SubmissionMetadataList = {
+  metadata: SubmissionMetadata[]
+  count: number
+}
 export interface ISubmission {
   form: IFormSchema['_id']
   authType?: AuthType
