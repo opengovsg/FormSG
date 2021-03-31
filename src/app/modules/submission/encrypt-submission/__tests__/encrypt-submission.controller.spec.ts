@@ -158,6 +158,16 @@ describe('encrypt-submission.controller', () => {
       title: 'mock title',
     } as IPopulatedForm
 
+    beforeEach(() => {
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValue(
+        ok(MOCK_FORM as IPopulatedEncryptedForm),
+      )
+    })
+
     it('should return 200 with single submission metadata when query.submissionId is provided and can be found', async () => {
       // Arrange
       const mockSubmissionId = new ObjectId().toHexString()
@@ -180,15 +190,6 @@ describe('encrypt-submission.controller', () => {
         submissionTime: 'some submission time',
       }
 
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        ok(MOCK_FORM as IPopulatedEncryptedForm),
-      )
       MockEncryptSubService.getSubmissionMetadata.mockReturnValueOnce(
         okAsync(expectedMetadata),
       )
@@ -226,15 +227,6 @@ describe('encrypt-submission.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
       // Mock service result.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        ok(MOCK_FORM as IPopulatedEncryptedForm),
-      )
       MockEncryptSubService.getSubmissionMetadata.mockReturnValueOnce(
         okAsync(null),
       )
@@ -281,16 +273,6 @@ describe('encrypt-submission.controller', () => {
         ] as SubmissionMetadata[],
         count: 32,
       }
-
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        ok(MOCK_FORM as IPopulatedEncryptedForm),
-      )
       MockEncryptSubService.getSubmissionMetadataList.mockReturnValueOnce(
         okAsync(expectedMetadataList),
       )
@@ -321,13 +303,6 @@ describe('encrypt-submission.controller', () => {
         },
       })
       const mockRes = expressHandler.mockResponse()
-
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
 
       const expectedError = new ResponseModeError(
         ResponseMode.Encrypt,
@@ -367,9 +342,6 @@ describe('encrypt-submission.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
       const expectedError = new ForbiddenFormError('no access')
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         errAsync(expectedError),
@@ -405,9 +377,6 @@ describe('encrypt-submission.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
       const expectedError = new FormNotFoundError('not found')
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         errAsync(expectedError),
@@ -443,9 +412,6 @@ describe('encrypt-submission.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
       const expectedError = new FormDeletedError('already archived')
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         errAsync(expectedError),
@@ -522,15 +488,6 @@ describe('encrypt-submission.controller', () => {
       const mockErrorString = 'error retrieving metadata'
       const mockRes = expressHandler.mockResponse()
       // Mock service result.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        ok(MOCK_FORM as IPopulatedEncryptedForm),
-      )
       MockEncryptSubService.getSubmissionMetadata.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
       )
@@ -568,15 +525,6 @@ describe('encrypt-submission.controller', () => {
       const mockErrorString = 'error retrieving metadata list'
       const mockRes = expressHandler.mockResponse()
       // Mock service result.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        ok(MOCK_FORM as IPopulatedEncryptedForm),
-      )
       MockEncryptSubService.getSubmissionMetadataList.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
       )
