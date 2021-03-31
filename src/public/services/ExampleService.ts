@@ -26,15 +26,15 @@ export const getExampleForms = (
   searchTerm?: string,
   agency?: string,
   shouldGetTotalNumResults?: boolean,
-): Promise<ExampleFormsResult> =>
-  axios
-    .get(EXAMPLES_ENDPOINT, {
+): Promise<ExampleFormsResult> => {
+  return axios
+    .get<ExampleFormsResult>(EXAMPLES_ENDPOINT, {
       params: { pageNo, searchTerm, agency, shouldGetTotalNumResults },
       // disable IE ajax request caching (so search requests don't get cached)
       headers: { 'If-Modified-Since': '0' },
     })
     .then(({ data }) => data)
-
+}
 /**
  * Gets a single form for examples
  * @param formId The id of the form to search for
@@ -44,7 +44,7 @@ export const getSingleExampleForm = (
   formId: string,
 ): Promise<ExampleSingleFormResult> => {
   return axios
-    .get(`${EXAMPLES_ENDPOINT}/${formId}`, {
+    .get<ExampleSingleFormResult>(`${EXAMPLES_ENDPOINT}/${formId}`, {
       // disable IE ajax request caching (so search requests don't get cached)
       headers: { 'If-Modified-Since': '0' },
     })
