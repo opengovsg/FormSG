@@ -22,7 +22,8 @@ import {
   WebhookFailedWithUnknownError,
   WebhookValidationError,
 } from './webhook.errors'
-import { formatWebhookResponse, validateWebhookUrl } from './webhook.utils'
+import { formatWebhookResponse } from './webhook.utils'
+import { validateWebhookUrl } from './webhook.validation'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -104,7 +105,9 @@ export const sendWebhook = (
       meta: logMeta,
       error,
     })
-    return new WebhookValidationError()
+    return error instanceof WebhookValidationError
+      ? error
+      : new WebhookValidationError()
   })
     .andThen(() =>
       ResultAsync.fromPromise(
@@ -176,8 +179,6 @@ export const sendWebhook = (
         signature,
         webhookUrl,
         errorMessage: axiosError.message,
-        // Not Axios error so no guarantee of having response.
-        // Hence allow formatting function to return default shape.
         response: formatWebhookResponse(axiosError.response),
       })
     })
