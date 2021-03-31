@@ -21,7 +21,8 @@ export const createReqMeta = (req: Request) => {
   return {
     ip: getRequestIp(req),
     trace: getTrace(req), // trace using cloudflare cf-ray header, with x-request-id header as backup
-    url: req.url,
+    url: req.baseUrl + req.path,
+    urlWithQueryParams: req.originalUrl,
     headers: req.headers,
   }
 }

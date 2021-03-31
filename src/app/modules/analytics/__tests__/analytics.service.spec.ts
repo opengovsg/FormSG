@@ -1,3 +1,4 @@
+import * as E from 'fp-ts/lib/Either'
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'
 
@@ -19,6 +20,8 @@ import {
   getSubmissionCount,
   getUserCount,
 } from '../analytics.service'
+
+import { AnalyticsTestError } from './analytics.error'
 
 const FormModel = getFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -49,11 +52,11 @@ describe('analytics.service', () => {
       expect(initialCount).toEqual(0)
 
       // Act
-      const actualResult = await getFormCount()
-
+      const actualTE = getFormCount()
+      const actualE = await actualTE()
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(0)
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(0)
     })
 
     it('should return number of forms in the database', async () => {
@@ -72,11 +75,11 @@ describe('analytics.service', () => {
       expect(initialCount).toEqual(expectedNum)
 
       // Act
-      const actualResult = await getFormCount()
-
+      const actualTE = await getFormCount()
+      const actualE = await actualTE()
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedNum)
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(expectedNum)
     })
 
     it('should return DatabaseError when error occurs whilst retrieving form count', async () => {
@@ -87,12 +90,12 @@ describe('analytics.service', () => {
       } as unknown) as Query<number>)
 
       // Act
-      const actualResult = await getFormCount()
-
+      const actualTE = await getFormCount()
+      const actualE = await actualTE()
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+      if (E.isRight(actualE)) throw new AnalyticsTestError()
+      expect(actualE.left instanceof DatabaseError).toBe(true)
     })
   })
 
@@ -112,11 +115,11 @@ describe('analytics.service', () => {
       expect(initialUserCount).toEqual(0)
 
       // Act
-      const actualResult = await getUserCount()
-
+      const actualTE = await getUserCount()
+      const actualE = await actualTE()
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(0)
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(0)
     })
 
     it('should return number of users in the database', async () => {
@@ -133,11 +136,11 @@ describe('analytics.service', () => {
       expect(initialUserCount).toEqual(expectedNumUsers)
 
       // Act
-      const actualResult = await getUserCount()
-
+      const actualTE = await getUserCount()
+      const actualE = await actualTE()
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedNumUsers)
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(expectedNumUsers)
     })
 
     it('should return DatabaseError when error occurs whilst retrieving user count', async () => {
@@ -148,12 +151,12 @@ describe('analytics.service', () => {
       } as unknown) as Query<number>)
 
       // Act
-      const actualResult = await getUserCount()
-
+      const actualTE = await getUserCount()
+      const actualE = await actualTE()
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+      if (E.isRight(actualE)) throw new AnalyticsTestError()
+      expect(actualE.left instanceof DatabaseError).toBe(true)
     })
   })
 
@@ -164,11 +167,12 @@ describe('analytics.service', () => {
       expect(initialSubCount).toEqual(0)
 
       // Act
-      const actualResult = await getSubmissionCount()
+      const actualTE = await getSubmissionCount()
+      const actualE = await actualTE()
 
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(0)
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(0)
     })
 
     it('should return number of submissions in the database', async () => {
@@ -188,11 +192,12 @@ describe('analytics.service', () => {
       expect(initialUserCount).toEqual(expectedNumSubs)
 
       // Act
-      const actualResult = await getSubmissionCount()
+      const actualTE = await getSubmissionCount()
+      const actualE = await actualTE()
 
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(expectedNumSubs)
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(expectedNumSubs)
     })
 
     it('should return DatabaseError when error occurs whilst retrieving submission count', async () => {
@@ -205,12 +210,13 @@ describe('analytics.service', () => {
         } as unknown) as Query<number>)
 
       // Act
-      const actualResult = await getSubmissionCount()
+      const actualTE = await getSubmissionCount()
+      const actualE = await actualTE()
 
       // Assert
       expect(execSpy).toHaveBeenCalledTimes(1)
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(new DatabaseError())
+      if (E.isRight(actualE)) throw new AnalyticsTestError()
+      expect(actualE.left instanceof DatabaseError).toBe(true)
     })
   })
 })

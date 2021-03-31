@@ -1,6 +1,8 @@
+import * as TE from 'fp-ts/TaskEither'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
 
+import { getMongoErrorMessage } from '../../../app/utils/handle-mongo-error'
+import { submissionsTopUp } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
@@ -14,12 +16,10 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Retrieves the number of user documents in the database.
- * @returns ok(user count) on success
- * @returns err(DatabaseError) on query failure
  */
-export const getUserCount = (): ResultAsync<number, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    UserModel.estimatedDocumentCount().exec(),
+export const getUserCount = (): TE.TaskEither<DatabaseError, number> => {
+  return TE.tryCatch(
+    () => UserModel.estimatedDocumentCount().exec(),
     (error) => {
       logger.error({
         message: 'Database error when retrieving user collection count',
@@ -29,19 +29,22 @@ export const getUserCount = (): ResultAsync<number, DatabaseError> => {
         error,
       })
 
-      return new DatabaseError()
+      return new DatabaseError(getMongoErrorMessage(error))
     },
   )
 }
 
 /**
  * Retrieves the number of submission documents in the database.
- * @returns ok(submissions count) on success
- * @returns err(DatabaseError) on query failure
  */
-export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    SubmissionModel.estimatedDocumentCount().exec(),
+export const getSubmissionCount = (): TE.TaskEither<DatabaseError, number> => {
+  return TE.tryCatch(
+    () =>
+      SubmissionModel.estimatedDocumentCount()
+        .exec()
+        // Top up submissions from config file that tracks submissions that has been
+        // archived (and thus deleted from the database).
+        .then((value) => value + submissionsTopUp),
     (error) => {
       logger.error({
         message: 'Database error when retrieving submission collection count',
@@ -51,19 +54,17 @@ export const getSubmissionCount = (): ResultAsync<number, DatabaseError> => {
         error,
       })
 
-      return new DatabaseError()
+      return new DatabaseError(getMongoErrorMessage(error))
     },
   )
 }
 
 /**
  * Retrieves the number of form documents in the database.
- * @returns ok(forms count) on success
- * @returns err(DatabaseError) on query failure
  */
-export const getFormCount = (): ResultAsync<number, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    FormModel.estimatedDocumentCount().exec(),
+export const getFormCount = (): TE.TaskEither<DatabaseError, number> => {
+  return TE.tryCatch(
+    () => FormModel.estimatedDocumentCount().exec(),
     (error) => {
       logger.error({
         message: 'Database error when retrieving form collection count',
@@ -73,7 +74,7 @@ export const getFormCount = (): ResultAsync<number, DatabaseError> => {
         error,
       })
 
-      return new DatabaseError()
+      return new DatabaseError(getMongoErrorMessage(error))
     },
   )
 }

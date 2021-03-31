@@ -4,7 +4,6 @@ const FIELDS_TO_REJECT = require('../../../shared/resources/basic')
 
 // deprecated
 const ALLOWED_VALIDATORS = [
-  'YesNoValidator',
   'TableValidator',
   // BaseFieldValidator can be constructed by the FieldValidatorFactory,
   // but is missing from this list.

@@ -1,8 +1,12 @@
 import { Request, RequestHandler } from 'express'
 
+import FeatureManager, {
+  FeatureNames,
+} from '../../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType, FieldResponse } from '../../../../types'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
 import {
@@ -26,6 +30,9 @@ import {
 } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
+
+// TODO (private #123): remove checking of form ID against CorpPass cloud test form
+const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
 export const handleEmailSubmission: RequestHandler<
   { formId: string },
@@ -126,11 +133,14 @@ export const handleEmailSubmission: RequestHandler<
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
   if (authType === AuthType.SP || authType === AuthType.CP) {
+    const useCpCloud = spcpFeature.props?.cpCloudFormId === formId
     // Verify NRIC and/or UEN
     const jwtPayloadResult = await SpcpFactory.extractJwt(
       req.cookies,
       authType,
-    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
+    ).asyncAndThen((jwt) =>
+      SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
+    )
     if (jwtPayloadResult.isErr()) {
       logger.error({
         message: 'Failed to verify JWT with auth client',
@@ -219,18 +229,14 @@ export const handleEmailSubmission: RequestHandler<
     message: 'Sending admin mail',
     meta: logMetaWithSubmission,
   })
-  const sendAdminEmailResult = await EmailSubmissionService.sendSubmissionToAdmin(
-    {
-      replyToEmails: EmailSubmissionService.extractEmailAnswers(
-        parsedResponses,
-      ),
-      form,
-      submission,
-      attachments,
-      dataCollationData: emailData.dataCollationData,
-      formData: emailData.formData,
-    },
-  )
+  const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
+    form,
+    submission,
+    attachments,
+    dataCollationData: emailData.dataCollationData,
+    formData: emailData.formData,
+  })
   if (sendAdminEmailResult.isErr()) {
     logger.error({
       message: 'Error sending submission to admin',

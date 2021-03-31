@@ -16,10 +16,10 @@ import getAdminVerificationModel from '../../models/admin_verification.server.mo
 import { AGENCY_SCHEMA_ID } from '../../models/agency.server.model'
 import getUserModel from '../../models/user.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { compareHash, hashData } from '../../utils/hash'
-import { generateOtp } from '../../utils/otp'
+import { compareHash, hashData, HashingError } from '../../utils/hash'
+import { generateOtpWithHash } from '../../utils/otp'
 import { InvalidDomainError } from '../auth/auth.errors'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
 
 import { InvalidOtpError, MissingUserError } from './user.errors'
 
@@ -36,30 +36,33 @@ export const MAX_OTP_ATTEMPTS = 10
  * @param contact the contact number to send the generated OTP to
  * @returns ok(the generated OTP) if saving into DB is successful
  * @returns err(DatabaseError) if error occurs whilst insertion of OTP into the database
- * @returns err(ApplicationError) if error occurs whilst hashing the OTP or contact
+ * @returns err(HashingError) if error occurs whilst hashing the OTP or contact
  * @returns err(MissingUserError) if the user document cannot be retrieved with the user id
  */
 export const createContactOtp = (
   userId: IUserSchema['_id'],
   contact: string,
-): ResultAsync<string, ApplicationError | DatabaseError | MissingUserError> => {
-  const otp = generateOtp()
+): ResultAsync<string, HashingError | DatabaseError | MissingUserError> => {
   // Step 1: Verify existence of userId.
   return (
     findUserById(userId)
-      // Step 2: Hash OTP and contact number.
-      .andThen(() => hashOtpAndContact(otp, contact))
-      // Step 3: Upsert hashed data into database..
-      .andThen(({ hashedOtp, hashedContact }) =>
-        upsertContactOtp({
-          admin: userId,
-          expireAt: new Date(Date.now() + config.otpLifeSpan),
-          hashedContact,
-          hashedOtp,
-        }),
+      // Step 2: Generate and hash OTP
+      .andThen(() => generateOtpWithHash())
+      // Step 3: Hash contact number.
+      .andThen(({ otp, hashedOtp }) =>
+        hashData(contact)
+          // Step 4: Upsert hashed data into database..
+          .andThen((hashedContact) =>
+            upsertContactOtp({
+              admin: userId,
+              expireAt: new Date(Date.now() + config.otpLifeSpan),
+              hashedContact,
+              hashedOtp,
+            }),
+          )
+          // Step 4: Return generated OTP.
+          .map(() => otp),
       )
-      // Step 4: Return generated OTP.
-      .map(() => otp)
   )
 }
 
@@ -76,7 +79,7 @@ export const createContactOtp = (
  * @returns ok(true) on success
  * @returns err(MissingUserError) if the user document cannot be retrieved with the user id
  * @returns err(InvalidHashError) if any of the hashes do not match, or if the OTP has expired
- * @returns err(ApplicationError) if any errors occur whilst hashing
+ * @returns err(HashingError) if any errors occur whilst hashing
  * @returns err(DatabaseError) if any errors occur whilst performing database queries
  */
 export const verifyContactOtp = (
@@ -85,7 +88,7 @@ export const verifyContactOtp = (
   userId: IUserSchema['_id'],
 ): ResultAsync<
   true,
-  MissingUserError | InvalidOtpError | DatabaseError | ApplicationError
+  MissingUserError | InvalidOtpError | DatabaseError | HashingError
 > => {
   return (
     // Step 1: Verify existence of userId.
@@ -301,40 +304,6 @@ export const findUserByEmail = (
 }
 
 // Private helper functions
-/**
- * Hashes both the given otp and contact data.
- * @param otp the otp to hash
- * @param contact the contact to hash
- * @param logMeta additional metadata for logging, if available
- * @returns ok(hashed otp and contact) is no errors occur
- * @returns err(ApplicationError) if error occurs whilst hashing
- *
- */
-const hashOtpAndContact = (
-  otp: string,
-  contact: string,
-  logMeta?: Record<string, unknown>,
-): ResultAsync<
-  {
-    hashedOtp: string
-    hashedContact: string
-  },
-  ApplicationError
-> => {
-  return (
-    // Step 1: Hash OTP.
-    hashData(otp, logMeta)
-      // Step 2: Hash contact.
-      .andThen((hashedOtp) =>
-        hashData(contact, logMeta)
-          // If successful, return both hashedOtp and hashedContact.
-          .map((hashedContact) => ({
-            hashedOtp,
-            hashedContact,
-          })),
-      )
-  )
-}
 
 /**
  * Asserts that the otp and contact number matches with their respective hashes.
@@ -344,7 +313,7 @@ const hashOtpAndContact = (
  * @param contactHash the hashed form of the contact to check match with
  * @param logMeta additional metadata for logging, if available
  * @returns ok(true) if both the hashes match
- * @returns err(ApplicationError) if error occurs whilst comparing hashes
+ * @returns err(HashingError) if error occurs whilst comparing hashes
  * @returns err(InvalidHashError) if the hashes do not match
  */
 const assertHashesMatch = (
@@ -353,7 +322,7 @@ const assertHashesMatch = (
   contact: string,
   contactHash: string,
   logMeta: Record<string, unknown> = {},
-): ResultAsync<true, ApplicationError | InvalidOtpError> => {
+): ResultAsync<true, HashingError | InvalidOtpError> => {
   // Compare OTP hashes first.
   return (
     compareHash(otp, otpHash, logMeta)

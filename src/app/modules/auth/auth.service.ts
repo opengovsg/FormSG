@@ -13,9 +13,9 @@ import {
 } from '../../../types'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
-import { compareHash, hashData } from '../../utils/hash'
-import { generateOtp } from '../../utils/otp'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { compareHash, HashingError } from '../../utils/hash'
+import { generateOtpWithHash } from '../../utils/otp'
+import { DatabaseError } from '../core/core.errors'
 import { PermissionLevel } from '../form/admin-form/admin-form.types'
 import {
   assertFormAvailable,
@@ -92,28 +92,25 @@ export const validateEmailDomain = (
  * @param email the email to link the generated otp to
  * @returns ok(the generated OTP) if saving into DB is successful
  * @returns err(InvalidDomainError) if the given email is invalid
- * @returns err(ApplicationError) if any error occur whilst hashing the OTP
+ * @returns err(HashingError) if any error occur whilst hashing the OTP
  * @returns err(DatabaseError) if error occurs during upsertion of hashed OTP into the database.
  */
 export const createLoginOtp = (
   email: string,
-): ResultAsync<
-  string,
-  ApplicationError | DatabaseError | InvalidDomainError
-> => {
+): ResultAsync<string, HashingError | DatabaseError | InvalidDomainError> => {
   if (!validator.isEmail(email)) {
     return errAsync(new InvalidDomainError())
   }
 
-  const otp = generateOtp()
-
   return (
-    // Step 1: Hash OTP.
-    hashData(otp, { email })
+    // Step 1: Generate and hash OTP.
+    generateOtpWithHash({ email })
       // Step 2: Upsert otp hash into database.
-      .andThen((hashedOtp) => upsertOtp(email, hashedOtp))
-      // Step 3: Return generated OTP.
-      .map(() => otp)
+      .andThen(({ otp, hashedOtp }) =>
+        upsertOtp(email, hashedOtp)
+          // Step 3: Return generated OTP.
+          .map(() => otp),
+      )
   )
 }
 
@@ -127,13 +124,13 @@ export const createLoginOtp = (
  * @param email the email used to retrieve the document from the database
  * @returns ok(true) on success
  * @returns err(InvalidOtpError) if the OTP is invalid or expired
- * @returns err(ApplicationError) if any error occurs whilst comparing hashes
+ * @returns err(HashingError) if any error occurs whilst comparing hashes
  * @returns err(DatabaseError) if any errors occur whilst querying the database
  */
 export const verifyLoginOtp = (
   otpToVerify: string,
   email: string,
-): ResultAsync<true, InvalidOtpError | DatabaseError | ApplicationError> => {
+): ResultAsync<true, InvalidOtpError | DatabaseError | HashingError> => {
   return (
     // Step 1: Increment login attempts.
     incrementLoginAttempts(email)
@@ -153,14 +150,14 @@ export const verifyLoginOtp = (
  * @param otpHash the hashed form of the otp to check match with
  * @param logMeta additional metadata for logging, if available
  * @returns ok(true) if the hash matches
- * @returns err(ApplicationError) if error occurs whilst comparing hashes
+ * @returns err(HashingError) if error occurs whilst comparing hashes
  * @returns err(InvalidOtpError) if the hashes do not match
  */
 const assertHashMatch = (
   otp: string,
   otpHash: string,
   logMeta: Record<string, unknown> = {},
-): ResultAsync<true, ApplicationError | InvalidOtpError> => {
+): ResultAsync<true, HashingError | InvalidOtpError> => {
   return compareHash(otp, otpHash, logMeta).andThen((isMatch) => {
     if (isMatch) return okAsync(true)
     return errAsync(new InvalidOtpError('OTP is invalid. Please try again.'))

@@ -11,3 +11,10 @@ export const renderFormDeactivatedSms = (formTitle: string): string => dedent`
 export const renderBouncedSubmissionSms = (formTitle: string): string => dedent`
   A response to your form "${formTitle}" has bounced from all recipient inboxes. Bounced responses cannot be recovered. To prevent more bounces, please ensure recipient email addresses are correct, and clear any full inboxes.
 `
+
+export const renderVerificationSms = (
+  otp: string,
+  appHost: string,
+): string => dedent`Use the OTP ${otp} to complete your submission on ${appHost}.
+
+  If you did not request this OTP, do not share the OTP with anyone else. You can safely ignore this message.`

@@ -14,6 +14,7 @@ import {
   AuthType,
   FormLogoState,
   FormMetaView,
+  FormSettings,
   IFieldSchema,
   IForm,
   IFormDocument,
@@ -22,7 +23,9 @@ import {
   IUserSchema,
   SpcpLocals,
 } from '../../../../types'
+import { SettingsUpdateDto } from '../../../../types/api'
 import getFormModel from '../../../models/form.server.model'
+import { dotifyObject } from '../../../utils/dotify-object'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -36,6 +39,7 @@ import {
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
+import { getFormModelByResponseMode } from '../form.service'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -500,5 +504,53 @@ export const updateForm = (
     })
 
     return transformMongoError(error)
+  })
+}
+
+/**
+ * Updates form settings.
+ * @param originalForm The original form to update settings for
+ * @param body the subset of form settings to update
+ * @returns ok(updated form settings) on success
+ * @returns err(MalformedParametersError) if email update is attempted for an encrypt mode form
+ * @returns err(database errors) if db error is thrown during form setting update
+ */
+export const updateFormSettings = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): ResultAsync<
+  FormSettings,
+  | FormNotFoundError
+  | DatabaseError
+  | DatabaseValidationError
+  | DatabaseConflictError
+  | DatabasePayloadSizeError
+> => {
+  const dotifiedSettingsToUpdate = dotifyObject(body)
+  const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
+
+  return ResultAsync.fromPromise(
+    ModelToUse.findByIdAndUpdate(originalForm._id, dotifiedSettingsToUpdate, {
+      new: true,
+      runValidators: true,
+    }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form',
+        meta: {
+          action: 'updateFormSettings',
+          formId: originalForm._id,
+          // Body is not logged in case sensitive data such as emails are stored.
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.getSettings())
   })
 }

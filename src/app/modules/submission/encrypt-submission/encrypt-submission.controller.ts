@@ -6,7 +6,9 @@ import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { WithForm } from '../../../../types'
-import { createReqMeta } from '../../../utils/request'
+import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
+import { createReqMeta, getRequestIp } from '../../../utils/request'
+import * as FormService from '../../form/form.service'
 
 import {
   getEncryptedSubmissionData,
@@ -19,6 +21,90 @@ import {
 import { mapRouteError } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
+
+export const handleEncryptedSubmission: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  const { formId } = req.params
+  const logMeta = {
+    action: 'handleEncryptedSubmission',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  // Retrieve form
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.warn({
+      message: 'Failed to retrieve form from database',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(formResult.error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const form = formResult.value
+
+  // Check that form is public
+  const formPublicResult = FormService.isFormPublic(form)
+  if (formPublicResult.isErr()) {
+    logger.warn({
+      message: 'Attempt to submit non-public form',
+      meta: logMeta,
+      error: formPublicResult.error,
+    })
+    const { statusCode } = mapRouteError(formPublicResult.error)
+    if (statusCode == StatusCodes.GONE) {
+      return res.status(statusCode)
+    } else {
+      return res.status(statusCode).json({
+        message: form.inactiveMessage,
+        isPageFound: true,
+        formTitle: form.title,
+      })
+    }
+  }
+
+  // Check captcha
+  if (form.hasCaptcha) {
+    const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
+      req.query.captchaResponse,
+      getRequestIp(req),
+    )
+    if (captchaResult.isErr()) {
+      logger.error({
+        message: 'Error while verifying captcha',
+        meta: logMeta,
+        error: captchaResult.error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
+      return res.status(statusCode).json({ message: errorMessage })
+    }
+  }
+
+  // Check that the form has not reached submission limits
+  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
+    form,
+  )
+  if (formSubmissionLimitResult.isErr()) {
+    logger.warn({
+      message:
+        'Attempt to submit form which has just reached submission limits',
+      meta: logMeta,
+      error: formSubmissionLimitResult.error,
+    })
+    const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
+    return res.status(statusCode).json({
+      message: form.inactiveMessage,
+      isPageFound: true,
+      formTitle: form.title,
+    })
+  }
+
+  return next()
+}
 
 /**
  * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download

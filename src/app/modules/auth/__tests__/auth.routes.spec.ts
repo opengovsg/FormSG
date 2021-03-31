@@ -4,6 +4,7 @@ import supertest, { Session } from 'supertest-session'
 import validator from 'validator'
 
 import MailService from 'src/app/services/mail/mail.service'
+import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema } from 'src/types'
 
@@ -12,7 +13,7 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
-import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { DatabaseError } from '../../core/core.errors'
 import * as UserService from '../../user/user.service'
 import { AuthRouter } from '../auth.routes'
 import * as AuthService from '../auth.service'
@@ -177,7 +178,7 @@ describe('auth.routes', () => {
       // Arrange
       const createLoginOtpSpy = jest
         .spyOn(AuthService, 'createLoginOtp')
-        .mockReturnValueOnce(errAsync(new ApplicationError()))
+        .mockReturnValueOnce(errAsync(new HashingError()))
 
       // Act
       const response = await request

@@ -235,7 +235,9 @@ export const notifyAdminsOfBounce = async (
       recipientEmail: recipient.email,
     }),
   )
-  const smsResults = await Promise.allSettled(smsPromises)
+
+  // neverthrow#combine is not used since we do not want to short circuit on the first error.
+  const smsResults = await Promise.all(smsPromises)
   const successfulSmsRecipients = extractSuccessfulSmsRecipients(
     smsResults,
     possibleSmsRecipients,
@@ -364,7 +366,9 @@ export const notifyAdminsOfDeactivation = async (
       recipientEmail: recipient.email,
     }),
   )
-  const smsResults = await Promise.allSettled(smsPromises)
+
+  // neverthrow#combine is not used since we do not want to short circuit on the first error.
+  const smsResults = await Promise.all(smsPromises)
   const smsErrors = extractSmsErrors(smsResults)
   if (smsErrors.length > 0) {
     logger.warn({

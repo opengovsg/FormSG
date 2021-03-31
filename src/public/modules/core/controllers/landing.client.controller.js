@@ -7,22 +7,20 @@ angular
   .controller('LandingPageController', [
     '$scope',
     '$state',
-    '$interval',
     '$timeout',
     '$translate',
     '$translatePartialLoader',
-    'Analytics',
+    'AnalyticStats',
     LandingPageController,
   ])
 
 function LandingPageController(
   $scope,
   $state,
-  $interval,
   $timeout,
   $translate,
   $translatePartialLoader,
-  Analytics,
+  AnalyticStats,
 ) {
   const vm = this
 
@@ -31,11 +29,7 @@ function LandingPageController(
   $translate.refresh()
 
   // Hero
-  vm.stats = {
-    formCount: 0,
-    userCount: 0,
-    submissionCount: 0,
-  }
+  vm.stats = AnalyticStats
 
   vm.selectedCarousel = 0
   vm.prevCarousel = () => {
@@ -71,20 +65,6 @@ function LandingPageController(
     $state.go('signin')
   }
 
-  // Animates the statistics
-  vm.animateNumbers = (number, val) => {
-    let current = 0
-    const step = Math.ceil(number / 400)
-    const timer = $interval(() => {
-      current += step
-      if (current + step > number) {
-        current = number
-        clearInterval(timer)
-      }
-      vm.stats[val] = current
-    }, 1)
-  }
-
   // Examples
   vm.carousel = { examples }
 
@@ -98,36 +78,6 @@ function LandingPageController(
   vm.nextTestimonial = () => {
     vm.selectedTestimonial =
       vm.selectedTestimonial === 2 ? 0 : vm.selectedTestimonial + 1
-  }
-
-  /**
-   * Initialises form statistics
-   */
-  function initialiseStats() {
-    Analytics.getFormCount().then(
-      function (response) {
-        vm.animateNumbers(response, 'formCount')
-      },
-      function (error) {
-        console.error(error)
-      },
-    )
-    Analytics.getUserCount().then(
-      function (response) {
-        vm.animateNumbers(response, 'userCount')
-      },
-      function (error) {
-        console.error(error)
-      },
-    )
-    Analytics.getSubmissionCount().then(
-      function (response) {
-        vm.animateNumbers(response, 'submissionCount')
-      },
-      function (error) {
-        console.error(error)
-      },
-    )
   }
 
   /**
@@ -242,7 +192,6 @@ function LandingPageController(
   vm.init = function () {
     vm.currentYear = new Date().getFullYear()
     $timeout(() => {
-      initialiseStats()
       addCarouselBehavior()
     })
   }

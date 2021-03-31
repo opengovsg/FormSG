@@ -5,7 +5,10 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import getFormModel from 'src/app/models/form.server.model'
+import getFormModel, {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
 import {
   DatabaseConflictError,
   DatabaseError,
@@ -18,9 +21,11 @@ import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { aws } from 'src/config/config'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
+  AuthType,
   BasicField,
   FormLogoState,
   FormMetaView,
+  FormSettings,
   ICustomFormLogo,
   IEmailFormSchema,
   IFormDocument,
@@ -32,6 +37,7 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
+import { SettingsUpdateDto } from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
@@ -51,6 +57,7 @@ import {
   getDashboardForms,
   transferFormOwnership,
   updateForm,
+  updateFormSettings,
 } from '../admin-form.service'
 import {
   DuplicateFormBody,
@@ -60,6 +67,8 @@ import {
 import * as AdminFormUtils from '../admin-form.utils'
 
 const FormModel = getFormModel(mongoose)
+const EmailFormModel = getEmailFormModel(mongoose)
+const EncryptFormModel = getEncryptedFormModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = mocked(UserService)
@@ -1050,6 +1059,136 @@ describe('admin-form.service', () => {
         assignIn(cloneDeep(MOCK_INITIAL_FORM), formUpdateParams),
       )
       expect(MOCK_INITIAL_FORM.save).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('updateFormSettings', () => {
+    const MOCK_UPDATED_SETTINGS: FormSettings = {
+      authType: AuthType.NIL,
+      hasCaptcha: false,
+      inactiveMessage: 'some inactive message',
+      status: Status.Private,
+      submissionLimit: 42069,
+      title: 'new title',
+      webhook: {
+        url: '',
+      },
+    }
+
+    const MOCK_UPDATED_FORM = ({
+      ...MOCK_UPDATED_SETTINGS,
+      responseMode: ResponseMode.Encrypt,
+      publicKey: 'some public key',
+      getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
+    } as unknown) as IFormDocument
+
+    const MOCK_EMAIL_FORM = mocked(({
+      _id: new ObjectId(),
+      status: Status.Public,
+      responseMode: ResponseMode.Email,
+    } as unknown) as IPopulatedForm)
+    const MOCK_ENCRYPT_FORM = mocked(({
+      _id: new ObjectId(),
+      status: Status.Public,
+      responseMode: ResponseMode.Encrypt,
+    } as unknown) as IPopulatedForm)
+
+    const EMAIL_UPDATE_SPY = jest
+      .spyOn(EmailFormModel, 'findByIdAndUpdate')
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      .mockReturnValue({
+        exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
+      })
+    const ENCRYPT_UPDATE_SPY = jest
+      .spyOn(EncryptFormModel, 'findByIdAndUpdate')
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      .mockReturnValue({
+        exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
+      })
+
+    beforeEach(() => jest.clearAllMocks())
+
+    it('should return updated form settings when successfully updating email form settings', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        status: Status.Private,
+        title: 'new title',
+      }
+
+      // Act
+      const actualResult = await updateFormSettings(
+        MOCK_EMAIL_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_EMAIL_FORM._id,
+        settingsToUpdate,
+        { new: true, runValidators: true },
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return updated form settings when successfully updating encrypt form settings', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        webhook: {
+          url: 'https://example.com',
+        },
+      }
+      // Act
+      const actualResult = await updateFormSettings(
+        MOCK_ENCRYPT_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_ENCRYPT_FORM._id,
+        // Should be dotified
+        { 'webhook.url': 'https://example.com' },
+        { new: true, runValidators: true },
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return DatabaseValidationError when validation error occurs whilst updating', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        title: 'does not matter',
+      }
+      // Mock database error
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      ENCRYPT_UPDATE_SPY.mockReturnValueOnce({
+        exec: jest.fn().mockRejectedValue(
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          new mongoose.Error.ValidationError({ errors: 'some error' }),
+        ),
+      })
+
+      // Act
+      const actualResult = await updateFormSettings(
+        MOCK_ENCRYPT_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        DatabaseValidationError,
+      )
+      expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_ENCRYPT_FORM._id,
+        settingsToUpdate,
+        { new: true, runValidators: true },
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
     })
   })
 })

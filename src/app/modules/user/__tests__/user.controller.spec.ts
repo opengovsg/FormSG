@@ -9,11 +9,12 @@ import {
 import * as UserService from 'src/app/modules/user/user.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
+import { HashingError } from 'src/app/utils/hash'
 import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { DatabaseError } from '../../core/core.errors'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/services/sms/sms.factory')
@@ -337,10 +338,10 @@ describe('user.controller', () => {
       expect(MockUserService.updateUserContact).not.toHaveBeenCalled()
     })
 
-    it('should return 500 when verifying contact returns ApplicationError', async () => {
+    it('should return 500 when verifying contact returns HashingError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
-      const expectedError = new ApplicationError('mock missing user error')
+      const expectedError = new HashingError()
 
       // Mock UserService to return error.
       MockUserService.verifyContactOtp.mockReturnValueOnce(

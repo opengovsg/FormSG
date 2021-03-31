@@ -1,7 +1,8 @@
 'use strict'
 
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const { LogicType } = require('../../../../../types')
+const AdminFormService = require('../../../../services/AdminFormService')
 
 // All viewable tabs. readOnly is true if that tab cannot be used to edit form.
 const VIEW_TABS = [
@@ -32,6 +33,7 @@ function getViewTabs(canEdit) {
 angular
   .module('forms', ['ng-drag-scroll'])
   .controller('AdminFormController', [
+    '$q',
     '$scope',
     '$translate',
     '$uibModal',
@@ -46,6 +48,7 @@ angular
   ])
 
 function AdminFormController(
+  $q,
   $scope,
   $translate,
   $uibModal,
@@ -131,6 +134,42 @@ function AdminFormController(
     })
   }
 
+  const handleUpdateError = (error) => {
+    if (!error) {
+      return
+    }
+    let errorMessage
+    switch (error.status) {
+      case StatusCodes.CONFLICT:
+      case StatusCodes.BAD_REQUEST:
+        errorMessage =
+          'This page seems outdated, and your changes could not be saved. Please refresh.'
+        break
+      case StatusCodes.UNAUTHORIZED:
+        errorMessage =
+          'Your changes could not be saved as your account lacks the requisite privileges.'
+        break
+      case StatusCodes.UNPROCESSABLE_ENTITY:
+        // Validation can fail for many reasons, so return more specific message
+        errorMessage = _.get(
+          error,
+          'data.message',
+          'Your changes contain invalid input.',
+        )
+        break
+      case StatusCodes.REQUEST_TOO_LONG: // HTTP Payload Too Large
+        errorMessage = `
+                Your form is too large. Reduce the number of fields, or submit a
+                <a href="${$scope.supportFormLink}" target="_blank" rel="noopener"><u>Support Form</u></a>.
+              `
+        break
+      default:
+        errorMessage = 'An error occurred while saving your changes.'
+    }
+    Toastr.error(errorMessage)
+    return error
+  }
+
   /**
    * Calls the update form api
    * formId is the id of the form to update
@@ -146,40 +185,27 @@ function AdminFormController(
         // and also updates myform if a formToUse is passed in
         $scope.myform = savedForm
       })
-      .catch((error) => {
-        if (!error) {
-          return
-        }
-        let errorMessage
-        switch (error.status) {
-          case HttpStatus.BAD_REQUEST:
-            errorMessage =
-              'This page seems outdated, and your changes could not be saved. Please refresh.'
-            break
-          case HttpStatus.UNAUTHORIZED:
-            errorMessage =
-              'Your changes could not be saved as your account lacks the requisite privileges.'
-            break
-          case HttpStatus.UNPROCESSABLE_ENTITY:
-            // Validation can fail for many reasons, so return more specific message
-            errorMessage = _.get(
-              error,
-              'data.message',
-              'Your changes contain invalid input.',
-            )
-            break
-          case HttpStatus.REQUEST_TOO_LONG: // HTTP Payload Too Large
-            errorMessage = `
-                Your form is too large. Reduce the number of fields, or submit a
-                <a href="${$scope.supportFormLink}" target="_blank" rel="noopener"><u>Support Form</u></a>.
-              `
-            break
-          default:
-            errorMessage = 'An error occurred while saving your changes.'
-        }
-        Toastr.error(errorMessage)
-        return error
+      .catch(handleUpdateError)
+  }
+
+  /**
+   * Calls the update form settings API
+   * @param {Object} settingsToUpdate the object with new values for settings.
+   * @returns Promise
+   */
+  $scope.updateFormSettings = (settingsToUpdate) => {
+    return $q
+      .when(
+        AdminFormService.updateFormSettings(
+          $scope.myform._id,
+          settingsToUpdate,
+        ),
+      )
+      .then((updatedSettings) => {
+        // merge back into main form since updating settings only returns the changed subset.
+        Object.assign($scope.myform, updatedSettings)
       })
+      .catch(handleUpdateError)
   }
 
   /* Logic stuff with checking across Build and Logic tabs */
