@@ -521,8 +521,13 @@ export const handleStreamEncryptedResponses: RequestHandler<
  * Handler for GET /:formId/adminform/submissions
  *
  * @returns 200 with encrypted submission data response
- * @returns 404 if submissionId cannot be found in the database
- * @returns 500 if any errors occurs in database query or generating signed URL
+ * @returns 400 when form is not an encrypt mode form
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when submissionId cannot be found in the database
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when any errors occurs in database query or generating signed URL
  */
 export const handleGetEncryptedResponse: RequestHandler<
   { formId: string },
