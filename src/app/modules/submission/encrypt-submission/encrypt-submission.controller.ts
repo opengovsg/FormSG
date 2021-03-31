@@ -23,7 +23,7 @@ import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
-import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
+import { MissingFeatureError } from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
@@ -642,7 +642,7 @@ export const handleGetMetadata: RequestHandler<
       // Step 3: Check whether form is encrypt mode.
       .andThen(checkFormIsEncryptMode)
       // Step 4: Retrieve submission metadata.
-      .andThen<SubmissionMetadataList, DatabaseError>(() => {
+      .andThen(() => {
         // Step 4a: Retrieve specific submission id.
         if (submissionId) {
           return getSubmissionMetadata(formId, submissionId).map((metadata) => {
