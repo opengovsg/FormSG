@@ -1,12 +1,14 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
+import { UserContactView } from '../../../types'
 import * as SmsErrors from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
 import * as UserErrors from './user.errors'
+import { UserWithContactNumber } from './user.types'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -57,4 +59,16 @@ export const mapRouteError = (
         errorMessage: 'Something went wrong. Please try again.',
       }
   }
+}
+
+/**
+ * Checks for presence of contact number in a user's contact
+ * details. Type guard.
+ * @param userDetails Contact view of user
+ * @returns True if user has a contact number
+ */
+export const isUserWithContactNumber = (
+  userDetails: UserContactView,
+): userDetails is UserWithContactNumber => {
+  return !!userDetails.contact
 }
