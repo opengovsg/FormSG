@@ -6,8 +6,6 @@ import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
-import { ErrorDto } from 'src/types/api'
-
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
