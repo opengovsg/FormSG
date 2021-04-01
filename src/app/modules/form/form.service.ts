@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { SetRequired } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -23,7 +22,11 @@ import {
   PossibleDatabaseError,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import {
+  ApplicationError,
+  DatabaseError,
+  MissingFeatureError,
+} from '../core/core.errors'
 
 import { IPublicFormView } from './public-form/public-form.types'
 import {
@@ -251,25 +254,34 @@ export const getFormModelByResponseMode = (
 export const setIsIntranetFormAccess = (
   ip: string,
   publicFormView: IPublicFormView,
-): Result<SetRequired<IPublicFormView, 'isIntranetUser'>, ApplicationError> => {
-  return IntranetFactory.isIntranetIp(ip).andThen((isIntranetUser) => {
-    // Warn if form is being accessed from within intranet
-    // and the form has authentication set
-    if (
-      isIntranetUser &&
-      [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(
-        publicFormView.form.authType,
-      )
-    ) {
-      logger.warn({
-        message:
-          'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
-        meta: {
-          action: 'read',
-          formId: publicFormView.form._id,
+): Result<IPublicFormView, ApplicationError> => {
+  return (
+    IntranetFactory.isIntranetIp(ip)
+      // NOTE: Need to annotate types because initializing the factory can cause MissingFeatureError
+      .andThen<IPublicFormView, ApplicationError | MissingFeatureError>(
+        (isIntranetUser) => {
+          // Warn if form is being accessed from within intranet
+          // and the form has authentication set
+          if (
+            isIntranetUser &&
+            [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(
+              publicFormView.form.authType,
+            )
+          ) {
+            logger.warn({
+              message:
+                'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+              meta: {
+                action: 'read',
+                formId: publicFormView.form._id,
+              },
+            })
+          }
+          return ok({ ...publicFormView, isIntranetUser })
         },
-      })
-    }
-    return ok({ ...publicFormView, isIntranetUser })
-  })
+      )
+      .orElse((error) =>
+        error instanceof MissingFeatureError ? ok(publicFormView) : err(error),
+      )
+  )
 }
