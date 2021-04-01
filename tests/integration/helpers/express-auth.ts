@@ -54,3 +54,16 @@ export const createAuthedSession = async (
   otpSpy.mockClear()
   return request
 }
+
+export const logoutSession = async (request: Session): Promise<Session> => {
+  const response = await request.get('/auth/signout')
+
+  expect(response.status).toEqual(200)
+
+  const sessionCookie = request.cookies.find(
+    (cookie) => cookie.name === 'connect.sid',
+  )
+  expect(sessionCookie).not.toBeDefined()
+
+  return request
+}
