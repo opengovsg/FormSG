@@ -570,7 +570,7 @@ describe('admin-form.routes', () => {
         title: 'form that user has no delete access to',
         admin: collabUser._id,
         publicKey: 'some random key',
-        // Current user only has write access.
+        // Current user only has write access but not admin.
         permissionList: [{ email: defaultUser.email, write: true }],
       })
 
@@ -651,6 +651,362 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
+  describe('POST /:formId/adminform', () => {
+    it('should return 200 with the duplicated form dashboard view', async () => {
+      // Arrange
+      // Create form.
+      const formToDupe = await EmailFormModel.create({
+        title: 'Original form title',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+
+      const dupeParams = {
+        responseMode: ResponseMode.Encrypt,
+        title: 'new duplicated form title',
+        publicKey: 'some public key',
+      }
+
+      // Act
+      const response = await request
+        .post(`/${formToDupe._id}/adminform`)
+        .send(dupeParams)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          admin: expect.objectContaining({
+            _id: String(defaultUser._id),
+          }),
+          responseMode: dupeParams.responseMode,
+          title: dupeParams.title,
+          status: Status.Private,
+        }),
+      )
+    })
+
+    it('should return 400 when body.emails is missing when duplicating to an email form', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.post(`/${formToDupe._id}/adminform`).send({
+        title: 'new email form',
+        responseMode: ResponseMode.Email,
+        // body.emails missing.
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'emails' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.emails is an empty string when duplicating to an email form', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.post(`/${formToDupe._id}/adminform`).send({
+        title: 'new email form',
+        responseMode: ResponseMode.Email,
+        emails: '',
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'emails',
+            message: '"emails" is not allowed to be empty',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.emails is an empty array when duplicating to an email form', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.post(`/${formToDupe._id}/adminform`).send({
+        title: 'new email form',
+        responseMode: ResponseMode.Email,
+        emails: [],
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'emails',
+            message: '"emails" must contain at least 1 items',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.publicKey is missing when duplicating to a storage mode form', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.post(`/${formToDupe._id}/adminform`).send({
+        title: 'new storage mode form',
+        responseMode: ResponseMode.Encrypt,
+        // publicKey missing.
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'publicKey',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.publicKey is an empty string when duplicating to a storage mode form', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.post(`/${formToDupe._id}/adminform`).send({
+        title: 'new storage mode form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: '',
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'publicKey',
+            message: '"publicKey" contains an invalid value',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.title is missing', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.post(`/${formToDupe._id}/adminform`).send({
+        // title is missing.
+        responseMode: ResponseMode.Email,
+        emails: 'test@example.com',
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'title' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.responseMode is missing', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.post(`/${formToDupe._id}/adminform`).send({
+        title: 'something',
+        // responseMode missing.
+        emails: 'test@example.com',
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'responseMode' },
+        }),
+      )
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+      // Create form.
+      const formToDupe = await EmailFormModel.create({
+        title: 'Original form title',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request
+        .post(`/${formToDupe._id}/adminform`)
+        .send('does not matter')
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      // Create separate user
+      const someUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const randomForm = await EncryptFormModel.create({
+        title: 'form that user has no delete access to',
+        admin: someUser._id,
+        publicKey: 'some random key',
+        // Current user has no access to this form,
+        permissionList: [],
+      })
+
+      // Act
+      const response = await request.post(`/${randomForm._id}/adminform`).send({
+        responseMode: ResponseMode.Encrypt,
+        title: 'new duplicated form title',
+        publicKey: 'some public key',
+      })
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${randomForm._id} with title: ${randomForm.title}.`,
+      })
+    })
+
+    it('should return 404 when form to duplicate cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId()
+
+      // Act
+      const response = await request.post(`/${invalidFormId}/adminform`).send({
+        responseMode: ResponseMode.Encrypt,
+        title: 'new duplicated form title',
+        publicKey: 'some public key',
+      })
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form is already archived', async () => {
+      // Arrange
+      // Create archived form.
+      const archivedForm = await EmailFormModel.create({
+        title: 'Form already archived',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        status: Status.Archived,
+      })
+
+      // Act
+      const response = await request
+        .post(`/${archivedForm._id}/adminform`)
+        .send({
+          responseMode: ResponseMode.Email,
+          emails: 'anyrandomEmail@example.com',
+          title: 'cool new title',
+        })
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be found in the database', async () => {
+      // Arrange
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.post(`/${new ObjectId()}/adminform`).send({
+        responseMode: ResponseMode.Encrypt,
+        title: 'does not matter',
+        publicKey: 'some public key',
+      })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst duplicating form', async () => {
+      // Arrange
+      // Create form.
+      const formToDupe = await EmailFormModel.create({
+        title: 'Original form title',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+
+      // Force validation error that will be returned as database error
+      // TODO(#614): Return transformMongoError instead of DatabaseError for better mongoose error handling.
+      const invalidEmailDupeParams = {
+        responseMode: ResponseMode.Email,
+        emails: 'notAnEmail, should return error',
+        title: 'cool new title',
+      }
+
+      // Act
+      const response = await request
+        .post(`/${formToDupe._id}/adminform`)
+        .send(invalidEmailDupeParams)
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'Please provide valid email addresses',
+        ),
       })
     })
   })
