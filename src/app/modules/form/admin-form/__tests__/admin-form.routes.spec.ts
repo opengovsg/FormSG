@@ -11,7 +11,10 @@ import getUserModel from 'src/app/models/user.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { IUserSchema, Status } from 'src/types'
 
-import { createAuthedSession } from 'tests/integration/helpers/express-auth'
+import {
+  createAuthedSession,
+  logoutSession,
+} from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -44,13 +47,12 @@ describe('admin-form.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /adminform', () => {
-    it('should return 200 with empty array when user has no forms', async () => {
-      // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
+    // Default all requests to come from authenticated user.
+    beforeEach(() => createAuthedSession(defaultUser.email, request))
 
+    it('should return 200 with empty array when user has no forms', async () => {
       // Act
-      const response = await session.get('/adminform')
+      const response = await request.get('/adminform')
 
       // Assert
       expect(response.status).toEqual(200)
@@ -59,9 +61,6 @@ describe('admin-form.routes', () => {
 
     it('should return 200 with a list of forms managed by the user', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
-
       // Create separate user
       const collabUser = (
         await dbHandler.insertFormCollectionReqs({
@@ -100,7 +99,7 @@ describe('admin-form.routes', () => {
       })
 
       // Act
-      const response = await session.get('/adminform')
+      const response = await request.get('/adminform')
 
       // Assert
       // Should only receive ownForm and collabForm
@@ -123,6 +122,9 @@ describe('admin-form.routes', () => {
     })
 
     it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
       // Act
       const response = await request.get('/adminform')
 
@@ -133,13 +135,11 @@ describe('admin-form.routes', () => {
 
     it('should return 422 when user of given id cannot be found in the database', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
       // Delete user after login.
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await session.get('/adminform')
+      const response = await request.get('/adminform')
 
       // Assert
       expect(response.status).toEqual(422)
@@ -148,15 +148,13 @@ describe('admin-form.routes', () => {
 
     it('should return 500 when database errors occur', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
       // Mock database error.
       jest
         .spyOn(FormModel, 'getMetaByUserIdOrEmail')
         .mockRejectedValueOnce(new Error('something went wrong'))
 
       // Act
-      const response = await session.get('/adminform')
+      const response = await request.get('/adminform')
 
       // Assert
       expect(response.status).toEqual(500)
