@@ -175,6 +175,8 @@ describe('admin-form.routes', () => {
           emails: defaultUser.email,
           responseMode: 'email',
           title: 'email mode form test',
+          // Extra keys should be fine.
+          someExtraKey: 'extra value that will be ignored.',
         },
       }
 
@@ -226,13 +228,13 @@ describe('admin-form.routes', () => {
       )
     })
 
-    it('should return 400 when Joi validation fails', async () => {
+    it('should return 400 when body.form.publicKey is missing', async () => {
       // Act
       const response = await request.post('/adminform').send({
         form: {
           responseMode: 'encrypt',
           title: 'storage mode form test',
-          // Missing public key-value
+          // Missing publicKey value.
         },
       })
 
@@ -240,6 +242,146 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(400)
       expect(response.body).toEqual(
         buildCelebrateError({ body: { key: 'form.publicKey' } }),
+      )
+    })
+
+    it('should return 400 when body.form.responseMode is missing', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          // responseMode missing.
+          title: 'storage mode form test',
+          emails: 'some@example.com',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'form.responseMode' } }),
+      )
+    })
+
+    it('should return 400 when body.form.title is missing', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          // title is missing.
+          responseMode: ResponseMode.Email,
+          emails: 'some@example.com',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'form.title' } }),
+      )
+    })
+
+    it('should return 400 when body.form.emails is missing when creating an email form', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          title: 'new email form',
+          responseMode: ResponseMode.Email,
+          // body.emails missing.
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'form.emails' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.form.emails is an empty string when creating an email form', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          title: 'new email form',
+          responseMode: ResponseMode.Email,
+          emails: '',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'form.emails',
+            message: '"form.emails" is not allowed to be empty',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.form.emails is an empty array when creating an email form', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          title: 'new email form',
+          responseMode: ResponseMode.Email,
+          emails: [],
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'form.emails',
+            message: '"form.emails" must contain at least 1 items',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.form.publicKey is missing when creating a storage mode form', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          title: 'new storage mode form',
+          responseMode: ResponseMode.Encrypt,
+          // publicKey missing.
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'form.publicKey',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.form.publicKey is an empty string when creating a storage mode form', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          title: 'new storage mode form',
+          responseMode: ResponseMode.Encrypt,
+          publicKey: '',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'form.publicKey',
+            message: '"form.publicKey" contains an invalid value',
+          },
+        }),
       )
     })
 
