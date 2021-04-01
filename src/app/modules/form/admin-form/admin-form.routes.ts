@@ -32,7 +32,7 @@ const createFormValidator = celebrate({
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
         emails: Joi.alternatives()
-          .try(Joi.array().items(Joi.string()), Joi.string())
+          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
           .when('responseMode', {
             is: ResponseMode.Email,
             then: Joi.required(),
@@ -62,7 +62,7 @@ const duplicateFormValidator = celebrate({
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
     emails: Joi.alternatives()
-      .try(Joi.array().items(Joi.string()), Joi.string())
+      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
       .when('responseMode', {
         is: ResponseMode.Email,
         then: Joi.required(),
@@ -173,6 +173,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
    * @security session
    *
    * @returns 200 with the duplicate form dashboard view
+   * @returns 400 when Joi validation fails
    * @returns 401 when user does not exist in session
    * @returns 403 when user does not have permissions to access form
    * @returns 404 when form cannot be found
@@ -188,6 +189,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
  * @security session
  *
  * @returns 200 with updated form with transferred owners
+ * @returns 400 when Joi validation fails
  * @returns 401 when user does not exist in session
  * @returns 403 when user is not the current owner of the form
  * @returns 404 when form cannot be found
@@ -238,6 +240,7 @@ AdminFormsRouter.get(
  * @security session
  *
  * @returns 200 with the duplicate form dashboard view
+ * @returns 400 when Joi validation fails
  * @returns 401 when user does not exist in session
  * @returns 403 when form is private
  * @returns 404 when form cannot be found
@@ -330,6 +333,7 @@ AdminFormsRouter.get(
  *
  * @returns 200 with encrypted submission data response
  * @returns 400 when form is not an encrypt mode form
+ * @returns 400 when Joi validation fails
  * @returns 401 when user does not exist in session
  * @returns 403 when user does not have read permissions for form
  * @returns 404 when submissionId cannot be found in the database
@@ -414,7 +418,7 @@ AdminFormsRouter.get(
  *
  * @returns 200 with stream of encrypted responses
  * @returns 400 if form is not an encrypt mode form
- * @returns 400 if req.query.startDate or req.query.endDate is malformed
+ * @returns 400 when Joi validation fails
  * @returns 401 when user does not exist in session
  * @returns 403 when user does not have read permissions for form
  * @returns 404 when form cannot be found
@@ -445,6 +449,7 @@ AdminFormsRouter.get(
  *
  * @returns 200 with presigned POST URL object
  * @returns 400 when error occurs whilst creating presigned POST URL object
+ * @returns 400 when Joi validation fails
  * @returns 401 when user does not exist in session
  * @returns 403 when user does not have write permissions for form
  * @returns 404 when form cannot be found
@@ -464,6 +469,7 @@ AdminFormsRouter.post(
  *
  * @returns 200 with presigned POST URL object
  * @returns 400 when error occurs whilst creating presigned POST URL object
+ * @returns 400 when Joi validation fails
  * @returns 401 when user does not exist in session
  * @returns 403 when user does not have write permissions for form
  * @returns 404 when form cannot be found
