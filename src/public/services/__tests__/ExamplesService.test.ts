@@ -1,10 +1,10 @@
 import MockAxios from 'jest-mock-axios'
 
-import * as ExampleService from '../ExampleService'
+import * as ExamplesService from '../ExamplesService'
 
 jest.mock('axios', () => MockAxios)
 
-describe('ExampleService', () => {
+describe('ExamplesService', () => {
   afterEach(() => jest.clearAllMocks())
   describe('getExampleForms', () => {
     const MOCK_PARAMS = {
@@ -20,16 +20,11 @@ describe('ExampleService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: {} })
 
       // Act
-      const actual = await ExampleService.getExampleForms(
-        MOCK_PARAMS.pageNo,
-        MOCK_PARAMS.searchTerm,
-        MOCK_PARAMS.agency,
-        MOCK_PARAMS.shouldGetTotalNumResults,
-      )
+      const actual = await ExamplesService.getExampleForms(MOCK_PARAMS)
 
       // Assert
       expect(MockAxios.get).toHaveBeenCalledWith(
-        ExampleService.EXAMPLES_ENDPOINT,
+        ExamplesService.EXAMPLES_ENDPOINT,
         {
           params: MOCK_PARAMS,
           headers: MOCK_HEADERS,
@@ -41,13 +36,7 @@ describe('ExampleService', () => {
     it('should reject with the provided error message when the GET request fails', async () => {
       // Arrange
       const expected = new Error('Mock Error')
-      const shouldReject = () =>
-        ExampleService.getExampleForms(
-          MOCK_PARAMS.pageNo,
-          MOCK_PARAMS.searchTerm,
-          MOCK_PARAMS.agency,
-          MOCK_PARAMS.shouldGetTotalNumResults,
-        )
+      const shouldReject = () => ExamplesService.getExampleForms(MOCK_PARAMS)
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
@@ -55,7 +44,7 @@ describe('ExampleService', () => {
 
       // Assert
       expect(MockAxios.get).toHaveBeenCalledWith(
-        ExampleService.EXAMPLES_ENDPOINT,
+        ExamplesService.EXAMPLES_ENDPOINT,
         {
           params: MOCK_PARAMS,
           headers: MOCK_HEADERS,
@@ -70,11 +59,11 @@ describe('ExampleService', () => {
     it('should return example single form data when the GET request succeeds', async () => {
       // Arrange
       const expected = {}
-      const expectedMockEndpoint = `${ExampleService.EXAMPLES_ENDPOINT}/${MOCK_FORM_ID}`
+      const expectedMockEndpoint = `${ExamplesService.EXAMPLES_ENDPOINT}/${MOCK_FORM_ID}`
       MockAxios.get.mockResolvedValueOnce({ data: {} })
 
       // Act
-      const actual = await ExampleService.getSingleExampleForm(MOCK_FORM_ID)
+      const actual = await ExamplesService.getSingleExampleForm(MOCK_FORM_ID)
 
       // Assert
       expect(MockAxios.get).toHaveBeenCalledWith(expectedMockEndpoint, {
@@ -86,9 +75,9 @@ describe('ExampleService', () => {
     it('should reject with the provided error message when the GET request fails', async () => {
       // Arrange
       const expected = new Error('Mock Error')
-      const expectedMockEndpoint = `${ExampleService.EXAMPLES_ENDPOINT}/${MOCK_FORM_ID}`
+      const expectedMockEndpoint = `${ExamplesService.EXAMPLES_ENDPOINT}/${MOCK_FORM_ID}`
       const shouldReject = () =>
-        ExampleService.getSingleExampleForm(MOCK_FORM_ID)
+        ExamplesService.getSingleExampleForm(MOCK_FORM_ID)
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
