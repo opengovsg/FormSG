@@ -8,14 +8,18 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
-import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { IUserSchema, Status } from 'src/types'
+import {
+  DatabaseError,
+  DatabasePayloadSizeError,
+} from 'src/app/modules/core/core.errors'
+import { IUserSchema, ResponseMode, Status } from 'src/types'
 
 import {
   createAuthedSession,
   logoutSession,
 } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
+import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { AdminFormsRouter } from '../admin-form.routes'
@@ -160,6 +164,195 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
+  describe('POST /adminform', () => {
+    // Default all requests to come from authenticated user.
+    beforeEach(() => createAuthedSession(defaultUser.email, request))
+
+    it('should return 200 with newly created email mode form', async () => {
+      // Arrange
+      const createEmailParams = {
+        form: {
+          emails: defaultUser.email,
+          responseMode: 'email',
+          title: 'email mode form test',
+        },
+      }
+
+      // Act
+      const response = await request.post('/adminform').send(createEmailParams)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          admin: String(defaultUser._id),
+          emails: [defaultUser.email],
+          responseMode: ResponseMode.Email,
+          status: Status.Private,
+          title: createEmailParams.form.title,
+          form_fields: [],
+          form_logics: [],
+        }),
+      )
+    })
+
+    it('should return 200 with newly created storage mode form', async () => {
+      // Arrange
+      const createStorageParams = {
+        form: {
+          responseMode: 'encrypt',
+          title: 'storage mode form test',
+          publicKey: 'some random public key',
+        },
+      }
+
+      // Act
+      const response = await request
+        .post('/adminform')
+        .send(createStorageParams)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          admin: String(defaultUser._id),
+          publicKey: createStorageParams.form.publicKey,
+          responseMode: ResponseMode.Encrypt,
+          status: Status.Private,
+          title: createStorageParams.form.title,
+          form_fields: [],
+          form_logics: [],
+        }),
+      )
+    })
+
+    it('should return 400 when Joi validation fails', async () => {
+      // Act
+      const response = await request.post('/adminform').send({
+        form: {
+          responseMode: 'encrypt',
+          title: 'storage mode form test',
+          // Missing public key-value
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'form.publicKey' } }),
+      )
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.post('/adminform').send('does not matter')
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 413 when a payload for created form exceeds the size limit', async () => {
+      // Arrange
+      const createStorageParams = {
+        form: {
+          responseMode: 'encrypt',
+          title: 'storage mode form test',
+          publicKey: 'some random public key',
+        },
+      }
+
+      const payloadSizeError = new DatabasePayloadSizeError(
+        'Creating a real > 16MB file in tests did not seem like a good idea',
+      )
+      jest
+        .spyOn(AdminFormService, 'createForm')
+        .mockReturnValueOnce(errAsync(payloadSizeError))
+
+      // Act
+      const response = await request
+        .post('/adminform')
+        .send(createStorageParams)
+
+      // Assert
+      expect(response.status).toEqual(413)
+      expect(response.body).toEqual({ message: payloadSizeError.message })
+    })
+
+    it('should return 422 when user cannot be found in the database', async () => {
+      // Arrange
+      const createEmailParams = {
+        form: {
+          emails: defaultUser.email,
+          responseMode: 'email',
+          title: 'email mode form test',
+        },
+      }
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.post('/adminform').send(createEmailParams)
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 422 when form creation results in a database validation error', async () => {
+      // Arrange
+      const emailParamsWithInvalidDomain = {
+        form: {
+          emails: defaultUser.email,
+          responseMode: 'email',
+          title: 'email mode form test should fail',
+          permissionList: [{ email: 'invalidEmailDomain@example.com' }],
+        },
+      }
+
+      // Act
+      const response = await request
+        .post('/adminform')
+        .send(emailParamsWithInvalidDomain)
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({
+        message:
+          'Error: [Failed to update collaborators list.]. Please refresh and try again. If you still need help, email us at form@open.gov.sg.',
+      })
+    })
+
+    it('should return 500 when database error occurs whilst creating a form', async () => {
+      // Arrange
+      const createStorageParams = {
+        form: {
+          responseMode: 'encrypt',
+          title: 'storage mode form test',
+          publicKey: 'some random public key',
+        },
+      }
+
+      const databaseError = new DatabaseError('something went wrong')
+      jest
+        .spyOn(AdminFormService, 'createForm')
+        .mockReturnValueOnce(errAsync(databaseError))
+
+      // Act
+      const response = await request
+        .post('/adminform')
+        .send(createStorageParams)
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: databaseError.message,
       })
     })
   })

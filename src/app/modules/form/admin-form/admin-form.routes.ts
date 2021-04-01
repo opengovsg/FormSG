@@ -99,7 +99,7 @@ AdminFormsRouter.route('/adminform')
    * @security session
    *
    * @returns 200 with a list of forms managed by the user
-   * @returns 401 when
+   * @returns 401 when user is not logged in
    * @returns 422 when user of given id cannnot be found in the database
    * @returns 500 when database errors occur
    */
@@ -110,10 +110,12 @@ AdminFormsRouter.route('/adminform')
    * @security session
    *
    * @returns 200 with newly created form
-   * @returns 401 if user does not exist in session
+   * @returns 400 when Joi validation fails
+   * @returns 401 when user does not exist in session
    * @returns 409 when a database conflict error occurs
    * @returns 413 when payload for created form exceeds size limit
-   * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
+   * @returns 422 when user of given id cannnot be found in the database
+   * @returns 422 when form parameters are invalid
    * @returns 500 when database error occurs
    */
   .post(createFormValidator, AdminFormController.handleCreateForm)
@@ -125,7 +127,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
    * @security session
    *
    * @returns 200 with retrieved form with formId if user has read permissions
-   * @returns 401 if user does not exist in session
+   * @returns 401 when user does not exist in session
    * @returns 403 when user does not have permissions to access form
    * @returns 404 when form cannot be found
    * @returns 410 when form is archived
@@ -140,7 +142,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
    *
    * @returns 200 with updated form
    * @returns 400 when form field has invalid updates to be performed
-   * @returns 401 if user does not exist in session
+   * @returns 401 when user does not exist in session
    * @returns 403 when current user does not have permissions to update form
    * @returns 404 when form to update cannot be found
    * @returns 409 when saving updated form incurs a conflict in the database
@@ -157,7 +159,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
    * @security session
    *
    * @returns 200 with success message when successfully archived
-   * @returns 401 if user does not exist in session
+   * @returns 401 when user does not exist in session
    * @returns 403 when user does not have permissions to archive form
    * @returns 404 when form cannot be found
    * @returns 410 when form is already archived
@@ -171,7 +173,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
    * @security session
    *
    * @returns 200 with the duplicate form dashboard view
-   * @returns 401 if user does not exist in session
+   * @returns 401 when user does not exist in session
    * @returns 403 when user does not have permissions to access form
    * @returns 404 when form cannot be found
    * @returns 410 when form is archived
@@ -186,7 +188,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
  * @security session
  *
  * @returns 200 with updated form with transferred owners
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user is not the current owner of the form
  * @returns 404 when form cannot be found
  * @returns 409 when new owner is not in the database yet, or if new owner is current owner
@@ -218,7 +220,7 @@ AdminFormsRouter.post(
  * @security session
  *
  * @returns 200 with target form's public view
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have permissions to access form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -236,7 +238,7 @@ AdminFormsRouter.get(
  * @security session
  *
  * @returns 200 with the duplicate form dashboard view
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when form is private
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -273,7 +275,7 @@ AdminFormsRouter.get(
  * @security session
  *
  * @returns 200 with feedback response
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have permissions to access form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -291,7 +293,7 @@ AdminFormsRouter.get(
  * @security session
  *
  * @returns 200 with feedback counts of given form
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have permissions to access form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -309,7 +311,7 @@ AdminFormsRouter.get(
  * @security session
  *
  * @returns 200 with feedback stream
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have permissions to access form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -328,7 +330,7 @@ AdminFormsRouter.get(
  *
  * @returns 200 with encrypted submission data response
  * @returns 400 when form is not an encrypt mode form
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have read permissions for form
  * @returns 404 when submissionId cannot be found in the database
  * @returns 404 when form cannot be found
@@ -355,7 +357,7 @@ AdminFormsRouter.get(
  *
  * @returns 200 with submission counts of given form
  * @returns 400 when query.startDate or query.endDate is malformed
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have permissions to access form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -413,7 +415,7 @@ AdminFormsRouter.get(
  * @returns 200 with stream of encrypted responses
  * @returns 400 if form is not an encrypt mode form
  * @returns 400 if req.query.startDate or req.query.endDate is malformed
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have read permissions for form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -443,7 +445,7 @@ AdminFormsRouter.get(
  *
  * @returns 200 with presigned POST URL object
  * @returns 400 when error occurs whilst creating presigned POST URL object
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have write permissions for form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -462,7 +464,7 @@ AdminFormsRouter.post(
  *
  * @returns 200 with presigned POST URL object
  * @returns 400 when error occurs whilst creating presigned POST URL object
- * @returns 401 if user does not exist in session
+ * @returns 401 when user does not exist in session
  * @returns 403 when user does not have write permissions for form
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
