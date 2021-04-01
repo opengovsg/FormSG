@@ -17,7 +17,7 @@ export const createWebhookFactory = ({
   isEnabled,
   props,
 }: RegisteredFeature<FeatureNames.WebhookVerifiedContent>): IWebhookFactory => {
-  if (isEnabled && !props) return WebhookService
+  if (isEnabled && props) return WebhookService
   const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
   return {
     sendWebhook: () => errAsync(error),
