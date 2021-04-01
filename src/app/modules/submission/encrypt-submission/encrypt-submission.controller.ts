@@ -85,8 +85,8 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
       error: formPublicResult.error,
     })
     const { statusCode } = mapRouteError(formPublicResult.error)
-    if (statusCode == StatusCodes.GONE) {
-      return res.status(statusCode)
+    if (statusCode === StatusCodes.GONE) {
+      return res.sendStatus(statusCode)
     } else {
       return res.status(statusCode).json({
         message: form.inactiveMessage,
