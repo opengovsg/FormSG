@@ -381,16 +381,19 @@ export const extractSuccessfulCookie = (
  * @return ok(cookie) the successful myInfoCookie
  * @return err(MyInfoMissingAccessTokenError) if myInfoCookie is not present on the request
  * @return err(MyInfoCookieStateError) if the extracted myInfoCookie was in an error state
+ * @return err(MyInfoCookieAccessError) if the cookie has been accessed before
  */
 export const extractSuccessfulMyInfoCookie = (
   cookies: Record<string, unknown>,
 ): Result<
   MyInfoSuccessfulCookiePayload,
-  MyInfoCookieStateError | MyInfoMissingAccessTokenError
+  | MyInfoCookieStateError
+  | MyInfoMissingAccessTokenError
+  | MyInfoCookieAccessError
 > =>
-  extractMyInfoCookie(cookies).andThen((cookiePayload) =>
-    extractSuccessfulCookie(cookiePayload),
-  )
+  extractMyInfoCookie(cookies)
+    .andThen((cookiePayload) => extractSuccessfulCookie(cookiePayload))
+    .andThen((cookiePayload) => checkMyInfoCookieUsedCount(cookiePayload))
 
 /**
  * checks if a MyInfo cookie has been used
