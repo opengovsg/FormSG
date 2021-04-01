@@ -42,6 +42,8 @@ describe('admin-form.routes', () => {
   beforeEach(async () => {
     request = supertest(app)
     const { user } = await dbHandler.insertFormCollectionReqs()
+    // Default all requests to come from authenticated user.
+    await createAuthedSession(user.email, request)
     defaultUser = user
   })
   afterEach(async () => {
@@ -51,9 +53,6 @@ describe('admin-form.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('GET /adminform', () => {
-    // Default all requests to come from authenticated user.
-    beforeEach(() => createAuthedSession(defaultUser.email, request))
-
     it('should return 200 with empty array when user has no forms', async () => {
       // Act
       const response = await request.get('/adminform')
@@ -169,9 +168,6 @@ describe('admin-form.routes', () => {
   })
 
   describe('POST /adminform', () => {
-    // Default all requests to come from authenticated user.
-    beforeEach(() => createAuthedSession(defaultUser.email, request))
-
     it('should return 200 with newly created email mode form', async () => {
       // Arrange
       const createEmailParams = {
@@ -360,8 +356,6 @@ describe('admin-form.routes', () => {
   describe('DELETE /:formId/adminform', () => {
     it('should return 200 with success message when form is successfully archived', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
       const formToArchive = await EmailFormModel.create({
         title: 'Form to archive',
         emails: [defaultUser.email],
@@ -370,7 +364,7 @@ describe('admin-form.routes', () => {
       expect(formToArchive.status).toEqual(Status.Private)
 
       // Act
-      const response = await session.delete(`/${formToArchive._id}/adminform`)
+      const response = await request.delete(`/${formToArchive._id}/adminform`)
 
       // Assert
       const form = await EmailFormModel.findById(formToArchive._id)
@@ -381,6 +375,7 @@ describe('admin-form.routes', () => {
 
     it('should return 401 when user is not logged in', async () => {
       // Arrange
+      await logoutSession(request)
       const formToArchive = await EmailFormModel.create({
         title: 'Form to archive',
         emails: [defaultUser.email],
@@ -388,7 +383,6 @@ describe('admin-form.routes', () => {
       })
 
       // Act
-      // Call endpoint before logging in.
       const response = await request.delete(`/${formToArchive._id}/adminform`)
 
       // Assert
@@ -398,8 +392,6 @@ describe('admin-form.routes', () => {
 
     it('should return 403 when user does not have permissions to archive form', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
       // Create separate user
       const collabUser = (
         await dbHandler.insertFormCollectionReqs({
@@ -417,8 +409,7 @@ describe('admin-form.routes', () => {
       })
 
       // Act
-      // Call endpoint before logging in.
-      const response = await session.delete(`/${randomForm._id}/adminform`)
+      const response = await request.delete(`/${randomForm._id}/adminform`)
 
       // Assert
       expect(response.status).toEqual(403)
@@ -429,12 +420,10 @@ describe('admin-form.routes', () => {
 
     it('should return 404 when form to archive cannot be found', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
       const invalidFormId = new ObjectId()
 
       // Act
-      const response = await session.delete(`/${invalidFormId}/adminform`)
+      const response = await request.delete(`/${invalidFormId}/adminform`)
 
       // Assert
       expect(response.status).toEqual(404)
@@ -443,7 +432,6 @@ describe('admin-form.routes', () => {
 
     it('should return 410 when form is already archived', async () => {
       // Arrange
-      const session = await createAuthedSession(defaultUser.email, request)
       // Create archived form.
       const archivedForm = await EmailFormModel.create({
         title: 'Form already archived',
@@ -453,7 +441,7 @@ describe('admin-form.routes', () => {
       })
 
       // Act
-      const response = await session.delete(`/${archivedForm._id}/adminform`)
+      const response = await request.delete(`/${archivedForm._id}/adminform`)
 
       // Assert
       expect(response.status).toEqual(410)
@@ -462,8 +450,6 @@ describe('admin-form.routes', () => {
 
     it('should return 422 when user in session cannot be found in the database', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
       const formToArchive = await EmailFormModel.create({
         title: 'Form to archive',
         emails: [defaultUser.email],
@@ -473,7 +459,7 @@ describe('admin-form.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await session.delete(`/${formToArchive._id}/adminform`)
+      const response = await request.delete(`/${formToArchive._id}/adminform`)
 
       // Assert
       expect(response.status).toEqual(422)
@@ -482,8 +468,6 @@ describe('admin-form.routes', () => {
 
     it('should return 500 when database error occurs whilst archiving form', async () => {
       // Arrange
-      // Log in user.
-      const session = await createAuthedSession(defaultUser.email, request)
       const formToArchive = await EmailFormModel.create({
         title: 'Form to archive',
         emails: [defaultUser.email],
@@ -495,7 +479,7 @@ describe('admin-form.routes', () => {
         .mockReturnValueOnce(errAsync(new DatabaseError()))
 
       // Act
-      const response = await session.delete(`/${formToArchive._id}/adminform`)
+      const response = await request.delete(`/${formToArchive._id}/adminform`)
 
       // Assert
       expect(response.status).toEqual(500)
