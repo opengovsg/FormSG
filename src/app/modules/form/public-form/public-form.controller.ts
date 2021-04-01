@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { ok } from 'neverthrow'
+import { err, ok } from 'neverthrow'
 import querystring from 'querystring'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -12,6 +12,10 @@ import {
   MYINFO_COOKIE_NAME,
   MYINFO_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
+import {
+  MyInfoCookieAccessError,
+  MyInfoMissingAccessTokenError,
+} from '../../myinfo/myinfo.errors'
 import { MyInfoCookiePayload } from '../../myinfo/myinfo.types'
 import { extractSuccessfulMyInfoCookie } from '../../myinfo/myinfo.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
@@ -236,13 +240,18 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
           },
         )
       })
-      .orElse(() => {
+      .orElse((error) => {
         // NOTE: This is a side-effect as there is no need for cookie if data could not be retrieved.
         res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+        if (
+          error instanceof MyInfoMissingAccessTokenError ||
+          error instanceof MyInfoCookieAccessError
+        ) {
+          return err(error)
+        }
         return ok({ form: publicForm, myInfoError: true })
       })
   }
-
   // NOTE: Once there is a valid form retrieved from the database,
   // the client should always get a 200 response with the form's public view.
   // Additional errors should be tagged onto the response object like myInfoError.

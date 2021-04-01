@@ -14,6 +14,7 @@ import {
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import {
   MyInfoAuthTypeError,
+  MyInfoCookieAccessError,
   MyInfoMissingAccessTokenError,
   MyInfoNoESrvcIdError,
 } from 'src/app/modules/myinfo/myinfo.errors'
@@ -654,7 +655,7 @@ describe('public-form.controller', () => {
         )
       })
 
-      it('should return 200 but the response should have cookies cleared and myInfoError when the request has no cookie', async () => {
+      it('should return 200 but the response should have cookies cleared without myInfoError when the request has no cookie', async () => {
         // Arrange
         // 1. Mock the response and calls
         const mockRes = expressHandler.mockResponse({
@@ -676,8 +677,31 @@ describe('public-form.controller', () => {
         expect(mockRes.clearCookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
-          isIntranetUser: false,
-          myInfoError: true,
+        })
+      })
+
+      it('should return 200 but the response should have cookies cleared without myInfoError when the cookie has been used before', async () => {
+        // Arrange
+        // 1. Mock the response and calls
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+
+        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
+          () => errAsync(new MyInfoCookieAccessError()),
+        )
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          MOCK_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(mockRes.clearCookie).toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
         })
       })
 
@@ -730,8 +754,8 @@ describe('public-form.controller', () => {
         expect(mockRes.clearCookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
-          isIntranetUser: false,
           myInfoError: true,
+          isIntranetUser: false,
         })
       })
 
