@@ -210,6 +210,20 @@ describe('webhook.service', () => {
         webhookUrl: MOCK_WEBHOOK_URL,
       }) as IWebhookResponse
 
+      const expectedSubmission = new EncryptSubmissionModel({
+        ...testEncryptedSubmission,
+      })
+      expectedSubmission.webhookResponses = [mockWebhookResponse]
+
+      jest
+        .spyOn(EncryptSubmissionModel, 'addWebhookResponse')
+        .mockImplementationOnce((submissionId, record) => {
+          expect(submissionId).toEqual(testEncryptedSubmission._id)
+          expect(record).toEqual(mockWebhookResponse)
+
+          return Promise.resolve(expectedSubmission)
+        })
+
       // Act
       const actual = await saveWebhookRecord(
         testEncryptedSubmission._id,
@@ -217,14 +231,7 @@ describe('webhook.service', () => {
       )
 
       // Assert
-      const originalLength =
-        testEncryptedSubmission.webhookResponses?.length ?? 0
-      const expectedLength = originalLength + 1
-
-      expect(actual.isOk()).toBe(true)
-      expect(actual._unsafeUnwrap().webhookResponses).toHaveLength(
-        expectedLength,
-      )
+      expect(actual._unsafeUnwrap()).toEqual(expectedSubmission)
     })
   })
 

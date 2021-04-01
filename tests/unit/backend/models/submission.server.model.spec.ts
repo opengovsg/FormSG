@@ -2,16 +2,20 @@ import { ObjectID } from 'bson'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
 
-import getSubmissionModel from 'src/app/models/submission.server.model'
+import getSubmissionModel, {
+  getEncryptSubmissionModel,
+} from 'src/app/models/submission.server.model'
 
 import {
   AuthType,
   ISubmissionSchema,
+  IWebhookResponse,
   SubmissionType,
 } from '../../../../src/types'
 import dbHandler from '../helpers/jest-db'
 
 const Submission = getSubmissionModel(mongoose)
+const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
 
 // TODO: Add more tests for the rest of the submission schema.
 describe('Submission Model', () => {
@@ -149,6 +153,84 @@ describe('Submission Model', () => {
 
         // Assert
         expect(actualWebhookView).toBeNull()
+      })
+    })
+
+    describe('addWebhookResponse', () => {
+      it('should return updated submission with webhook response and valid submission id', async () => {
+        // Arrange
+        const formId = new ObjectID()
+        const submission = new EncryptedSubmission({
+          submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          authType: AuthType.NIL,
+          myInfoFields: [],
+          recipientEmails: [],
+          responseHash: 'hash',
+          responseSalt: 'salt',
+          hasBounced: false,
+        })
+        await submission.save()
+
+        const webhookResponse = new Object({
+          _id: submission._id,
+          created: submission.created,
+          signature: 'some signature',
+          webhookUrl: 'https://form.gov.sg/endpoint',
+        }) as IWebhookResponse
+
+        // Act
+        const actualSubmission = await EncryptedSubmission.addWebhookResponse(
+          submission._id,
+          webhookResponse,
+        )
+        const webhookResponses = actualSubmission!.webhookResponses!
+
+        // Assert
+        const expectedResult = webhookResponse
+
+        expect(webhookResponses[0].signature).toEqual(expectedResult.signature)
+        expect(webhookResponses[0].webhookUrl).toEqual(
+          expectedResult.webhookUrl,
+        )
+      })
+
+      it('should return null with webhook response and invalid submission id', async () => {
+        // Arrange
+        const formId = new ObjectID()
+        const submission = new EncryptedSubmission({
+          submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          authType: AuthType.NIL,
+          myInfoFields: [],
+          recipientEmails: [],
+          responseHash: 'hash',
+          responseSalt: 'salt',
+          hasBounced: false,
+        })
+        await submission.save()
+
+        const webhookResponse = new Object({
+          _id: submission._id,
+          created: submission.created,
+          signature: 'some signature',
+          webhookUrl: 'https://form.gov.sg/endpoint',
+        }) as IWebhookResponse
+
+        const invalidSubmissionId = new ObjectID().toHexString()
+
+        // Act
+        const actualSubmission = await EncryptedSubmission.addWebhookResponse(
+          invalidSubmissionId,
+          webhookResponse,
+        )
+
+        // Assert
+        expect(actualSubmission).toBeNull()
       })
     })
   })
