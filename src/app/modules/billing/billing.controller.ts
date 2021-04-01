@@ -4,11 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import {
-  BillingInformationDto,
-  BillingQueryDto,
-  ErrorDto,
-} from '../../../types/api'
+import { BillingInfoDto, BillingQueryDto, ErrorDto } from '../../../types/api'
 import { createReqMeta } from '../../utils/request'
 
 import { BillingFactory } from './billing.factory'
@@ -25,7 +21,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleGetBillInfo: RequestHandler<
   ParamsDictionary,
-  ErrorDto | BillingInformationDto,
+  ErrorDto | BillingInfoDto,
   unknown,
   BillingQueryDto
 > = async (req, res) => {
@@ -55,7 +51,7 @@ export const handleGetBillInfo: RequestHandler<
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json('Error in retrieving billing records')
+      .json({ message: 'Error in retrieving billing records' })
   }
 
   // Retrieved login stats successfully.

@@ -1,29 +1,21 @@
 import axios from 'axios'
 
-import { BillingInformationDto } from '../../types/api/billing'
+import { BillingInfoDto, BillingQueryDto } from '../../types/api/billing'
 
 // Exported for testing
 export const BILLING_ENDPOINT = '/billing'
 
 /**
  * Gets the billing information for the given month and year
- * @param yr The year to get the billing information for
- * @param mth The month to get the billing information for
- * @param esrvcId The id of the form
+ * @param billingQueryParams The formId and the specific month to get the information for
  * @returns Promise<BillingResult> The billing statistics of the given month
  */
 export const getBillingInfo = (
-  yr: string,
-  mth: string,
-  esrvcId: string,
-): Promise<BillingInformationDto> => {
+  billingQueryParams: BillingQueryDto,
+): Promise<BillingInfoDto> => {
   return axios
-    .get<BillingInformationDto>(BILLING_ENDPOINT, {
-      params: {
-        yr,
-        mth,
-        esrvcId,
-      },
+    .get<BillingInfoDto>(BILLING_ENDPOINT, {
+      params: billingQueryParams,
     })
     .then(({ data }) => data)
 }
