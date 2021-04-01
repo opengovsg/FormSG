@@ -19,11 +19,7 @@ describe('BillingService', () => {
       MockAxios.get.mockResolvedValueOnce({ data: MOCK_DATA })
 
       // Act
-      const actual = await BillingService.getBillingInfo(
-        MOCK_PARAMS.yr,
-        MOCK_PARAMS.mth,
-        MOCK_PARAMS.esrvcId,
-      )
+      const actual = await BillingService.getBillingInfo(MOCK_PARAMS)
 
       // Assert
       expect(MockAxios.get).toHaveBeenCalledWith(
@@ -38,12 +34,7 @@ describe('BillingService', () => {
     it('should reject with the provided error message when the GET request fails', async () => {
       // Arrange
       const expected = new Error('Mock Error')
-      const shouldReject = () =>
-        BillingService.getBillingInfo(
-          MOCK_PARAMS.yr,
-          MOCK_PARAMS.mth,
-          MOCK_PARAMS.esrvcId,
-        )
+      const shouldReject = () => BillingService.getBillingInfo(MOCK_PARAMS)
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
