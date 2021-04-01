@@ -190,10 +190,11 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
  *
  * @returns 200 with updated form with transferred owners
  * @returns 400 when Joi validation fails
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
  * @returns 401 when user does not exist in session
  * @returns 403 when user is not the current owner of the form
  * @returns 404 when form cannot be found
- * @returns 409 when new owner is not in the database yet, or if new owner is current owner
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs

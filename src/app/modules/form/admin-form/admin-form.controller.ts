@@ -793,9 +793,10 @@ export const handleCopyTemplateForm: RequestHandler<
  * @security session
  *
  * @returns 200 with updated form with transferred owners
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
  * @returns 403 when user is not the current owner of the form
  * @returns 404 when form cannot be found
- * @returns 409 when new owner is not in the database yet, or if new owner is current owner
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs

@@ -1152,4 +1152,256 @@ describe('admin-form.routes', () => {
       })
     })
   })
+
+  describe('POST /:formId/adminform/transfer-owner', () => {
+    it('should return 200 with updated form and owner transferred', async () => {
+      // Arrange
+      const formToTransfer = await EmailFormModel.create({
+        title: 'Original form title',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
+
+      // Act
+      const response = await request
+        .post(`/${formToTransfer._id}/adminform/transfer-owner`)
+        .send({
+          email: newOwner.email,
+        })
+
+      // Assert
+      const expected = {
+        form: expect.objectContaining({
+          _id: String(formToTransfer._id),
+          // Admin should be new owner.
+          admin: expect.objectContaining({
+            _id: String(newOwner._id),
+          }),
+          // Original owner should still have write permissions.
+          permissionList: [
+            expect.objectContaining({
+              email: defaultUser.email,
+              write: true,
+            }),
+          ],
+        }),
+      }
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(expected)
+    })
+
+    it('should return 400 when body.email is missing', async () => {
+      // Arrange
+      const someFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request
+        .post(`/${someFormId}/adminform/transfer-owner`)
+        // Missing email.
+        .send({})
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'email' } }),
+      )
+    })
+
+    it('should return 400 when body.email is an invalid email', async () => {
+      // Arrange
+      const someFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request
+        .post(`/${someFormId}/adminform/transfer-owner`)
+        .send({ email: 'not an email' })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'email', message: 'Please enter a valid email' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.email contains multiple emails', async () => {
+      // Arrange
+      const someFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request
+        .post(`/${someFormId}/adminform/transfer-owner`)
+        .send({ email: 'first@example.com,second@example.com' })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'email', message: 'Please enter a valid email' },
+        }),
+      )
+    })
+
+    it('should return 400 when the new owner is not in the database', async () => {
+      // Arrange
+      const emailNotInDb = 'notInDb@example.com'
+      const formToTransfer = await EncryptFormModel.create({
+        title: 'Original form title',
+        admin: defaultUser._id,
+        publicKey: 'some public key',
+      })
+
+      // Act
+      const response = await request
+        .post(`/${formToTransfer._id}/adminform/transfer-owner`)
+        .send({ email: emailNotInDb })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: `${emailNotInDb} must have logged in once before being added as Owner`,
+      })
+    })
+
+    it('should return 400 when the new owner is already the current owner', async () => {
+      // Arrange
+      const formToTransfer = await EncryptFormModel.create({
+        title: 'Original form title',
+        admin: defaultUser._id,
+        publicKey: 'some public key',
+      })
+
+      // Act
+      const response = await request
+        .post(`/${formToTransfer._id}/adminform/transfer-owner`)
+        .send({ email: defaultUser.email })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: 'You are already the owner of this form',
+      })
+    })
+
+    it('should return 403 when current user is not the owner of the form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const yetAnotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'anotheranother-user',
+          shortName: 'someOtherUser',
+        })
+      ).user
+      const notOwnerForm = await EmailFormModel.create({
+        title: 'Original form title',
+        emails: [anotherUser.email],
+        admin: anotherUser._id,
+      })
+
+      // Act
+      const response = await request
+        .post(`/${notOwnerForm._id}/adminform/transfer-owner`)
+        .send({ email: yetAnotherUser.email })
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform delete operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form to transfer cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+
+      // Act
+      const response = await request
+        .post(`/${invalidFormId}/adminform/transfer-owner`)
+        .send({ email: anotherUser.email })
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: 'Form not found',
+      })
+    })
+
+    it('should return 410 when the form to transfer is already archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'Original form title',
+        admin: defaultUser._id,
+        publicKey: 'some public key',
+        // Already deleted.
+        status: Status.Archived,
+      })
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+
+      // Act
+      const response = await request
+        .post(`/${archivedForm._id}/adminform/transfer-owner`)
+        .send({ email: anotherUser.email })
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when the user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const formToTransfer = await EncryptFormModel.create({
+        title: 'Original form title',
+        admin: defaultUser._id,
+        publicKey: 'some public key',
+      })
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request
+        .post(`/${formToTransfer._id}/adminform/transfer-owner`)
+        .send({ email: anotherUser.email })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+  })
 })
