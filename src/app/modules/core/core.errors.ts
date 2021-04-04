@@ -73,3 +73,12 @@ export class MissingFeatureError extends ApplicationError {
     )
   }
 }
+
+/**
+ * Error thrown when attachment upload fails
+ */
+export class AttachmentUploadError extends ApplicationError {
+  constructor(message?: string) {
+    super(message)
+  }
+}
