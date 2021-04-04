@@ -11,9 +11,11 @@ import {
   IAgencySchema,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  IPopulatedForm,
   IUserSchema,
   ResponseMode,
 } from 'src/types'
+import { SettingsUpdateDto } from 'src/types/api'
 
 import MemoryDatabaseServer from 'tests/database'
 
@@ -153,7 +155,6 @@ const insertEmailForm = async ({
   })
 
   const EmailFormModel = getEmailFormModel(mongoose)
-
   const form = await EmailFormModel.create({
     title: 'example form title',
     admin: user._id,
@@ -214,6 +215,21 @@ const insertEncryptForm = async ({
   }
 }
 
+const getFullFormById = async (
+  formId: string,
+): Promise<IPopulatedForm | null> =>
+  await getEmailFormModel(mongoose).getFullFormById(formId)
+
+// 1. Get full form by id
+// 2. Patch in new settings
+const updateForm = async (
+  formId: string,
+  settingsToUpdate: SettingsUpdateDto,
+): Promise<IFormSchema | null> =>
+  await getEmailFormModel(mongoose)
+    .findByIdAndUpdate(formId, settingsToUpdate)
+    .exec()
+
 const dbHandler = {
   connect,
   closeDatabase,
@@ -224,6 +240,8 @@ const dbHandler = {
   clearCollection,
   insertEmailForm,
   insertEncryptForm,
+  getFullFormById,
+  updateForm,
 }
 
 export default dbHandler
