@@ -31,7 +31,13 @@ import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
-import { DatabaseError, MissingFeatureError } from '../../core/core.errors'
+import {
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+  MissingFeatureError,
+} from '../../core/core.errors'
 import {
   FormDeletedError,
   FormNotFoundError,
@@ -320,6 +326,12 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: 'Submission could not be parsed.',
       }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
+        errorMessage:
+          'Submission too large to be saved. Please reduce the size of your submission and try again.',
+      }
     case InvalidFileExtensionError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
@@ -330,6 +342,7 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Please keep the size of your attachments under 7MB.',
       }
+    case DatabaseConflictError:
     case ConflictError:
       return {
         statusCode: StatusCodes.CONFLICT,
@@ -339,6 +352,7 @@ export const mapRouteError: MapRouteError = (error) => {
     case ProcessingError:
     case ValidateFieldError:
     case ResponseModeError:
+    case DatabaseValidationError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
