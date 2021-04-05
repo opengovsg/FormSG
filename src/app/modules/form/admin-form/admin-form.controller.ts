@@ -1023,7 +1023,7 @@ export const handleUpdateSettings: RequestHandler<
 
 export const handleEncryptPreviewSubmission: RequestHandler<
   { formId: string },
-  unknown,
+  { message: string; submissionId: string } | ErrorDto,
   EncryptSubmissionBody
 > = async (req, res) => {
   const { formId } = req.params
@@ -1100,16 +1100,17 @@ export const handleEncryptPreviewSubmission: RequestHandler<
     verifiedContent = verifiedContentResult.value
   }
 
-  // Return the reply early to the submitter
-  res.json({
-    message: 'Form submission successful.',
-  })
-
   const submission = AdminFormService.createEncryptSubmissionWithoutSave({
     form,
     encryptedContent,
     verifiedContent,
     version,
+  })
+
+  // Return the reply early to the submitter
+  res.json({
+    message: 'Form submission successful.',
+    submissionId: submission._id,
   })
 
   return SubmissionService.sendEmailConfirmations({
