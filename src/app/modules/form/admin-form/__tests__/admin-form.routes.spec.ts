@@ -12,7 +12,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
-import { IUserSchema, ResponseMode, Status } from 'src/types'
+import { BasicField, IUserSchema, ResponseMode, Status } from 'src/types'
 
 import {
   createAuthedSession,
@@ -20,10 +20,14 @@ import {
 } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { AdminFormsRouter } from '../admin-form.routes'
 import * as AdminFormService from '../admin-form.service'
+
+// Prevent rate limiting.
+jest.mock('src/app/utils/limit-rate')
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
@@ -43,7 +47,7 @@ describe('admin-form.routes', () => {
     request = supertest(app)
     const { user } = await dbHandler.insertFormCollectionReqs()
     // Default all requests to come from authenticated user.
-    await createAuthedSession(user.email, request)
+    request = await createAuthedSession(user.email, request)
     defaultUser = user
   })
   afterEach(async () => {
@@ -1402,6 +1406,181 @@ describe('admin-form.routes', () => {
       // Assert
       expect(response.status).toEqual(422)
       expect(response.body).toEqual({ message: 'User not found' })
+    })
+  })
+
+  describe('GET /:formId/adminform/template', () => {
+    it("should return 200 with target form's public view", async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Create public form
+      const publicForm = await FormModel.create({
+        title: 'some public form',
+        status: Status.Public,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        form_fields: [
+          generateDefaultField(BasicField.Date),
+          generateDefaultField(BasicField.Nric),
+        ],
+      })
+
+      // Act
+      const response = await request.get(
+        `/${publicForm._id}/adminform/template`,
+      )
+
+      // Assert
+      const populatedForm = await publicForm
+        .populate({ path: 'admin', populate: { path: 'agency' } })
+        .execPopulate()
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        form: JSON.parse(JSON.stringify(populatedForm.getPublicView())),
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.get(
+        `/${new ObjectId()}/adminform/template`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when the target form is private', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Create private form
+      const privateForm = await FormModel.create({
+        title: 'some private form',
+        status: Status.Private,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        form_fields: [generateDefaultField(BasicField.Nric)],
+      })
+
+      // Act
+      const response = await request.get(
+        `/${privateForm._id}/adminform/template`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        formTitle: privateForm.title,
+        isPageFound: true,
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 404 when the form cannot be found', async () => {
+      // Act
+      const response = await request.get(
+        `/${new ObjectId()}/adminform/template`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when the form is already archived', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const archivedForm = await FormModel.create({
+        title: 'some archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        form_fields: [generateDefaultField(BasicField.Nric)],
+      })
+
+      // Act
+      const response = await request.get(
+        `/${archivedForm._id}/adminform/template`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been deleted' })
+    })
+
+    it('should return 422 when the user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const formToRetrieve = await FormModel.create({
+        title: 'some form',
+        status: Status.Public,
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Nric)],
+      })
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/${formToRetrieve._id}/adminform/template`,
+      )
+
+      // Assert
+      expect(response.body).toEqual({ message: 'User not found' })
+      expect(response.status).toEqual(422)
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form', async () => {
+      // Arrange
+      const formToRetrieve = await FormModel.create({
+        title: 'some form',
+        status: Status.Public,
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Nric)],
+      })
+      // Mock database error.
+      jest
+        .spyOn(FormModel, 'getFullFormById')
+        .mockRejectedValueOnce(new Error('something went wrong'))
+
+      // Act
+      const response = await request.get(
+        `/${formToRetrieve._id}/adminform/template`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
     })
   })
 })
