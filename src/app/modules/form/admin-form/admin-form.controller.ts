@@ -12,7 +12,13 @@ import {
   IPopulatedForm,
   WithForm,
 } from '../../../../types'
-import { ErrorDto, SettingsUpdateDto } from '../../../../types/api'
+import {
+  EncryptSubmissionBody,
+  ErrorDto,
+  SettingsUpdateDto,
+} from '../../../../types/api'
+import { VerifiedContentFactory } from '../../../modules/verified-content/verified-content.factory'
+import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -22,24 +28,14 @@ import {
   DatabaseValidationError,
 } from '../../core/core.errors'
 import * as FeedbackService from '../../feedback/feedback.service'
+import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
+import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 
 import { EditFieldError } from './admin-form.errors'
-import {
-  archiveForm,
-  createForm,
-  createPresignedPostUrlForImages,
-  createPresignedPostUrlForLogos,
-  duplicateForm,
-  editFormFields,
-  getDashboardForms,
-  getMockSpcpLocals,
-  transferFormOwnership,
-  updateForm,
-  updateFormSettings,
-} from './admin-form.service'
+import * as AdminFormService from './admin-form.service'
 import {
   DuplicateFormBody,
   FormUpdateParams,
@@ -60,7 +56,7 @@ const logger = createLoggerWithLabel(module)
 export const handleListDashboardForms: RequestHandler = async (req, res) => {
   const authedUserId = (req.session as Express.AuthedSession).user._id
 
-  return getDashboardForms(authedUserId)
+  return AdminFormService.getDashboardForms(authedUserId)
     .map((dashboardView) => res.json(dashboardView))
     .mapErr((error) => {
       logger.error({
@@ -209,7 +205,11 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
       )
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
-        createPresignedPostUrlForImages({ fileId, fileMd5Hash, fileType }),
+        AdminFormService.createPresignedPostUrlForImages({
+          fileId,
+          fileMd5Hash,
+          fileType,
+        }),
       )
       .map((presignedPostUrl) => res.json(presignedPostUrl))
       .mapErr((error) => {
@@ -265,7 +265,11 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
       )
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
-        createPresignedPostUrlForLogos({ fileId, fileMd5Hash, fileType }),
+        AdminFormService.createPresignedPostUrlForLogos({
+          fileId,
+          fileMd5Hash,
+          fileType,
+        }),
       )
       .map((presignedPostUrl) => res.json(presignedPostUrl))
       .mapErr((error) => {
@@ -368,7 +372,7 @@ export const passThroughSpcp: RequestHandler = (req, res, next) => {
   if ([AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(authType)) {
     res.locals = {
       ...res.locals,
-      ...getMockSpcpLocals(
+      ...AdminFormService.getMockSpcpLocals(
         authType,
         (req as WithForm<typeof req>).form.form_fields,
       ),
@@ -593,7 +597,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
         }),
       )
       // Step 3: Currently logged in user has permissions to archive form.
-      .andThen((formToArchive) => archiveForm(formToArchive))
+      .andThen((formToArchive) => AdminFormService.archiveForm(formToArchive))
       .map(() => res.json({ message: 'Form has been archived' }))
       .mapErr((error) => {
         logger.warn({
@@ -647,7 +651,11 @@ export const handleDuplicateAdminForm: RequestHandler<
         })
           .andThen((originalForm) =>
             // Step 3: Duplicate form.
-            duplicateForm(originalForm, userId, overrideParams),
+            AdminFormService.duplicateForm(
+              originalForm,
+              userId,
+              overrideParams,
+            ),
           )
           // Step 4: Retrieve dashboard view of duplicated form.
           .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
@@ -755,7 +763,7 @@ export const handleCopyTemplateForm: RequestHandler<
         // Step 2: Check if form is currently public.
         AuthService.getFormIfPublic(formId).andThen((originalForm) =>
           // Step 3: Duplicate form.
-          duplicateForm(originalForm, userId, overrideParams)
+          AdminFormService.duplicateForm(originalForm, userId, overrideParams)
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
         ),
@@ -822,7 +830,7 @@ export const handleTransferFormOwnership: RequestHandler<
       )
       // Step 3: User has permissions, transfer form ownership.
       .andThen((retrievedForm) =>
-        transferFormOwnership(retrievedForm, newOwnerEmail),
+        AdminFormService.transferFormOwnership(retrievedForm, newOwnerEmail),
       )
       // Success, return updated form.
       .map((updatedPopulatedForm) => res.json({ form: updatedPopulatedForm }))
@@ -867,7 +875,9 @@ export const handleCreateForm: RequestHandler<
     // Step 1: Retrieve currently logged in user.
     UserService.findUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
-      .andThen((user) => createForm({ ...formParams, admin: user._id }))
+      .andThen((user) =>
+        AdminFormService.createForm({ ...formParams, admin: user._id }),
+      )
       .map((createdForm) => res.status(StatusCodes.OK).json(createdForm))
       .mapErr((error) => {
         logger.error({
@@ -933,8 +943,8 @@ export const handleUpdateForm: RequestHandler<
         | DatabaseConflictError
         | DatabasePayloadSizeError
       > = editFormField
-        ? editFormFields(retrievedForm, editFormField)
-        : updateForm(retrievedForm, formUpdateParams)
+        ? AdminFormService.editFormFields(retrievedForm, editFormField)
+        : AdminFormService.updateForm(retrievedForm, formUpdateParams)
 
       return updateFormResult
     })
@@ -991,7 +1001,7 @@ export const handleUpdateSettings: RequestHandler<
       }),
     )
     .andThen((retrievedForm) =>
-      updateFormSettings(retrievedForm, settingsToPatch),
+      AdminFormService.updateFormSettings(retrievedForm, settingsToPatch),
     )
     .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
     .mapErr((error) => {
@@ -1009,4 +1019,102 @@ export const handleUpdateSettings: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
+}
+
+export const handleEncryptPreviewSubmission: RequestHandler<
+  { formId: string },
+  unknown,
+  EncryptSubmissionBody
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  // No need to process attachments as we don't do anything with them
+  const { encryptedContent, responses, version } = req.body
+  const logMeta = {
+    action: 'handleEncryptPreviewSubmission',
+    formId,
+  }
+
+  const formResult = await UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }),
+    )
+    .andThen(EncryptSubmissionService.checkFormIsEncryptMode)
+  if (formResult.isErr()) {
+    logger.error({
+      message: 'Error while retrieving form for preview submission',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    const { errorMessage, statusCode } = mapEncryptSubmissionError(
+      formResult.error,
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const form = formResult.value
+
+  const parsedResponsesResult = checkIsEncryptedEncoding(
+    encryptedContent,
+  ).andThen(() => SubmissionService.getProcessedResponses(form, responses))
+  if (parsedResponsesResult.isErr()) {
+    logger.error({
+      message: 'Error while parsing responses for preview submission',
+      meta: logMeta,
+      error: parsedResponsesResult.error,
+    })
+    const { errorMessage, statusCode } = mapEncryptSubmissionError(
+      parsedResponsesResult.error,
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const parsedResponses = parsedResponsesResult.value
+
+  const { authType } = form
+  let verifiedContent: string | undefined
+  if (authType === AuthType.SP || authType === AuthType.CP) {
+    const verifiedContentResult = VerifiedContentFactory.getVerifiedContent({
+      type: authType,
+      data: AdminFormService.getMockSpcpLocals(authType, form.form_fields),
+    }).andThen((verifiedContent) =>
+      VerifiedContentFactory.encryptVerifiedContent({
+        verifiedContent,
+        formPublicKey: form.publicKey,
+      }),
+    )
+    if (verifiedContentResult.isErr()) {
+      logger.error({
+        message: 'Error while parsing verified content for preview submission',
+        meta: logMeta,
+        error: verifiedContentResult.error,
+      })
+      const { errorMessage, statusCode } = mapEncryptSubmissionError(
+        verifiedContentResult.error,
+      )
+      return res.status(statusCode).json({ message: errorMessage })
+    }
+    verifiedContent = verifiedContentResult.value
+  }
+
+  // Return the reply early to the submitter
+  res.json({
+    message: 'Form submission successful.',
+  })
+
+  const submission = AdminFormService.createEncryptSubmissionWithoutSave({
+    form,
+    encryptedContent,
+    verifiedContent,
+    version,
+  })
+
+  return SubmissionService.sendEmailConfirmations({
+    form,
+    parsedResponses,
+    submission,
+  })
 }

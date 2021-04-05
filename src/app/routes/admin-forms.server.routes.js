@@ -18,7 +18,6 @@ const {
 const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
-const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
 
 /**
  * Authenticates logged in user, before retrieving non-archived form
@@ -112,13 +111,8 @@ module.exports = function (app) {
   app
     .route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})')
     .post(
+      withUserAuthentication,
       EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
-      authActiveForm(PermissionLevel.Read),
-      EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
-      AdminFormController.passThroughSpcp,
-      VerifiedContentMiddleware.encryptVerifiedSpcpFields,
-      EncryptSubmissionMiddleware.prepareEncryptSubmission,
-      adminForms.passThroughSaveMetadataToDb,
-      SubmissionsMiddleware.sendEmailConfirmations,
+      AdminFormController.handleEncryptPreviewSubmission,
     )
 }
