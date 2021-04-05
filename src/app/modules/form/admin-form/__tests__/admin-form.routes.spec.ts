@@ -12,7 +12,13 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
-import { BasicField, IUserSchema, ResponseMode, Status } from 'src/types'
+import {
+  BasicField,
+  IFormDocument,
+  IUserSchema,
+  ResponseMode,
+  Status,
+} from 'src/types'
 
 import {
   createAuthedSession,
@@ -1533,29 +1539,6 @@ describe('admin-form.routes', () => {
       expect(response.body).toEqual({ message: 'Form has been deleted' })
     })
 
-    it('should return 422 when the user in session cannot be retrieved from the database', async () => {
-      // Arrange
-      const formToRetrieve = await FormModel.create({
-        title: 'some form',
-        status: Status.Public,
-        responseMode: ResponseMode.Email,
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-        form_fields: [generateDefaultField(BasicField.Nric)],
-      })
-      // Delete user after login.
-      await dbHandler.clearCollection(UserModel.collection.name)
-
-      // Act
-      const response = await request.get(
-        `/${formToRetrieve._id}/adminform/template`,
-      )
-
-      // Assert
-      expect(response.body).toEqual({ message: 'User not found' })
-      expect(response.status).toEqual(422)
-    })
-
     it('should return 500 when database error occurs whilst retrieving form', async () => {
       // Arrange
       const formToRetrieve = await FormModel.create({
@@ -1580,6 +1563,375 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
+  describe('POST /:formId/adminform/copy', () => {
+    let formToCopy: IFormDocument
+    let anotherUser: IUserSchema
+
+    beforeEach(async () => {
+      anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      formToCopy = (await EncryptFormModel.create({
+        title: 'some form',
+        admin: anotherUser._id,
+        publicKey: 'some random key',
+        // Must be public to copy
+        status: Status.Public,
+      })) as IFormDocument
+    })
+
+    it('should return 200 with duplicated form dashboard view when copying to an email mode form', async () => {
+      // Act
+      const bodyParams = {
+        title: 'some title',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+      }
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send(bodyParams)
+
+      // Assert
+      const expected = expect.objectContaining({
+        _id: expect.any(String),
+        admin: expect.objectContaining({
+          _id: defaultUser.id,
+        }),
+        title: bodyParams.title,
+        responseMode: bodyParams.responseMode,
+      })
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(expected)
+    })
+
+    it('should return 200 with duplicated form dashboard view when copying to a storage mode form', async () => {
+      // Act
+      const bodyParams = {
+        title: 'some other title',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+      }
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send(bodyParams)
+
+      // Assert
+      const expected = expect.objectContaining({
+        _id: expect.any(String),
+        admin: expect.objectContaining({
+          _id: defaultUser.id,
+        }),
+        title: bodyParams.title,
+        responseMode: bodyParams.responseMode,
+      })
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(expected)
+    })
+
+    it('should return 400 when body.responseMode is missing', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'some title',
+          // body.responseMode is missing
+          emails: [defaultUser.email],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'responseMode' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.responseMode is invalid', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'some title',
+          responseMode: 'some rubbish',
+          emails: [defaultUser.email],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'responseMode',
+            message: `"responseMode" must be one of [${Object.values(
+              ResponseMode,
+            ).join(', ')}]`,
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.title is missing', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          // body.title missing
+          responseMode: ResponseMode.Email,
+          emails: [defaultUser.email],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'title' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.emails is missing when copying to an email form', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'new email form',
+          responseMode: ResponseMode.Email,
+          // body.emails missing.
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'emails' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.emails is an empty string when copying to an email form', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'new email form',
+          responseMode: ResponseMode.Email,
+          emails: '',
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'emails',
+            message: '"emails" is not allowed to be empty',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.emails is an empty array when copying to an email form', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'new email form',
+          responseMode: ResponseMode.Email,
+          emails: [],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'emails',
+            message: '"emails" must contain at least 1 items',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.publicKey is missing when copying to a storage mode form', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'new storage mode form',
+          responseMode: ResponseMode.Encrypt,
+          // publicKey missing.
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'publicKey',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.publicKey is an empty string when copying to a storage mode form', async () => {
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'new storage mode form',
+          responseMode: ResponseMode.Encrypt,
+          publicKey: '',
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'publicKey',
+            message: '"publicKey" contains an invalid value',
+          },
+        }),
+      )
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.post(`/${new ObjectId()}/adminform/copy`)
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when form to copy is private', async () => {
+      // Arrange
+      const bodyParams = {
+        title: 'some title',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+      }
+      // Create private form
+      const privateForm = await FormModel.create({
+        title: 'some private form',
+        status: Status.Private,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        form_fields: [generateDefaultField(BasicField.Nric)],
+      })
+
+      // Act
+      const response = await request
+        .post(`/${privateForm._id}/adminform/copy`)
+        .send(bodyParams)
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: 'Form must be public to be copied',
+      })
+    })
+
+    it('should return 404 when the form cannot be found', async () => {
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/copy`)
+        .send({
+          title: 'some new title',
+          responseMode: ResponseMode.Encrypt,
+          publicKey: 'booyeah',
+        })
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: 'Form not found',
+      })
+    })
+
+    it('should return 410 when the form to copy is archived', async () => {
+      // Arrange
+      // Create archived form.
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: anotherUser._id,
+      })
+
+      // Act
+      const response = await request
+        .post(`/${archivedForm._id}/adminform/copy`)
+        .send({
+          title: 'some new title',
+          responseMode: ResponseMode.Encrypt,
+          publicKey: 'booyeah',
+        })
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({
+        message: 'Form has been deleted',
+      })
+    })
+
+    it('should return 422 when the user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'some new title',
+          responseMode: ResponseMode.Encrypt,
+          publicKey: 'booyeah',
+        })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst copying form', async () => {
+      // Arrange
+      // Mock database error.
+      const mockErrorString = 'something went wrong'
+      jest
+        .spyOn(FormModel, 'create')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockRejectedValueOnce(new Error(mockErrorString))
+
+      // Act
+      const response = await request
+        .post(`/${formToCopy._id}/adminform/copy`)
+        .send({
+          title: 'some new title',
+          responseMode: ResponseMode.Encrypt,
+          publicKey: 'booyeah',
+        })
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: `Error: [${mockErrorString}]. Please refresh and try again. If you still need help, email us at form@open.gov.sg.`,
       })
     })
   })
