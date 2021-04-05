@@ -156,7 +156,7 @@ describe('webhook.service', () => {
 
       const mockDBError = new Error(DEFAULT_ERROR_MSG)
 
-      jest
+      const addWebhookResponseSpy = jest
         .spyOn(EncryptSubmissionModel, 'addWebhookResponse')
         .mockRejectedValueOnce(mockDBError)
 
@@ -169,6 +169,10 @@ describe('webhook.service', () => {
       // Assert
       const expectedError = transformMongoError(mockDBError)
 
+      expect(addWebhookResponseSpy).toHaveBeenCalledWith(
+        testEncryptedSubmission._id,
+        mockWebhookResponse,
+      )
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
@@ -231,8 +235,8 @@ describe('webhook.service', () => {
   describe('sendWebhook', () => {
     it('should return webhook url validation error if webhook url is not valid', async () => {
       // Arrange
-      MockWebhookValidationModule.validateWebhookUrl.mockReturnValueOnce(
-        Promise.reject(new WebhookValidationError(DEFAULT_ERROR_MSG)),
+      MockWebhookValidationModule.validateWebhookUrl.mockRejectedValueOnce(
+        new WebhookValidationError(DEFAULT_ERROR_MSG),
       )
 
       // Act
@@ -249,8 +253,8 @@ describe('webhook.service', () => {
 
     it('should return default webhook url validation error if webhook url is not valid and validate webhook url returns a non webhook url validation error', async () => {
       // Arrange
-      MockWebhookValidationModule.validateWebhookUrl.mockReturnValueOnce(
-        Promise.reject(new Error()),
+      MockWebhookValidationModule.validateWebhookUrl.mockRejectedValueOnce(
+        new Error(),
       )
 
       // Act
@@ -269,9 +273,7 @@ describe('webhook.service', () => {
 
     it('should resolve with webhook failed with axios error message if axios post fails due to an axios error', async () => {
       // Arrange
-      MockWebhookValidationModule.validateWebhookUrl.mockReturnValueOnce(
-        Promise.resolve(),
-      )
+      MockWebhookValidationModule.validateWebhookUrl.mockResolvedValueOnce()
 
       const MOCK_AXIOS_ERROR: AxiosError = {
         name: '',
@@ -310,9 +312,7 @@ describe('webhook.service', () => {
 
     it("should resolve with unknown error's error message and default response format if axios post fails due to an unknown error", async () => {
       // Arrange
-      MockWebhookValidationModule.validateWebhookUrl.mockReturnValueOnce(
-        Promise.resolve(),
-      )
+      MockWebhookValidationModule.validateWebhookUrl.mockResolvedValueOnce()
 
       MockAxios.post.mockRejectedValue(new Error(DEFAULT_ERROR_MSG))
       MockAxios.isAxiosError.mockReturnValue(false)
@@ -341,13 +341,15 @@ describe('webhook.service', () => {
 
     it('should resolve with an empty error message and default response format if axios post fails due to an unknown error which has no message', async () => {
       // Arrange
-      MockWebhookValidationModule.validateWebhookUrl.mockReturnValueOnce(
-        Promise.resolve(),
-      )
+      MockWebhookValidationModule.validateWebhookUrl.mockResolvedValueOnce()
 
-      MockAxios.post.mockRejectedValue(new Error(DEFAULT_ERROR_MSG))
+      const mockOriginalError = new Error(DEFAULT_ERROR_MSG)
+
+      MockAxios.post.mockRejectedValue(mockOriginalError)
       MockAxios.isAxiosError.mockReturnValue(false)
-      jest.spyOn(HasPropModule, 'hasProp').mockReturnValueOnce(false)
+      const hasPropSpy = jest
+        .spyOn(HasPropModule, 'hasProp')
+        .mockReturnValueOnce(false)
 
       // Act
       const actual = await sendWebhook(
@@ -363,6 +365,7 @@ describe('webhook.service', () => {
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
+      expect(hasPropSpy).toHaveBeenCalledWith(mockOriginalError, 'message')
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
         testSubmissionWebhookView,
@@ -373,9 +376,7 @@ describe('webhook.service', () => {
 
     it('should resolve without error message if axios post succeeds', async () => {
       // Arrange
-      MockWebhookValidationModule.validateWebhookUrl.mockReturnValueOnce(
-        Promise.resolve(),
-      )
+      MockWebhookValidationModule.validateWebhookUrl.mockResolvedValueOnce()
 
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
 

@@ -160,7 +160,7 @@ describe('Submission Model', () => {
       it('should return updated submission with webhook response when submission ID is valid', async () => {
         // Arrange
         const formId = new ObjectID()
-        const submission = new EncryptedSubmission({
+        const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -172,13 +172,18 @@ describe('Submission Model', () => {
           responseSalt: 'salt',
           hasBounced: false,
         })
-        await submission.save()
 
         const webhookResponse = new Object({
           _id: submission._id,
           created: submission.created,
           signature: 'some signature',
           webhookUrl: 'https://form.gov.sg/endpoint',
+          response: {
+            data: '{"result":"test-result"}',
+            status: 200,
+            statusText: 'success',
+            headers: '{}',
+          },
         }) as IWebhookResponse
 
         // Act
@@ -186,19 +191,20 @@ describe('Submission Model', () => {
           submission._id,
           webhookResponse,
         )
-        const webhookResponses = actualSubmission!.webhookResponses!
+        const webhookResponses = actualSubmission!.toObject().webhookResponses!
 
         // Assert
         expect(webhookResponses[0].signature).toEqual(webhookResponse.signature)
         expect(webhookResponses[0].webhookUrl).toEqual(
           webhookResponse.webhookUrl,
         )
+        expect(webhookResponses[0].response).toEqual(webhookResponse.response)
       })
 
       it('should return null when submission id is invalid', async () => {
         // Arrange
         const formId = new ObjectID()
-        const submission = new EncryptedSubmission({
+        const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -210,14 +216,13 @@ describe('Submission Model', () => {
           responseSalt: 'salt',
           hasBounced: false,
         })
-        await submission.save()
 
-        const webhookResponse = new Object({
+        const webhookResponse = {
           _id: submission._id,
           created: submission.created,
           signature: 'some signature',
           webhookUrl: 'https://form.gov.sg/endpoint',
-        }) as IWebhookResponse
+        } as IWebhookResponse
 
         const invalidSubmissionId = new ObjectID().toHexString()
 
