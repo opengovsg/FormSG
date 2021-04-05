@@ -248,6 +248,9 @@ describe('webhook.service', () => {
       // Assert
       const expectedError = new WebhookValidationError(DEFAULT_ERROR_MSG)
 
+      expect(
+        MockWebhookValidationModule.validateWebhookUrl,
+      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
@@ -268,6 +271,9 @@ describe('webhook.service', () => {
         'Webhook URL is non-HTTPS or points to private IP',
       )
 
+      expect(
+        MockWebhookValidationModule.validateWebhookUrl,
+      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
@@ -285,6 +291,9 @@ describe('webhook.service', () => {
         toJSON: () => jest.fn(),
       }
 
+      expect(
+        MockWebhookValidationModule.validateWebhookUrl,
+      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       MockAxios.post.mockRejectedValue(MOCK_AXIOS_ERROR)
       MockAxios.isAxiosError.mockReturnValue(true)
 
@@ -331,6 +340,9 @@ describe('webhook.service', () => {
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
+      expect(
+        MockWebhookValidationModule.validateWebhookUrl,
+      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
         testSubmissionWebhookView,
@@ -365,6 +377,9 @@ describe('webhook.service', () => {
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
+      expect(
+        MockWebhookValidationModule.validateWebhookUrl,
+      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(hasPropSpy).toHaveBeenCalledWith(mockOriginalError, 'message')
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
@@ -393,6 +408,9 @@ describe('webhook.service', () => {
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
+      expect(
+        MockWebhookValidationModule.validateWebhookUrl,
+      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
         testSubmissionWebhookView,
