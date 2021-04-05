@@ -5,11 +5,11 @@ import { SetOptional } from 'type-fest'
 import { createReqMeta } from '../../../../app/utils/request'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { BasicField, WithForm, WithParsedResponses } from '../../../../types'
+import { EncryptSubmissionBody } from '../../../../types/api'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { getProcessedResponses } from '../submission.service'
 
 import {
-  EncryptSubmissionBody,
   EncryptSubmissionBodyAfterProcess,
   WithAttachmentsData,
   WithFormData,

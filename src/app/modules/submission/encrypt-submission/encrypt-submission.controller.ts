@@ -13,7 +13,7 @@ import {
   ResWithUinFin,
   SubmissionMetadataList,
 } from '../../../../types'
-import { ErrorDto } from '../../../../types/api'
+import { EncryptSubmissionBody, ErrorDto } from '../../../../types/api'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
@@ -44,7 +44,6 @@ import {
   transformAttachmentMetaStream,
   uploadAttachments,
 } from './encrypt-submission.service'
-import { EncryptSubmissionBody } from './encrypt-submission.types'
 import {
   createEncryptedSubmissionDto,
   mapRouteError,
