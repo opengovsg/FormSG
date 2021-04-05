@@ -8,15 +8,10 @@ import { AuthType, WithForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
 import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
-import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { SpcpFactory } from './spcp.factory'
 import { JwtName, LoginPageValidationResult } from './spcp.types'
-import {
-  createCorppassParsedResponses,
-  createSingpassParsedResponses,
-  mapRouteError,
-} from './spcp.util'
+import { mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -222,32 +217,4 @@ export const handleLogin: (
       res.cookie('isLoginError', true)
       return res.redirect(destination)
     })
-}
-
-/**
- * Append additional verified responses(s) for SP and CP responses so that they show up in email response
- * @param req - Express request object
- * @param res - Express response object
- */
-export const appendVerifiedSPCPResponses: RequestHandler<
-  ParamsDictionary,
-  unknown,
-  { parsedResponses: ProcessedFieldResponse[] }
-> = (req, res, next) => {
-  const { form } = req as WithForm<typeof req>
-  const { uinFin, userInfo } = res.locals
-  switch (form.authType) {
-    case AuthType.MyInfo:
-    case AuthType.SP:
-      req.body.parsedResponses.push(...createSingpassParsedResponses(uinFin))
-      break
-    case AuthType.CP:
-      // Note that maskUidOnLastField() relies on the fact that userInfo is pushed in last to parsedResponses
-      // TODO(#1104): Remove this comment after refactoring
-      req.body.parsedResponses.push(
-        ...createCorppassParsedResponses(uinFin, userInfo),
-      )
-      break
-  }
-  return next()
 }

@@ -11,7 +11,6 @@ import {
   FormSettings,
   IForm,
   IPopulatedForm,
-  WithForm,
 } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -375,26 +374,6 @@ export const handleCountFormSubmissions: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
-}
-
-/**
- * Allow submission in preview without Spcp authentication by providing default values
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Object} next - the next expressjs callback
- */
-export const passThroughSpcp: RequestHandler = (req, res, next) => {
-  const { authType } = (req as WithForm<typeof req>).form
-  if ([AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(authType)) {
-    res.locals = {
-      ...res.locals,
-      ...AdminFormService.getPreviewSpcpData(
-        authType,
-        (req as WithForm<typeof req>).form.form_fields,
-      ),
-    }
-  }
-  return next()
 }
 
 /**
