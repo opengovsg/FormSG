@@ -157,7 +157,7 @@ describe('Submission Model', () => {
     })
 
     describe('addWebhookResponse', () => {
-      it('should return updated submission with webhook response and valid submission id', async () => {
+      it('should return updated submission with webhook response when submission ID is valid', async () => {
         // Arrange
         const formId = new ObjectID()
         const submission = new EncryptedSubmission({
@@ -189,15 +189,13 @@ describe('Submission Model', () => {
         const webhookResponses = actualSubmission!.webhookResponses!
 
         // Assert
-        const expectedResult = webhookResponse
-
-        expect(webhookResponses[0].signature).toEqual(expectedResult.signature)
+        expect(webhookResponses[0].signature).toEqual(webhookResponse.signature)
         expect(webhookResponses[0].webhookUrl).toEqual(
-          expectedResult.webhookUrl,
+          webhookResponse.webhookUrl,
         )
       })
 
-      it('should return null with webhook response and invalid submission id', async () => {
+      it('should return null when submission id is invalid', async () => {
         // Arrange
         const formId = new ObjectID()
         const submission = new EncryptedSubmission({

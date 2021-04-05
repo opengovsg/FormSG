@@ -109,16 +109,15 @@ describe('webhook.service', () => {
     jest.spyOn(Date, 'now').mockImplementation(() => MOCK_EPOCH)
 
     // instantiate new form and save
-    const testEncryptedForm = new FormModel({
+    const testEncryptedForm = await FormModel.create({
       title: 'Test Form',
       admin: preloaded.user._id,
       responseMode: ResponseMode.Encrypt,
       publicKey: 'fake-public-key',
     })
-    await testEncryptedForm.save()
 
     // initialise encrypted submussion
-    testEncryptedSubmission = new EncryptSubmissionModel({
+    testEncryptedSubmission = await EncryptSubmissionModel.create({
       form: testEncryptedForm._id,
       authType: testEncryptedForm.authType,
       myInfoFields: [],
@@ -127,7 +126,6 @@ describe('webhook.service', () => {
       version: 1,
       webhookResponses: [],
     })
-    await testEncryptedSubmission.save()
 
     // initialise webhook related variables
     testSubmissionWebhookView = testEncryptedSubmission.getWebhookView()
@@ -137,7 +135,7 @@ describe('webhook.service', () => {
       submissionId: testEncryptedSubmission._id,
       formId: testEncryptedForm._id,
       epoch: MOCK_EPOCH,
-    }) as string
+    })
 
     testConfig = {
       headers: {
@@ -150,11 +148,11 @@ describe('webhook.service', () => {
   describe('saveWebhookRecord', () => {
     it('should return transform mongo error if database update for webhook fails', async () => {
       // Arrange
-      const mockWebhookResponse = new Object({
+      const mockWebhookResponse = {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
-      }) as IWebhookResponse
+      } as IWebhookResponse
 
       const mockDBError = new Error(DEFAULT_ERROR_MSG)
 
@@ -171,23 +169,20 @@ describe('webhook.service', () => {
       // Assert
       const expectedError = transformMongoError(mockDBError)
 
-      expect(actual.isErr()).toBe(true)
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
     it('should return submission not found error if submission id cannot be found in database', async () => {
       // Arrange
-      const mockWebhookResponse = new Object({
+      const mockWebhookResponse = {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
-      }) as IWebhookResponse
-
-      const invalidSubmission = new EncryptSubmissionModel()
+      } as IWebhookResponse
 
       // Act
       const actual = await saveWebhookRecord(
-        invalidSubmission._id,
+        new ObjectID(),
         mockWebhookResponse,
       )
 
@@ -196,33 +191,27 @@ describe('webhook.service', () => {
         'Unable to find submission ID to update webhook response',
       )
 
-      expect(actual.isErr()).toBe(true)
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
     it('should return updated submission with new webhook response if the record is successfully saved', async () => {
       // Arrange
-      const mockWebhookResponse = new Object({
+      const mockWebhookResponse = {
         _id: testEncryptedSubmission._id,
         created: testEncryptedSubmission.created,
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
-      }) as IWebhookResponse
+      } as IWebhookResponse
 
       const expectedSubmission = new EncryptSubmissionModel({
         ...testEncryptedSubmission,
       })
       expectedSubmission.webhookResponses = [mockWebhookResponse]
 
-      jest
+      const addWebhookResponseSpy = jest
         .spyOn(EncryptSubmissionModel, 'addWebhookResponse')
-        .mockImplementationOnce((submissionId, record) => {
-          expect(submissionId).toEqual(testEncryptedSubmission._id)
-          expect(record).toEqual(mockWebhookResponse)
-
-          return Promise.resolve(expectedSubmission)
-        })
+        .mockResolvedValue(expectedSubmission)
 
       // Act
       const actual = await saveWebhookRecord(
@@ -231,6 +220,10 @@ describe('webhook.service', () => {
       )
 
       // Assert
+      expect(addWebhookResponseSpy).toHaveBeenCalledWith(
+        testEncryptedSubmission._id,
+        mockWebhookResponse,
+      )
       expect(actual._unsafeUnwrap()).toEqual(expectedSubmission)
     })
   })
@@ -251,7 +244,6 @@ describe('webhook.service', () => {
       // Assert
       const expectedError = new WebhookValidationError(DEFAULT_ERROR_MSG)
 
-      expect(actual.isErr()).toBe(true)
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
@@ -272,7 +264,6 @@ describe('webhook.service', () => {
         'Webhook URL is non-HTTPS or points to private IP',
       )
 
-      expect(actual.isErr()).toBe(true)
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
 
@@ -292,12 +283,7 @@ describe('webhook.service', () => {
         toJSON: () => jest.fn(),
       }
 
-      MockAxios.post.mockImplementationOnce((url, data, config) => {
-        expect(url).toEqual(MOCK_WEBHOOK_URL)
-        expect(data).toEqual(testSubmissionWebhookView)
-        expect(config).toEqual(testConfig)
-        return Promise.reject(MOCK_AXIOS_ERROR)
-      })
+      MockAxios.post.mockRejectedValue(MOCK_AXIOS_ERROR)
       MockAxios.isAxiosError.mockReturnValue(true)
 
       // Act
@@ -307,14 +293,18 @@ describe('webhook.service', () => {
       )
 
       // Assert
-      const expectedResult = new Object({
+      const expectedResult = {
         errorMessage: AXIOS_ERROR_MSG,
         ...MOCK_WEBHOOK_FAILURE_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
-      })
+      }
 
-      expect(actual.isOk()).toBe(true)
+      expect(MockAxios.post).toHaveBeenCalledWith(
+        MOCK_WEBHOOK_URL,
+        testSubmissionWebhookView,
+        testConfig,
+      )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
     })
 
@@ -324,12 +314,7 @@ describe('webhook.service', () => {
         Promise.resolve(),
       )
 
-      MockAxios.post.mockImplementationOnce((url, data, config) => {
-        expect(url).toEqual(MOCK_WEBHOOK_URL)
-        expect(data).toEqual(testSubmissionWebhookView)
-        expect(config).toEqual(testConfig)
-        return Promise.reject(new Error(DEFAULT_ERROR_MSG))
-      })
+      MockAxios.post.mockRejectedValue(new Error(DEFAULT_ERROR_MSG))
       MockAxios.isAxiosError.mockReturnValue(false)
 
       // Act
@@ -339,14 +324,18 @@ describe('webhook.service', () => {
       )
 
       // Assert
-      const expectedResult = new Object({
+      const expectedResult = {
         errorMessage: DEFAULT_ERROR_MSG,
         ...MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
-      })
+      }
 
-      expect(actual.isOk()).toBe(true)
+      expect(MockAxios.post).toHaveBeenCalledWith(
+        MOCK_WEBHOOK_URL,
+        testSubmissionWebhookView,
+        testConfig,
+      )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
     })
 
@@ -356,12 +345,7 @@ describe('webhook.service', () => {
         Promise.resolve(),
       )
 
-      MockAxios.post.mockImplementationOnce((url, data, config) => {
-        expect(url).toEqual(MOCK_WEBHOOK_URL)
-        expect(data).toEqual(testSubmissionWebhookView)
-        expect(config).toEqual(testConfig)
-        return Promise.reject(new Error(DEFAULT_ERROR_MSG))
-      })
+      MockAxios.post.mockRejectedValue(new Error(DEFAULT_ERROR_MSG))
       MockAxios.isAxiosError.mockReturnValue(false)
       jest.spyOn(HasPropModule, 'hasProp').mockReturnValueOnce(false)
 
@@ -372,14 +356,18 @@ describe('webhook.service', () => {
       )
 
       // Assert
-      const expectedResult = new Object({
+      const expectedResult = {
         errorMessage: '',
         ...MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
-      })
+      }
 
-      expect(actual.isOk()).toBe(true)
+      expect(MockAxios.post).toHaveBeenCalledWith(
+        MOCK_WEBHOOK_URL,
+        testSubmissionWebhookView,
+        testConfig,
+      )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
     })
 
@@ -389,12 +377,7 @@ describe('webhook.service', () => {
         Promise.resolve(),
       )
 
-      MockAxios.post.mockImplementationOnce((url, data, config) => {
-        expect(url).toEqual(MOCK_WEBHOOK_URL)
-        expect(data).toEqual(testSubmissionWebhookView)
-        expect(config).toEqual(testConfig)
-        return Promise.resolve(MOCK_AXIOS_SUCCESS_RESPONSE)
-      })
+      MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
 
       // Act
       const actual = await sendWebhook(
@@ -403,13 +386,17 @@ describe('webhook.service', () => {
       )
 
       // Assert
-      const expectedResult = new Object({
+      const expectedResult = {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
-      })
+      }
 
-      expect(actual.isOk()).toBe(true)
+      expect(MockAxios.post).toHaveBeenCalledWith(
+        MOCK_WEBHOOK_URL,
+        testSubmissionWebhookView,
+        testConfig,
+      )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
     })
   })
