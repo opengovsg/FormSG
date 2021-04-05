@@ -190,3 +190,18 @@ export const checkFormIsEmailMode = (
   }
   return err(new ResponseModeError(ResponseMode.Email, form.responseMode))
 }
+
+export const createEmailSubmissionWithoutSave = (
+  form: IPopulatedEmailForm,
+  responseHash: string,
+  responseSalt: string,
+): IEmailSubmissionSchema => {
+  return new EmailSubmissionModel({
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    recipientEmails: transformEmails(form.emails),
+    responseHash,
+    responseSalt,
+  })
+}

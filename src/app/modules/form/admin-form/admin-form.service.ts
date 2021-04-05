@@ -41,7 +41,12 @@ import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
 
-import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
+import {
+  PRESIGNED_POST_EXPIRY_SECS,
+  PREVIEW_CORPPASS_UID,
+  PREVIEW_CORPPASS_UINFIN,
+  PREVIEW_SINGPASS_UINFIN,
+} from './admin-form.constants'
 import {
   CreatePresignedUrlError,
   EditFieldError,
@@ -206,33 +211,34 @@ export const createPresignedPostUrlForLogos = (
   return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
 }
 
-export const getMockSpcpLocals = (
-  authType: AuthType,
-  formFields: IFieldSchema[] | undefined,
-): SpcpLocals => {
-  const myInfoFieldIds: string[] = formFields
-    ? formFields
-        .filter((field) => field.myInfo?.attr)
-        .map((field) => field._id.toString())
-    : []
+export const getPreviewSpcpData = (authType: AuthType): SpcpLocals => {
   switch (authType) {
     case AuthType.MyInfo:
       return {
-        uinFin: 'S1234567A',
-        hashedFields: new Set(myInfoFieldIds),
+        uinFin: PREVIEW_SINGPASS_UINFIN,
       }
     case AuthType.SP:
       return {
-        uinFin: 'S1234567A',
+        uinFin: PREVIEW_SINGPASS_UINFIN,
       }
     case AuthType.CP:
       return {
-        uinFin: '123456789A',
-        userInfo: 'ABC',
+        uinFin: PREVIEW_CORPPASS_UINFIN,
+        userInfo: PREVIEW_CORPPASS_UID,
       }
     default:
       return {}
   }
+}
+
+export const extractMyInfoFieldIds = (
+  formFields: IFieldSchema[] | undefined,
+): string[] => {
+  return formFields
+    ? formFields
+        .filter((field) => field.myInfo?.attr)
+        .map((field) => field._id.toString())
+    : []
 }
 
 /**

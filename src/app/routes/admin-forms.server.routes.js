@@ -3,32 +3,10 @@
 /**
  * Module dependencies.
  */
-const { celebrate, Joi, Segments } = require('celebrate')
 
-let forms = require('../../app/controllers/forms.server.controller')
-let adminForms = require('../../app/controllers/admin-forms.server.controller')
-let auth = require('../../app/controllers/authentication.server.controller')
 const EmailSubmissionsMiddleware = require('../../app/modules/submission/email-submission/email-submission.middleware')
-const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 const AdminFormController = require('../modules/form/admin-form/admin-form.controller')
 const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
-const {
-  PermissionLevel,
-} = require('../modules/form/admin-form/admin-form.types')
-const SpcpController = require('../modules/spcp/spcp.controller')
-const { BasicField } = require('../../types')
-
-/**
- * Authenticates logged in user, before retrieving non-archived form
- * and verifying read/write permissions.
- * @param {enum} requiredPermission
- */
-let authActiveForm = (requiredPermission) => [
-  withUserAuthentication,
-  forms.formById,
-  adminForms.isFormActive,
-  auth.verifyPermission(requiredPermission),
-]
 
 module.exports = function (app) {
   /**
@@ -49,41 +27,12 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    * @security OTP
    */
-  app.route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})').post(
-    authActiveForm(PermissionLevel.Read),
-    EmailSubmissionsMiddleware.receiveEmailSubmission,
-    celebrate({
-      [Segments.BODY]: Joi.object({
-        responses: Joi.array()
-          .items(
-            Joi.object()
-              .keys({
-                _id: Joi.string().required(),
-                question: Joi.string().required(),
-                fieldType: Joi.string()
-                  .required()
-                  .valid(...Object.values(BasicField)),
-                answer: Joi.string().allow(''),
-                answerArray: Joi.array(),
-                filename: Joi.string(),
-                content: Joi.binary(),
-                isHeader: Joi.boolean(),
-                myInfo: Joi.object(),
-                signature: Joi.string().allow(''),
-              })
-              .xor('answer', 'answerArray') // only answer or answerArray can be present at once
-              .with('filename', 'content'), // if filename is present, content must be present
-          )
-          .required(),
-        isPreview: Joi.boolean().required(),
-      }),
-    }),
-    EmailSubmissionsMiddleware.validateEmailSubmission,
-    AdminFormController.passThroughSpcp,
-    SpcpController.appendVerifiedSPCPResponses,
-    EmailSubmissionsMiddleware.prepareEmailSubmission,
-    adminForms.passThroughSaveMetadataToDb,
-    EmailSubmissionsMiddleware.sendAdminEmail,
-    SubmissionsMiddleware.sendEmailConfirmations,
-  )
+  app
+    .route('/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})')
+    .post(
+      withUserAuthentication,
+      EmailSubmissionsMiddleware.receiveEmailSubmission,
+      EmailSubmissionsMiddleware.validateResponseParams,
+      AdminFormController.handleEmailPreviewSubmission,
+    )
 }
