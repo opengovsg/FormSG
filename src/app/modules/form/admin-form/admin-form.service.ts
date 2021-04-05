@@ -4,8 +4,6 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
-import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
-
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
@@ -28,6 +26,7 @@ import {
 } from '../../../../types'
 import { SettingsUpdateDto } from '../../../../types/api'
 import getFormModel from '../../../models/form.server.model'
+import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { dotifyObject } from '../../../utils/dotify-object'
 import {
   getMongoErrorMessage,
