@@ -258,6 +258,7 @@
 #start-page-main-container .start-page-multiline-btn {
   height: auto;
   max-width: max-content;
+  padding: 17px 30px;
 }
 
 #start-page-main-container .start-page-multiline-btn-decorator {
