@@ -261,9 +261,7 @@ export const handleEmailSubmission: RequestHandler<
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',
-      meta: {
-        action: 'sendEmailAutoReplies',
-      },
+      meta: logMetaWithSubmission,
       error,
     })
   })
