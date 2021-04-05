@@ -1,9 +1,10 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { SetOptional } from 'type-fest'
 
 import { createReqMeta } from '../../../../app/utils/request'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { WithForm, WithParsedResponses } from '../../../../types'
+import { BasicField, WithForm, WithParsedResponses } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { getProcessedResponses } from '../submission.service'
 
@@ -84,3 +85,51 @@ export const prepareEncryptSubmission: RequestHandler<
     req.body.attachments || {}
   return next()
 }
+
+/**
+ * Celebrate middleware for verifying shape of encrypted submission
+ */
+export const validateEncryptSubmissionParams = celebrate({
+  [Segments.BODY]: Joi.object({
+    responses: Joi.array()
+      .items(
+        Joi.object().keys({
+          _id: Joi.string().required(),
+          answer: Joi.string().allow('').required(),
+          fieldType: Joi.string()
+            .required()
+            .valid(...Object.values(BasicField)),
+          signature: Joi.string().allow(''),
+        }),
+      )
+      .required(),
+    encryptedContent: Joi.string()
+      .custom((value, helpers) => {
+        const parts = String(value).split(/;|:/)
+        if (
+          parts.length !== 3 ||
+          parts[0].length !== 44 || // public key
+          parts[1].length !== 32 || // nonce
+          !parts.every((part) => Joi.string().base64().validate(part))
+        ) {
+          return helpers.error('Invalid encryptedContent.')
+        }
+        return value
+      }, 'encryptedContent')
+      .required(),
+    attachments: Joi.object()
+      .pattern(
+        /^[a-fA-F0-9]{24}$/,
+        Joi.object().keys({
+          encryptedFile: Joi.object().keys({
+            binary: Joi.string().required(),
+            nonce: Joi.string().required(),
+            submissionPublicKey: Joi.string().required(),
+          }),
+        }),
+      )
+      .optional(),
+    isPreview: Joi.boolean().required(),
+    version: Joi.number().required(),
+  }),
+})
