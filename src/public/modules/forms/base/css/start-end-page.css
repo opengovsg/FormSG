@@ -255,6 +255,16 @@
   width: 100%;
 }
 
+#start-page-main-container .start-page-multiline-btn {
+  height: auto;
+  max-width: max-content;
+}
+
+#start-page-main-container .start-page-multiline-btn-decorator {
+  display: flex;
+  align-items: center;
+}
+
 #start-page-main-container .start-page-btn {
   margin: 39px auto 0 auto;
 }

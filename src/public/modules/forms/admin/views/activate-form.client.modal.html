@@ -27,13 +27,13 @@
           <div class="field-description">
             <span ng-if="vm.esrvcIdError.errorCode">
               {{ (['SP', 'MyInfo'].includes(vm.esrvcIdError.authType) ?
-              'SingPass' : 'CorpPass') + ' returns the error code ' }}
+              'Singpass' : 'Corppass') + ' returns the error code ' }}
               <b>{{vm.esrvcIdError.errorCode}}</b>
               {{' for the e-service ID ' }} <b>{{vm.esrvcIdError.esrvcId}}</b>
             </span>
             <span ng-if="!vm.esrvcIdError.errorCode">
               {{ 'Could not connect to ' + (vm.esrvcIdError.authType === 'CP' ?
-              'CorpPass' : 'SingPass') + ' to check the e-service id '}}
+              'Corppass' : 'Singpass') + ' to check the e-service id '}}
               <b>{{vm.esrvcIdError.esrvcId}}</b>
             </span>
           </div>
@@ -48,7 +48,7 @@
         </div>
         <!-- Since CorpPass eservice id cannot be validated, remind user to check-->
         <div ng-if="vm.esrvcIdSuccess.authType === 'CP'">
-          <div class="field-title">This form uses CorpPass.</div>
+          <div class="field-title">This form uses Corppass.</div>
           <div class="field-description">
             Please make sure <b>{{vm.esrvcIdSuccess.esrvcId}}</b> is the correct
             e-service ID

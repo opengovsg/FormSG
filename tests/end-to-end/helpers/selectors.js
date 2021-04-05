@@ -192,7 +192,7 @@ const formPage = {
   },
   submitBtn: Selector('#form-submit button'),
   spcpLoginBtn: Selector('#start-page-btn-container button span').withText(
-    'LOG IN',
+    'LOGIN',
   ),
   spcpLogoutBtn: Selector('#start-page-btn-container button span').withText(
     'LOG OUT',
