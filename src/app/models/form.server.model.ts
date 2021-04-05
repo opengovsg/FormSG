@@ -131,7 +131,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   },
 })
 
-const EmailFormSchema = new Schema<IEmailFormSchema>({
+const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
     type: [
       {
@@ -159,7 +159,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   const User = getUserModel(db)
 
   // Schema
-  const FormSchema = new Schema<IFormSchema>(
+  const FormSchema = new Schema<IFormSchema, IFormModel>(
     {
       title: {
         type: String,
