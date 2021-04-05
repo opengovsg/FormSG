@@ -258,6 +258,14 @@
                     class="radiomark"
                     ng-class="tempForm.authType === type.val ? 'blue-border' : ''"
                   ></span>
+                  <i
+                    class="glyphicon glyphicon-question-sign"
+                    uib-tooltip="Corppass no longer has its own login page, and now uses 
+                    Singpass to authenticate corporate users. You will still need a 
+                    separate Corppass e-service ID."
+                    tooltip-trigger="'click mouseenter'"
+                    ng-if="type.val === 'CP'"
+                  ></i>
                 </label>
               </div>
               <div
