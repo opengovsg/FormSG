@@ -6,6 +6,7 @@ import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { PublicTransaction } from '../../../types'
 import { ErrorDto } from '../../../types/api'
 import { generateOtpWithHash } from '../../utils/otp'
+import { createReqMeta } from '../../utils/request'
 
 import { VerificationFactory } from './verification.factory'
 import { Transaction } from './verification.types'
@@ -30,6 +31,7 @@ export const handleCreateTransaction: RequestHandler<
   const logMeta = {
     action: 'handleCreateTransaction',
     formId,
+    ...createReqMeta(req),
   }
   return VerificationFactory.createTransaction(formId)
     .map((transaction) => {
@@ -66,6 +68,7 @@ export const handleGetTransactionMetadata: RequestHandler<
   const logMeta = {
     action: 'handleGetTransactionMetadata',
     transactionId,
+    ...createReqMeta(req),
   }
   return VerificationFactory.getTransactionMetadata(transactionId)
     .map((publicTransaction) =>
@@ -99,6 +102,7 @@ export const handleResetField: RequestHandler<
     action: 'handleResetField',
     transactionId,
     fieldId,
+    ...createReqMeta(req),
   }
   return VerificationFactory.resetFieldForTransaction(transactionId, fieldId)
     .map(() => res.sendStatus(StatusCodes.OK))
@@ -130,6 +134,7 @@ export const handleGetOtp: RequestHandler<
     action: 'handleGetOtp',
     transactionId,
     fieldId,
+    ...createReqMeta(req),
   }
   return generateOtpWithHash(logMeta, SALT_ROUNDS)
     .andThen(({ otp, hashedOtp }) =>
@@ -171,6 +176,7 @@ export const handleVerifyOtp: RequestHandler<
     action: 'handleVerifyOtp',
     transactionId,
     fieldId,
+    ...createReqMeta(req),
   }
   return VerificationFactory.verifyOtp(transactionId, fieldId, otp)
     .map((signedData) => res.status(StatusCodes.OK).json(signedData))
