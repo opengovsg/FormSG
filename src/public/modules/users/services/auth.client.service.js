@@ -56,7 +56,7 @@ function Auth($q, $http, $state, $window) {
 
   function refreshUser() {
     return $http
-      .get('api/v3/user')
+      .get('/api/v3/user')
       .then(({ data }) => {
         setUser(data)
         return data
