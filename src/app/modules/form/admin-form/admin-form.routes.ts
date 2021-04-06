@@ -2,7 +2,8 @@
  * Old routes that has not been migrated to their new /api/v3/ root endpoints.
  */
 
-import { celebrate, Joi, Segments } from 'celebrate'
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
@@ -17,7 +18,7 @@ export const AdminFormsRouter = Router()
 // All routes in this handler should be protected by authentication.
 AdminFormsRouter.use(withUserAuthentication)
 
-const YYYY_MM_DD_REGEX = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/
+const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 // Validators
 const createFormValidator = celebrate({
@@ -369,10 +370,11 @@ AdminFormsRouter.get(
   celebrate({
     [Segments.QUERY]: Joi.object()
       .keys({
-        // Ensure YYYY-MM-DD format.
-        startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
-        // Ensure YYYY-MM-DD format.
-        endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+        startDate: Joi.date().format('YYYY-MM-DD').raw(),
+        endDate: Joi.date()
+          .format('YYYY-MM-DD')
+          .greater(Joi.ref('startDate'))
+          .raw(),
       })
       .and('startDate', 'endDate'),
   }),
@@ -427,10 +429,11 @@ AdminFormsRouter.get(
   celebrate({
     [Segments.QUERY]: Joi.object()
       .keys({
-        // Ensure YYYY-MM-DD format.
-        startDate: Joi.string().regex(YYYY_MM_DD_REGEX),
-        // Ensure YYYY-MM-DD format.
-        endDate: Joi.string().regex(YYYY_MM_DD_REGEX),
+        startDate: Joi.date().format('YYYY-MM-DD').raw(),
+        endDate: Joi.date()
+          .format('YYYY-MM-DD')
+          .greater(Joi.ref('startDate'))
+          .raw(),
         downloadAttachments: Joi.boolean().default(false),
       })
       .and('startDate', 'endDate'),
