@@ -475,9 +475,7 @@ describe('public-form.controller', () => {
       }
 
       beforeAll(() => {
-        MockFormService.setIsIntranetFormAccess.mockImplementation(
-          (_, publicForm) => ok({ ...publicForm, isIntranetUser: false }),
-        )
+        MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
       })
 
       it('should return 200 when there is no AuthType on the request', async () => {
@@ -493,12 +491,6 @@ describe('public-form.controller', () => {
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_NIL_AUTH_FORM),
-        )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () =>
-            okAsync({
-              form: MOCK_NIL_AUTH_FORM.getPublicView(),
-            }),
         )
 
         // Act
@@ -517,14 +509,11 @@ describe('public-form.controller', () => {
 
       it('should return 200 when client authenticates using SP', async () => {
         // Arrange
+        const MOCK_SPCP_SESSION = { userName: MOCK_JWT_PAYLOAD.userName }
         const MOCK_SP_AUTH_FORM = ({
           ...BASE_FORM,
           authType: AuthType.SP,
         } as unknown) as IPopulatedForm
-        const MOCK_PUBLIC_SP_FORM_VIEW = {
-          form: MOCK_SP_AUTH_FORM.getPublicView(),
-          spcpSession: { userName: MOCK_JWT_PAYLOAD.userName },
-        }
         const mockRes = expressHandler.mockResponse()
 
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
@@ -533,8 +522,8 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => okAsync(MOCK_PUBLIC_SP_FORM_VIEW),
+        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+          okAsync(MOCK_SPCP_SESSION),
         )
 
         // Act
@@ -546,21 +535,19 @@ describe('public-form.controller', () => {
 
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
-          ...MOCK_PUBLIC_SP_FORM_VIEW,
+          form: MOCK_SP_AUTH_FORM.getPublicView(),
           isIntranetUser: false,
+          spcpSession: MOCK_SPCP_SESSION,
         })
       })
 
       it('should return 200 when client authenticates using CP', async () => {
         // Arrange
+        const MOCK_SPCP_SESSION = { userName: MOCK_JWT_PAYLOAD.userName }
         const MOCK_CP_AUTH_FORM = ({
           ...BASE_FORM,
           authType: AuthType.CP,
         } as unknown) as IPopulatedForm
-        const MOCK_PUBLIC_CP_FORM_VIEW = {
-          form: MOCK_CP_AUTH_FORM.getPublicView(),
-          spcpSession: { userName: MOCK_JWT_PAYLOAD.userName },
-        }
         const mockRes = expressHandler.mockResponse()
 
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
@@ -569,10 +556,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => okAsync(MOCK_PUBLIC_CP_FORM_VIEW),
+        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+          okAsync(MOCK_SPCP_SESSION),
         )
-
         // Act
         await PublicFormController.handleGetPublicForm(
           MOCK_REQ,
@@ -582,8 +568,9 @@ describe('public-form.controller', () => {
 
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
-          ...MOCK_PUBLIC_CP_FORM_VIEW,
+          form: MOCK_CP_AUTH_FORM.getPublicView(),
           isIntranetUser: false,
+          spcpSession: MOCK_SPCP_SESSION,
         })
       })
 
@@ -598,23 +585,25 @@ describe('public-form.controller', () => {
         const MOCK_MYINFO_DATA = new MyInfoData({
           uinFin: 'i am a fish',
         } as IPersonResponse)
-        const MOCK_PUBLIC_MYINFO_FORM_VIEW = {
-          form: MOCK_MYINFO_AUTH_FORM.getPublicView(),
-          spcpSession: { userName: MOCK_MYINFO_DATA.getUinFin() },
-        }
+        const MOCK_SPCP_SESSION = { userName: MOCK_MYINFO_DATA.getUinFin() }
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
+          cookie: jest.fn().mockReturnThis(),
         })
-
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
-
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => okAsync(MOCK_PUBLIC_MYINFO_FORM_VIEW),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_DATA),
+        )
+        MockMyInfoFactory.createFormWithMyInfoMeta.mockReturnValueOnce(
+          okAsync({
+            prefilledFields: [],
+            spcpSession: MOCK_SPCP_SESSION,
+          }),
         )
 
         // Act
@@ -626,8 +615,10 @@ describe('public-form.controller', () => {
 
         // Assert
         expect(mockRes.clearCookie).not.toHaveBeenCalled()
+        expect(mockRes.cookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
-          ...MOCK_PUBLIC_MYINFO_FORM_VIEW,
+          form: { ...MOCK_MYINFO_AUTH_FORM.getPublicView(), form_fields: [] },
+          spcpSession: MOCK_SPCP_SESSION,
           isIntranetUser: false,
         })
       })
@@ -637,6 +628,7 @@ describe('public-form.controller', () => {
     describe('errors in myInfo', () => {
       const MOCK_MYINFO_FORM = ({
         ...BASE_FORM,
+        toJSON: jest.fn().mockReturnThis(),
         authType: AuthType.MyInfo,
       } as unknown) as IPopulatedForm
 
@@ -646,24 +638,22 @@ describe('public-form.controller', () => {
           okAsync(MOCK_MYINFO_FORM),
         )
 
-        MockFormService.setIsIntranetFormAccess.mockImplementation(
-          (ip, publicForm) => ok({ ...publicForm, isIntranetUser: false }),
-        )
+        MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(false)
 
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
         )
       })
 
-      it('should return 200 but the response should have cookies cleared without myInfoError when the request has no cookie', async () => {
+      it('should return 200 but the response should have cookies cleared with myInfoError set to undefined when the request has no cookie', async () => {
         // Arrange
         // 1. Mock the response and calls
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => errAsync(new MyInfoMissingAccessTokenError()),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          errAsync(new MyInfoMissingAccessTokenError()),
         )
 
         // Act
@@ -677,18 +667,20 @@ describe('public-form.controller', () => {
         expect(mockRes.clearCookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
+          myInfoError: undefined,
         })
       })
 
-      it('should return 200 but the response should have cookies cleared without myInfoError when the cookie has been used before', async () => {
+      it('should return 200 but the response should have cookies cleared with myInfoError set to undefined when the cookie has been used before', async () => {
         // Arrange
         // 1. Mock the response and calls
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => errAsync(new MyInfoCookieAccessError()),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          errAsync(new MyInfoCookieAccessError()),
         )
 
         // Act
@@ -702,6 +694,8 @@ describe('public-form.controller', () => {
         expect(mockRes.clearCookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
+          myInfoError: undefined,
         })
       })
 
@@ -712,8 +706,8 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => errAsync(new MyInfoCookieStateError()),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          errAsync(new MyInfoCookieStateError()),
         )
 
         // Act
@@ -739,8 +733,8 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => errAsync(new MyInfoAuthTypeError()),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          errAsync(new MyInfoAuthTypeError()),
         )
 
         // Act
@@ -766,8 +760,8 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => errAsync(new MyInfoNoESrvcIdError()),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          errAsync(new MyInfoNoESrvcIdError()),
         )
 
         // Act
@@ -793,13 +787,12 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () =>
-            errAsync(
-              new MissingFeatureError(
-                'testing is the missing feature' as FeatureNames,
-              ),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          errAsync(
+            new MissingFeatureError(
+              'testing is the missing feature' as FeatureNames,
             ),
+          ),
         )
 
         // Act
@@ -821,12 +814,18 @@ describe('public-form.controller', () => {
       it('should return 200 but the response should have cookies cleared and myInfoError if a database error occurs while saving hashes', async () => {
         // Arrange
         // 1. Mock the response and calls
+        const MOCK_MYINFO_DATA = new MyInfoData({
+          uinFin: 'i am a fish',
+        } as IPersonResponse)
+        const expected = new DatabaseError('fish error')
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
         })
-
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => errAsync(new DatabaseError()),
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_DATA),
+        )
+        MockMyInfoFactory.createFormWithMyInfoMeta.mockReturnValueOnce(
+          errAsync(expected),
         )
 
         // Act
@@ -862,8 +861,8 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SPCP_FORM),
         )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () => errAsync(new MissingJwtError()),
+        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+          errAsync(new MissingJwtError()),
         )
 
         // Act
@@ -879,6 +878,7 @@ describe('public-form.controller', () => {
         // json object should only have form property
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_SPCP_FORM.getPublicView(),
+          isIntranetUser: false,
         })
       })
     })
@@ -985,9 +985,8 @@ describe('public-form.controller', () => {
     })
 
     describe('errors in form access', () => {
-      const MOCK_JWT_PAYLOAD: JwtPayload = {
+      const MOCK_SPCP_SESSION = {
         userName: 'mock',
-        rememberMe: false,
       }
 
       it('should return 200 with isIntranetUser set to false when a user accesses a form from outside intranet', async () => {
@@ -1004,15 +1003,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_NIL_AUTH_FORM),
         )
-        MockFormService.setIsIntranetFormAccess.mockImplementation(
-          (_, publicForm) => ok({ ...publicForm, isIntranetUser: false }),
-        )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () =>
-            okAsync({
-              form: MOCK_NIL_AUTH_FORM.getPublicView(),
-            }),
-        )
+        MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(false)
 
         // Act
         await PublicFormController.handleGetPublicForm(
@@ -1034,34 +1025,18 @@ describe('public-form.controller', () => {
           ...BASE_FORM,
           authType: AuthType.SP,
         } as unknown) as IPopulatedForm
+
         const mockRes = expressHandler.mockResponse()
 
-        MockSpcpFactory.createFormWithSpcpSession.mockReturnValueOnce(
-          okAsync({
-            form: MOCK_SP_AUTH_FORM.getPublicView(),
-            spcpSession: { userName: MOCK_JWT_PAYLOAD.userName },
-          }),
-        )
-        MockFormService.setIsIntranetFormAccess.mockImplementation(
-          (_, publicForm) => ok({ ...publicForm, isIntranetUser: true }),
-        )
         MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
-          okAsync(MOCK_JWT_PAYLOAD),
+          okAsync(MOCK_SPCP_SESSION),
         )
+        MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
-        )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () =>
-            okAsync({
-              form: MOCK_SP_AUTH_FORM.getPublicView(),
-              spcpSession: {
-                userName: MOCK_JWT_PAYLOAD.userName,
-              },
-            }),
         )
 
         // Act
@@ -1074,9 +1049,7 @@ describe('public-form.controller', () => {
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_SP_AUTH_FORM.getPublicView(),
-          spcpSession: {
-            userName: MOCK_JWT_PAYLOAD.userName,
-          },
+          spcpSession: MOCK_SPCP_SESSION,
           isIntranetUser: true,
         })
       })
@@ -1087,36 +1060,18 @@ describe('public-form.controller', () => {
           ...BASE_FORM,
           authType: AuthType.CP,
         } as unknown) as IPopulatedForm
+
         const mockRes = expressHandler.mockResponse()
 
-        MockSpcpFactory.createFormWithSpcpSession.mockReturnValueOnce(
-          okAsync({
-            form: MOCK_CP_AUTH_FORM.getPublicView(),
-            spcpSession: { userName: MOCK_JWT_PAYLOAD.userName },
-          }),
-        )
-
-        MockFormService.setIsIntranetFormAccess.mockImplementation(
-          (_, publicForm) => ok({ ...publicForm, isIntranetUser: true }),
-        )
-
+        MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
         MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
-          okAsync(MOCK_JWT_PAYLOAD),
+          okAsync(MOCK_SPCP_SESSION),
         )
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
-        )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () =>
-            okAsync({
-              form: MOCK_CP_AUTH_FORM.getPublicView(),
-              spcpSession: {
-                userName: MOCK_JWT_PAYLOAD.userName,
-              },
-            }),
         )
 
         // Act
@@ -1129,9 +1084,7 @@ describe('public-form.controller', () => {
         // Assert
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_CP_AUTH_FORM.getPublicView(),
-          spcpSession: {
-            userName: MOCK_JWT_PAYLOAD.userName,
-          },
+          spcpSession: MOCK_SPCP_SESSION,
           isIntranetUser: true,
         })
       })
@@ -1146,6 +1099,7 @@ describe('public-form.controller', () => {
         } as unknown) as IPopulatedForm
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
+          cookie: jest.fn().mockReturnThis(),
         })
 
         const MOCK_MYINFO_DATA = new MyInfoData({
@@ -1158,23 +1112,15 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
-        MockMyInfoFactory.createFormWithMyInfo.mockReturnValueOnce(
+        MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
+        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_DATA),
+        )
+        MockMyInfoFactory.createFormWithMyInfoMeta.mockReturnValueOnce(
           okAsync({
-            form: MOCK_MYINFO_AUTH_FORM.getPublicView(),
+            prefilledFields: [],
             spcpSession: { userName: MOCK_MYINFO_DATA.getUinFin() },
           }),
-        )
-        MockFormService.setIsIntranetFormAccess.mockImplementation(
-          (_, publicForm) => ok({ ...publicForm, isIntranetUser: true }),
-        )
-        MockPublicFormService.getAuthTypeHandlerForForm.mockReturnValueOnce(
-          () =>
-            okAsync({
-              form: MOCK_MYINFO_AUTH_FORM.getPublicView(),
-              spcpSession: {
-                userName: MOCK_MYINFO_DATA.getUinFin(),
-              },
-            }),
         )
 
         // Act
@@ -1186,8 +1132,9 @@ describe('public-form.controller', () => {
 
         // Assert
         expect(mockRes.clearCookie).not.toHaveBeenCalled()
+        expect(mockRes.cookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
-          form: MOCK_MYINFO_AUTH_FORM.getPublicView(),
+          form: { ...MOCK_MYINFO_AUTH_FORM.getPublicView(), form_fields: [] },
           spcpSession: { userName: MOCK_MYINFO_DATA.getUinFin() },
           isIntranetUser: true,
         })
