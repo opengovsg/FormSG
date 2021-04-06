@@ -15,7 +15,6 @@ import {
   FormLogoState,
   FormMetaView,
   FormSettings,
-  IEncryptedSubmissionSchema,
   IFieldSchema,
   IForm,
   IFormDocument,
@@ -26,7 +25,6 @@ import {
 } from '../../../../types'
 import { SettingsUpdateDto } from '../../../../types/api'
 import getFormModel from '../../../models/form.server.model'
-import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { dotifyObject } from '../../../utils/dotify-object'
 import {
   getMongoErrorMessage,
@@ -38,7 +36,6 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
 } from '../../core/core.errors'
-import { SaveEncryptSubmissionParams } from '../../submission/encrypt-submission/encrypt-submission.types'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
@@ -62,7 +59,6 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
-const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
 type PresignedPostUrlParams = {
   fileId: string
@@ -556,23 +552,5 @@ export const updateFormSettings = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm.getSettings())
-  })
-}
-
-export const createEncryptSubmissionWithoutSave = ({
-  form,
-  encryptedContent,
-  version,
-  attachmentMetadata,
-  verifiedContent,
-}: SaveEncryptSubmissionParams): IEncryptedSubmissionSchema => {
-  return new EncryptSubmissionModel({
-    form: form._id,
-    authType: form.authType,
-    myInfoFields: form.getUniqueMyInfoAttrs(),
-    encryptedContent,
-    verifiedContent,
-    attachmentMetadata,
-    version,
   })
 }

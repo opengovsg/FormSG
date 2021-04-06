@@ -1084,13 +1084,15 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   }
   const parsedResponses = parsedResponsesResult.value
 
-  const submission = AdminFormService.createEncryptSubmissionWithoutSave({
-    form,
-    encryptedContent,
-    // Don't bother encrypting and signing mock variables for previews
-    verifiedContent: '',
-    version,
-  })
+  const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
+    {
+      form,
+      encryptedContent,
+      // Don't bother encrypting and signing mock variables for previews
+      verifiedContent: '',
+      version,
+    },
+  )
 
   // Return the reply early to the submitter
   res.json({
