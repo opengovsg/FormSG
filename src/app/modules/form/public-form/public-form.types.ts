@@ -1,7 +1,8 @@
 import { ParamsDictionary } from 'express-serve-static-core'
 
-import { IFieldSchema, IPopulatedForm, PublicForm } from 'src/types'
+import { IFieldSchema, PublicForm } from 'src/types'
 
+import { SpcpSession } from '../../../../types/spcp'
 import { IPossiblyPrefilledField } from '../../myinfo/myinfo.types'
 
 export type Metatags = {
@@ -24,14 +25,9 @@ interface PossiblyPrefilledPublicForm extends Omit<PublicForm, 'form_fields'> {
   form_fields: IPossiblyPrefilledField[] | IFieldSchema[]
 }
 
-export interface IPublicFormView {
+export type PublicFormViewDto = {
   form: PossiblyPrefilledPublicForm
-  spcpSession?: { userName: string }
+  spcpSession?: SpcpSession
   isIntranetUser?: boolean
   myInfoError?: true
-}
-
-export interface IIntranetForm {
-  isIntranetUser?: boolean
-  form: IPopulatedForm
 }

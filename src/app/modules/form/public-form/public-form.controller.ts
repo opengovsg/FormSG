@@ -5,9 +5,14 @@ import { UnreachableCaseError } from 'ts-essentials'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType } from '../../../../types'
+import { ErrorDto } from '../../../../types/api'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
+import {
+  MYINFO_COOKIE_NAME,
+  MYINFO_COOKIE_OPTIONS,
+} from '../../myinfo/myinfo.constants'
 import {
   MyInfoCookieAccessError,
   MyInfoMissingAccessTokenError,
@@ -20,7 +25,7 @@ import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
-import { RedirectParams } from './public-form.types'
+import { PublicFormViewDto, RedirectParams } from './public-form.types'
 import { mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -181,19 +186,15 @@ export const handleRedirect: RequestHandler<
  * @returns 410 if form has been archived
  * @returns 500 if database error occurs or if the type of error is unknown
  */
-export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
-  req,
-  res,
-) => {
+export const handleGetPublicForm: RequestHandler<
+  { formId: string },
+  PublicFormViewDto | ErrorDto
+> = async (req, res) => {
   const { formId } = req.params
 
-  const formResult = await getFormIfPublic(formId)
-    .andThen((form) =>
-      FormService.checkFormSubmissionLimitAndDeactivateForm(form),
-    )
-    .andThen((form) =>
-      FormService.setIsIntranetFormAccess(getRequestIp(req), form),
-    )
+  const formResult = await getFormIfPublic(formId).andThen((form) =>
+    FormService.checkFormSubmissionLimitAndDeactivateForm(form),
+  )
 
   // Early return if form is not public or any error occurred.
   if (formResult.isErr()) {
@@ -215,28 +216,29 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const intranetForm = formResult.value
-  const { form, isIntranetUser } = intranetForm
-  const publicForm = intranetForm.form.getPublicView()
-  const { authType } = intranetForm.form
-
-  // Step 1: Call the appropriate handler
+  const form = formResult.value
+  const publicForm = form.getPublicView()
+  const { authType } = form
+  const isIntranetUser = FormService.checkIsIntranetFormAccess(
+    getRequestIp(req),
+    form,
+  )
 
   switch (authType) {
-    // Do not need to do any extra chaining of services.
     case AuthType.NIL:
-      return res.json({ form: publicForm })
+      return res.json({ form: publicForm, isIntranetUser })
     case AuthType.SP:
     case AuthType.CP:
       return SpcpFactory.getSpcpSession(authType, req.cookies)
         .map((spcpSession) =>
           res.json({
-            ...intranetForm,
+            form,
+            isIntranetUser,
             spcpSession,
           }),
         )
         .mapErr((error) => {
-          // Step 3: Report relevant errors - verification failed for user
+          // Report only relevant errors - verification failed for user here
           if (
             error instanceof VerifyJwtError ||
             error instanceof InvalidJwtError
@@ -251,45 +253,69 @@ export const handleGetPublicForm: RequestHandler<{ formId: string }> = async (
               error,
             })
           }
-          return (res.json(intranetForm))
+          return res.json({ form, isIntranetUser })
         })
     case AuthType.MyInfo: {
-      return MyInfoFactory.fetchMyInfoData(form, req.cookies)
-        .andThen((myInfoData) => {
-            // MyInfoFactory.createFormMyInfoMeta
-              return MyInfoFactory.createFormWithMyInfo(
-                form.toJSON().form_fields,
-                myInfoData,
-                form._id,
-              )}
-        )
-        .andThen(({ prefilledFields, spcpSession }) => {
-          return extractAndAssertMyInfoCookieValidity(req.cookies).map(
-            (myInfoCookie) => ({
-             prefilledFields,
-             spcpSession,
-             myInfoCookie,
-            }),
-          )
-        })
-        .map(({myInfoCookie, prefilledFields, spcpSession}) => {
-            return res.cookie(.....).json({
+      // Step 1. Fetch required data and fill the form based off data retrieved
+      return (
+        MyInfoFactory.fetchMyInfoData(form, req.cookies)
+          .andThen((myInfoData) => {
+            return MyInfoFactory.createFormWithMyInfoMeta(
+              form.toJSON().form_fields,
+              myInfoData,
+              form._id,
+            )
+          })
+          // Check if the user is signed in
+          .andThen(({ prefilledFields, spcpSession }) => {
+            return extractAndAssertMyInfoCookieValidity(req.cookies).map(
+              (myInfoCookie) => ({
+                prefilledFields,
                 spcpSession,
-                form: { ...publicForm, formFields...{ }
-            })
-        })
-        .mapErr((error) => {
-            // ADD COMMENT WHY
-            const isMyInfoError = !(error instanceof MyInfoCookieAccessError || error instanceof MyInfoMissingAccessTokenError)
-          // clear cookie
-          return res.clearCookie().json({
-              form: publicForm,
-              myInfoError: isMyInfoError || undefined
-            }),
-          )
-        })
+                myInfoCookie,
+              }),
+            )
+          })
+          .map(({ myInfoCookie, prefilledFields, spcpSession }) => {
+            const updatedMyInfoCookie = {
+              ...myInfoCookie,
+              usedCount: myInfoCookie.usedCount + 1,
+            }
+            // Set the updated cookie accordingly and return the form back to the user
+            return res
+              .cookie(
+                MYINFO_COOKIE_NAME,
+                updatedMyInfoCookie,
+                MYINFO_COOKIE_OPTIONS,
+              )
+              .json({
+                spcpSession,
+                form: { ...form, form_fields: prefilledFields },
+                isIntranetUser,
+              })
+          })
+          .mapErr((error) => {
+            // NOTE: If the user is not signed in or the access token has been used before, it is not an error.
+            // myInfoError is set to true only when the authentication provider rejects the user's attempt at auth
+            // or when there is a network or database error during the process of retrieval
+            const isMyInfoError = !(
+              error instanceof MyInfoCookieAccessError ||
+              error instanceof MyInfoMissingAccessTokenError
+            )
+            // No need for cookie if data could not be retrieved
+            // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
+            return res
+              .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+              .json({
+                form: publicForm,
+                // Setting to undefined ensures that the frontend does not get myInfoError if it is false
+                myInfoError: isMyInfoError || undefined,
+                isIntranetUser,
+              })
+          })
+      )
+    }
     default:
       return new UnreachableCaseError(authType)
   }
 }
-  }
