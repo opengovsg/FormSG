@@ -28,7 +28,7 @@ import {
   MissingFeatureError,
 } from '../core/core.errors'
 
-import { IPublicFormView } from './public-form/public-form.types'
+import { IIntranetForm } from './public-form/public-form.types'
 import {
   FormDeletedError,
   FormNotFoundError,
@@ -253,35 +253,33 @@ export const getFormModelByResponseMode = (
  */
 export const setIsIntranetFormAccess = (
   ip: string,
-  publicFormView: IPublicFormView,
-): Result<IPublicFormView, ApplicationError> => {
+  form: IPopulatedForm,
+): Result<IIntranetForm, ApplicationError> => {
   return (
     IntranetFactory.isIntranetIp(ip)
       // NOTE: Need to annotate types because initializing the factory can cause MissingFeatureError
-      .andThen<IPublicFormView, ApplicationError | MissingFeatureError>(
+      .andThen<IIntranetForm, ApplicationError | MissingFeatureError>(
         (isIntranetUser) => {
           // Warn if form is being accessed from within intranet
           // and the form has authentication set
           if (
             isIntranetUser &&
-            [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(
-              publicFormView.form.authType,
-            )
+            [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
           ) {
             logger.warn({
               message:
                 'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
               meta: {
                 action: 'read',
-                formId: publicFormView.form._id,
+                formId: form._id,
               },
             })
           }
-          return ok({ ...publicFormView, isIntranetUser })
+          return ok({ form, isIntranetUser })
         },
       )
       .orElse((error) =>
-        error instanceof MissingFeatureError ? ok(publicFormView) : err(error),
+        error instanceof MissingFeatureError ? ok({ form }) : err(error),
       )
   )
 }

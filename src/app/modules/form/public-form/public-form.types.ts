@@ -1,6 +1,6 @@
 import { ParamsDictionary } from 'express-serve-static-core'
 
-import { IFieldSchema, PublicForm } from 'src/types'
+import { IFieldSchema, IPopulatedForm, PublicForm } from 'src/types'
 
 import { IPossiblyPrefilledField } from '../../myinfo/myinfo.types'
 
@@ -29,4 +29,9 @@ export interface IPublicFormView {
   spcpSession?: { userName: string }
   isIntranetUser?: boolean
   myInfoError?: true
+}
+
+export interface IIntranetForm {
+  isIntranetUser?: boolean
+  form: IPopulatedForm
 }

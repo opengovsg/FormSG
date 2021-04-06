@@ -7,6 +7,7 @@ import { PublicView } from './database'
 import { IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
+import { SpcpSession } from './spcp'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
 export enum AuthType {
@@ -273,4 +274,11 @@ export type FormMetaView = Pick<
  */
 export type FormController<F> = {
   [K in keyof typeof AuthType]: F
+}
+
+/**
+ * The current session of a user who is logged in
+ */
+export type UserSession = {
+  spcpSession: SpcpSession
 }
