@@ -42,7 +42,7 @@ export class IntranetService {
    * @param ip IP address to check
    * @returns Whether the IP address originated from the intranet
    */
-  isIntranetIp(ip: string): Result<boolean, ApplicationError> {
-    return ok(this.intranetIps.includes(ip))
+  isIntranetIp(ip: string): boolean {
+    return this.intranetIps.includes(ip)
   }
 }

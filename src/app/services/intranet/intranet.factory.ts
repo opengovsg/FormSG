@@ -1,4 +1,4 @@
-import { err } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 
 import FeatureManager, {
   FeatureNames,
@@ -9,7 +9,7 @@ import { MissingFeatureError } from '../../modules/core/core.errors'
 import { IntranetService } from './intranet.service'
 
 interface IIntranetFactory {
-  isIntranetIp: IntranetService['isIntranetIp']
+  isIntranetIp: (ip: string) => Result<boolean, MissingFeatureError>
 }
 
 export const createIntranetFactory = ({
@@ -17,7 +17,10 @@ export const createIntranetFactory = ({
   props,
 }: RegisteredFeature<FeatureNames.Intranet>): IIntranetFactory => {
   if (isEnabled && props?.intranetIpListPath) {
-    return new IntranetService(props)
+    const intranetService = new IntranetService(props)
+    return {
+      isIntranetIp: (ip: string) => ok(intranetService.isIntranetIp(ip)),
+    }
   }
 
   const error = new MissingFeatureError(FeatureNames.Intranet)
