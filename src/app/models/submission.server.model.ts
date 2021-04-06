@@ -191,8 +191,8 @@ EncryptSubmissionSchema.statics.addWebhookResponse = function (
   submissionId: string,
   webhookResponse: IWebhookResponse,
 ): Promise<IEncryptedSubmissionSchema | null> {
-  return this.findOneAndUpdate(
-    { _id: submissionId },
+  return this.findByIdAndUpdate(
+    submissionId,
     { $push: { webhookResponses: webhookResponse } },
     { new: true, setDefaultsOnInsert: true, runValidators: true },
   ).exec()

@@ -34,7 +34,7 @@ describe('Webhook URL validation', () => {
     )
   })
 
-  it('should reject URLs if dns resolution fails', async () => {
+  it('should reject URLs if DNS resolution fails', async () => {
     MockDns.resolve.mockRejectedValueOnce([])
     await expect(validateWebhookUrl(MOCK_WEBHOOK_URL)).rejects.toStrictEqual(
       new WebhookValidationError(
