@@ -264,7 +264,7 @@ export const checkIsIntranetFormAccess = (
           message:
             'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
           meta: {
-            action: 'read',
+            action: 'checkIsIntranetFormAccess',
             formId: form._id,
           },
         })
