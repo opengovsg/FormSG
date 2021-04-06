@@ -241,7 +241,7 @@ export class MyInfoService {
    * @returns the person object retrieved.
    * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
    */
-  fetchMyInfoPersonData(
+  private fetchMyInfoPersonData(
     accessToken: string,
     requestedAttributes: MyInfoAttribute[],
     singpassEserviceId: string,
