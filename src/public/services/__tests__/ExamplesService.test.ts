@@ -36,13 +36,13 @@ describe('ExamplesService', () => {
     it('should reject with the provided error message when the GET request fails', async () => {
       // Arrange
       const expected = new Error('Mock Error')
-      const shouldReject = () => ExamplesService.getExampleForms(MOCK_PARAMS)
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
-      await expect(shouldReject).rejects.toEqual(expected)
+      const actualPromise = ExamplesService.getExampleForms(MOCK_PARAMS)
 
       // Assert
+      await expect(actualPromise).rejects.toEqual(expected)
       expect(MockAxios.get).toHaveBeenCalledWith(
         ExamplesService.EXAMPLES_ENDPOINT,
         {
@@ -76,14 +76,13 @@ describe('ExamplesService', () => {
       // Arrange
       const expected = new Error('Mock Error')
       const expectedMockEndpoint = `${ExamplesService.EXAMPLES_ENDPOINT}/${MOCK_FORM_ID}`
-      const shouldReject = () =>
-        ExamplesService.getSingleExampleForm(MOCK_FORM_ID)
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
-      await expect(shouldReject).rejects.toEqual(expected)
+      const actualPromise = ExamplesService.getSingleExampleForm(MOCK_FORM_ID)
 
       // Assert
+      await expect(actualPromise).rejects.toEqual(expected)
       expect(MockAxios.get).toHaveBeenCalledWith(expectedMockEndpoint, {
         headers: MOCK_HEADERS,
       })
