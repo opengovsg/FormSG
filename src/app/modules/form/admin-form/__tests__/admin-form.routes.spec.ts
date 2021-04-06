@@ -2846,4 +2846,243 @@ describe('admin-form.routes', () => {
       expect(response.body).toEqual({ message: 'User not found' })
     })
   })
+
+  describe('POST /:formId/adminform/logos', () => {
+    const DEFAULT_POST_PARAMS = {
+      fileId: 'some other file id',
+      fileMd5Hash: SparkMD5.hash('test file name again'),
+      fileType: VALID_UPLOAD_FILE_TYPES[2],
+    }
+
+    it('should return 200 with presigned POST URL object', async () => {
+      // Arrange
+      const form = await EncryptFormModel.create({
+        title: 'form',
+        admin: defaultUser._id,
+        publicKey: 'does not matter',
+      })
+
+      // Act
+      const response = await request
+        .post(`/${form._id}/adminform/logos`)
+        .send(DEFAULT_POST_PARAMS)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Should equal mocked result.
+      expect(response.body).toEqual({
+        url: expect.any(String),
+        fields: expect.objectContaining({
+          'Content-MD5': DEFAULT_POST_PARAMS.fileMd5Hash,
+          'Content-Type': DEFAULT_POST_PARAMS.fileType,
+          key: DEFAULT_POST_PARAMS.fileId,
+          // Should have correct permissions.
+          acl: 'public-read',
+          bucket: expect.any(String),
+        }),
+      })
+    })
+
+    it('should return 400 when body.fileId is missing', async () => {
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/logos`)
+        .send({
+          // missing fileId.
+          fileMd5Hash: SparkMD5.hash('test file name'),
+          fileType: VALID_UPLOAD_FILE_TYPES[0],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'fileId' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.fileId is an empty string', async () => {
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/logos`)
+        .send({
+          fileId: '',
+          fileMd5Hash: SparkMD5.hash('test file name'),
+          fileType: VALID_UPLOAD_FILE_TYPES[1],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'fileId',
+            message: '"fileId" is not allowed to be empty',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.fileType is missing', async () => {
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/logos`)
+        .send({
+          fileId: 'some id',
+          fileMd5Hash: SparkMD5.hash('test file name'),
+          // Missing fileType.
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'fileType' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.fileType is invalid', async () => {
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/logos`)
+        .send({
+          fileId: 'some id',
+          fileMd5Hash: SparkMD5.hash('test file name'),
+          fileType: 'some random type',
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'fileType',
+            message: `"fileType" must be one of [${VALID_UPLOAD_FILE_TYPES.join(
+              ', ',
+            )}]`,
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.fileMd5Hash is missing', async () => {
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/logos`)
+        .send({
+          fileId: 'some id',
+          // Missing fileMd5Hash
+          fileType: VALID_UPLOAD_FILE_TYPES[2],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'fileMd5Hash' },
+        }),
+      )
+    })
+
+    it('should return 400 when body.fileMd5Hash is not a base64 string', async () => {
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/logos`)
+        .send({
+          fileId: 'some id',
+          fileMd5Hash: 'rubbish hash',
+          fileType: VALID_UPLOAD_FILE_TYPES[2],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'fileMd5Hash',
+            message: '"fileMd5Hash" must be a valid base64 string',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when creating presigned POST URL object errors', async () => {
+      // Arrange
+      // Mock error.
+      jest
+        .spyOn(aws.s3, 'createPresignedPost')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockImplementationOnce((_opts, cb) =>
+          cb(new Error('something went wrong')),
+        )
+      const form = await EncryptFormModel.create({
+        title: 'form',
+        admin: defaultUser._id,
+        publicKey: 'does not matter again',
+      })
+
+      // Act
+      const response = await request
+        .post(`/${form._id}/adminform/logos`)
+        .send(DEFAULT_POST_PARAMS)
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: 'Error occurred whilst uploading file',
+      })
+    })
+
+    it('should return 404 when form to upload logo to cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request
+        .post(`/${invalidFormId}/adminform/logos`)
+        .send(DEFAULT_POST_PARAMS)
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form to upload logo to is already archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request
+        .post(`/${archivedForm._id}/adminform/logos`)
+        .send(DEFAULT_POST_PARAMS)
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Clear user collection
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request
+        .post(`/${new ObjectId()}/adminform/logos`)
+        .send(DEFAULT_POST_PARAMS)
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+  })
 })
