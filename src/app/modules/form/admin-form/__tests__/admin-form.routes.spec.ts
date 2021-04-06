@@ -2305,4 +2305,160 @@ describe('admin-form.routes', () => {
       })
     })
   })
+
+  describe('GET /:formId/adminform/feedback/count', () => {
+    let formForFeedback: IFormDocument
+    beforeEach(async () => {
+      formForFeedback = (await EncryptFormModel.create({
+        title: 'form to view feedback',
+        admin: defaultUser._id,
+        publicKey: 'does not matter',
+      })) as IFormDocument
+    })
+
+    it('should return 200 with 0 count when no feedback exists', async () => {
+      // Act
+      const response = await request.get(
+        `/${formForFeedback._id}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(0)
+    })
+
+    it('should return 200 with feedback count when feedback exists', async () => {
+      // Arrange
+      const formFeedbacks = [
+        { formId: formForFeedback._id, rating: 5, comment: 'nice' },
+        { formId: formForFeedback._id, rating: 2, comment: 'not nice' },
+      ]
+      await insertFormFeedback(formFeedbacks[0])
+      await insertFormFeedback(formFeedbacks[1])
+
+      // Act
+      const response = await request.get(
+        `/${formForFeedback._id}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(formFeedbacks.length)
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.get(
+        `/${formForFeedback._id}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions for form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Form that defaultUser has no access to.
+      const inaccessibleForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        permissionList: [],
+      })
+
+      // Act
+      const response = await request.get(
+        `/${inaccessibleForm._id}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      // Act
+      const response = await request.get(
+        `/${new ObjectId()}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form is already archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/${archivedForm._id}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/${formForFeedback._id}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form feedback', async () => {
+      // Arrange
+      // Mock database error
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      jest.spyOn(FormFeedbackModel, 'countDocuments').mockReturnValueOnce({
+        exec: jest
+          .fn()
+          .mockRejectedValueOnce(new Error('something went wrong')),
+      })
+
+      // Act
+      const response = await request.get(
+        `/${formForFeedback._id}/adminform/feedback/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message:
+          'Error: [something went wrong]. Please refresh and try again. If you still need help, email us at form@open.gov.sg.',
+      })
+    })
+  })
 })
