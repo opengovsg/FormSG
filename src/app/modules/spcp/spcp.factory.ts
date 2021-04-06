@@ -20,7 +20,6 @@ interface ISpcpFactory {
   createJWTPayload: SpcpService['createJWTPayload']
   getCookieSettings: SpcpService['getCookieSettings']
   getSpcpSession: SpcpService['getSpcpSession']
-  createFormWithSpcpSession: SpcpService['createFormWithSpcpSession']
 }
 
 export const createSpcpFactory = ({
@@ -41,7 +40,6 @@ export const createSpcpFactory = ({
       createJWTPayload: () => err(error),
       getCookieSettings: () => ({}),
       getSpcpSession: () => errAsync(error),
-      createFormWithSpcpSession: () => errAsync(error),
     }
   }
   return new SpcpService(props)
