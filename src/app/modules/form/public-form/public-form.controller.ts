@@ -292,7 +292,7 @@ export const handleGetPublicForm: RequestHandler<
               })
           })
           .mapErr((error) => {
-            // NOTE: If the user is not signed in or the access token has been used before, it is not an error.
+            // NOTE: If the user is not signed in or if the user refreshes the page while logged in, it is not an error.
             // myInfoError is set to true only when the authentication provider rejects the user's attempt at auth
             // or when there is a network or database error during the process of retrieval
             const isMyInfoError = !(
