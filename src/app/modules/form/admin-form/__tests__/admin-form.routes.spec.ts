@@ -1936,4 +1936,185 @@ describe('admin-form.routes', () => {
       })
     })
   })
+
+  describe('GET /:formId/adminform/preview', () => {
+    it("should return 200 with own form's public form view even when private", async () => {
+      // Arrange
+      const formToPreview = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        // Private status.
+        status: Status.Private,
+      })
+
+      // Act
+      const response = await request.get(
+        `/${formToPreview._id}/adminform/preview`,
+      )
+
+      // Assert
+      const expectedForm = (
+        await formToPreview
+          .populate({
+            path: 'admin',
+            populate: {
+              path: 'agency',
+            },
+          })
+          .execPopulate()
+      ).getPublicView()
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        form: jsonParseStringify(expectedForm),
+      })
+    })
+
+    it("should return 200 with collaborator's form's public form view", async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const collabFormToPreview = await EmailFormModel.create({
+        title: 'some form',
+        admin: anotherUser._id,
+        emails: [anotherUser.email],
+        // Only read permissions.
+        permissionList: [{ email: defaultUser.email }],
+      })
+
+      // Act
+      const response = await request.get(
+        `/${collabFormToPreview._id}/adminform/preview`,
+      )
+
+      // Assert
+      const expectedForm = (
+        await collabFormToPreview
+          .populate({
+            path: 'admin',
+            populate: {
+              path: 'agency',
+            },
+          })
+          .execPopulate()
+      ).getPublicView()
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({ form: jsonParseStringify(expectedForm) })
+    })
+    it('should return 403 when user does not have read permissions for form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const unauthedForm = await EmailFormModel.create({
+        title: 'some form',
+        admin: anotherUser._id,
+        emails: [anotherUser.email],
+        // defaultUser does not have read permissions.
+      })
+
+      // Act
+      const response = await request.get(
+        `/${unauthedForm._id}/adminform/preview`,
+      )
+
+      // Arrange
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form to preview cannot be found', async () => {
+      // Act
+      const response = await request.get(`/${new ObjectId()}/adminform/preview`)
+
+      // Arrange
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: 'Form not found',
+      })
+    })
+
+    it('should return 410 when form is already archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/${archivedForm._id}/adminform/preview`,
+      )
+
+      // Arrange
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({
+        message: 'Form has been archived',
+      })
+    })
+
+    it('should return 422 when user in session cannot be found in the database', async () => {
+      // Arrange
+      const formToPreview = await EmailFormModel.create({
+        title: 'some other form',
+        admin: defaultUser._id,
+        status: Status.Public,
+        emails: [defaultUser.email],
+      })
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/${formToPreview._id}/adminform/preview`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({
+        message: 'User not found',
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form to preview', async () => {
+      // Arrange
+      const formToPreview = await EmailFormModel.create({
+        title: 'some other form',
+        admin: defaultUser._id,
+        status: Status.Public,
+        emails: [defaultUser.email],
+      })
+      // Mock database error.
+      jest
+        .spyOn(FormModel, 'getFullFormById')
+        .mockRejectedValueOnce(new Error('something went wrong'))
+
+      // Act
+      const response = await request.get(
+        `/${formToPreview._id}/adminform/preview`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
 })
