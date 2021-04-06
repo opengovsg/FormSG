@@ -5,7 +5,7 @@ function AdminConsole($q, $http) {
     getBillingInfo: function (yr, mth, esrvcId) {
       let deferred = $q.defer()
       $http({
-        url: '/billing',
+        url: '/api/v3/billings',
         method: 'GET',
         params: { yr, mth, esrvcId },
       }).then(
