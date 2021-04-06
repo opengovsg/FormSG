@@ -191,6 +191,11 @@ export const handleGetPublicForm: RequestHandler<
   PublicFormViewDto | ErrorDto
 > = async (req, res) => {
   const { formId } = req.params
+  const logMeta = {
+    action: 'handleGetPublicForm',
+    ...createReqMeta(req),
+    formId,
+  }
 
   const formResult = await getFormIfPublic(formId).andThen((form) =>
     FormService.checkFormSubmissionLimitAndDeactivateForm(form),
@@ -204,11 +209,7 @@ export const handleGetPublicForm: RequestHandler<
     if (isMongoError(error)) {
       logger.error({
         message: 'Error retrieving public form',
-        meta: {
-          action: 'handleGetPublicForm',
-          ...createReqMeta(req),
-          formId,
-        },
+        meta: logMeta,
         error,
       })
     }
@@ -245,11 +246,7 @@ export const handleGetPublicForm: RequestHandler<
           ) {
             logger.error({
               message: 'Error getting public form',
-              meta: {
-                action: 'handleGetPublicForm',
-                ...createReqMeta(req),
-                formId,
-              },
+              meta: logMeta,
               error,
             })
           }
