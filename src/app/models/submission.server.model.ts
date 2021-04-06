@@ -25,7 +25,7 @@ import { FORM_SCHEMA_ID } from './form.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
-const SubmissionSchema = new Schema<ISubmissionSchema>(
+const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
   {
     form: {
       type: Schema.Types.ObjectId,
@@ -143,7 +143,10 @@ const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
   },
 )
 
-const EncryptSubmissionSchema = new Schema<IEncryptedSubmissionSchema>({
+const EncryptSubmissionSchema = new Schema<
+  IEncryptedSubmissionSchema,
+  IEncryptSubmissionModel
+>({
   encryptedContent: {
     type: String,
     trim: true,
@@ -347,15 +350,15 @@ const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const Submission = db.model('Submission', SubmissionSchema)
   Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)
   Submission.discriminator(SubmissionType.Encrypt, EncryptSubmissionSchema)
-  return db.model<ISubmissionSchema>(
+  return db.model<ISubmissionSchema, ISubmissionModel>(
     SUBMISSION_SCHEMA_ID,
     SubmissionSchema,
-  ) as ISubmissionModel
+  )
 }
 
 const getSubmissionModel = (db: Mongoose): ISubmissionModel => {
   try {
-    return db.model(SUBMISSION_SCHEMA_ID) as ISubmissionModel
+    return db.model<ISubmissionSchema, ISubmissionModel>(SUBMISSION_SCHEMA_ID)
   } catch {
     return compileSubmissionModel(db)
   }

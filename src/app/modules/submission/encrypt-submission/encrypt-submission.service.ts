@@ -12,6 +12,7 @@ import {
   SubmissionCursorData,
   SubmissionData,
   SubmissionMetadata,
+  SubmissionMetadataList,
 } from '../../../../types'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
@@ -247,10 +248,7 @@ export const getSubmissionMetadata = (
 export const getSubmissionMetadataList = (
   formId: string,
   page?: number,
-): ResultAsync<
-  { metadata: SubmissionMetadata[]; count: number },
-  DatabaseError
-> => {
+): ResultAsync<SubmissionMetadataList, DatabaseError> => {
   return ResultAsync.fromPromise(
     EncryptSubmissionModel.findAllMetadataByFormId(formId, { page }),
     (error) => {

@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
+import moment from 'moment-timezone'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import {
   CaptchaConnectionError,
@@ -8,7 +10,10 @@ import {
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
 import {
+  DatabaseConflictError,
   DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
   MalformedParametersError,
   MissingFeatureError,
 } from '../../core/core.errors'
@@ -135,13 +140,21 @@ export const mapRouteError: MapRouteError = (
         errorMessage:
           'Invalid data was found. Please check your responses and submit again.',
       }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
+        errorMessage:
+          'Submission too large to be saved. Please reduce the size of your submission and try again.',
+      }
     case ValidateFieldError:
+    case DatabaseValidationError:
     case ProcessingError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
       }
+    case DatabaseConflictError:
     case ConflictError:
       return {
         statusCode: StatusCodes.CONFLICT,
@@ -167,5 +180,24 @@ export const mapRouteError: MapRouteError = (
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
       }
+  }
+}
+
+/**
+ * Creates and returns an EncryptedSubmissionDto object from submissionData and
+ * attachment presigned urls.
+ */
+export const createEncryptedSubmissionDto = (
+  submissionData: SubmissionData,
+  attachmentPresignedUrls: Record<string, string>,
+): EncryptedSubmissionDto => {
+  return {
+    refNo: submissionData._id,
+    submissionTime: moment(submissionData.created)
+      .tz('Asia/Singapore')
+      .format('ddd, D MMM YYYY, hh:mm:ss A'),
+    content: submissionData.encryptedContent,
+    verified: submissionData.verifiedContent,
+    attachmentMetadata: attachmentPresignedUrls,
   }
 }

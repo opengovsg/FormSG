@@ -14,7 +14,7 @@ import { USER_SCHEMA_ID } from './user.server.model'
 
 export const LOGIN_SCHEMA_ID = 'Login'
 
-const LoginSchema = new Schema<ILoginSchema>(
+const LoginSchema = new Schema<ILoginSchema, ILoginModel>(
   {
     admin: {
       type: Schema.Types.ObjectId,
@@ -133,7 +133,7 @@ LoginSchema.statics.aggregateLoginStats = function (
 }
 
 const compileLoginModel = (db: Mongoose) =>
-  db.model<ILoginSchema>(LOGIN_SCHEMA_ID, LoginSchema) as ILoginModel
+  db.model<ILoginSchema, ILoginModel>(LOGIN_SCHEMA_ID, LoginSchema)
 
 /**
  * Retrieves the Login model on the given Mongoose instance. If the model is
@@ -143,7 +143,7 @@ const compileLoginModel = (db: Mongoose) =>
  */
 const getLoginModel = (db: Mongoose): ILoginModel => {
   try {
-    return db.model(LOGIN_SCHEMA_ID) as ILoginModel
+    return db.model<ILoginSchema, ILoginModel>(LOGIN_SCHEMA_ID)
   } catch {
     return compileLoginModel(db)
   }

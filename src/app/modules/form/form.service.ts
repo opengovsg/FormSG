@@ -15,8 +15,15 @@ import getFormModel, {
   getEncryptedFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import {
+  getMongoErrorMessage,
+  transformMongoError,
+} from '../../utils/handle-mongo-error'
+import {
+  ApplicationError,
+  DatabaseError,
+  PossibleDatabaseError,
+} from '../core/core.errors'
 
 import {
   FormDeletedError,
@@ -138,30 +145,49 @@ export const isFormPublic = (
  * @returns ok(true) if submission is allowed because the form has not reached limits
  * @returns ok(false) if submission is not allowed because the form has reached limits
  */
-export const checkFormSubmissionLimitAndDeactivateForm = async (
+export const checkFormSubmissionLimitAndDeactivateForm = (
   form: IPopulatedForm,
-): Promise<Result<true, PrivateFormError>> => {
-  if (form.submissionLimit !== null) {
-    const currentCount = await SubmissionModel.countDocuments({
-      form: form._id,
-    }).exec()
-
-    if (currentCount >= form.submissionLimit) {
-      logger.info({
-        message: 'Form reached maximum submission count, deactivating.',
-        meta: {
-          form: form._id,
-          action: 'checkFormSubmissionLimitAndDeactivate',
-        },
-      })
-      await deactivateForm(form._id)
-      return err(new PrivateFormError(form.inactiveMessage, form.title))
-    } else {
-      return ok(true)
-    }
-  } else {
-    return ok(true)
+): ResultAsync<true, PrivateFormError | PossibleDatabaseError> => {
+  const logMeta = {
+    action: 'checkFormSubmissionLimitAndDeactivateForm',
+    formId: form._id,
   }
+  if (form.submissionLimit === null) return okAsync(true)
+  return ResultAsync.fromPromise(
+    SubmissionModel.countDocuments({
+      form: form._id,
+    }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error while counting submissions for form',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((count) => {
+    if (count < form.submissionLimit) return okAsync(true)
+    logger.info({
+      message: 'Form reached maximum submission count, deactivating.',
+      meta: logMeta,
+    })
+    return ResultAsync.fromPromise(deactivateForm(form._id), (error) => {
+      logger.error({
+        message: 'Error while deactivating form',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    }).andThen(() =>
+      // Always return err because submission limit was exceeded
+      errAsync(
+        new PrivateFormError(
+          'Submission made after form submission limit was reached',
+          form.title,
+        ),
+      ),
+    )
+  })
 }
 
 export const getFormModelByResponseMode = (
