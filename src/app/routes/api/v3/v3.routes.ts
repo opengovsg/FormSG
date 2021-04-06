@@ -1,8 +1,8 @@
 import { Router } from 'express'
 
 import { AdminRouter } from './admin'
-import { UserRouter } from './user'
 import { AuthRouter } from './auth'
+import { UserRouter } from './user'
 
 export const V3Router = Router()
 
