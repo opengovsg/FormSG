@@ -22,13 +22,8 @@ import {
   PossibleDatabaseError,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
-import {
-  ApplicationError,
-  DatabaseError,
-  MissingFeatureError,
-} from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 
-import { IIntranetForm } from './public-form/public-form.types'
 import {
   FormDeletedError,
   FormNotFoundError,
@@ -251,35 +246,31 @@ export const getFormModelByResponseMode = (
  * @returns ok(PublicFormView) if the form is accessed from the internet
  * @returns err(ApplicationError) if an error occured while checking if the ip of the request is from the intranet
  */
-export const setIsIntranetFormAccess = (
+export const checkIsIntranetFormAccess = (
   ip: string,
   form: IPopulatedForm,
-): Result<IIntranetForm, ApplicationError> => {
-  return (
-    IntranetFactory.isIntranetIp(ip)
-      // NOTE: Need to annotate types because initializing the factory can cause MissingFeatureError
-      .andThen<IIntranetForm, ApplicationError | MissingFeatureError>(
-        (isIntranetUser) => {
-          // Warn if form is being accessed from within intranet
-          // and the form has authentication set
-          if (
-            isIntranetUser &&
-            [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
-          ) {
-            logger.warn({
-              message:
-                'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
-              meta: {
-                action: 'read',
-                formId: form._id,
-              },
-            })
-          }
-          return ok({ form, isIntranetUser })
-        },
-      )
-      .orElse((error) =>
-        error instanceof MissingFeatureError ? ok({ form }) : err(error),
-      )
+): boolean => {
+  const isIntranetIpResult = IntranetFactory.isIntranetIp(ip).andThen(
+    (isIntranetUser) => {
+      // Warn if form is being accessed from within intranet
+      // and the form has authentication set
+      if (
+        isIntranetUser &&
+        [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
+      ) {
+        logger.warn({
+          message:
+            'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+          meta: {
+            action: 'read',
+            formId: form._id,
+          },
+        })
+      }
+      return ok(isIntranetUser)
+    },
   )
+
+  // This is required becausing the factory can throw missing feature error on initialization
+  return isIntranetIpResult.unwrapOr(false)
 }
