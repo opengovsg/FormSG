@@ -5,6 +5,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import { IForm, ResponseMode } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
@@ -79,16 +80,11 @@ const duplicateFormValidator = celebrate({
 
 const fileUploadValidator = celebrate({
   [Segments.BODY]: {
-    fileId: Joi.string()
-      .required()
-      .error(() => 'Please enter a valid file id'),
-    fileMd5Hash: Joi.string()
-      .base64()
-      .required()
-      .error(() => 'Error - your file could not be verified'),
+    fileId: Joi.string().required(),
+    fileMd5Hash: Joi.string().base64().required(),
     fileType: Joi.string()
-      .required()
-      .error(() => 'Error - your file could not be verified'),
+      .valid(...VALID_UPLOAD_FILE_TYPES)
+      .required(),
   },
 })
 
