@@ -131,7 +131,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   },
 })
 
-const EmailFormSchema = new Schema<IEmailFormSchema>({
+const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
     type: [
       {
@@ -159,7 +159,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   const User = getUserModel(db)
 
   // Schema
-  const FormSchema = new Schema<IFormSchema>(
+  const FormSchema = new Schema<IFormSchema, IFormModel>(
     {
       title: {
         type: String,
@@ -342,7 +342,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Add discriminators for the various field types.
   const FormFieldPath = FormSchema.path(
     'form_fields',
-  ) as Schema.Types.DocumentArray
+  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
 
   const TableFieldSchema = createTableFieldSchema()
 
@@ -376,7 +376,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormFieldPath.discriminator(BasicField.Table, TableFieldSchema)
   const TableColumnPath = TableFieldSchema.path(
     'columns',
-  ) as Schema.Types.DocumentArray
+  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
   TableColumnPath.discriminator(
     BasicField.ShortText,
     createShortTextFieldSchema(),
@@ -389,13 +389,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Discriminator defines all possible values of startPage.logo
   const StartPageLogoPath = FormSchema.path(
     'startPage.logo',
-  ) as Schema.Types.DocumentArray
+  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
   StartPageLogoPath.discriminator(FormLogoState.Custom, CustomFormLogoSchema)
 
   // Discriminator defines different logic types
   const FormLogicPath = FormSchema.path(
     'form_logics',
-  ) as Schema.Types.DocumentArray
+  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
 
   FormLogicPath.discriminator(LogicType.ShowFields, ShowFieldsLogicSchema)
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
@@ -458,12 +458,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
-  FormSchema.methods.getSettings = function (
-    this: IFormDocument,
-  ): FormSettings {
-    return pick(this, FORM_SETTING_FIELDS)
-  }
-
   // Archives form.
   FormSchema.methods.archive = function (this: IFormSchema) {
     // Return instantly when form is already archived.
@@ -475,8 +469,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  const FormDocumentSchema = (FormSchema as unknown) as Schema<IFormDocument>
+
+  FormDocumentSchema.methods.getSettings = function (
+    this: IFormDocument,
+  ): FormSettings {
+    return pick(this, FORM_SETTING_FIELDS)
+  }
+
   // Transfer ownership of the form to another user
-  FormSchema.methods.transferOwner = async function (
+  FormDocumentSchema.methods.transferOwner = async function (
     this: IFormDocument,
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
