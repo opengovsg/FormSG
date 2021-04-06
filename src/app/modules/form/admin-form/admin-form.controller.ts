@@ -1021,6 +1021,17 @@ export const handleUpdateSettings: RequestHandler<
     })
 }
 
+/**
+ * Handler for POST /v2/submissions/encrypt/preview/:formId.
+ * @security session
+ *
+ * @returns 200 with a mock submission ID
+ * @returns 400 when body is malformed; e.g. invalid plaintext responses or encoding for encrypted content
+ * @returns 403 when current user does not have read permissions to given form
+ * @returns 404 when given form ID does not exist
+ * @returns 410 when given form has been deleted
+ * @returns 500 when database error occurs
+ */
 export const handleEncryptPreviewSubmission: RequestHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
