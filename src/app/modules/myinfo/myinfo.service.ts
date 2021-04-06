@@ -9,6 +9,7 @@ import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
+import { Merge } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -18,6 +19,7 @@ import {
   IMyInfoHashSchema,
   IPopulatedForm,
   MyInfoAttribute,
+  UserSession,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { IPublicFormView } from '../form/public-form/public-form.types'
@@ -34,6 +36,7 @@ import {
   MyInfoCircuitBreakerError,
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
+  MyInfoError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -47,13 +50,14 @@ import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
   IPossiblyPrefilledField,
+  IPossiblyPrefilledFieldArray,
   MyInfoParsedRelayState,
 } from './myinfo.types'
 import {
-  checkMyInfoCookieUsedCount,
+  assertMyInfoCookieUnused,
   compareHashedValues,
   createRelayState,
-  extractSuccessfulMyInfoCookie,
+  extractAndAssertMyInfoCookieValidity,
   hashFieldValues,
   isMyInfoRelayState,
   validateMyInfoForm,
@@ -491,8 +495,8 @@ export class MyInfoService {
     | MyInfoCookieAccessError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
-    return extractSuccessfulMyInfoCookie(cookies)
-      .andThen((myInfoCookie) => checkMyInfoCookieUsedCount(myInfoCookie))
+    return extractAndAssertMyInfoCookieValidity(cookies)
+      .andThen((myInfoCookie) => assertMyInfoCookieUnused(myInfoCookie))
       .asyncAndThen((cookiePayload) =>
         validateMyInfoForm(form).asyncAndThen((form) =>
           this.fetchMyInfoPersonData(
@@ -511,42 +515,23 @@ export class MyInfoService {
    * @returns
    */
   createFormWithMyInfo(
-    form: IPopulatedForm,
-    cookies: Record<string, unknown>,
+    formFields: mongoose.LeanDocument<IFieldSchema>[],
+    myInfoData: MyInfoData,
+    formId: string,
   ): ResultAsync<
-    IPublicFormView,
-    | MyInfoCookieAccessError
-    | MissingFeatureError
-    | MyInfoFetchError
-    | MyInfoAuthTypeError
-    | MyInfoCircuitBreakerError
-    | DatabaseError
-    | MyInfoMissingAccessTokenError
-    | MyInfoCookieStateError
-    | MyInfoNoESrvcIdError
+    Merge<UserSession, IPossiblyPrefilledFieldArray>,
+    MyInfoError | MyInfoMissingAccessTokenError | MyInfoCookieAccessError
   > {
+    const uinFin = myInfoData.getUinFin()
     return (
-      // 1. Validate form and extract myInfoData
-      this.fetchMyInfoData(form, cookies)
-        // 2. Fill the form based on the result
-        .andThen((myInfoData) =>
-          this.prefillMyInfoFields(myInfoData, form.toJSON().form_fields).map(
-            (formFields) => ({
-              form: {
-                ...form.getPublicView(),
-                form_fields: formFields,
-              },
-              spcpSession: { userName: myInfoData.getUinFin() },
-            }),
-          ),
-        )
+      // 1. Fill the form based on the result
+      this.prefillMyInfoFields(myInfoData, formFields)
         // 3. Hash and save to database
-        .andThen((prefilledForm) =>
-          this.saveMyInfoHashes(
-            prefilledForm.spcpSession.userName,
-            form._id,
-            prefilledForm.form.form_fields,
-          ).map(() => prefilledForm),
+        .asyncAndThen((prefilledFields) =>
+          this.saveMyInfoHashes(uinFin, formId, prefilledFields).map(() => ({
+            prefilledFields,
+            spcpSession: { userName: uinFin },
+          })),
         )
     )
   }

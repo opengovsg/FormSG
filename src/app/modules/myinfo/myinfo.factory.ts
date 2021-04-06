@@ -1,5 +1,6 @@
-import { LeanDocument } from 'mongoose'
+import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
+import { Merge } from 'type-fest'
 
 import config from '../../../config/config'
 import FeatureManager, {
@@ -12,6 +13,7 @@ import {
   IMyInfoHashSchema,
   IPopulatedForm,
   MyInfoAttribute,
+  UserSession,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { IPublicFormView } from '../form/public-form/public-form.types'
@@ -21,7 +23,9 @@ import { MyInfoData } from './myinfo.adapter'
 import {
   MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
+  MyInfoCookieAccessError,
   MyInfoCookieStateError,
+  MyInfoError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -35,6 +39,7 @@ import { MyInfoService } from './myinfo.service'
 import {
   IMyInfoRedirectURLArgs,
   IPossiblyPrefilledField,
+  IPossiblyPrefilledFieldArray,
   MyInfoParsedRelayState,
 } from './myinfo.types'
 
@@ -104,18 +109,12 @@ interface IMyInfoFactory {
   >
 
   createFormWithMyInfo: (
-    form: IPopulatedForm,
-    cookies: Record<string, unknown>,
+    formFields: mongoose.LeanDocument<IFieldSchema>[],
+    myInfoData: MyInfoData,
+    formId: string,
   ) => ResultAsync<
-    IPublicFormView,
-    | MissingFeatureError
-    | MyInfoFetchError
-    | MyInfoAuthTypeError
-    | MyInfoCircuitBreakerError
-    | DatabaseError
-    | MyInfoMissingAccessTokenError
-    | MyInfoCookieStateError
-    | MyInfoNoESrvcIdError
+    Merge<UserSession, IPossiblyPrefilledFieldArray>,
+    MyInfoError | MyInfoMissingAccessTokenError | MyInfoCookieAccessError
   >
 }
 

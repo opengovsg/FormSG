@@ -368,7 +368,7 @@ export const extractMyInfoCookie = (
  * @returns ok(cookie) the successful myInfoCookie
  * @returns err(cookie) the errored cookie
  */
-export const extractSuccessfulCookie = (
+export const assertMyInfoCookieSuccessState = (
   cookie: MyInfoCookiePayload,
 ): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieStateError> =>
   cookie.state === MyInfoCookieState.Success
@@ -383,7 +383,7 @@ export const extractSuccessfulCookie = (
  * @return err(MyInfoCookieStateError) if the extracted myInfoCookie was in an error state
  * @return err(MyInfoCookieAccessError) if the cookie has been accessed before
  */
-export const extractSuccessfulMyInfoCookie = (
+export const extractAndAssertMyInfoCookieValidity = (
   cookies: Record<string, unknown>,
 ): Result<
   MyInfoSuccessfulCookiePayload,
@@ -392,8 +392,8 @@ export const extractSuccessfulMyInfoCookie = (
   | MyInfoCookieAccessError
 > =>
   extractMyInfoCookie(cookies)
-    .andThen((cookiePayload) => extractSuccessfulCookie(cookiePayload))
-    .andThen((cookiePayload) => checkMyInfoCookieUsedCount(cookiePayload))
+    .andThen((cookiePayload) => assertMyInfoCookieSuccessState(cookiePayload))
+    .andThen((cookiePayload) => assertMyInfoCookieUnused(cookiePayload))
 
 /**
  * checks if a MyInfo cookie has been used
@@ -401,7 +401,7 @@ export const extractSuccessfulMyInfoCookie = (
  * @returns ok(myInfoCookie) if the cookie has not been used before
  * @returns err(MyInfoCookieAccessError) if the cookie has been used before
  */
-export const checkMyInfoCookieUsedCount = (
+export const assertMyInfoCookieUnused = (
   myInfoCookie: MyInfoSuccessfulCookiePayload,
 ): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieAccessError> =>
   myInfoCookie.usedCount <= 0

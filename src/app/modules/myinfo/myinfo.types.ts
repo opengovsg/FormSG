@@ -27,6 +27,10 @@ export interface IPossiblyPrefilledField extends LeanDocument<IFieldSchema> {
   fieldValue?: string
 }
 
+export interface IPossiblyPrefilledFieldArray {
+  prefilledFields: IPossiblyPrefilledField[]
+}
+
 export type MyInfoHashPromises = Partial<
   Record<MyInfoAttribute, Promise<string>>
 >
