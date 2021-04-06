@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import mongoose from 'mongoose'
+import { errAsync, ok } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -18,13 +19,11 @@ import {
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { MyInfoData } from '../myinfo.adapter'
-import {
-  MYINFO_CONSENT_PAGE_PURPOSE,
-  MYINFO_COOKIE_NAME,
-} from '../myinfo.constants'
+import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
+  MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
   MyInfoMissingAccessTokenError,
   MyInfoParseRelayStateError,
@@ -492,74 +491,74 @@ describe('MyInfoService', () => {
 
     it('should return the filled form when the form and cookies are valid', async () => {
       // Arrange
-      const mockReturnedParams = {
-        uinFin: MOCK_UINFIN,
-        data: MOCK_MYINFO_DATA,
-      }
-      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
+      const MOCK_MYINFO_DATA = ({
+        getUinFin: jest.fn().mockReturnValue(MOCK_UINFIN),
+      } as unknown) as MyInfoData
 
       const expected = {
-        form: MOCK_MYINFO_FORM.getPublicView(),
+        prefilledFields: [],
         spcpSession: { userName: MOCK_UINFIN },
       }
 
       // Spies to ensure that submethods have been called
-      const fetchMyInfoSpy = jest.spyOn(myInfoService, 'fetchMyInfoData')
-      const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
+      const prefillMyInfoSpy = jest
+        .spyOn(myInfoService, 'prefillMyInfoFields')
+        .mockReturnValueOnce(ok([]))
       const saveMyInfoSpy = jest.spyOn(myInfoService, 'saveMyInfoHashes')
 
       // Act
-      const result = await myInfoService.createFormWithMyInfo(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        { [MYINFO_COOKIE_NAME]: MOCK_SUCCESSFUL_COOKIE },
+      const result = await myInfoService.createFormWithMyInfoMeta(
+        [],
+        MOCK_MYINFO_DATA,
+        MOCK_MYINFO_FORM._id,
       )
 
       // Assert
-      expect(fetchMyInfoSpy).toHaveBeenCalled()
       expect(prefillMyInfoSpy).toHaveBeenCalled()
       expect(saveMyInfoSpy).toHaveBeenCalled()
       expect(result._unsafeUnwrap()).toEqual(expected)
     })
 
-    it('should return MyInfoMissingAccessTokenError when there are no cookies in the request', async () => {
+    it('should return DatabaseError when the form could not be saved to the database', async () => {
       // Arrange
-      const expected = new MyInfoMissingAccessTokenError()
+      const expected = new DatabaseError('mock db error')
+      const MOCK_MYINFO_DATA = ({
+        getUinFin: jest.fn().mockReturnValue(MOCK_UINFIN),
+      } as unknown) as MyInfoData
       const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
-      const saveMyInfoSpy = jest.spyOn(myInfoService, 'saveMyInfoHashes')
+      const saveMyInfoSpy = jest
+        .spyOn(myInfoService, 'saveMyInfoHashes')
+        .mockReturnValueOnce(errAsync(expected))
 
       // Act
-      const result = await myInfoService.createFormWithMyInfo(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        {},
+      const result = await myInfoService.createFormWithMyInfoMeta(
+        [],
+        MOCK_MYINFO_DATA,
+        MOCK_MYINFO_FORM._id,
       )
 
       // Assert
-      expect(prefillMyInfoSpy).not.toHaveBeenCalled()
-      expect(saveMyInfoSpy).not.toHaveBeenCalled()
+      expect(prefillMyInfoSpy).toHaveBeenCalled()
+      expect(saveMyInfoSpy).toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
 
-    it('should return DatabaseError when the form could not be saved to the database', async () => {
+    it('should return MyInfoHashingError when myInfoData could not be hashed', async () => {
       // Arrange
-      const expected = new DatabaseError(
-        'Failed to save MyInfo hashes to database',
-      )
+      const expected = new MyInfoHashingError('mock hash failed')
+      const MOCK_MYINFO_DATA = ({
+        getUinFin: jest.fn().mockReturnValue(MOCK_UINFIN),
+      } as unknown) as MyInfoData
       const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
-      const saveMyInfoSpy = jest.spyOn(myInfoService, 'saveMyInfoHashes')
-      const mockReturnedParams = {
-        uinFin: MOCK_UINFIN,
-        data: MOCK_MYINFO_DATA,
-      }
-      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
-
-      jest
-        .spyOn(MyInfoHash, 'updateHashes')
-        .mockRejectedValueOnce(new DatabaseError())
+      const saveMyInfoSpy = jest
+        .spyOn(myInfoService, 'saveMyInfoHashes')
+        .mockReturnValueOnce(errAsync(expected))
 
       // Act
-      const result = await myInfoService.createFormWithMyInfo(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        { [MYINFO_COOKIE_NAME]: MOCK_SUCCESSFUL_COOKIE },
+      const result = await myInfoService.createFormWithMyInfoMeta(
+        [],
+        MOCK_MYINFO_DATA,
+        MOCK_MYINFO_FORM._id,
       )
 
       // Assert

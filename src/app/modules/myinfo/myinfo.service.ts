@@ -526,7 +526,7 @@ export class MyInfoService {
     return (
       // 1. Fill the form based on the result
       this.prefillMyInfoFields(myInfoData, formFields)
-        // 3. Hash and save to database
+        // 2. Hash and save to database
         .asyncAndThen((prefilledFields) =>
           this.saveMyInfoHashes(uinFin, formId, prefilledFields).map(() => ({
             prefilledFields,
