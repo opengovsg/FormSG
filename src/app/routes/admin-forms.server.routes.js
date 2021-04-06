@@ -41,15 +41,6 @@ let authActiveForm = (requiredPermission) => [
   auth.verifyPermission(requiredPermission),
 ]
 
-/**
- * Ensures that user has read permissions,form is encrypt-mode and
- * form admin is encrypt beta-enabled.
- */
-const authEncryptedResponseAccess = [
-  authActiveForm(PermissionLevel.Read),
-  adminForms.isFormEncryptMode,
-]
-
 module.exports = function (app) {
   /**
    * @typedef ErrorMessage
@@ -523,7 +514,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions').get(
-    authEncryptedResponseAccess,
+    withUserAuthentication,
     celebrate({
       [Segments.QUERY]: {
         submissionId: Joi.string()
@@ -545,6 +536,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/count').get(
+    withUserAuthentication,
     celebrate({
       [Segments.QUERY]: Joi.object()
         .keys({
@@ -555,7 +547,6 @@ module.exports = function (app) {
         })
         .and('startDate', 'endDate'),
     }),
-    withUserAuthentication,
     AdminFormController.handleCountFormSubmissions,
   )
 
@@ -576,7 +567,7 @@ module.exports = function (app) {
    * @security OTP
    */
   app.route('/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata').get(
-    authEncryptedResponseAccess,
+    withUserAuthentication,
     celebrate({
       [Segments.QUERY]: {
         submissionId: Joi.string().optional(),

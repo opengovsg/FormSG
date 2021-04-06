@@ -1,286 +1,452 @@
-import bcrypt from 'bcrypt'
-import _ from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
-import * as VfnUtils from '../../../shared/util/verification'
+import { NUM_OTP_RETRIES } from '../../../shared/util/verification'
 import {
-  IEmailFieldSchema,
-  IFieldSchema,
-  IFormSchema,
-  IMobileFieldSchema,
+  BasicField,
   IVerificationFieldSchema,
   IVerificationSchema,
+  PublicTransaction,
 } from '../../../types'
-import getFormModel from '../../models/form.server.model'
 import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { generateOtp } from '../../utils/otp'
+import { transformMongoError } from '../../utils/handle-mongo-error'
+import { compareHash, HashingError } from '../../utils/hash'
 import {
-  ApplicationError,
   DatabaseError,
   MalformedParametersError,
+  PossibleDatabaseError,
 } from '../core/core.errors'
+import { FormNotFoundError } from '../form/form.errors'
+import * as FormService from '../form/form.service'
 
+import {
+  FieldNotFoundInTransactionError,
+  MissingHashDataError,
+  NonVerifiedFieldTypeError,
+  OtpExpiredError,
+  OtpRetryExceededError,
+  TransactionExpiredError,
+  TransactionNotFoundError,
+  WaitForOtpError,
+  WrongOtpError,
+} from './verification.errors'
 import getVerificationModel from './verification.model'
-import { Transaction } from './verification.types'
+import { SendOtpParams } from './verification.types'
+import {
+  isOtpExpired,
+  isOtpWaitTimeElapsed,
+  isTransactionExpired,
+} from './verification.util'
 
 const logger = createLoggerWithLabel(module)
 
-const Form = getFormModel(mongoose)
-const Verification = getVerificationModel(mongoose)
-
-const {
-  HASH_EXPIRE_AFTER_SECONDS,
-  NUM_OTP_RETRIES,
-  SALT_ROUNDS,
-  VERIFIED_FIELDTYPES,
-  VfnErrors,
-  WAIT_FOR_OTP_SECONDS,
-} = VfnUtils
+const VerificationModel = getVerificationModel(mongoose)
 
 /**
  *  Creates a transaction for a form that has verifiable fields
  * @param formId
+ * @returns ok(created transaction or null) if form has no verifiable fields.
+ * @returns err(FormNotFoundError) when form does not exist
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
-export const createTransaction = async (
+export const createTransaction = (
   formId: string,
-): Promise<Transaction | null> => {
-  const form = await Form.findById(formId)
-
-  if (!form) {
-    return null
+): ResultAsync<
+  IVerificationSchema | null,
+  FormNotFoundError | PossibleDatabaseError
+> => {
+  const logMeta = {
+    action: 'createTransaction',
+    formId,
   }
-
-  const fields = initializeVerifiableFields(form)
-  if (!_.isEmpty(fields)) {
-    const verification = new Verification({ formId, fields })
-    const doc = await verification.save()
-    return { transactionId: doc._id, expireAt: doc.expireAt }
-  }
-  return null
+  return FormService.retrieveFormById(formId).andThen((form) =>
+    ResultAsync.fromPromise(
+      VerificationModel.createTransactionFromForm(form),
+      (error) => {
+        logger.error({
+          message: 'Error while creating transaction',
+          meta: logMeta,
+          error,
+        })
+        return transformMongoError(error)
+      },
+    ),
+  )
 }
 
-type TransactionMetadata = ReturnType<
-  typeof Verification.findTransactionMetadata
->
 /**
  *  Retrieves a transaction's metadata by id
  * @param transactionId
+ * @returns ok(transaction metadata)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
-export const getTransactionMetadata = async (
+export const getTransactionMetadata = (
   transactionId: string,
-): Promise<TransactionMetadata> => {
-  const transaction = await Verification.findTransactionMetadata(transactionId)
-  if (transaction === null) {
-    throwError(VfnErrors.TransactionNotFound)
+): ResultAsync<
+  PublicTransaction,
+  TransactionNotFoundError | PossibleDatabaseError
+> => {
+  const logMeta = {
+    action: 'getTransactionMetadata',
+    transactionId,
   }
-  return transaction
-}
-
-/**
- * Retrieves an entire transaction
- * @param transactionId
- */
-export const getTransaction = async (
-  transactionId: string,
-): Promise<IVerificationSchema> => {
-  const transaction = await Verification.findById(transactionId)
-  if (!transaction) {
-    return throwError(VfnErrors.TransactionNotFound)
-  }
-  return transaction
-}
-
-/**
- *  Sets signedData, hashedOtp, hashCreatedAt to null for that field in that transaction
- *  @param transaction
- *  @param fieldId
- */
-export const resetFieldInTransaction = async (
-  transaction: IVerificationSchema,
-  fieldId: string,
-): Promise<void> => {
-  const { _id: transactionId } = transaction
-  const { n } = await Verification.updateOne(
-    { _id: transactionId, 'fields._id': fieldId },
-    {
-      $set: {
-        'fields.$.hashCreatedAt': null,
-        'fields.$.hashedOtp': null,
-        'fields.$.signedData': null,
-        'fields.$.hashRetries': 0,
-      },
+  return ResultAsync.fromPromise(
+    VerificationModel.getPublicViewById(transactionId),
+    (error) => {
+      logger.error({
+        message: 'Error while retrieving transaction metadata',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
     },
-  )
-  if (n === 0) {
-    throwError('Field not found in transaction', VfnErrors.FieldNotFound)
-  }
+  ).andThen((transaction) => {
+    if (!transaction) {
+      logger.error({
+        message: 'Transaction ID does not exist',
+        meta: logMeta,
+      })
+      return errAsync(new TransactionNotFoundError())
+    }
+    return okAsync(transaction)
+  })
 }
 
 /**
- *  Generates hashed otp and signed data for the given transaction, fieldId, and answer
- * @param transaction
- * @param fieldId
- * @param answer
+ * Retrieves an entire transaction and validates that it is not expired
+ * @param transactionId
+ * @returns ok(transaction)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
-export const getNewOtp = async (
+const getValidTransaction = (
+  transactionId: string,
+): ResultAsync<
+  IVerificationSchema,
+  TransactionNotFoundError | PossibleDatabaseError | TransactionExpiredError
+> => {
+  const logMeta = {
+    action: 'getValidTransaction',
+    transactionId,
+  }
+  return ResultAsync.fromPromise(
+    VerificationModel.findById(transactionId).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error while retrieving transaction',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((transaction) => {
+    if (!transaction) {
+      logger.error({
+        message: 'Transaction ID does not exist',
+        meta: logMeta,
+      })
+      return errAsync(new TransactionNotFoundError())
+    }
+    if (isTransactionExpired(transaction)) {
+      logger.warn({
+        message: 'Transaction has expired',
+        meta: {
+          ...logMeta,
+          formId: transaction.formId,
+        },
+      })
+      return errAsync(new TransactionExpiredError())
+    }
+    return okAsync(transaction)
+  })
+}
+
+/**
+ * Extracts an individual field's data from a transaction document.
+ * @param transaction Transaction document
+ * @param fieldId ID of field to find
+ * @returns ok(field) when field exists
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ */
+const getFieldFromTransaction = (
   transaction: IVerificationSchema,
   fieldId: string,
-  answer: string,
-): Promise<void> => {
-  // TODO (#317): remove usage of non-null assertion
-  if (isTransactionExpired(transaction.expireAt!)) {
-    throwError(VfnErrors.TransactionNotFound)
-  }
-  const field = getFieldFromTransaction(transaction, fieldId)
+): Result<IVerificationFieldSchema, FieldNotFoundInTransactionError> => {
+  const field = transaction.getField(fieldId)
   if (!field) {
-    return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
-  }
-  const { _id: transactionId, formId } = transaction
-  // TODO (#317): remove usage of non-null assertion
-  const waitForSeconds = waitToResendOtpSeconds(field.hashCreatedAt!)
-  if (waitForSeconds > 0) {
-    return throwError(
-      `Wait for ${waitForSeconds} seconds before requesting for a new otp`,
-      VfnErrors.WaitForOtp,
-    )
-  } else {
-    const hashCreatedAt = new Date()
-    const otp = generateOtp()
-    const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS)
-
-    const signedData = formsgSdk.verification.generateSignature!({
-      transactionId,
-      formId,
-      fieldId,
-      answer,
+    logger.warn({
+      message: 'Field ID not found for transaction',
+      meta: {
+        action: 'getFieldFromTransaction',
+        transactionId: transaction._id,
+        fieldId,
+        formId: transaction.formId,
+      },
     })
+    return err(new FieldNotFoundInTransactionError())
+  }
+  return ok(field)
+}
 
-    await sendOtpForField(formId, field, answer, otp)
-      .andThen(() => {
-        return ResultAsync.fromPromise(
-          Verification.updateOne(
-            { _id: transactionId, 'fields._id': fieldId },
-            {
-              $set: {
-                'fields.$.hashCreatedAt': hashCreatedAt,
-                'fields.$.hashedOtp': hashedOtp,
-                'fields.$.signedData': signedData,
-                'fields.$.hashRetries': 0,
-              },
+/**
+ * Sets signedData, hashedOtp, hashCreatedAt to null for that field in that transaction
+ * @param transactionId
+ * @param fieldId
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(PossibleDatabaseError) when database read/write errors
+ */
+export const resetFieldForTransaction = (
+  transactionId: string,
+  fieldId: string,
+): ResultAsync<
+  IVerificationSchema,
+  | TransactionNotFoundError
+  | TransactionExpiredError
+  | FieldNotFoundInTransactionError
+  | PossibleDatabaseError
+> => {
+  // Ensure that field ID exists first
+  return getValidTransaction(transactionId).andThen((transaction) => {
+    const logMeta = {
+      action: 'resetFieldForTransaction',
+      transactionId,
+      fieldId,
+      formId: transaction.formId,
+    }
+    return (
+      getFieldFromTransaction(transaction, fieldId)
+        // Apply atomic update
+        .asyncAndThen(() =>
+          ResultAsync.fromPromise(
+            VerificationModel.resetField(transactionId, fieldId),
+            (error) => {
+              logger.error({
+                message: 'Error while resetting field data in transaction',
+                meta: logMeta,
+                error,
+              })
+              return transformMongoError(error)
             },
-          ).exec(),
+          ),
+        )
+        .andThen((updatedTransaction) => {
+          // Transaction was deleted before update could be applied
+          if (!updatedTransaction) {
+            logger.error({
+              message: 'Transaction with given ID does not exist',
+              meta: logMeta,
+            })
+            return errAsync(new TransactionNotFoundError())
+          }
+          return okAsync(updatedTransaction)
+        })
+    )
+  })
+}
+
+/**
+ * Sends OTP and updates database record for the given transaction, fieldId, and answer
+ * @param transactionId
+ * @param fieldId
+ * @param recipient Phone number for verified mobile field, or email address for verified email
+ * @param otp Input OTP to be sent
+ * @param hashedOtp Hash of input OTP to be saved
+ * @returns ok(updated transaction document)
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(WaitForOtpError) when waiting time for new OTP has not elapsed
+ * @returns err(MalformedParametersError) when form data to send SMS OTP cannot be retrieved
+ * @returns err(SmsSendError) when attempt to send OTP SMS fails
+ * @returns err(InvalidNumberError) when SMS recipient is invalid
+ * @returns err(MailSendError) when attempt to send OTP email fails
+ * @returns err(NonVerifiedFieldTypeError) when field's fieldType is not verified
+ * @returns err(PossibleDatabaseError) when database read/write errors
+ */
+export const sendNewOtp = ({
+  transactionId,
+  fieldId,
+  recipient,
+  otp,
+  hashedOtp,
+}: SendOtpParams): ResultAsync<
+  IVerificationSchema,
+  | TransactionNotFoundError
+  | PossibleDatabaseError
+  | FieldNotFoundInTransactionError
+  | TransactionExpiredError
+  | WaitForOtpError
+  | MalformedParametersError
+  | SmsSendError
+  | InvalidNumberError
+  | MailSendError
+  | NonVerifiedFieldTypeError
+> => {
+  return getValidTransaction(transactionId).andThen((transaction) => {
+    const logMeta = {
+      action: 'sendNewOtp',
+      transactionId,
+      fieldId,
+      formId: transaction.formId,
+    }
+    return getFieldFromTransaction(transaction, fieldId)
+      .asyncAndThen((field) => {
+        if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
+          logger.warn({
+            message: 'OTP requested before waiting time elapsed',
+            meta: logMeta,
+          })
+          return errAsync(new WaitForOtpError())
+        }
+
+        return sendOtpForField(transaction.formId, field, recipient, otp)
+      })
+      .andThen(() => {
+        const signedData = formsgSdk.verification.generateSignature({
+          transactionId,
+          formId: transaction.formId,
+          fieldId,
+          answer: recipient,
+        })
+        return ResultAsync.fromPromise(
+          VerificationModel.updateHashForField({
+            fieldId,
+            hashedOtp,
+            signedData,
+            transactionId,
+          }),
           (error) => {
             logger.error({
               message:
-                'Database error occurred whilst updating verification document',
-              meta: {
-                action: 'getNewOtp',
-                formId,
-                fieldId,
-                transactionId,
-              },
+                'Error while updating transaction data after sending OTP',
+              meta: logMeta,
               error,
             })
-            return new DatabaseError(getMongoErrorMessage(error))
+            return transformMongoError(error)
           },
         )
-        // TODO(#941): Properly handle error in controller instead of throwing.
-        // Throwing is currently done to keep old behaviour consistent
       })
-      .mapErr((err) => {
-        throwError(err.message, VfnErrors.SendOtpFailed)
+      .andThen((newTransaction) => {
+        // Transaction deleted before update could be applied
+        if (!newTransaction) {
+          logger.warn({
+            message: 'Transaction with given ID not found',
+            meta: logMeta,
+          })
+          return errAsync(new TransactionNotFoundError())
+        }
+        return okAsync(newTransaction)
       })
-  }
+  })
 }
 
 /**
  * Compares the given otp. If correct, returns signedData, else returns an error
- * @param transaction
+ * @param transactionId
  * @param fieldId
  * @param inputOtp
+ * @returns ok(signedData of field) when OTP is correct
+ * @returns err(TransactionNotFoundError) when transaction ID does not exist
+ * @returns err(TransactionExpiredError) when transaction is expired
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ * @returns err(MissingHashDataError) when field exists but data on hash is missing
+ * @returns err(OtpExpiredError) when OTP has expired
+ * @returns err(OtpRetryExceededError) when OTP has been retried too many times
+ * @returns err(WrongOtpError) when OTP is wrong
+ * @returns err(HashingError) when error occurs while hashing input OTP for comparison
+ * @returns err(PossibleDatabaseError) when database read/write errors
  */
-export const verifyOtp = async (
-  transaction: IVerificationSchema,
+export const verifyOtp = (
+  transactionId: string,
   fieldId: string,
   inputOtp: string,
-): Promise<string> => {
-  // TODO (#317): remove usage of non-null assertion
-  if (isTransactionExpired(transaction.expireAt!)) {
-    throwError(VfnErrors.TransactionNotFound)
-  }
-  const field = getFieldFromTransaction(transaction, fieldId)
-  if (!field) {
-    return throwError('Field not found in transaction', VfnErrors.FieldNotFound)
-  }
-  const { hashedOtp, hashCreatedAt, signedData, hashRetries } = field
-  if (
-    hashedOtp &&
-    hashCreatedAt &&
-    !isHashedOtpExpired(hashCreatedAt) &&
-    NUM_OTP_RETRIES > hashRetries!
-  ) {
-    await Verification.updateOne(
-      { _id: transaction._id, 'fields._id': fieldId },
-      {
-        $set: {
-          'fields.$.hashRetries': hashRetries! + 1,
-        },
-      },
-    )
-    const validOtp = await bcrypt.compare(inputOtp, hashedOtp)
-    return validOtp ? signedData! : throwError(VfnErrors.InvalidOtp)
-  }
-  return throwError(VfnErrors.ResendOtp)
-}
-
-/**
- * Gets verifiable fields from form and initializes the values to be stored in a transaction
- * @param form
- */
-const initializeVerifiableFields = (
-  form: IFormSchema,
-): Pick<IFieldSchema, '_id' | 'fieldType'>[] => {
-  return _.get(form, 'form_fields', [])
-    .filter(isFieldVerifiable)
-    .map(({ _id, fieldType }) => {
-      return {
-        _id,
-        fieldType,
+): ResultAsync<
+  string,
+  | TransactionNotFoundError
+  | PossibleDatabaseError
+  | FieldNotFoundInTransactionError
+  | TransactionExpiredError
+  | MissingHashDataError
+  | OtpExpiredError
+  | OtpRetryExceededError
+  | WrongOtpError
+  | HashingError
+> => {
+  return getValidTransaction(transactionId).andThen((transaction) =>
+    getFieldFromTransaction(transaction, fieldId).asyncAndThen((field) => {
+      const logMeta = {
+        action: 'verifyOtp',
+        transactionId,
+        fieldId,
+        formId: transaction.formId,
       }
-    })
-}
+      const { hashedOtp, hashCreatedAt, signedData, hashRetries } = field
+      if (!hashedOtp || !hashCreatedAt || !signedData) {
+        logger.warn({
+          message: 'OTP cannot be verified as hash information is missing',
+          meta: logMeta,
+        })
+        return errAsync(new MissingHashDataError())
+      }
 
-/**
- * Whether a field is of a type that can be verified.
- * @param field
- */
-const isPossiblyVerifiable = (
-  field: IFieldSchema,
-): field is IEmailFieldSchema | IMobileFieldSchema => {
-  return VERIFIED_FIELDTYPES.includes(field.fieldType)
-}
+      if (isOtpExpired(hashCreatedAt)) {
+        logger.warn({
+          message: 'OTP expired',
+          meta: logMeta,
+        })
+        return errAsync(new OtpExpiredError())
+      }
 
-/**
- * Evaluates whether a field is verifiable
- * @param field
- */
-const isFieldVerifiable = (field: IFieldSchema): boolean => {
-  return isPossiblyVerifiable(field) && field.isVerifiable === true
+      if (hashRetries >= NUM_OTP_RETRIES) {
+        logger.warn({
+          message: 'OTP retries exceeded',
+          meta: logMeta,
+        })
+        return errAsync(new OtpRetryExceededError())
+      }
+
+      // Important: increment retries before comparing hash
+      return ResultAsync.fromPromise(
+        VerificationModel.incrementFieldRetries(transactionId, fieldId),
+        (error) => {
+          // We know field exists, so if error occurs then it must be
+          // database error
+          logger.error({
+            message: 'Error while incrementing hash retries for verified field',
+            meta: logMeta,
+            error,
+          })
+          return transformMongoError(error)
+        },
+      )
+        .andThen(() => compareHash(inputOtp, hashedOtp))
+        .andThen((doesHashMatch) => {
+          if (!doesHashMatch) {
+            logger.warn({
+              message: 'Wrong OTP',
+              meta: logMeta,
+            })
+            return errAsync(new WrongOtpError())
+          }
+          return okAsync(signedData)
+        })
+    }),
+  )
 }
 
 /**
  * Send otp to recipient
- *
  * @param formId
  * @param field
- * @param field.fieldType
  * @param recipient
  * @param otp
  */
@@ -296,88 +462,17 @@ const sendOtpForField = (
   | SmsSendError
   | InvalidNumberError
   | MailSendError
-  | ApplicationError
+  | NonVerifiedFieldTypeError
 > => {
   const { fieldType } = field
   switch (fieldType) {
-    case 'mobile':
+    case BasicField.Mobile:
       // call sms - it should validate the recipient
       return SmsFactory.sendVerificationOtp(recipient, otp, formId)
-    case 'email':
+    case BasicField.Email:
       // call email - it should validate the recipient
       return MailService.sendVerificationOtp(recipient, otp)
     default:
-      return errAsync(
-        new ApplicationError(
-          'Unsupported field type passed to sendOtpForField',
-          { fieldType },
-        ),
-      )
+      return errAsync(new NonVerifiedFieldTypeError(fieldType))
   }
-}
-
-/**
- * Checks if expireAt is in the past -- ie transaction has expired
- * @param expireAt
- * @returns boolean
- */
-const isTransactionExpired = (expireAt: Date): boolean => {
-  const currentDate = new Date()
-  return expireAt < currentDate
-}
-
-/**
- * Checks if HASH_EXPIRE_AFTER_SECONDS has elapsed since the hash was created - ie hash has expired
- * @param hashCreatedAt
- */
-const isHashedOtpExpired = (hashCreatedAt: Date): boolean => {
-  const currentDate = new Date()
-  const expireAt = VfnUtils.getExpiryDate(
-    HASH_EXPIRE_AFTER_SECONDS,
-    hashCreatedAt,
-  )
-  return expireAt < currentDate
-}
-
-/**
- * Checks how many seconds remain before a new otp can be generated
- * @param hashCreatedAt
- */
-const waitToResendOtpSeconds = (hashCreatedAt: Date): number => {
-  if (!hashCreatedAt) {
-    // Hash has not been created
-    return 0
-  }
-  const expireAtMs = VfnUtils.getExpiryDate(
-    WAIT_FOR_OTP_SECONDS,
-    hashCreatedAt,
-  ).getTime()
-  const currentMs = Date.now()
-  return Math.ceil((expireAtMs - currentMs) / 1000)
-}
-
-/**
- *  Finds a field by id in a transaction
- * @param transaction
- * @param fieldId
- * @returns verification field
- */
-const getFieldFromTransaction = (
-  transaction: IVerificationSchema,
-  fieldId: string,
-): IVerificationFieldSchema | undefined => {
-  return transaction.fields.find((field) => field._id === fieldId)
-}
-
-/**
- * Helper method to throw an error
- * @param message
- * @param name
- */
-const throwError = (message: string, name?: string): never => {
-  const error = new Error(message)
-  error.name = name || message
-  // TODO(#941) Convert this service to use neverthrow, and re-examine type assertions made
-  // eslint-disable-next-line
-  throw error
 }

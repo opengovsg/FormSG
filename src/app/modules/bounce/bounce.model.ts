@@ -23,7 +23,7 @@ export interface IBounceModel extends Model<IBounceSchema> {
   ) => IBounceSchema
 }
 
-const BounceSchema = new Schema<IBounceSchema>({
+const BounceSchema = new Schema<IBounceSchema, IBounceModel>({
   formId: {
     type: Schema.Types.ObjectId,
     ref: FORM_SCHEMA_ID,

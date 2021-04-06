@@ -227,7 +227,7 @@ export const getFormSubmissionsCount = (
  * @returns ok(true) if all emails were sent successfully
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  */
-export const sendEmailConfirmations = ({
+export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   form,
   submission,
   parsedResponses,
@@ -235,7 +235,7 @@ export const sendEmailConfirmations = ({
   attachments,
 }: {
   form: IPopulatedForm
-  submission: ISubmissionSchema
+  submission: S
   parsedResponses: ProcessedFieldResponse[]
   autoReplyData?: EmailRespondentConfirmationField[]
   attachments?: IAttachmentInfo[]

@@ -302,7 +302,12 @@ describe('FormService', () => {
       )
 
       // Assert
-      expect(actual._unsafeUnwrapErr()).toEqual(new PrivateFormError())
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new PrivateFormError(
+          'Submission made after form submission limit was reached',
+          form.title,
+        ),
+      )
       const updated = await Form.findById(form._id)
       expect(updated!.status).toBe('PRIVATE')
     })
