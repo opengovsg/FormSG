@@ -22,7 +22,6 @@ import {
   UserSession,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
-import { IPublicFormView } from '../form/public-form/public-form.types'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
@@ -36,7 +35,6 @@ import {
   MyInfoCircuitBreakerError,
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
-  MyInfoError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -512,15 +510,17 @@ export class MyInfoService {
    * Creates a form view with myInfo fields prefilled onto the form
    * @param form The form to validate and fill
    * @param cookies The cookies on the request
-   * @returns
+   * @returns ok({prefilledFields, spcpSession}) if the form could be filled and myInfoData saved
+   * @returns err(MyInfoHashingError) if myInfoData could not be hashed
+   * @returns err(DatabaseError) if an error occurred while trying to save myInfoData
    */
-  createFormWithMyInfo(
+  createFormWithMyInfoMeta(
     formFields: mongoose.LeanDocument<IFieldSchema>[],
     myInfoData: MyInfoData,
     formId: string,
   ): ResultAsync<
     Merge<UserSession, IPossiblyPrefilledFieldArray>,
-    MyInfoError | MyInfoMissingAccessTokenError | MyInfoCookieAccessError
+    DatabaseError | MyInfoHashingError
   > {
     const uinFin = myInfoData.getUinFin()
     return (

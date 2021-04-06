@@ -362,7 +362,7 @@ export const extractMyInfoCookie = (
 }
 
 /**
- * Checks if myInfoCookie is successful and returns the result.
+ * Asserts that myInfoCookie is in success state
  * This function acts as a discriminator so that the type of the cookie is encoded in its type
  * @param cookie the cookie to
  * @returns ok(cookie) the successful myInfoCookie
@@ -376,7 +376,7 @@ export const assertMyInfoCookieSuccessState = (
     : err(new MyInfoCookieStateError())
 
 /**
- * Extracts a successful myInfoCookie from a request's cookies
+ * Extracts and asserts a successful myInfoCookie from a request's cookies
  * @param cookies Cookies in a request
  * @return ok(cookie) the successful myInfoCookie
  * @return err(MyInfoMissingAccessTokenError) if myInfoCookie is not present on the request
@@ -396,7 +396,7 @@ export const extractAndAssertMyInfoCookieValidity = (
     .andThen((cookiePayload) => assertMyInfoCookieUnused(cookiePayload))
 
 /**
- * checks if a MyInfo cookie has been used
+ * Asserts that the myInfoCookie has not been used before
  * @param myInfoCookie
  * @returns ok(myInfoCookie) if the cookie has not been used before
  * @returns err(MyInfoCookieAccessError) if the cookie has been used before

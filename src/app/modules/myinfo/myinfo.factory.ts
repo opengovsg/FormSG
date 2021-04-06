@@ -16,7 +16,6 @@ import {
   UserSession,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
-import { IPublicFormView } from '../form/public-form/public-form.types'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MyInfoData } from './myinfo.adapter'
@@ -25,7 +24,6 @@ import {
   MyInfoCircuitBreakerError,
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
-  MyInfoError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -106,15 +104,16 @@ interface IMyInfoFactory {
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
     | MissingFeatureError
+    | MyInfoCookieAccessError
   >
 
-  createFormWithMyInfo: (
+  createFormWithMyInfoMeta: (
     formFields: mongoose.LeanDocument<IFieldSchema>[],
     myInfoData: MyInfoData,
     formId: string,
   ) => ResultAsync<
     Merge<UserSession, IPossiblyPrefilledFieldArray>,
-    MyInfoError | MyInfoMissingAccessTokenError | MyInfoCookieAccessError
+    DatabaseError | MyInfoHashingError
   >
 }
 
@@ -135,7 +134,7 @@ export const createMyInfoFactory = ({
       parseMyInfoRelayState: () => err(error),
       extractUinFin: () => err(error),
       fetchMyInfoData: () => errAsync(error),
-      createFormWithMyInfo: () => errAsync(error),
+      createFormWithMyInfoMeta: () => errAsync(error),
     }
   }
   return new MyInfoService({
