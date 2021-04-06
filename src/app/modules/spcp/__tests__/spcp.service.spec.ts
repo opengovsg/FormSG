@@ -4,10 +4,7 @@ import fs from 'fs'
 import { omit } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
-import {
-  MOCK_COOKIE_AGE,
-  MOCK_MYINFO_FORM,
-} from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
+import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { ISpcpMyInfo } from 'src/config/feature-manager'
 import { AuthType } from 'src/types'
 
@@ -22,7 +19,6 @@ import {
   MissingAttributesError,
   MissingJwtError,
   RetrieveAttributesError,
-  SpcpAuthTypeError,
   VerifyJwtError,
 } from '../spcp.errors'
 import { SpcpService } from '../spcp.service'
@@ -30,7 +26,6 @@ import { JwtName } from '../spcp.types'
 
 import {
   MOCK_COOKIES,
-  MOCK_CP_FORM,
   MOCK_CP_JWT_PAYLOAD,
   MOCK_CP_SAML,
   MOCK_DESTINATION,
@@ -42,7 +37,6 @@ import {
   MOCK_LOGIN_HTML,
   MOCK_REDIRECT_URL,
   MOCK_SERVICE_PARAMS as MOCK_PARAMS,
-  MOCK_SP_FORM,
   MOCK_SP_JWT_PAYLOAD,
   MOCK_SP_SAML,
   MOCK_SP_SAML_WRONG_HASH,
@@ -820,7 +814,7 @@ describe('spcp.service', () => {
       const result = await spcpService.getSpcpSession(AuthType.SP, MOCK_COOKIES)
 
       // Assert
-      expect(result._unsafeUnwrap()).toBe(MOCK_SP_JWT_PAYLOAD)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_SP_JWT_PAYLOAD)
     })
 
     it('should return a CP JWT payload when there is a valid JWT in the request', async () => {
@@ -836,7 +830,9 @@ describe('spcp.service', () => {
       const result = await spcpService.getSpcpSession(AuthType.CP, MOCK_COOKIES)
 
       // Assert
-      expect(result._unsafeUnwrap()).toBe(MOCK_CP_JWT_PAYLOAD)
+      expect(result._unsafeUnwrap()).toEqual({
+        userName: MOCK_CP_JWT_PAYLOAD.userName,
+      })
     })
 
     it('should return MissingJwtError if there is no JWT when client authenticates using SP', async () => {
@@ -921,68 +917,6 @@ describe('spcp.service', () => {
 
       // Act
       const result = await spcpService.getSpcpSession(AuthType.CP, MOCK_COOKIES)
-
-      // Assert
-      expect(result._unsafeUnwrapErr()).toEqual(expected)
-    })
-  })
-
-  describe('createFormWithSpcpSession', () => {
-    it('should return the public form view when clients authenticate using SP', async () => {
-      // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      // Assumes that SP auth client was instantiated first
-      const mockClient = mocked(MockAuthClient.mock.instances[0], true)
-      mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
-        cb(null, MOCK_SP_JWT_PAYLOAD),
-      )
-      const expected = {
-        form: MOCK_SP_FORM.getPublicView(),
-        spcpSession: { userName: MOCK_SP_JWT_PAYLOAD.userName },
-      }
-
-      // Act
-      const result = spcpService.createFormWithSpcpSession(
-        MOCK_SP_FORM,
-        MOCK_COOKIES,
-      )
-
-      // Assert
-      expect((await result)._unsafeUnwrap()).toEqual(expected)
-    })
-
-    it('should return the public form view when clients authenticate using CP', async () => {
-      // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      // Assumes that SP auth client was instantiated first
-      const mockClient = mocked(MockAuthClient.mock.instances[1], true)
-      mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
-        cb(null, MOCK_CP_JWT_PAYLOAD),
-      )
-      const expected = {
-        form: MOCK_CP_FORM.getPublicView(),
-        spcpSession: { userName: MOCK_CP_JWT_PAYLOAD.userName },
-      }
-
-      // Act
-      const result = spcpService.createFormWithSpcpSession(
-        MOCK_CP_FORM,
-        MOCK_COOKIES,
-      )
-
-      // Assert
-      expect((await result)._unsafeUnwrap()).toEqual(expected)
-    })
-    it('should return SpcpAuthTypeError when auth type is not SP or CP', async () => {
-      // Arrange
-      const spcpService = new SpcpService(MOCK_PARAMS)
-      const expected = new SpcpAuthTypeError()
-
-      // Act
-      const result = await spcpService.createFormWithSpcpSession(
-        MOCK_MYINFO_FORM,
-        MOCK_COOKIES,
-      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
