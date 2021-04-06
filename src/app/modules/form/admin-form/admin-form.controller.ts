@@ -17,7 +17,6 @@ import {
   ErrorDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
-import { VerifiedContentFactory } from '../../../modules/verified-content/verified-content.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
@@ -1085,36 +1084,11 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   }
   const parsedResponses = parsedResponsesResult.value
 
-  const { authType } = form
-  let verifiedContent: string | undefined
-  if (authType === AuthType.SP || authType === AuthType.CP) {
-    const verifiedContentResult = VerifiedContentFactory.getVerifiedContent({
-      type: authType,
-      data: AdminFormService.getMockSpcpLocals(authType, form.form_fields),
-    }).andThen((verifiedContent) =>
-      VerifiedContentFactory.encryptVerifiedContent({
-        verifiedContent,
-        formPublicKey: form.publicKey,
-      }),
-    )
-    if (verifiedContentResult.isErr()) {
-      logger.error({
-        message: 'Error while parsing verified content for preview submission',
-        meta: logMeta,
-        error: verifiedContentResult.error,
-      })
-      const { errorMessage, statusCode } = mapEncryptSubmissionError(
-        verifiedContentResult.error,
-      )
-      return res.status(statusCode).json({ message: errorMessage })
-    }
-    verifiedContent = verifiedContentResult.value
-  }
-
   const submission = AdminFormService.createEncryptSubmissionWithoutSave({
     form,
     encryptedContent,
-    verifiedContent,
+    // Don't bother encrypting and signing mock variables for previews
+    verifiedContent: '',
     version,
   })
 
