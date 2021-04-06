@@ -232,7 +232,7 @@ export const handleGetPublicForm: RequestHandler<
       return SpcpFactory.getSpcpSession(authType, req.cookies)
         .map((spcpSession) =>
           res.json({
-            form,
+            form: publicForm,
             isIntranetUser,
             spcpSession,
           }),
@@ -253,7 +253,7 @@ export const handleGetPublicForm: RequestHandler<
               error,
             })
           }
-          return res.json({ form, isIntranetUser })
+          return res.json({ form: publicForm, isIntranetUser })
         })
     case AuthType.MyInfo: {
       // Step 1. Fetch required data and fill the form based off data retrieved
@@ -290,7 +290,7 @@ export const handleGetPublicForm: RequestHandler<
               )
               .json({
                 spcpSession,
-                form: { ...form, form_fields: prefilledFields },
+                form: { ...publicForm, form_fields: prefilledFields },
                 isIntranetUser,
               })
           })
