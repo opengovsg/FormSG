@@ -171,17 +171,17 @@ function settingsFormDirective(
           },
           {
             val: 'SP',
-            name: 'SingPass',
+            name: 'Singpass',
             isEnabledInStorageMode: true,
           },
           {
             val: 'MyInfo',
-            name: 'SingPass (MyInfo)',
+            name: 'Singpass (MyInfo)',
             isEnabledInStorageMode: false,
           },
           {
             val: 'CP',
-            name: 'CorpPass',
+            name: 'Singpass (Corporate)',
             isEnabledInStorageMode: true,
           },
         ]

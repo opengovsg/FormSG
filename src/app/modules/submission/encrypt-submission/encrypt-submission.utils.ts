@@ -10,7 +10,10 @@ import {
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
 import {
+  DatabaseConflictError,
   DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
   MalformedParametersError,
   MissingFeatureError,
 } from '../../core/core.errors'
@@ -137,13 +140,21 @@ export const mapRouteError: MapRouteError = (
         errorMessage:
           'Invalid data was found. Please check your responses and submit again.',
       }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
+        errorMessage:
+          'Submission too large to be saved. Please reduce the size of your submission and try again.',
+      }
     case ValidateFieldError:
+    case DatabaseValidationError:
     case ProcessingError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
       }
+    case DatabaseConflictError:
     case ConflictError:
       return {
         statusCode: StatusCodes.CONFLICT,
