@@ -28,6 +28,7 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { AdminFormsRouter } from '../admin-form.routes'
 import * as AdminFormService from '../admin-form.service'
@@ -130,7 +131,7 @@ describe('admin-form.routes', () => {
           },
         })
         .lean()
-      expect(response.body).toEqual(JSON.parse(JSON.stringify(expected)))
+      expect(response.body).toEqual(jsonParseStringify(expected))
       expect(response.status).toEqual(200)
     })
 
@@ -529,7 +530,7 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
       expect(response.body).toEqual({
-        form: JSON.parse(JSON.stringify(expected)),
+        form: jsonParseStringify(expected),
       })
     })
 
@@ -566,7 +567,7 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
       expect(response.body).toEqual({
-        form: JSON.parse(JSON.stringify(expected)),
+        form: jsonParseStringify(expected),
       })
     })
 
@@ -1449,7 +1450,7 @@ describe('admin-form.routes', () => {
         .execPopulate()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({
-        form: JSON.parse(JSON.stringify(populatedForm.getPublicView())),
+        form: jsonParseStringify(populatedForm.getPublicView()),
       })
     })
 
