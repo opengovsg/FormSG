@@ -34,13 +34,13 @@ describe('BillingService', () => {
     it('should reject with the provided error message when the GET request fails', async () => {
       // Arrange
       const expected = new Error('Mock Error')
-      const shouldReject = () => BillingService.getBillingInfo(MOCK_PARAMS)
       MockAxios.get.mockRejectedValueOnce(expected)
 
       // Act
-      await expect(shouldReject).rejects.toEqual(expected)
+      const actualPromise = BillingService.getBillingInfo(MOCK_PARAMS)
 
       // Assert
+      await expect(actualPromise).rejects.toEqual(expected)
       expect(MockAxios.get).toHaveBeenCalledWith(
         BillingService.BILLING_ENDPOINT,
         {
