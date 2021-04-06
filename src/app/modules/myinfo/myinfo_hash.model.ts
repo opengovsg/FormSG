@@ -7,7 +7,7 @@ import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 export const MYINFO_HASH_SCHEMA_ID = 'MyInfoHash'
 
-const MyInfoHashSchema = new Schema<IMyInfoHashSchema>(
+const MyInfoHashSchema = new Schema<IMyInfoHashSchema, IMyInfoHashModel>(
   {
     // We stored a hashed uinFin using a salt stored as a env var
     // Note: key name not updated to reflect this for backward compatibility purposes
