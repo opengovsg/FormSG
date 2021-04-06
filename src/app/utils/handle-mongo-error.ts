@@ -6,6 +6,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  PossibleDatabaseError,
 } from '../modules/core/core.errors'
 
 /**
