@@ -74,7 +74,6 @@ angular.module('forms').config([
         url: '/{formId:[0-9a-fA-F]{24}}/use-template',
         templateUrl: 'modules/users/views/examples.client.view.html',
         resolve: {
-          AdminConsole: 'AdminConsole',
           Auth: 'Auth',
           FormErrorService: 'FormErrorService',
           // If the user is logged in, this field will contain the form data of the provided formId,
