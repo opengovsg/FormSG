@@ -1,41 +1,33 @@
-const {
-  validateField,
-} = require('../../../../../dist/backend/app/utils/field-validation')
+import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { validateField } from 'src/app/utils/field-validation'
+import { BasicField } from 'src/types'
 
-const {
-  ValidateFieldError,
-} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+} from '../../helpers/generate-form-data'
 
 describe('Dropdown validation', () => {
   it('should allow valid option', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
       answer: 'KISS',
-      isVisible: true,
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow invalid option', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
       answer: 'invalid',
-      isVisible: true,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -44,18 +36,12 @@ describe('Dropdown validation', () => {
   })
 
   it('should disallow empty answer when required', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
-      required: true,
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
       answer: '',
-      isVisible: true,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -64,53 +50,38 @@ describe('Dropdown validation', () => {
   })
 
   it('should allow empty answer when not required', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
       required: false,
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
       answer: '',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow empty answer when it is required but not visible', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
-      required: true,
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
       answer: '',
       isVisible: false,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow empty answer when it is required and visible', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
-      required: true,
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
       answer: '',
-      isVisible: true,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -119,16 +90,12 @@ describe('Dropdown validation', () => {
   })
 
   it('should disallow multiple answers', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
-      answer: ['KISS', 'DRY'],
-    }
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
+      answer: (['KISS', 'DRY'] as unknown) as string,
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -136,17 +103,13 @@ describe('Dropdown validation', () => {
     )
   })
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    const formField = generateDefaultField(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
-    }
-    const response = {
-      _id: 'ddID',
-      fieldType: 'dropdown',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
       answer: 'KISS',
       isVisible: false,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(

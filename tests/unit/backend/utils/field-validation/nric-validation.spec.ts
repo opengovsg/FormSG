@@ -1,92 +1,63 @@
-const {
-  validateField,
-} = require('../../../../../dist/backend/app/utils/field-validation')
+import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { validateField } from 'src/app/utils/field-validation'
+import { BasicField } from 'src/types'
 
-const {
-  ValidateFieldError,
-} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+} from '../../helpers/generate-form-data'
 
 describe('NRIC field validation', () => {
   it('should allow valid NRIC with S prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'S9912345A',
-      isVisible: true,
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow valid NRIC with T prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'T1394524H',
-      isVisible: true,
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow valid NRIC with F prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'F0477844T',
-      isVisible: true,
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow valid NRIC with G prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'G9592927W',
-      isVisible: true,
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow invalid NRIC with S prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'S9912345B',
-      isVisible: true,
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -95,17 +66,11 @@ describe('NRIC field validation', () => {
   })
 
   it('should disallow invalid NRIC with T prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'T1394524I',
-      isVisible: true,
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -114,17 +79,10 @@ describe('NRIC field validation', () => {
   })
 
   it('should disallow invalid NRIC with F prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'F0477844U',
-      isVisible: true,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -133,17 +91,10 @@ describe('NRIC field validation', () => {
   })
 
   it('should disallow invalid NRIC with G prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: 'G9592927X',
-      isVisible: true,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -152,34 +103,22 @@ describe('NRIC field validation', () => {
   })
 
   it('should allow empty string for optional NRIC', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric, {
       required: false,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: '',
-      isVisible: true,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow empty string for required NRIC', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
       answer: '',
-      isVisible: true,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -188,17 +127,11 @@ describe('NRIC field validation', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'nric',
-      answer: 'S0000000X',
+    const formField = generateDefaultField(BasicField.Nric)
+    const response = generateNewSingleAnswerResponse(BasicField.Nric, {
+      answer: 'S9912345A',
       isVisible: false,
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(

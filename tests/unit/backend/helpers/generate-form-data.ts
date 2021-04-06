@@ -16,22 +16,39 @@ import {
   ICheckboxField,
   ICheckboxFieldSchema,
   ICheckboxResponse,
+  IColumn,
+  IDateField,
   IDecimalFieldSchema,
   IDropdownField,
+  IDropdownFieldSchema,
   IField,
   IFieldSchema,
   IImageFieldSchema,
+  ILongTextField,
   IMobileField,
   IMobileFieldSchema,
+  INumberField,
+  IRatingField,
+  IShortTextField,
   IShortTextFieldSchema,
   ISingleAnswerResponse,
+  ITableField,
   ITableFieldSchema,
 } from 'src/types'
 
 export const generateDefaultField = (
   fieldType: BasicField,
   customParams?: Partial<
-    IField | IAttachmentField | ICheckboxField | IMobileField
+    | IField
+    | IAttachmentField
+    | ICheckboxField
+    | IMobileField
+    | ITableField
+    | IDateField
+    | INumberField
+    | IRatingField
+    | IShortTextField
+    | ILongTextField
   >,
 ): IFieldSchema => {
   const defaultParams = {
@@ -47,6 +64,7 @@ export const generateDefaultField = (
     case BasicField.Table:
       return {
         minimumRows: 1,
+        addMoreRows: false,
         columns: [
           {
             title: 'Test Column Title 1',
@@ -102,6 +120,13 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IShortTextFieldSchema
+    case BasicField.Dropdown:
+      return {
+        ...defaultParams,
+        fieldOptions: ['Option 1', 'Option 2'],
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as IDropdownFieldSchema
     case BasicField.Decimal:
       return {
         ...defaultParams,
@@ -286,3 +311,61 @@ export const generateNewTableResponse = (
   isVisible: true,
   ...customParams,
 })
+
+export const generateTableDropdownColumn = (
+  customParams?: Partial<IDropdownField>,
+): IColumn => {
+  return {
+    title: 'some title',
+    columnType: BasicField.Dropdown,
+    required: true,
+    _id: new ObjectId().toHexString(),
+    fieldOptions: ['a', 'b', 'c'],
+    ...customParams,
+    toObject() {
+      // mock toObject method of mongoose document
+      return {
+        title: 'some title',
+        columnType: BasicField.Dropdown,
+        required: true,
+        _id: new ObjectId().toHexString(),
+        fieldOptions: ['a', 'b', 'c'],
+        ...customParams,
+      }
+    },
+  } as IColumn
+}
+
+export const generateTableShortTextColumn = (
+  customParams?: Partial<IShortTextField>,
+): IColumn => {
+  return {
+    title: 'some title',
+    columnType: BasicField.ShortText,
+    required: true,
+    _id: new ObjectId().toHexString(),
+    ValidationOptions: {
+      customMax: null,
+      customMin: null,
+      customVal: null,
+      selectedValidation: null,
+    },
+    ...customParams,
+    toObject() {
+      // mock toObject method of mongoose document
+      return {
+        title: 'some title',
+        columnType: BasicField.ShortText,
+        required: true,
+        _id: new ObjectId().toHexString(),
+        ValidationOptions: {
+          customMax: null,
+          customMin: null,
+          customVal: null,
+          selectedValidation: null,
+        },
+        ...customParams,
+      }
+    },
+  } as IColumn
+}

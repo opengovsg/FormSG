@@ -6,27 +6,27 @@ import {
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
+  ProcessedTableResponse,
 } from '../../../app/modules/submission/submission.types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { IFieldSchema } from '../../../types/field/baseField'
-import { BasicField } from '../../../types/field/fieldTypes'
+import { FIELDS_TO_REJECT } from '../../../shared/resources/basic'
+import { IFieldSchema, ITableFieldSchema } from '../../../types/field'
+import { isTableField } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
-import { FieldResponse } from '../../../types/response'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import {
   constructAttachmentFieldValidator,
   constructCheckboxFieldValidator,
   constructSingleAnswerValidator,
+  constructTableFieldValidator,
 } from './answerValidator.factory'
-import { ALLOWED_VALIDATORS, FIELDS_TO_REJECT } from './config'
 import {
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
 } from './field-validation.guards'
-import fieldValidatorFactory from './FieldValidatorFactory.class' // Deprecated
 
 const logger = createLoggerWithLabel(module)
 
@@ -111,6 +111,19 @@ const checkboxRequiresValidation = (
 ) =>
   (formField.required && response.isVisible) || response.answerArray.length > 0
 
+const tableRequiresValidation = (
+  formField: ITableFieldSchema,
+  response: ProcessedTableResponse,
+) => {
+  const { columns } = formField
+  const { isVisible } = response
+  const requiredVisible = columns.some((column) => column.required) && isVisible
+  const answerPresent = !response.answerArray.every((row) =>
+    row.every((elem) => elem === ''),
+  )
+  return requiredVisible || answerPresent
+}
+
 /**
  * Generic logging function for invalid fields.
  * Incomplete for table fields as the columnType is not logged.
@@ -186,35 +199,13 @@ export const validateField = (
 
   if (isProcessedSingleAnswerResponse(response)) {
     if (singleAnswerRequiresValidation(formField, response)) {
-      switch (formField.fieldType) {
-        // Migrated validators
-        case BasicField.Section:
-        case BasicField.ShortText:
-        case BasicField.LongText:
-        case BasicField.Nric:
-        case BasicField.YesNo:
-        case BasicField.HomeNo:
-        case BasicField.Radio:
-        case BasicField.Rating:
-        case BasicField.Email:
-        case BasicField.Date:
-        case BasicField.Dropdown:
-        case BasicField.Decimal:
-        case BasicField.Number:
-        case BasicField.Mobile: {
-          const validator = constructSingleAnswerValidator(formField)
-          return validateResponseWithValidator(
-            validator,
-            formId,
-            formField,
-            response,
-          )
-        }
-        // Fallback for un-migrated single answer validators
-        default: {
-          return classBasedValidation(formId, formField, response)
-        }
-      }
+      const validator = constructSingleAnswerValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
     }
   } else if (isProcessedAttachmentResponse(response)) {
     if (attachmentRequiresValidation(formField, response)) {
@@ -236,38 +227,19 @@ export const validateField = (
         response,
       )
     }
-  } else if (isProcessedTableResponse(response)) {
-    // fallback for processed table responses
-    return classBasedValidation(formId, formField, response)
+  } else if (isProcessedTableResponse(response) && isTableField(formField)) {
+    if (tableRequiresValidation(formField, response)) {
+      const validator = constructTableFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
+    }
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
     return err(new ValidateFieldError('Response has invalid shape'))
-  }
-  return ok(true)
-}
-
-/**
- * Validate that the answers in the response adhere to the form field definition
- * using the deprecated class-based field validators.
- * @deprecated
- */
-const classBasedValidation = (
-  formId: string,
-  formField: IFieldSchema,
-  response: FieldResponse,
-): Result<true, ValidateFieldError> => {
-  const fieldValidator = fieldValidatorFactory.createFieldValidator(
-    formId,
-    formField,
-    response,
-  )
-
-  if (!fieldValidator.isAnswerValid()) {
-    // TODO: Remove after soft launch of validation. Should throw Error for all validators
-    // fieldValidator.constructor.name only returns the name of the class if code is not minified!
-    if (ALLOWED_VALIDATORS.includes(fieldValidator.constructor.name)) {
-      return err(new ValidateFieldError('Invalid answer submitted'))
-    }
   }
   return ok(true)
 }

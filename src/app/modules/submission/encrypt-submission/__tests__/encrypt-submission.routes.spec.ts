@@ -7,8 +7,7 @@ import { mocked } from 'ts-jest/utils'
 import * as encryptSubmissions from 'src/app/controllers/encrypt-submissions.server.controller'
 import * as FormController from 'src/app/controllers/forms.server.controller'
 import * as webhookVerifiedContentFactory from 'src/app/factories/webhook-verified-content.factory'
-import * as MyInfoMiddleware from 'src/app/modules/myinfo/myinfo.middleware'
-import * as SpcpController from 'src/app/modules/spcp/spcp.controller'
+import * as EncryptSubmissionController from 'src/app/modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as EncryptSubmissionsMiddleware from 'src/app/modules/submission/encrypt-submission/encrypt-submission.middleware'
 import * as SubmissionsMiddleware from 'src/app/modules/submission/submission.middleware'
 import * as VerifiedContentMiddleware from 'src/app/modules/verified-content/verified-content.middlewares'
@@ -20,8 +19,6 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
-const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
-const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
 // TODO (#149): Import router instead of creating it here
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/encrypt'
@@ -87,9 +84,7 @@ EncryptSubmissionsRouter.post(
     }),
   }),
   FormController.formById,
-  EncryptSubmissionsMiddleware.validateAndProcessEncryptSubmission,
-  SpcpController.isSpcpAuthenticated,
-  MyInfoMiddleware.verifyMyInfoVals as RequestHandler,
+  EncryptSubmissionController.handleEncryptedSubmission,
   VerifiedContentMiddleware.encryptVerifiedSpcpFields,
   EncryptSubmissionsMiddleware.prepareEncryptSubmission as RequestHandler,
   (encryptSubmissions.saveResponseToDb as unknown) as RequestHandler,
@@ -101,6 +96,8 @@ const EncryptSubmissionsApp = setupApp('/', EncryptSubmissionsRouter)
 
 describe('encrypt-submission.routes', () => {
   let request: Session
+  const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
+  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {

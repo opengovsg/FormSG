@@ -3,7 +3,6 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import config from '../../../config/config'
-import FeatureManager, { FeatureNames } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType, WithForm } from '../../../types'
 import { createReqMeta } from '../../utils/request'
@@ -16,14 +15,10 @@ import { JwtName, LoginPageValidationResult } from './spcp.types'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
-  extractFormId,
   mapRouteError,
 } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
-
-// TODO (private #123): remove checking of form ID against CorpPass cloud test form
-const spcpFeature = FeatureManager.get(FeatureNames.SpcpMyInfo)
 
 /**
  * Generates redirect URL to Official SingPass/CorpPass log in page
@@ -48,11 +43,7 @@ export const handleRedirect: RequestHandler<
     target,
     esrvcId,
   }
-  // TODO (private #123): remove checking of form ID against CorpPass cloud test form
-  const payloads = target.split(',')
-  const formId = extractFormId(payloads[0])
-  const useCpCloud = spcpFeature.props?.cpCloudFormId === formId
-  return SpcpFactory.createRedirectUrl(authType, target, esrvcId, useCpCloud)
+  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
     .map((redirectURL) => {
       return res.status(StatusCodes.OK).json({ redirectURL })
     })
@@ -83,8 +74,7 @@ export const handleValidate: RequestHandler<
   }
 > = (req, res) => {
   const { target, authType, esrvcId } = req.query
-  const useCpCloud = spcpFeature.props?.cpCloudFormId === target
-  return SpcpFactory.createRedirectUrl(authType, target, esrvcId, useCpCloud)
+  return SpcpFactory.createRedirectUrl(authType, target, esrvcId)
     .asyncAndThen(SpcpFactory.fetchLoginPage)
     .andThen(SpcpFactory.validateLoginPage)
     .map((result) => res.status(StatusCodes.OK).json(result))
@@ -116,15 +106,14 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
   res,
   next,
 ) => {
-  const { authType, _id } = (req as WithForm<typeof req>).form
+  const { authType } = (req as WithForm<typeof req>).form
   if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
 
   const jwtResult = SpcpFactory.extractJwt(req.cookies, authType)
   // No action needed if JWT is missing, just means user is not logged in
   if (jwtResult.isErr()) return next()
 
-  const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
-  return SpcpFactory.extractJwtPayload(jwtResult.value, authType, useCpCloud)
+  return SpcpFactory.extractJwtPayload(jwtResult.value, authType)
     .map(({ userName }) => {
       res.locals.spcpSession = { userName }
       return next()
@@ -139,48 +128,6 @@ export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
         error,
       })
       return next()
-    })
-}
-
-/**
- * Checks if user is SPCP-authenticated before allowing submission
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const isSpcpAuthenticated: RequestHandler<ParamsDictionary> = (
-  req,
-  res,
-  next,
-) => {
-  const { authType, _id } = (req as WithForm<typeof req>).form
-  if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
-
-  const useCpCloud = spcpFeature.props?.cpCloudFormId === String(_id)
-  return SpcpFactory.extractJwt(req.cookies, authType)
-    .asyncAndThen((jwt) =>
-      SpcpFactory.extractJwtPayload(jwt, authType, useCpCloud),
-    )
-    .map(({ userName, userInfo }) => {
-      res.locals.uinFin = userName
-      res.locals.userInfo = userInfo
-      return next()
-    })
-    .mapErr((error) => {
-      const { statusCode, errorMessage } = mapRouteError(error)
-      logger.error({
-        message: 'Failed to verify JWT with auth client',
-        meta: {
-          action: 'isSpcpAuthenticated',
-          ...createReqMeta(req),
-          authType,
-        },
-        error,
-      })
-      return res.status(statusCode).json({
-        message: errorMessage,
-        spcpSubmissionFailure: true,
-      })
     })
 }
 
@@ -235,18 +182,16 @@ export const handleLogin: (
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
-  const useCpCloud = spcpFeature.props?.cpCloudFormId === String(form._id)
   const jwtResult = await SpcpFactory.getSpcpAttributes(
     SAMLart,
     destination,
     authType,
-    useCpCloud,
   )
     .andThen((attributes) =>
       SpcpFactory.createJWTPayload(attributes, rememberMe, authType),
     )
     .andThen((jwtPayload) =>
-      SpcpFactory.createJWT(jwtPayload, cookieDuration, authType, useCpCloud),
+      SpcpFactory.createJWT(jwtPayload, cookieDuration, authType),
     )
   if (jwtResult.isErr()) {
     logger.error({

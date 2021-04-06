@@ -1,9 +1,11 @@
 pull_request_rules:
-  - name: Merge dependency upgrades when tests pass
+  - name: Approve and merge non-major dependency upgrades
     conditions:
       - 'author=dependabot[bot]'
       - '#check-failure=0'
       - 'title~=bump [^\s]+ from ([\d]+)\..+ to \1\.'
     actions:
+      review:
+        type: APPROVE
       merge:
         method: squash

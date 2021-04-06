@@ -6,6 +6,9 @@ import { Transform } from 'stream'
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
+  IPopulatedEncryptedForm,
+  IPopulatedForm,
+  ResponseMode,
   SubmissionCursorData,
   SubmissionData,
   SubmissionMetadata,
@@ -15,7 +18,11 @@ import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
-import { SubmissionNotFoundError } from '../submission.errors'
+import { isFormEncryptMode } from '../../form/form.utils'
+import {
+  ResponseModeError,
+  SubmissionNotFoundError,
+} from '../submission.errors'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -259,4 +266,12 @@ export const getSubmissionMetadataList = (
       return new DatabaseError(getMongoErrorMessage(error))
     },
   )
+}
+
+export const checkFormIsEncryptMode = (
+  form: IPopulatedForm,
+): Result<IPopulatedEncryptedForm, ResponseModeError> => {
+  return isFormEncryptMode(form)
+    ? ok(form)
+    : err(new ResponseModeError(ResponseMode.Encrypt, form.responseMode))
 }

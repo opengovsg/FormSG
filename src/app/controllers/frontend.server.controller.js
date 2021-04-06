@@ -17,7 +17,8 @@ module.exports.datalayer = function (req, res) {
       gtag('js', new Date());
       gtag('config', '<%= GATrackingID%>', {
         'send_page_view': false,
-        'app_name': '<%= appName%>'
+        'app_name': '<%= appName%>',
+        'cookie_flags': 'samesite=none;secure',
       });
     `
   try {

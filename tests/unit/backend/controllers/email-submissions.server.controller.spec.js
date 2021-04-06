@@ -16,7 +16,7 @@ const User = dbHandler.makeModel('user.server.model', 'User')
 const Agency = dbHandler.makeModel('agency.server.model', 'Agency')
 const Form = dbHandler.makeModel('form.server.model', 'Form')
 const Verification = dbHandler.makeModel(
-  'verification.server.model',
+  '../modules/verification/verification.model',
   'Verification',
 )
 const vfnConstants = require('../../../../dist/backend/shared/util/verification')

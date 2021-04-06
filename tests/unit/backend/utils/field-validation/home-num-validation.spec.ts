@@ -1,60 +1,43 @@
-const {
-  validateField,
-} = require('../../../../../dist/backend/app/utils/field-validation')
+import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { validateField } from 'src/app/utils/field-validation'
+import { BasicField } from 'src/types'
 
-const {
-  ValidateFieldError,
-} = require('../../../../../dist/backend/app/modules/submission/submission.errors')
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+} from '../../helpers/generate-form-data'
+
 describe('Home phone number validation tests', () => {
   it('should allow empty answer for required logic field that is not visible', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
-      allowIntlNumbers: false,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: false,
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
       answer: '',
-    }
+      isVisible: false,
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should allow empty answer for optional field', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
+    const formField = generateDefaultField(BasicField.HomeNo, {
       required: false,
-      allowIntlNumbers: false,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
       answer: '',
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should not allow empty answer for required field', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
-      allowIntlNumbers: false,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: true,
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
       answer: '',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -63,35 +46,20 @@ describe('Home phone number validation tests', () => {
   })
 
   it('should allow valid home numbers for homeno fieldType', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: true,
-      answer: '+6565656565',
-    }
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
+      answer: '+6563334444',
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow home numbers without "+" prefix', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
-      allowIntlNumbers: false,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: true,
-      answer: '6567772918',
-    }
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
+      answer: '6563334444',
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -100,18 +68,10 @@ describe('Home phone number validation tests', () => {
   })
 
   it('should disallow mobile numbers on homeno fieldType', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
-    }
-
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: true,
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
       answer: '+6598765432',
-    }
+    })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -120,18 +80,11 @@ describe('Home phone number validation tests', () => {
   })
 
   it('should disallow international numbers when field does not allow for it', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
-      allowIntlNumbers: false,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: true,
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
       answer: '+441285291028',
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
@@ -140,35 +93,24 @@ describe('Home phone number validation tests', () => {
   })
 
   it('should allow international numbers when field allows for it', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
+    const formField = generateDefaultField(BasicField.HomeNo, {
       allowIntlNumbers: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      isVisible: true,
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
       answer: '+441285291028',
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = {
-      _id: 'abc123',
-      fieldType: 'homeno',
-      required: true,
-      allowIntlNumbers: true,
-    }
-    const response = {
-      _id: 'abc123',
-      fieldType: 'homeno',
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
+      answer: '+6565656565',
       isVisible: false,
-      answer: '+441285291028',
-    }
+    })
+
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(

@@ -33,19 +33,20 @@ function FormFeedback($q, $http) {
   const feedbackAdminUrl = '/:formId/adminform/feedback'
   let feedbackService = {
     postFeedback: function (params, body) {
-      let resUrl = fixParamsToUrl(
-        params,
-        body.isPreview ? feedbackAdminUrl : resourceUrl,
-      )
       let deferred = $q.defer()
-      $http.post(resUrl, body).then(
-        function () {
-          deferred.resolve('Successfully posted feedback.')
-        },
-        function (_errorResponse) {
-          deferred.reject('Failed to post feedback.')
-        },
-      )
+      if (body.isPreview) {
+        deferred.resolve('Successfully posted feedback.')
+      } else {
+        let resUrl = fixParamsToUrl(params, resourceUrl)
+        $http.post(resUrl, body).then(
+          function () {
+            deferred.resolve('Successfully posted feedback.')
+          },
+          function (_errorResponse) {
+            deferred.reject('Failed to post feedback.')
+          },
+        )
+      }
       return deferred.promise
     },
     getFeedback: function (params) {

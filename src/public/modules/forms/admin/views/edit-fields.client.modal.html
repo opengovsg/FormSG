@@ -691,17 +691,11 @@
         <div class="row" ng-if="vm.field.fieldType === 'email'">
           <div class="toggle-option">
             <div class="col-xs-8 label-custom label-medium">
-              Email confirmation<span ng-switch="vm.myform.responseMode">
+              Email confirmation
+              <span>
                 <i
-                  ng-switch-when="encrypt"
                   class="glyphicon glyphicon-question-sign"
-                  uib-tooltip="Customised email acknowledgement to the respondent."
-                  tooltip-trigger="'click mouseenter'"
-                ></i>
-                <i
-                  ng-switch-default
-                  class="glyphicon glyphicon-question-sign"
-                  uib-tooltip="Recipients will receive an email confirmation with their submission reference number, and a customised message from you."
+                  uib-tooltip="Customise an email acknowledgement to respondents"
                   tooltip-trigger="'click mouseenter'"
                 ></i>
               </span>

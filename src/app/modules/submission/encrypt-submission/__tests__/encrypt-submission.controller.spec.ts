@@ -1,22 +1,44 @@
 import { ObjectId } from 'bson-ext'
-import { errAsync, okAsync } from 'neverthrow'
+import { err, errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
-import { SubmissionData, SubmissionMetadata } from 'src/types'
+import {
+  ForbiddenFormError,
+  FormDeletedError,
+  FormNotFoundError,
+} from 'src/app/modules/form/form.errors'
+import { MissingUserError } from 'src/app/modules/user/user.errors'
+import * as UserService from 'src/app/modules/user/user.service'
+import {
+  IPopulatedForm,
+  IPopulatedUser,
+  ResponseMode,
+  SubmissionData,
+  SubmissionMetadata,
+} from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import { SubmissionNotFoundError } from '../../submission.errors'
+import {
+  ResponseModeError,
+  SubmissionNotFoundError,
+} from '../../submission.errors'
 import {
   handleGetEncryptedResponse,
   handleGetMetadata,
+  handleStreamEncryptedResponses,
 } from '../encrypt-submission.controller'
 import * as EncryptSubmissionService from '../encrypt-submission.service'
 
 jest.mock('../encrypt-submission.service')
+jest.mock('src/app/modules/user/user.service')
+jest.mock('src/app/modules/auth/auth.service')
 const MockEncryptSubService = mocked(EncryptSubmissionService)
+const MockUserService = mocked(UserService)
+const MockAuthService = mocked(AuthService)
 
 describe('encrypt-submission.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -290,6 +312,221 @@ describe('encrypt-submission.controller', () => {
       expect(
         MockEncryptSubService.getSubmissionMetadataList,
       ).toHaveBeenCalledWith(MOCK_FORM_ID, mockReq.query.page)
+    })
+  })
+
+  describe('handleStreamEncryptedResponses', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    // Not sure how to test streams in express controllers, so skipping...
+    it.todo('should successfully return stream of encrypted responses')
+
+    it('should return 400 if form is not an encrypt mode form', async () => {
+      // Arrange
+      // Mock success case until form encrypt check
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      const expectedError = new ResponseModeError(
+        ResponseMode.Encrypt,
+        ResponseMode.Email,
+      )
+      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
+        err(expectedError),
+      )
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      // Check cursor retrieval not called.
+      expect(MockEncryptSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 when user does not have read permissions for form', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      const expectedError = new ForbiddenFormError('no access')
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(
+        MockEncryptSubService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      // Check cursor retrieval not called.
+      expect(MockEncryptSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      const expectedError = new FormNotFoundError('not found')
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(
+        MockEncryptSubService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      // Check cursor retrieval not called.
+      expect(MockEncryptSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+
+    it('should return 410 when form is already archived', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      const expectedError = new FormDeletedError('already archived')
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(
+        MockEncryptSubService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      // Check cursor retrieval not called.
+      expect(MockEncryptSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when user in session cannot be retrieved', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedError = new MissingUserError('user is not found')
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(
+        MockEncryptSubService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      // Check cursor retrieval not called.
+      expect(MockEncryptSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when database error occurs whilst retrieving user in session', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedError = new DatabaseError('db went ????????')
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+
+      // Act
+      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(
+        MockEncryptSubService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      // Check cursor retrieval not called.
+      expect(MockEncryptSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when database error occurs whilst checking form permissions', async () => {
+      // Arrange
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      const expectedError = new DatabaseError('database error beep boop')
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(expectedError),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
+      expect(
+        MockEncryptSubService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      // Check cursor retrieval not called.
+      expect(MockEncryptSubService.getSubmissionCursor).not.toHaveBeenCalled()
     })
   })
 })

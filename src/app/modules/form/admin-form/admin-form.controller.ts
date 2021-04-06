@@ -741,16 +741,6 @@ export const handleCopyTemplateForm: RequestHandler<
   const userId = (req.session as Express.AuthedSession).user._id
   const overrideParams = req.body
 
-  // TODO(#792): Remove when frontend has stopped sending isTemplate.
-  if ('isTemplate' in req.body) {
-    logger.info({
-      message: 'isTemplate is still being sent by the frontend',
-      meta: {
-        action: 'handleCopyTemplateForm',
-      },
-    })
-  }
-
   return (
     // Step 1: Retrieve currently logged in user.
     UserService.getPopulatedUserById(userId)
