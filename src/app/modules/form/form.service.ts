@@ -220,7 +220,12 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
     // Map success case back into error to display to client as form has been
     // deactivated.
     return deactivateForm(formId).andThen(() =>
-      errAsync(new PrivateFormError(form.inactiveMessage, form.title)),
+      errAsync(
+        new PrivateFormError(
+          'Submission made after form submission limit was reached',
+          form.title,
+        ),
+      ),
     )
   })
 }
