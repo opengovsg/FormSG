@@ -83,7 +83,7 @@ const BouncedSubmissionSmsCountSchema = new Schema<IBouncedSubmissionSmsCountSch
 )
 
 const compileSmsCountModel = (db: Mongoose) => {
-  const SmsCountSchema = new Schema<ISmsCountSchema>(
+  const SmsCountSchema = new Schema<ISmsCountSchema, ISmsCountModel>(
     {
       msgSrvcSid: {
         type: String,

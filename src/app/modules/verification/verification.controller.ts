@@ -1,13 +1,14 @@
-import { RequestHandler, Response } from 'express'
+import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { SALT_ROUNDS, VfnErrors } from '../../../shared/util/verification'
+import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { PublicTransaction } from '../../../types'
+import { ErrorDto } from '../../../types/api'
 import { generateOtpWithHash } from '../../utils/otp'
+import { createReqMeta } from '../../utils/request'
 
 import { VerificationFactory } from './verification.factory'
-import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
 import { mapRouteError } from './verification.util'
 
@@ -23,13 +24,14 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleCreateTransaction: RequestHandler<
   never,
-  Transaction | { message: string },
+  Transaction | ErrorDto,
   { formId: string }
 > = async (req, res) => {
   const { formId } = req.body
   const logMeta = {
     action: 'handleCreateTransaction',
     formId,
+    ...createReqMeta(req),
   }
   return VerificationFactory.createTransaction(formId)
     .map((transaction) => {
@@ -60,12 +62,13 @@ export const handleGetTransactionMetadata: RequestHandler<
   {
     transactionId: string
   },
-  PublicTransaction | { message: string }
+  PublicTransaction | ErrorDto
 > = async (req, res) => {
   const { transactionId } = req.params
   const logMeta = {
     action: 'handleGetTransactionMetadata',
     transactionId,
+    ...createReqMeta(req),
   }
   return VerificationFactory.getTransactionMetadata(transactionId)
     .map((publicTransaction) =>
@@ -90,7 +93,7 @@ export const handleGetTransactionMetadata: RequestHandler<
  */
 export const handleResetField: RequestHandler<
   { transactionId: string },
-  { message: string },
+  ErrorDto,
   { fieldId: string }
 > = async (req, res) => {
   const { transactionId } = req.params
@@ -99,6 +102,7 @@ export const handleResetField: RequestHandler<
     action: 'handleResetField',
     transactionId,
     fieldId,
+    ...createReqMeta(req),
   }
   return VerificationFactory.resetFieldForTransaction(transactionId, fieldId)
     .map(() => res.sendStatus(StatusCodes.OK))
@@ -121,7 +125,7 @@ export const handleResetField: RequestHandler<
  */
 export const handleGetOtp: RequestHandler<
   { transactionId: string },
-  { message: string },
+  ErrorDto,
   { answer: string; fieldId: string }
 > = async (req, res) => {
   const { transactionId } = req.params
@@ -130,6 +134,7 @@ export const handleGetOtp: RequestHandler<
     action: 'handleGetOtp',
     transactionId,
     fieldId,
+    ...createReqMeta(req),
   }
   return generateOtpWithHash(logMeta, SALT_ROUNDS)
     .andThen(({ otp, hashedOtp }) =>
@@ -160,54 +165,28 @@ export const handleGetOtp: RequestHandler<
  * @param req
  * @param res
  */
-export const verifyOtp: RequestHandler<
+export const handleVerifyOtp: RequestHandler<
   { transactionId: string },
-  string,
+  string | ErrorDto,
   { otp: string; fieldId: string }
 > = async (req, res) => {
-  try {
-    const { transactionId } = req.params
-    const { fieldId, otp } = req.body
-    const transaction = await VerificationService.getTransaction(transactionId)
-    const data = await VerificationService.verifyOtp(transaction, fieldId, otp)
-    return res.status(StatusCodes.OK).json(data)
-  } catch (error) {
-    logger.error({
-      message: 'Error verifying OTP',
-      meta: {
-        action: 'verifyOtp',
-      },
-      error,
+  const { transactionId } = req.params
+  const { fieldId, otp } = req.body
+  const logMeta = {
+    action: 'handleVerifyOtp',
+    transactionId,
+    fieldId,
+    ...createReqMeta(req),
+  }
+  return VerificationFactory.verifyOtp(transactionId, fieldId, otp)
+    .map((signedData) => res.status(StatusCodes.OK).json(signedData))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying OTP',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     })
-    return handleError(error, res)
-  }
-}
-
-/**
- * Returns relevant http status code for different verification failures
- * @param error
- * @param res
- */
-const handleError = (error: Error, res: Response) => {
-  let status = StatusCodes.INTERNAL_SERVER_ERROR
-  let message = error.message
-  switch (error.name) {
-    case VfnErrors.SendOtpFailed:
-      status = StatusCodes.BAD_REQUEST
-      break
-    case VfnErrors.WaitForOtp:
-      status = StatusCodes.ACCEPTED
-      break
-    case VfnErrors.ResendOtp:
-    case VfnErrors.InvalidOtp:
-      status = StatusCodes.UNPROCESSABLE_ENTITY
-      break
-    case VfnErrors.FieldNotFound:
-    case VfnErrors.TransactionNotFound:
-      status = StatusCodes.NOT_FOUND
-      break
-    default:
-      message = 'An error occurred'
-  }
-  return res.status(status).json(message)
 }

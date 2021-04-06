@@ -1131,7 +1131,7 @@ const expectSpcpLogin = async (t, authType, authData) => {
     case 'MyInfo':
       await t
         .expect(formPage.spcpLoginBtn.textContent)
-        .contains(`Log in with SingPass`)
+        .contains(`Login with Singpass`)
         .click(formPage.spcpLoginBtn)
         .click(mockpass.loginBtn)
         .click(mockpass.nricDropdownBtn)
@@ -1143,7 +1143,7 @@ const expectSpcpLogin = async (t, authType, authData) => {
     case 'SP':
       await t
         .expect(formPage.spcpLoginBtn.textContent)
-        .contains(`Log in with SingPass`)
+        .contains(`Login with Singpass`)
         .click(formPage.spcpLoginBtn)
         .click(mockpass.loginBtn)
         .click(mockpass.nricDropdownBtn)
@@ -1154,7 +1154,7 @@ const expectSpcpLogin = async (t, authType, authData) => {
     case 'CP':
       await t
         .expect(formPage.spcpLoginBtn.textContent)
-        .contains(`Log in with CorpPass`)
+        .contains(`Login with Singpass (Corporate)`)
         .click(formPage.spcpLoginBtn)
         .click(mockpass.loginBtn)
         .click(mockpass.nricDropdownBtn)

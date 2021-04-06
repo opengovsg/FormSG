@@ -19,10 +19,13 @@ import getSubmissionModel from '../../models/submission.server.model'
 import { IntranetFactory } from '../../services/intranet/intranet.factory'
 import {
   getMongoErrorMessage,
-  PossibleDatabaseError,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import {
+  ApplicationError,
+  DatabaseError,
+  PossibleDatabaseError,
+} from '../core/core.errors'
 
 import {
   FormDeletedError,
@@ -183,13 +186,15 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
   IPopulatedForm,
   PossibleDatabaseError | PrivateFormError | FormNotFoundError
 > => {
+  const logMeta = {
+    action: 'checkFormSubmissionLimitAndDeactivateForm',
+    formId: form._id,
+  }
   const { submissionLimit } = form
   const formId = String(form._id)
   // Not using falsey check as submissionLimit === 0 can result in incorrectly
   // returning form without any actions.
-  if (submissionLimit === null) {
-    return okAsync(form)
-  }
+  if (submissionLimit === null) return okAsync(form)
 
   return ResultAsync.fromPromise(
     SubmissionModel.countDocuments({
@@ -197,27 +202,19 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
     }).exec(),
     (error) => {
       logger.error({
-        message: 'Error counting documents',
-        meta: {
-          action: 'checkFormSubmissionLimitAndDeactivateForm',
-          formId,
-        },
+        message: 'Error while counting submissions for form',
+        meta: logMeta,
         error,
       })
       return transformMongoError(error)
     },
   ).andThen((currentCount) => {
     // Limit has not been hit yet, passthrough.
-    if (currentCount < submissionLimit) {
-      return okAsync(form)
-    }
+    if (currentCount < submissionLimit) return okAsync(form)
 
     logger.info({
       message: 'Form reached maximum submission count, deactivating.',
-      meta: {
-        form: formId,
-        action: 'checkFormSubmissionLimitAndDeactivate',
-      },
+      meta: logMeta,
     })
 
     // Map success case back into error to display to client as form has been

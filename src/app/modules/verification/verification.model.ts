@@ -1,7 +1,7 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import * as vfnConstants from '../../../shared/util/verification'
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   IFormSchema,
   IVerificationFieldSchema,
@@ -12,9 +12,8 @@ import {
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-import { extractTransactionFields } from './verification.util'
+import { extractTransactionFields, getExpiryDate } from './verification.util'
 
-const { getExpiryDate } = vfnConstants
 const VERIFICATION_SCHEMA_ID = 'Verification'
 
 export const VERIFICATION_PUBLIC_FIELDS = ['formId', 'expireAt', '_id']
@@ -34,7 +33,10 @@ const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
 })
 
 const compileVerificationModel = (db: Mongoose): IVerificationModel => {
-  const VerificationSchema = new Schema<IVerificationSchema>({
+  const VerificationSchema = new Schema<
+    IVerificationSchema,
+    IVerificationModel
+  >({
     formId: {
       type: Schema.Types.ObjectId,
       ref: FORM_SCHEMA_ID,
@@ -42,8 +44,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     },
     expireAt: {
       type: Date,
-      default: () =>
-        getExpiryDate(vfnConstants.TRANSACTION_EXPIRE_AFTER_SECONDS),
+      default: () => getExpiryDate(TRANSACTION_EXPIRE_AFTER_SECONDS),
     },
     fields: {
       type: [VerificationFieldSchema],
@@ -104,6 +105,29 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
       formId: form._id,
       fields,
     })
+  }
+
+  VerificationSchema.statics.incrementFieldRetries = async function (
+    this: IVerificationModel,
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: transactionId,
+        'fields._id': fieldId,
+      },
+      {
+        $inc: {
+          'fields.$.hashRetries': 1,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
   }
 
   VerificationSchema.statics.resetField = async function (

@@ -15,6 +15,18 @@ export type SubmissionMetadata = {
   submissionTime: string
 }
 
+export type EncryptedSubmissionDto = {
+  refNo: IEncryptedSubmissionSchema['_id']
+  submissionTime: string
+  content: IEncryptedSubmissionSchema['encryptedContent']
+  verified: IEncryptedSubmissionSchema['verifiedContent']
+  attachmentMetadata: Record<string, string>
+}
+
+export type SubmissionMetadataList = {
+  metadata: SubmissionMetadata[]
+  count: number
+}
 export interface ISubmission {
   form: IFormSchema['_id']
   authType?: AuthType
@@ -46,9 +58,7 @@ export interface WebhookView {
   data: WebhookData
 }
 
-export interface ISubmissionSchema extends ISubmission, Document {
-  getWebhookView(): WebhookView | null
-}
+export interface ISubmissionSchema extends ISubmission, Document {}
 
 export type FindFormsWithSubsAboveResult = {
   _id: IFormSchema['_id']
@@ -71,7 +81,7 @@ export interface IEmailSubmission extends ISubmission {
   version: never
   attachmentMetadata: never
   webhookResponses: never
-  getWebhookView(): WebhookView | null
+  getWebhookView(): null
 }
 
 export type IEmailSubmissionSchema = IEmailSubmission & ISubmissionSchema
@@ -86,7 +96,7 @@ export interface IEncryptedSubmission extends ISubmission {
   version: number
   attachmentMetadata?: Map<string, string>
   webhookResponses?: IWebhookResponse[]
-  getWebhookView(): WebhookView | null
+  getWebhookView(): WebhookView
 }
 
 export type IEncryptedSubmissionSchema = IEncryptedSubmission &
@@ -167,6 +177,16 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       formId: string,
       submissionId: string,
     ): Promise<SubmissionData | null>
+
+    /**
+     * Adds a record of a webhook response to a submission
+     * @param submissionId ID of submission to update
+     * @param webhookResponse Response data to push
+     */
+    addWebhookResponse(
+      submissionId: string,
+      webhookResponse: IWebhookResponse,
+    ): Promise<IEncryptedSubmissionSchema | null>
   }
 
 export interface IWebhookResponseSchema extends IWebhookResponse, Document {}

@@ -2,7 +2,7 @@ import { promises as dns } from 'dns'
 import { mocked } from 'ts-jest/utils'
 
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
-import { validateWebhookUrl } from 'src/app/modules/webhook/webhook.utils'
+import { validateWebhookUrl } from 'src/app/modules/webhook/webhook.validation'
 import config from 'src/config/config'
 
 jest.mock('dns', () => ({
@@ -34,11 +34,20 @@ describe('Webhook URL validation', () => {
     )
   })
 
-  it('should reject URLs which do not resolve to any IP', async () => {
+  it('should reject URLs if DNS resolution fails', async () => {
     MockDns.resolve.mockRejectedValueOnce([])
     await expect(validateWebhookUrl(MOCK_WEBHOOK_URL)).rejects.toStrictEqual(
       new WebhookValidationError(
         `Error encountered during DNS resolution for ${MOCK_WEBHOOK_URL}. Check that the URL is correct.`,
+      ),
+    )
+  })
+
+  it('should reject URLs which do not resolve to any IPs', async () => {
+    MockDns.resolve.mockResolvedValueOnce([])
+    await expect(validateWebhookUrl(MOCK_WEBHOOK_URL)).rejects.toStrictEqual(
+      new WebhookValidationError(
+        `${MOCK_WEBHOOK_URL} does not resolve to any IP address.`,
       ),
     )
   })

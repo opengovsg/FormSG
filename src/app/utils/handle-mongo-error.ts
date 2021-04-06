@@ -8,12 +8,6 @@ import {
   DatabaseValidationError,
 } from '../modules/core/core.errors'
 
-export type PossibleDatabaseError =
-  | DatabaseError
-  | DatabaseValidationError
-  | DatabaseConflictError
-  | DatabasePayloadSizeError
-
 /**
  * Exported for testing.
  * Format error recovery message to be returned to client.

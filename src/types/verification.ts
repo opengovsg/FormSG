@@ -70,6 +70,13 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
     form: IFormSchema,
   ): Promise<IVerificationSchema | null>
   /**
+   * Increments the number of retries for a given field by 1.
+   */
+  incrementFieldRetries(
+    transactionId: string,
+    fieldId: string,
+  ): Promise<IVerificationSchema | null>
+  /**
    * Resets the hash records of a single field.
    */
   resetField(

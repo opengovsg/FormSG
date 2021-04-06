@@ -12,7 +12,10 @@ import { USER_SCHEMA_ID } from './user.server.model'
 
 export const ADMIN_VERIFICATION_SCHEMA_ID = 'AdminVerification'
 
-const AdminVerificationSchema = new Schema<IAdminVerificationSchema>(
+const AdminVerificationSchema = new Schema<
+  IAdminVerificationSchema,
+  IAdminVerificationModel
+>(
   {
     admin: {
       type: Schema.Types.ObjectId,

@@ -16,12 +16,3 @@ export enum VfnErrors {
   TransactionNotFound = 'TRANSACTION_NOT_FOUND',
   InvalidMobileNumber = 'INVALID_MOBILE_NUMBER',
 }
-
-export const getExpiryDate = (
-  expireAfterSeconds: number,
-  fromDate?: Date,
-): Date => {
-  const expireAt = fromDate ? new Date(fromDate) : new Date()
-  expireAt.setTime(expireAt.getTime() + expireAfterSeconds * 1000)
-  return expireAt
-}

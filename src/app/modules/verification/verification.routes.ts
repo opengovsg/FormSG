@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as VerificationController from './verification.controller'
-import { verificationMiddleware } from './verification.middleware'
 
 export const VfnRouter = Router()
 
@@ -69,5 +68,5 @@ VfnRouter.post(
         .message('Please enter a valid OTP'),
     }),
   }),
-  verificationMiddleware.verifyOtp,
+  VerificationController.handleVerifyOtp,
 )

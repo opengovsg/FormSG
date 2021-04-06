@@ -54,20 +54,20 @@
             ng-if="['SP', 'MyInfo'].includes(vm.authType) && !vm.userName && !vm.isTemplate"
             ng-disabled="vm.isAdminPreview"
           >
-            <span>Log in with SingPass</span>
+            <span>Login with Singpass</span>
             <span class="hidden-xs">
               <i class="bx bx-log-in"></i>
             </span>
           </button>
           <button
             type="button"
-            class="start-page-btn {{ vm.colorTheme }}-font"
+            class="start-page-btn {{ vm.colorTheme }}-font start-page-multiline-btn"
             ng-click="vm.formLogin({ authType: 'CP', rememberMe: false })"
             ng-if="vm.authType==='CP' && !vm.userName && !vm.isTemplate"
             ng-disabled="vm.isAdminPreview"
           >
-            <span>Log in with CorpPass</span>
-            <span class="hidden-xs">
+            <span>Login with Singpass (Corporate)</span>
+            <span class="hidden-xs start-page-multiline-btn-decorator">
               <i class="bx bx-log-in"></i>
             </span>
           </button>
@@ -100,13 +100,20 @@
               ng-if="['SP', 'MyInfo'].includes(vm.authType)"
               class="form-locked-msg padded-view"
             >
-              Login with SingPass to access this form. Your SingPass ID will be
+              Login with Singpass to access this form. Your Singpass ID will be
               included with your form submission.
             </div>
             <div ng-if="vm.authType==='CP'" class="form-locked-msg padded-view">
-              Login with CorpPass to access this form. Your Entity ID and
-              CorpPass ID will be included with your form submission.
+              Corporate entity login is required for this form. Your Singpass ID
+              and corporate Entity ID will be included with your form
+              submission.
             </div>
+          </div>
+          <div
+            ng-if="vm.authType==='CP' && (vm.userName || vm.isTemplate)"
+            class="form-locked-msg padded-view"
+          >
+            <div>Logged in as corporate user</div>
           </div>
           <label
             class="remember-me-btn"
