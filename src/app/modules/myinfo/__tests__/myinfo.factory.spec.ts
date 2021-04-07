@@ -2,7 +2,7 @@ import { mocked } from 'ts-jest/utils'
 
 import config from 'src/config/config'
 import { ISpcpMyInfo } from 'src/config/feature-manager'
-import { Environment } from 'src/types'
+import { Environment, IPopulatedForm } from 'src/types'
 
 import { MyInfoData } from '../myinfo.adapter'
 import { createMyInfoFactory } from '../myinfo.factory'
@@ -45,10 +45,9 @@ describe('myinfo.factory', () => {
     )
     const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
     const extractUinFinResult = MyInfoFactory.extractUinFin('')
-    const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
-      '',
-      [],
-      '',
+    const fetchMyInfoDataResult = await MyInfoFactory.fetchMyInfoData(
+      ({} as unknown) as IPopulatedForm,
+      {},
     )
     const prefillMyInfoFieldsResult = MyInfoFactory.prefillMyInfoFields(
       {} as MyInfoData,
@@ -71,7 +70,7 @@ describe('myinfo.factory', () => {
     expect(parseMyInfoRelayStateResult._unsafeUnwrapErr()).toEqual(error)
     expect(createRedirectURLResult._unsafeUnwrapErr()).toEqual(error)
     expect(extractUinFinResult._unsafeUnwrapErr()).toEqual(error)
-    expect(fetchMyInfoPersonDataResult._unsafeUnwrapErr()).toEqual(error)
+    expect(fetchMyInfoDataResult._unsafeUnwrapErr()).toEqual(error)
     expect(prefillMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
     expect(saveMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
@@ -94,10 +93,9 @@ describe('myinfo.factory', () => {
     )
     const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
     const extractUinFinResult = MyInfoFactory.extractUinFin('')
-    const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
-      '',
-      [],
-      '',
+    const fetchMyInfoDataResult = await MyInfoFactory.fetchMyInfoData(
+      ({} as unknown) as IPopulatedForm,
+      {},
     )
     const prefillMyInfoFieldsResult = MyInfoFactory.prefillMyInfoFields(
       {} as MyInfoData,
@@ -120,7 +118,7 @@ describe('myinfo.factory', () => {
     expect(parseMyInfoRelayStateResult._unsafeUnwrapErr()).toEqual(error)
     expect(createRedirectURLResult._unsafeUnwrapErr()).toEqual(error)
     expect(extractUinFinResult._unsafeUnwrapErr()).toEqual(error)
-    expect(fetchMyInfoPersonDataResult._unsafeUnwrapErr()).toEqual(error)
+    expect(fetchMyInfoDataResult._unsafeUnwrapErr()).toEqual(error)
     expect(prefillMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
     expect(saveMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
