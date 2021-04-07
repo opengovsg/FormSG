@@ -50,7 +50,7 @@ export const generateDefaultField = (
     | IRatingField
     | IShortTextField
     | ILongTextField
-  >,
+  > & { _id: string },
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
@@ -230,8 +230,9 @@ export const generateNewSingleAnswerResponse = (
 
 export const generateUnprocessedSingleAnswerResponse = (
   fieldType: BasicField,
+  customParams?: Partial<ISingleAnswerResponse>,
 ): ISingleAnswerResponse => {
-  return pick(generateNewSingleAnswerResponse(fieldType), [
+  return pick(generateNewSingleAnswerResponse(fieldType, customParams), [
     '_id',
     'question',
     'fieldType',
