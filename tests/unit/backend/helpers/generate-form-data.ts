@@ -1,5 +1,6 @@
 /* eslint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
+import { pick } from 'lodash'
 
 import {
   ProcessedAttachmentResponse,
@@ -225,6 +226,17 @@ export const generateNewSingleAnswerResponse = (
     isVisible: true,
     ...customParams,
   }
+}
+
+export const generateUnprocessedSingleAnswerResponse = (
+  fieldType: BasicField,
+): ISingleAnswerResponse => {
+  return pick(generateNewSingleAnswerResponse(fieldType), [
+    '_id',
+    'question',
+    'fieldType',
+    'answer',
+  ])
 }
 
 export const generateAttachmentResponse = (
