@@ -12,7 +12,9 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
-import getSubmissionModel from 'src/app/models/submission.server.model'
+import getSubmissionModel, {
+  getEncryptSubmissionModel,
+} from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
   DatabaseError,
@@ -55,6 +57,7 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
+const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
 const app = setupApp(undefined, AdminFormsRouter, {
   setupWithAuth: true,
@@ -2614,6 +2617,288 @@ describe('admin-form.routes', () => {
     })
   })
 
+  describe('GET /:formId/adminform/submissions', () => {
+    let defaultForm: IFormDocument
+
+    beforeEach(async () => {
+      defaultForm = (await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'any public key',
+        admin: defaultUser._id,
+      })) as IFormDocument
+    })
+
+    it('should return 200 with encrypted submission data of queried submissionId (without attachments)', async () => {
+      // Arrange
+      const expectedSubmissionParams = {
+        encryptedContent: 'any encrypted content',
+        verifiedContent: 'any verified content',
+      }
+      const submission = await createSubmission({
+        form: defaultForm,
+        ...expectedSubmissionParams,
+      })
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(submission._id),
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        attachmentMetadata: {},
+        content: expectedSubmissionParams.encryptedContent,
+        refNo: String(submission._id),
+        submissionTime: expect.any(String),
+        verified: expectedSubmissionParams.verifiedContent,
+      })
+    })
+
+    it('should return 200 with encrypted submission data of queried submissionId (with attachments)', async () => {
+      // Arrange
+      const expectedSubmissionParams = {
+        encryptedContent: 'any encrypted content',
+        verifiedContent: 'any verified content',
+        attachmentMetadata: new Map([
+          ['fieldId1', 'some.attachment.url'],
+          ['fieldId2', 'some.other.attachment.url'],
+        ]),
+      }
+      const submission = await createSubmission({
+        form: defaultForm,
+        ...expectedSubmissionParams,
+      })
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(submission._id),
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        attachmentMetadata: {
+          fieldId1: expect.stringContaining(
+            expectedSubmissionParams.attachmentMetadata.get('fieldId1') ?? 'no',
+          ),
+          fieldId2: expect.stringContaining(
+            expectedSubmissionParams.attachmentMetadata.get('fieldId2') ?? 'no',
+          ),
+        },
+        content: expectedSubmissionParams.encryptedContent,
+        refNo: String(submission._id),
+        submissionTime: expect.any(String),
+        verified: expectedSubmissionParams.verifiedContent,
+      })
+    })
+
+    it('should return 400 when form of given formId is not an encrypt mode form', async () => {
+      // Arrange
+      const emailForm = await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request
+        .get(`/${emailForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(new ObjectId()),
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: 'Attempted to submit encrypt form to email endpoint',
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(new ObjectId()),
+        })
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Form that defaultUser has no access to.
+      const inaccessibleForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        permissionList: [],
+      })
+
+      // Act
+      const response = await request
+        .get(`/${inaccessibleForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(new ObjectId()),
+        })
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when submission cannot be found', async () => {
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(new ObjectId()),
+        })
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: 'Unable to find encrypted submission from database',
+      })
+    })
+
+    it('should return 404 when form to retrieve submission for cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request
+        .get(`/${invalidFormId}/adminform/submissions`)
+        .query({
+          submissionId: String(new ObjectId()),
+        })
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form to retrieve submission for is archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request
+        .get(`/${archivedForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(new ObjectId()),
+        })
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Clear user collection
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request
+        .get(`/${new ObjectId()}/adminform/submissions`)
+        .query({
+          submissionId: String(new ObjectId()),
+        })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving submission', async () => {
+      // Arrange
+      jest
+        .spyOn(EncryptSubmissionModel, 'findEncryptedSubmissionById')
+        .mockRejectedValueOnce(new Error('ohno'))
+      const submission = await createSubmission({
+        form: defaultForm,
+        encryptedContent: 'any encrypted content',
+        verifiedContent: 'any verified content',
+      })
+
+      // Act
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(submission._id),
+        })
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: expect.stringContaining('ohno'),
+      })
+    })
+
+    it('should return 500 when error occurs whilst creating presigned attachment urls', async () => {
+      // Arrange
+      // Mock error.
+      jest
+        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .mockRejectedValueOnce(new Error('something went wrong'))
+
+      const submission = await createSubmission({
+        form: defaultForm,
+        encryptedContent: 'any encrypted content',
+        verifiedContent: 'any verified content',
+        attachmentMetadata: new Map([
+          ['fieldId1', 'some.attachment.url'],
+          ['fieldId2', 'some.other.attachment.url'],
+        ]),
+      })
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions`)
+        .query({
+          submissionId: String(submission._id),
+        })
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Failed to create attachment URL',
+      })
+    })
+  })
+
   describe('GET /:formId/adminform/submissions/count', () => {
     it('should return 200 with 0 count when email mode form has no submissions', async () => {
       // Arrange
@@ -3498,3 +3783,27 @@ describe('admin-form.routes', () => {
     })
   })
 })
+
+// Helper utils
+const createSubmission = ({
+  form,
+  encryptedContent,
+  verifiedContent,
+  attachmentMetadata,
+}: {
+  form: IFormDocument
+  encryptedContent: string
+  attachmentMetadata?: Map<string, string>
+  verifiedContent?: string
+}) => {
+  return SubmissionModel.create({
+    submissionType: SubmissionType.Encrypt,
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    attachmentMetadata,
+    encryptedContent,
+    verifiedContent,
+    version: 1,
+  })
+}
