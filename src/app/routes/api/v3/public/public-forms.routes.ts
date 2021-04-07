@@ -55,8 +55,7 @@ PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/feedback').post(
  * @returns 200 - submission made
  * @returns 400 - submission has bad data and could not be processed
  */
-PublicFormsRouter.post(
-  '/:formId([a-fA-F0-9]{24})/submissions/email ',
+PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/submissions/email').post(
   limitRate({ max: rateLimitConfig.submissions }),
   CaptchaFactory.validateCaptchaParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
