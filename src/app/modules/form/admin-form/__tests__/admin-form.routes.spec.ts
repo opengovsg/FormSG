@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
-import { times } from 'lodash'
+import { take, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 import SparkMD5 from 'spark-md5'
@@ -3303,6 +3303,276 @@ describe('admin-form.routes', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
+  describe('GET /:formId/adminform/submissions/metadata', () => {
+    let defaultForm: IFormDocument
+
+    beforeEach(async () => {
+      defaultForm = (await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'any public key',
+        admin: defaultUser._id,
+      })) as IFormDocument
+    })
+
+    it('should return 200 with empty results if no metadata exists', async () => {
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/metadata`)
+        .query({
+          page: 1,
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({ count: 0, metadata: [] })
+    })
+
+    it('should return 200 with requested page of metadata when metadata exists', async () => {
+      // Arrange
+      // Create 11 submissions
+      const submissions = (
+        await Promise.all(
+          times(11, (count) =>
+            createSubmission({
+              form: defaultForm,
+              encryptedContent: `any encrypted content ${count}`,
+              verifiedContent: `any verified content ${count}`,
+            }),
+          ),
+        )
+      )
+        // @ts-ignore
+        .sort((a, b) => b.created! - a.created!)
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/metadata`)
+        .query({
+          page: 1,
+        })
+
+      // Assert
+      // Take first 10 submissions
+      const expected = take(submissions, 10).map((s, index) => ({
+        number: 11 - index,
+        refNo: String(s._id),
+        submissionTime: expect.any(String),
+      }))
+      expect(response.status).toEqual(200)
+      // Should be 11, but only return metadata of last 10 submissions due to page size.
+      expect(response.body).toEqual({
+        count: 11,
+        metadata: expected,
+      })
+    })
+
+    it('should return 200 with empty results if query.page does not have metadata', async () => {
+      // Arrange
+      // Create single submission
+      await createSubmission({
+        form: defaultForm,
+        encryptedContent: `any encrypted content`,
+        verifiedContent: `any verified content`,
+      })
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/metadata`)
+        .query({
+          // Page 2 should have no submissions
+          page: 2,
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Single submission count, but no metadata returned
+      expect(response.body).toEqual({
+        count: 1,
+        metadata: [],
+      })
+    })
+
+    it('should return 200 with metadata of single submissionId when query.submissionId is provided', async () => {
+      // Arrange
+      // Create 3 submissions
+      const submissions = await Promise.all(
+        times(3, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+          }),
+        ),
+      )
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/metadata`)
+        .query({
+          submissionId: String(submissions[1]._id),
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Only return the single submission id's metadata
+      expect(response.body).toEqual({
+        count: 1,
+        metadata: [
+          {
+            number: 1,
+            refNo: String(submissions[1]._id),
+            submissionTime: expect.any(String),
+          },
+        ],
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/metadata`)
+        .query({
+          page: 10,
+        })
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Form that defaultUser has no access to.
+      const inaccessibleForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        permissionList: [],
+      })
+
+      // Act
+      const response = await request
+        .get(`/${inaccessibleForm._id}/adminform/submissions/metadata`)
+        .query({
+          page: 10,
+        })
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form to retrieve submission metadata for cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request
+        .get(`/${invalidFormId}/adminform/submissions/metadata`)
+        .query({
+          page: 10,
+        })
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form to retrieve submission metadata for is archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request
+        .get(`/${archivedForm._id}/adminform/submissions/metadata`)
+        .query({
+          page: 10,
+        })
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Clear user collection
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request
+        .get(`/${new ObjectId()}/adminform/submissions/metadata`)
+        .query({
+          page: 10,
+        })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving submission metadata list', async () => {
+      // Arrange
+      jest
+        .spyOn(EncryptSubmissionModel, 'findAllMetadataByFormId')
+        .mockRejectedValueOnce(new Error('ohno'))
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/metadata`)
+        .query({
+          page: 10,
+        })
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: expect.stringContaining('ohno'),
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving single submission metadata', async () => {
+      // Arrange
+      jest
+        .spyOn(EncryptSubmissionModel, 'findSingleMetadata')
+        .mockRejectedValueOnce(new Error('ohno'))
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/metadata`)
+        .query({
+          submissionId: new ObjectId().toHexString(),
+        })
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: expect.stringContaining('ohno'),
       })
     })
   })
