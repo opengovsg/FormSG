@@ -136,7 +136,7 @@
     "node-cache": "^5.1.2",
     "nodemailer": "^6.5.0",
     "opossum": "^6.0.0",
-    "p-queue": "^6.6.2",
+    "p-queue": "^7.1.0",
     "promise-retry": "^2.0.1",
     "puppeteer-core": "^5.3.1",
     "selectize": "0.12.6",
