@@ -11,7 +11,6 @@ import {
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
 import {
-  AuthType,
   FormLogoState,
   FormMetaView,
   FormSettings,
@@ -21,7 +20,6 @@ import {
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
-  SpcpLocals,
 } from '../../../../types'
 import { SettingsUpdateDto } from '../../../../types/api'
 import getFormModel from '../../../models/form.server.model'
@@ -41,12 +39,7 @@ import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
 
-import {
-  PRESIGNED_POST_EXPIRY_SECS,
-  PREVIEW_CORPPASS_UID,
-  PREVIEW_CORPPASS_UINFIN,
-  PREVIEW_SINGPASS_UINFIN,
-} from './admin-form.constants'
+import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
   EditFieldError,
@@ -209,26 +202,6 @@ export const createPresignedPostUrlForLogos = (
   InvalidFileTypeError | CreatePresignedUrlError
 > => {
   return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
-}
-
-export const getPreviewSpcpData = (authType: AuthType): SpcpLocals => {
-  switch (authType) {
-    case AuthType.MyInfo:
-      return {
-        uinFin: PREVIEW_SINGPASS_UINFIN,
-      }
-    case AuthType.SP:
-      return {
-        uinFin: PREVIEW_SINGPASS_UINFIN,
-      }
-    case AuthType.CP:
-      return {
-        uinFin: PREVIEW_CORPPASS_UINFIN,
-        userInfo: PREVIEW_CORPPASS_UID,
-      }
-    default:
-      return {}
-  }
 }
 
 export const extractMyInfoFieldIds = (

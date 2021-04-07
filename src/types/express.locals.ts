@@ -26,14 +26,6 @@ export type ResWithHashedFields<T> = T & {
   locals: { hashedFields?: Set<string> }
 }
 
-export type SpcpLocals =
-  | {
-      uinFin: string
-      hashedFields?: Set<string>
-    }
-  | { uinFin: string; userInfo: string }
-  | { [key: string]: never } // empty object
-
 export type EmailRespondentConfirmationField = {
   question: string
   answerTemplate: string[]
