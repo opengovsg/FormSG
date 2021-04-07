@@ -6,7 +6,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, SpcpSession } from '../../../types'
+import { AuthType } from '../../../types'
 import { ApplicationError } from '../core/core.errors'
 
 import {
@@ -401,17 +401,15 @@ export class SpcpService {
    * @return err(VerifyJwtError) if the jwt exists but could not be authenticated
    * @return err(InvalidJwtError) if the jwt exists but the payload is invalid
    */
-  getSpcpSession(
+  extractJwtPayloadFromRequest(
     authType: AuthType.SP | AuthType.CP,
     cookies: SpcpCookies,
   ): ResultAsync<
-    SpcpSession,
+    JwtPayload,
     VerifyJwtError | InvalidJwtError | MissingJwtError
   > {
     return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
-      this.extractJwtPayload(jwtResult, authType).map(({ userName }) => ({
-        userName,
-      })),
+      this.extractJwtPayload(jwtResult, authType),
     )
   }
 }
