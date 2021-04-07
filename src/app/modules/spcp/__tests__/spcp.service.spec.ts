@@ -800,7 +800,7 @@ describe('spcp.service', () => {
     })
   })
 
-  describe('getSpcpSession', () => {
+  describe('extractJwtPayloadFromRequest', () => {
     it('should return a SP JWT payload when there is a valid JWT in the request', async () => {
       // Arrange
       const spcpService = new SpcpService(MOCK_PARAMS)
@@ -811,7 +811,10 @@ describe('spcp.service', () => {
       )
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.SP, MOCK_COOKIES)
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.SP,
+        MOCK_COOKIES,
+      )
 
       // Assert
       expect(result._unsafeUnwrap()).toEqual(MOCK_SP_JWT_PAYLOAD)
@@ -827,12 +830,13 @@ describe('spcp.service', () => {
       )
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.CP, MOCK_COOKIES)
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.CP,
+        MOCK_COOKIES,
+      )
 
       // Assert
-      expect(result._unsafeUnwrap()).toEqual({
-        userName: MOCK_CP_JWT_PAYLOAD.userName,
-      })
+      expect(result._unsafeUnwrap()).toEqual(MOCK_CP_JWT_PAYLOAD)
     })
 
     it('should return MissingJwtError if there is no JWT when client authenticates using SP', async () => {
@@ -841,7 +845,10 @@ describe('spcp.service', () => {
       const expected = new MissingJwtError()
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.SP, {})
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.SP,
+        {},
+      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
@@ -853,7 +860,10 @@ describe('spcp.service', () => {
       const expected = new MissingJwtError()
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.CP, {})
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.CP,
+        {},
+      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
@@ -870,7 +880,10 @@ describe('spcp.service', () => {
       const expected = new VerifyJwtError()
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.SP, MOCK_COOKIES)
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.SP,
+        MOCK_COOKIES,
+      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
@@ -887,7 +900,10 @@ describe('spcp.service', () => {
       const expected = new VerifyJwtError()
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.CP, MOCK_COOKIES)
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.CP,
+        MOCK_COOKIES,
+      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
@@ -901,7 +917,10 @@ describe('spcp.service', () => {
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.SP, MOCK_COOKIES)
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.SP,
+        MOCK_COOKIES,
+      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
@@ -916,7 +935,10 @@ describe('spcp.service', () => {
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.getSpcpSession(AuthType.CP, MOCK_COOKIES)
+      const result = await spcpService.extractJwtPayloadFromRequest(
+        AuthType.CP,
+        MOCK_COOKIES,
+      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
