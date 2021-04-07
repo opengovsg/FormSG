@@ -522,7 +522,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
-        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
 
@@ -556,7 +556,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
-        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         // Act
@@ -596,14 +596,11 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
         )
-        MockMyInfoFactory.createFormWithMyInfoMeta.mockReturnValueOnce(
-          okAsync({
-            prefilledFields: [],
-            spcpSession: MOCK_SPCP_SESSION,
-          }),
+        MockMyInfoFactory.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+          okAsync([]),
         )
 
         // Act
@@ -652,7 +649,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoMissingAccessTokenError()),
         )
 
@@ -679,7 +676,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoCookieAccessError()),
         )
 
@@ -706,7 +703,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoCookieStateError()),
         )
 
@@ -733,7 +730,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoAuthTypeError()),
         )
 
@@ -760,7 +757,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(new MyInfoNoESrvcIdError()),
         )
 
@@ -787,7 +784,7 @@ describe('public-form.controller', () => {
           clearCookie: jest.fn().mockReturnThis(),
         })
 
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           errAsync(
             new MissingFeatureError(
               'testing is the missing feature' as FeatureNames,
@@ -821,10 +818,10 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
         })
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
         )
-        MockMyInfoFactory.createFormWithMyInfoMeta.mockReturnValueOnce(
+        MockMyInfoFactory.prefillAndSaveMyInfoFields.mockReturnValueOnce(
           errAsync(expected),
         )
 
@@ -861,7 +858,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SPCP_FORM),
         )
-        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
           errAsync(new MissingJwtError()),
         )
 
@@ -1028,7 +1025,7 @@ describe('public-form.controller', () => {
 
         const mockRes = expressHandler.mockResponse()
 
-        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
@@ -1064,7 +1061,7 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse()
 
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockSpcpFactory.getSpcpSession.mockReturnValueOnce(
+        MockSpcpFactory.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
@@ -1113,14 +1110,11 @@ describe('public-form.controller', () => {
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockMyInfoFactory.fetchMyInfoData.mockReturnValueOnce(
+        MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
         )
-        MockMyInfoFactory.createFormWithMyInfoMeta.mockReturnValueOnce(
-          okAsync({
-            prefilledFields: [],
-            spcpSession: { userName: MOCK_MYINFO_DATA.getUinFin() },
-          }),
+        MockMyInfoFactory.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+          okAsync([]),
         )
 
         // Act
