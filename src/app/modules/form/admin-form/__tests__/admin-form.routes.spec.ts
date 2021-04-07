@@ -31,6 +31,7 @@ import {
   IUserSchema,
   ResponseMode,
   Status,
+  SubmissionCursorData,
   SubmissionType,
 } from 'src/types'
 
@@ -3574,6 +3575,324 @@ describe('admin-form.routes', () => {
       expect(response.body).toEqual({
         message: expect.stringContaining('ohno'),
       })
+    })
+  })
+
+  describe('GET /:formId/adminform/submissions/download', () => {
+    let defaultForm: IFormDocument
+
+    beforeEach(async () => {
+      defaultForm = (await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'any public key',
+        admin: defaultUser._id,
+      })) as IFormDocument
+    })
+
+    it('should return 200 with stream of encrypted responses without attachment URLs when query.downloadAttachments is false', async () => {
+      // Arrange
+      const submissions = await Promise.all(
+        times(11, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map([
+              ['fieldId1', `some.attachment.url.${count}`],
+              ['fieldId2', `some.other.attachment.url.${count}`],
+            ]),
+          }),
+        ),
+      )
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/download`)
+        .query({ downloadAttachments: false })
+        .buffer()
+        .parse((res, cb) => {
+          let buffer = ''
+          res.on('data', (chunk) => {
+            buffer += chunk
+          })
+          res.on('end', () => cb(null, buffer))
+        })
+
+      // Assert
+      const expectedSorted = submissions
+        .map((s) =>
+          jsonParseStringify({
+            _id: s._id,
+            submissionType: s.submissionType,
+            // Expect returned submissions to not have attachment metadata.
+            attachmentMetadata: {},
+            encryptedContent: s.encryptedContent,
+            verifiedContent: s.verifiedContent,
+            created: s.created,
+          }),
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      const actualSorted = (response.body as string)
+        .split('\n')
+        .map(
+          (submissionStr: string) =>
+            JSON.parse(submissionStr) as SubmissionCursorData,
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      expect(response.status).toEqual(200)
+      expect(actualSorted).toEqual(expectedSorted)
+    })
+
+    it('should return 200 with stream of encrypted responses with attachment URLs when query.downloadAttachments is true', async () => {
+      // Arrange
+      const submissions = await Promise.all(
+        times(5, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map([
+              ['fieldId1', `some.attachment.url.${count}`],
+              ['fieldId2', `some.other.attachment.url.${count}`],
+            ]),
+          }),
+        ),
+      )
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/download`)
+        .query({ downloadAttachments: true })
+        .buffer()
+        .parse((res, cb) => {
+          let buffer = ''
+          res.on('data', (chunk) => {
+            buffer += chunk
+          })
+          res.on('end', () => cb(null, buffer))
+        })
+
+      // Assert
+      const expectedSorted = submissions
+        .map((s) =>
+          jsonParseStringify({
+            _id: s._id,
+            submissionType: s.submissionType,
+            // Expect returned submissions to also have attachment metadata.
+            attachmentMetadata: s.attachmentMetadata,
+            encryptedContent: s.encryptedContent,
+            verifiedContent: s.verifiedContent,
+            created: s.created,
+          }),
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+        .map((s) => ({
+          ...s,
+          // Require second map due to stringify stage prior to this.
+          attachmentMetadata: {
+            fieldId1: expect.stringContaining(s.attachmentMetadata['fieldId1']),
+            fieldId2: expect.stringContaining(s.attachmentMetadata['fieldId2']),
+          },
+        }))
+
+      const actualSorted = (response.body as string)
+        .split('\n')
+        .map(
+          (submissionStr: string) =>
+            JSON.parse(submissionStr) as SubmissionCursorData,
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      expect(response.status).toEqual(200)
+      expect(actualSorted).toEqual(expectedSorted)
+    })
+
+    it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
+      // Arrange
+      const submissions = await Promise.all(
+        times(5, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map([
+              ['fieldId1', `some.attachment.url.${count}`],
+              ['fieldId2', `some.other.attachment.url.${count}`],
+            ]),
+          }),
+        ),
+      )
+      // Set 2 submissions to be submitted 3-4 days ago.
+      const now = new Date()
+      submissions[2].created = subDays(now, 3)
+      submissions[4].created = subDays(now, 4)
+      await submissions[2].save()
+      await submissions[4].save()
+      const expectedSubmissionIds = [
+        String(submissions[2]._id),
+        String(submissions[4]._id),
+      ]
+
+      // Act
+      const response = await request
+        .get(`/${defaultForm._id}/adminform/submissions/download`)
+        .query({
+          startDate: format(subDays(now, 4), 'yyyy-MM-dd'),
+          endDate: format(subDays(now, 3), 'yyyy-MM-dd'),
+        })
+        .buffer()
+        .parse((res, cb) => {
+          let buffer = ''
+          res.on('data', (chunk) => {
+            buffer += chunk
+          })
+          res.on('end', () => cb(null, buffer))
+        })
+
+      // Assert
+      const expectedSorted = submissions
+        .map((s) =>
+          jsonParseStringify({
+            _id: s._id,
+            submissionType: s.submissionType,
+            // Expect returned submissions to not have attachment metadata since query is false.
+            attachmentMetadata: {},
+            encryptedContent: s.encryptedContent,
+            verifiedContent: s.verifiedContent,
+            created: s.created,
+          }),
+        )
+        .filter((s) => expectedSubmissionIds.includes(s._id))
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      const actualSorted = (response.body as string)
+        .split('\n')
+        .map(
+          (submissionStr: string) =>
+            JSON.parse(submissionStr) as SubmissionCursorData,
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      expect(response.status).toEqual(200)
+      expect(actualSorted).toEqual(expectedSorted)
+    })
+
+    it('should return 400 when form of given formId is not an encrypt mode form', async () => {
+      // Arrange
+      const emailForm = await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/${emailForm._id}/adminform/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: 'Attempted to submit encrypt form to email endpoint',
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.get(
+        `/${defaultForm._id}/adminform/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Form that defaultUser has no access to.
+      const inaccessibleForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        permissionList: [],
+      })
+
+      // Act
+      const response = await request.get(
+        `/${inaccessibleForm._id}/adminform/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form to download submissions for cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request.get(
+        `/${invalidFormId}/adminform/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form to download submissions for is archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/${archivedForm._id}/adminform/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Clear user collection
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/${new ObjectId()}/adminform/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
     })
   })
 
