@@ -13,13 +13,17 @@ import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-f
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { aws } from 'src/config/config'
 import {
+  IPopulatedEncryptedForm,
   SubmissionCursorData,
   SubmissionData,
   SubmissionMetadata,
 } from 'src/types'
 
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
+  createEncryptSubmissionWithoutSave,
   getEncryptedSubmissionData,
   getSubmissionCursor,
   getSubmissionMetadata,
@@ -31,7 +35,49 @@ import {
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 describe('encrypt-submission.service', () => {
-  beforeEach(() => jest.restoreAllMocks())
+  beforeAll(async () => await dbHandler.connect())
+  beforeEach(async () => {
+    await dbHandler.clearDatabase()
+    jest.restoreAllMocks()
+  })
+  afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('createEncryptSubmissionWithoutSave', () => {
+    const MOCK_FORM = ({
+      admin: new ObjectId(),
+      _id: new ObjectId(),
+      title: 'mock title',
+      getUniqueMyInfoAttrs: () => [],
+      authType: 'NIL',
+    } as unknown) as IPopulatedEncryptedForm
+    const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
+    const MOCK_VERIFIED_CONTENT = 'mockVerifiedContent'
+    const MOCK_VERSION = 1
+    const MOCK_ATTACHMENT_METADATA = new Map<string, string>()
+    MOCK_ATTACHMENT_METADATA.set('a', 'b')
+
+    it('should create a new submission without saving it to the database', async () => {
+      const result = createEncryptSubmissionWithoutSave({
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        form: MOCK_FORM,
+        version: MOCK_VERSION,
+        attachmentMetadata: MOCK_ATTACHMENT_METADATA,
+        verifiedContent: MOCK_VERIFIED_CONTENT,
+      })
+      const foundInDatabase = await EncryptSubmission.findOne({
+        _id: result._id,
+      })
+
+      expect(result.encryptedContent).toBe(MOCK_ENCRYPTED_CONTENT)
+      expect(result.form).toEqual(MOCK_FORM._id)
+      expect(result.verifiedContent).toEqual(MOCK_VERIFIED_CONTENT)
+      expect(Object.fromEntries(result.attachmentMetadata!)).toEqual(
+        Object.fromEntries(MOCK_ATTACHMENT_METADATA),
+      )
+      expect(result.version).toEqual(MOCK_VERSION)
+      expect(foundInDatabase).toBeNull()
+    })
+  })
 
   describe('getSubmissionCursor', () => {
     it('should return cursor successfully when date range is not provided', async () => {
