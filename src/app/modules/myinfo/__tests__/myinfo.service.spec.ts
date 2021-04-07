@@ -1,10 +1,9 @@
 import bcrypt from 'bcrypt'
+import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
-import { errAsync, ok } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
-import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
@@ -18,12 +17,12 @@ import {
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { DatabaseError } from '../../core/core.errors'
 import { MyInfoData } from '../myinfo.adapter'
 import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
-  MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
   MyInfoMissingAccessTokenError,
   MyInfoParseRelayStateError,
@@ -190,13 +189,14 @@ describe('MyInfoService', () => {
     })
   })
 
-  describe('prefillMyInfoFields', () => {
-    it('should prefill fields correctly', () => {
+  describe('prefillAndSaveMyInfoFields', () => {
+    it('should prefill fields correctly', async () => {
       const mockData = new MyInfoData({
         data: MOCK_MYINFO_DATA,
         uinFin: MOCK_UINFIN,
       })
-      const result = myInfoService.prefillMyInfoFields(
+      const result = await myInfoService.prefillAndSaveMyInfoFields(
+        new ObjectId().toHexString(),
         mockData,
         MOCK_FORM_FIELDS as IFieldSchema[],
       )
@@ -258,7 +258,7 @@ describe('MyInfoService', () => {
         MOCK_POPULATED_FORM_FIELDS as IPossiblyPrefilledField[],
       )
       expect(result._unsafeUnwrapErr()).toEqual(
-        new Error('Failed to save MyInfo hashes to database'),
+        new DatabaseError('Failed to save MyInfo hashes to database'),
       )
     })
   })
@@ -381,7 +381,7 @@ describe('MyInfoService', () => {
     })
   })
 
-  describe('fetchMyInfoData', () => {
+  describe('getMyInfoDataForForm', () => {
     // NOTE: Mocks the underlying circuit breaker implementation to avoid network calls
     beforeEach(() => {
       myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
@@ -397,7 +397,7 @@ describe('MyInfoService', () => {
       mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
 
       // Act
-      const result = await myInfoService.fetchMyInfoData(
+      const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
         { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
       )
@@ -415,7 +415,7 @@ describe('MyInfoService', () => {
       mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
 
       // Act
-      const result = await myInfoService.fetchMyInfoData(
+      const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
         { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
       )
@@ -434,7 +434,7 @@ describe('MyInfoService', () => {
       mockGetPerson.mockRejectedValueOnce(new Error())
 
       // Act
-      const result = await myInfoService.fetchMyInfoData(
+      const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
         { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
       )
@@ -452,14 +452,14 @@ describe('MyInfoService', () => {
       // Arrange
       mockGetPerson.mockRejectedValue(new Error())
       for (let i = 0; i < 5; i++) {
-        await myInfoService.fetchMyInfoData(
+        await myInfoService.getMyInfoDataForForm(
           MOCK_MYINFO_FORM as IPopulatedForm,
           { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
         )
       }
 
       // Act
-      const result = await myInfoService.fetchMyInfoData(
+      const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
         { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
       )
@@ -474,97 +474,12 @@ describe('MyInfoService', () => {
       const expected = new MyInfoMissingAccessTokenError()
 
       // Act
-      const result = await myInfoService.fetchMyInfoData(
+      const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
         {},
       )
 
       // Assert
-      expect(result._unsafeUnwrapErr()).toEqual(expected)
-    })
-  })
-
-  describe('createFormWithMyInfo', () => {
-    // NOTE: Mocks the underlying circuit breaker implementation to avoid network calls
-    beforeEach(() => {
-      myInfoService = new MyInfoService(MOCK_SERVICE_PARAMS)
-    })
-
-    it('should return the filled form when the form and cookies are valid', async () => {
-      // Arrange
-      const MOCK_MYINFO_DATA = ({
-        getUinFin: jest.fn().mockReturnValue(MOCK_UINFIN),
-      } as unknown) as MyInfoData
-
-      const expected = {
-        prefilledFields: [],
-        spcpSession: { userName: MOCK_UINFIN },
-      }
-
-      // Spies to ensure that submethods have been called
-      const prefillMyInfoSpy = jest
-        .spyOn(myInfoService, 'prefillMyInfoFields')
-        .mockReturnValueOnce(ok([]))
-      const saveMyInfoSpy = jest.spyOn(myInfoService, 'saveMyInfoHashes')
-
-      // Act
-      const result = await myInfoService.createFormWithMyInfoMeta(
-        [],
-        MOCK_MYINFO_DATA,
-        MOCK_MYINFO_FORM._id,
-      )
-
-      // Assert
-      expect(prefillMyInfoSpy).toHaveBeenCalled()
-      expect(saveMyInfoSpy).toHaveBeenCalled()
-      expect(result._unsafeUnwrap()).toEqual(expected)
-    })
-
-    it('should return DatabaseError when the form could not be saved to the database', async () => {
-      // Arrange
-      const expected = new DatabaseError('mock db error')
-      const MOCK_MYINFO_DATA = ({
-        getUinFin: jest.fn().mockReturnValue(MOCK_UINFIN),
-      } as unknown) as MyInfoData
-      const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
-      const saveMyInfoSpy = jest
-        .spyOn(myInfoService, 'saveMyInfoHashes')
-        .mockReturnValueOnce(errAsync(expected))
-
-      // Act
-      const result = await myInfoService.createFormWithMyInfoMeta(
-        [],
-        MOCK_MYINFO_DATA,
-        MOCK_MYINFO_FORM._id,
-      )
-
-      // Assert
-      expect(prefillMyInfoSpy).toHaveBeenCalled()
-      expect(saveMyInfoSpy).toHaveBeenCalled()
-      expect(result._unsafeUnwrapErr()).toEqual(expected)
-    })
-
-    it('should return MyInfoHashingError when myInfoData could not be hashed', async () => {
-      // Arrange
-      const expected = new MyInfoHashingError('mock hash failed')
-      const MOCK_MYINFO_DATA = ({
-        getUinFin: jest.fn().mockReturnValue(MOCK_UINFIN),
-      } as unknown) as MyInfoData
-      const prefillMyInfoSpy = jest.spyOn(myInfoService, 'prefillMyInfoFields')
-      const saveMyInfoSpy = jest
-        .spyOn(myInfoService, 'saveMyInfoHashes')
-        .mockReturnValueOnce(errAsync(expected))
-
-      // Act
-      const result = await myInfoService.createFormWithMyInfoMeta(
-        [],
-        MOCK_MYINFO_DATA,
-        MOCK_MYINFO_FORM._id,
-      )
-
-      // Assert
-      expect(prefillMyInfoSpy).toHaveBeenCalled()
-      expect(saveMyInfoSpy).toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
   })
