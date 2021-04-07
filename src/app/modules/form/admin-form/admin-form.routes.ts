@@ -15,8 +15,6 @@ import * as AdminFormController from './admin-form.controller'
 import { DuplicateFormBody } from './admin-form.types'
 
 export const AdminFormsRouter = Router()
-// All routes in this handler should be protected by authentication.
-AdminFormsRouter.use(withUserAuthentication)
 
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
@@ -90,6 +88,8 @@ const fileUploadValidator = celebrate({
 })
 
 AdminFormsRouter.route('/adminform')
+  // All HTTP methods of route protected with authentication.
+  .all(withUserAuthentication)
   /**
    * List the forms managed by the user
    * @route GET /adminform
@@ -118,6 +118,8 @@ AdminFormsRouter.route('/adminform')
   .post(createFormValidator, AdminFormController.handleCreateForm)
 
 AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
+  // All HTTP methods of route protected with authentication.
+  .all(withUserAuthentication)
   /**
    * Return the specified form to the user.
    * @route GET /:formId/adminform
@@ -198,6 +200,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
  */
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/transfer-owner',
+  withUserAuthentication,
   celebrate({
     [Segments.BODY]: {
       email: Joi.string()
@@ -228,6 +231,7 @@ AdminFormsRouter.post(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/template',
+  withUserAuthentication,
   AdminFormController.handleGetTemplateForm,
 )
 
@@ -247,6 +251,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/copy',
+  withUserAuthentication,
   duplicateFormValidator,
   AdminFormController.handleCopyTemplateForm,
 )
@@ -266,6 +271,7 @@ AdminFormsRouter.post(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/preview',
+  withUserAuthentication,
   AdminFormController.handlePreviewAdminForm,
 )
 
@@ -284,6 +290,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/feedback',
+  withUserAuthentication,
   AdminFormController.handleGetFormFeedbacks,
 )
 
@@ -302,6 +309,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/feedback/count',
+  withUserAuthentication,
   AdminFormController.handleCountFormFeedback,
 )
 
@@ -320,6 +328,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/feedback/download',
+  withUserAuthentication,
   AdminFormController.handleStreamFormFeedback,
 )
 
@@ -341,6 +350,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions',
+  withUserAuthentication,
   celebrate({
     [Segments.QUERY]: {
       submissionId: Joi.string()
@@ -367,6 +377,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/count',
+  withUserAuthentication,
   celebrate({
     [Segments.QUERY]: Joi.object()
       .keys({
@@ -397,6 +408,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata',
+  withUserAuthentication,
   celebrate({
     [Segments.QUERY]: {
       submissionId: Joi.string().optional(),
@@ -426,6 +438,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/download',
+  withUserAuthentication,
   celebrate({
     [Segments.QUERY]: Joi.object()
       .keys({
@@ -457,6 +470,7 @@ AdminFormsRouter.get(
  */
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/images',
+  withUserAuthentication,
   fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForImages,
 )
@@ -477,6 +491,7 @@ AdminFormsRouter.post(
  */
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/logos',
+  withUserAuthentication,
   fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForLogos,
 )
