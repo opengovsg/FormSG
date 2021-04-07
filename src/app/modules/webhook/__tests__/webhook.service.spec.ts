@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectID } from 'bson'
-import { SubmissionNotFoundError } from 'dist/backend/app/modules/submission/submission.errors'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
@@ -20,6 +19,7 @@ import {
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { SubmissionNotFoundError } from '../../submission/submission.errors'
 import { saveWebhookRecord, sendWebhook } from '../webhook.service'
 
 // define suite-wide mocks
