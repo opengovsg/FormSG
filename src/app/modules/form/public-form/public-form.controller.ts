@@ -231,11 +231,11 @@ export const handleGetPublicForm: RequestHandler<
     case AuthType.SP:
     case AuthType.CP:
       return SpcpFactory.extractJwtPayloadFromRequest(authType, req.cookies)
-        .map((spcpSession) =>
+        .map(({ userName }) =>
           res.json({
             form: publicForm,
             isIntranetUser,
-            spcpSession,
+            spcpSession: { userName },
           }),
         )
         .mapErr((error) => {
