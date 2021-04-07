@@ -28,7 +28,7 @@ import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
-import { pushData as webhookPushData } from '../../webhook/webhook.service'
+import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
   getProcessedResponses,
   sendEmailConfirmations,
@@ -332,12 +332,16 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   })
 
   // Fire webhooks if available
+  // Note that we push data to webhook endpoints on a best effort basis
+  // As such, we should not await on these post requests
   const webhookUrl = form.webhook?.url
-  const submissionWebhookView = submission.getWebhookView()
   if (webhookUrl) {
-    // Note that we push data to webhook endpoints on a best effort basis
-    // As such, we should not await on these post requests
-    void webhookPushData(webhookUrl, submissionWebhookView)
+    void WebhookFactory.sendWebhook(
+      submission,
+      webhookUrl,
+    ).andThen((response) =>
+      WebhookFactory.saveWebhookRecord(submission._id, response),
+    )
   }
 
   // Send Email Confirmations

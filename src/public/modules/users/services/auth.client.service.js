@@ -56,7 +56,7 @@ function Auth($q, $http, $state, $window) {
 
   function refreshUser() {
     return $http
-      .get('/user')
+      .get('/api/v3/user')
       .then(({ data }) => {
         setUser(data)
         return data
@@ -69,7 +69,7 @@ function Auth($q, $http, $state, $window) {
 
   function checkUser(credentials) {
     let deferred = $q.defer()
-    $http.post('/auth/checkuser', credentials).then(
+    $http.post('/api/v3/auth/email/validate', credentials).then(
       function (response) {
         deferred.resolve(response.data)
       },
@@ -82,7 +82,7 @@ function Auth($q, $http, $state, $window) {
 
   function sendOtp(credentials) {
     let deferred = $q.defer()
-    $http.post('/auth/sendotp', credentials).then(
+    $http.post('/api/v3/auth/otp/generate', credentials).then(
       function (response) {
         deferred.resolve(response.data)
       },
@@ -95,7 +95,7 @@ function Auth($q, $http, $state, $window) {
 
   function verifyOtp(credentials) {
     let deferred = $q.defer()
-    $http.post('/auth/verifyotp', credentials).then(
+    $http.post('/api/v3/auth/otp/verify', credentials).then(
       function (response) {
         setUser(response.data)
         deferred.resolve()
@@ -108,7 +108,7 @@ function Auth($q, $http, $state, $window) {
   }
 
   function signOut() {
-    $http.get('/auth/signout').then(
+    $http.get('/api/v3/auth/logout').then(
       function () {
         $window.localStorage.removeItem('user')
         // Clear contact banner on logout

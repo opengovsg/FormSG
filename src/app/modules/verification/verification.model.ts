@@ -33,7 +33,10 @@ const VerificationFieldSchema = new Schema<IVerificationFieldSchema>({
 })
 
 const compileVerificationModel = (db: Mongoose): IVerificationModel => {
-  const VerificationSchema = new Schema<IVerificationSchema>({
+  const VerificationSchema = new Schema<
+    IVerificationSchema,
+    IVerificationModel
+  >({
     formId: {
       type: Schema.Types.ObjectId,
       ref: FORM_SCHEMA_ID,

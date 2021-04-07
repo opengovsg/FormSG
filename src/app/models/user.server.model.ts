@@ -18,7 +18,7 @@ export const USER_SCHEMA_ID = 'User'
 const compileUserModel = (db: Mongoose) => {
   const Agency = getAgencyModel(db)
 
-  const UserSchema: Schema<IUserSchema> = new Schema(
+  const UserSchema: Schema<IUserSchema, IUserModel> = new Schema(
     {
       email: {
         type: String,
@@ -59,7 +59,8 @@ const compileUserModel = (db: Mongoose) => {
             if (!phoneNumber) return false
             return phoneNumber.isValid()
           },
-          message: (props) => `${props.value} is not a valid mobile number`,
+          message: (props: { value: string }) =>
+            `${props.value} is not a valid mobile number`,
         },
       },
       lastAccessed: Date,
