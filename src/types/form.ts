@@ -269,14 +269,6 @@ export type FormMetaView = Pick<
 }
 
 /**
- * Mapping type between authType into an output function to ensure that the indexed type has transformations for all forms.
- * F is a function type that maps authType into the output
- */
-export type FormController<F> = {
-  [K in keyof typeof AuthType]: F
-}
-
-/**
  * The current session of a user who is logged in
  */
 export type UserSession = {
