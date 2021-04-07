@@ -230,7 +230,7 @@ export const handleGetPublicForm: RequestHandler<
       return res.json({ form: publicForm, isIntranetUser })
     case AuthType.SP:
     case AuthType.CP:
-      return SpcpFactory.getSpcpSession(authType, req.cookies)
+      return SpcpFactory.extractJwtPayloadFromRequest(authType, req.cookies)
         .map((spcpSession) =>
           res.json({
             form: publicForm,
@@ -255,13 +255,16 @@ export const handleGetPublicForm: RequestHandler<
     case AuthType.MyInfo: {
       // Step 1. Fetch required data and fill the form based off data retrieved
       return (
-        MyInfoFactory.fetchMyInfoData(form, req.cookies)
+        MyInfoFactory.getMyInfoDataForForm(form, req.cookies)
           .andThen((myInfoData) => {
-            return MyInfoFactory.createFormWithMyInfoMeta(
-              form.toJSON().form_fields,
-              myInfoData,
+            return MyInfoFactory.prefillAndSaveMyInfoFields(
               form._id,
-            )
+              myInfoData,
+              form.toJSON().form_fields,
+            ).map((prefilledFields) => ({
+              prefilledFields,
+              spcpSession: { userName: myInfoData.getUinFin() },
+            }))
           })
           // Check if the user is signed in
           .andThen(({ prefilledFields, spcpSession }) => {
