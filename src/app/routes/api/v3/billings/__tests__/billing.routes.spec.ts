@@ -14,9 +14,9 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { BillingFactory } from '../../../../../modules/billing/billing.factory'
 import { DatabaseError } from '../../../../../modules/core/core.errors'
-import { BillingRouter } from '../billing.routes'
+import { BillingsRouter } from '../billings.routes'
 
-const app = setupApp('/billings', BillingRouter, {
+const app = setupApp('/billings', BillingsRouter, {
   setupWithAuth: true,
 })
 

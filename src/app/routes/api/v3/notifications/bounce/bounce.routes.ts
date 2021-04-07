@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { handleSns } from '../../../../modules/bounce/bounce.controller'
+import { handleSns } from '../../../../../modules/bounce/bounce.controller'
 
 export const BounceRouter = Router()
 
@@ -13,4 +13,4 @@ export const BounceRouter = Router()
  *
  * @route POST /api/v3/notifications/bounce/email
  */
-BounceRouter.post('/', handleSns)
+BounceRouter.post('/email', handleSns)

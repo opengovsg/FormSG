@@ -4,10 +4,10 @@ import { Router } from 'express'
 import { withUserAuthentication } from '../../../../modules/auth/auth.middlewares'
 import * as BillingController from '../../../../modules/billing/billing.controller'
 
-export const BillingRouter = Router()
+export const BillingsRouter = Router()
 
 // All routes in this router are protected.
-BillingRouter.use(withUserAuthentication)
+BillingsRouter.use(withUserAuthentication)
 
 /**
  * Lists the SingPass/CorpPass (SPCP) logins made to forms
@@ -21,7 +21,7 @@ BillingRouter.use(withUserAuthentication)
  * @return 401 when request does not contain a user session
  * @return 500 when error occurs whilst querying database
  */
-BillingRouter.get(
+BillingsRouter.get(
   '/',
   celebrate({
     [Segments.QUERY]: Joi.object({
