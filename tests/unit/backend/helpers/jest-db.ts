@@ -15,7 +15,6 @@ import {
   IUserSchema,
   ResponseMode,
 } from 'src/types'
-import { SettingsUpdateDto } from 'src/types/api'
 
 import MemoryDatabaseServer from 'tests/database'
 
@@ -220,16 +219,6 @@ const getFullFormById = async (
 ): Promise<IPopulatedForm | null> =>
   await getEmailFormModel(mongoose).getFullFormById(formId)
 
-// 1. Get full form by id
-// 2. Patch in new settings
-const updateForm = async (
-  formId: string,
-  settingsToUpdate: SettingsUpdateDto,
-): Promise<IFormSchema | null> =>
-  await getEmailFormModel(mongoose)
-    .findByIdAndUpdate(formId, settingsToUpdate)
-    .exec()
-
 const dbHandler = {
   connect,
   closeDatabase,
@@ -241,7 +230,6 @@ const dbHandler = {
   insertEmailForm,
   insertEncryptForm,
   getFullFormById,
-  updateForm,
 }
 
 export default dbHandler
