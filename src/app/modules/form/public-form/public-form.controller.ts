@@ -42,7 +42,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleSubmitFeedback: RequestHandler<
   { formId: string },
-  unknown,
+  ErrorDto | { message: string; isPageFound: boolean; formTitle: string },
   { rating: number; comment: string }
 > = async (req, res) => {
   const { formId } = req.params
