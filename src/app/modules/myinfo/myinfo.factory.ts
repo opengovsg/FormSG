@@ -1,6 +1,5 @@
-import mongoose, { LeanDocument } from 'mongoose'
+import { LeanDocument } from 'mongoose'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
-import { Merge } from 'type-fest'
 
 import config from '../../../config/config'
 import FeatureManager, {
@@ -12,7 +11,6 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
-  UserSession,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
@@ -36,7 +34,6 @@ import { MyInfoService } from './myinfo.service'
 import {
   IMyInfoRedirectURLArgs,
   IPossiblyPrefilledField,
-  IPossiblyPrefilledFieldArray,
   MyInfoParsedRelayState,
 } from './myinfo.types'
 
@@ -53,10 +50,14 @@ interface IMyInfoFactory {
     MyInfoParsedRelayState,
     MyInfoParseRelayStateError | MissingFeatureError
   >
-  prefillMyInfoFields: (
+  prefillAndSaveMyInfoFields: (
+    formId: string,
     myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
-  ) => Result<IPossiblyPrefilledField[], MissingFeatureError>
+  ) => ResultAsync<
+    IPossiblyPrefilledField[],
+    MyInfoHashingError | DatabaseError
+  >
   saveMyInfoHashes: (
     uinFin: string,
     formId: string,
@@ -83,7 +84,7 @@ interface IMyInfoFactory {
     accessToken: string,
   ) => Result<string, MyInfoInvalidAccessTokenError | MissingFeatureError>
 
-  fetchMyInfoData: (
+  getMyInfoDataForForm: (
     form: IPopulatedForm,
     cookies: Record<string, unknown>,
   ) => ResultAsync<
@@ -97,15 +98,6 @@ interface IMyInfoFactory {
     | MissingFeatureError
     | MyInfoCookieAccessError
   >
-
-  createFormWithMyInfoMeta: (
-    formFields: mongoose.LeanDocument<IFieldSchema>[],
-    myInfoData: MyInfoData,
-    formId: string,
-  ) => ResultAsync<
-    Merge<UserSession, IPossiblyPrefilledFieldArray>,
-    DatabaseError | MyInfoHashingError
-  >
 }
 
 export const createMyInfoFactory = ({
@@ -116,15 +108,14 @@ export const createMyInfoFactory = ({
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     return {
       retrieveAccessToken: () => errAsync(error),
-      prefillMyInfoFields: () => err(error),
+      prefillAndSaveMyInfoFields: () => errAsync(error),
       saveMyInfoHashes: () => errAsync(error),
       fetchMyInfoHashes: () => errAsync(error),
       checkMyInfoHashes: () => errAsync(error),
       createRedirectURL: () => err(error),
       parseMyInfoRelayState: () => err(error),
       extractUinFin: () => err(error),
-      fetchMyInfoData: () => errAsync(error),
-      createFormWithMyInfoMeta: () => errAsync(error),
+      getMyInfoDataForForm: () => errAsync(error),
     }
   }
   return new MyInfoService({

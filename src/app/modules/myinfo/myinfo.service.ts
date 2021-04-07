@@ -9,7 +9,6 @@ import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
-import { Merge } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -19,7 +18,6 @@ import {
   IMyInfoHashSchema,
   IPopulatedForm,
   MyInfoAttribute,
-  UserSession,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
@@ -48,7 +46,6 @@ import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
   IPossiblyPrefilledField,
-  IPossiblyPrefilledFieldArray,
   MyInfoParsedRelayState,
 } from './myinfo.types'
 import {
@@ -286,14 +283,19 @@ export class MyInfoService {
 
   /**
    * Prefill given current form fields with given MyInfo data.
+   * Saves the has of the prefilled fields as well because the two operations are atomic and should not be separated
    * @param myInfoData
    * @param currFormFields
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
    */
-  prefillMyInfoFields(
+  prefillAndSaveMyInfoFields(
+    formId: string,
     myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
-  ): Result<IPossiblyPrefilledField[], never> {
+  ): ResultAsync<
+    IPossiblyPrefilledField[],
+    MyInfoHashingError | DatabaseError
+  > {
     const prefilledFields = currFormFields.map((field) => {
       if (!field.myInfo?.attr) return field
 
@@ -308,7 +310,11 @@ export class MyInfoService {
       prefilledField.disabled = isReadOnly
       return prefilledField
     })
-    return ok(prefilledFields)
+    return this.saveMyInfoHashes(
+      myInfoData.getUinFin(),
+      formId,
+      prefilledFields,
+    ).map(() => prefilledFields)
   }
 
   /**
@@ -471,7 +477,7 @@ export class MyInfoService {
   }
 
   /**
-   * Extracts myInfo data using the provided form and the cookies of the request
+   * Gets myInfo data using the provided form and the cookies of the request
    * @param form the form to validate
    * @param cookies cookies of the request
    * @returns ok(MyInfoData) if the form has been validated successfully
@@ -484,7 +490,7 @@ export class MyInfoService {
    * @returns err(MyInfoFetchError) if validated but the data could not be retrieved
    * @returns err(MissingFeatureError) if using an outdated version that does not support myInfo
    */
-  fetchMyInfoData(
+  getMyInfoDataForForm(
     form: IPopulatedForm,
     cookies: Record<string, unknown>,
   ): ResultAsync<
@@ -510,35 +516,5 @@ export class MyInfoService {
           ),
         ),
       )
-  }
-
-  /**
-   * Creates a form view with myInfo fields prefilled onto the form
-   * @param form The form to validate and fill
-   * @param cookies The cookies on the request
-   * @returns ok({prefilledFields, spcpSession}) if the form could be filled and myInfoData saved
-   * @returns err(MyInfoHashingError) if myInfoData could not be hashed
-   * @returns err(DatabaseError) if an error occurred while trying to save myInfoData
-   */
-  createFormWithMyInfoMeta(
-    formFields: mongoose.LeanDocument<IFieldSchema>[],
-    myInfoData: MyInfoData,
-    formId: string,
-  ): ResultAsync<
-    Merge<UserSession, IPossiblyPrefilledFieldArray>,
-    DatabaseError | MyInfoHashingError
-  > {
-    const uinFin = myInfoData.getUinFin()
-    return (
-      // 1. Fill the form based on the result
-      this.prefillMyInfoFields(myInfoData, formFields)
-        // 2. Hash and save to database
-        .asyncAndThen((prefilledFields) =>
-          this.saveMyInfoHashes(uinFin, formId, prefilledFields).map(() => ({
-            prefilledFields,
-            spcpSession: { userName: uinFin },
-          })),
-        )
-    )
   }
 }
