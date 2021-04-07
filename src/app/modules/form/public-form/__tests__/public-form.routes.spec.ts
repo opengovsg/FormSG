@@ -1,5 +1,5 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
-import _ from 'lodash'
+import { ObjectId } from 'bson-ext'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
@@ -196,7 +196,7 @@ describe('public-form.routes', () => {
         usedCount: 0,
         state: MyInfoCookieState.Success,
       })
-      const MOCK_FORM_ID = _.pad('', 24, '1')
+      const MOCK_FORM_ID = new ObjectId().toHexString()
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
           message: 'Form not found',
@@ -223,8 +223,9 @@ describe('public-form.routes', () => {
       })
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
-          message:
-            'If you think this is a mistake, please contact the agency that gave you the form link.',
+          message: form.inactiveMessage,
+          formTitle: form.title,
+          isPageFound: true,
         }),
       )
 
