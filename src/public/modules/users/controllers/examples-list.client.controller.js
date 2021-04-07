@@ -1,10 +1,12 @@
 'use strict'
 
+const ExamplesService = require('../../../services/ExamplesService')
+
 const PAGE_SIZE = 16
 
 angular.module('users').controller('ExamplesController', [
+  '$q',
   '$scope',
-  'AdminConsole',
   'Auth',
   'GTag',
   '$state',
@@ -17,8 +19,8 @@ angular.module('users').controller('ExamplesController', [
 ])
 
 function ExamplesController(
+  $q,
   $scope,
-  AdminConsole,
   Auth,
   GTag,
   $state,
@@ -129,12 +131,14 @@ function ExamplesController(
     const shouldGetTotalNumResults = pageNo === 0 && searchTerm !== ''
 
     // Get next page of forms and add to ui
-    AdminConsole.getExampleForms({
-      pageNo,
-      searchTerm,
-      agency,
-      shouldGetTotalNumResults,
-    }).then(
+    $q.when(
+      ExamplesService.getExampleForms({
+        pageNo,
+        searchTerm,
+        agency,
+        shouldGetTotalNumResults,
+      }),
+    ).then(
       function (response) {
         /* Form Properties
             ------------------
