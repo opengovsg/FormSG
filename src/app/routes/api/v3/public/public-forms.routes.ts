@@ -1,7 +1,13 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import * as EmailSubmissionController from 'src/app/modules/submission/email-submission/email-submission.controller'
+import { CaptchaFactory } from 'src/app/services/captcha/captcha.factory'
+import { limitRate } from 'src/app/utils/limit-rate'
+import { rateLimitConfig } from 'src/config/config'
+
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
+import * as EmailSubmissionMiddleware from '../../../../modules/submission/email-submission/email-submission.middleware'
 
 export const PublicFormsRouter = Router()
 
@@ -31,4 +37,29 @@ PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/feedback').post(
       .unknown(true),
   }),
   PublicFormController.handleSubmitFeedback,
+)
+
+/**
+ * Submit a form response, processing it as an email to be sent to
+ * the public servant who created the form. Optionally send a PDF
+ * containing the submission back to the user, if an email address
+ * was given. SMS autoreplies for mobile number fields are also sent if feature
+ * is enabled.
+ * @route POST /:formId/submissions/email
+ * @group forms - endpoints to serve forms
+ * @param formId.path.required - the form id
+ * @param response.body.required - contains the entire form submission
+ * @param captchaResponse.query - contains the reCAPTCHA response artifact, if any
+ * @consumes multipart/form-data
+ * @produces application/json
+ * @returns 200 - submission made
+ * @returns 400 - submission has bad data and could not be processed
+ */
+PublicFormsRouter.post(
+  '/:formId([a-fA-F0-9]{24})/submissions/email ',
+  limitRate({ max: rateLimitConfig.submissions }),
+  CaptchaFactory.validateCaptchaParams,
+  EmailSubmissionMiddleware.receiveEmailSubmission,
+  EmailSubmissionMiddleware.validateResponseParams,
+  EmailSubmissionController.handleEmailSubmission,
 )
