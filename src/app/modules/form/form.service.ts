@@ -252,27 +252,27 @@ export const checkIsIntranetFormAccess = (
   ip: string,
   form: IPopulatedForm,
 ): boolean => {
-  const isIntranetIpResult = IntranetFactory.isIntranetIp(ip).andThen(
-    (isIntranetUser) => {
-      // Warn if form is being accessed from within intranet
-      // and the form has authentication set
-      if (
-        isIntranetUser &&
-        [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
-      ) {
-        logger.warn({
-          message:
-            'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
-          meta: {
-            action: 'checkIsIntranetFormAccess',
-            formId: form._id,
-          },
-        })
-      }
-      return ok(isIntranetUser)
-    },
+  return (
+    IntranetFactory.isIntranetIp(ip)
+      .andThen((isIntranetUser) => {
+        // Warn if form is being accessed from within intranet
+        // and the form has authentication set
+        if (
+          isIntranetUser &&
+          [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
+        ) {
+          logger.warn({
+            message:
+              'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+            meta: {
+              action: 'checkIsIntranetFormAccess',
+              formId: form._id,
+            },
+          })
+        }
+        return ok(isIntranetUser)
+      })
+      // This is required becausing the factory can throw missing feature error on initialization
+      .unwrapOr(false)
   )
-
-  // This is required becausing the factory can throw missing feature error on initialization
-  return isIntranetIpResult.unwrapOr(false)
 }
