@@ -98,6 +98,12 @@ export class MyInfoService {
    */
   #spCookieMaxAge: number
 
+  #fetchMyInfoPersonData: (
+    accessToken: string,
+    requestedAttributes: MyInfoAttribute[],
+    singpassEserviceId: string,
+  ) => ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError>
+
   /**
    *
    * @param myInfoConfig Environment variables including myInfoClientMode and myInfoKeyPath
@@ -130,6 +136,54 @@ export class MyInfoService {
         this.#myInfoGovClient.getPerson(accessToken, attributes, eSrvcId),
       BREAKER_PARAMS,
     )
+
+    /**
+     * Fetches MyInfo person detail with given params.
+     * This function has circuit breaking built into it, and will throw an error
+     * if any recent usages of this function returned an error.
+     * @param params The params required to retrieve the data.
+     * @param params.uinFin The uin/fin of the person's data to retrieve.
+     * @param params.requestedAttributes The requested attributes to fetch.
+     * @param params.singpassEserviceId The eservice id of the form requesting the data.
+     * @returns the person object retrieved.
+     * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
+     */
+    this.#fetchMyInfoPersonData = function (
+      accessToken: string,
+      requestedAttributes: MyInfoAttribute[],
+      singpassEserviceId: string,
+    ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
+      return ResultAsync.fromPromise(
+        this.#myInfoPersonBreaker
+          .fire(
+            accessToken,
+            internalAttrListToScopes(requestedAttributes),
+            singpassEserviceId,
+          )
+          .then((response) => new MyInfoData(response)),
+        (error) => {
+          const logMeta = {
+            action: 'fetchMyInfoPersonData',
+            requestedAttributes,
+          }
+          if (CircuitBreaker.isOurError(error)) {
+            logger.error({
+              message: 'Circuit breaker tripped',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoCircuitBreakerError()
+          } else {
+            logger.error({
+              message: 'Error retrieving data from MyInfo',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoFetchError()
+          }
+        },
+      )
+    }
   }
 
   /**
@@ -210,54 +264,6 @@ export class MyInfoService {
       (error) => {
         const logMeta = {
           action: 'retrieveAccessToken',
-        }
-        if (CircuitBreaker.isOurError(error)) {
-          logger.error({
-            message: 'Circuit breaker tripped',
-            meta: logMeta,
-            error,
-          })
-          return new MyInfoCircuitBreakerError()
-        } else {
-          logger.error({
-            message: 'Error retrieving data from MyInfo',
-            meta: logMeta,
-            error,
-          })
-          return new MyInfoFetchError()
-        }
-      },
-    )
-  }
-
-  /**
-   * Fetches MyInfo person detail with given params.
-   * This function has circuit breaking built into it, and will throw an error
-   * if any recent usages of this function returned an error.
-   * @param params The params required to retrieve the data.
-   * @param params.uinFin The uin/fin of the person's data to retrieve.
-   * @param params.requestedAttributes The requested attributes to fetch.
-   * @param params.singpassEserviceId The eservice id of the form requesting the data.
-   * @returns the person object retrieved.
-   * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
-   */
-  private fetchMyInfoPersonData(
-    accessToken: string,
-    requestedAttributes: MyInfoAttribute[],
-    singpassEserviceId: string,
-  ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
-    return ResultAsync.fromPromise(
-      this.#myInfoPersonBreaker
-        .fire(
-          accessToken,
-          internalAttrListToScopes(requestedAttributes),
-          singpassEserviceId,
-        )
-        .then((response) => new MyInfoData(response)),
-      (error) => {
-        const logMeta = {
-          action: 'fetchMyInfoPersonData',
-          requestedAttributes,
         }
         if (CircuitBreaker.isOurError(error)) {
           logger.error({
@@ -497,7 +503,7 @@ export class MyInfoService {
       .andThen((myInfoCookie) => assertMyInfoCookieUnused(myInfoCookie))
       .asyncAndThen((cookiePayload) =>
         validateMyInfoForm(form).asyncAndThen((form) =>
-          this.fetchMyInfoPersonData(
+          this.#fetchMyInfoPersonData(
             cookiePayload.accessToken,
             requestedAttributes,
             form.esrvcId,

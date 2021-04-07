@@ -12,7 +12,6 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
-  MyInfoAttribute,
   UserSession,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
@@ -48,14 +47,6 @@ interface IMyInfoFactory {
   retrieveAccessToken: (
     authCode: string,
   ) => ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError>
-  fetchMyInfoPersonData: (
-    accessToken: string,
-    requestedAttributes: MyInfoAttribute[],
-    singpassEserviceId: string,
-  ) => ResultAsync<
-    MyInfoData,
-    MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
-  >
   parseMyInfoRelayState: (
     relayState: string,
   ) => Result<
@@ -125,7 +116,6 @@ export const createMyInfoFactory = ({
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     return {
       retrieveAccessToken: () => errAsync(error),
-      fetchMyInfoPersonData: () => errAsync(error),
       prefillMyInfoFields: () => err(error),
       saveMyInfoHashes: () => errAsync(error),
       fetchMyInfoHashes: () => errAsync(error),
