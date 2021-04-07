@@ -1,4 +1,3 @@
-import crypto from 'crypto'
 import { RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
@@ -6,7 +5,6 @@ import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
-import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
@@ -14,7 +12,6 @@ import {
   ResWithHashedFields,
   ResWithUinFin,
   SubmissionMetadataList,
-  WithParsedResponses,
 } from '../../../../types'
 import { ErrorDto } from '../../../../types/api'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
@@ -45,6 +42,7 @@ import {
   getSubmissionMetadataList,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
+  uploadAttachments,
 } from './encrypt-submission.service'
 import { EncryptSubmissionBody } from './encrypt-submission.types'
 import {
@@ -167,12 +165,6 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     })
   }
   const processedResponses = processedResponsesResult.value
-  // eslint-disable-next-line @typescript-eslint/no-extra-semi
-  ;(req.body as WithParsedResponses<
-    typeof req.body
-  >).parsedResponses = processedResponses
-  // Prevent downstream functions from using responses by deleting it.
-  // TODO(#1104): We want to remove the mutability of state that comes with delete.
   delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
@@ -214,7 +206,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
       uinFin,
       formId,
     ).andThen((hashes) =>
-      MyInfoFactory.checkMyInfoHashes(req.body.parsedResponses, hashes),
+      MyInfoFactory.checkMyInfoHashes(processedResponses, hashes),
     )
     if (myinfoResult.isErr()) {
       logger.error({
@@ -279,35 +271,26 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   }
 
   // Save Responses to Database
-  // TODO(frankchn): Extract S3 upload functionality to a service
   const formData = req.body.encryptedContent
-  const attachmentData = req.body.attachments || {}
   const { verified } = res.locals
-  const attachmentMetadata = new Map()
-  const attachmentUploadPromises = []
+  let attachmentMetadata = new Map<string, string>()
 
-  // Object.keys(attachmentData[fieldId].encryptedFile) [ 'submissionPublicKey', 'nonce', 'binary' ]
-  for (const fieldId in attachmentData) {
-    const individualAttachment = JSON.stringify(attachmentData[fieldId])
-
-    const hashStr = crypto
-      .createHash('sha256')
-      .update(individualAttachment)
-      .digest('hex')
-
-    const uploadKey =
-      form._id + '/' + crypto.randomBytes(20).toString('hex') + '/' + hashStr
-
-    attachmentMetadata.set(fieldId, uploadKey)
-    attachmentUploadPromises.push(
-      AwsConfig.s3
-        .upload({
-          Bucket: AwsConfig.attachmentS3Bucket,
-          Key: uploadKey,
-          Body: Buffer.from(individualAttachment),
-        })
-        .promise(),
+  if (req.body.attachments) {
+    const attachmentUploadResult = await uploadAttachments(
+      form._id,
+      req.body.attachments,
     )
+
+    if (attachmentUploadResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(
+        attachmentUploadResult.error,
+      )
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    } else {
+      attachmentMetadata = attachmentUploadResult.value
+    }
   }
 
   const submission = new EncryptSubmission({
@@ -319,22 +302,6 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     attachmentMetadata,
     version: req.body.version,
   })
-
-  try {
-    await Promise.all(attachmentUploadPromises)
-  } catch (err) {
-    logger.error({
-      message: 'Attachment upload error',
-      meta: logMeta,
-      error: err,
-    })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
-      spcpSubmissionFailure: false,
-    })
-  }
 
   let savedSubmission
   try {
@@ -385,7 +352,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
 
   return sendEmailConfirmations({
     form,
-    parsedResponses: req.body.parsedResponses,
+    parsedResponses: processedResponses,
     submission: savedSubmission,
   }).mapErr((error) => {
     logger.error({
