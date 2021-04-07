@@ -18,7 +18,6 @@ import { getEncryptSubmissionModel } from '../../../models/submission.server.mod
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
-import { uploadAttachments } from '../../attachment/attachment.service'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MissingFeatureError } from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
@@ -43,6 +42,7 @@ import {
   getSubmissionMetadataList,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
+  uploadAttachments,
 } from './encrypt-submission.service'
 import { EncryptSubmissionBody } from './encrypt-submission.types'
 import {
@@ -273,7 +273,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   // Save Responses to Database
   const formData = req.body.encryptedContent
   const { verified } = res.locals
-  let attachmentMetadata = new Map()
+  let attachmentMetadata = new Map<string, string>()
 
   if (req.body.attachments) {
     const attachmentUploadResult = await uploadAttachments(
@@ -282,10 +282,11 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     )
 
     if (attachmentUploadResult.isErr()) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
-        spcpSubmissionFailure: false,
+      const { statusCode, errorMessage } = mapRouteError(
+        attachmentUploadResult.error,
+      )
+      return res.status(statusCode).json({
+        message: errorMessage,
       })
     } else {
       attachmentMetadata = attachmentUploadResult.value

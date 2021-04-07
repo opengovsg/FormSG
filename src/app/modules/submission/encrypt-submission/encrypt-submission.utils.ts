@@ -10,6 +10,7 @@ import {
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
 import {
+  AttachmentUploadError,
   DatabaseError,
   MalformedParametersError,
   MissingFeatureError,
@@ -51,6 +52,12 @@ export const mapRouteError: MapRouteError = (
   coreErrorMessage = 'Sorry, something went wrong. Please try again.',
 ) => {
   switch (error.constructor) {
+    case AttachmentUploadError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
     case MissingFeatureError:
     case CreateRedirectUrlError:
       return {

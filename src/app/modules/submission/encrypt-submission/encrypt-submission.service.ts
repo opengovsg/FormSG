@@ -1,4 +1,6 @@
+import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
+import crypto from 'crypto'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
@@ -17,7 +19,11 @@ import {
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
-import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
+import {
+  AttachmentUploadError,
+  DatabaseError,
+  MalformedParametersError,
+} from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import { isFormEncryptMode } from '../../form/form.utils'
 import {
@@ -25,8 +31,74 @@ import {
   SubmissionNotFoundError,
 } from '../submission.errors'
 
+import { AttachmentMetadata } from './encrypt-submission.types'
+
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+
+type AttachmentReducerData = {
+  attachmentMetadata: AttachmentMetadata // type alias for Map<string, string>
+  attachmentUploadPromises: Promise<ManagedUpload.SendData>[]
+}
+
+/**
+ * Uploads a set of submissions to S3 and returns a map of attachment IDs to S3 object keys
+ *
+ * @param formId the id of the form to upload attachments for
+ * @param attachmentData Attachment blob data from the client (including the attachment)
+ *
+ * @returns ok(AttachmentMetadata) A map of field id to the s3 key of the uploaded attachment
+ * @returns err(AttachmentUploadError) if the upload has failed
+ */
+export const uploadAttachments = (
+  formId: string,
+  attachmentData: Record<string, unknown>,
+): ResultAsync<AttachmentMetadata, AttachmentUploadError> => {
+  const { attachmentMetadata, attachmentUploadPromises } = Object.keys(
+    attachmentData,
+  ).reduce<AttachmentReducerData>(
+    (accumulator: AttachmentReducerData, fieldId: string) => {
+      const individualAttachment = JSON.stringify(attachmentData[fieldId])
+
+      const hashStr = crypto
+        .createHash('sha256')
+        .update(individualAttachment)
+        .digest('hex')
+
+      const uploadKey =
+        formId + '/' + crypto.randomBytes(20).toString('hex') + '/' + hashStr
+
+      accumulator.attachmentMetadata.set(fieldId, uploadKey)
+      accumulator.attachmentUploadPromises.push(
+        AwsConfig.s3
+          .upload({
+            Bucket: AwsConfig.attachmentS3Bucket,
+            Key: uploadKey,
+            Body: Buffer.from(individualAttachment),
+          })
+          .promise(),
+      )
+
+      return accumulator
+    },
+    {
+      attachmentMetadata: new Map<string, string>(),
+      attachmentUploadPromises: [],
+    },
+  )
+
+  return ResultAsync.fromPromise(
+    Promise.all(attachmentUploadPromises),
+    (error) => {
+      logger.error({
+        message: 'S3 attachment upload error',
+        meta: { action: 'uploadAttachments' },
+        error,
+      })
+      return new AttachmentUploadError()
+    },
+  ).map(() => attachmentMetadata)
+}
 
 /**
  * Returns a cursor to the stream of the submissions of the given form id.
