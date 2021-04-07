@@ -50,7 +50,7 @@ export const generateDefaultField = (
     | IRatingField
     | IShortTextField
     | ILongTextField
-  > & { _id: string },
+  > & { _id?: string },
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
