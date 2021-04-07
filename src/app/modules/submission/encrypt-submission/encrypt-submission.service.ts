@@ -8,6 +8,7 @@ import { Transform } from 'stream'
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
+  IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
   ResponseMode,
