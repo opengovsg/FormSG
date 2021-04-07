@@ -15,7 +15,6 @@ const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
-const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
 
@@ -87,32 +86,4 @@ module.exports = function (app) {
     EmailSubmissionsMiddleware.sendAdminEmail,
     SubmissionsMiddleware.sendEmailConfirmations,
   )
-
-  /**
-   * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply
-   * confirming submission is sent back to the user, if an email address
-   * was given. SMS autoreplies for mobile number fields are also sent if feature
-   * is enabled.
-   * Note that preview submissions are not saved to db
-   * Note that spcp session is not verified, neither is myInfo data verified
-   * Note that webhooks are not supported as they require an actual submission document to be created
-   * Note that v2 endpoint accepts requests in content-type json, instead of content-type multi-part
-   * @route POST /v2/submissions/encrypt/preview/{formId}
-   * @group forms - endpoints to serve forms
-   * @param {string} formId.path.required - the form id
-   * @param {Array} response.body.required - contains only the auto-reply fields
-   * @param {string} encryptedContent.body.required - contains the entire encrypted form submission
-   * @consumes multipart/form-data
-   * @produces application/json
-   * @returns {SubmissionResponse.model} 200 - submission made
-   * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
-   * @security OTP
-   */
-  app
-    .route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})')
-    .post(
-      withUserAuthentication,
-      EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
-      AdminFormController.handleEncryptPreviewSubmission,
-    )
 }
