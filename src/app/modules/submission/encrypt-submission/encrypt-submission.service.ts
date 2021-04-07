@@ -92,7 +92,10 @@ export const uploadAttachments = (
     (error) => {
       logger.error({
         message: 'S3 attachment upload error',
-        meta: { action: 'uploadAttachments' },
+        meta: { 
+          action: 'uploadAttachments',
+          formId,
+        },
         error,
       })
       return new AttachmentUploadError()
