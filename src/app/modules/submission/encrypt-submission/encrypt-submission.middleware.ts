@@ -28,7 +28,7 @@ export const validateEncryptSubmissionParams = celebrate({
           parts[1].length !== 32 || // nonce
           !parts.every((part) => Joi.string().base64().validate(part))
         ) {
-          return helpers.error('Invalid encryptedContent.')
+          return helpers.message({ custom: 'Invalid encryptedContent.' })
         }
         return value
       }, 'encryptedContent')
@@ -37,11 +37,13 @@ export const validateEncryptSubmissionParams = celebrate({
       .pattern(
         /^[a-fA-F0-9]{24}$/,
         Joi.object().keys({
-          encryptedFile: Joi.object().keys({
-            binary: Joi.string().required(),
-            nonce: Joi.string().required(),
-            submissionPublicKey: Joi.string().required(),
-          }),
+          encryptedFile: Joi.object()
+            .keys({
+              binary: Joi.string().required(),
+              nonce: Joi.string().required(),
+              submissionPublicKey: Joi.string().required(),
+            })
+            .required(),
         }),
       )
       .optional(),
