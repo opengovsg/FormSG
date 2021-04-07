@@ -4926,6 +4926,54 @@ describe('admin-form.controller', () => {
       })
     })
 
+    it('should return 500 when generic database error occurs while retrieving user', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
     it('should return 422 when user is missing', async () => {
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
         errAsync(new MissingUserError()),
@@ -4969,6 +5017,58 @@ describe('admin-form.controller', () => {
         MockSubmissionService.sendEmailConfirmations,
       ).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 500 when generic database error occurs while retrieving form', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
       })
