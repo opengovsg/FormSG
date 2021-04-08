@@ -3,15 +3,8 @@
 /**
  * Module dependencies.
  */
-const forms = require('../../app/controllers/forms.server.controller')
 const { celebrate, Joi, Segments } = require('celebrate')
-const { CaptchaFactory } = require('../services/captcha/captcha.factory')
-const { limitRate } = require('../utils/limit-rate')
-const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
-const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
-const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
-
 module.exports = function (app) {
   /**
    * Redirect a form to the main index, with the specified path
@@ -125,33 +118,4 @@ module.exports = function (app) {
   app
     .route('/:formId([a-fA-F0-9]{24})/publicform')
     .get(PublicFormController.handleGetPublicForm)
-
-  /**
-   * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply
-   * confirming submission is sent back to the user, if an email address
-   * was given. SMS autoreplies for mobile number fields are also sent if feature
-   * is enabled.
-   * Note that v2 endpoint no longer accepts body.captchaResponse
-   * Note that v2 endpoint accepts requests in content-type json, instead of content-type multi-part
-   * Note that v2 endpoint now requires body.version
-   * @route POST /v2/submissions/encrypt/{formId}
-   * @group forms - endpoints to serve forms
-   * @param {string} formId.path.required - the form id
-   * @param {string} response.body.required - contains the entire form submission
-   * @param {string} captchaResponse.query - contains the reCAPTCHA response artifact, if any
-   * @param {string} encryptedContent.body.required - contains the entire encrypted form submission
-   * @consumes multipart/form-data
-   * @produces application/json
-   * @returns {SubmissionResponse.model} 200 - submission made
-   * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
-   */
-  app
-    .route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})')
-    .post(
-      limitRate({ max: rateLimitConfig.submissions }),
-      CaptchaFactory.validateCaptchaParams,
-      EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
-      forms.formById,
-      EncryptSubmissionController.handleEncryptedSubmission,
-    )
 }
