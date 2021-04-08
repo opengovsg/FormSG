@@ -149,8 +149,8 @@ const loadExpressApp = async (connection: Connection) => {
     routeFunction(app)
   })
 
-  app.use(FrontendRouter)
   app.use('/', HomeRouter)
+  app.use('/frontend', FrontendRouter)
   app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
   app.use('/emailnotifications', BounceRouter)

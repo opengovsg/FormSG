@@ -14,10 +14,7 @@ export const FrontendRouter = Router()
  * @return 200 when code generation is successful
  * @return 400 when code generation fails
  */
-FrontendRouter.get(
-  '/frontend/datalayer',
-  GoogleAnalyticsFactory.addGoogleAnalyticsData,
-)
+FrontendRouter.get('/datalayer', GoogleAnalyticsFactory.addGoogleAnalyticsData)
 
 /**
  * Generate the templated Javascript code with environment variables for the frontend
@@ -25,20 +22,14 @@ FrontendRouter.get(
  * @return 200 when code generation is successful
  * @return 400 when code generation fails
  */
-FrontendRouter.get(
-  '/frontend/environment',
-  FrontendServerController.addEnvVarData,
-)
+FrontendRouter.get('/environment', FrontendServerController.addEnvVarData)
 
 /**
  * Generate a json of current activated features
  * @route GET /frontend/features
  * @return json with featureManager.states
  */
-FrontendRouter.get(
-  '/frontend/features',
-  FrontendServerController.showFeaturesStates,
-)
+FrontendRouter.get('/features', FrontendServerController.showFeaturesStates)
 
 /**
  * Generate the javascript code to redirect to the correct url
@@ -47,7 +38,7 @@ FrontendRouter.get(
  * @return 400 when redirect code fails
  */
 FrontendRouter.get(
-  '/frontend/redirect',
+  '/redirect',
   celebrate({
     [Segments.QUERY]: {
       redirectPath: Joi.string()
