@@ -9,8 +9,8 @@ const { CaptchaFactory } = require('../services/captcha/captcha.factory')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
-const { BasicField } = require('../../types')
 const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
+const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 
 module.exports = function (app) {
   /**
@@ -145,54 +145,13 @@ module.exports = function (app) {
    * @returns {SubmissionResponse.model} 200 - submission made
    * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
    */
-  app.route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})').post(
-    limitRate({ max: rateLimitConfig.submissions }),
-    CaptchaFactory.validateCaptchaParams,
-    celebrate({
-      body: Joi.object({
-        responses: Joi.array()
-          .items(
-            Joi.object().keys({
-              _id: Joi.string().required(),
-              answer: Joi.string().allow('').required(),
-              fieldType: Joi.string()
-                .required()
-                .valid(...Object.values(BasicField)),
-              signature: Joi.string().allow(''),
-            }),
-          )
-          .required(),
-        encryptedContent: Joi.string()
-          .custom((value, helpers) => {
-            const parts = String(value).split(/;|:/)
-            if (
-              parts.length !== 3 ||
-              parts[0].length !== 44 || // public key
-              parts[1].length !== 32 || // nonce
-              !parts.every((part) => Joi.string().base64().validate(part))
-            ) {
-              return helpers.error('Invalid encryptedContent.')
-            }
-            return value
-          }, 'encryptedContent')
-          .required(),
-        attachments: Joi.object()
-          .pattern(
-            /^[a-fA-F0-9]{24}$/,
-            Joi.object().keys({
-              encryptedFile: Joi.object().keys({
-                binary: Joi.string().required(),
-                nonce: Joi.string().required(),
-                submissionPublicKey: Joi.string().required(),
-              }),
-            }),
-          )
-          .optional(),
-        isPreview: Joi.boolean().required(),
-        version: Joi.number().required(),
-      }),
-    }),
-    forms.formById,
-    EncryptSubmissionController.handleEncryptedSubmission,
-  )
+  app
+    .route('/v2/submissions/encrypt/:formId([a-fA-F0-9]{24})')
+    .post(
+      limitRate({ max: rateLimitConfig.submissions }),
+      CaptchaFactory.validateCaptchaParams,
+      EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+      forms.formById,
+      EncryptSubmissionController.handleEncryptedSubmission,
+    )
 }

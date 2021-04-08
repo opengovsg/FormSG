@@ -10,6 +10,7 @@ import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import { IForm, ResponseMode } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
+import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 
 import * as AdminFormController from './admin-form.controller'
 import { DuplicateFormBody } from './admin-form.types'
@@ -494,4 +495,24 @@ AdminFormsRouter.post(
   withUserAuthentication,
   fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForLogos,
+)
+
+/**
+ * Submit an encrypt mode form in preview mode
+ * @route POST /v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})
+ * @security session
+ *
+ * @returns 200 if submission was valid
+ * @returns 400 when error occurs while processing submission or submission is invalid
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsRouter.post(
+  '/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})',
+  withUserAuthentication,
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  AdminFormController.handleEncryptPreviewSubmission,
 )
