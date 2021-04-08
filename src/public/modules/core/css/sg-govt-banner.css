@@ -70,6 +70,12 @@
   background-color: #f0f0f0;
 }
 
+#sg-govt-banner.banner-x-padding-small {
+  padding-left: 4px;
+  padding-right: 4px;
+  background-color: #f0f0f0;
+}
+
 @media screen and (max-width: 992px) {
   #sg-govt-banner {
     padding: 0;
