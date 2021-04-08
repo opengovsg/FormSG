@@ -52,3 +52,12 @@ export class MissingEmailHeadersError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Error while parsing notification
+ */
+export class ParseNotificationError extends ApplicationError {
+  constructor(message = 'Could not parse SNS notification') {
+    super(message)
+  }
+}

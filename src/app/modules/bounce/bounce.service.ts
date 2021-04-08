@@ -6,6 +6,7 @@ import {
   combineWithAllErrors,
   errAsync,
   okAsync,
+  Result,
   ResultAsync,
 } from 'neverthrow'
 
@@ -34,6 +35,7 @@ import { isUserWithContactNumber } from '../user/user.utils'
 import {
   InvalidNotificationError,
   MissingEmailHeadersError,
+  ParseNotificationError,
   RetrieveAwsCertError,
   SendBounceSmsNotificationError,
 } from './bounce.errors'
@@ -456,4 +458,52 @@ export const notifyAdminsOfDeactivation = (
       })
       return okAsync(true)
     })
+}
+
+/**
+ * Saves a document to the database.
+ * @param bounceDoc Bounce document
+ * @returns The saved document
+ */
+export const saveBounceDoc = (
+  bounceDoc: IBounceSchema,
+): ResultAsync<IBounceSchema, PossibleDatabaseError> => {
+  return ResultAsync.fromPromise(bounceDoc.save(), (error) => {
+    // Accept the risk that there might be concurrency problems
+    // when multiple server instances try to access the same
+    // document, due to notifications arriving asynchronously.
+    // Hence avoid logging so logs do not get polluted
+    if (!(error instanceof mongoose.Error.VersionError)) {
+      logger.warn({
+        message: 'Error while saving Bounce document',
+        meta: {
+          action: 'saveBounceDoc',
+          formId: bounceDoc.formId,
+        },
+      })
+    }
+    return transformMongoError(error)
+  })
+}
+
+/**
+ * Safely parses an SNS notification.
+ * @param message Content of notification
+ */
+export const safeParseNotification = (
+  message: string,
+): Result<IEmailNotification, ParseNotificationError> => {
+  return Result.fromThrowable(
+    () => JSON.parse(message),
+    (error) => {
+      logger.warn({
+        message: 'Unable to parse SNS notification',
+        meta: {
+          action: 'safeParseNotification',
+        },
+        error,
+      })
+      return new ParseNotificationError()
+    },
+  )()
 }
