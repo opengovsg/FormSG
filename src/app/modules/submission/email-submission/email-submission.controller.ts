@@ -1,10 +1,12 @@
 import { Request, RequestHandler } from 'express'
+import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { AuthType, FieldResponse } from '../../../../types'
+import { AuthType, FieldResponse, IPopulatedEmailForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
+import { ApplicationError } from '../../core/core.errors'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_COOKIE_NAME,
@@ -14,10 +16,11 @@ import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import {
-  createCorppassParsedResponses,
   createSingpassParsedResponses,
+  createSpcpFieldResponsesFromJwt,
 } from '../../spcp/spcp.util'
 import * as SubmissionService from '../submission.service'
+import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionService from './email-submission.service'
 import {
@@ -30,267 +33,222 @@ const logger = createLoggerWithLabel(module)
 
 export const handleEmailSubmission: RequestHandler<
   { formId: string },
-  { message: string; submissionId?: string; spcpSubmissionFailure?: boolean },
+  { message: string; submissionId?: string; spcpSubmissionFailure?: true },
   { responses: FieldResponse[]; isPreview: boolean },
   { captchaResponse?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
+  const attachments = mapAttachmentsFromResponses(req.body.responses)
+  let spcpSubmissionFailure: undefined | true
+
+  // Inlined utilities
   const logMeta = {
     action: 'handleEmailSubmission',
     ...createReqMeta(req as Request),
     formId,
   }
-  // Retrieve form
-  const formResult = await FormService.retrieveFullFormById(
-    formId,
-  ).andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
-  if (formResult.isErr()) {
-    logger.error({
-      message: 'Error while retrieving form from database',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-  const form = formResult.value
 
-  // Check that form is public
-  const formPublicResult = FormService.isFormPublic(form)
-  if (formPublicResult.isErr()) {
-    logger.warn({
-      message: 'Attempt to submit non-public form',
-      meta: logMeta,
-      error: formPublicResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(formPublicResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  // Check captcha
-  if (form.hasCaptcha) {
-    const captchaResult = await CaptchaFactory.verifyCaptchaResponse(
-      req.query.captchaResponse,
-      getRequestIp(req as Request),
-    )
-    if (captchaResult.isErr()) {
-      logger.error({
-        message: 'Error while verifying captcha',
-        meta: logMeta,
-        error: captchaResult.error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
-      return res.status(statusCode).json({ message: errorMessage })
-    }
-  }
-
-  // Check that the form has not reached submission limits
-  const formSubmissionLimitResult = await FormService.checkFormSubmissionLimitAndDeactivateForm(
-    form,
-  )
-  if (formSubmissionLimitResult.isErr()) {
-    logger.warn({
-      message:
-        'Attempt to submit form which has just reached submission limits',
-      meta: logMeta,
-      error: formSubmissionLimitResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(
-      formSubmissionLimitResult.error,
-    )
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  // Validate responses
-  const parsedResponsesResult = await EmailSubmissionService.validateAttachments(
-    req.body.responses,
-  ).andThen(() =>
-    SubmissionService.getProcessedResponses(form, req.body.responses),
-  )
-  if (parsedResponsesResult.isErr()) {
-    logger.error({
-      message: 'Error processing responses',
-      meta: logMeta,
-      error: parsedResponsesResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(
-      parsedResponsesResult.error,
-    )
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-  const parsedResponses = parsedResponsesResult.value
-  const attachments = mapAttachmentsFromResponses(req.body.responses)
-
-  // Keep track of which fields are MyInfo-verified
-  let hashedFields = new Set<string>()
-
-  // Handle SingPass, CorpPass and MyInfo authentication and validation
-  const { authType } = form
-  switch (authType) {
-    case AuthType.SP: {
-      // Verify NRIC
-      const jwtPayloadResult = await SpcpFactory.extractJwt(
-        req.cookies,
-        authType,
-      ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
-      if (jwtPayloadResult.isErr()) {
-        logger.error({
-          message: 'Failed to verify Singpass JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        return res
-          .status(statusCode)
-          .json({ message: errorMessage, spcpSubmissionFailure: true })
-      }
-      parsedResponses.push(
-        ...createSingpassParsedResponses(jwtPayloadResult.value.userName),
-      )
-      break
-    }
-    case AuthType.CP: {
-      // Verify NRIC and UEN
-      const jwtPayloadResult = await SpcpFactory.extractJwt(
-        req.cookies,
-        authType,
-      ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
-      if (jwtPayloadResult.isErr()) {
-        logger.error({
-          message: 'Failed to verify Corppass JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        return res
-          .status(statusCode)
-          .json({ message: errorMessage, spcpSubmissionFailure: true })
-      }
-      parsedResponses.push(
-        ...createCorppassParsedResponses(
-          jwtPayloadResult.value.userName,
-          jwtPayloadResult.value.userInfo,
-        ),
-      )
-      break
-    }
-    case AuthType.MyInfo: {
-      const uinFinResult = MyInfoUtil.extractMyInfoCookie(req.cookies)
-        .andThen(MyInfoUtil.extractAccessTokenFromCookie)
-        .andThen((accessToken) => MyInfoFactory.extractUinFin(accessToken))
-      if (uinFinResult.isErr()) {
-        const { errorMessage, statusCode } = mapRouteError(uinFinResult.error)
-        return res
-          .status(statusCode)
-          .json({ message: errorMessage, spcpSubmissionFailure: true })
-      }
-      const uinFin = uinFinResult.value
-      const verifyMyInfoResult = await MyInfoFactory.fetchMyInfoHashes(
-        uinFin,
-        formId,
-      ).andThen((hashes) =>
-        MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
-      )
-      if (verifyMyInfoResult.isErr()) {
-        logger.error({
-          message: 'Error verifying MyInfo hashes',
-          meta: logMeta,
-          error: verifyMyInfoResult.error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(
-          verifyMyInfoResult.error,
-        )
-        return res
-          .status(statusCode)
-          .json({ message: errorMessage, spcpSubmissionFailure: true })
-      }
-      hashedFields = verifyMyInfoResult.value
-      parsedResponses.push(...createSingpassParsedResponses(uinFin))
-      break
-    }
-  }
-
-  // Create data for response email as well as email confirmation
-  const emailData = new SubmissionEmailObj(
-    parsedResponses,
-    hashedFields,
-    authType,
-  )
-
-  // Save submission to database
-  const submissionResult = await EmailSubmissionService.hashSubmission(
-    emailData.formData,
-    attachments,
-  ).andThen((submissionHash) =>
-    EmailSubmissionService.saveSubmissionMetadata(form, submissionHash),
-  )
-  if (submissionResult.isErr()) {
-    logger.error({
-      message: 'Error while saving metadata to database',
-      meta: logMeta,
-      error: submissionResult.error,
-    })
-    const { statusCode, errorMessage } = mapRouteError(submissionResult.error)
-    return res.status(statusCode).json({
-      message: errorMessage,
-      spcpSubmissionFailure: false,
-    })
-  }
-  const submission = submissionResult.value
-  const logMetaWithSubmission = { ...logMeta, submissionId: submission._id }
-
-  // Send response to admin
-  logger.info({
-    message: 'Sending admin mail',
-    meta: logMetaWithSubmission,
-  })
-  const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
-    form,
-    submission,
-    attachments,
-    dataCollationData: emailData.dataCollationData,
-    formData: emailData.formData,
-  })
-  if (sendAdminEmailResult.isErr()) {
-    logger.error({
-      message: 'Error sending submission to admin',
-      meta: logMetaWithSubmission,
-      error: sendAdminEmailResult.error,
-    })
-    const { statusCode, errorMessage } = mapRouteError(
-      sendAdminEmailResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-      spcpSubmissionFailure: false,
-    })
-  }
-
-  // MyInfo access token is single-use, so clear it
-  res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
-  // Return the reply early to the submitter
-  res.json({
-    message: 'Form submission successful.',
-    submissionId: submission.id,
-  })
-
-  // Send email confirmations
-  return SubmissionService.sendEmailConfirmations({
-    form,
-    parsedResponses,
-    submission,
-    attachments,
-    autoReplyData: emailData.autoReplyData,
-  }).mapErr((error) => {
-    logger.error({
-      message: 'Error while sending email confirmations',
-      meta: logMetaWithSubmission,
+  // Stores a predefined message and returns a function that can be used for mapErr
+  const logErrorWithMeta = (
+    loggerMeta: Record<string, unknown> & { action: string },
+  ) => <E extends ApplicationError>(
+    message: string,
+    logLevel: 'warn' | 'error' = 'error',
+  ) => (error: E) => {
+    logger[logLevel]({
+      message,
+      meta: loggerMeta,
       error,
     })
-  })
+    return error
+  }
+
+  const logErrorWithReqMeta = logErrorWithMeta(logMeta)
+
+  return (
+    // Retrieve form
+    FormService.retrieveFullFormById(formId)
+      .andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
+      // NOTE: This is on the top most level because errors are reported together for the first two
+      .mapErr(logErrorWithReqMeta('Error while retrieving form from database'))
+      .andThen((form) =>
+        // Check that form is public
+        // If it is, pass through and return the original form
+        FormService.isFormPublic(form)
+          .map(() => form)
+          .mapErr(
+            logErrorWithReqMeta('Attempt to submit non-public form', 'warn'),
+          ),
+      )
+      .andThen((form) => {
+        // Check the captcha
+        if (form.hasCaptcha) {
+          return CaptchaFactory.verifyCaptchaResponse(
+            req.query.captchaResponse,
+            getRequestIp(req as Request),
+          )
+            .map(() => form)
+            .mapErr(logErrorWithReqMeta('Error while verifying captcha'))
+        }
+        return okAsync(form) as ResultAsync<IPopulatedEmailForm, never>
+      })
+      .andThen((form) =>
+        // Check that the form has not reached submission limits
+        FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+          .map(() => form)
+          .mapErr(
+            logErrorWithReqMeta(
+              'Attempt to submit form which has just reached submission limits',
+              'warn',
+            ),
+          ),
+      )
+      .andThen((form) =>
+        // Validate responses
+        EmailSubmissionService.validateAttachments(req.body.responses)
+          .andThen(() =>
+            SubmissionService.getProcessedResponses(form, req.body.responses),
+          )
+          .map((parsedResponses) => ({ parsedResponses, form }))
+          .mapErr(logErrorWithReqMeta('Error processing responses')),
+      )
+      .andThen(({ parsedResponses, form }) => {
+        const { authType } = form
+        if (authType === AuthType.SP || authType === AuthType.CP) {
+          // Verify NRIC and/or UEN
+          return SpcpFactory.extractJwtPayloadFromRequest(authType, req.cookies)
+            .map((jwt) => ({
+              form,
+              parsedResponses: createSpcpFieldResponsesFromJwt(
+                authType,
+                jwt,
+                parsedResponses,
+              ),
+              hashedFields: new Set<string>(),
+            }))
+            .mapErr((error) => {
+              spcpSubmissionFailure = true
+              return logErrorWithReqMeta(
+                'Failed to verify JWT with auth client',
+              )(error)
+            })
+        } else if (authType === AuthType.MyInfo) {
+          return MyInfoUtil.extractMyInfoCookie(req.cookies)
+            .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+            .andThen((accessToken) => MyInfoFactory.extractUinFin(accessToken))
+            .asyncAndThen((uinFin) =>
+              MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
+                .andThen((hashes) =>
+                  MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+                )
+                .map((hashedFields) => ({
+                  form,
+                  hashedFields,
+                  parsedResponses: [
+                    ...parsedResponses,
+                    ...createSingpassParsedResponses(uinFin),
+                  ],
+                })),
+            )
+            .mapErr((error) => {
+              spcpSubmissionFailure = true
+              return logErrorWithReqMeta('Error verifying MyInfo hashes')(error)
+            })
+        }
+        return ok({
+          form,
+          parsedResponses,
+          hashedFields: new Set<string>(),
+        }) as Result<
+          {
+            form: IPopulatedEmailForm
+            parsedResponses: ProcessedFieldResponse[]
+            hashedFields: Set<string>
+          },
+          never
+        >
+      })
+      // If this fails, spcpSubmissionFailure is false
+      .andThen(({ form, parsedResponses, hashedFields }) => {
+        // Create data for response email as well as email confirmation
+        const emailData = new SubmissionEmailObj(
+          parsedResponses,
+          hashedFields,
+          form.authType,
+        )
+
+        // Save submission to database
+        return EmailSubmissionService.hashSubmission(
+          emailData.formData,
+          attachments,
+        )
+          .andThen((submissionHash) =>
+            EmailSubmissionService.saveSubmissionMetadata(form, submissionHash),
+          )
+          .map((submission) => ({
+            form,
+            parsedResponses,
+            submission,
+            emailData,
+          }))
+          .mapErr(
+            logErrorWithReqMeta('Error while saving metadata to database'),
+          )
+      })
+      .andThen(({ form, parsedResponses, submission, emailData }) => {
+        const logMetaWithSubmission = {
+          ...logMeta,
+          submissionId: submission._id,
+        }
+
+        const logErrorWithSubmissionMeta = logErrorWithMeta(
+          logMetaWithSubmission,
+        )
+
+        // Send response to admin
+        logger.info({
+          message: 'Sending admin mail',
+          meta: logMetaWithSubmission,
+        })
+
+        return MailService.sendSubmissionToAdmin({
+          replyToEmails: EmailSubmissionService.extractEmailAnswers(
+            parsedResponses,
+          ),
+          form,
+          submission,
+          attachments,
+          dataCollationData: emailData.dataCollationData,
+          formData: emailData.formData,
+        })
+          .map(() => ({ form, parsedResponses, submission, emailData }))
+          .mapErr(
+            logErrorWithSubmissionMeta('Error sending submission to admin'),
+          )
+      })
+      .andThen(({ form, parsedResponses, submission, emailData }) => {
+        // MyInfo access token is single-use, so clear it
+        res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+        // Return the reply early to the submitter
+        res.json({
+          message: 'Form submission successful.',
+          submissionId: submission.id,
+        })
+
+        // Send email confirmations
+        return SubmissionService.sendEmailConfirmations({
+          form,
+          parsedResponses,
+          submission,
+          attachments,
+          autoReplyData: emailData.autoReplyData,
+        })
+      })
+      .mapErr((error) => {
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res
+          .status(statusCode)
+          .json({ message: errorMessage, spcpSubmissionFailure })
+      })
+  )
 }

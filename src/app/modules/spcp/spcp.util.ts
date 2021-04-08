@@ -6,7 +6,10 @@ import { BasicField, MapRouteError, SPCPFieldTitle } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { hasProp } from '../../utils/has-prop'
 import { MissingFeatureError } from '../core/core.errors'
-import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
+import {
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from '../submission/submission.types'
 
 import {
   CreateRedirectUrlError,
@@ -208,6 +211,25 @@ export const createCorppassParsedResponses = (
       answer: userInfo,
     },
   ]
+}
+
+/**
+ * This is a utility wrapper over the spcp methods to ease usage
+ * @param authType Auth type of the request
+ * @param jwt The jwt to create the responses from
+ * @param responses The processed fields
+ * @returns ProcessedFieldResponse The parsed form fields
+ */
+export const createSpcpFieldResponsesFromJwt = (
+  authType: AuthType.SP | AuthType.CP,
+  jwt: JwtPayload,
+  responses: ProcessedFieldResponse[],
+): ProcessedFieldResponse[] => {
+  const { userName: uinFin, userInfo } = jwt
+  if (authType === AuthType.SP) {
+    return [...responses, ...createSingpassParsedResponses(uinFin)]
+  }
+  return [...responses, ...createCorppassParsedResponses(uinFin, userInfo!)]
 }
 
 /**
