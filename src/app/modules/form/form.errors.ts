@@ -51,3 +51,12 @@ export class TransferOwnershipError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Error to be returned when form logic cannot be found
+ */
+export class LogicNotFoundError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

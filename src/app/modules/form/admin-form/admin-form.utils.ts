@@ -24,6 +24,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  LogicNotFoundError,
   PrivateFormError,
   TransferOwnershipError,
 } from '../form.errors'
@@ -64,6 +65,11 @@ export const mapRouteError = (
       }
     case FieldNotFoundError:
     case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case LogicNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,

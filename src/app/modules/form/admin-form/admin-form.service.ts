@@ -1,7 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
@@ -41,7 +41,11 @@ import {
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
-import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
+import {
+  FormNotFoundError,
+  LogicNotFoundError,
+  TransferOwnershipError,
+} from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
 import { getFormFieldById } from '../form.utils'
 
@@ -622,4 +626,60 @@ export const updateFormSettings = (
     }
     return okAsync(updatedForm.getSettings())
   })
+}
+
+/**
+ * Deletes form logic.
+ * @param form The original form to delete logic in
+ * @param logicId the logicId to delete
+ * @returns ok(true) on success
+ * @returns err(database errors) if db error is thrown during logic delete
+ * @returns err(LogicNotFoundError) if logicId does not exist on form
+ */
+export const deleteFormLogic = (
+  form: IPopulatedForm,
+  logicId: string,
+): Result<never, LogicNotFoundError> | ResultAsync<true, DatabaseError> => {
+  // First check if specified logic exists
+  if (!form.form_logics.some((logic) => logic.id === logicId)) {
+    logger.error({
+      message: 'Error occurred when deleting form logic',
+      meta: {
+        action: 'deleteFormLogic',
+        formId: form._id,
+        logicId,
+      },
+    })
+    return err(new LogicNotFoundError('logicId does not exist on form'))
+  }
+
+  // Remove specified logic and then update form logic
+  const updated_form_logic = form.form_logics.filter(
+    (logic) => logic.id !== logicId,
+  )
+  const ModelToUse = getFormModelByResponseMode(form.responseMode)
+
+  return ResultAsync.fromPromise(
+    ModelToUse.findByIdAndUpdate(
+      form._id,
+      { form_logics: updated_form_logic },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when deleting form logic',
+        meta: {
+          action: 'deleteFormLogic',
+          formId: form._id,
+          logicId,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+    // On success, return true
+  ).map(() => true)
 }
