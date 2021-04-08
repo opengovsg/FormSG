@@ -1,22 +1,5 @@
 // TODO (#42): remove these types when migrating away from middleware pattern
-import { LeanDocument } from 'mongoose'
-
-import { ProcessedFieldResponse } from '../app/modules/submission/submission.types'
-
 import { BasicField } from './field'
-import { IPopulatedForm } from './form'
-
-export type WithForm<T> = T & {
-  form: IPopulatedForm
-}
-
-export type WithJsonForm<T> = T & {
-  form: LeanDocument<IPopulatedForm>
-}
-
-export type WithParsedResponses<T> = T & {
-  parsedResponses: ProcessedFieldResponse[]
-}
 
 export type ResWithUinFin<T> = T & {
   uinFin?: string

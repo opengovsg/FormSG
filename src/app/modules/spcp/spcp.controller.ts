@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, WithForm } from '../../../types'
+import { AuthType } from '../../../types'
 import { createReqMeta } from '../../utils/request'
 import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
@@ -87,42 +87,6 @@ export const handleValidate: RequestHandler<
       })
       const { statusCode, errorMessage } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Adds session to returned JSON if form-filler is SPCP Authenticated
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
-  req,
-  res,
-  next,
-) => {
-  const { authType } = (req as WithForm<typeof req>).form
-  if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
-
-  const jwtResult = SpcpFactory.extractJwt(req.cookies, authType)
-  // No action needed if JWT is missing, just means user is not logged in
-  if (jwtResult.isErr()) return next()
-
-  return SpcpFactory.extractJwtPayload(jwtResult.value, authType)
-    .map(({ userName }) => {
-      res.locals.spcpSession = { userName }
-      return next()
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Failed to verify JWT with auth client',
-        meta: {
-          action: 'addSpcpSessionInfo',
-          ...createReqMeta(req),
-        },
-        error,
-      })
-      return next()
     })
 }
 
