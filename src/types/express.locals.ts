@@ -1,14 +1,6 @@
 // TODO (#42): remove these types when migrating away from middleware pattern
 import { BasicField } from './field'
 
-export type ResWithUinFin<T> = T & {
-  uinFin?: string
-}
-
-export type ResWithHashedFields<T> = T & {
-  locals: { hashedFields?: Set<string> }
-}
-
 export type EmailRespondentConfirmationField = {
   question: string
   answerTemplate: string[]

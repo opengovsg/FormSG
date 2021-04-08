@@ -126,15 +126,15 @@ export const handleEmailSubmission: RequestHandler<
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
-  if (authType === AuthType.SP || authType === AuthType.CP) {
-    // Verify NRIC and/or UEN
+  if (authType === AuthType.SP) {
+    // Verify NRIC
     const jwtPayloadResult = await SpcpFactory.extractJwt(
       req.cookies,
       authType,
-    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
+    ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
     if (jwtPayloadResult.isErr()) {
       logger.error({
-        message: 'Failed to verify JWT with auth client',
+        message: 'Failed to verify Singpass JWT with auth client',
         meta: logMeta,
         error: jwtPayloadResult.error,
       })
@@ -143,15 +143,32 @@ export const handleEmailSubmission: RequestHandler<
         .status(statusCode)
         .json({ message: errorMessage, spcpSubmissionFailure: true })
     }
-    const { userName: uinFin, userInfo } = jwtPayloadResult.value
-
-    // Append SingPass/CorpPass info to responses
-    if (authType === AuthType.SP) {
-      parsedResponses.push(...createSingpassParsedResponses(uinFin))
-    } else if (authType === AuthType.CP) {
-      // TODO (#317): remove usage of non-null assertion with better typing of JWT payload
-      parsedResponses.push(...createCorppassParsedResponses(uinFin, userInfo!))
+    parsedResponses.push(
+      ...createSingpassParsedResponses(jwtPayloadResult.value.userName),
+    )
+  } else if (authType === AuthType.CP) {
+    // Verify NRIC and UEN
+    const jwtPayloadResult = await SpcpFactory.extractJwt(
+      req.cookies,
+      authType,
+    ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+    if (jwtPayloadResult.isErr()) {
+      logger.error({
+        message: 'Failed to verify Corppass JWT with auth client',
+        meta: logMeta,
+        error: jwtPayloadResult.error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(jwtPayloadResult.error)
+      return res
+        .status(statusCode)
+        .json({ message: errorMessage, spcpSubmissionFailure: true })
     }
+    parsedResponses.push(
+      ...createCorppassParsedResponses(
+        jwtPayloadResult.value.userName,
+        jwtPayloadResult.value.userInfo,
+      ),
+    )
   } else if (authType === AuthType.MyInfo) {
     const uinFinResult = MyInfoUtil.extractMyInfoCookie(req.cookies)
       .andThen(MyInfoUtil.extractAccessTokenFromCookie)

@@ -9,8 +9,6 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
   EncryptedSubmissionDto,
-  ResWithHashedFields,
-  ResWithUinFin,
   SubmissionMetadataList,
 } from '../../../../types'
 import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
@@ -23,8 +21,6 @@ import { MissingFeatureError } from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
-import { MyInfoFactory } from '../../myinfo/myinfo.factory'
-import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
@@ -168,62 +164,43 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
 
   // Checks if user is SPCP-authenticated before allowing submission
   const { authType } = form
-  if (authType === AuthType.SP || authType === AuthType.CP) {
-    const spcpResult = await SpcpFactory.extractJwt(
+  if (authType === AuthType.SP) {
+    const jwtPayloadResult = await SpcpFactory.extractJwt(
       req.cookies,
       authType,
-    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
-    if (spcpResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(spcpResult.error)
+    ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+    if (jwtPayloadResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(jwtPayloadResult.error)
       logger.error({
-        message: 'Failed to verify JWT with auth client',
+        message: 'Failed to verify Singpass JWT with auth client',
         meta: logMeta,
-        error: spcpResult.error,
+        error: jwtPayloadResult.error,
       })
       return res.status(statusCode).json({
         message: errorMessage,
         spcpSubmissionFailure: true,
       })
     }
-    res.locals.uinFin = spcpResult.value.userName
-    res.locals.userInfo = spcpResult.value.userInfo
-  }
-
-  // validating that submitted MyInfo field values match the values
-  // originally retrieved from MyInfo.
-  // TODO(frankchn): Roll into a single service call as part of internal refactoring
-  const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin
-  const requestedAttributes = form.getUniqueMyInfoAttrs()
-  if (authType === AuthType.SP && requestedAttributes.length > 0) {
-    if (!uinFin) {
-      return res.status(StatusCodes.UNAUTHORIZED).send({
-        message: 'Please log in to SingPass and try again.',
-        spcpSubmissionFailure: true,
-      })
-    }
-    const myinfoResult = await MyInfoFactory.fetchMyInfoHashes(
-      uinFin,
-      formId,
-    ).andThen((hashes) =>
-      MyInfoFactory.checkMyInfoHashes(processedResponses, hashes),
-    )
-    if (myinfoResult.isErr()) {
+    res.locals.uinFin = jwtPayloadResult.value.userName
+  } else if (authType === AuthType.CP) {
+    const jwtPayloadResult = await SpcpFactory.extractJwt(
+      req.cookies,
+      authType,
+    ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+    if (jwtPayloadResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(jwtPayloadResult.error)
       logger.error({
-        message: 'Error verifying MyInfo hashes',
+        message: 'Failed to verify Corppass JWT with auth client',
         meta: logMeta,
-        error: myinfoResult.error,
+        error: jwtPayloadResult.error,
       })
-      const { statusCode, errorMessage } = mapVerifyMyInfoError(
-        myinfoResult.error,
-      )
-      return res.status(statusCode).send({
+      return res.status(statusCode).json({
         message: errorMessage,
         spcpSubmissionFailure: true,
       })
     }
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(res as ResWithHashedFields<typeof res>).locals.hashedFields =
-      myinfoResult.value
+    res.locals.uinFin = jwtPayloadResult.value.userName
+    res.locals.userInfo = jwtPayloadResult.value.userInfo
   }
 
   // Encrypt Verified SPCP Fields

@@ -9,11 +9,18 @@ export type LoginPageValidationResult =
 
 export type SpcpCookies = Partial<Record<JwtName, string>>
 
-export type JwtPayload = {
+export type SingpassJwtPayload = {
   userName: string
-  userInfo?: string
   rememberMe: boolean
 }
+
+export type CorppassJwtPayload = {
+  userName: string
+  userInfo: string
+  rememberMe: boolean
+}
+
+export type JwtPayload = SingpassJwtPayload | CorppassJwtPayload
 
 export interface SingpassAttributes {
   UserName?: string
