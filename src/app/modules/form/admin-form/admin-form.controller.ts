@@ -1105,7 +1105,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
 
 export const handleEmailPreviewSubmission: RequestHandler<
   { formId: string },
-  { message: string; submissionId?: string; spcpSubmissionFailure?: boolean },
+  { message: string; submissionId?: string },
   { responses: FieldResponse[]; isPreview: boolean },
   { captchaResponse?: unknown }
 > = async (req, res) => {
@@ -1204,7 +1204,6 @@ export const handleEmailPreviewSubmission: RequestHandler<
     )
     return res.status(statusCode).json({
       message: errorMessage,
-      spcpSubmissionFailure: false,
     })
   }
 
