@@ -1,4 +1,4 @@
-import { RequestHandler } from 'express'
+import { Request, RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
@@ -7,16 +7,17 @@ import { ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
+  FieldResponse,
   FormSettings,
   IForm,
   IPopulatedForm,
-  WithForm,
 } from '../../../../types'
 import {
   EncryptSubmissionDto,
   ErrorDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
+import MailService from '../../../services/mail/mail.service'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
@@ -27,12 +28,27 @@ import {
   DatabaseValidationError,
 } from '../../core/core.errors'
 import * as FeedbackService from '../../feedback/feedback.service'
+import {
+  createCorppassParsedResponses,
+  createSingpassParsedResponses,
+} from '../../spcp/spcp.util'
+import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
+import {
+  mapAttachmentsFromResponses,
+  mapRouteError as mapEmailSubmissionError,
+  SubmissionEmailObj,
+} from '../../submission/email-submission/email-submission.util'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 
+import {
+  PREVIEW_CORPPASS_UID,
+  PREVIEW_CORPPASS_UINFIN,
+  PREVIEW_SINGPASS_UINFIN,
+} from './admin-form.constants'
 import { EditFieldError } from './admin-form.errors'
 import * as AdminFormService from './admin-form.service'
 import {
@@ -358,26 +374,6 @@ export const handleCountFormSubmissions: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
-}
-
-/**
- * Allow submission in preview without Spcp authentication by providing default values
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Object} next - the next expressjs callback
- */
-export const passThroughSpcp: RequestHandler = (req, res, next) => {
-  const { authType } = (req as WithForm<typeof req>).form
-  if ([AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(authType)) {
-    res.locals = {
-      ...res.locals,
-      ...AdminFormService.getMockSpcpLocals(
-        authType,
-        (req as WithForm<typeof req>).form.form_fields,
-      ),
-    }
-  }
-  return next()
 }
 
 /**
@@ -1029,6 +1025,7 @@ export const handleUpdateSettings: RequestHandler<
  * @returns 403 when current user does not have read permissions to given form
  * @returns 404 when given form ID does not exist
  * @returns 410 when given form has been deleted
+ * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
 export const handleEncryptPreviewSubmission: RequestHandler<
@@ -1104,5 +1101,143 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   return res.json({
     message: 'Form submission successful.',
     submissionId: submission._id,
+  })
+}
+
+/**
+ * Handler for POST /v2/submissions/encrypt/preview/:formId.
+ * @security session
+ *
+ * @returns 200 with a mock submission ID
+ * @returns 400 when body is malformed; e.g. invalid responses, or when admin email fails to be sent
+ * @returns 403 when current user does not have read permissions to given form
+ * @returns 404 when given form ID does not exist
+ * @returns 410 when given form has been deleted
+ * @returns 422 when user ID in session is not found in database
+ * @returns 500 when database error occurs
+ */
+export const handleEmailPreviewSubmission: RequestHandler<
+  { formId: string },
+  { message: string; submissionId?: string },
+  { responses: FieldResponse[]; isPreview: boolean },
+  { captchaResponse?: unknown }
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  // No need to process attachments as we don't do anything with them
+  const { responses } = req.body
+  const logMeta = {
+    action: 'handleEmailPreviewSubmission',
+    formId,
+    ...createReqMeta(req as Request),
+  }
+
+  const formResult = await UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }),
+    )
+    .andThen(EmailSubmissionService.checkFormIsEmailMode)
+  if (formResult.isErr()) {
+    logger.error({
+      message: 'Error while retrieving form for preview submission',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    const { errorMessage, statusCode } = mapEmailSubmissionError(
+      formResult.error,
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const form = formResult.value
+
+  const parsedResponsesResult = await EmailSubmissionService.validateAttachments(
+    responses,
+  ).andThen(() => SubmissionService.getProcessedResponses(form, responses))
+  if (parsedResponsesResult.isErr()) {
+    logger.error({
+      message: 'Error while parsing responses for preview submission',
+      meta: logMeta,
+      error: parsedResponsesResult.error,
+    })
+    const { errorMessage, statusCode } = mapEmailSubmissionError(
+      parsedResponsesResult.error,
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const parsedResponses = parsedResponsesResult.value
+  const attachments = mapAttachmentsFromResponses(req.body.responses)
+
+  // Handle SingPass, CorpPass and MyInfo authentication and validation
+  if (form.authType === AuthType.SP || form.authType === AuthType.MyInfo) {
+    parsedResponses.push(
+      ...createSingpassParsedResponses(PREVIEW_SINGPASS_UINFIN),
+    )
+  } else if (form.authType === AuthType.CP) {
+    parsedResponses.push(
+      ...createCorppassParsedResponses(
+        PREVIEW_CORPPASS_UINFIN,
+        PREVIEW_CORPPASS_UID,
+      ),
+    )
+  }
+
+  const emailData = new SubmissionEmailObj(
+    parsedResponses,
+    // All MyInfo fields are verified in preview
+    new Set(AdminFormService.extractMyInfoFieldIds(form.form_fields)),
+    form.authType,
+  )
+  const submission = EmailSubmissionService.createEmailSubmissionWithoutSave(
+    form,
+    // Don't need to care about response hash or salt
+    '',
+    '',
+  )
+
+  const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
+    replyToEmails: EmailSubmissionService.extractEmailAnswers(parsedResponses),
+    form,
+    submission,
+    attachments,
+    dataCollationData: emailData.dataCollationData,
+    formData: emailData.formData,
+  })
+  if (sendAdminEmailResult.isErr()) {
+    logger.error({
+      message: 'Error sending submission to admin',
+      meta: logMeta,
+      error: sendAdminEmailResult.error,
+    })
+    const { statusCode, errorMessage } = mapEmailSubmissionError(
+      sendAdminEmailResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  // Don't await on email confirmations, so submission is successful even if
+  // this fails
+  void SubmissionService.sendEmailConfirmations({
+    form,
+    parsedResponses,
+    submission,
+    attachments,
+    autoReplyData: emailData.autoReplyData,
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Error while sending email confirmations',
+      meta: logMeta,
+      error,
+    })
+  })
+
+  return res.json({
+    message: 'Form submission successful.',
+    submissionId: submission.id,
   })
 }

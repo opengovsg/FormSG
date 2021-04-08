@@ -10,12 +10,6 @@ export type EncryptSubmissionBodyAfterProcess = {
   parsedResponses: ProcessedFieldResponse[]
 }
 
-export type WithAttachmentsData<T> = T & {
-  attachmentData: EncryptedAttachmentsDto
-}
-
-export type WithFormData<T> = T & { formData: string }
-
 export type AttachmentMetadata = Map<string, string>
 
 export type SaveEncryptSubmissionParams = {

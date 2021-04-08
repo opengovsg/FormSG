@@ -190,3 +190,25 @@ export const checkFormIsEmailMode = (
   }
   return err(new ResponseModeError(ResponseMode.Email, form.responseMode))
 }
+
+/**
+ * Creates an email submission without saving it to the database.
+ * @param form Form document
+ * @param responseHash Hash of response
+ * @param responseSalt Salt used to hash response
+ * @returns Submission document which has not been saved to database
+ */
+export const createEmailSubmissionWithoutSave = (
+  form: IPopulatedEmailForm,
+  responseHash: string,
+  responseSalt: string,
+): IEmailSubmissionSchema => {
+  return new EmailSubmissionModel({
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    recipientEmails: transformEmails(form.emails),
+    responseHash,
+    responseSalt,
+  })
+}

@@ -1,60 +1,15 @@
 import { celebrate, Joi } from 'celebrate'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { Merge, SetOptional } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../../../config/logger'
-import {
-  BasicField,
-  FieldResponse,
-  ResWithHashedFields,
-  WithAttachments,
-  WithEmailData,
-  WithForm,
-} from '../../../../types'
-import MailService from '../../../services/mail/mail.service'
+import { BasicField, FieldResponse } from '../../../../types'
 import { createReqMeta } from '../../../utils/request'
-import { getProcessedResponses } from '../submission.service'
-import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'
-import * as EmailSubmissionService from './email-submission.service'
-import { WithAdminEmailData } from './email-submission.types'
-import {
-  mapAttachmentsFromResponses,
-  mapRouteError,
-  SubmissionEmailObj,
-} from './email-submission.util'
+import { mapRouteError } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Construct autoReply data and data to send admin from responses submitted
- *
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const prepareEmailSubmission: RequestHandler<
-  ParamsDictionary,
-  unknown,
-  { parsedResponses: ProcessedFieldResponse[] }
-> = (req, res, next) => {
-  const hashedFields =
-    (res as ResWithHashedFields<typeof res>).locals.hashedFields || new Set()
-  const { form } = req as WithForm<typeof req>
-  const emailData = new SubmissionEmailObj(
-    req.body.parsedResponses,
-    hashedFields,
-    form.authType,
-  )
-  // eslint-disable-next-line @typescript-eslint/no-extra-semi
-  ;(req as WithEmailData<typeof req>).autoReplyData = emailData.autoReplyData
-  ;(req as WithEmailData<typeof req>).dataCollationData =
-    emailData.dataCollationData
-  ;(req as WithEmailData<typeof req>).formData = emailData.formData
-  return next()
-}
 
 /**
  * Parses multipart-form data request. Parsed attachments are
@@ -94,115 +49,6 @@ export const receiveEmailSubmission: RequestHandler<
       })
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Extracts relevant fields, injects questions, verifies visibility of field and validates answers
- * to produce req.body.parsedResponses
- *
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const validateEmailSubmission: RequestHandler<
-  ParamsDictionary,
-  { message: string },
-  { responses: FieldResponse[] }
-> = async (req, res, next) => {
-  const { form } = req as WithForm<typeof req>
-
-  return EmailSubmissionService.validateAttachments(req.body.responses)
-    .andThen(() => getProcessedResponses(form, req.body.responses))
-    .map((parsedResponses) => {
-      // Creates an array of attachments from the validated responses
-      // TODO (#42): remove these types when merging middlewares into controller
-      // eslint-disable-next-line @typescript-eslint/no-extra-semi
-      ;(req as WithAttachments<
-        typeof req
-      >).attachments = mapAttachmentsFromResponses(req.body.responses)
-      ;(req.body as Merge<
-        typeof req.body,
-        { parsedResponses: ProcessedFieldResponse[] }
-      >).parsedResponses = parsedResponses
-      delete (req.body as SetOptional<typeof req.body, 'responses'>).responses // Prevent downstream functions from using responses by deleting it
-      return next()
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error processing responses',
-        meta: {
-          action: 'validateEmailSubmission',
-          ...createReqMeta(req),
-          formId: form._id,
-        },
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    })
-}
-
-/**
- * Sends response email to admin
- * @param req - Express request object
- * @param req.form - form object from req
- * @param req.formData - the submission for the form
- * @param req.dataCollationData - data to be included in JSON section of email
- * @param req.submission - submission which was saved to database
- * @param req.attachments - submitted attachments, parsed by
- * exports.receiveSubmission
- * @param res - Express response object
- * @param next - the next expressjs callback, invoked once attachments
- * are processed
- */
-export const sendAdminEmail: RequestHandler<
-  ParamsDictionary,
-  { message: string; spcpSubmissionFailure: boolean },
-  { parsedResponses: ProcessedFieldResponse[] }
-> = async (req, res, next) => {
-  const {
-    form,
-    formData,
-    dataCollationData,
-    submission,
-    attachments,
-  } = req as WithAdminEmailData<typeof req>
-  const logMeta = {
-    action: 'sendAdminEmail',
-    submissionId: submission.id,
-    formId: form._id,
-    ...createReqMeta(req),
-    submissionHash: submission.responseHash,
-  }
-  logger.info({
-    message: 'Sending admin mail',
-    meta: logMeta,
-  })
-  return MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(
-      req.body.parsedResponses,
-    ),
-    form,
-    submission,
-    attachments,
-    dataCollationData,
-    formData,
-  })
-    .map(() => next())
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error sending submission to admin',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-        spcpSubmissionFailure: false,
-      })
     })
 }
 
