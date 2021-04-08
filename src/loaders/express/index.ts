@@ -27,6 +27,7 @@ import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
 import apiRoutes from '../../app/routes'
 import { ApiRouter } from '../../app/routes/api'
+import { FrontendRouter } from '../../app/routes/frontend.server.routes'
 import * as IntranetMiddleware from '../../app/services/intranet/intranet.middleware'
 import config from '../../config/config'
 
@@ -148,6 +149,7 @@ const loadExpressApp = async (connection: Connection) => {
     routeFunction(app)
   })
 
+  app.use(FrontendRouter)
   app.use('/', HomeRouter)
   app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
