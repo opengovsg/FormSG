@@ -2,11 +2,13 @@
 
 const frontendCtrl = require('../controllers/frontend.server.controller')
 const featureManager = require('../../config/feature-manager').default
-const googleAnalyticsFactory = require('../factories/google-analytics.factory')
+const {
+  GoogleAnalyticsFactory,
+} = require('../factories/google-analytics.factory')
 const { celebrate, Joi, Segments } = require('celebrate')
 
 module.exports = function (app) {
-  app.route('/frontend/datalayer').get(googleAnalyticsFactory.datalayer)
+  app.route('/frontend/datalayer').get(GoogleAnalyticsFactory.datalayer)
 
   app.route('/frontend/environment').get(frontendCtrl.environment)
 
