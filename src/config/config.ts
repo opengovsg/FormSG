@@ -84,7 +84,7 @@ const awsConfig: AwsConfig = {
   s3,
 }
 
-let dbUri
+let dbUri: string | undefined
 if (isDev) {
   if (basicVars.core.nodeEnv === Environment.Dev && prodOnlyVars.dbHost) {
     dbUri = prodOnlyVars.dbHost
@@ -98,8 +98,7 @@ if (isDev) {
 }
 
 const dbConfig: DbConfig = {
-  // TODO (#317): remove usage of non-null assertion
-  uri: dbUri!,
+  uri: dbUri ?? '',
   options: {
     user: '',
     pass: '',
