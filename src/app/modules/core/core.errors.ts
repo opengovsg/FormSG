@@ -73,3 +73,12 @@ export class MissingFeatureError extends ApplicationError {
     )
   }
 }
+
+/**
+ * Error thrown when attachment upload fails
+ */
+export class AttachmentUploadError extends ApplicationError {
+  constructor(message = 'Error while uploading encrypted attachments to S3') {
+    super(message)
+  }
+}

@@ -1,25 +1,20 @@
 'use strict'
 
 const CsvGenerator = require('../../forms/helpers/CsvGenerator')
+const BillingService = require('../../../services/BillingService')
 
 angular
   .module('users')
   .controller('BillingController', [
+    '$q',
     '$state',
     '$timeout',
-    'AdminConsole',
     'Auth',
     'NgTableParams',
     BillingController,
   ])
 
-function BillingController(
-  $state,
-  $timeout,
-  AdminConsole,
-  Auth,
-  NgTableParams,
-) {
+function BillingController($q, $state, $timeout, Auth, NgTableParams) {
   const vm = this
 
   vm.user = Auth.getUser()
@@ -102,10 +97,12 @@ function BillingController(
     esrvcId = esrvcId || vm.esrvcId
     vm.loading = true
     vm.searchError = false
-    AdminConsole.getBillingInfo(
-      vm.selectedTimePeriod.yr,
-      vm.selectedTimePeriod.mth,
-      esrvcId,
+    $q.when(
+      BillingService.getBillingInfo({
+        yr: vm.selectedTimePeriod.yr,
+        mth: vm.selectedTimePeriod.mth,
+        esrvcId,
+      }),
     ).then(
       function (response) {
         // Remove loader

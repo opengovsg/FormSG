@@ -283,7 +283,6 @@ require('./modules/users/config/users.client.routes.js')
 
 // User services
 require('./modules/users/services/auth.client.service.js')
-require('./modules/users/services/admin-console.client.service.js')
 
 // User controllers
 require('./modules/users/controllers/authentication.client.controller.js')

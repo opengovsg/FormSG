@@ -14,11 +14,10 @@ import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
-import { DatabaseError } from '../../core/core.errors'
+import { DatabaseError } from '../../../../../modules/core/core.errors'
+import * as UserService from '../../../../../modules/user/user.service'
 import UserRouter from '../user.routes'
-import * as UserService from '../user.service'
 
 const UserModel = getUserModel(mongoose)
 
@@ -70,9 +69,9 @@ describe('user.routes', () => {
       // Response should contain user object.
       expect(response.body).toEqual(
         expect.objectContaining({
-          ...jsonParseStringify(defaultUser.toObject()),
+          ...JSON.parse(JSON.stringify(defaultUser.toObject())),
           // Should be object since agency key should be populated.
-          agency: jsonParseStringify(defaultAgency.toObject()),
+          agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
         }),
       )
     })
@@ -109,7 +108,7 @@ describe('user.routes', () => {
     })
   })
 
-  describe('POST /user/contact/sendotp', () => {
+  describe('POST /user/contact/otp/generate', () => {
     it('should return 200 when otp is sent successfully', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
@@ -118,7 +117,7 @@ describe('user.routes', () => {
         .mockReturnValueOnce(okAsync(true))
 
       // Act
-      const response = await session.post('/user/contact/sendotp').send({
+      const response = await session.post('/user/contact/otp/generate').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
       })
@@ -131,7 +130,7 @@ describe('user.routes', () => {
 
     it('should return 400 when body.contact is not provided as a param', async () => {
       // Act
-      const response = await request.post('/user/contact/sendotp').send({
+      const response = await request.post('/user/contact/otp/generate').send({
         userId: defaultUser.email,
       })
 
@@ -144,7 +143,7 @@ describe('user.routes', () => {
 
     it('should return 400 when body.userId is not provided as a param', async () => {
       // Act
-      const response = await request.post('/user/contact/sendotp').send({
+      const response = await request.post('/user/contact/otp/generate').send({
         contact: VALID_CONTACT,
       })
 
@@ -161,7 +160,7 @@ describe('user.routes', () => {
       const invalidUserId = new ObjectId()
 
       // Act
-      const response = await session.post('/user/contact/sendotp').send({
+      const response = await session.post('/user/contact/otp/generate').send({
         contact: VALID_CONTACT,
         userId: invalidUserId,
       })
@@ -174,7 +173,7 @@ describe('user.routes', () => {
     it('should return 401 when user is not currently logged in', async () => {
       // Act
       // POSTing without first logging in.
-      const response = await request.post('/user/contact/sendotp').send({
+      const response = await request.post('/user/contact/otp/generate').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
       })
@@ -191,7 +190,7 @@ describe('user.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await session.post('/user/contact/sendotp').send({
+      const response = await session.post('/user/contact/otp/generate').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
       })
@@ -210,7 +209,7 @@ describe('user.routes', () => {
         .mockReturnValueOnce(errAsync(new SmsSendError(mockErrorString)))
 
       // Act
-      const response = await session.post('/user/contact/sendotp').send({
+      const response = await session.post('/user/contact/otp/generate').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
       })
@@ -230,7 +229,7 @@ describe('user.routes', () => {
         .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
-      const response = await session.post('/user/contact/sendotp').send({
+      const response = await session.post('/user/contact/otp/generate').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
       })
@@ -242,7 +241,7 @@ describe('user.routes', () => {
     })
   })
 
-  describe('POST /user/contact/verifyotp', () => {
+  describe('POST /user/contact/otp/verify', () => {
     const MOCK_VALID_OTP = '123456'
 
     beforeEach(async () => {
@@ -257,7 +256,7 @@ describe('user.routes', () => {
       expect(defaultUser.contact).not.toBeDefined()
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         otp: MOCK_VALID_OTP,
         userId: defaultUser._id,
@@ -267,8 +266,8 @@ describe('user.routes', () => {
       expect(response.status).toEqual(200)
       // Body should be an user object.
       expect(response.body).toEqual({
-        ...jsonParseStringify(defaultUser.toObject()),
-        agency: jsonParseStringify(defaultAgency.toObject()),
+        ...JSON.parse(JSON.stringify(defaultUser.toObject())),
+        agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
         // This time with the new contact number.
         contact: VALID_CONTACT,
         // Dynamic date strings to be returned.
@@ -279,7 +278,7 @@ describe('user.routes', () => {
 
     it('should return 400 when body.contact is not provided as a param', async () => {
       // Act
-      const response = await request.post('/user/contact/verifyotp').send({
+      const response = await request.post('/user/contact/otp/verify').send({
         userId: defaultUser.email,
         otp: MOCK_VALID_OTP,
       })
@@ -293,7 +292,7 @@ describe('user.routes', () => {
 
     it('should return 400 when body.userId is not provided as a param', async () => {
       // Act
-      const response = await request.post('/user/contact/verifyotp').send({
+      const response = await request.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         otp: MOCK_VALID_OTP,
       })
@@ -307,7 +306,7 @@ describe('user.routes', () => {
 
     it('should return 400 when body.otp is not provided as a param', async () => {
       // Act
-      const response = await request.post('/user/contact/verifyotp').send({
+      const response = await request.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
       })
@@ -325,7 +324,7 @@ describe('user.routes', () => {
       const invalidUserId = new ObjectId()
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         otp: MOCK_VALID_OTP,
         userId: invalidUserId,
@@ -339,7 +338,7 @@ describe('user.routes', () => {
     it('should return 401 when user is not currently logged in', async () => {
       // Act
       // POSTing without first logging in.
-      const response = await request.post('/user/contact/verifyotp').send({
+      const response = await request.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         otp: MOCK_VALID_OTP,
         userId: defaultUser._id,
@@ -355,7 +354,7 @@ describe('user.routes', () => {
       const session = await createAuthedSession(defaultUser.email, request)
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         otp: MOCK_VALID_OTP,
         userId: defaultUser._id,
@@ -374,7 +373,7 @@ describe('user.routes', () => {
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         otp: '999999',
         userId: defaultUser._id,
@@ -392,7 +391,7 @@ describe('user.routes', () => {
       const invalidContact = '999'
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: invalidContact,
         otp: MOCK_VALID_OTP,
         userId: defaultUser._id,
@@ -416,7 +415,7 @@ describe('user.routes', () => {
       const verifyPromises = []
       for (let i = 0; i < UserService.MAX_OTP_ATTEMPTS; i++) {
         verifyPromises.push(
-          session.post('/user/contact/verifyotp').send({
+          session.post('/user/contact/otp/verify').send({
             contact: VALID_CONTACT,
             otp: invalidOtp,
             userId: defaultUser._id,
@@ -435,7 +434,7 @@ describe('user.routes', () => {
       )
 
       // Act again, this time with a valid OTP.
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
         otp: MOCK_VALID_OTP,
@@ -457,7 +456,7 @@ describe('user.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
         otp: MOCK_VALID_OTP,
@@ -479,7 +478,7 @@ describe('user.routes', () => {
         .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
         otp: MOCK_VALID_OTP,
@@ -502,7 +501,7 @@ describe('user.routes', () => {
         .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
-      const response = await session.post('/user/contact/verifyotp').send({
+      const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
         userId: defaultUser._id,
         otp: MOCK_VALID_OTP,
@@ -528,7 +527,7 @@ const requestForContactOtp = async (
     .mockReturnValueOnce(okAsync(true))
 
   // Act
-  const response = await authedSession.post('/user/contact/sendotp').send({
+  const response = await authedSession.post('/user/contact/otp/generate').send({
     userId: user._id,
     contact,
   })

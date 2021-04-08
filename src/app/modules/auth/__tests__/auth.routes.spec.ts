@@ -11,6 +11,7 @@ import { IAgencySchema } from 'src/types'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
 import { DatabaseError } from '../../core/core.errors'
@@ -463,7 +464,7 @@ describe('auth.routes', () => {
       // Body should be an user object.
       expect(response.body).toMatchObject({
         // Required since that's how the data is sent out from the application.
-        agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
+        agency: jsonParseStringify(defaultAgency.toObject()),
         _id: expect.any(String),
         created: expect.any(String),
         email: VALID_EMAIL,

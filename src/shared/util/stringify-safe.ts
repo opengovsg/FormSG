@@ -18,9 +18,7 @@ import stringify from 'json-stringify-safe'
  * @param obj the object to be stringified
  */
 export const stringifySafe = (obj: any): string | undefined => {
-  const bigIntReplacer = (_key: any, value: any): any => {
-    // eslint-disable-next-line valid-typeof
-    return typeof value === 'bigint' ? Number(value) : value
-  }
-  return stringify(obj, bigIntReplacer)
+  return stringify(obj, (_key, value) =>
+    typeof value === 'bigint' ? value.toString() : value,
+  )
 }

@@ -97,7 +97,7 @@ function EditContactNumberModalController(
     $scope.otpForm.otp.$setPristine()
     $scope.otpForm.otp.$setUntouched()
     $http
-      .post('/user/contact/sendotp', {
+      .post('/api/v3/user/otp/generate', {
         contact: vm.contact.number,
         userId: vm.user._id,
       })
@@ -126,7 +126,7 @@ function EditContactNumberModalController(
     vm.otp.isFetching = true
     // Check with backend if the otp is correct
     $http
-      .post('/user/contact/verifyotp', {
+      .post('/api/v3/user/otp/verify', {
         contact: vm.contact.number,
         otp: vm.otp.value,
         userId: vm.user._id,

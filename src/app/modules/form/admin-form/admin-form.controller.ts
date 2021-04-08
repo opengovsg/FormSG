@@ -59,24 +59,21 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleListDashboardForms: RequestHandler = async (req, res) => {
   const authedUserId = (req.session as Express.AuthedSession).user._id
-  const dashboardResult = await getDashboardForms(authedUserId)
 
-  if (dashboardResult.isErr()) {
-    const { error } = dashboardResult
-    logger.error({
-      message: 'Error listing dashboard forms',
-      meta: {
-        action: 'handleListDashboardForms',
-        userId: authedUserId,
-      },
-      error,
+  return getDashboardForms(authedUserId)
+    .map((dashboardView) => res.json(dashboardView))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error listing dashboard forms',
+        meta: {
+          action: 'handleListDashboardForms',
+          userId: authedUserId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  // Success.
-  return res.json(dashboardResult.value)
 }
 
 /**
@@ -675,6 +672,16 @@ export const handleDuplicateAdminForm: RequestHandler<
   )
 }
 
+/**
+ * Handler for GET /:formId/adminform/template
+ * @security session
+ *
+ * @returns 200 with target form's public view
+ * @returns 403 when the target form is private
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
+ */
 export const handleGetTemplateForm: RequestHandler<{ formId: string }> = (
   req,
   res,
@@ -785,9 +792,10 @@ export const handleCopyTemplateForm: RequestHandler<
  * @security session
  *
  * @returns 200 with updated form with transferred owners
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
  * @returns 403 when user is not the current owner of the form
  * @returns 404 when form cannot be found
- * @returns 409 when new owner is not in the database yet, or if new owner is current owner
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
