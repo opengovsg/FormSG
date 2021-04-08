@@ -1220,13 +1220,9 @@ export const handleEmailPreviewSubmission: RequestHandler<
     })
   }
 
-  // Return the reply early to the submitter
-  res.json({
-    message: 'Form submission successful.',
-    submissionId: submission.id,
-  })
-
-  return SubmissionService.sendEmailConfirmations({
+  // Don't await on email confirmations, so submission is successful even if
+  // this fails
+  void SubmissionService.sendEmailConfirmations({
     form,
     parsedResponses,
     submission,
@@ -1238,5 +1234,10 @@ export const handleEmailPreviewSubmission: RequestHandler<
       meta: logMeta,
       error,
     })
+  })
+
+  return res.json({
+    message: 'Form submission successful.',
+    submissionId: submission.id,
   })
 }
