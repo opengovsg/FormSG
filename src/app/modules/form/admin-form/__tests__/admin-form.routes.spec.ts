@@ -21,12 +21,25 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
+import {
+  MOCK_ATTACHMENT_FIELD,
+  MOCK_ATTACHMENT_RESPONSE,
+  MOCK_CHECKBOX_FIELD,
+  MOCK_CHECKBOX_RESPONSE,
+  MOCK_OPTIONAL_VERIFIED_FIELD,
+  MOCK_OPTIONAL_VERIFIED_RESPONSE,
+  MOCK_SECTION_FIELD,
+  MOCK_SECTION_RESPONSE,
+  MOCK_TEXT_FIELD,
+  MOCK_TEXTFIELD_RESPONSE,
+} from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { aws } from 'src/config/config'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
   BasicField,
+  IFieldSchema,
   IFormDocument,
   IFormSchema,
   IPopulatedEmailForm,
@@ -58,6 +71,11 @@ import * as AdminFormService from '../admin-form.service'
 
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue(true),
+  }),
+}))
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
@@ -88,6 +106,440 @@ describe('admin-form.routes', () => {
     jest.restoreAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('POST /v2/submissions/email/preview/:formId', () => {
+    const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/email/preview'
+    it('should return 200 when submission is valid', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_TEXT_FIELD],
+          admin: defaultUser._id,
+        },
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        // MOCK_RESPONSE contains all required keys
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [MOCK_TEXTFIELD_RESPONSE],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when answer is empty string for optional field', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [
+            { ...MOCK_TEXT_FIELD, required: false } as IFieldSchema,
+          ],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when attachment response has filename and content', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_ATTACHMENT_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [
+              {
+                ...MOCK_ATTACHMENT_RESPONSE,
+                content: MOCK_ATTACHMENT_RESPONSE.content.toString('binary'),
+              },
+            ],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when response has isHeader key', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_SECTION_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when signature is empty string for optional verified field', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_OPTIONAL_VERIFIED_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_OPTIONAL_VERIFIED_RESPONSE, signature: '' }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when response has answerArray and no answer', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_CHECKBOX_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [MOCK_CHECKBOX_RESPONSE],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 400 when isPreview key is missing', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        // Note missing isPreview
+        .field('body', JSON.stringify({ responses: [] }))
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when responses key is missing', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        // Note missing responses
+        .field('body', JSON.stringify({ isPreview: false }))
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response is missing _id', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response is missing fieldType', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response has invalid fieldType', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [
+              { ...MOCK_TEXTFIELD_RESPONSE, fieldType: 'definitelyInvalid' },
+            ],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response is missing answer', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response has both answer and answerArray', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when attachment response has filename but not content', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when attachment response has content but not filename', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+  })
 
   describe('POST /v2/submissions/encrypt/preview/:formId', () => {
     const MOCK_FIELD_ID = new ObjectId().toHexString()
