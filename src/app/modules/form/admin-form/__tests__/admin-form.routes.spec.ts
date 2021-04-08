@@ -3934,6 +3934,7 @@ describe('admin-form.routes', () => {
 
     it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
       // Arrange
+      const now = new Date()
       const submissions = await Promise.all(
         times(5, (count) =>
           createSubmission({
@@ -3944,11 +3945,11 @@ describe('admin-form.routes', () => {
               ['fieldId1', `some.attachment.url.${count}`],
               ['fieldId2', `some.other.attachment.url.${count}`],
             ]),
+            created: now,
           }),
         ),
       )
       // Set 2 submissions to be submitted 3-4 days ago.
-      const now = new Date()
       submissions[2].created = subDays(now, 3)
       submissions[4].created = subDays(now, 4)
       await submissions[2].save()
@@ -4601,11 +4602,13 @@ const createSubmission = ({
   encryptedContent,
   verifiedContent,
   attachmentMetadata,
+  created,
 }: {
   form: IFormDocument
   encryptedContent: string
   attachmentMetadata?: Map<string, string>
   verifiedContent?: string
+  created?: Date
 }) => {
   return SubmissionModel.create({
     submissionType: SubmissionType.Encrypt,
@@ -4615,6 +4618,7 @@ const createSubmission = ({
     attachmentMetadata,
     encryptedContent,
     verifiedContent,
+    created,
     version: 1,
   })
 }
