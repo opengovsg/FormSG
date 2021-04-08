@@ -1094,15 +1094,15 @@ export const handleEncryptPreviewSubmission: RequestHandler<
     },
   )
 
-  // Return the reply early to the submitter
-  res.json({
-    message: 'Form submission successful.',
-    submissionId: submission._id,
-  })
-
-  return SubmissionService.sendEmailConfirmations({
+  // Don't await on email confirmations
+  void SubmissionService.sendEmailConfirmations({
     form,
     parsedResponses,
     submission,
+  })
+
+  return res.json({
+    message: 'Form submission successful.',
+    submissionId: submission._id,
   })
 }
