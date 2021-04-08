@@ -7,20 +7,17 @@ export const PublicFormRouter = Router()
 
 /**
  * Returns the specified form to the user, along with any
- * identity information obtained from SingPass/CorpPass,
- * and MyInfo details, if any.
+ * identify information obtained from Singpass/Corppass/MyInfo.
  *
  * WARNING: TemperatureSG batch jobs rely on this endpoint to
  * retrieve the master list of personnel for daily reporting.
  * Please strictly ensure backwards compatibility.
+ * @route GET /:formId/publicform
  *
- * @route GET /{formId}/publicform
- * @group forms - endpoints to serve forms
- * @param {string} formId.path.required - the form id
- * @consumes application/json
- * @produces application/json
- * @returns {string} 404 - form is not made public
- * @returns {PublicForm.model} 200 - the form, and other information
+ * @returns 200 with form when form exists and is public
+ * @returns 404 when form is private or form with given ID does not exist
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
  */
 PublicFormRouter.get(
   '/:formId([a-fA-F0-9]{24})/publicform',
@@ -29,46 +26,31 @@ PublicFormRouter.get(
 
 /**
  * Redirect a form to the main index, with the specified path
- * suffixed with a hashbang (`/#!`)
- * parameter Id is used instead of formId as formById middleware is not needed
+ * suffixed with a hashbang (`/#!`).
  * @route GET /{Id}
- * @route GET /{Id}/preview
  * @route GET /{Id}/embed
+ * @route GET /{Id}/preview
  * @route GET /{Id}/template
  * @route GET /{Id}/use-template
+ * @route GET /forms/:agency/{Id}
+ * @route GET /forms/:agency/{Id}/embed
+ * @route GET /forms/:agency/{Id}/preview
+ * @route GET /forms/:agency/{Id}/template
+ * @route GET /forms/:agency/{Id}/use-template
  * @group forms - endpoints to serve forms
- * @param {string} Id.path.required - the form id
- * @produces text/html
- * @returns {string} 302 - redirects the user to the specified form,
- * through the main index, with the form id specified as a hashbang path
+ * @returns 302 - redirects the user to the specified form,
+ * through the main index, with the form ID specified as a hashbang path
  */
 PublicFormRouter.get(
   '/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
   PublicFormController.handleRedirect,
 )
 
-// TODO: Remove this embed endpoint
 PublicFormRouter.get(
   '/:Id([a-fA-F0-9]{24})/embed',
   PublicFormController.handleRedirect,
 )
 
-/**
- * Redirect a form to the main index, with the specified path
- * suffixed with a hashbang (`/#!`). /forms/:agency is added for backward compatibility.
- * parameter Id is used instead of formId as formById middleware is not needed
- * TODO: Remove once all form links being shared do not have /forms/:agency
- * @route GET /forms/:agency/{Id}
- * @route GET /forms/:agency/{Id}/preview
- * @route GET /forms/:agency/{Id}/embed
- * @route GET /forms/:agency/{Id}/template
- * @route GET /{Id}/use-template
- * @group forms - endpoints to serve forms
- * @param {string} Id.path.required - the form id
- * @produces text/html
- * @returns {string} 302 - redirects the user to the specified form,
- * through the main index, with the form id specified as a hashbang path
- */
 PublicFormRouter.get(
   '/forms/:agency/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
   PublicFormController.handleRedirect,
@@ -80,19 +62,8 @@ PublicFormRouter.get(
 )
 
 /**
- * @typedef Feedback
- * @property {number} rating.required - the user's rating of the form
- * @property {string} comment - any comments the user might have
- */
-
-/**
  * Send feedback for a public form
  * @route POST /:formId/feedback
- * @group forms - endpoints to serve forms
- * @param {string} formId.path.required - the form id
- * @param {Feedback.model} feedback.body.required - the user's feedback
- * @consumes application/json
- * @produces application/json
  * @returns 200 if feedback was successfully saved
  * @returns 400 if form feedback was malformed and hence cannot be saved
  * @returns 404 if form with formId does not exist or is private
@@ -112,33 +83,4 @@ PublicFormRouter.post(
       .unknown(true),
   }),
   PublicFormController.handleSubmitFeedback,
-)
-
-/**
- * @typedef PublicForm
- * @property {object} form.required - the form
- * @property {object} spcpSession - contains identity information from SingPass/CorpPass
- * @property {boolean} myInfoError - indicates if there was any errors while accessing MyInfo
- */
-
-/**
- * Returns the specified form to the user, along with any
- * identity information obtained from SingPass/CorpPass,
- * and MyInfo details, if any.
- *
- * WARNING: TemperatureSG batch jobs rely on this endpoint to
- * retrieve the master list of personnel for daily reporting.
- * Please strictly ensure backwards compatibility.
- *
- * @route GET /{formId}/publicform
- * @group forms - endpoints to serve forms
- * @param {string} formId.path.required - the form id
- * @consumes application/json
- * @produces application/json
- * @returns {string} 404 - form is not made public
- * @returns {PublicForm.model} 200 - the form, and other information
- */
-PublicFormRouter.get(
-  '/:formId([a-fA-F0-9]{24})/publicform',
-  PublicFormController.handleGetPublicForm,
 )
