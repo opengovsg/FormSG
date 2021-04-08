@@ -6,10 +6,10 @@ import { SettingsUpdateDto } from '../../../../../../types/api'
 import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
 import { handleUpdateSettings } from '../../../../../modules/form/admin-form/admin-form.controller'
 
-export const AdminFormsRouter = Router()
+export const AdminFormsSettingsRouter = Router()
 
 // All routes in this handler should be protected by authentication.
-AdminFormsRouter.use(withUserAuthentication)
+AdminFormsSettingsRouter.use(withUserAuthentication)
 
 /**
  * Joi validator for PATCH /forms/:formId/settings route.
@@ -52,7 +52,7 @@ const updateSettingsValidator = celebrate({
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/settings').patch(
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings').patch(
   updateSettingsValidator,
   handleUpdateSettings,
 )

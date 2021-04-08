@@ -11,15 +11,15 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { AdminFormsRouter } from '../admin-forms.routes'
+import { AdminFormsSettingsRouter } from '../admin-forms.settings.routes'
 
 const UserModel = getUserModel(mongoose)
 
-const app = setupApp('/admin/forms', AdminFormsRouter, {
+const app = setupApp('/admin/forms', AdminFormsSettingsRouter, {
   setupWithAuth: true,
 })
 
-describe('admin-form.routes', () => {
+describe('admin-form.settings.routes', () => {
   let request: Session
 
   const USER_ID = new ObjectId()

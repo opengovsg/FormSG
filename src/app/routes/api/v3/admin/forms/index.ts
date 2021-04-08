@@ -1,1 +1,7 @@
-export { AdminFormsRouter } from './admin-forms.routes'
+import { Router } from 'express'
+
+import { AdminFormsSettingsRouter } from './admin-forms.settings.routes'
+
+export const AdminFormsRouter = Router()
+
+AdminFormsRouter.use(AdminFormsSettingsRouter)
