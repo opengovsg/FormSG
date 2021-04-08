@@ -3578,7 +3578,6 @@ describe('admin-form.routes', () => {
         })
 
       // Assert
-      // Take first 10 submissions
       const expected = times(10, (index) => ({
         number: 11 - index,
         // Loosen refNo checks due to non-deterministic aggregation query.
