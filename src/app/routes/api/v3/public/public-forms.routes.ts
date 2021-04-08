@@ -1,13 +1,12 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import * as EmailSubmissionController from 'src/app/modules/submission/email-submission/email-submission.controller'
-import { CaptchaFactory } from 'src/app/services/captcha/captcha.factory'
-import { limitRate } from 'src/app/utils/limit-rate'
-import { rateLimitConfig } from 'src/config/config'
-
+import { rateLimitConfig } from '../../../../../config/config'
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
+import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
 import * as EmailSubmissionMiddleware from '../../../../modules/submission/email-submission/email-submission.middleware'
+import { CaptchaFactory } from '../../../../services/captcha/captcha.factory'
+import { limitRate } from '../../../../utils/limit-rate'
 
 export const PublicFormsRouter = Router()
 
