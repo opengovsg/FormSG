@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
-import { Status } from 'src/types'
+import { ILogicSchema, Status } from 'src/types'
 import { SettingsUpdateDto } from 'src/types/api'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
@@ -263,6 +263,181 @@ describe('admin-form.settings.routes', () => {
       expect(response.body).toEqual({
         message: expect.any(String),
       })
+    })
+  })
+
+  describe('DELETE /forms/:formId/logic/:logicId', () => {
+    it('should return 200 with success message on successful form logic delete for email mode form', async () => {
+      // Arrange
+      const formLogicId = '606d408f37af650047dd1a6a'
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
+        formOptions: {
+          form_logics: [
+            {
+              _id: formLogicId,
+            } as ILogicSchema,
+          ],
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const response = await session
+        .delete(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
+        .send()
+
+      // Assert
+      const expectedResponse = {
+        message: 'Logic deleted successfully',
+      }
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 200 with success message on successful form logic delete for encrypt mode form', async () => {
+      // Arrange
+      const formLogicId = '606d408f37af650047dd1a6a'
+      const { form: formToUpdate, user } = await dbHandler.insertEncryptForm({
+        formOptions: {
+          form_logics: [
+            {
+              _id: formLogicId,
+            } as ILogicSchema,
+          ],
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const response = await session
+        .delete(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
+        .send()
+
+      // Assert
+      const expectedResponse = {
+        message: 'Logic deleted successfully',
+      }
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 403 when current user does not have permissions to delete form logic', async () => {
+      // Arrange
+      const formLogicId = '606d408f37af650047dd1a6a'
+      const { form: formToUpdate, agency } = await dbHandler.insertEncryptForm({
+        formOptions: {
+          form_logics: [
+            {
+              _id: formLogicId,
+            } as ILogicSchema,
+          ],
+        },
+      })
+      const diffUser = await dbHandler.insertUser({
+        mailName: 'newUser',
+        agencyId: agency._id,
+      })
+      // Log in as different user.
+      const session = await createAuthedSession(diffUser.email, request)
+
+      // Act
+      const response = await session
+        .delete(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
+        .send()
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform write operation',
+        ),
+      })
+    })
+
+    it('should return 404 with error message if logicId does not exist', async () => {
+      // Arrange
+      const formLogicId = '606d408f37af650047dd1a6a'
+      const wrongLogicId = '606d408f37af650047dd0000'
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
+        formOptions: {
+          form_logics: [
+            {
+              _id: formLogicId,
+            } as ILogicSchema,
+          ],
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const response = await session
+        .delete(`/admin/forms/${formToUpdate._id}/logic/${wrongLogicId}`)
+        .send()
+
+      // Assert
+      const expectedResponse = {
+        message: 'logicId does not exist on form',
+      }
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 with error message if form does not exist', async () => {
+      // Arrange
+      const formLogicId = '606d408f37af650047dd1a6a'
+      const { user } = await dbHandler.insertEmailForm({
+        formOptions: {
+          form_logics: [
+            {
+              _id: formLogicId,
+            } as ILogicSchema,
+          ],
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const wrongFormId = '12345abcde67890aaaaa1234'
+      const response = await session
+        .delete(`/admin/forms/${wrongFormId}/logic/${formLogicId}`)
+        .send()
+
+      // Assert
+      const expectedResponse = {
+        message: 'Form not found',
+      }
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when userId cannot be found in the database', async () => {
+      // Arrange
+      const formLogicId = '606d408f37af650047dd1a6a'
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
+        formOptions: {
+          form_logics: [
+            {
+              _id: formLogicId,
+            } as ILogicSchema,
+          ],
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await session
+        .delete(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
+        .send()
+
+      // Assert
+      const expectedResponse = {
+        message: 'User not found',
+      }
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual(expectedResponse)
     })
   })
 })
