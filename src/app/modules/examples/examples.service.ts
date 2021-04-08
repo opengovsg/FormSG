@@ -157,10 +157,6 @@ const execExamplesQuery = (
 ): ResultAsync<QueryPageResult, DatabaseError> => {
   return ResultAsync.fromPromise(
     queryBuilder
-      // TODO(#42): Missing type in native typescript, waiting on upstream fixes.
-      // Tracking at https://github.com/Automattic/mongoose/issues/9714.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       .append(
         selectAndProjectCardInfo(/* limit= */ PAGE_SIZE, /* offset= */ offset),
       )

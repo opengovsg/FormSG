@@ -6,11 +6,6 @@ import { InvalidEncodingError } from '../modules/submission/submission.errors'
 export const checkIsEncryptedEncoding = (
   encryptedStr: string,
 ): Result<true, InvalidEncodingError> => {
-  // TODO (#42): Remove this type check once whole backend is in TypeScript.
-  if (typeof encryptedStr !== 'string') {
-    return err(new InvalidEncodingError('encryptedStr is not of type `string`'))
-  }
-
   const [submissionPublicKey, nonceEncrypted] = encryptedStr.split(';')
 
   if (!nonceEncrypted) {
