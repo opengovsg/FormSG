@@ -246,6 +246,7 @@ export const sendEmailBounceNotification = (
 ): ResultAsync<string[], never> => {
   // Email all collaborators
   const emailRecipients = computeValidEmails(form, bounceDoc)
+  if (emailRecipients.length === 0) return okAsync([])
   return MailService.sendBounceNotification({
     emailRecipients,
     bouncedRecipients: bounceDoc.getEmails(),
