@@ -4,7 +4,6 @@ import { errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
-// eslint-disable-next-line import/first
 import { handleSns } from 'src/app/modules/bounce/bounce.controller'
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
 import * as BounceService from 'src/app/modules/bounce/bounce.service'
