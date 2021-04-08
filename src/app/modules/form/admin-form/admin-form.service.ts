@@ -204,6 +204,11 @@ export const createPresignedPostUrlForLogos = (
   return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
 }
 
+/**
+ * Extracts IDs of MyInfo fields
+ * @param formFields
+ * @returns List of IDs of MyInfo fields
+ */
 export const extractMyInfoFieldIds = (
   formFields: IFieldSchema[] | undefined,
 ): string[] => {

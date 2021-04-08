@@ -1025,6 +1025,7 @@ export const handleUpdateSettings: RequestHandler<
  * @returns 403 when current user does not have read permissions to given form
  * @returns 404 when given form ID does not exist
  * @returns 410 when given form has been deleted
+ * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
 export const handleEncryptPreviewSubmission: RequestHandler<
@@ -1103,6 +1104,18 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   })
 }
 
+/**
+ * Handler for POST /v2/submissions/encrypt/preview/:formId.
+ * @security session
+ *
+ * @returns 200 with a mock submission ID
+ * @returns 400 when body is malformed; e.g. invalid responses, or when admin email fails to be sent
+ * @returns 403 when current user does not have read permissions to given form
+ * @returns 404 when given form ID does not exist
+ * @returns 410 when given form has been deleted
+ * @returns 422 when user ID in session is not found in database
+ * @returns 500 when database error occurs
+ */
 export const handleEmailPreviewSubmission: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string },
