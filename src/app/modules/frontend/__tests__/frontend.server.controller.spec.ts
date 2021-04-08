@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import frontendServerController from '../frontend.server.controller'
+import * as FrontendServerController from '../frontend.server.controller'
 
 describe('frontend.server.controller', () => {
   afterEach(() => jest.clearAllMocks())
@@ -24,7 +24,7 @@ describe('frontend.server.controller', () => {
   }
   describe('datalayer', () => {
     it('should return the correct response when the request is valid', () => {
-      frontendServerController.datalayer(mockReq, mockRes)
+      FrontendServerController.addGoogleAnalyticsData(mockReq, mockRes)
       expect(mockRes.send).toHaveBeenCalledWith(
         expect.stringContaining("'app_name': 'xyz'"),
       )
@@ -35,20 +35,20 @@ describe('frontend.server.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
     })
     it('should return BAD_REQUEST if the request is not valid', () => {
-      frontendServerController.datalayer(mockBadReq, mockRes)
+      FrontendServerController.addGoogleAnalyticsData(mockBadReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     })
   })
 
   describe('environment', () => {
     it('should return the correct response when the request is valid', () => {
-      frontendServerController.environment(mockReq, mockRes)
+      FrontendServerController.addEnvVarData(mockReq, mockRes)
       expect(mockRes.send).toHaveBeenCalledWith('efg')
       expect(mockRes.type).toHaveBeenCalledWith('text/javascript')
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
     })
     it('should return BAD_REQUEST if the request is not valid', () => {
-      frontendServerController.environment(mockBadReq, mockRes)
+      FrontendServerController.addEnvVarData(mockBadReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     })
   })
@@ -65,7 +65,7 @@ describe('frontend.server.controller', () => {
         'window.location.hash = "#!/formId?fieldId1=abc&fieldId2=&lt;&gt;&#39;&#34;'
       // Note this is different from mockReqModified.query.redirectPath as
       // there are html-encoded characters
-      frontendServerController.redirectLayer(mockReqModified, mockRes)
+      FrontendServerController.generateRedirectUrl(mockReqModified, mockRes)
       expect(mockRes.send).toHaveBeenCalledWith(
         expect.stringContaining(redirectString),
       )
@@ -73,7 +73,7 @@ describe('frontend.server.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
     })
     it('should return BAD_REQUEST if the request is not valid', () => {
-      frontendServerController.redirectLayer(mockBadReq, mockRes)
+      FrontendServerController.generateRedirectUrl(mockBadReq, mockRes)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     })
   })

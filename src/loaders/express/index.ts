@@ -14,6 +14,7 @@ import { BillingRouter } from '../../app/modules/billing/billing.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import { ExamplesRouter } from '../../app/modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../app/modules/form/admin-form/admin-form.routes'
+import { FrontendRouter } from '../../app/modules/frontend/frontend.server.routes'
 import { HomeRouter } from '../../app/modules/home/home.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../app/modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../app/modules/myinfo/myinfo.routes'
@@ -149,6 +150,7 @@ const loadExpressApp = async (connection: Connection) => {
   })
 
   app.use('/', HomeRouter)
+  app.use('/frontend', FrontendRouter)
   app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
   app.use('/emailnotifications', BounceRouter)
