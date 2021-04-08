@@ -3,9 +3,9 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import featureManager from '../../config/feature-manager'
-import { createLoggerWithLabel } from '../../config/logger'
-import { createReqMeta } from '../utils/request'
+import featureManager from '../../../config/feature-manager'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { createReqMeta } from '../../utils/request'
 
 const logger = createLoggerWithLabel(module)
 

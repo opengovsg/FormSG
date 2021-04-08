@@ -6,7 +6,7 @@ import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../config/feature-manager'
-import * as FrontendServerController from '../controllers/frontend.server.controller'
+import * as FrontendServerController from '../modules/frontend/frontend.server.controller'
 
 interface IGoogleAnalyticsFactory {
   addGoogleAnalyticsData: RequestHandler<
