@@ -1,18 +1,24 @@
-import { Request, Response } from 'express'
+import { RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
 } from '../../config/feature-manager'
-import * as frontend from '../controllers/frontend.server.controller'
+import * as FrontendServerController from '../controllers/frontend.server.controller'
 
 interface IGoogleAnalyticsFactory {
-  datalayer: (req: Request, res: Response) => string | void
+  datalayer: RequestHandler<ParamsDictionary, string | { message: string }>
 }
 
 const googleAnalyticsFeature = FeatureManager.get(FeatureNames.GoogleAnalytics)
 
+/**
+ * Factory function which returns the correct handler
+ * for /frontend/datalayer endpoint depending on googleAnalyticsFeature.isEnabled
+ * @param googleAnalyticsFeature
+ */
 export const createGoogleAnalyticsFactory = (
   googleAnalyticsFeature: RegisteredFeature<FeatureNames.GoogleAnalytics>,
 ): IGoogleAnalyticsFactory => {
@@ -24,7 +30,7 @@ export const createGoogleAnalyticsFactory = (
     }
   }
   return {
-    datalayer: frontend.datalayer,
+    datalayer: FrontendServerController.datalayer,
   }
 }
 

@@ -1,16 +1,24 @@
-'use strict'
+import ejs from 'ejs'
+import { RequestHandler } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
+import { StatusCodes } from 'http-status-codes'
 
-const ejs = require('ejs')
-const { StatusCodes } = require('http-status-codes')
-const logger = require('../../config/logger').createLoggerWithLabel(module)
-const { createReqMeta } = require('../utils/request')
+import featureManager from '../../config/feature-manager'
+import { createLoggerWithLabel } from '../../config/logger'
+import { createReqMeta } from '../utils/request'
+
+const logger = createLoggerWithLabel(module)
 
 /**
- * Google Tag Manager initialisation Javascript code templated
- * with environment variables.
- * @returns {String} Templated Javascript code for the frontend
+ * Handler for GET /frontend/datalayer endpoint.
+ * @param req - Express request object
+ * @param res - Express response object
+ * @returns {String} Templated Javascript code for the frontend to initialise Google Tag Manager
  */
-module.exports.datalayer = function (req, res) {
+export const datalayer: RequestHandler<
+  ParamsDictionary,
+  string | { message: string }
+> = (req, res) => {
   const js = `
     window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -40,10 +48,15 @@ module.exports.datalayer = function (req, res) {
 }
 
 /**
- * Custom Javascript code templated with environment variables.
- * @returns {String} Templated Javascript code for the frontend
+ * Handler for GET /frontend/environment endpoint.
+ * @param req - Express request object
+ * @param res - Express response object
+ * @returns {String} Templated Javascript code with environment variables for the frontend
  */
-module.exports.environment = function (req, res) {
+export const environment: RequestHandler<
+  ParamsDictionary,
+  { message: string }
+> = (req, res) => {
   try {
     return res
       .type('text/javascript')
@@ -65,10 +78,15 @@ module.exports.environment = function (req, res) {
 }
 
 /**
- * Custom Javascript code that redirects to specific form url
- * @returns {String} Templated Javascript code for the frontend
+ * Handler for GET /frontend/redirect endpoint.
+ * @param req - Express request object
+ * @param res - Express response object
+ * @returns {String} Templated Javascript code for the frontend that redirects to specific form url
  */
-module.exports.redirectLayer = function (req, res) {
+export const redirectLayer: RequestHandler<
+  ParamsDictionary,
+  string | { message: string }
+> = (req, res) => {
   const js = `
     // Update hash to match form id
     window.location.hash = "#!/<%= redirectPath%>"
@@ -79,7 +97,6 @@ module.exports.redirectLayer = function (req, res) {
   // Prefer to replace just '&' instead of using <%- to output unescaped values into the template
   // As this could potentially introduce security vulnerability
   // See https://ejs.co/#docs for tags
-
   try {
     const ejsRendered = ejs.render(js, req.query).replace(/&amp;/g, '&')
     return res.type('text/javascript').status(StatusCodes.OK).send(ejsRendered)
@@ -96,4 +113,17 @@ module.exports.redirectLayer = function (req, res) {
       message: 'There was an unexpected error. Please refresh and try again.',
     })
   }
+}
+
+/**
+ * Handler for GET /frontend/features endpoint.
+ * @param req - Express request object
+ * @param res - Express response object
+ * @returns {String} Current featureManager states
+ */
+export const features: RequestHandler<
+  ParamsDictionary,
+  typeof featureManager.states
+> = (req, res) => {
+  return res.json(featureManager.states)
 }
