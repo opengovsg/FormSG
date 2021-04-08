@@ -122,7 +122,7 @@ export const generateRedirectUrl: RequestHandler<
  * @returns {String} Current featureManager states
  */
 export const showFeaturesStates: RequestHandler<
-  ParamsDictionary,
+  unknown,
   typeof featureManager.states
 > = (req, res) => {
   return res.json(featureManager.states)
