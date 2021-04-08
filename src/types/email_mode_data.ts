@@ -1,4 +1,3 @@
-// TODO (#42): remove these types when migrating away from middleware pattern
 import { BasicField } from './field'
 
 export type EmailRespondentConfirmationField = {
