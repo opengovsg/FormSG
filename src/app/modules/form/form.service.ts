@@ -3,6 +3,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
+  AuthType,
   IEmailFormModel,
   IEncryptedFormModel,
   IFormSchema,
@@ -15,6 +16,7 @@ import getFormModel, {
   getEncryptedFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
+import { IntranetFactory } from '../../services/intranet/intranet.factory'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -37,10 +39,42 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 
-export const deactivateForm = async (
+/**
+ * Deactivates a given form by its id
+ * @param formId the id of the form to deactivate
+ * @returns ok(true) if the form has been deactivated successfully
+ * @returns err(PossibleDatabaseError) if an error occurred while trying to deactivate the form
+ * @returns err(FormNotFoundError) if there is no form with the given formId
+ */
+export const deactivateForm = (
   formId: string,
-): Promise<IFormSchema | null> => {
-  return FormModel.deactivateById(formId)
+): ResultAsync<IFormSchema, PossibleDatabaseError | FormNotFoundError> => {
+  return ResultAsync.fromPromise(FormModel.deactivateById(formId), (error) => {
+    logger.error({
+      message: 'Error deactivating form by id',
+      meta: {
+        action: 'deactivateForm',
+        form: formId,
+      },
+      error,
+    })
+
+    return transformMongoError(error)
+  }).andThen((deactivatedForm) => {
+    if (!deactivatedForm) {
+      logger.error({
+        message:
+          'Attempted to deactivate form that cannot be found in the database',
+        meta: {
+          action: 'deactivateForm',
+          form: formId,
+        },
+      })
+      return errAsync(new FormNotFoundError())
+    }
+    // Successfully deactivated.
+    return okAsync(deactivatedForm)
+  })
 }
 
 /**
@@ -118,9 +152,9 @@ export const retrieveFormById = (
  * Method to ensure given form is available to the public.
  * @param form the form to check
  * @returns ok(true) if form is public
+ * @returns err(ApplicationError) if form has an invalid state
  * @returns err(FormDeletedError) if form has been deleted
  * @returns err(PrivateFormError) if form is private, the message will be the form inactive message
- * @returns err(ApplicationError) if form has an invalid state
  */
 export const isFormPublic = (
   form: IPopulatedForm,
@@ -128,7 +162,6 @@ export const isFormPublic = (
   if (!form.status) {
     return err(new ApplicationError())
   }
-
   switch (form.status) {
     case Status.Public:
       return ok(true)
@@ -142,20 +175,30 @@ export const isFormPublic = (
 /**
  * Method to check whether a form has reached submission limits, and deactivate the form if necessary
  * @param form the form to check
- * @returns ok(true) if submission is allowed because the form has not reached limits
- * @returns ok(false) if submission is not allowed because the form has reached limits
+ * @returns ok(form) if submission is allowed because the form has not reached limits
+ * @returns err(PossibleDatabaseError) if an error occurred while querying the database for the specified form
+ * @returns err(FormNotFoundError) if the form has exceeded the submission limits but could not be found and deactivated
+ * @returns err(PrivateFormError) if the count of the form has been exceeded and the form has been deactivated
  */
 export const checkFormSubmissionLimitAndDeactivateForm = (
   form: IPopulatedForm,
-): ResultAsync<true, PrivateFormError | PossibleDatabaseError> => {
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | PrivateFormError | FormNotFoundError
+> => {
   const logMeta = {
     action: 'checkFormSubmissionLimitAndDeactivateForm',
     formId: form._id,
   }
-  if (form.submissionLimit === null) return okAsync(true)
+  const { submissionLimit } = form
+  const formId = String(form._id)
+  // Not using falsey check as submissionLimit === 0 can result in incorrectly
+  // returning form without any actions.
+  if (submissionLimit === null) return okAsync(form)
+
   return ResultAsync.fromPromise(
     SubmissionModel.countDocuments({
-      form: form._id,
+      form: formId,
     }).exec(),
     (error) => {
       logger.error({
@@ -165,21 +208,18 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
       })
       return transformMongoError(error)
     },
-  ).andThen((count) => {
-    if (count < form.submissionLimit) return okAsync(true)
+  ).andThen((currentCount) => {
+    // Limit has not been hit yet, passthrough.
+    if (currentCount < submissionLimit) return okAsync(form)
+
     logger.info({
       message: 'Form reached maximum submission count, deactivating.',
       meta: logMeta,
     })
-    return ResultAsync.fromPromise(deactivateForm(form._id), (error) => {
-      logger.error({
-        message: 'Error while deactivating form',
-        meta: logMeta,
-        error,
-      })
-      return transformMongoError(error)
-    }).andThen(() =>
-      // Always return err because submission limit was exceeded
+
+    // Map success case back into error to display to client as form has been
+    // deactivated.
+    return deactivateForm(formId).andThen(() =>
       errAsync(
         new PrivateFormError(
           'Submission made after form submission limit was reached',
@@ -199,4 +239,40 @@ export const getFormModelByResponseMode = (
     case ResponseMode.Encrypt:
       return EncryptedFormModel
   }
+}
+
+/**
+ * Checks if a form is accessed from within intranet and sets the property accordingly
+ * @param ip The ip of the request
+ * @param publicFormView The form to check
+ * @returns ok(PublicFormView) if the form is accessed from the internet
+ * @returns err(ApplicationError) if an error occured while checking if the ip of the request is from the intranet
+ */
+export const checkIsIntranetFormAccess = (
+  ip: string,
+  form: IPopulatedForm,
+): boolean => {
+  return (
+    IntranetFactory.isIntranetIp(ip)
+      .andThen((isIntranetUser) => {
+        // Warn if form is being accessed from within intranet
+        // and the form has authentication set
+        if (
+          isIntranetUser &&
+          [AuthType.SP, AuthType.CP, AuthType.MyInfo].includes(form.authType)
+        ) {
+          logger.warn({
+            message:
+              'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+            meta: {
+              action: 'checkIsIntranetFormAccess',
+              formId: form._id,
+            },
+          })
+        }
+        return ok(isIntranetUser)
+      })
+      // This is required becausing the factory can throw missing feature error on initialization
+      .unwrapOr(false)
+  )
 }

@@ -201,10 +201,7 @@ export class SpcpService {
   ): Result<string, MissingJwtError> {
     const jwtName = authType === AuthType.SP ? JwtName.SP : JwtName.CP
     const cookie = cookies[jwtName]
-    if (!cookie) {
-      return err(new MissingJwtError())
-    }
-    return ok(cookie)
+    return cookie ? ok(cookie) : err(new MissingJwtError())
   }
 
   /**
@@ -393,5 +390,26 @@ export class SpcpService {
   getCookieSettings(): SpcpDomainSettings {
     const spcpCookieDomain = this.#spcpProps.spcpCookieDomain
     return spcpCookieDomain ? { domain: spcpCookieDomain, path: '/' } : {}
+  }
+
+  /**
+   * Gets the spcp session info from the auth, cookies
+   * @param authType The authentication type of the user
+   * @param cookies The spcp cookies set by the redirect
+   * @return ok(jwtPayload) if successful
+   * @return err(MissingJwtError) if the specified cookie for the authType (spcp) does not exist
+   * @return err(VerifyJwtError) if the jwt exists but could not be authenticated
+   * @return err(InvalidJwtError) if the jwt exists but the payload is invalid
+   */
+  extractJwtPayloadFromRequest(
+    authType: AuthType.SP | AuthType.CP,
+    cookies: SpcpCookies,
+  ): ResultAsync<
+    JwtPayload,
+    VerifyJwtError | InvalidJwtError | MissingJwtError
+  > {
+    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
+      this.extractJwtPayload(jwtResult, authType),
+    )
   }
 }

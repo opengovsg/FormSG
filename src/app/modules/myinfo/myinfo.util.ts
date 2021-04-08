@@ -29,6 +29,7 @@ import { ProcessedFieldResponse } from '../submission/submission.types'
 import { MYINFO_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoAuthTypeError,
+  MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -44,6 +45,7 @@ import {
   MyInfoCookieState,
   MyInfoHashPromises,
   MyInfoRelayState,
+  MyInfoSuccessfulCookiePayload,
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
@@ -345,6 +347,53 @@ export const extractMyInfoCookie = (
   }
   return err(new MyInfoMissingAccessTokenError())
 }
+
+/**
+ * Asserts that myInfoCookie is in success state
+ * This function acts as a discriminator so that the type of the cookie is encoded in its type
+ * @param cookie the cookie to
+ * @returns ok(cookie) the successful myInfoCookie
+ * @returns err(cookie) the errored cookie
+ */
+export const assertMyInfoCookieSuccessState = (
+  cookie: MyInfoCookiePayload,
+): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieStateError> =>
+  cookie.state === MyInfoCookieState.Success
+    ? ok(cookie)
+    : err(new MyInfoCookieStateError())
+
+/**
+ * Extracts and asserts a successful myInfoCookie from a request's cookies
+ * @param cookies Cookies in a request
+ * @return ok(cookie) the successful myInfoCookie
+ * @return err(MyInfoMissingAccessTokenError) if myInfoCookie is not present on the request
+ * @return err(MyInfoCookieStateError) if the extracted myInfoCookie was in an error state
+ * @return err(MyInfoCookieAccessError) if the cookie has been accessed before
+ */
+export const extractAndAssertMyInfoCookieValidity = (
+  cookies: Record<string, unknown>,
+): Result<
+  MyInfoSuccessfulCookiePayload,
+  | MyInfoCookieStateError
+  | MyInfoMissingAccessTokenError
+  | MyInfoCookieAccessError
+> =>
+  extractMyInfoCookie(cookies)
+    .andThen((cookiePayload) => assertMyInfoCookieSuccessState(cookiePayload))
+    .andThen((cookiePayload) => assertMyInfoCookieUnused(cookiePayload))
+
+/**
+ * Asserts that the myInfoCookie has not been used before
+ * @param myInfoCookie
+ * @returns ok(myInfoCookie) if the cookie has not been used before
+ * @returns err(MyInfoCookieAccessError) if the cookie has been used before
+ */
+export const assertMyInfoCookieUnused = (
+  myInfoCookie: MyInfoSuccessfulCookiePayload,
+): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieAccessError> =>
+  myInfoCookie.usedCount <= 0
+    ? ok(myInfoCookie)
+    : err(new MyInfoCookieAccessError())
 
 /**
  * Extracts access token from a MyInfo cookie

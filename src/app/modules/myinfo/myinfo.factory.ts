@@ -10,19 +10,24 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
-  MyInfoAttribute,
+  IPopulatedForm,
 } from '../../../types'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MyInfoData } from './myinfo.adapter'
 import {
+  MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
+  MyInfoCookieAccessError,
+  MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
+  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoNoESrvcIdError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
@@ -39,24 +44,20 @@ interface IMyInfoFactory {
   retrieveAccessToken: (
     authCode: string,
   ) => ResultAsync<string, MyInfoCircuitBreakerError | MyInfoFetchError>
-  fetchMyInfoPersonData: (
-    accessToken: string,
-    requestedAttributes: MyInfoAttribute[],
-    singpassEserviceId: string,
-  ) => ResultAsync<
-    MyInfoData,
-    MyInfoCircuitBreakerError | MyInfoFetchError | MissingFeatureError
-  >
   parseMyInfoRelayState: (
     relayState: string,
   ) => Result<
     MyInfoParsedRelayState,
     MyInfoParseRelayStateError | MissingFeatureError
   >
-  prefillMyInfoFields: (
+  prefillAndSaveMyInfoFields: (
+    formId: string,
     myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
-  ) => Result<IPossiblyPrefilledField[], MissingFeatureError>
+  ) => ResultAsync<
+    IPossiblyPrefilledField[],
+    MyInfoHashingError | DatabaseError
+  >
   saveMyInfoHashes: (
     uinFin: string,
     formId: string,
@@ -82,6 +83,21 @@ interface IMyInfoFactory {
   extractUinFin: (
     accessToken: string,
   ) => Result<string, MyInfoInvalidAccessTokenError | MissingFeatureError>
+
+  getMyInfoDataForForm: (
+    form: IPopulatedForm,
+    cookies: Record<string, unknown>,
+  ) => ResultAsync<
+    MyInfoData,
+    | MyInfoMissingAccessTokenError
+    | MyInfoCookieStateError
+    | MyInfoNoESrvcIdError
+    | MyInfoAuthTypeError
+    | MyInfoCircuitBreakerError
+    | MyInfoFetchError
+    | MissingFeatureError
+    | MyInfoCookieAccessError
+  >
 }
 
 export const createMyInfoFactory = ({
@@ -92,14 +108,14 @@ export const createMyInfoFactory = ({
     const error = new MissingFeatureError(FeatureNames.SpcpMyInfo)
     return {
       retrieveAccessToken: () => errAsync(error),
-      fetchMyInfoPersonData: () => errAsync(error),
-      prefillMyInfoFields: () => err(error),
+      prefillAndSaveMyInfoFields: () => errAsync(error),
       saveMyInfoHashes: () => errAsync(error),
       fetchMyInfoHashes: () => errAsync(error),
       checkMyInfoHashes: () => errAsync(error),
       createRedirectURL: () => err(error),
       parseMyInfoRelayState: () => err(error),
       extractUinFin: () => err(error),
+      getMyInfoDataForForm: () => errAsync(error),
     }
   }
   return new MyInfoService({

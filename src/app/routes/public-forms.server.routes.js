@@ -4,14 +4,11 @@
  * Module dependencies.
  */
 const forms = require('../../app/controllers/forms.server.controller')
-const publicForms = require('../modules/form/public-form/public-form.middlewares')
-const MyInfoMiddleware = require('../modules/myinfo/myinfo.middleware')
 const { celebrate, Joi, Segments } = require('celebrate')
 const { CaptchaFactory } = require('../services/captcha/captcha.factory')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
-const SpcpController = require('../modules/spcp/spcp.controller')
 const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
 const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 
@@ -127,14 +124,7 @@ module.exports = function (app) {
    */
   app
     .route('/:formId([a-fA-F0-9]{24})/publicform')
-    .get(
-      forms.formById,
-      publicForms.isFormPublicCheck,
-      publicForms.checkFormSubmissionLimitAndDeactivate,
-      SpcpController.addSpcpSessionInfo,
-      MyInfoMiddleware.addMyInfo,
-      forms.read(forms.REQUEST_TYPE.PUBLIC),
-    )
+    .get(PublicFormController.handleGetPublicForm)
 
   /**
    * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply
