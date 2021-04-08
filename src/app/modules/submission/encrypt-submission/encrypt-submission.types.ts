@@ -1,17 +1,17 @@
 import { IPopulatedEncryptedForm } from '../../../../types'
-import { EncryptedAttachments } from '../../../../types/api'
+import { EncryptedAttachmentsDto } from '../../../../types/api'
 import { ProcessedFieldResponse } from '../submission.types'
 
 export type EncryptSubmissionBodyAfterProcess = {
   encryptedContent: string
-  attachments?: EncryptedAttachments
+  attachments?: EncryptedAttachmentsDto
   isPreview: boolean
   version: number
   parsedResponses: ProcessedFieldResponse[]
 }
 
 export type WithAttachmentsData<T> = T & {
-  attachmentData: EncryptedAttachments
+  attachmentData: EncryptedAttachmentsDto
 }
 
 export type WithFormData<T> = T & { formData: string }

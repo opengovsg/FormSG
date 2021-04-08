@@ -43,7 +43,7 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
-import { EncryptSubmissionBody } from 'src/types/api'
+import { EncryptSubmissionDto } from 'src/types/api'
 
 import {
   generateDefaultField,
@@ -4816,7 +4816,7 @@ describe('admin-form.controller', () => {
     ]
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERSION = 1
-    const MOCK_SUBMISSION_BODY: EncryptSubmissionBody = {
+    const MOCK_SUBMISSION_BODY: EncryptSubmissionDto = {
       responses: MOCK_RESPONSES,
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: MOCK_VERSION,

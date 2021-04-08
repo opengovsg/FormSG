@@ -37,7 +37,7 @@ import {
   SubmissionCursorData,
   SubmissionType,
 } from 'src/types'
-import { EncryptSubmissionBody } from 'src/types/api'
+import { EncryptSubmissionDto } from 'src/types/api'
 
 import {
   createAuthedSession,
@@ -103,7 +103,7 @@ describe('admin-form.routes', () => {
       32,
     )}:${'a'.repeat(4)}`
     const MOCK_VERSION = 1
-    const MOCK_SUBMISSION_BODY: EncryptSubmissionBody = {
+    const MOCK_SUBMISSION_BODY: EncryptSubmissionDto = {
       responses: [MOCK_RESPONSE],
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: MOCK_VERSION,

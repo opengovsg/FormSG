@@ -1,14 +1,14 @@
 import { FieldResponse } from '../response'
 
-export type EncryptSubmissionBody = {
+export type EncryptSubmissionDto = {
   responses: FieldResponse[]
   encryptedContent: string
-  attachments?: EncryptedAttachments
+  attachments?: EncryptedAttachmentsDto
   isPreview: boolean
   version: number
 }
 
-export type EncryptedAttachments = {
+export type EncryptedAttachmentsDto = {
   [fieldId: string]: {
     encryptedFile:
       | {

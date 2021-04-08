@@ -13,7 +13,7 @@ import {
   WithForm,
 } from '../../../../types'
 import {
-  EncryptSubmissionBody,
+  EncryptSubmissionDto,
   ErrorDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
@@ -1034,7 +1034,7 @@ export const handleUpdateSettings: RequestHandler<
 export const handleEncryptPreviewSubmission: RequestHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
-  EncryptSubmissionBody
+  EncryptSubmissionDto
 > = async (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as Express.AuthedSession).user._id
