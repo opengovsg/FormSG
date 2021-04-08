@@ -9,7 +9,10 @@ import FeatureManager, {
 import * as FrontendServerController from '../controllers/frontend.server.controller'
 
 interface IGoogleAnalyticsFactory {
-  datalayer: RequestHandler<ParamsDictionary, string | { message: string }>
+  addGoogleAnalyticsData: RequestHandler<
+    ParamsDictionary,
+    string | { message: string }
+  >
 }
 
 const googleAnalyticsFeature = FeatureManager.get(FeatureNames.GoogleAnalytics)
@@ -24,13 +27,13 @@ export const createGoogleAnalyticsFactory = (
 ): IGoogleAnalyticsFactory => {
   if (!googleAnalyticsFeature.isEnabled) {
     return {
-      datalayer: (req, res) => {
+      addGoogleAnalyticsData: (req, res) => {
         res.type('text/javascript').sendStatus(StatusCodes.OK)
       },
     }
   }
   return {
-    datalayer: FrontendServerController.datalayer,
+    addGoogleAnalyticsData: FrontendServerController.addGoogleAnalyticsData,
   }
 }
 

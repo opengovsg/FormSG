@@ -13,7 +13,10 @@ export const FrontendRouter = Router()
  * @return 200 when code generation is successful
  * @return 400 when code generation fails
  */
-FrontendRouter.get('/frontend/datalayer', GoogleAnalyticsFactory.datalayer)
+FrontendRouter.get(
+  '/frontend/datalayer',
+  GoogleAnalyticsFactory.addGoogleAnalyticsData,
+)
 
 /**
  * Generate the templated Javascript code with environment variables for the frontend
@@ -23,7 +26,7 @@ FrontendRouter.get('/frontend/datalayer', GoogleAnalyticsFactory.datalayer)
  */
 FrontendRouter.get(
   '/frontend/environment',
-  FrontendServerController.environment,
+  FrontendServerController.addEnvVarData,
 )
 
 /**
@@ -31,7 +34,10 @@ FrontendRouter.get(
  * @route GET /frontend/features
  * @return json with featureManager.states
  */
-FrontendRouter.get('/frontend/features', FrontendServerController.features)
+FrontendRouter.get(
+  '/frontend/features',
+  FrontendServerController.showFeaturesStates,
+)
 
 /**
  * Generate the javascript code to redirect to the correct url
@@ -48,5 +54,5 @@ FrontendRouter.get(
         .required(),
     },
   }),
-  FrontendServerController.redirectLayer,
+  FrontendServerController.generateRedirectUrl,
 )

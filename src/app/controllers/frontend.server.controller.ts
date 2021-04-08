@@ -15,7 +15,7 @@ const logger = createLoggerWithLabel(module)
  * @param res - Express response object
  * @returns {String} Templated Javascript code for the frontend to initialise Google Tag Manager
  */
-export const datalayer: RequestHandler<
+export const addGoogleAnalyticsData: RequestHandler<
   ParamsDictionary,
   string | { message: string }
 > = (req, res) => {
@@ -53,7 +53,7 @@ export const datalayer: RequestHandler<
  * @param res - Express response object
  * @returns {String} Templated Javascript code with environment variables for the frontend
  */
-export const environment: RequestHandler<
+export const addEnvVarData: RequestHandler<
   ParamsDictionary,
   { message: string }
 > = (req, res) => {
@@ -83,7 +83,7 @@ export const environment: RequestHandler<
  * @param res - Express response object
  * @returns {String} Templated Javascript code for the frontend that redirects to specific form url
  */
-export const redirectLayer: RequestHandler<
+export const generateRedirectUrl: RequestHandler<
   ParamsDictionary,
   string | { message: string }
 > = (req, res) => {
@@ -121,7 +121,7 @@ export const redirectLayer: RequestHandler<
  * @param res - Express response object
  * @returns {String} Current featureManager states
  */
-export const features: RequestHandler<
+export const showFeaturesStates: RequestHandler<
   ParamsDictionary,
   typeof featureManager.states
 > = (req, res) => {

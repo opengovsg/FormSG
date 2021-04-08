@@ -30,7 +30,7 @@ describe('google-analytics.factory', () => {
       MOCK_DISABLED_GA_FEATURE,
     )
 
-    GoogleAnalyticsFactory.datalayer(mockReq, mockRes)
+    GoogleAnalyticsFactory.addGoogleAnalyticsData(mockReq, mockRes)
 
     expect(mockRes.type).toHaveBeenCalledWith('text/javascript')
     expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
@@ -46,7 +46,7 @@ describe('google-analytics.factory', () => {
       MOCK_ENABLED_GA_FEATURE,
     )
 
-    GoogleAnalyticsFactory.datalayer(mockReq, mockRes)
+    GoogleAnalyticsFactory.addGoogleAnalyticsData(mockReq, mockRes)
 
     expect(mockRes.send).toHaveBeenCalledWith(expect.stringContaining('gtag'))
     expect(mockRes.type).toHaveBeenCalledWith('text/javascript')
