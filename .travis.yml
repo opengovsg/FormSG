@@ -41,7 +41,7 @@ jobs:
         use: build
       script:
         - npm run test-frontend
-    - name: Typescript tests
+    - name: Backend tests
       workspaces:
         use: build
       script:
