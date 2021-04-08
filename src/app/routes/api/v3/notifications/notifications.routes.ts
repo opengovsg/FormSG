@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
-import { BounceRouter } from './bounce'
+import { BouncesRouter } from './bounces'
 
 export const NotificationsRouter = Router()
 
-NotificationsRouter.use('/bounce', BounceRouter)
+NotificationsRouter.use('/bounces', BouncesRouter)

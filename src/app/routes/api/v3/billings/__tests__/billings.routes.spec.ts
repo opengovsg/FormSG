@@ -23,7 +23,7 @@ const app = setupApp('/billings', BillingsRouter, {
 const FormModel = getFormModel(mongoose)
 const LoginModel = getLoginModel(mongoose)
 
-describe('billing.routes', () => {
+describe('billings.routes', () => {
   let request: Session
   let defaultUser: IUserSchema
 
