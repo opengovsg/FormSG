@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
-import { cloneDeep, take, times } from 'lodash'
+import { cloneDeep, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import SparkMD5 from 'spark-md5'
@@ -3559,19 +3559,16 @@ describe('admin-form.routes', () => {
     it('should return 200 with requested page of metadata when metadata exists', async () => {
       // Arrange
       // Create 11 submissions
-      const submissions = (
-        await Promise.all(
-          times(11, (count) =>
-            createSubmission({
-              form: defaultForm,
-              encryptedContent: `any encrypted content ${count}`,
-              verifiedContent: `any verified content ${count}`,
-            }),
-          ),
-        )
+      const submissions = await Promise.all(
+        times(11, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+          }),
+        ),
       )
-        // @ts-ignore
-        .sort((a, b) => b.created! - a.created!)
+      const createdSubmissionIds = submissions.map((s) => String(s._id))
 
       // Act
       const response = await request
@@ -3582,9 +3579,11 @@ describe('admin-form.routes', () => {
 
       // Assert
       // Take first 10 submissions
-      const expected = take(submissions, 10).map((s, index) => ({
+      const expected = times(10, (index) => ({
         number: 11 - index,
-        refNo: String(s._id),
+        // Loosen refNo checks due to non-deterministic aggregation query.
+        // Just expect refNo is one of the possible ones.
+        refNo: expect.toBeOneOf(createdSubmissionIds),
         submissionTime: expect.any(String),
       }))
       expect(response.status).toEqual(200)
