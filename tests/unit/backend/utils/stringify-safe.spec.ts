@@ -1,14 +1,11 @@
-/* global BigInt */
+import { cloneDeep } from 'lodash'
 
-const {
-  stringifySafe,
-} = require('../../../../dist/backend/shared/util/stringify-safe')
-const { cloneDeep } = require('lodash')
+import { stringifySafe } from 'src/shared/util/stringify-safe'
 
 // Tests that the stringifySafe function works as expected, i.e. correctly
 // deals with circular references and BigInt.
 describe('Safe stringify function', () => {
-  let json, expected
+  let json: Record<string, any>, expected: Record<string, any>
   beforeEach(() => {
     json = {
       complicated: {
@@ -48,9 +45,15 @@ describe('Safe stringify function', () => {
 
     expect(stringifySafe(json)).toEqual(JSON.stringify(expected))
   })
-  it('should convert BigInt to Number', () => {
-    expected.bigInt = 10
+  it('should convert BigInt of < Number.MAX_SAFE_INTEGER to string', () => {
+    expected.bigInt = '10'
     json.bigInt = BigInt(10)
+    expect(stringifySafe(json)).toEqual(JSON.stringify(expected))
+  })
+
+  it('should convert BigInt of > Number.MAX_SAFE_INTEGER to string', () => {
+    expected.bigInt = '9007199254740995'
+    json.bigInt = BigInt('9007199254740995')
     expect(stringifySafe(json)).toEqual(JSON.stringify(expected))
   })
 })

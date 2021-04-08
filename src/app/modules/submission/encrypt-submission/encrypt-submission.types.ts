@@ -34,3 +34,5 @@ export type EncryptSubmissionBodyAfterProcess = {
 export type WithAttachmentsData<T> = T & { attachmentData: Attachments }
 
 export type WithFormData<T> = T & { formData: string }
+
+export type AttachmentMetadata = Map<string, string>
