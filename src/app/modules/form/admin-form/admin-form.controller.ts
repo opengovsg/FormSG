@@ -1199,7 +1199,7 @@ export const handleEmailPreviewSubmission: RequestHandler<
       meta: logMeta,
       error: sendAdminEmailResult.error,
     })
-    const { statusCode, errorMessage } = mapRouteError(
+    const { statusCode, errorMessage } = mapEmailSubmissionError(
       sendAdminEmailResult.error,
     )
     return res.status(statusCode).json({
