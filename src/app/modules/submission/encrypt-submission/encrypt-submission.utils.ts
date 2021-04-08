@@ -4,6 +4,7 @@ import moment from 'moment-timezone'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
+import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
 import {
   CaptchaConnectionError,
   MissingCaptchaError,
@@ -80,6 +81,7 @@ export const mapRouteError: MapRouteError = (
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
+    case MalformedVerifiedContentError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:

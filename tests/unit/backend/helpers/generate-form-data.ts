@@ -1,5 +1,6 @@
 /* eslint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
+import { pick } from 'lodash'
 
 import {
   ProcessedAttachmentResponse,
@@ -49,7 +50,7 @@ export const generateDefaultField = (
     | IRatingField
     | IShortTextField
     | ILongTextField
-  >,
+  > & { _id?: string },
 ): IFieldSchema => {
   const defaultParams = {
     title: `test ${fieldType} field title`,
@@ -225,6 +226,18 @@ export const generateNewSingleAnswerResponse = (
     isVisible: true,
     ...customParams,
   }
+}
+
+export const generateUnprocessedSingleAnswerResponse = (
+  fieldType: BasicField,
+  customParams?: Partial<ISingleAnswerResponse>,
+): ISingleAnswerResponse => {
+  return pick(generateNewSingleAnswerResponse(fieldType, customParams), [
+    '_id',
+    'question',
+    'fieldType',
+    'answer',
+  ])
 }
 
 export const generateAttachmentResponse = (

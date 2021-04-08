@@ -15,10 +15,8 @@ const { withUserAuthentication } = require('../modules/auth/auth.middlewares')
 const {
   PermissionLevel,
 } = require('../modules/form/admin-form/admin-form.types')
-const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
-const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
 
 /**
  * Authenticates logged in user, before retrieving non-archived form
@@ -86,80 +84,6 @@ module.exports = function (app) {
     EmailSubmissionsMiddleware.prepareEmailSubmission,
     adminForms.passThroughSaveMetadataToDb,
     EmailSubmissionsMiddleware.sendAdminEmail,
-    SubmissionsMiddleware.sendEmailConfirmations,
-  )
-
-  /**
-   * On preview, submit a form response, and stores the encrypted contents. Optionally, an autoreply
-   * confirming submission is sent back to the user, if an email address
-   * was given. SMS autoreplies for mobile number fields are also sent if feature
-   * is enabled.
-   * Note that preview submissions are not saved to db
-   * Note that spcp session is not verified, neither is myInfo data verified
-   * Note that webhooks are not supported as they require an actual submission document to be created
-   * Note that v2 endpoint accepts requests in content-type json, instead of content-type multi-part
-   * @route POST /v2/submissions/encrypt/preview/{formId}
-   * @group forms - endpoints to serve forms
-   * @param {string} formId.path.required - the form id
-   * @param {Array} response.body.required - contains only the auto-reply fields
-   * @param {string} encryptedContent.body.required - contains the entire encrypted form submission
-   * @consumes multipart/form-data
-   * @produces application/json
-   * @returns {SubmissionResponse.model} 200 - submission made
-   * @returns {SubmissionResponse.model} 400 - submission has bad data and could not be processed
-   * @security OTP
-   */
-  app.route('/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})').post(
-    celebrate({
-      [Segments.BODY]: Joi.object({
-        responses: Joi.array()
-          .items(
-            Joi.object().keys({
-              _id: Joi.string().required(),
-              answer: Joi.string().allow('').required(),
-              fieldType: Joi.string()
-                .required()
-                .valid(...Object.values(BasicField)),
-              signature: Joi.string().allow(''),
-            }),
-          )
-          .required(),
-        encryptedContent: Joi.string()
-          .custom((value, helpers) => {
-            const parts = String(value).split(/;|:/)
-            if (
-              parts.length !== 3 ||
-              parts[0].length !== 44 || // public key
-              parts[1].length !== 32 || // nonce
-              !parts.every((part) => Joi.string().base64().validate(part))
-            ) {
-              return helpers.error('Invalid encryptedContent.')
-            }
-            return value
-          }, 'encryptedContent')
-          .required(),
-        attachments: Joi.object()
-          .pattern(
-            /^[a-fA-F0-9]{24}$/,
-            Joi.object().keys({
-              encryptedFile: Joi.object().keys({
-                binary: Joi.string().required(),
-                nonce: Joi.string().required(),
-                submissionPublicKey: Joi.string().required(),
-              }),
-            }),
-          )
-          .optional(),
-        isPreview: Joi.boolean().required(),
-        version: Joi.number().required(),
-      }),
-    }),
-    authActiveForm(PermissionLevel.Read),
-    EncryptSubmissionMiddleware.validateAndProcessEncryptSubmission,
-    AdminFormController.passThroughSpcp,
-    VerifiedContentMiddleware.encryptVerifiedSpcpFields,
-    EncryptSubmissionMiddleware.prepareEncryptSubmission,
-    adminForms.passThroughSaveMetadataToDb,
     SubmissionsMiddleware.sendEmailConfirmations,
   )
 }

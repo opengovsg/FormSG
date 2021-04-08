@@ -13,7 +13,7 @@ import {
   ResWithUinFin,
   SubmissionMetadataList,
 } from '../../../../types'
-import { ErrorDto } from '../../../../types/api'
+import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
@@ -44,7 +44,6 @@ import {
   transformAttachmentMetaStream,
   uploadAttachments,
 } from './encrypt-submission.service'
-import { EncryptSubmissionBody } from './encrypt-submission.types'
 import {
   createEncryptedSubmissionDto,
   mapRouteError,
@@ -165,7 +164,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     })
   }
   const processedResponses = processedResponsesResult.value
-  delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
+  delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
   const { authType } = form
