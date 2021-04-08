@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
-import { cloneDeep, take, times } from 'lodash'
+import { cloneDeep, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import SparkMD5 from 'spark-md5'
@@ -3559,19 +3559,16 @@ describe('admin-form.routes', () => {
     it('should return 200 with requested page of metadata when metadata exists', async () => {
       // Arrange
       // Create 11 submissions
-      const submissions = (
-        await Promise.all(
-          times(11, (count) =>
-            createSubmission({
-              form: defaultForm,
-              encryptedContent: `any encrypted content ${count}`,
-              verifiedContent: `any verified content ${count}`,
-            }),
-          ),
-        )
+      const submissions = await Promise.all(
+        times(11, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+          }),
+        ),
       )
-        // @ts-ignore
-        .sort((a, b) => b.created! - a.created!)
+      const createdSubmissionIds = submissions.map((s) => String(s._id))
 
       // Act
       const response = await request
@@ -3581,10 +3578,11 @@ describe('admin-form.routes', () => {
         })
 
       // Assert
-      // Take first 10 submissions
-      const expected = take(submissions, 10).map((s, index) => ({
+      const expected = times(10, (index) => ({
         number: 11 - index,
-        refNo: String(s._id),
+        // Loosen refNo checks due to non-deterministic aggregation query.
+        // Just expect refNo is one of the possible ones.
+        refNo: expect.toBeOneOf(createdSubmissionIds),
         submissionTime: expect.any(String),
       }))
       expect(response.status).toEqual(200)
@@ -3935,6 +3933,7 @@ describe('admin-form.routes', () => {
 
     it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
       // Arrange
+      const now = new Date()
       const submissions = await Promise.all(
         times(5, (count) =>
           createSubmission({
@@ -3945,11 +3944,11 @@ describe('admin-form.routes', () => {
               ['fieldId1', `some.attachment.url.${count}`],
               ['fieldId2', `some.other.attachment.url.${count}`],
             ]),
+            created: now,
           }),
         ),
       )
       // Set 2 submissions to be submitted 3-4 days ago.
-      const now = new Date()
       submissions[2].created = subDays(now, 3)
       submissions[4].created = subDays(now, 4)
       await submissions[2].save()
@@ -4602,11 +4601,13 @@ const createSubmission = ({
   encryptedContent,
   verifiedContent,
   attachmentMetadata,
+  created,
 }: {
   form: IFormDocument
   encryptedContent: string
   attachmentMetadata?: Map<string, string>
   verifiedContent?: string
+  created?: Date
 }) => {
   return SubmissionModel.create({
     submissionType: SubmissionType.Encrypt,
@@ -4616,6 +4617,7 @@ const createSubmission = ({
     attachmentMetadata,
     encryptedContent,
     verifiedContent,
+    created,
     version: 1,
   })
 }
