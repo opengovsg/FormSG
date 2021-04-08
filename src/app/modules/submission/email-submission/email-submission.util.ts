@@ -39,6 +39,7 @@ import {
   MissingFeatureError,
 } from '../../core/core.errors'
 import {
+  ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
@@ -56,6 +57,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
+import { MissingUserError } from '../../user/user.errors'
 import {
   ConflictError,
   ProcessingError,
@@ -372,6 +374,16 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case MissingUserError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: 'You must be logged in to perform this action.',
+      }
+    case ForbiddenFormError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: 'You do not have permission to perform this action.',
       }
     case FormNotFoundError:
       return {
