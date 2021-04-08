@@ -53,8 +53,7 @@ describe('encrypt-submission.service', () => {
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERIFIED_CONTENT = 'mockVerifiedContent'
     const MOCK_VERSION = 1
-    const MOCK_ATTACHMENT_METADATA = new Map<string, string>()
-    MOCK_ATTACHMENT_METADATA.set('a', 'b')
+    const MOCK_ATTACHMENT_METADATA = new Map([['a', 'b']])
 
     it('should create a new submission without saving it to the database', async () => {
       const result = createEncryptSubmissionWithoutSave({
