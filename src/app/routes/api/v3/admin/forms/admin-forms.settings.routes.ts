@@ -3,13 +3,9 @@ import { Router } from 'express'
 
 import { AuthType, Status } from '../../../../../../types'
 import { SettingsUpdateDto } from '../../../../../../types/api'
-import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
 import { handleUpdateSettings } from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsSettingsRouter = Router()
-
-// All routes in this handler should be protected by authentication.
-AdminFormsSettingsRouter.use(withUserAuthentication)
 
 /**
  * Joi validator for PATCH /forms/:formId/settings route.
