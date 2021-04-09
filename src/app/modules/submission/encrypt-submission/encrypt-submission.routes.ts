@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { rateLimitConfig } from '../../../../config/config'
+import { rateLimitConfig } from '../../../config/config'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../utils/limit-rate'
 

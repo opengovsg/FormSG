@@ -2,7 +2,6 @@ import _ from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
@@ -17,6 +16,7 @@ import {
   ISubmissionSchema,
   ResponseMode,
 } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'

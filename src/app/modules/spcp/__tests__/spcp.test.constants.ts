@@ -3,7 +3,7 @@ import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import _ from 'lodash'
 
-import { ISpcpMyInfo } from 'src/config/feature-manager'
+import { ISpcpMyInfo } from 'src/app/config/feature-manager'
 import { ILoginSchema, IPopulatedForm } from 'src/types'
 
 import { JwtName } from '../spcp.types'

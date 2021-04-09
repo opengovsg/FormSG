@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
-import { Environment } from '../types'
+import { Environment } from '../../types'
 
 import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
 

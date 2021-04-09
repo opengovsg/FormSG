@@ -4,8 +4,6 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
-import { aws as AwsConfig } from '../../../../config/config'
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -22,6 +20,8 @@ import {
   IUserSchema,
 } from '../../../../types'
 import { SettingsUpdateDto } from '../../../../types/api'
+import { aws as AwsConfig } from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import { dotifyObject } from '../../../utils/dotify-object'
 import {

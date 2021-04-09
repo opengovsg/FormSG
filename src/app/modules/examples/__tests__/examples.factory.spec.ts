@@ -4,7 +4,7 @@ import {
   FeatureNames,
   IAggregateStats,
   RegisteredFeature,
-} from 'src/config/feature-manager'
+} from 'src/app/config/feature-manager'
 
 import { createExamplesFactory } from '../examples.factory'
 import * as ExamplesService from '../examples.service'

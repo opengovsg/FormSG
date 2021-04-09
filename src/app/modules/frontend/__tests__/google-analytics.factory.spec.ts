@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { FeatureNames, RegisteredFeature } from 'src/config/feature-manager'
+import { FeatureNames, RegisteredFeature } from 'src/app/config/feature-manager'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 

@@ -5,7 +5,6 @@ import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
 import {
   AuthType,
@@ -16,6 +15,7 @@ import {
   IPopulatedForm,
   MapRouteError,
 } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import { hasProp } from '../../utils/has-prop'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'

@@ -2,8 +2,8 @@ import { celebrate, Joi } from 'celebrate'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { BasicField, FieldResponse } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 
 import * as EmailSubmissionReceiver from './email-submission.receiver'

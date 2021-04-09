@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import { GOOGLE_RECAPTCHA_URL } from './captcha.constants'
 import {

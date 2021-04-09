@@ -1,8 +1,8 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import { ISnsNotification } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import { EmailType } from '../../services/mail/mail.constants'
 import { DatabaseConflictError } from '../core/core.errors'
 import * as FormService from '../form/form.service'

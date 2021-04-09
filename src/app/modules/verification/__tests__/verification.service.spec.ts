@@ -4,13 +4,13 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as HashUtils from 'src/app/utils/hash'
-import formsgSdk from 'src/config/formsg-sdk'
 import {
   BasicField,
   IFormSchema,

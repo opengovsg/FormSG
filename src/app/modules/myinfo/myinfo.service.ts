@@ -10,7 +10,6 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   Environment,
   IFieldSchema,
@@ -19,6 +18,7 @@ import {
   IPopulatedForm,
   MyInfoAttribute,
 } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 

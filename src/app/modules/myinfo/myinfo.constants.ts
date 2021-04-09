@@ -1,4 +1,4 @@
-import config from '../../../config/config'
+import config from '../../config/config'
 
 /**
  * Top-level router prefix to be used for MyInfo routes.

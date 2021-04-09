@@ -2,9 +2,9 @@ import expressWinston from 'express-winston'
 import get from 'lodash/get'
 import winston from 'winston'
 
-import { getRequestIp, getTrace } from '../../app/utils/request'
 import config from '../../config/config'
 import { customFormat } from '../../config/logger'
+import { getRequestIp, getTrace } from '../../utils/request'
 
 const LOGGER_LABEL = 'network'
 

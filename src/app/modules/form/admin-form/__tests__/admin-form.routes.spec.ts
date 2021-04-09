@@ -7,6 +7,7 @@ import { errAsync, okAsync } from 'neverthrow'
 import SparkMD5 from 'spark-md5'
 import supertest, { Session } from 'supertest-session'
 
+import { aws } from 'src/app/config/config'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -35,7 +36,6 @@ import {
 } from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
-import { aws } from 'src/config/config'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
   BasicField,

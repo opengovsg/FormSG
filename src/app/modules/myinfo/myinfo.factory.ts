@@ -1,17 +1,17 @@
 import { LeanDocument } from 'mongoose'
 import { err, errAsync, Result, ResultAsync } from 'neverthrow'
 
-import config from '../../../config/config'
-import FeatureManager, {
-  FeatureNames,
-  RegisteredFeature,
-} from '../../../config/feature-manager'
 import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
 } from '../../../types'
+import config from '../../config/config'
+import FeatureManager, {
+  FeatureNames,
+  RegisteredFeature,
+} from '../../config/feature-manager'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 

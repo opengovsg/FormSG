@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact, flattenDeep, sumBy } from 'lodash'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
@@ -18,6 +17,7 @@ import {
   MapRouteError,
   SPCPFieldTitle,
 } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CaptchaConnectionError,
   MissingCaptchaError,

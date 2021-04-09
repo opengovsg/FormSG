@@ -7,7 +7,7 @@ import {
 import { ObjectId } from 'bson'
 import { merge, omit, zipWith } from 'lodash'
 
-import { ISpcpMyInfo } from 'src/config/feature-manager'
+import { ISpcpMyInfo } from 'src/app/config/feature-manager'
 import { AuthType, Environment, IFormSchema, MyInfoAttribute } from 'src/types'
 
 import {

@@ -2,13 +2,13 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   ErrorDto,
   ExampleFormsQueryDto,
   ExampleFormsResult,
   ExampleSingleFormResult,
 } from '../../../types/api'
+import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
 import { ExamplesFactory } from './examples.factory'

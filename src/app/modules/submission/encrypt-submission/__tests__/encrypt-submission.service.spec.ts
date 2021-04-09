@@ -4,6 +4,7 @@ import { clone } from 'lodash'
 import mongoose from 'mongoose'
 import { PassThrough, Transform } from 'stream'
 
+import { aws } from 'src/app/config/config'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import {
   DatabaseError,
@@ -11,7 +12,6 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
-import { aws } from 'src/config/config'
 import {
   IPopulatedEncryptedForm,
   SubmissionCursorData,

@@ -2,7 +2,6 @@ import crypto from 'crypto'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   BasicField,
   EmailAdminDataField,
@@ -14,6 +13,7 @@ import {
   ResponseMode,
   SubmissionType,
 } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import { DatabaseError } from '../../core/core.errors'
 import { isEmailModeForm, transformEmails } from '../../form/form.utils'

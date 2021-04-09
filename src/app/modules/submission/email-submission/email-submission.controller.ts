@@ -1,7 +1,7 @@
 import { Request, RequestHandler } from 'express'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { AuthType, FieldResponse } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'

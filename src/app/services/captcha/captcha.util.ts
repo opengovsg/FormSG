@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import { MapRouteError } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import { MissingFeatureError } from '../../modules/core/core.errors'
 
 import {

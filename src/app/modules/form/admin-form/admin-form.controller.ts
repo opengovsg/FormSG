@@ -4,7 +4,6 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
   FieldResponse,
@@ -17,6 +16,7 @@ import {
   ErrorDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
+import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'

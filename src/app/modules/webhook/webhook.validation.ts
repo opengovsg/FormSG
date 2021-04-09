@@ -1,8 +1,8 @@
 import { promises as dns } from 'dns'
 import ip from 'ip'
 
-import config from '../../../config/config'
 import { isValidHttpsUrl } from '../../../shared/util/url-validation'
+import config from '../../config/config'
 
 import { WebhookValidationError } from './webhook.errors'
 

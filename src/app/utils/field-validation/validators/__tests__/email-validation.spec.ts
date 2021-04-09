@@ -1,7 +1,7 @@
+import formsgSdk from 'src/app/config/formsg-sdk'
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { validateField } from 'src/app/utils/field-validation'
-import formsgSdk from 'src/config/formsg-sdk'
 import { IFieldSchema } from 'src/types'
 import { BasicField } from 'src/types/field/fieldTypes'
 import { ISingleAnswerResponse } from 'src/types/response'

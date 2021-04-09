@@ -4,7 +4,7 @@ import { omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
-import config from 'src/config/config'
+import config from 'src/app/config/config'
 
 import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
 
