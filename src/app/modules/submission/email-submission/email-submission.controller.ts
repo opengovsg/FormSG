@@ -126,81 +126,92 @@ export const handleEmailSubmission: RequestHandler<
 
   // Handle SingPass, CorpPass and MyInfo authentication and validation
   const { authType } = form
-  if (authType === AuthType.SP) {
-    // Verify NRIC
-    const jwtPayloadResult = await SpcpFactory.extractJwt(
-      req.cookies,
-      authType,
-    ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
-    if (jwtPayloadResult.isErr()) {
-      logger.error({
-        message: 'Failed to verify Singpass JWT with auth client',
-        meta: logMeta,
-        error: jwtPayloadResult.error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(jwtPayloadResult.error)
-      return res
-        .status(statusCode)
-        .json({ message: errorMessage, spcpSubmissionFailure: true })
-    }
-    parsedResponses.push(
-      ...createSingpassParsedResponses(jwtPayloadResult.value.userName),
-    )
-  } else if (authType === AuthType.CP) {
-    // Verify NRIC and UEN
-    const jwtPayloadResult = await SpcpFactory.extractJwt(
-      req.cookies,
-      authType,
-    ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
-    if (jwtPayloadResult.isErr()) {
-      logger.error({
-        message: 'Failed to verify Corppass JWT with auth client',
-        meta: logMeta,
-        error: jwtPayloadResult.error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(jwtPayloadResult.error)
-      return res
-        .status(statusCode)
-        .json({ message: errorMessage, spcpSubmissionFailure: true })
-    }
-    parsedResponses.push(
-      ...createCorppassParsedResponses(
-        jwtPayloadResult.value.userName,
-        jwtPayloadResult.value.userInfo,
-      ),
-    )
-  } else if (authType === AuthType.MyInfo) {
-    const uinFinResult = MyInfoUtil.extractMyInfoCookie(req.cookies)
-      .andThen(MyInfoUtil.extractAccessTokenFromCookie)
-      .andThen((accessToken) => MyInfoFactory.extractUinFin(accessToken))
-    if (uinFinResult.isErr()) {
-      const { errorMessage, statusCode } = mapRouteError(uinFinResult.error)
-      return res
-        .status(statusCode)
-        .json({ message: errorMessage, spcpSubmissionFailure: true })
-    }
-    const uinFin = uinFinResult.value
-    const verifyMyInfoResult = await MyInfoFactory.fetchMyInfoHashes(
-      uinFin,
-      formId,
-    ).andThen((hashes) =>
-      MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
-    )
-    if (verifyMyInfoResult.isErr()) {
-      logger.error({
-        message: 'Error verifying MyInfo hashes',
-        meta: logMeta,
-        error: verifyMyInfoResult.error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(
-        verifyMyInfoResult.error,
+  switch (authType) {
+    case AuthType.SP: {
+      // Verify NRIC
+      const jwtPayloadResult = await SpcpFactory.extractJwt(
+        req.cookies,
+        authType,
+      ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+      if (jwtPayloadResult.isErr()) {
+        logger.error({
+          message: 'Failed to verify Singpass JWT with auth client',
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        return res
+          .status(statusCode)
+          .json({ message: errorMessage, spcpSubmissionFailure: true })
+      }
+      parsedResponses.push(
+        ...createSingpassParsedResponses(jwtPayloadResult.value.userName),
       )
-      return res
-        .status(statusCode)
-        .json({ message: errorMessage, spcpSubmissionFailure: true })
+      break
     }
-    hashedFields = verifyMyInfoResult.value
-    parsedResponses.push(...createSingpassParsedResponses(uinFin))
+    case AuthType.CP: {
+      // Verify NRIC and UEN
+      const jwtPayloadResult = await SpcpFactory.extractJwt(
+        req.cookies,
+        authType,
+      ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+      if (jwtPayloadResult.isErr()) {
+        logger.error({
+          message: 'Failed to verify Corppass JWT with auth client',
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        return res
+          .status(statusCode)
+          .json({ message: errorMessage, spcpSubmissionFailure: true })
+      }
+      parsedResponses.push(
+        ...createCorppassParsedResponses(
+          jwtPayloadResult.value.userName,
+          jwtPayloadResult.value.userInfo,
+        ),
+      )
+      break
+    }
+    case AuthType.MyInfo: {
+      const uinFinResult = MyInfoUtil.extractMyInfoCookie(req.cookies)
+        .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+        .andThen((accessToken) => MyInfoFactory.extractUinFin(accessToken))
+      if (uinFinResult.isErr()) {
+        const { errorMessage, statusCode } = mapRouteError(uinFinResult.error)
+        return res
+          .status(statusCode)
+          .json({ message: errorMessage, spcpSubmissionFailure: true })
+      }
+      const uinFin = uinFinResult.value
+      const verifyMyInfoResult = await MyInfoFactory.fetchMyInfoHashes(
+        uinFin,
+        formId,
+      ).andThen((hashes) =>
+        MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+      )
+      if (verifyMyInfoResult.isErr()) {
+        logger.error({
+          message: 'Error verifying MyInfo hashes',
+          meta: logMeta,
+          error: verifyMyInfoResult.error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(
+          verifyMyInfoResult.error,
+        )
+        return res
+          .status(statusCode)
+          .json({ message: errorMessage, spcpSubmissionFailure: true })
+      }
+      hashedFields = verifyMyInfoResult.value
+      parsedResponses.push(...createSingpassParsedResponses(uinFin))
+      break
+    }
   }
 
   // Create data for response email as well as email confirmation
