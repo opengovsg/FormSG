@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import * as FrontendServerController from '../frontend.server.controller'
+import * as FrontendServerController from '../frontend.controller'
 
 describe('frontend.server.controller', () => {
   afterEach(() => jest.clearAllMocks())

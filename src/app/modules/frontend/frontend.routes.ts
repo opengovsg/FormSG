@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import * as FrontendServerController from './frontend.server.controller'
+import * as FrontendServerController from './frontend.controller'
 import { GoogleAnalyticsFactory } from './google-analytics.factory'
 
 export const FrontendRouter = Router()
