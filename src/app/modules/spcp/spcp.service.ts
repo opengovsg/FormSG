@@ -208,7 +208,7 @@ export class SpcpService {
   }
 
   /**
-   * Verifies a SingPass JWT and extracts its payload.
+   * Verifies a Singpass JWT and extracts its payload.
    * @param jwt The contents of the JWT cookie
    */
   extractSingpassJwtPayload(
@@ -248,7 +248,7 @@ export class SpcpService {
   }
 
   /**
-   * Verifies a CorpPass JWT and extracts its payload.
+   * Verifies a Corppass JWT and extracts its payload.
    * @param jwt The contents of the JWT cookie
    */
   extractCorppassJwtPayload(
