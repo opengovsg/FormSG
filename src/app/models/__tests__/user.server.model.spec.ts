@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 import getUserModel from 'src/app/models/user.server.model'
 import { IAgencySchema, IUser, IUserSchema } from 'src/types'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const User = getUserModel(mongoose)
 

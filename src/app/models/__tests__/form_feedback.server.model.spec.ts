@@ -5,7 +5,7 @@ import mongoose from 'mongoose'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { IFormFeedback } from 'src/types'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const FeedbackModel = getFormFeedbackModel(mongoose)
 

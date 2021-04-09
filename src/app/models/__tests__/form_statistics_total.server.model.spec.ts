@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import { AggregateFormCountResult, IFormStatisticsTotalSchema } from 'src/types'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const FormStatsModel = getFormStatisticsTotalModel(mongoose)
 

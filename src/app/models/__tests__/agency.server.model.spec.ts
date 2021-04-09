@@ -5,7 +5,7 @@ import getAgencyModel, {
   AGENCY_PUBLIC_FIELDS,
 } from 'src/app/models/agency.server.model'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Agency = getAgencyModel(mongoose)
 

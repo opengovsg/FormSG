@@ -6,13 +6,14 @@ import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
 
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
 import {
   AuthType,
   ISubmissionSchema,
   IWebhookResponse,
   SubmissionType,
 } from '../../../../src/types'
-import dbHandler from '../helpers/jest-db'
 
 const Submission = getSubmissionModel(mongoose)
 const EncryptedSubmission = getEncryptSubmissionModel(mongoose)

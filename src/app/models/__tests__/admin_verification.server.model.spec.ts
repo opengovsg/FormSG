@@ -7,7 +7,7 @@ import {
   UpsertOtpParams,
 } from 'src/types/admin_verification'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
 
@@ -87,7 +87,6 @@ describe('AdminVerification Model', () => {
       }
 
       // Act
-      // @ts-ignore
       const actualPromise = AdminVerification.create(missingContactParams)
 
       // Assert
@@ -104,7 +103,6 @@ describe('AdminVerification Model', () => {
       }
 
       // Act
-      // @ts-ignore
       const actualPromise = AdminVerification.create(missingOtpParams)
 
       // Assert
@@ -121,7 +119,6 @@ describe('AdminVerification Model', () => {
       }
 
       // Act
-      // @ts-ignore
       const actualPromise = AdminVerification.create(missingExpireParams)
 
       // Assert

@@ -13,7 +13,7 @@ import {
   IUserSchema,
 } from 'src/types'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const LoginModel = getLoginModel(mongoose)
 

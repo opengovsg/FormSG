@@ -16,7 +16,7 @@ import {
   Status,
 } from 'src/types'
 
-import dbHandler from '../helpers/jest-db'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Form = getFormModel(mongoose)
 const EncryptedForm = getEncryptedFormModel(mongoose)
