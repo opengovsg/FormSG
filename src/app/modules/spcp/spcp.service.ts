@@ -448,10 +448,13 @@ export class SpcpService {
     JwtPayload,
     VerifyJwtError | InvalidJwtError | MissingJwtError
   > {
-    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
-      authType === AuthType.SP
-        ? this.extractSingpassJwtPayload(jwtResult)
-        : this.extractCorppassJwtPayload(jwtResult),
-    )
+    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) => {
+      switch (authType) {
+        case AuthType.SP:
+          return this.extractSingpassJwtPayload(jwtResult)
+        case AuthType.CP:
+          return this.extractCorppassJwtPayload(jwtResult)
+      }
+    })
   }
 }
