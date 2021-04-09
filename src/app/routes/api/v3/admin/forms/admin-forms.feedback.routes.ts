@@ -1,6 +1,5 @@
 import { Router } from 'express'
 
-import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsFeedbackRouter = Router()
@@ -20,7 +19,6 @@ export const AdminFormsFeedbackRouter = Router()
  */
 AdminFormsFeedbackRouter.get(
   '/:formId([a-fA-F0-9]{24})/feedback',
-  withUserAuthentication,
   AdminFormController.handleGetFormFeedbacks,
 )
 
@@ -39,7 +37,6 @@ AdminFormsFeedbackRouter.get(
  */
 AdminFormsFeedbackRouter.get(
   '/:formId([a-fA-F0-9]{24})/feedback/count',
-  withUserAuthentication,
   AdminFormController.handleCountFormFeedback,
 )
 
@@ -58,6 +55,5 @@ AdminFormsFeedbackRouter.get(
  */
 AdminFormsFeedbackRouter.get(
   '/:formId([a-fA-F0-9]{24})/feedback/download',
-  withUserAuthentication,
   AdminFormController.handleStreamFormFeedback,
 )

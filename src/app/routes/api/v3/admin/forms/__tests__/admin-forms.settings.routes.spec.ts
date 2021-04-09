@@ -11,11 +11,11 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { AdminFormsSettingsRouter } from '../admin-forms.settings.routes'
+import { AdminFormsRouter } from '../admin-forms.routes'
 
 const UserModel = getUserModel(mongoose)
 
-const app = setupApp('/admin/forms', AdminFormsSettingsRouter, {
+const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })
 

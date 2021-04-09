@@ -17,7 +17,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { insertFormFeedback } from '../../../../../../modules/form/public-form/public-form.service'
-import { AdminFormsFeedbackRouter } from '../admin-forms.feedback.routes'
+import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
@@ -26,7 +26,7 @@ const UserModel = getUserModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 
-const app = setupApp('/admin/forms', AdminFormsFeedbackRouter, {
+const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })
 
