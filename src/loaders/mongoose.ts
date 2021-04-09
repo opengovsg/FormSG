@@ -43,8 +43,7 @@ export default async (): Promise<Connection> => {
 
   // Actually connect to the database
   function connect() {
-    // TODO (#317): remove usage of non-null assertion
-    return mongoose.connect(config.db.uri!, config.db.options)
+    return mongoose.connect(config.db.uri, config.db.options)
   }
 
   // Only required for initial connection errors, reconnect on error.

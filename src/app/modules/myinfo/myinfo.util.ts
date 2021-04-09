@@ -83,16 +83,6 @@ const hasMyInfoAnswer = (
   return !!field.isVisible && !!field.myInfo?.attr
 }
 
-const filterFieldsWithHashes = (
-  responses: ProcessedFieldResponse[],
-  hashes: IHashes,
-): VisibleMyInfoResponse[] => {
-  // Filter twice to get types to cooperate
-  return responses
-    .filter(hasMyInfoAnswer)
-    .filter((response) => !!hashes[response.myInfo.attr])
-}
-
 const transformAnswer = (field: VisibleMyInfoResponse): string => {
   const answer = field.answer
   return field.fieldType === BasicField.Date
@@ -117,14 +107,15 @@ export const compareHashedValues = (
   responses: ProcessedFieldResponse[],
   hashes: IHashes,
 ): MyInfoComparePromises => {
-  // Filter responses to only those fields with a corresponding hash
-  const fieldsWithHashes = filterFieldsWithHashes(responses, hashes)
   // Map MyInfoAttribute to response
   const myInfoResponsesMap: MyInfoComparePromises = new Map()
-  fieldsWithHashes.forEach((field) => {
-    const attr = field.myInfo.attr
-    // Already checked that hashes contains this attr
-    myInfoResponsesMap.set(field._id, compareSingleHash(hashes[attr]!, field))
+  responses.forEach((field) => {
+    if (hasMyInfoAnswer(field)) {
+      const hash = hashes[field.myInfo.attr]
+      if (hash) {
+        myInfoResponsesMap.set(field._id, compareSingleHash(hash, field))
+      }
+    }
   })
   return myInfoResponsesMap
 }

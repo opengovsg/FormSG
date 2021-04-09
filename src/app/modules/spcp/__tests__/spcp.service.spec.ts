@@ -215,7 +215,7 @@ describe('spcp.service', () => {
     })
   })
 
-  describe('extractJwtPayload', () => {
+  describe('extractSingpassJwtPayload', () => {
     it('should return the correct payload for Singpass when JWT is valid', async () => {
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
@@ -223,7 +223,7 @@ describe('spcp.service', () => {
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
         cb(null, MOCK_SP_JWT_PAYLOAD),
       )
-      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.SP)
+      const result = await spcpService.extractSingpassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrap()).toEqual(MOCK_SP_JWT_PAYLOAD)
     })
 
@@ -234,7 +234,7 @@ describe('spcp.service', () => {
       mockClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(new Error(), null),
       )
-      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.SP)
+      const result = await spcpService.extractSingpassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
     })
 
@@ -247,12 +247,14 @@ describe('spcp.service', () => {
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.SP)
+      const result = await spcpService.extractSingpassJwtPayload(MOCK_JWT)
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
+  })
 
+  describe('extractCorppassJwtPayload', () => {
     it('should return the correct payload for Corppass when JWT is valid', async () => {
       const spcpService = new SpcpService(MOCK_PARAMS)
       // Assumes that SP auth client was instantiated first
@@ -260,7 +262,7 @@ describe('spcp.service', () => {
       mockClient.verifyJWT.mockImplementationOnce((jwt, cb) =>
         cb(null, MOCK_CP_JWT_PAYLOAD),
       )
-      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.CP)
+      const result = await spcpService.extractCorppassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrap()).toEqual(MOCK_CP_JWT_PAYLOAD)
     })
 
@@ -271,7 +273,7 @@ describe('spcp.service', () => {
       mockClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
         cb(new Error(), null),
       )
-      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.CP)
+      const result = await spcpService.extractCorppassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toEqual(new VerifyJwtError())
     })
 
@@ -284,7 +286,7 @@ describe('spcp.service', () => {
       const expected = new InvalidJwtError()
 
       // Act
-      const result = await spcpService.extractJwtPayload(MOCK_JWT, AuthType.CP)
+      const result = await spcpService.extractCorppassJwtPayload(MOCK_JWT)
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(expected)

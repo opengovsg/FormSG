@@ -27,9 +27,11 @@ describe('spcp.factory', () => {
     )
     const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
     const validateLoginPageResult = SpcpFactory.validateLoginPage('')
-    const extractJwtPayloadResult = await SpcpFactory.extractJwtPayload(
+    const extractSingpassJwtPayloadResult = await SpcpFactory.extractSingpassJwtPayload(
       '',
-      AuthType.SP,
+    )
+    const extractCorppassJwtPayloadResult = await SpcpFactory.extractCorppassJwtPayload(
+      '',
     )
     const parseOOBParamsResult = SpcpFactory.parseOOBParams('', '', AuthType.SP)
     const getSpcpAttributesResult = await SpcpFactory.getSpcpAttributes(
@@ -51,7 +53,8 @@ describe('spcp.factory', () => {
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
-    expect(extractJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractSingpassJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractCorppassJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
     expect(parseOOBParamsResult._unsafeUnwrapErr()).toEqual(error)
     expect(getSpcpAttributesResult._unsafeUnwrapErr()).toEqual(error)
     expect(createJWTResult._unsafeUnwrapErr()).toEqual(error)
@@ -74,9 +77,11 @@ describe('spcp.factory', () => {
     )
     const fetchLoginPageResult = await SpcpFactory.fetchLoginPage('')
     const validateLoginPageResult = SpcpFactory.validateLoginPage('')
-    const extractJwtPayloadResult = await SpcpFactory.extractJwtPayload(
+    const extractSingpassJwtPayloadResult = await SpcpFactory.extractSingpassJwtPayload(
       '',
-      AuthType.SP,
+    )
+    const extractCorppassJwtPayloadResult = await SpcpFactory.extractCorppassJwtPayload(
+      '',
     )
     const parseOOBParamsResult = SpcpFactory.parseOOBParams('', '', AuthType.SP)
     const getSpcpAttributesResult = await SpcpFactory.getSpcpAttributes(
@@ -98,7 +103,8 @@ describe('spcp.factory', () => {
     expect(createRedirectUrlResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchLoginPageResult._unsafeUnwrapErr()).toEqual(error)
     expect(validateLoginPageResult._unsafeUnwrapErr()).toEqual(error)
-    expect(extractJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractSingpassJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
+    expect(extractCorppassJwtPayloadResult._unsafeUnwrapErr()).toEqual(error)
     expect(parseOOBParamsResult._unsafeUnwrapErr()).toEqual(error)
     expect(getSpcpAttributesResult._unsafeUnwrapErr()).toEqual(error)
     expect(createJWTResult._unsafeUnwrapErr()).toEqual(error)

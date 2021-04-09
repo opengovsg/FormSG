@@ -22,11 +22,13 @@ import {
 } from './spcp.errors'
 import {
   CorppassAttributes,
+  CorppassJwtPayload,
   JwtName,
   JwtPayload,
   LoginPageValidationResult,
   ParsedSpcpParams,
   SingpassAttributes,
+  SingpassJwtPayload,
   SpcpCookies,
   SpcpDomainSettings,
 } from './spcp.types'
@@ -34,7 +36,8 @@ import {
   extractFormId,
   getAttributesPromise,
   getSubstringBetween,
-  isJwtPayload,
+  isCorppassJwtPayload,
+  isSingpassJwtPayload,
   isValidAuthenticationQuery,
   verifyJwtPromise,
 } from './spcp.util'
@@ -205,19 +208,16 @@ export class SpcpService {
   }
 
   /**
-   * Verifies a JWT and extracts its payload.
+   * Verifies a Singpass JWT and extracts its payload.
    * @param jwt The contents of the JWT cookie
-   * @param authType 'SP' or 'CP'
    */
-  extractJwtPayload(
+  extractSingpassJwtPayload(
     jwt: string,
-    authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidJwtError> {
+  ): ResultAsync<SingpassJwtPayload, VerifyJwtError | InvalidJwtError> {
     const logMeta = {
-      action: 'extractJwtPayload',
-      authType,
+      action: 'extractSingpassJwtPayload',
     }
-    const authClient = this.getAuthClient(authType)
+    const authClient = this.getAuthClient(AuthType.SP)
     return ResultAsync.fromPromise(
       verifyJwtPromise(authClient, jwt),
       (error) => {
@@ -229,7 +229,47 @@ export class SpcpService {
         return new VerifyJwtError()
       },
     ).andThen((payload) => {
-      if (isJwtPayload(payload, authType)) {
+      if (isSingpassJwtPayload(payload)) {
+        return okAsync(payload)
+      }
+      const payloadIsDefined = !!payload
+      const payloadKeys =
+        typeof payload === 'object' && !!payload && Object.keys(payload)
+      logger.error({
+        message: 'JWT has incorrect shape',
+        meta: {
+          ...logMeta,
+          payloadIsDefined,
+          payloadKeys,
+        },
+      })
+      return errAsync(new InvalidJwtError())
+    })
+  }
+
+  /**
+   * Verifies a Corppass JWT and extracts its payload.
+   * @param jwt The contents of the JWT cookie
+   */
+  extractCorppassJwtPayload(
+    jwt: string,
+  ): ResultAsync<CorppassJwtPayload, VerifyJwtError | InvalidJwtError> {
+    const logMeta = {
+      action: 'extractCorppassJwtPayload',
+    }
+    const authClient = this.getAuthClient(AuthType.CP)
+    return ResultAsync.fromPromise(
+      verifyJwtPromise(authClient, jwt),
+      (error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: logMeta,
+          error,
+        })
+        return new VerifyJwtError()
+      },
+    ).andThen((payload) => {
+      if (isCorppassJwtPayload(payload)) {
         return okAsync(payload)
       }
       const payloadIsDefined = !!payload
@@ -408,8 +448,13 @@ export class SpcpService {
     JwtPayload,
     VerifyJwtError | InvalidJwtError | MissingJwtError
   > {
-    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) =>
-      this.extractJwtPayload(jwtResult, authType),
-    )
+    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) => {
+      switch (authType) {
+        case AuthType.SP:
+          return this.extractSingpassJwtPayload(jwtResult)
+        case AuthType.CP:
+          return this.extractCorppassJwtPayload(jwtResult)
+      }
+    })
   }
 }
