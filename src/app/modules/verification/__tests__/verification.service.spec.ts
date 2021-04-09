@@ -47,7 +47,7 @@ import {
 const VerificationModel = getVerificationModel(mongoose)
 
 // Set up mocks
-jest.mock('src/config/formsg-sdk')
+jest.mock('src/app/config/formsg-sdk')
 const MockFormsgSdk = mocked(formsgSdk, true)
 jest.mock('src/app/services/sms/sms.factory')
 const MockSmsFactory = mocked(SmsFactory, true)

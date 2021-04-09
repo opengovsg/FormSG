@@ -8,7 +8,7 @@ import config from 'src/app/config/config'
 
 import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
 
-jest.mock('src/config/config')
+jest.mock('src/app/config/config')
 const MockConfig = mocked(config, true)
 
 // eslint-disable-next-line import/first

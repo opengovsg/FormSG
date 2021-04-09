@@ -13,7 +13,7 @@ jest.mock('dns', () => ({
 const MockDns = mocked(dns, true)
 
 const MOCK_APP_URL = 'https://example.com'
-jest.mock('src/config/config')
+jest.mock('src/app/config/config')
 const MockConfig = mocked(config, true)
 MockConfig.app.appUrl = MOCK_APP_URL
 

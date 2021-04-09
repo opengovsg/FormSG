@@ -48,7 +48,7 @@ jest.mock('../../billing/billing.factory')
 const MockBillingFactory = mocked(BillingFactory, true)
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = mocked(FormService, true)
-jest.mock('src/config/config')
+jest.mock('src/app/config/config')
 const MockConfig = mocked(config, true)
 MockConfig.isDev = false
 

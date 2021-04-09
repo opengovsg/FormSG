@@ -15,7 +15,7 @@ jest.mock('../myinfo.service', () => ({
   MyInfoService: jest.fn(),
 }))
 const MockMyInfoService = mocked(MyInfoServiceModule, true)
-jest.mock('src/config/config')
+jest.mock('src/app/config/config')
 const MockConfig = mocked(config, true)
 MockConfig.nodeEnv = MOCK_NODE_ENV as Environment
 MockConfig.app = {

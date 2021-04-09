@@ -31,7 +31,7 @@ import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
-jest.mock('src/config/logger')
+jest.mock('src/app/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)

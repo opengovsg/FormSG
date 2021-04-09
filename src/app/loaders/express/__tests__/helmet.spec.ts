@@ -11,9 +11,9 @@ import helmetMiddlewares from '../helmet'
 describe('helmetMiddlewares', () => {
   jest.mock('helmet')
   const mockHelmet = mocked(helmet, true)
-  jest.mock('src/config/feature-manager')
+  jest.mock('src/app/config/feature-manager')
   const mockFeatureManager = mocked(featureManager, true)
-  jest.mock('src/config/config')
+  jest.mock('src/app/config/config')
   const mockConfig = mocked(config, true)
 
   const cspCoreDirectives = {
