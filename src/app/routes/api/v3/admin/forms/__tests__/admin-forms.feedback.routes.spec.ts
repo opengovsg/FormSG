@@ -26,7 +26,7 @@ const UserModel = getUserModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 
-const app = setupApp(undefined, AdminFormsFeedbackRouter, {
+const app = setupApp('/admin/forms', AdminFormsFeedbackRouter, {
   setupWithAuth: true,
 })
 
@@ -48,7 +48,7 @@ describe('admin-form.feedback.routes', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('GET /:formId/feedback', () => {
+  describe('GET /admin/forms/:formId/feedback', () => {
     let formForFeedback: IFormDocument
     beforeEach(async () => {
       formForFeedback = (await EncryptFormModel.create({
@@ -60,7 +60,9 @@ describe('admin-form.feedback.routes', () => {
 
     it('should return 200 with empty feedback meta when no feedback exists', async () => {
       // Act
-      const response = await request.get(`/${formForFeedback._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${formForFeedback._id}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(200)
@@ -80,7 +82,9 @@ describe('admin-form.feedback.routes', () => {
       await insertFormFeedback(formFeedbacks[1])
 
       // Act
-      const response = await request.get(`/${formForFeedback._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${formForFeedback._id}/feedback`,
+      )
 
       // Assert
       const expected = {
@@ -116,7 +120,9 @@ describe('admin-form.feedback.routes', () => {
       await logoutSession(request)
 
       // Act
-      const response = await request.get(`/${formForFeedback._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${formForFeedback._id}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(401)
@@ -141,7 +147,9 @@ describe('admin-form.feedback.routes', () => {
       })
 
       // Act
-      const response = await request.get(`/${inaccessibleForm._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${inaccessibleForm._id}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(403)
@@ -154,7 +162,9 @@ describe('admin-form.feedback.routes', () => {
 
     it('should return 404 when form cannot be found', async () => {
       // Act
-      const response = await request.get(`/${new ObjectId()}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${new ObjectId()}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(404)
@@ -172,7 +182,9 @@ describe('admin-form.feedback.routes', () => {
       })
 
       // Act
-      const response = await request.get(`/${archivedForm._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${archivedForm._id}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(410)
@@ -185,7 +197,9 @@ describe('admin-form.feedback.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await request.get(`/${formForFeedback._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${formForFeedback._id}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(422)
@@ -204,7 +218,9 @@ describe('admin-form.feedback.routes', () => {
       }))
 
       // Act
-      const response = await request.get(`/${formForFeedback._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${formForFeedback._id}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(500)
@@ -215,7 +231,7 @@ describe('admin-form.feedback.routes', () => {
     })
   })
 
-  describe('GET /:formId/feedback/count', () => {
+  describe('GET /admin/forms/:formId/feedback/count', () => {
     let formForFeedback: IFormDocument
     beforeEach(async () => {
       formForFeedback = (await EncryptFormModel.create({
@@ -228,7 +244,7 @@ describe('admin-form.feedback.routes', () => {
     it('should return 200 with 0 count when no feedback exists', async () => {
       // Act
       const response = await request.get(
-        `/${formForFeedback._id}/feedback/count`,
+        `/admin/forms/${formForFeedback._id}/feedback/count`,
       )
 
       // Assert
@@ -247,7 +263,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${formForFeedback._id}/feedback/count`,
+        `/admin/forms/${formForFeedback._id}/feedback/count`,
       )
 
       // Assert
@@ -261,7 +277,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${formForFeedback._id}/feedback/count`,
+        `/admin/forms/${formForFeedback._id}/feedback/count`,
       )
 
       // Assert
@@ -288,7 +304,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${inaccessibleForm._id}/feedback/count`,
+        `/admin/forms/${inaccessibleForm._id}/feedback/count`,
       )
 
       // Assert
@@ -302,7 +318,9 @@ describe('admin-form.feedback.routes', () => {
 
     it('should return 404 when form cannot be found', async () => {
       // Act
-      const response = await request.get(`/${new ObjectId()}/feedback/count`)
+      const response = await request.get(
+        `/admin/forms/${new ObjectId()}/feedback/count`,
+      )
 
       // Assert
       expect(response.status).toEqual(404)
@@ -320,7 +338,9 @@ describe('admin-form.feedback.routes', () => {
       })
 
       // Act
-      const response = await request.get(`/${archivedForm._id}/feedback/count`)
+      const response = await request.get(
+        `/admin/forms/${archivedForm._id}/feedback/count`,
+      )
 
       // Assert
       expect(response.status).toEqual(410)
@@ -334,7 +354,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${formForFeedback._id}/feedback/count`,
+        `/admin/forms/${formForFeedback._id}/feedback/count`,
       )
 
       // Assert
@@ -354,7 +374,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${formForFeedback._id}/feedback/count`,
+        `/admin/forms/${formForFeedback._id}/feedback/count`,
       )
 
       // Assert
@@ -366,7 +386,7 @@ describe('admin-form.feedback.routes', () => {
     })
   })
 
-  describe('GET /:formId/feedback/download', () => {
+  describe('GET /admin/forms/:formId/feedback/download', () => {
     let formForFeedback: IFormDocument
     beforeEach(async () => {
       formForFeedback = (await EncryptFormModel.create({
@@ -387,7 +407,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request
-        .get(`/${formForFeedback._id}/feedback/download`)
+        .get(`/admin/forms/${formForFeedback._id}/feedback/download`)
         .buffer()
         .parse((res, cb) => {
           let buffer = ''
@@ -410,7 +430,7 @@ describe('admin-form.feedback.routes', () => {
     it('should return 200 with empty stream when feedbacks do not exist', async () => {
       // Act
       const response = await request
-        .get(`/${formForFeedback._id}/feedback/download`)
+        .get(`/admin/forms/${formForFeedback._id}/feedback/download`)
         .buffer()
 
       // Assert
@@ -424,7 +444,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${formForFeedback._id}/feedback/download`,
+        `/admin/forms/${formForFeedback._id}/feedback/download`,
       )
 
       // Assert
@@ -451,7 +471,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${inaccessibleForm._id}/feedback/download`,
+        `/admin/forms/${inaccessibleForm._id}/feedback/download`,
       )
 
       // Assert
@@ -465,7 +485,9 @@ describe('admin-form.feedback.routes', () => {
 
     it('should return 404 when form cannot be found', async () => {
       // Act
-      const response = await request.get(`/${new ObjectId()}/feedback/download`)
+      const response = await request.get(
+        `/admin/forms/${new ObjectId()}/feedback/download`,
+      )
 
       // Assert
       expect(response.status).toEqual(404)
@@ -484,7 +506,7 @@ describe('admin-form.feedback.routes', () => {
 
       // Act
       const response = await request.get(
-        `/${archivedForm._id}/feedback/download`,
+        `/admin/forms/${archivedForm._id}/feedback/download`,
       )
 
       // Assert
@@ -498,7 +520,9 @@ describe('admin-form.feedback.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await request.get(`/${formForFeedback._id}/feedback`)
+      const response = await request.get(
+        `/admin/forms/${formForFeedback._id}/feedback`,
+      )
 
       // Assert
       expect(response.status).toEqual(422)
