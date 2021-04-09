@@ -13,12 +13,9 @@ identities, and E-mail servers hosted in Government Data Centres.
 
 ## Backend
 
-FormSG is currently in the process of migrating its backend to TypeScript, so you will find
-a mixture of `.js` and `.ts` files in the backend.
-
-The backend for FormSG is bootstrapped using `src/server.ts` and `src/loaders`.
-It sets up express.js routes defined in `src/app/routes/*.(j|t)s`, with business logic
-defined in `src/app/controllers/*.(j|t)s` and mongoose models defined in `src/app/models/*.(j|t)s`.
+The backend for FormSG is bootstrapped using `src/server.ts` and `src/app/loaders`.
+It sets up express.js routes defined in `src/app/**/*.routes.ts`, with business logic
+defined in `src/app/**/*.controller.ts` and mongoose models defined in `src/app/**/*.model.ts`.
 
 ### Security
 
