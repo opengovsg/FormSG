@@ -7,7 +7,7 @@ import { BasicField } from 'src/types'
 import {
   generateDefaultField,
   generateNewCheckboxResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Checkbox validation', () => {
   const formId = new ObjectId().toHexString()

@@ -9,7 +9,7 @@ import {
   generateNewTableResponse,
   generateTableDropdownColumn,
   generateTableShortTextColumn,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Table validation', () => {
   const formId = new ObjectId().toHexString()

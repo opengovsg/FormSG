@@ -5,7 +5,7 @@ import { BasicField, NumberSelectedValidation } from 'src/types'
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Number field validation', () => {
   it('should allow number with valid maximum', () => {

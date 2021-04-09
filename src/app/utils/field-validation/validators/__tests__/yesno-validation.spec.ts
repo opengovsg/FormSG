@@ -5,7 +5,7 @@ import { BasicField } from 'src/types'
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Yes/No field validation', () => {
   it('should allow yes', () => {

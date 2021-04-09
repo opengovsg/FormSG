@@ -6,7 +6,7 @@ import { RatingShape } from 'src/types/field/ratingField'
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Rating field validation', () => {
   it('should allow answer within range', () => {

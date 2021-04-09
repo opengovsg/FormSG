@@ -5,7 +5,7 @@ import { BasicField, TextSelectedValidation } from 'src/types'
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Text validation', () => {
   describe('Short text', () => {

@@ -7,7 +7,7 @@ import { AttachmentSize, BasicField } from 'src/types'
 import {
   generateDefaultField,
   generateNewAttachmentResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Attachment validation', () => {
   const formId = new ObjectId().toHexString()

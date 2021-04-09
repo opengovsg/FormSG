@@ -7,7 +7,7 @@ import { BasicField } from 'src/types/field/fieldTypes'
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 type VerificationMock = {
   authenticate: () => boolean

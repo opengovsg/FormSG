@@ -5,7 +5,7 @@ import { BasicField } from 'src/types'
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-} from '../../helpers/generate-form-data'
+} from 'tests/unit/backend/helpers/generate-form-data'
 
 describe('Radio button validation', () => {
   it('should allow valid option', () => {
