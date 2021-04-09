@@ -4719,7 +4719,6 @@ describe('admin-form.routes', () => {
 
     it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
       // Arrange
-      const now = new Date()
       const submissions = await Promise.all(
         times(5, (count) =>
           createSubmission({
@@ -4730,13 +4729,15 @@ describe('admin-form.routes', () => {
               ['fieldId1', `some.attachment.url.${count}`],
               ['fieldId2', `some.other.attachment.url.${count}`],
             ]),
-            created: now,
           }),
         ),
       )
-      // Set 2 submissions to be submitted 3-4 days ago.
-      submissions[2].created = subDays(now, 3)
-      submissions[4].created = subDays(now, 4)
+
+      const startDateStr = '2020-02-03'
+      const endDateStr = '2020-02-04'
+      // Set 2 submissions to be submitted with specific date
+      submissions[2].created = new Date(startDateStr)
+      submissions[4].created = new Date(endDateStr)
       await submissions[2].save()
       await submissions[4].save()
       const expectedSubmissionIds = [
@@ -4748,8 +4749,8 @@ describe('admin-form.routes', () => {
       const response = await request
         .get(`/${defaultForm._id}/adminform/submissions/download`)
         .query({
-          startDate: format(subDays(now, 4), 'yyyy-MM-dd'),
-          endDate: format(subDays(now, 3), 'yyyy-MM-dd'),
+          startDate: startDateStr,
+          endDate: endDateStr,
         })
         .buffer()
         .parse((res, cb) => {
