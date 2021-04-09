@@ -14,6 +14,7 @@ import { BillingRouter } from '../../app/modules/billing/billing.routes'
 import { BounceRouter } from '../../app/modules/bounce/bounce.routes'
 import { ExamplesRouter } from '../../app/modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../app/modules/form/admin-form/admin-form.routes'
+import { PublicFormRouter } from '../../app/modules/form/public-form/public-form.routes'
 import { FrontendRouter } from '../../app/modules/frontend/frontend.server.routes'
 import { HomeRouter } from '../../app/modules/home/home.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../app/modules/myinfo/myinfo.constants'
@@ -26,7 +27,6 @@ import {
 import { SubmissionRouter } from '../../app/modules/submission/submission.routes'
 import UserRouter from '../../app/modules/user/user.routes'
 import { VfnRouter } from '../../app/modules/verification/verification.routes'
-import apiRoutes from '../../app/routes'
 import { ApiRouter } from '../../app/routes/api'
 import * as IntranetMiddleware from '../../app/services/intranet/intranet.middleware'
 import config from '../../config/config'
@@ -144,11 +144,6 @@ const loadExpressApp = async (connection: Connection) => {
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
 
-  // Mount all API endpoints
-  apiRoutes.forEach(function (routeFunction) {
-    routeFunction(app)
-  })
-
   app.use('/', HomeRouter)
   app.use('/frontend', FrontendRouter)
   app.use('/auth', AuthRouter)
@@ -167,6 +162,7 @@ const loadExpressApp = async (connection: Connection) => {
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
   app.use(AdminFormsRouter)
+  app.use(PublicFormRouter)
 
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
