@@ -4732,9 +4732,12 @@ describe('admin-form.routes', () => {
           }),
         ),
       )
+
+      const startDateStr = '2020-02-03'
+      const endDateStr = '2020-02-04'
       // Set 2 submissions to be submitted with specific date
-      submissions[2].created = new Date('2020-02-03')
-      submissions[4].created = new Date('2020-02-04')
+      submissions[2].created = new Date(startDateStr)
+      submissions[4].created = new Date(endDateStr)
       await submissions[2].save()
       await submissions[4].save()
       const expectedSubmissionIds = [
@@ -4746,8 +4749,8 @@ describe('admin-form.routes', () => {
       const response = await request
         .get(`/${defaultForm._id}/adminform/submissions/download`)
         .query({
-          startDate: '2020-02-03',
-          endDate: '2020-02-04',
+          startDate: startDateStr,
+          endDate: endDateStr,
         })
         .buffer()
         .parse((res, cb) => {
