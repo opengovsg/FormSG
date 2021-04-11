@@ -204,7 +204,7 @@
     "csv-parse": "^4.15.3",
     "date-fns": "^2.20.1",
     "env-cmd": "^10.1.0",
-    "eslint": "^7.23.0",
+    "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-import": "^2.22.1",
