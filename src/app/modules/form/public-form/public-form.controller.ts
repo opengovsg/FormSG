@@ -4,7 +4,7 @@ import querystring from 'querystring'
 import { UnreachableCaseError } from 'ts-essentials'
 
 import { AuthType } from '../../../../types'
-import { ErrorDto } from '../../../../types/api'
+import { ErrorDto, PrivateFormErrorDto } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -188,7 +188,7 @@ export const handleRedirect: RequestHandler<
  */
 export const handleGetPublicForm: RequestHandler<
   { formId: string },
-  PublicFormViewDto | ErrorDto
+  PublicFormViewDto | ErrorDto | PrivateFormErrorDto
 > = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
@@ -214,6 +214,19 @@ export const handleGetPublicForm: RequestHandler<
       })
     }
     const { errorMessage, statusCode } = mapRouteError(error)
+
+    // Specialized error response for PrivateFormError.
+    // This is to maintain backwards compatibility with the middleware implementation
+    if (error instanceof PrivateFormError) {
+      return res.status(statusCode).json({
+        message: error.message,
+        // Flag to prevent default 404 subtext ("please check link") from
+        // showing.
+        isPageFound: true,
+        formTitle: error.formTitle,
+      })
+    }
+
     return res.status(statusCode).json({ message: errorMessage })
   }
 

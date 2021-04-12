@@ -952,10 +952,11 @@ describe('public-form.controller', () => {
         // Arrange
         // 1. Mock the response
         const mockRes = expressHandler.mockResponse()
+        const MOCK_FORM_TITLE = 'private form'
 
         // 2. Mock the call to retrieve the form
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
-          errAsync(new PrivateFormError(MOCK_ERROR_STRING, 'private form')),
+          errAsync(new PrivateFormError(MOCK_ERROR_STRING, MOCK_FORM_TITLE)),
         )
 
         // Act
@@ -977,6 +978,8 @@ describe('public-form.controller', () => {
         expect(mockRes.status).toHaveBeenCalledWith(404)
         expect(mockRes.json).toHaveBeenCalledWith({
           message: MOCK_ERROR_STRING,
+          formTitle: MOCK_FORM_TITLE,
+          isPageFound: true,
         })
       })
     })
