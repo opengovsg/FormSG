@@ -1,10 +1,12 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { rateLimitConfig } from '../../../../../config/config'
+import { rateLimitConfig } from '../../../../config/config'
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
 import * as EmailSubmissionMiddleware from '../../../../modules/submission/email-submission/email-submission.middleware'
+import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
+import * as EncryptSubmissionMiddleware from '../../../../modules/submission/encrypt-submission/encrypt-submission.middleware'
 import { CaptchaFactory } from '../../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../../utils/limit-rate'
 
@@ -60,4 +62,23 @@ PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/submissions/email').post(
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   EmailSubmissionController.handleEmailSubmission,
+)
+
+/**
+ * Submit a form response, submit a form response, and stores the encrypted
+ * contents.
+ * Optionally, an autoreply confirming submission is sent back to the user, if
+ * an email address was given. SMS autoreplies for mobile number fields are also
+ * sent if the feature is enabled.
+ * @route POST /forms/:formId/submissions/encrypt
+ * @param response.body.required - contains the entire form submission
+ * @param captchaResponse.query - contains the reCAPTCHA response artifact, if any
+ * @returns 200 - submission made
+ * @returns 400 - submission has bad data and could not be processed
+ */
+PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/submissions/encrypt').post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  CaptchaFactory.validateCaptchaParams,
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  EncryptSubmissionController.handleEncryptedSubmission,
 )
