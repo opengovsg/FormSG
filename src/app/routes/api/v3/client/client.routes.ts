@@ -13,7 +13,8 @@ export const ClientRouter = Router()
  * @return 200 when code generation is successful
  * @return 400 when code generation fails
  */
-ClientRouter.route('/analytics/google').get(
+ClientRouter.get(
+  '/analytics/google',
   GoogleAnalyticsFactory.addGoogleAnalyticsData,
 )
 
@@ -23,16 +24,14 @@ ClientRouter.route('/analytics/google').get(
  * @return 200 when code generation is successful
  * @return 400 when code generation fails
  */
-ClientRouter.route('/environment').get(FrontendServerController.addEnvVarData)
+ClientRouter.get('/environment', FrontendServerController.addEnvVarData)
 
 /**
  * Generate a json of current activated features
  * @route GET /api/v3/client/features
  * @return json with featureManager.states
  */
-ClientRouter.route('/features').get((req, res) => {
-  res.json(FrontendServerController.showFeaturesStates)
-})
+ClientRouter.get('/features', FrontendServerController.showFeaturesStates)
 
 /**
  * Generate the javascript code to redirect to the correct url
@@ -40,7 +39,8 @@ ClientRouter.route('/features').get((req, res) => {
  * @return 200 when redirect code is  successful
  * @return 400 when redirect code fails
  */
-ClientRouter.route('/redirect').get(
+ClientRouter.get(
+  '/redirect',
   celebrate({
     [Segments.QUERY]: {
       redirectPath: Joi.string()
