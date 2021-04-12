@@ -7,5 +7,5 @@ import { AnalyticStatsDto } from '../../types/analytics'
  */
 export const getLandingPageStatistics = async (): Promise<AnalyticStatsDto> =>
   axios
-    .get<AnalyticStatsDto>('/analytics/statistics')
+    .get<AnalyticStatsDto>('/api/v3/analytics/statistics')
     .then((response) => response.data)
