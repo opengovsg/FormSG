@@ -7,6 +7,7 @@ import { ResultAsync } from 'neverthrow'
 import {
   AuthType,
   FieldResponse,
+  FormMetaView,
   FormSettings,
   IForm,
   IPopulatedForm,
@@ -68,7 +69,10 @@ const logger = createLoggerWithLabel(module)
  * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
-export const handleListDashboardForms: RequestHandler = async (req, res) => {
+export const handleListDashboardForms: RequestHandler<
+  unknown,
+  FormMetaView[] | ErrorDto
+> = async (req, res) => {
   const authedUserId = (req.session as Express.AuthedSession).user._id
 
   return AdminFormService.getDashboardForms(authedUserId)
@@ -1042,7 +1046,8 @@ export const handleEncryptPreviewSubmission: RequestHandler<
     formId,
   }
 
-  const formResult = await UserService.getPopulatedUserById(sessionUserId)
+  // eslint-disable-next-line typesafe/no-await-without-trycatch
+  return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
       // Step 2: Retrieve form with write permission check.
       AuthService.getFormAfterPermissionChecks({
@@ -1051,57 +1056,56 @@ export const handleEncryptPreviewSubmission: RequestHandler<
         level: PermissionLevel.Read,
       }),
     )
-    .andThen(EncryptSubmissionService.checkFormIsEncryptMode)
-  if (formResult.isErr()) {
-    logger.error({
-      message: 'Error while retrieving form for preview submission',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    const { errorMessage, statusCode } = mapEncryptSubmissionError(
-      formResult.error,
+    .andThen((form) =>
+      EncryptSubmissionService.checkFormIsEncryptMode(form).mapErr((error) => {
+        logger.error({
+          message: 'Error while retrieving form for preview submission',
+          meta: logMeta,
+          error,
+        })
+        return error
+      }),
     )
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-  const form = formResult.value
-
-  const parsedResponsesResult = checkIsEncryptedEncoding(
-    encryptedContent,
-  ).andThen(() => SubmissionService.getProcessedResponses(form, responses))
-  if (parsedResponsesResult.isErr()) {
-    logger.error({
-      message: 'Error while parsing responses for preview submission',
-      meta: logMeta,
-      error: parsedResponsesResult.error,
-    })
-    const { errorMessage, statusCode } = mapEncryptSubmissionError(
-      parsedResponsesResult.error,
+    .andThen((form) =>
+      checkIsEncryptedEncoding(encryptedContent)
+        .andThen(() => SubmissionService.getProcessedResponses(form, responses))
+        .map((parsedResponses) => ({ parsedResponses, form }))
+        .mapErr((error) => {
+          logger.error({
+            message: 'Error while parsing responses for preview submission',
+            meta: logMeta,
+            error,
+          })
+          return error
+        }),
     )
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-  const parsedResponses = parsedResponsesResult.value
+    .map(({ parsedResponses, form }) => {
+      const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
+        {
+          form,
+          encryptedContent,
+          // Don't bother encrypting and signing mock variables for previews
+          verifiedContent: '',
+          version,
+        },
+      )
 
-  const submission = EncryptSubmissionService.createEncryptSubmissionWithoutSave(
-    {
-      form,
-      encryptedContent,
-      // Don't bother encrypting and signing mock variables for previews
-      verifiedContent: '',
-      version,
-    },
-  )
+      void SubmissionService.sendEmailConfirmations({
+        form,
+        parsedResponses,
+        submission,
+      })
 
-  // Don't await on email confirmations
-  void SubmissionService.sendEmailConfirmations({
-    form,
-    parsedResponses,
-    submission,
-  })
-
-  return res.json({
-    message: 'Form submission successful.',
-    submissionId: submission._id,
-  })
+      // Return the reply early to the submitter
+      return res.json({
+        message: 'Form submission successful.',
+        submissionId: submission._id,
+      })
+    })
+    .mapErr((error) => {
+      const { errorMessage, statusCode } = mapEncryptSubmissionError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**
