@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson-ext'
+import compareAsc from 'date-fns/compareAsc'
 import { times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
@@ -126,7 +127,8 @@ describe('feedback.service', () => {
       })
       const expectedCreatedFbs = await Promise.all(expectedFbPromises)
       const expectedFeedbackList = expectedCreatedFbs
-        .sort((a, b) => a.created!.getTime() - b.created!.getTime())
+        // Feedback is returned in date order
+        .sort((a, b) => compareAsc(a.created!, b.created!))
         .map((fb, idx) => ({
           index: idx + 1,
           timestamp: moment(fb.created).valueOf(),
