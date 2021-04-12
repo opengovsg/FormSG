@@ -2,14 +2,13 @@ import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
-import { ImportMock } from 'ts-mock-imports'
 
 import getTokenModel from 'src/app/models/token.server.model'
-import * as OtpUtils from 'src/app/utils/otp'
 import { IAgencySchema, IPopulatedForm, IPopulatedUser } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import * as OtpUtils from '../../../utils/otp'
 import { DatabaseError } from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as AdminFormUtils from '../../form/admin-form/admin-form.utils'
@@ -34,9 +33,6 @@ const VALID_EMAIL_DOMAIN = 'test.gov.sg'
 const VALID_EMAIL = `valid@${VALID_EMAIL_DOMAIN}`
 const MOCK_OTP = '123456'
 
-// All calls to generateOtp will return MOCK_OTP.
-ImportMock.mockFunction(OtpUtils, 'generateOtp', MOCK_OTP)
-
 describe('auth.service', () => {
   let defaultAgency: IAgencySchema
 
@@ -50,7 +46,7 @@ describe('auth.service', () => {
   // Only need to clear Token collection, and ignore other collections.
   beforeEach(async () => {
     await dbHandler.clearCollection(TokenModel.collection.collectionName)
-    jest.resetAllMocks()
+    jest.clearAllMocks()
   })
 
   afterAll(async () => await dbHandler.closeDatabase())
@@ -97,6 +93,7 @@ describe('auth.service', () => {
       // Arrange
       // Should have no documents prior to this.
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValueOnce(MOCK_OTP)
 
       // Act
       const actualResult = await AuthService.createLoginOtp(VALID_EMAIL)
@@ -124,6 +121,7 @@ describe('auth.service', () => {
   describe('verifyLoginOtp', () => {
     it('should successfully return true and delete Token document when OTP hash matches', async () => {
       // Arrange
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValueOnce(MOCK_OTP)
       // Add a Token document to verify against.
       await AuthService.createLoginOtp(VALID_EMAIL)
       await expect(TokenModel.countDocuments()).resolves.toEqual(1)
