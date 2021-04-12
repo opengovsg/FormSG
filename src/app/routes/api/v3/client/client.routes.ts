@@ -1,24 +1,25 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import featureManager from '../../../../../config/feature-manager'
-import frontendCtrl from '../../../../controllers/frontend.server.controller'
-import googleAnalyticsFactory from '../../../../factories/google-analytics.factory'
+import * as FrontendServerController from '../../../../modules/frontend/frontend.controller'
+import { GoogleAnalyticsFactory } from '../../../../modules/frontend/google-analytics.factory'
 
 export const ClientRouter = Router()
 
 /**
  * @route GET /api/v3/client/analytics/google
  */
-ClientRouter.route('/analytics/google').get(googleAnalyticsFactory.datalayer)
+ClientRouter.route('/analytics/google').get(
+  GoogleAnalyticsFactory.addGoogleAnalyticsData,
+)
 
 /**
  * @route GET /api/v3/client/environment
  */
-ClientRouter.route('/environment').get(frontendCtrl.environment)
+ClientRouter.route('/environment').get(FrontendServerController.addEnvVarData)
 
 /**
- * @route GET /api/v3/client/features
+ * @route GET /api/v3/client/redirect
  */
 ClientRouter.route('/redirect').get(
   celebrate({
@@ -28,12 +29,12 @@ ClientRouter.route('/redirect').get(
         .required(),
     },
   }),
-  frontendCtrl.redirectLayer,
+  FrontendServerController.generateRedirectUrl,
 )
 
 /**
- * @route GET /api/v3/client/redirect
+ * @route GET /api/v3/client/features
  */
 ClientRouter.route('/features').get((req, res) => {
-  res.json(featureManager.states)
+  res.json(FrontendServerController.showFeaturesStates)
 })
