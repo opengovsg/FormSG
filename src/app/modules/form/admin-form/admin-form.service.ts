@@ -657,7 +657,7 @@ export const deleteFormLogic = (
   const updated_form_logic = form.form_logics.filter(
     (logic) => logic.id !== logicId,
   )
-  const ModelToUse = getFormModelByResponseMode(form.responseMode)
+  const ModelToUse = getFormModel(mongoose)
 
   return ResultAsync.fromPromise(
     ModelToUse.findByIdAndUpdate(
