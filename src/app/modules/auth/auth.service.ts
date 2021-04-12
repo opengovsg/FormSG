@@ -2,8 +2,6 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import config from '../../../config/config'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { LINKS } from '../../../shared/constants'
 import {
   IAgencySchema,
@@ -11,6 +9,8 @@ import {
   ITokenSchema,
   IUserSchema,
 } from '../../../types'
+import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
 import { compareHash, HashingError } from '../../utils/hash'

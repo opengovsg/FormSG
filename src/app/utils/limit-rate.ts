@@ -5,7 +5,7 @@ import RateLimit, {
 import { StatusCodes } from 'http-status-codes'
 import { merge } from 'lodash'
 
-import { createLoggerWithLabel } from '../../config/logger'
+import { createLoggerWithLabel } from '../config/logger'
 
 import { createReqMeta } from './request'
 

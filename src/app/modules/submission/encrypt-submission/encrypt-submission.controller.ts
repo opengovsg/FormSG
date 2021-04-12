@@ -5,13 +5,13 @@ import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
   EncryptedSubmissionDto,
   SubmissionMetadataList,
 } from '../../../../types'
 import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'

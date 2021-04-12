@@ -3,13 +3,13 @@ import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import formsgSdk from '../../../config/formsg-sdk'
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
   IWebhookResponse,
 } from '../../../types'
+import formsgSdk from '../../config/formsg-sdk'
+import { createLoggerWithLabel } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { hasProp } from '../../utils/has-prop'

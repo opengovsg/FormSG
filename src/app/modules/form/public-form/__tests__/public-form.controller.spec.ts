@@ -6,6 +6,7 @@ import { err, errAsync, ok, okAsync } from 'neverthrow'
 import querystring from 'querystring'
 import { mocked } from 'ts-jest/utils'
 
+import { FeatureNames } from 'src/app/config/feature-manager/types'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import {
   DatabaseError,
@@ -20,7 +21,6 @@ import {
 } from 'src/app/modules/myinfo/myinfo.errors'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
 import { JwtPayload } from 'src/app/modules/spcp/spcp.types'
-import { FeatureNames } from 'src/config/feature-manager/types'
 import {
   AuthType,
   IPopulatedForm,

@@ -1,6 +1,5 @@
 import { LeanDocument } from 'mongoose'
 
-import { ISpcpMyInfo } from '../../../config/feature-manager'
 import {
   AuthType,
   Environment,
@@ -9,6 +8,7 @@ import {
   IMyInfo,
   MyInfoAttribute,
 } from '../../../types'
+import { ISpcpMyInfo } from '../../config/feature-manager'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 export interface IMyInfoServiceConfig {

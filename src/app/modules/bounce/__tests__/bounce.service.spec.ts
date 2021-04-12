@@ -8,12 +8,12 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import * as LoggerModule from 'src/app/config/logger'
 import getFormModel from 'src/app/models/form.server.model'
 import * as UserService from 'src/app/modules/user/user.service'
 import { EMAIL_HEADERS, EmailType } from 'src/app/services/mail/mail.constants'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
-import * as LoggerModule from 'src/config/logger'
 import {
   BounceType,
   IPopulatedForm,
@@ -31,7 +31,7 @@ import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
-jest.mock('src/config/logger')
+jest.mock('src/app/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)

@@ -11,16 +11,16 @@ import {
 } from 'neverthrow'
 
 import {
-  createCloudWatchLogger,
-  createLoggerWithLabel,
-} from '../../../config/logger'
-import {
   BounceType,
   IBounceSchema,
   IEmailNotification,
   IPopulatedForm,
   ISnsNotification,
 } from '../../../types'
+import {
+  createCloudWatchLogger,
+  createLoggerWithLabel,
+} from '../../config/logger'
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
 import { SmsFactory } from '../../services/sms/sms.factory'

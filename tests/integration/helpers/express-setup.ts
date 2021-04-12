@@ -4,11 +4,11 @@ import express, { Express, Router } from 'express'
 import session from 'express-session'
 import nocache from 'nocache'
 
+import errorHandlerMiddlewares from 'src/app/loaders/express/error-handler'
+import helmetMiddlewares from 'src/app/loaders/express/helmet'
+import loggingMiddleware from 'src/app/loaders/express/logging'
+import parserMiddlewares from 'src/app/loaders/express/parser'
 import { AuthRouter } from 'src/app/modules/auth/auth.routes'
-import errorHandlerMiddlewares from 'src/loaders/express/error-handler'
-import helmetMiddlewares from 'src/loaders/express/helmet'
-import loggingMiddleware from 'src/loaders/express/logging'
-import parserMiddlewares from 'src/loaders/express/parser'
 
 // Special session middleware that only uses the memory store.
 const testSessionMiddlewares = () => {

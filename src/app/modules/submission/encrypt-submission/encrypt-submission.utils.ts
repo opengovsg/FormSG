@@ -1,9 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
 import {
   CaptchaConnectionError,

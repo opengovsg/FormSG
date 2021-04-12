@@ -1,7 +1,7 @@
 import fs from 'fs'
 
-import { IIntranet } from '../../../config/feature-manager'
-import { createLoggerWithLabel } from '../../../config/logger'
+import { IIntranet } from '../../config/feature-manager'
+import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
 

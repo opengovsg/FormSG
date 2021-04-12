@@ -5,9 +5,9 @@ import { StatusCodes } from 'http-status-codes'
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
-} from '../../../config/feature-manager'
+} from '../../config/feature-manager'
 
-import * as FrontendServerController from './frontend.server.controller'
+import * as FrontendServerController from './frontend.controller'
 
 interface IGoogleAnalyticsFactory {
   addGoogleAnalyticsData: RequestHandler<

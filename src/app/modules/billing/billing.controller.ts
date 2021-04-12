@@ -3,8 +3,8 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import { BillingInfoDto, BillingQueryDto, ErrorDto } from '../../../types/api'
+import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
 import { BillingFactory } from './billing.factory'

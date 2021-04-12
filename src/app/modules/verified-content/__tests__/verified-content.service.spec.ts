@@ -1,4 +1,4 @@
-import formsgSdk from 'src/config/formsg-sdk'
+import formsgSdk from 'src/app/config/formsg-sdk'
 import { AuthType } from 'src/types'
 
 import {

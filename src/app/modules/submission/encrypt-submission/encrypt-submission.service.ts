@@ -5,8 +5,6 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
 
-import { aws as AwsConfig } from '../../../../config/config'
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -17,6 +15,8 @@ import {
   SubmissionMetadata,
   SubmissionMetadataList,
 } from '../../../../types'
+import { aws as AwsConfig } from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'

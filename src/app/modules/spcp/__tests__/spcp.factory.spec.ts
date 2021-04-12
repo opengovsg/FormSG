@@ -1,6 +1,6 @@
 import { mocked } from 'ts-jest/utils'
 
-import { FeatureNames, ISpcpMyInfo } from 'src/config/feature-manager'
+import { FeatureNames, ISpcpMyInfo } from 'src/app/config/feature-manager'
 import { AuthType } from 'src/types'
 
 import { MissingFeatureError } from '../../core/core.errors'

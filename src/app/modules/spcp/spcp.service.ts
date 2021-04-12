@@ -4,9 +4,9 @@ import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { ISpcpMyInfo } from '../../../config/feature-manager'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
+import { ISpcpMyInfo } from '../../config/feature-manager'
+import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
 import {

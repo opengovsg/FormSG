@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   AuthType,
   IEmailFormModel,
@@ -11,6 +10,7 @@ import {
   ResponseMode,
   Status,
 } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,

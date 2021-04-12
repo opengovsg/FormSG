@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
 import getSubmissionModel from '../../models/submission.server.model'

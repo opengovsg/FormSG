@@ -3,7 +3,7 @@ import { err, errAsync } from 'neverthrow'
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
-} from '../../../config/feature-manager'
+} from '../../config/feature-manager'
 import { MissingFeatureError } from '../core/core.errors'
 
 import { SpcpService } from './spcp.service'
