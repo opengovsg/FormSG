@@ -7,19 +7,38 @@ import { GoogleAnalyticsFactory } from '../../../../modules/frontend/google-anal
 export const ClientRouter = Router()
 
 /**
+ * Generate the templated Javascript code for the frontend to initialise Google Tag Manager
+ * Code depends on whether googleAnalyticsFeature.isEnabled
  * @route GET /api/v3/client/analytics/google
+ * @return 200 when code generation is successful
+ * @return 400 when code generation fails
  */
 ClientRouter.route('/analytics/google').get(
   GoogleAnalyticsFactory.addGoogleAnalyticsData,
 )
 
 /**
+ * Generate the templated Javascript code with environment variables for the frontend
  * @route GET /api/v3/client/environment
+ * @return 200 when code generation is successful
+ * @return 400 when code generation fails
  */
 ClientRouter.route('/environment').get(FrontendServerController.addEnvVarData)
 
 /**
+ * Generate a json of current activated features
+ * @route GET /api/v3/client/features
+ * @return json with featureManager.states
+ */
+ClientRouter.route('/features').get((req, res) => {
+  res.json(FrontendServerController.showFeaturesStates)
+})
+
+/**
+ * Generate the javascript code to redirect to the correct url
  * @route GET /api/v3/client/redirect
+ * @return 200 when redirect code is  successful
+ * @return 400 when redirect code fails
  */
 ClientRouter.route('/redirect').get(
   celebrate({
@@ -31,10 +50,3 @@ ClientRouter.route('/redirect').get(
   }),
   FrontendServerController.generateRedirectUrl,
 )
-
-/**
- * @route GET /api/v3/client/features
- */
-ClientRouter.route('/features').get((req, res) => {
-  res.json(FrontendServerController.showFeaturesStates)
-})
