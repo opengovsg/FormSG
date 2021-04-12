@@ -166,6 +166,8 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
+  let uinFin
+  let userInfo
   const { authType } = form
   switch (authType) {
     case AuthType.MyInfo: {
@@ -200,7 +202,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
           spcpSubmissionFailure: true,
         })
       }
-      res.locals.uinFin = jwtPayloadResult.value.userName
+      uinFin = jwtPayloadResult.value.userName
       break
     }
     case AuthType.CP: {
@@ -222,8 +224,8 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
           spcpSubmissionFailure: true,
         })
       }
-      res.locals.uinFin = jwtPayloadResult.value.userName
-      res.locals.userInfo = jwtPayloadResult.value.userInfo
+      uinFin = jwtPayloadResult.value.userName
+      userInfo = jwtPayloadResult.value.userInfo
       break
     }
   }
@@ -241,9 +243,10 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     })
   }
 
+  let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
     const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
-      { type: form.authType, data: res.locals },
+      { type: form.authType, data: { uinFin, userInfo } },
     ).andThen((verifiedContent) =>
       VerifiedContentFactory.encryptVerifiedContent({
         verifiedContent,
@@ -267,13 +270,12 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
       }
     } else {
       // No errors, set local variable to the encrypted string.
-      res.locals.verified = encryptVerifiedContentResult.value
+      verified = encryptVerifiedContentResult.value
     }
   }
 
   // Save Responses to Database
   const formData = req.body.encryptedContent
-  const { verified } = res.locals
   let attachmentMetadata = new Map<string, string>()
 
   if (req.body.attachments) {
