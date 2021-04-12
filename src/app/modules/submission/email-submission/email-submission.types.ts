@@ -1,10 +1,4 @@
-import {
-  BasicField,
-  FieldResponse,
-  IBaseResponse,
-  WithEmailModeMetadata,
-  WithSubmission,
-} from '../../../../types'
+import { BasicField, FieldResponse, IBaseResponse } from '../../../../types'
 import { ProcessedResponse } from '../submission.types'
 
 // When a response has been formatted for email, all answerArray
@@ -26,5 +20,3 @@ export interface SubmissionHash {
   hash: string
   salt: string
 }
-
-export type WithAdminEmailData<T> = WithEmailModeMetadata<T> & WithSubmission<T>

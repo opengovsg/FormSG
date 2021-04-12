@@ -10,7 +10,7 @@ import {
   MyInfoVehicle,
 } from '@opengovsg/myinfo-gov-client'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
 

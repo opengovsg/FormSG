@@ -3,7 +3,7 @@ import axios from 'axios'
 import { BillingInfoDto, BillingQueryDto } from '../../types/api/billing'
 
 // Exported for testing
-export const BILLING_ENDPOINT = '/billing'
+export const BILLING_ENDPOINT = '/api/v3/billings'
 
 /**
  * Gets the billing information for the given month and year

@@ -8,12 +8,12 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import * as LoggerModule from 'src/app/config/logger'
 import getFormModel from 'src/app/models/form.server.model'
 import * as UserService from 'src/app/modules/user/user.service'
 import { EMAIL_HEADERS, EmailType } from 'src/app/services/mail/mail.constants'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
-import * as LoggerModule from 'src/config/logger'
 import {
   BounceType,
   IPopulatedForm,
@@ -25,13 +25,13 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 
 import { DatabaseError } from '../../core/core.errors'
-import { UserWithContactNumber } from '../bounce.types'
+import { UserWithContactNumber } from '../../user/user.types'
 
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
 jest.mock('axios')
 const mockAxios = mocked(axios, true)
-jest.mock('src/config/logger')
+jest.mock('src/app/config/logger')
 const MockLoggerModule = mocked(LoggerModule, true)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
@@ -52,20 +52,16 @@ MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 // Import modules which depend on config last so that mocks get imported correctly
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
-import {
-  extractEmailType,
-  getEditorsWithContactNumbers,
-  getUpdatedBounceDoc,
-  isValidSnsRequest,
-  logCriticalBounce,
-  logEmailNotification,
-  notifyAdminsOfBounce,
-  notifyAdminsOfDeactivation,
-} from 'src/app/modules/bounce/bounce.service'
+import * as BounceService from 'src/app/modules/bounce/bounce.service'
 import {
   InvalidNumberError,
   SmsSendError,
 } from 'src/app/services/sms/sms.errors'
+
+import {
+  InvalidNotificationError,
+  MissingEmailHeadersError,
+} from '../bounce.errors'
 
 const Form = getFormModel(mongoose)
 const Bounce = getBounceModel(mongoose)
@@ -87,6 +83,10 @@ const MOCK_SUBMISSION_ID = new ObjectId()
 describe('BounceService', () => {
   beforeAll(async () => await dbHandler.connect())
 
+  beforeEach(() => {
+    MockMailService.sendBounceNotification.mockReturnValue(okAsync(true))
+  })
+
   afterEach(async () => {
     await dbHandler.clearDatabase()
     jest.clearAllMocks()
@@ -99,7 +99,9 @@ describe('BounceService', () => {
       const notification = makeBounceNotification({
         emailType: EmailType.AdminResponse,
       })
-      expect(extractEmailType(notification)).toBe(EmailType.AdminResponse)
+      expect(BounceService.extractEmailType(notification)).toBe(
+        EmailType.AdminResponse,
+      )
     })
   })
 
@@ -112,7 +114,7 @@ describe('BounceService', () => {
       await dbHandler.clearDatabase()
     })
 
-    it('should return null when there is no form ID', async () => {
+    it('should return MissingEmailHeadersError when there is no form ID', async () => {
       const notification = makeBounceNotification()
       const header = notification.mail.headers.find(
         (header) => header.name === EMAIL_HEADERS.formId,
@@ -121,8 +123,8 @@ describe('BounceService', () => {
       if (header) {
         header.value = ''
       }
-      const result = await getUpdatedBounceDoc(notification)
-      expect(result).toBeNull()
+      const result = await BounceService.getUpdatedBounceDoc(notification)
+      expect(result._unsafeUnwrapErr()).toEqual(new MissingEmailHeadersError())
     })
 
     it('should call updateBounceInfo if the document exists', async () => {
@@ -133,8 +135,8 @@ describe('BounceService', () => {
       const notification = makeBounceNotification({
         formId: MOCK_FORM_ID,
       })
-      const result = await getUpdatedBounceDoc(notification)
-      expect(result?.toObject()).toEqual(
+      const result = await BounceService.getUpdatedBounceDoc(notification)
+      expect(result._unsafeUnwrap().toObject()).toEqual(
         bounceDoc.updateBounceInfo(notification).toObject(),
       )
     })
@@ -144,8 +146,8 @@ describe('BounceService', () => {
       const notification = makeBounceNotification({
         formId: MOCK_FORM_ID,
       })
-      const result = await getUpdatedBounceDoc(notification)
-      const actual = pick(result?.toObject(), [
+      const result = await BounceService.getUpdatedBounceDoc(notification)
+      const actual = pick(result._unsafeUnwrap().toObject(), [
         'formId',
         'bounces',
         'hasAutoEmailed',
@@ -178,7 +180,7 @@ describe('BounceService', () => {
         bounceType: BounceType.Transient,
         emailType: EmailType.EmailConfirmation,
       })
-      logEmailNotification(notification)
+      BounceService.logEmailNotification(notification)
       expect(mockLogger.info).not.toHaveBeenCalled()
       expect(mockLogger.warn).not.toHaveBeenCalled()
       expect(mockShortTermLogger.info).toHaveBeenCalledWith(notification)
@@ -195,7 +197,7 @@ describe('BounceService', () => {
         bounceType: BounceType.Transient,
         emailType: EmailType.AdminResponse,
       })
-      logEmailNotification(notification)
+      BounceService.logEmailNotification(notification)
       expect(mockLogger.info).toHaveBeenCalledWith({
         message: 'Email notification',
         meta: {
@@ -218,7 +220,7 @@ describe('BounceService', () => {
         bounceType: BounceType.Transient,
         emailType: EmailType.LoginOtp,
       })
-      logEmailNotification(notification)
+      BounceService.logEmailNotification(notification)
       expect(mockLogger.info).toHaveBeenCalledWith({
         message: 'Email notification',
         meta: {
@@ -241,7 +243,7 @@ describe('BounceService', () => {
         bounceType: BounceType.Transient,
         emailType: EmailType.AdminBounce,
       })
-      logEmailNotification(notification)
+      BounceService.logEmailNotification(notification)
       expect(mockLogger.info).toHaveBeenCalledWith({
         message: 'Email notification',
         meta: {
@@ -264,14 +266,14 @@ describe('BounceService', () => {
         bounceType: BounceType.Transient,
         emailType: EmailType.VerificationOtp,
       })
-      logEmailNotification(notification)
+      BounceService.logEmailNotification(notification)
       expect(mockLogger.info).not.toHaveBeenCalled()
       expect(mockLogger.warn).not.toHaveBeenCalled()
       expect(mockShortTermLogger.info).toHaveBeenCalledWith(notification)
     })
   })
 
-  describe('notifyAdminsOfBounce', () => {
+  describe('sendEmailBounceNotification', () => {
     const MOCK_FORM_TITLE = 'FormTitle'
     let testUser: IUserSchema
 
@@ -280,10 +282,6 @@ describe('BounceService', () => {
         userId: MOCK_ADMIN_ID,
       })
       testUser = user
-    })
-
-    beforeEach(async () => {
-      jest.resetAllMocks()
     })
 
     it('should auto-email when admin is not email recipient', async () => {
@@ -300,7 +298,10 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
+        bounceDoc,
+        form,
+      )
 
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [testUser.email],
@@ -309,7 +310,7 @@ describe('BounceService', () => {
         formTitle: form.title,
         formId: form._id,
       })
-      expect(notifiedRecipients.emailRecipients).toEqual([testUser.email])
+      expect(notifiedRecipients._unsafeUnwrap()).toEqual([testUser.email])
     })
 
     it('should auto-email when any collaborator is not email recipient', async () => {
@@ -328,7 +329,10 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
+        bounceDoc,
+        form,
+      )
 
       expect(MockMailService.sendBounceNotification).toHaveBeenCalledWith({
         emailRecipients: [collabEmail],
@@ -337,7 +341,7 @@ describe('BounceService', () => {
         formTitle: form.title,
         formId: form._id,
       })
-      expect(notifiedRecipients.emailRecipients).toEqual([collabEmail])
+      expect(notifiedRecipients._unsafeUnwrap()).toEqual([collabEmail])
     })
 
     it('should not auto-email when admin is email recipient', async () => {
@@ -354,10 +358,13 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
+        bounceDoc,
+        form,
+      )
 
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
-      expect(notifiedRecipients.emailRecipients).toEqual([])
+      expect(notifiedRecipients._unsafeUnwrap()).toEqual([])
     })
 
     it('should not auto-email when all collabs are email recipients', async () => {
@@ -377,10 +384,29 @@ describe('BounceService', () => {
         ],
       })
 
-      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [])
+      const notifiedRecipients = await BounceService.sendEmailBounceNotification(
+        bounceDoc,
+        form,
+      )
 
       expect(MockMailService.sendBounceNotification).not.toHaveBeenCalled()
-      expect(notifiedRecipients.emailRecipients).toEqual([])
+      expect(notifiedRecipients._unsafeUnwrap()).toEqual([])
+    })
+  })
+
+  describe('sendSmsBounceNotification', () => {
+    const MOCK_FORM_TITLE = 'FormTitle'
+    let testUser: IUserSchema
+
+    beforeEach(async () => {
+      const { user } = await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_ADMIN_ID,
+      })
+      testUser = user
+    })
+
+    beforeEach(async () => {
+      jest.resetAllMocks()
     })
 
     it('should send text for all SMS recipients and return successful ones', async () => {
@@ -396,10 +422,11 @@ describe('BounceService', () => {
       })
       MockSmsFactory.sendBouncedSubmissionSms.mockReturnValue(okAsync(true))
 
-      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
-        MOCK_CONTACT,
-        MOCK_CONTACT_2,
-      ])
+      const notifiedRecipients = await BounceService.sendSmsBounceNotification(
+        bounceDoc,
+        form,
+        [MOCK_CONTACT, MOCK_CONTACT_2],
+      )
 
       expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledTimes(2)
       expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
@@ -418,7 +445,7 @@ describe('BounceService', () => {
         recipient: MOCK_CONTACT_2.contact,
         recipientEmail: MOCK_CONTACT_2.email,
       })
-      expect(notifiedRecipients.smsRecipients).toEqual([
+      expect(notifiedRecipients._unsafeUnwrap()).toEqual([
         MOCK_CONTACT,
         MOCK_CONTACT_2,
       ])
@@ -439,10 +466,11 @@ describe('BounceService', () => {
         .mockReturnValueOnce(okAsync(true))
         .mockReturnValueOnce(errAsync(new InvalidNumberError()))
 
-      const notifiedRecipients = await notifyAdminsOfBounce(bounceDoc, form, [
-        MOCK_CONTACT,
-        MOCK_CONTACT_2,
-      ])
+      const notifiedRecipients = await BounceService.sendSmsBounceNotification(
+        bounceDoc,
+        form,
+        [MOCK_CONTACT, MOCK_CONTACT_2],
+      )
 
       expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledTimes(2)
       expect(MockSmsFactory.sendBouncedSubmissionSms).toHaveBeenCalledWith({
@@ -461,7 +489,7 @@ describe('BounceService', () => {
         recipient: MOCK_CONTACT_2.contact,
         recipientEmail: MOCK_CONTACT_2.email,
       })
-      expect(notifiedRecipients.smsRecipients).toEqual([MOCK_CONTACT])
+      expect(notifiedRecipients._unsafeUnwrap()).toEqual([MOCK_CONTACT])
     })
   })
 
@@ -488,7 +516,7 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients = [MOCK_EMAIL, MOCK_EMAIL_2]
       const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
-      logCriticalBounce({
+      BounceService.logCriticalBounce({
         bounceDoc,
         notification: snsInfo,
         autoEmailRecipients,
@@ -533,7 +561,7 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
-      logCriticalBounce({
+      BounceService.logCriticalBounce({
         bounceDoc,
         notification: snsInfo,
         autoEmailRecipients,
@@ -578,7 +606,7 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients = [MOCK_CONTACT, MOCK_CONTACT_2]
-      logCriticalBounce({
+      BounceService.logCriticalBounce({
         bounceDoc,
         notification: snsInfo,
         autoEmailRecipients,
@@ -620,7 +648,7 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients: UserWithContactNumber[] = []
-      logCriticalBounce({
+      BounceService.logCriticalBounce({
         bounceDoc,
         notification: snsInfo,
         autoEmailRecipients,
@@ -662,7 +690,7 @@ describe('BounceService', () => {
       })
       const autoEmailRecipients: string[] = []
       const autoSmsRecipients: UserWithContactNumber[] = []
-      logCriticalBounce({
+      BounceService.logCriticalBounce({
         bounceDoc,
         notification: snsInfo,
         autoEmailRecipients,
@@ -690,7 +718,7 @@ describe('BounceService', () => {
     })
   })
 
-  describe('isValidSnsRequest', () => {
+  describe('validateSnsRequest', () => {
     const keys = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
       publicKeyEncoding: {
@@ -712,30 +740,43 @@ describe('BounceService', () => {
       })
     })
 
-    it('should gracefully reject when input is empty', () => {
-      return expect(isValidSnsRequest(undefined!)).resolves.toBe(false)
+    it('should gracefully reject when input is empty', async () => {
+      const result = await BounceService.validateSnsRequest(undefined!)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
     })
 
-    it('should reject requests when their structure is invalid', () => {
+    it('should reject requests when their structure is invalid', async () => {
       const invalidBody = omit(cloneDeep(body), 'Type') as ISnsNotification
-      return expect(isValidSnsRequest(invalidBody)).resolves.toBe(false)
+
+      const result = await BounceService.validateSnsRequest(invalidBody)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
     })
 
-    it('should reject requests when their certificate URL is invalid', () => {
+    it('should reject requests when their certificate URL is invalid', async () => {
       body.SigningCertURL = 'http://www.example.com'
-      return expect(isValidSnsRequest(body)).resolves.toBe(false)
+
+      const result = await BounceService.validateSnsRequest(body)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
     })
 
-    it('should reject requests when their signature version is invalid', () => {
+    it('should reject requests when their signature version is invalid', async () => {
       body.SignatureVersion = 'wrongSignatureVersion'
-      return expect(isValidSnsRequest(body)).resolves.toBe(false)
+
+      const result = await BounceService.validateSnsRequest(body)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
     })
 
-    it('should reject requests when their signature is invalid', () => {
-      return expect(isValidSnsRequest(body)).resolves.toBe(false)
+    it('should reject requests when their signature is invalid', async () => {
+      const result = await BounceService.validateSnsRequest(body)
+
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidNotificationError())
     })
 
-    it('should accept when requests are valid', () => {
+    it('should accept when requests are valid', async () => {
       const signer = crypto.createSign('RSA-SHA1')
       const baseString =
         dedent`Message
@@ -751,7 +792,10 @@ describe('BounceService', () => {
         ` + '\n'
       signer.write(baseString)
       body.Signature = signer.sign(keys.privateKey, 'base64')
-      return expect(isValidSnsRequest(body)).resolves.toBe(true)
+
+      const result = await BounceService.validateSnsRequest(body)
+
+      expect(result._unsafeUnwrap()).toBe(true)
     })
   })
 
@@ -785,13 +829,13 @@ describe('BounceService', () => {
         okAsync([MOCK_CONTACT]),
       )
 
-      const result = await getEditorsWithContactNumbers(form)
+      const result = await BounceService.getEditorsWithContactNumbers(form)
 
       expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
         form.admin.email,
         MOCK_EMAIL,
       ])
-      expect(result).toEqual([MOCK_CONTACT])
+      expect(result._unsafeUnwrap()).toEqual([MOCK_CONTACT])
     })
 
     it('should filter out collaborators without contact numbers', async () => {
@@ -809,13 +853,13 @@ describe('BounceService', () => {
         okAsync([omit(MOCK_CONTACT, 'contact'), MOCK_CONTACT_2]),
       )
 
-      const result = await getEditorsWithContactNumbers(form)
+      const result = await BounceService.getEditorsWithContactNumbers(form)
 
       expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
         form.admin.email,
         MOCK_EMAIL,
       ])
-      expect(result).toEqual([MOCK_CONTACT_2])
+      expect(result._unsafeUnwrap()).toEqual([MOCK_CONTACT_2])
     })
 
     it('should return empty array when UserService returns error', async () => {
@@ -833,13 +877,13 @@ describe('BounceService', () => {
         errAsync(new DatabaseError()),
       )
 
-      const result = await getEditorsWithContactNumbers(form)
+      const result = await BounceService.getEditorsWithContactNumbers(form)
 
       expect(MockUserService.findContactsForEmails).toHaveBeenCalledWith([
         form.admin.email,
         MOCK_EMAIL,
       ])
-      expect(result).toEqual([])
+      expect(result._unsafeUnwrap()).toEqual([])
     })
   })
 
@@ -867,12 +911,12 @@ describe('BounceService', () => {
         .execPopulate()) as IPopulatedForm
       MockSmsFactory.sendFormDeactivatedSms.mockReturnValue(okAsync(true))
 
-      const result = await notifyAdminsOfDeactivation(form, [
+      const result = await BounceService.notifyAdminsOfDeactivation(form, [
         MOCK_CONTACT,
         MOCK_CONTACT_2,
       ])
 
-      expect(result).toEqual(true)
+      expect(result._unsafeUnwrap()).toEqual(true)
       expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledTimes(2)
       expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
         adminEmail: form.admin.email,
@@ -903,12 +947,12 @@ describe('BounceService', () => {
         .mockReturnValueOnce(okAsync(true))
         .mockReturnValueOnce(errAsync(new SmsSendError()))
 
-      const result = await notifyAdminsOfDeactivation(form, [
+      const result = await BounceService.notifyAdminsOfDeactivation(form, [
         MOCK_CONTACT,
         MOCK_CONTACT_2,
       ])
 
-      expect(result).toEqual(true)
+      expect(result._unsafeUnwrap()).toEqual(true)
       expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledTimes(2)
       expect(MockSmsFactory.sendFormDeactivatedSms).toHaveBeenCalledWith({
         adminEmail: form.admin.email,

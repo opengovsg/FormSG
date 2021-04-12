@@ -5,8 +5,6 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import config from '../../../config/config'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../shared/util/verification'
 import {
   BounceType,
@@ -14,6 +12,8 @@ import {
   IEmailFormSchema,
   ISubmissionSchema,
 } from '../../../types'
+import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'

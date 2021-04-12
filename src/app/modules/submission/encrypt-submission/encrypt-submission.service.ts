@@ -5,9 +5,8 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
 
-import { aws as AwsConfig } from '../../../../config/config'
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
+  IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
   ResponseMode,
@@ -16,6 +15,8 @@ import {
   SubmissionMetadata,
   SubmissionMetadataList,
 } from '../../../../types'
+import { aws as AwsConfig } from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
@@ -31,7 +32,10 @@ import {
   SubmissionNotFoundError,
 } from '../submission.errors'
 
-import { AttachmentMetadata } from './encrypt-submission.types'
+import {
+  AttachmentMetadata,
+  SaveEncryptSubmissionParams,
+} from './encrypt-submission.types'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -347,4 +351,31 @@ export const checkFormIsEncryptMode = (
   return isFormEncryptMode(form)
     ? ok(form)
     : err(new ResponseModeError(ResponseMode.Encrypt, form.responseMode))
+}
+
+/**
+ * Creates an encrypted submission without saving it to the database.
+ * @param form Document of the form being submitted
+ * @param encryptedContent Encrypted content of submission
+ * @param version Encryption version
+ * @param attachmentMetadata
+ * @param verifiedContent Verified content included in submission, e.g. SingPass ID
+ * @returns Encrypted submission document which has not been saved to database
+ */
+export const createEncryptSubmissionWithoutSave = ({
+  form,
+  encryptedContent,
+  version,
+  attachmentMetadata,
+  verifiedContent,
+}: SaveEncryptSubmissionParams): IEncryptedSubmissionSchema => {
+  return new EncryptSubmissionModel({
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    encryptedContent,
+    verifiedContent,
+    attachmentMetadata,
+    version,
+  })
 }

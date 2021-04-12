@@ -1,7 +1,7 @@
 import { ok } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { FeatureNames, RegisteredFeature } from 'src/config/feature-manager'
+import { FeatureNames, RegisteredFeature } from 'src/app/config/feature-manager'
 
 import { MissingFeatureError } from '../../core/core.errors'
 import { createVerifiedContentFactory } from '../verified-content.factory'

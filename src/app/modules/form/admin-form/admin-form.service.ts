@@ -4,14 +4,11 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
-import { aws as AwsConfig } from '../../../../config/config'
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
 import {
-  AuthType,
   FormLogoState,
   FormMetaView,
   FormSettings,
@@ -21,9 +18,10 @@ import {
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
-  SpcpLocals,
 } from '../../../../types'
 import { SettingsUpdateDto } from '../../../../types/api'
+import { aws as AwsConfig } from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import { dotifyObject } from '../../../utils/dotify-object'
 import {
@@ -206,33 +204,19 @@ export const createPresignedPostUrlForLogos = (
   return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
 }
 
-export const getMockSpcpLocals = (
-  authType: AuthType,
+/**
+ * Extracts IDs of MyInfo fields
+ * @param formFields
+ * @returns List of IDs of MyInfo fields
+ */
+export const extractMyInfoFieldIds = (
   formFields: IFieldSchema[] | undefined,
-): SpcpLocals => {
-  const myInfoFieldIds: string[] = formFields
+): string[] => {
+  return formFields
     ? formFields
         .filter((field) => field.myInfo?.attr)
         .map((field) => field._id.toString())
     : []
-  switch (authType) {
-    case AuthType.MyInfo:
-      return {
-        uinFin: 'S1234567A',
-        hashedFields: new Set(myInfoFieldIds),
-      }
-    case AuthType.SP:
-      return {
-        uinFin: 'S1234567A',
-      }
-    case AuthType.CP:
-      return {
-        uinFin: '123456789A',
-        userInfo: 'ABC',
-      }
-    default:
-      return {}
-  }
 }
 
 /**

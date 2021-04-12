@@ -1,4 +1,4 @@
-import { FeatureNames } from 'src/config/feature-manager'
+import { FeatureNames } from '../../config/feature-manager'
 
 /**
  * A custom base error class that encapsulates the name, message, status code,

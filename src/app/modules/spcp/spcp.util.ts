@@ -2,13 +2,9 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../config/logger'
-import {
-  AuthType,
-  BasicField,
-  MapRouteError,
-  SPCPFieldTitle,
-} from '../../../types'
+import { BasicField, MapRouteError, SPCPFieldTitle } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
+import { hasProp } from '../../utils/has-prop'
 import { MissingFeatureError } from '../core/core.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
@@ -20,7 +16,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
-import { JwtPayload } from './spcp.types'
+import { CorppassJwtPayload, SingpassJwtPayload } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -138,27 +134,35 @@ export const verifyJwtPromise = (
 }
 
 /**
- * Typeguard for JWT payload.
+ * Typeguard for SingPass JWT payload.
  * @param payload Payload decrypted from JWT
  */
-export const isJwtPayload = (
+export const isSingpassJwtPayload = (
   payload: unknown,
-  authType: AuthType.SP | AuthType.CP,
-): payload is JwtPayload => {
-  if (authType === AuthType.SP) {
-    return (
-      !!payload &&
-      typeof payload === 'object' &&
-      typeof (payload as Record<string, unknown>).userName === 'string'
-    )
-  } else {
-    return (
-      !!payload &&
-      typeof payload === 'object' &&
-      typeof (payload as Record<string, unknown>).userName === 'string' &&
-      typeof (payload as Record<string, unknown>).userInfo === 'string'
-    )
-  }
+): payload is SingpassJwtPayload => {
+  return (
+    typeof payload === 'object' &&
+    !!payload &&
+    hasProp(payload, 'userName') &&
+    typeof payload.userName === 'string'
+  )
+}
+
+/**
+ * Typeguard for Corppass JWT payload.
+ * @param payload Payload decrypted from JWT
+ */
+export const isCorppassJwtPayload = (
+  payload: unknown,
+): payload is CorppassJwtPayload => {
+  return (
+    typeof payload === 'object' &&
+    !!payload &&
+    hasProp(payload, 'userName') &&
+    typeof payload.userName === 'string' &&
+    hasProp(payload, 'userInfo') &&
+    typeof payload.userInfo === 'string'
+  )
 }
 
 /**

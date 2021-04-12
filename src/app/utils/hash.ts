@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import { ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../config/logger'
+import { createLoggerWithLabel } from '../config/logger'
 import { ApplicationError } from '../modules/core/core.errors'
 
 const logger = createLoggerWithLabel(module)

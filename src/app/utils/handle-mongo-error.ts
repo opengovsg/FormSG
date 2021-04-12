@@ -6,6 +6,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  PossibleDatabaseError,
 } from '../modules/core/core.errors'
 
 /**
@@ -66,13 +67,7 @@ export const getMongoErrorMessage = (
  * @param error the error thrown by database operations
  * @returns errors that extend from ApplicationError class
  */
-export const transformMongoError = (
-  error: unknown,
-):
-  | DatabaseError
-  | DatabaseValidationError
-  | DatabaseConflictError
-  | DatabasePayloadSizeError => {
+export const transformMongoError = (error: unknown): PossibleDatabaseError => {
   const errorMessage = getMongoErrorMessage(error)
   if (!(error instanceof Error)) {
     return new DatabaseError(errorMessage)
@@ -98,4 +93,16 @@ export const transformMongoError = (
   }
 
   return new DatabaseError(errorMessage)
+}
+
+export const isMongoError = (error: Error): boolean => {
+  switch (error.constructor) {
+    case DatabaseConflictError:
+    case DatabaseError:
+    case DatabasePayloadSizeError:
+    case DatabaseValidationError:
+      return true
+    default:
+      return false
+  }
 }

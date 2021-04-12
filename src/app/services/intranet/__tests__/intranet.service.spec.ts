@@ -31,7 +31,7 @@ describe('IntranetService', () => {
     it('should return true when IP is in intranet IP list', () => {
       const result = intranetService.isIntranetIp(MOCK_IP_LIST[0])
 
-      expect(result._unsafeUnwrap()).toBe(true)
+      expect(result).toBe(true)
     })
 
     it('should return false when IP is not in intranet IP list', () => {
@@ -39,7 +39,7 @@ describe('IntranetService', () => {
 
       const result = intranetService.isIntranetIp(ipNotInList)
 
-      expect(result._unsafeUnwrap()).toBe(false)
+      expect(result).toBe(false)
     })
   })
 })

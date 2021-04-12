@@ -1,10 +1,10 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import { SALT_ROUNDS } from '../../../shared/util/verification'
 import { PublicTransaction } from '../../../types'
 import { ErrorDto } from '../../../types/api'
+import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta } from '../../utils/request'
 

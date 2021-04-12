@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express-serve-static-core'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 
 import { IntranetFactory } from './intranet.factory'

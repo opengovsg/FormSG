@@ -5,7 +5,7 @@ import {
   FeatureNames,
   ISpcpMyInfo,
   RegisteredFeature,
-} from 'src/config/feature-manager'
+} from 'src/app/config/feature-manager'
 import {
   AuthType,
   ILoginSchema,

@@ -2,7 +2,6 @@ import { keyBy } from 'lodash'
 import { Model, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
-import { bounceLifeSpan } from '../../../config/config'
 import {
   BounceType,
   IBounceSchema,
@@ -10,6 +9,7 @@ import {
   ISingleBounce,
   UserContactView,
 } from '../../../types'
+import { bounceLifeSpan } from '../../config/config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 import { hasEmailBeenDelivered, hasEmailBounced } from './bounce.util'

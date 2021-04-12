@@ -1,23 +1,18 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
-import { celebrate, Joi } from 'celebrate'
-import { Router } from 'express'
 import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import * as FormController from 'src/app/controllers/forms.server.controller'
-import * as EncryptSubmissionController from 'src/app/modules/submission/encrypt-submission/encrypt-submission.controller'
-import { CaptchaFactory } from 'src/app/services/captcha/captcha.factory'
-import { AuthType, BasicField, Status } from 'src/types'
+import { AuthType, Status } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { EncryptSubmissionRouter } from '../encrypt-submission.routes'
+
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 
-// TODO (#149): Import router instead of creating it here
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/encrypt'
-const SUBMISSIONS_ENDPT = `${SUBMISSIONS_ENDPT_BASE}/:formId([a-fA-F0-9]{24})`
 
 const MOCK_ENCRYPTED_CONTENT = `${'a'.repeat(44)};${'a'.repeat(
   32,
@@ -29,60 +24,10 @@ const MOCK_SUBMISSION_BODY = {
   version: 1,
 }
 
-// TODO (#149): Import router instead of creating it here
-const EncryptSubmissionsRouter = Router()
-EncryptSubmissionsRouter.post(
-  SUBMISSIONS_ENDPT,
-  CaptchaFactory.validateCaptchaParams,
-  celebrate({
-    body: Joi.object({
-      responses: Joi.array()
-        .items(
-          Joi.object().keys({
-            _id: Joi.string().required(),
-            answer: Joi.string().allow('').required(),
-            fieldType: Joi.string()
-              .required()
-              .valid(...Object.values(BasicField)),
-            signature: Joi.string().allow(''),
-          }),
-        )
-        .required(),
-      encryptedContent: Joi.string()
-        .custom((value, helpers) => {
-          const parts = String(value).split(/;|:/)
-          if (
-            parts.length !== 3 ||
-            parts[0].length !== 44 || // public key
-            parts[1].length !== 32 || // nonce
-            !parts.every((part) => Joi.string().base64().validate(part))
-          ) {
-            return helpers.error('Invalid encryptedContent.')
-          }
-          return value
-        }, 'encryptedContent')
-        .required(),
-      attachments: Joi.object()
-        .pattern(
-          /^[a-fA-F0-9]{24}$/,
-          Joi.object().keys({
-            encryptedFile: Joi.object().keys({
-              binary: Joi.string().required(),
-              nonce: Joi.string().required(),
-              submissionPublicKey: Joi.string().required(),
-            }),
-          }),
-        )
-        .optional(),
-      isPreview: Joi.boolean().required(),
-      version: Joi.number().required(),
-    }),
-  }),
-  FormController.formById,
-  EncryptSubmissionController.handleEncryptedSubmission,
+const EncryptSubmissionsApp = setupApp(
+  SUBMISSIONS_ENDPT_BASE,
+  EncryptSubmissionRouter,
 )
-
-const EncryptSubmissionsApp = setupApp('/', EncryptSubmissionsRouter)
 
 describe('encrypt-submission.routes', () => {
   let request: Session

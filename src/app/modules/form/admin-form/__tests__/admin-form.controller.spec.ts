@@ -1,7 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { assignIn, cloneDeep, merge } from 'lodash'
-import { errAsync, okAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { PassThrough } from 'stream'
 import { MockedObject } from 'ts-jest/dist/utils/testing'
 import { mocked } from 'ts-jest/utils'
@@ -15,16 +15,41 @@ import {
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
 import { FeedbackResponse } from 'src/app/modules/feedback/feedback.types'
+import {
+  AttachmentTooLargeError,
+  InvalidFileExtensionError,
+} from 'src/app/modules/submission/email-submission/email-submission.errors'
+import * as EmailSubmissionService from 'src/app/modules/submission/email-submission/email-submission.service'
+import * as EmailSubmissionUtil from 'src/app/modules/submission/email-submission/email-submission.util'
+import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
+import {
+  ConflictError,
+  InvalidEncodingError,
+  ProcessingError,
+  ResponseModeError,
+  SendEmailConfirmationError,
+  ValidateFieldError,
+} from 'src/app/modules/submission/submission.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
+import {
+  MailGenerationError,
+  MailSendError,
+} from 'src/app/services/mail/mail.errors'
+import MailService from 'src/app/services/mail/mail.service'
+import * as EncryptionUtils from 'src/app/utils/encryption'
 import { EditFieldActions } from 'src/shared/constants'
 import {
   AuthType,
   BasicField,
   FormMetaView,
   FormSettings,
+  IEmailSubmissionSchema,
+  IEncryptedSubmissionSchema,
   IForm,
   IFormSchema,
+  IPopulatedEmailForm,
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
@@ -32,8 +57,13 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
+import { EncryptSubmissionDto } from 'src/types/api'
 
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+  generateUnprocessedSingleAnswerResponse,
+} from 'tests/unit/backend/helpers/generate-form-data'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as UserService from '../../../user/user.service'
@@ -63,10 +93,22 @@ jest.mock('src/app/modules/feedback/feedback.service')
 const MockFeedbackService = mocked(FeedbackService)
 jest.mock('src/app/modules/submission/submission.service')
 const MockSubmissionService = mocked(SubmissionService)
+jest.mock(
+  'src/app/modules/submission/encrypt-submission/encrypt-submission.service',
+)
+const MockEncryptSubmissionService = mocked(EncryptSubmissionService)
+jest.mock(
+  'src/app/modules/submission/email-submission/email-submission.service',
+)
+const MockEmailSubmissionService = mocked(EmailSubmissionService)
+jest.mock('src/app/utils/encryption')
+const MockEncryptionUtils = mocked(EncryptionUtils)
 jest.mock('../admin-form.service')
 const MockAdminFormService = mocked(AdminFormService)
 jest.mock('../../../user/user.service')
 const MockUserService = mocked(UserService)
+jest.mock('src/app/services/mail/mail.service')
+const MockMailService = mocked(MailService)
 
 describe('admin-form.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -4782,6 +4824,1744 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_REQ.body,
       )
+    })
+  })
+
+  describe('handleEmailPreviewSubmission', () => {
+    const MOCK_FIELD_ID = new ObjectId().toHexString()
+    const MOCK_RESPONSES = [
+      generateUnprocessedSingleAnswerResponse(BasicField.Email, {
+        _id: MOCK_FIELD_ID,
+      }),
+    ]
+    const MOCK_PARSED_RESPONSES = [
+      generateNewSingleAnswerResponse(BasicField.Email, { _id: MOCK_FIELD_ID }),
+    ]
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+      form_fields: [
+        generateDefaultField(BasicField.Email, {
+          _id: MOCK_FIELD_ID,
+        }),
+      ],
+    } as IPopulatedEmailForm
+    const MOCK_SUBMISSION = {
+      id: MOCK_SUBMISSION_ID,
+      _id: MOCK_SUBMISSION_ID,
+      created: new Date(),
+    } as IEmailSubmissionSchema
+    const MOCK_SUBMISSION_BODY = {
+      responses: MOCK_RESPONSES,
+      isPreview: false,
+    }
+    const MOCK_DATA_COLLATION_DATA = 'mockDataCollation'
+    const MOCK_FORM_DATA = 'mockFormData'
+    const MOCK_AUTOREPLY_DATA = 'mockAutoReply'
+
+    beforeEach(() => {
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValue(
+        ok(MOCK_FORM),
+      )
+      MockEmailSubmissionService.validateAttachments.mockReturnValue(
+        okAsync(true),
+      )
+      MockSubmissionService.getProcessedResponses.mockReturnValue(
+        ok(MOCK_PARSED_RESPONSES),
+      )
+      MockEmailSubmissionService.createEmailSubmissionWithoutSave.mockReturnValue(
+        MOCK_SUBMISSION,
+      )
+      MockEmailSubmissionService.extractEmailAnswers.mockReturnValue([
+        MOCK_RESPONSES[0].answer,
+      ])
+      MockAdminFormService.extractMyInfoFieldIds.mockReturnValue([
+        MOCK_FIELD_ID,
+      ])
+      MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
+      MockSubmissionService.sendEmailConfirmations.mockReturnValue(
+        okAsync(true),
+      )
+      jest.spyOn(EmailSubmissionUtil, 'SubmissionEmailObj').mockReturnValue(({
+        dataCollationData: MOCK_DATA_COLLATION_DATA,
+        formData: MOCK_FORM_DATA,
+        autoReplyData: MOCK_AUTOREPLY_DATA,
+      } as unknown) as EmailSubmissionUtil.SubmissionEmailObj)
+    })
+
+    it('should call all services correctly when submission is valid', async () => {
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
+        MOCK_FORM.form_fields,
+      )
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).toHaveBeenCalledWith(MOCK_FORM, expect.any(String), expect.any(String))
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).toHaveBeenCalledWith(MOCK_PARSED_RESPONSES)
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith({
+        replyToEmails: [MOCK_RESPONSES[0].answer],
+        form: MOCK_FORM,
+        submission: MOCK_SUBMISSION,
+        attachments: [],
+        dataCollationData: MOCK_DATA_COLLATION_DATA,
+        formData: MOCK_FORM_DATA,
+      })
+      expect(MockSubmissionService.sendEmailConfirmations).toHaveBeenCalledWith(
+        {
+          form: MOCK_FORM,
+          parsedResponses: MOCK_PARSED_RESPONSES,
+          submission: MOCK_SUBMISSION,
+          attachments: [],
+          autoReplyData: MOCK_AUTOREPLY_DATA,
+        },
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Form submission successful.',
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+    })
+
+    it('should return 500 when generic database error occurs while retrieving user', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 422 when user is missing', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 500 when generic database error occurs while retrieving form', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 404 when form is not found', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 410 when form has been archived', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 403 when user does not have read permissions', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when form is not email mode', async () => {
+      MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+        err(new ResponseModeError(ResponseMode.Encrypt, ResponseMode.Email)),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when attachments are invalid', async () => {
+      MockEmailSubmissionService.validateAttachments.mockReturnValueOnce(
+        errAsync(new InvalidFileExtensionError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when attachments are too large', async () => {
+      MockEmailSubmissionService.validateAttachments.mockReturnValueOnce(
+        errAsync(new AttachmentTooLargeError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when responses cannot be processed', async () => {
+      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+        err(new ProcessingError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 409 when the submitted field IDs do not match the form field IDs', async () => {
+      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+        err(new ConflictError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when any answer is invalid', async () => {
+      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+        err(new ValidateFieldError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).not.toHaveBeenCalled()
+      expect(MockMailService.sendSubmissionToAdmin).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when the submission email fails to be generated', async () => {
+      MockMailService.sendSubmissionToAdmin.mockReturnValueOnce(
+        errAsync(new MailGenerationError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
+        MOCK_FORM.form_fields,
+      )
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).toHaveBeenCalledWith(MOCK_FORM, expect.any(String), expect.any(String))
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).toHaveBeenCalledWith(MOCK_PARSED_RESPONSES)
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith({
+        replyToEmails: [MOCK_RESPONSES[0].answer],
+        form: MOCK_FORM,
+        submission: MOCK_SUBMISSION,
+        attachments: [],
+        dataCollationData: MOCK_DATA_COLLATION_DATA,
+        formData: MOCK_FORM_DATA,
+      })
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when the submission email fails to be sent', async () => {
+      MockMailService.sendSubmissionToAdmin.mockReturnValueOnce(
+        errAsync(new MailSendError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
+        MOCK_FORM.form_fields,
+      )
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).toHaveBeenCalledWith(MOCK_FORM, expect.any(String), expect.any(String))
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).toHaveBeenCalledWith(MOCK_PARSED_RESPONSES)
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith({
+        replyToEmails: [MOCK_RESPONSES[0].answer],
+        form: MOCK_FORM,
+        submission: MOCK_SUBMISSION,
+        attachments: [],
+        dataCollationData: MOCK_DATA_COLLATION_DATA,
+        formData: MOCK_FORM_DATA,
+      })
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 200 regardless of errors while sending email confirmations', async () => {
+      MockSubmissionService.sendEmailConfirmations.mockReturnValueOnce(
+        errAsync(new SendEmailConfirmationError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEmailPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEmailSubmissionService.checkFormIsEmailMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEmailSubmissionService.validateAttachments,
+      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
+        MOCK_FORM.form_fields,
+      )
+      expect(
+        MockEmailSubmissionService.createEmailSubmissionWithoutSave,
+      ).toHaveBeenCalledWith(MOCK_FORM, expect.any(String), expect.any(String))
+      expect(
+        MockEmailSubmissionService.extractEmailAnswers,
+      ).toHaveBeenCalledWith(MOCK_PARSED_RESPONSES)
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith({
+        replyToEmails: [MOCK_RESPONSES[0].answer],
+        form: MOCK_FORM,
+        submission: MOCK_SUBMISSION,
+        attachments: [],
+        dataCollationData: MOCK_DATA_COLLATION_DATA,
+        formData: MOCK_FORM_DATA,
+      })
+      expect(MockSubmissionService.sendEmailConfirmations).toHaveBeenCalledWith(
+        {
+          form: MOCK_FORM,
+          parsedResponses: MOCK_PARSED_RESPONSES,
+          submission: MOCK_SUBMISSION,
+          attachments: [],
+          autoReplyData: MOCK_AUTOREPLY_DATA,
+        },
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Form submission successful.',
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+    })
+  })
+
+  describe('handleEncryptPreviewSubmission', () => {
+    const MOCK_RESPONSES = [
+      generateUnprocessedSingleAnswerResponse(BasicField.Email),
+    ]
+    const MOCK_PARSED_RESPONSES = [
+      generateNewSingleAnswerResponse(BasicField.Email),
+    ]
+    const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
+    const MOCK_VERSION = 1
+    const MOCK_SUBMISSION_BODY: EncryptSubmissionDto = {
+      responses: MOCK_RESPONSES,
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      version: MOCK_VERSION,
+      isPreview: false,
+      attachments: {
+        [new ObjectId().toHexString()]: {
+          encryptedFile: {
+            binary: '10101',
+            nonce: 'mockNonce',
+            submissionPublicKey: 'mockPublicKey',
+          },
+        },
+      },
+    }
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+    } as IPopulatedEncryptedForm
+    const MOCK_SUBMISSION = {
+      _id: MOCK_SUBMISSION_ID,
+      created: new Date(),
+    } as IEncryptedSubmissionSchema
+
+    beforeEach(() => {
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
+        ok(MOCK_FORM),
+      )
+      MockEncryptionUtils.checkIsEncryptedEncoding.mockReturnValue(ok(true))
+      MockSubmissionService.getProcessedResponses.mockReturnValue(
+        ok(MOCK_PARSED_RESPONSES),
+      )
+      MockEncryptSubmissionService.createEncryptSubmissionWithoutSave.mockReturnValue(
+        MOCK_SUBMISSION,
+      )
+    })
+
+    it('should call all services correctly when submission is valid', async () => {
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
+        MOCK_ENCRYPTED_CONTENT,
+      )
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).toHaveBeenCalledWith({
+        form: MOCK_FORM,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        verifiedContent: '',
+        version: MOCK_VERSION,
+      })
+      expect(MockSubmissionService.sendEmailConfirmations).toHaveBeenCalledWith(
+        {
+          form: MOCK_FORM,
+          parsedResponses: MOCK_PARSED_RESPONSES,
+          submission: MOCK_SUBMISSION,
+        },
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Form submission successful.',
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+    })
+
+    it('should return 500 when generic database error occurs while retrieving user', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 422 when user is missing', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 500 when generic database error occurs while retrieving form', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 404 when form is not found', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 410 when form has been archived', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 403 when user does not have read permissions', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when form is not encrypt mode', async () => {
+      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
+        err(new ResponseModeError(ResponseMode.Email, ResponseMode.Encrypt)),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockEncryptionUtils.checkIsEncryptedEncoding,
+      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when encrypted content encoding is invalid', async () => {
+      MockEncryptionUtils.checkIsEncryptedEncoding.mockReturnValueOnce(
+        err(new InvalidEncodingError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
+        MOCK_ENCRYPTED_CONTENT,
+      )
+      expect(MockSubmissionService.getProcessedResponses).not.toHaveBeenCalled()
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when responses cannot be processed', async () => {
+      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+        err(new ProcessingError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
+        MOCK_ENCRYPTED_CONTENT,
+      )
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 409 when form fields submitted are not updated', async () => {
+      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+        err(new ConflictError('')),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
+        MOCK_ENCRYPTED_CONTENT,
+      )
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+    })
+
+    it('should return 400 when responses cannot be validated', async () => {
+      MockSubmissionService.getProcessedResponses.mockReturnValueOnce(
+        err(new ValidateFieldError()),
+      )
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+        },
+        body: MOCK_SUBMISSION_BODY,
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      await AdminFormController.handleEncryptPreviewSubmission(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(
+        MockEncryptSubmissionService.checkFormIsEncryptMode,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MockEncryptionUtils.checkIsEncryptedEncoding).toHaveBeenCalledWith(
+        MOCK_ENCRYPTED_CONTENT,
+      )
+      expect(MockSubmissionService.getProcessedResponses).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_RESPONSES,
+      )
+      expect(
+        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
+      ).not.toHaveBeenCalled()
+      expect(
+        MockSubmissionService.sendEmailConfirmations,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
     })
   })
 })

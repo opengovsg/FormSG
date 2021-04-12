@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
-import { cloneDeep, times } from 'lodash'
+import { cloneDeep, omit, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import SparkMD5 from 'spark-md5'
 import supertest, { Session } from 'supertest-session'
 
+import { aws } from 'src/app/config/config'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -21,13 +22,26 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
+import {
+  MOCK_ATTACHMENT_FIELD,
+  MOCK_ATTACHMENT_RESPONSE,
+  MOCK_CHECKBOX_FIELD,
+  MOCK_CHECKBOX_RESPONSE,
+  MOCK_OPTIONAL_VERIFIED_FIELD,
+  MOCK_OPTIONAL_VERIFIED_RESPONSE,
+  MOCK_SECTION_FIELD,
+  MOCK_SECTION_RESPONSE,
+  MOCK_TEXT_FIELD,
+  MOCK_TEXTFIELD_RESPONSE,
+} from 'src/app/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
-import { aws } from 'src/config/config'
 import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
   BasicField,
+  IFieldSchema,
   IFormDocument,
+  IFormSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
   IUserSchema,
@@ -36,6 +50,7 @@ import {
   SubmissionCursorData,
   SubmissionType,
 } from 'src/types'
+import { EncryptSubmissionDto } from 'src/types/api'
 
 import {
   createAuthedSession,
@@ -43,7 +58,10 @@ import {
 } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
+import {
+  generateDefaultField,
+  generateUnprocessedSingleAnswerResponse,
+} from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
@@ -53,6 +71,11 @@ import * as AdminFormService from '../admin-form.service'
 
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue(true),
+  }),
+}))
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
@@ -83,6 +106,769 @@ describe('admin-form.routes', () => {
     jest.restoreAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('POST /v2/submissions/email/preview/:formId', () => {
+    const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/email/preview'
+    it('should return 200 when submission is valid', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_TEXT_FIELD],
+          admin: defaultUser._id,
+        },
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        // MOCK_RESPONSE contains all required keys
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [MOCK_TEXTFIELD_RESPONSE],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when answer is empty string for optional field', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [
+            { ...MOCK_TEXT_FIELD, required: false } as IFieldSchema,
+          ],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when attachment response has filename and content', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_ATTACHMENT_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [
+              {
+                ...MOCK_ATTACHMENT_RESPONSE,
+                content: MOCK_ATTACHMENT_RESPONSE.content.toString('binary'),
+              },
+            ],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when response has isHeader key', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_SECTION_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when signature is empty string for optional verified field', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_OPTIONAL_VERIFIED_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_OPTIONAL_VERIFIED_RESPONSE, signature: '' }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 200 when response has answerArray and no answer', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          form_fields: [MOCK_CHECKBOX_FIELD],
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [MOCK_CHECKBOX_RESPONSE],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        message: 'Form submission successful.',
+        submissionId: expect.any(String),
+      })
+    })
+
+    it('should return 400 when isPreview key is missing', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        // Note missing isPreview
+        .field('body', JSON.stringify({ responses: [] }))
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when responses key is missing', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        // Note missing responses
+        .field('body', JSON.stringify({ isPreview: false }))
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response is missing _id', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response is missing fieldType', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response has invalid fieldType', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [
+              { ...MOCK_TEXTFIELD_RESPONSE, fieldType: 'definitelyInvalid' },
+            ],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response is missing answer', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when response has both answer and answerArray', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when attachment response has filename but not content', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+
+    it('should return 400 when attachment response has content but not filename', async () => {
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          hasCaptcha: false,
+          status: Status.Public,
+          admin: defaultUser._id,
+        },
+        // Avoid default mail domain so that user emails in the database don't conflict
+        mailDomain: 'test2.gov.sg',
+      })
+
+      const response = await request
+        .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+        .field(
+          'body',
+          JSON.stringify({
+            isPreview: false,
+            responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
+          }),
+        )
+        .query({ captchaResponse: 'null' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.message).toEqual(
+        'celebrate request validation failed',
+      )
+    })
+  })
+
+  describe('POST /v2/submissions/encrypt/preview/:formId', () => {
+    const MOCK_FIELD_ID = new ObjectId().toHexString()
+    const MOCK_ATTACHMENT_FIELD_ID = new ObjectId().toHexString()
+    const MOCK_RESPONSE = omit(
+      generateUnprocessedSingleAnswerResponse(BasicField.Email, {
+        _id: MOCK_FIELD_ID,
+        answer: 'a@abc.com',
+      }),
+      'question',
+    )
+    const MOCK_ENCRYPTED_CONTENT = `${'a'.repeat(44)};${'a'.repeat(
+      32,
+    )}:${'a'.repeat(4)}`
+    const MOCK_VERSION = 1
+    const MOCK_SUBMISSION_BODY: EncryptSubmissionDto = {
+      responses: [MOCK_RESPONSE],
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      version: MOCK_VERSION,
+      isPreview: false,
+      attachments: {
+        [MOCK_ATTACHMENT_FIELD_ID]: {
+          encryptedFile: {
+            binary: '10101',
+            nonce: 'mockNonce',
+            submissionPublicKey: 'mockPublicKey',
+          },
+        },
+      },
+    }
+    let mockForm: IFormSchema
+
+    beforeEach(async () => {
+      mockForm = await EncryptFormModel.create({
+        title: 'mock form',
+        publicKey: 'some public key',
+        admin: defaultUser._id,
+        form_fields: [
+          generateDefaultField(BasicField.Email, { _id: MOCK_FIELD_ID }),
+        ],
+      })
+    })
+
+    it('should return 200 with submission ID when request is valid', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send(MOCK_SUBMISSION_BODY)
+
+      expect(response.body.message).toBe('Form submission successful.')
+      expect(mongoose.isValidObjectId(response.body.submissionId)).toBe(true)
+      expect(response.status).toBe(200)
+    })
+
+    it('should return 401 when user is not signed in', async () => {
+      await logoutSession(request)
+
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send(MOCK_SUBMISSION_BODY)
+
+      expect(response.status).toBe(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 400 when responses are not provided in body', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send(omit(MOCK_SUBMISSION_BODY, 'responses'))
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'responses' } }),
+      )
+    })
+
+    it('should return 400 when responses are missing _id field', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          responses: [omit(MOCK_RESPONSE, '_id')],
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'responses.0._id',
+            message: '"responses[0]._id" is required',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when responses are missing answer field', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          responses: [omit(MOCK_RESPONSE, 'answer')],
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'responses.0.answer',
+            message: '"responses[0].answer" is required',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when responses are missing fieldType', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          responses: [omit(MOCK_RESPONSE, 'fieldType')],
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'responses.0.fieldType',
+            message: '"responses[0].fieldType" is required',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when a fieldType is malformed', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          responses: [{ ...MOCK_RESPONSE, fieldType: 'malformed' }],
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'responses.0.fieldType',
+            message: expect.stringContaining(
+              '"responses[0].fieldType" must be one of ',
+            ),
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when encryptedContent is not provided in body', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send(omit(MOCK_SUBMISSION_BODY, 'encryptedContent'))
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'encryptedContent',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when version is not provided in body', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send(omit(MOCK_SUBMISSION_BODY, 'version'))
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'version',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when encryptedContent is malformed', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({ ...MOCK_SUBMISSION_BODY, encryptedContent: 'abc' })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'encryptedContent',
+            message: 'Invalid encryptedContent.',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when attachment field ID is malformed', async () => {
+      const invalidKey = 'invalidFieldId'
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          attachments: {
+            [invalidKey]: {
+              encryptedFile: {
+                binary: '10101',
+                nonce: 'mockNonce',
+                submissionPublicKey: 'mockPublicKey',
+              },
+            },
+          },
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: `attachments.${invalidKey}`,
+            message: `"attachments.${invalidKey}" is not allowed`,
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when attachment is missing encryptedFile key', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          attachments: {
+            [MOCK_ATTACHMENT_FIELD_ID]: {},
+          },
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile`,
+            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile" is required`,
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when attachment is missing binary', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          attachments: {
+            [MOCK_ATTACHMENT_FIELD_ID]: {
+              encryptedFile: {
+                // binary is missing
+                nonce: 'mockNonce',
+                submissionPublicKey: 'mockPublicKey',
+              },
+            },
+          },
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.binary`,
+            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.binary" is required`,
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when attachment is missing nonce', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          attachments: {
+            [MOCK_ATTACHMENT_FIELD_ID]: {
+              encryptedFile: {
+                binary: '10101',
+                // nonce is missing
+                submissionPublicKey: 'mockPublicKey',
+              },
+            },
+          },
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.nonce`,
+            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.nonce" is required`,
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when attachment is missing public key', async () => {
+      const response = await request
+        .post(`/v2/submissions/encrypt/preview/${mockForm._id}`)
+        .send({
+          ...MOCK_SUBMISSION_BODY,
+          attachments: {
+            [MOCK_ATTACHMENT_FIELD_ID]: {
+              encryptedFile: {
+                binary: '10101',
+                nonce: 'mockNonce',
+                // missing public key
+              },
+            },
+          },
+        })
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.submissionPublicKey`,
+            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.submissionPublicKey" is required`,
+          },
+        }),
+      )
+    })
+  })
 
   describe('GET /adminform', () => {
     it('should return 200 with empty array when user has no forms', async () => {
@@ -3933,7 +4719,6 @@ describe('admin-form.routes', () => {
 
     it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
       // Arrange
-      const now = new Date()
       const submissions = await Promise.all(
         times(5, (count) =>
           createSubmission({
@@ -3944,13 +4729,15 @@ describe('admin-form.routes', () => {
               ['fieldId1', `some.attachment.url.${count}`],
               ['fieldId2', `some.other.attachment.url.${count}`],
             ]),
-            created: now,
           }),
         ),
       )
-      // Set 2 submissions to be submitted 3-4 days ago.
-      submissions[2].created = subDays(now, 3)
-      submissions[4].created = subDays(now, 4)
+
+      const startDateStr = '2020-02-03'
+      const endDateStr = '2020-02-04'
+      // Set 2 submissions to be submitted with specific date
+      submissions[2].created = new Date(startDateStr)
+      submissions[4].created = new Date(endDateStr)
       await submissions[2].save()
       await submissions[4].save()
       const expectedSubmissionIds = [
@@ -3962,8 +4749,8 @@ describe('admin-form.routes', () => {
       const response = await request
         .get(`/${defaultForm._id}/adminform/submissions/download`)
         .query({
-          startDate: format(subDays(now, 4), 'yyyy-MM-dd'),
-          endDate: format(subDays(now, 3), 'yyyy-MM-dd'),
+          startDate: startDateStr,
+          endDate: endDateStr,
         })
         .buffer()
         .parse((res, cb) => {

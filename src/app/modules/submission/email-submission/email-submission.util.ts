@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact, flattenDeep, sumBy } from 'lodash'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { FilePlatforms } from '../../../../shared/constants'
 import * as FileValidation from '../../../../shared/util/file-validation'
 import {
@@ -18,6 +17,7 @@ import {
   MapRouteError,
   SPCPFieldTitle,
 } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CaptchaConnectionError,
   MissingCaptchaError,
@@ -39,6 +39,7 @@ import {
   MissingFeatureError,
 } from '../../core/core.errors'
 import {
+  ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
@@ -56,6 +57,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
+import { MissingUserError } from '../../user/user.errors'
 import {
   ConflictError,
   ProcessingError,
@@ -373,6 +375,16 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage:
           'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
       }
+    case MissingUserError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: 'You must be logged in to perform this action.',
+      }
+    case ForbiddenFormError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: 'You do not have permission to perform this action.',
+      }
     case FormNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
@@ -603,7 +615,7 @@ const maskUidOnLastField = (
 ): EmailRespondentConfirmationField[] => {
   // Mask corppass UID and show only last 4 chars in autoreply to form filler
   // This does not affect response email to form admin
-  // Function assumes corppass UID is last in the autoReplyData array - see appendVerifiedSPCPResponses()
+  // Function assumes corppass UID is last in the autoReplyData array
   // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
   // This will allow for proper tagging of corppass UID field instead of checking field title and position
 

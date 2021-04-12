@@ -1,6 +1,6 @@
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import * as FormErrors from '../form.errors'

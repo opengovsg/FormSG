@@ -5,16 +5,15 @@ import RateLimit, {
 import { StatusCodes } from 'http-status-codes'
 import { merge } from 'lodash'
 
-import { createLoggerWithLabel } from '../../config/logger'
+import { createLoggerWithLabel } from '../config/logger'
 
 import { createReqMeta } from './request'
 
 const logger = createLoggerWithLabel(module)
 
 /**
- * Returns a middleware which logs a message if the rate of requests
+ * Returns a middleware which logs a message and returns 429 if the rate of requests
  * to an API endpoint exceeds a given rate.
- * TODO (private #49): update this documentation.
  * @param options Custom options to be passed to RateLimit
  * @return Rate-limiting middleware
  */

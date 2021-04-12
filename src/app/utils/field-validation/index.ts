@@ -8,11 +8,11 @@ import {
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../../app/modules/submission/submission.types'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { FIELDS_TO_REJECT } from '../../../shared/resources/basic'
 import { IFieldSchema, ITableFieldSchema } from '../../../types/field'
 import { isTableField } from '../../../types/field/utils/guards'
 import { ResponseValidator } from '../../../types/field/utils/validation'
+import { createLoggerWithLabel } from '../../config/logger'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 
 import {

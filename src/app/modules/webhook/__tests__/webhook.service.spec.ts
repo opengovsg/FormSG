@@ -3,13 +3,13 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
+import formsgSdk from 'src/app/config/formsg-sdk'
 import getFormModel from 'src/app/models/form.server.model'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
 import * as HasPropModule from 'src/app/utils/has-prop'
-import formsgSdk from 'src/config/formsg-sdk'
 import {
   IEncryptedSubmissionSchema,
   IWebhookResponse,

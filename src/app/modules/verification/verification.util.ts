@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   HASH_EXPIRE_AFTER_SECONDS,
   VERIFIED_FIELDTYPES,
@@ -11,6 +10,7 @@ import {
   IVerificationSchema,
   MapRouteError,
 } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'

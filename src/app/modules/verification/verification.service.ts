@@ -1,8 +1,6 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import formsgSdk from '../../../config/formsg-sdk'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { NUM_OTP_RETRIES } from '../../../shared/util/verification'
 import {
   BasicField,
@@ -10,6 +8,8 @@ import {
   IVerificationSchema,
   PublicTransaction,
 } from '../../../types'
+import formsgSdk from '../../config/formsg-sdk'
+import { createLoggerWithLabel } from '../../config/logger'
 import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
