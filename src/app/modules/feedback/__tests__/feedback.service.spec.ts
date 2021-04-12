@@ -125,15 +125,16 @@ describe('feedback.service', () => {
         rating: 1,
       })
       const expectedCreatedFbs = await Promise.all(expectedFbPromises)
-      const expectedFeedbackList = expectedCreatedFbs.map((fb, idx) => ({
-        index: idx + 1,
-        timestamp: moment(fb.created).valueOf(),
-        rating: fb.rating,
-        comment: fb.comment,
-        date: moment(fb.created).tz('Asia/Singapore').format('D MMM YYYY'),
-        dateShort: moment(fb.created).tz('Asia/Singapore').format('D MMM'),
-      }))
-
+      const expectedFeedbackList = expectedCreatedFbs
+        .sort((a, b) => a.created!.getTime() - b.created!.getTime())
+        .map((fb, idx) => ({
+          index: idx + 1,
+          timestamp: moment(fb.created).valueOf(),
+          rating: fb.rating,
+          comment: fb.comment,
+          date: moment(fb.created).tz('Asia/Singapore').format('D MMM YYYY'),
+          dateShort: moment(fb.created).tz('Asia/Singapore').format('D MMM'),
+        }))
       // Act
       const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
 
