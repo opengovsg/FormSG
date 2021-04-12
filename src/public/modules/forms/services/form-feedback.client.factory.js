@@ -29,7 +29,7 @@ class FeedbackCsvGenerator extends CsvGenerator {
 angular.module('forms').factory('FormFeedback', ['$q', '$http', FormFeedback])
 
 function FormFeedback($q, $http) {
-  let resourceUrl = '/api/v3/forms/:formId/feedbacks'
+  let resourceUrl = '/api/v3/forms/:formId/feedback'
   const feedbackAdminUrl = '/:formId/adminform/feedback'
   let feedbackService = {
     postFeedback: function (params, body) {

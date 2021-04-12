@@ -26,7 +26,7 @@ export const PublicFormsRouter = Router()
  * @returns 410 if form has been archived
  * @returns 500 if database error occurs
  */
-PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/feedbacks').post(
+PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/feedback').post(
   celebrate({
     [Segments.BODY]: Joi.object()
       .keys({

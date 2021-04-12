@@ -318,7 +318,7 @@ describe('public-form.routes', () => {
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
   })
-  describe('POST /forms/:formId/feedbacks', () => {
+  describe('POST /forms/:formId/feedback', () => {
     it('should return 200 when feedback was successfully saved', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
@@ -336,7 +336,7 @@ describe('public-form.routes', () => {
 
       // Act
       const response = await request
-        .post(`/forms/${form._id}/feedbacks`)
+        .post(`/forms/${form._id}/feedback`)
         .send(MOCK_FEEDBACK)
 
       // Assert
@@ -351,7 +351,7 @@ describe('public-form.routes', () => {
 
       // Act
       const response = await request
-        .post(`/forms/${form._id}/feedbacks`)
+        .post(`/forms/${form._id}/feedback`)
         .send(MOCK_FEEDBACK)
 
       // Assert
@@ -383,7 +383,7 @@ describe('public-form.routes', () => {
 
       // Act
       const response = await request
-        .post(`/forms/${form._id}/feedbacks`)
+        .post(`/forms/${form._id}/feedback`)
         .send(MOCK_FEEDBACK)
 
       // Assert
@@ -410,7 +410,7 @@ describe('public-form.routes', () => {
 
       // Act
       const response = await request
-        .post(`/forms/${form._id}/feedbacks`)
+        .post(`/forms/${form._id}/feedback`)
         .send(MOCK_FEEDBACK)
 
       // Assert
@@ -441,7 +441,7 @@ describe('public-form.routes', () => {
 
       // Act
       const response = await request
-        .post(`/forms/${form._id}/feedbacks`)
+        .post(`/forms/${form._id}/feedback`)
         .send(MOCK_FEEDBACK)
 
       // Assert
