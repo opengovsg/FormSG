@@ -28,7 +28,7 @@ const testSessionMiddlewares = () => {
 }
 
 export const setupApp = (
-  route: string,
+  route: string | undefined,
   router: Router,
   options: { showLogs?: boolean; setupWithAuth?: boolean } = {},
 ): Express => {
@@ -45,10 +45,14 @@ export const setupApp = (
     app.use(loggingMiddleware())
   }
 
-  app.use(route, router)
-
   if (options.setupWithAuth) {
     app.use('/auth', AuthRouter)
+  }
+
+  if (route) {
+    app.use(route, router)
+  } else {
+    app.use(router)
   }
 
   app.use(errorHandlerMiddlewares())
