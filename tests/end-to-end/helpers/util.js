@@ -77,7 +77,7 @@ async function enterEmail(t, email) {
  * @returns boolean
  */
 async function getFeatureState(feature) {
-  const featureStates = await axios.get(`${appUrl}/frontend/features`)
+  const featureStates = await axios.get(`${appUrl}/api/v3/client/features`)
   return featureStates.data[feature]
 }
 
