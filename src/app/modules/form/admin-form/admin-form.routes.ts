@@ -386,7 +386,7 @@ AdminFormsRouter.get(
         startDate: Joi.date().format('YYYY-MM-DD').raw(),
         endDate: Joi.date()
           .format('YYYY-MM-DD')
-          .greater(Joi.ref('startDate'))
+          .min(Joi.ref('startDate'))
           .raw(),
       })
       .and('startDate', 'endDate'),
@@ -447,7 +447,7 @@ AdminFormsRouter.get(
         startDate: Joi.date().format('YYYY-MM-DD').raw(),
         endDate: Joi.date()
           .format('YYYY-MM-DD')
-          .greater(Joi.ref('startDate'))
+          .min(Joi.ref('startDate'))
           .raw(),
         downloadAttachments: Joi.boolean().default(false),
       })
