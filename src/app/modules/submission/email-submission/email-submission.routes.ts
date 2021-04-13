@@ -5,7 +5,6 @@ import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../utils/limit-rate'
 
 import { handleEmailSubmission } from './email-submission.controller'
-import * as EmailSubmissionMiddleware from './email-submission.middleware'
 
 export const EmailSubmissionRouter = Router()
 
@@ -30,7 +29,5 @@ EmailSubmissionRouter.post(
   '/:formId([a-fA-F0-9]{24})',
   limitRate({ max: rateLimitConfig.submissions }),
   CaptchaFactory.validateCaptchaParams,
-  EmailSubmissionMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
   handleEmailSubmission,
 )
