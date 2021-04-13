@@ -269,7 +269,7 @@ describe('admin-form.settings.routes', () => {
   describe('DELETE /forms/:formId/logic/:logicId', () => {
     it('should return 200 with success message on successful form logic delete for email mode form', async () => {
       // Arrange
-      const formLogicId = '606d408f37af650047dd1a6a'
+      const formLogicId = new ObjectId()
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
         formOptions: {
           form_logics: [
@@ -296,7 +296,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 200 with success message on successful form logic delete for encrypt mode form', async () => {
       // Arrange
-      const formLogicId = '606d408f37af650047dd1a6a'
+      const formLogicId = new ObjectId()
       const { form: formToUpdate, user } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
@@ -323,7 +323,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 403 when current user does not have permissions to delete form logic', async () => {
       // Arrange
-      const formLogicId = '606d408f37af650047dd1a6a'
+      const formLogicId = new ObjectId()
       const { form: formToUpdate, agency } = await dbHandler.insertEncryptForm({
         formOptions: {
           form_logics: [
@@ -356,8 +356,8 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 404 with error message if logicId does not exist', async () => {
       // Arrange
-      const formLogicId = '606d408f37af650047dd1a6a'
-      const wrongLogicId = '606d408f37af650047dd0000'
+      const formLogicId = new ObjectId()
+      const wrongLogicId = new ObjectId()
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
         formOptions: {
           form_logics: [
@@ -384,7 +384,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 404 with error message if form does not exist', async () => {
       // Arrange
-      const formLogicId = '606d408f37af650047dd1a6a'
+      const formLogicId = new ObjectId()
       const { user } = await dbHandler.insertEmailForm({
         formOptions: {
           form_logics: [
@@ -397,7 +397,7 @@ describe('admin-form.settings.routes', () => {
       const session = await createAuthedSession(user.email, request)
 
       // Act
-      const wrongFormId = '12345abcde67890aaaaa1234'
+      const wrongFormId = new ObjectId()
       const response = await session
         .delete(`/admin/forms/${wrongFormId}/logic/${formLogicId}`)
         .send()
@@ -412,7 +412,7 @@ describe('admin-form.settings.routes', () => {
 
     it('should return 422 when userId cannot be found in the database', async () => {
       // Arrange
-      const formLogicId = '606d408f37af650047dd1a6a'
+      const formLogicId = new ObjectId()
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
         formOptions: {
           form_logics: [
