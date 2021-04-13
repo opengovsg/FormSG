@@ -20,9 +20,9 @@ import {
   createSingpassParsedResponses,
 } from '../../spcp/spcp.util'
 import * as SubmissionService from '../submission.service'
-import { ProcessedFieldResponse } from '../submission.types'
 
 import * as EmailSubmissionService from './email-submission.service'
+import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
 import {
   mapAttachmentsFromResponses,
   mapRouteError,
@@ -180,14 +180,7 @@ export const handleEmailSubmission: RequestHandler<
               form,
               parsedResponses,
               hashedFields: new Set<string>(),
-            }) as Result<
-              {
-                form: IPopulatedEmailForm
-                parsedResponses: ProcessedFieldResponse[]
-                hashedFields: Set<string>
-              },
-              never
-            >
+            }) as Result<IPopulatedEmailFormWithResponsesAndHash, never>
         }
       })
 
@@ -253,9 +246,8 @@ export const handleEmailSubmission: RequestHandler<
       // NOTE: The final step returns a ResultAsync so it is not a map
       .andThen(({ form, parsedResponses, submission, emailData }) => {
         // MyInfo access token is single-use, so clear it
-        res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
-        // Return the reply early to the submitter
-        res.json({
+        res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS).json({
+          // Return the reply early to the submitter
           message: 'Form submission successful.',
           submissionId: submission.id,
         })
