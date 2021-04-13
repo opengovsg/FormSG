@@ -1,4 +1,4 @@
-import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
+import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { ObjectId } from 'bson-ext'
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
@@ -9,10 +9,6 @@ import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import {
-  MOCK_COOKIE_AGE,
-  MOCK_UINFIN,
-} from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
@@ -31,6 +27,7 @@ import {
   MOCK_ATTACHMENT_RESPONSE,
   MOCK_CHECKBOX_FIELD,
   MOCK_CHECKBOX_RESPONSE,
+  MOCK_COOKIE_AGE,
   MOCK_NO_RESPONSES_BODY,
   MOCK_OPTIONAL_VERIFIED_FIELD,
   MOCK_OPTIONAL_VERIFIED_RESPONSE,
@@ -38,6 +35,7 @@ import {
   MOCK_SECTION_RESPONSE,
   MOCK_TEXT_FIELD,
   MOCK_TEXTFIELD_RESPONSE,
+  MOCK_UINFIN,
 } from './public-forms.routes.spec.constants'
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
@@ -51,26 +49,25 @@ jest.mock('nodemailer', () => ({
   }),
 }))
 
-jest.mock('@opengovsg/myinfo-gov-client', () => ({
-  MyInfoGovClient: jest.fn(),
-  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
-  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
-  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAddressType,
-  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAttribute,
-}))
+jest.mock('@opengovsg/myinfo-gov-client', () => {
+  return {
+    MyInfoGovClient: jest.fn().mockReturnValue({
+      extractUinFin: jest.fn(),
+      getPerson: jest.fn(),
+    }),
+    MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
+    MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client')
+      .MyInfoSource,
+    MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
+      .MyInfoAddressType,
+    MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
+      .MyInfoAttribute,
+  }
+})
 
-const mockExtractUinFin = jest.fn()
-const mockGetPerson = jest.fn()
-
-const MockMyInfoGovClient = mocked(MyInfoGovClient, true)
-MockMyInfoGovClient.mockImplementation(
-  () =>
-    (({
-      extractUinFin: mockExtractUinFin,
-      getPerson: mockGetPerson,
-    } as unknown) as MyInfoGovClient),
+const MockMyInfoGovClient = mocked(
+  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
+  true,
 )
 
 const app = setupApp('/forms', PublicFormsRouter)
@@ -193,7 +190,9 @@ describe('public-form.routes', () => {
     })
     it('should return 200 with public form when form has AuthType.MyInfo and valid formId', async () => {
       // Arrange
-      mockGetPerson.mockReturnValueOnce({ uinFin: 'S1234567A' })
+      MockMyInfoGovClient.getPerson.mockResolvedValueOnce({
+        uinFin: MOCK_UINFIN,
+      })
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -1046,7 +1045,7 @@ describe('public-form.routes', () => {
       describe('MyInfo', () => {
         it('should return 200 when submission is valid', async () => {
           // Arrange
-          mockExtractUinFin.mockReturnValueOnce(MOCK_UINFIN)
+          MockMyInfoGovClient.extractUinFin.mockReturnValueOnce(MOCK_UINFIN)
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
@@ -1143,7 +1142,7 @@ describe('public-form.routes', () => {
         it('should return 401 when submission has invalid cookie', async () => {
           // Arrange
           // Mock MyInfoGovClient to return error when decoding JWT
-          mockExtractUinFin.mockImplementationOnce(() => {
+          MockMyInfoGovClient.extractUinFin.mockImplementationOnce(() => {
             throw new Error()
           })
           const { form } = await dbHandler.insertEmailForm({

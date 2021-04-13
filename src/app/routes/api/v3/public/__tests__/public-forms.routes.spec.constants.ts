@@ -52,3 +52,6 @@ export const MOCK_OPTIONAL_VERIFIED_RESPONSE = generateSingleAnswerResponse(
   MOCK_OPTIONAL_VERIFIED_FIELD,
   '',
 )
+
+export const MOCK_COOKIE_AGE = 2000
+export const MOCK_UINFIN = 'S1234567A'
