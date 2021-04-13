@@ -19,7 +19,7 @@ const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })
 
-describe('admin-form.routes', () => {
+describe('admin-form.settings.routes', () => {
   let request: Session
 
   const USER_ID = new ObjectId()

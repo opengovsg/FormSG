@@ -2366,7 +2366,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleGetFormFeedbacks', () => {
+  describe('handleGetFormFeedback', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -2419,7 +2419,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2454,7 +2454,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2488,7 +2488,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2522,7 +2522,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2553,7 +2553,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2580,7 +2580,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2610,7 +2610,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2648,7 +2648,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleGetFormFeedbacks(
+      await AdminFormController.handleGetFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
