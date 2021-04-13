@@ -291,7 +291,7 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/feedback',
   withUserAuthentication,
-  AdminFormController.handleGetFormFeedbacks,
+  AdminFormController.handleGetFormFeedback,
 )
 
 /**

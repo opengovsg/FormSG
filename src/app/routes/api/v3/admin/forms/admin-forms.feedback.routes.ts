@@ -19,7 +19,7 @@ export const AdminFormsFeedbackRouter = Router()
  */
 AdminFormsFeedbackRouter.get(
   '/:formId([a-fA-F0-9]{24})/feedback',
-  AdminFormController.handleGetFormFeedbacks,
+  AdminFormController.handleGetFormFeedback,
 )
 
 /**

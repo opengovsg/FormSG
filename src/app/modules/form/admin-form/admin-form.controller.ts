@@ -531,7 +531,7 @@ export const handleStreamFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormFeedbacks: RequestHandler<{
+export const handleGetFormFeedback: RequestHandler<{
   formId: string
 }> = (req, res) => {
   const { formId } = req.params
@@ -551,7 +551,7 @@ export const handleGetFormFeedbacks: RequestHandler<{
       logger.error({
         message: 'Error retrieving form feedbacks',
         meta: {
-          action: 'handleGetFormFeedbacks',
+          action: 'handleGetFormFeedback',
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
