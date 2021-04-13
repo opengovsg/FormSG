@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
@@ -27,16 +26,6 @@ export const PublicFormsRouter = Router()
  * @returns 500 if database error occurs
  */
 PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/feedback').post(
-  celebrate({
-    [Segments.BODY]: Joi.object()
-      .keys({
-        rating: Joi.number().min(1).max(5).cast('string').required(),
-        comment: Joi.string().allow('').required(),
-      })
-      // Allow other keys for backwards compability as frontend might put
-      // extra keys in the body.
-      .unknown(true),
-  }),
   PublicFormController.handleSubmitFeedback,
 )
 
