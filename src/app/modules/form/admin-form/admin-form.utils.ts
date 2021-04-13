@@ -31,6 +31,7 @@ import {
 import {
   CreatePresignedUrlError,
   EditFieldError,
+  FieldNotFoundError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -61,6 +62,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
+    case FieldNotFoundError:
     case FormNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
