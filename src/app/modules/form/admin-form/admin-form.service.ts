@@ -654,15 +654,14 @@ export const deleteFormLogic = (
   }
 
   // Remove specified logic and then update form logic
-  const updated_form_logic = form.form_logics.filter(
-    (logic) => logic.id !== logicId,
-  )
   const ModelToUse = getFormModel(mongoose)
 
   return ResultAsync.fromPromise(
     ModelToUse.findByIdAndUpdate(
       form._id,
-      { form_logics: updated_form_logic },
+      {
+        $pull: { form_logics: { _id: logicId } },
+      },
       {
         new: true,
         runValidators: true,
