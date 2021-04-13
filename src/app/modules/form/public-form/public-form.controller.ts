@@ -43,6 +43,7 @@ const validateSubmitFormFeedbackParams = celebrate({
 })
 
 /**
+ * NOTE: This is exported solely for unit testing
  * Handler for POST /:formId/feedback endpoint
  * @precondition formId should be present in req.params.
  * @precondition Joi validation should enforce shape of req.body before this handler is invoked.

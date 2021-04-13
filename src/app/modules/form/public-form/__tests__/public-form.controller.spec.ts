@@ -63,7 +63,7 @@ const FormFeedbackModel = getFormFeedbackModel(mongoose)
 describe('public-form.controller', () => {
   afterEach(() => jest.clearAllMocks())
 
-  describe('handleSubmitFeedback', () => {
+  describe('submitFormFeedback', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_FORM = {
       _id: MOCK_FORM_ID,
@@ -99,7 +99,7 @@ describe('public-form.controller', () => {
       )
 
       // Act
-      await PublicFormController.handleSubmitFeedback(
+      await PublicFormController.submitFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -132,7 +132,7 @@ describe('public-form.controller', () => {
       )
 
       // Act
-      await PublicFormController.handleSubmitFeedback(
+      await PublicFormController.submitFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -165,7 +165,7 @@ describe('public-form.controller', () => {
       )
 
       // Act
-      await PublicFormController.handleSubmitFeedback(
+      await PublicFormController.submitFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -200,7 +200,7 @@ describe('public-form.controller', () => {
       )
 
       // Act
-      await PublicFormController.handleSubmitFeedback(
+      await PublicFormController.submitFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -233,7 +233,7 @@ describe('public-form.controller', () => {
       )
 
       // Act
-      await PublicFormController.handleSubmitFeedback(
+      await PublicFormController.submitFormFeedback(
         MOCK_REQ,
         mockRes,
         jest.fn(),
