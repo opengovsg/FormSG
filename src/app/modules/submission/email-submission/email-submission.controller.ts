@@ -6,7 +6,6 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
-import { ApplicationError } from '../../core/core.errors'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_COOKIE_NAME,
@@ -41,44 +40,38 @@ export const handleEmailSubmission: RequestHandler<
   const attachments = mapAttachmentsFromResponses(req.body.responses)
   let spcpSubmissionFailure: undefined | true
 
-  // Inlined utilities
   const logMeta = {
     action: 'handleEmailSubmission',
     ...createReqMeta(req as Request),
     formId,
   }
 
-  // Stores a predefined message and returns a function that can be used for mapErr
-  const logErrorWithMeta = (
-    loggerMeta: Record<string, unknown> & { action: string },
-  ) => <E extends ApplicationError>(
-    message: string,
-    logLevel: 'warn' | 'error' = 'error',
-  ) => (error: E) => {
-    logger[logLevel]({
-      message,
-      meta: loggerMeta,
-      error,
-    })
-    return error
-  }
-
-  const logErrorWithReqMeta = logErrorWithMeta(logMeta)
-
   return (
     // Retrieve form
     FormService.retrieveFullFormById(formId)
       .andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
       // NOTE: This is on the top most level because errors are reported together for the first two
-      .mapErr(logErrorWithReqMeta('Error while retrieving form from database'))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error while retrieving form from database',
+          meta: logMeta,
+          error,
+        })
+        return error
+      })
       .andThen((form) =>
         // Check that form is public
         // If it is, pass through and return the original form
         FormService.isFormPublic(form)
           .map(() => form)
-          .mapErr(
-            logErrorWithReqMeta('Attempt to submit non-public form', 'warn'),
-          ),
+          .mapErr((error) => {
+            logger.warn({
+              message: 'Attempt to submit non-public form',
+              meta: logMeta,
+              error,
+            })
+            return error
+          }),
       )
       .andThen((form) => {
         // Check the captcha
@@ -88,7 +81,14 @@ export const handleEmailSubmission: RequestHandler<
             getRequestIp(req as Request),
           )
             .map(() => form)
-            .mapErr(logErrorWithReqMeta('Error while verifying captcha'))
+            .mapErr((error) => {
+              logger.error({
+                message: 'Error while verifying captcha',
+                meta: logMeta,
+                error,
+              })
+              return error
+            })
         }
         return okAsync(form) as ResultAsync<IPopulatedEmailForm, never>
       })
@@ -96,12 +96,15 @@ export const handleEmailSubmission: RequestHandler<
         // Check that the form has not reached submission limits
         FormService.checkFormSubmissionLimitAndDeactivateForm(form)
           .map(() => form)
-          .mapErr(
-            logErrorWithReqMeta(
-              'Attempt to submit form which has just reached submission limits',
-              'warn',
-            ),
-          ),
+          .mapErr((error) => {
+            logger.warn({
+              message:
+                'Attempt to submit form which has just reached submission limits',
+              meta: logMeta,
+              error,
+            })
+            return error
+          }),
       )
       .andThen((form) =>
         // Validate responses
@@ -110,7 +113,14 @@ export const handleEmailSubmission: RequestHandler<
             SubmissionService.getProcessedResponses(form, req.body.responses),
           )
           .map((parsedResponses) => ({ parsedResponses, form }))
-          .mapErr(logErrorWithReqMeta('Error processing responses')),
+          .mapErr((error) => {
+            logger.error({
+              message: 'Error processing responses',
+              meta: logMeta,
+              error,
+            })
+            return error
+          }),
       )
       .andThen(({ parsedResponses, form }) => {
         const { authType } = form
@@ -128,9 +138,12 @@ export const handleEmailSubmission: RequestHandler<
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
-                return logErrorWithReqMeta(
-                  'Failed to verify JWT with auth client',
-                )(error)
+                logger.error({
+                  message: 'Failed to verify Corppass JWT with auth client',
+                  meta: logMeta,
+                  error,
+                })
+                return error
               })
           case AuthType.SP:
             return SpcpFactory.extractJwt(req.cookies, authType)
@@ -145,9 +158,12 @@ export const handleEmailSubmission: RequestHandler<
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
-                return logErrorWithReqMeta(
-                  'Failed to verify JWT with auth client',
-                )(error)
+                logger.error({
+                  message: 'Failed to verify Singpass JWT with auth client',
+                  meta: logMeta,
+                  error,
+                })
+                return error
               })
           case AuthType.MyInfo:
             return MyInfoUtil.extractMyInfoCookie(req.cookies)
@@ -171,9 +187,12 @@ export const handleEmailSubmission: RequestHandler<
               )
               .mapErr((error) => {
                 spcpSubmissionFailure = true
-                return logErrorWithReqMeta('Error verifying MyInfo hashes')(
+                logger.error({
+                  message: 'Error verifying MyInfo hashes',
+                  meta: logMeta,
                   error,
-                )
+                })
+                return error
               })
           default:
             return ok({
@@ -183,7 +202,6 @@ export const handleEmailSubmission: RequestHandler<
             }) as Result<IPopulatedEmailFormWithResponsesAndHash, never>
         }
       })
-
       .andThen(({ form, parsedResponses, hashedFields }) => {
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
@@ -206,9 +224,14 @@ export const handleEmailSubmission: RequestHandler<
             submission,
             emailData,
           }))
-          .mapErr(
-            logErrorWithReqMeta('Error while saving metadata to database'),
-          )
+          .mapErr((error) => {
+            logger.error({
+              message: 'Error while saving metadata to database',
+              meta: logMeta,
+              error,
+            })
+            return error
+          })
       })
       .andThen(({ form, parsedResponses, submission, emailData }) => {
         const logMetaWithSubmission = {
@@ -216,16 +239,12 @@ export const handleEmailSubmission: RequestHandler<
           submissionId: submission._id,
         }
 
-        const logErrorWithSubmissionMeta = logErrorWithMeta(
-          logMetaWithSubmission,
-        )
-
-        // Send response to admin
         logger.info({
           message: 'Sending admin mail',
           meta: logMetaWithSubmission,
         })
 
+        // Send response to admin
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
@@ -238,27 +257,42 @@ export const handleEmailSubmission: RequestHandler<
           dataCollationData: emailData.dataCollationData,
           formData: emailData.formData,
         })
-          .map(() => ({ form, parsedResponses, submission, emailData }))
-          .mapErr(
-            logErrorWithSubmissionMeta('Error sending submission to admin'),
-          )
+          .map(() => ({
+            form,
+            parsedResponses,
+            submission,
+            emailData,
+            logMeta,
+          }))
+          .mapErr((error) => {
+            logger.error({
+              message: 'Error sending submission to admin',
+              meta: logMetaWithSubmission,
+              error,
+            })
+            return error
+          })
       })
-      // NOTE: The final step returns a ResultAsync so it is not a map
-      .andThen(({ form, parsedResponses, submission, emailData }) => {
-        // MyInfo access token is single-use, so clear it
-        res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS).json({
-          // Return the reply early to the submitter
-          message: 'Form submission successful.',
-          submissionId: submission.id,
-        })
-
+      .map(({ form, parsedResponses, submission, emailData, logMeta }) => {
         // Send email confirmations
-        return SubmissionService.sendEmailConfirmations({
+        void SubmissionService.sendEmailConfirmations({
           form,
           parsedResponses,
           submission,
           attachments,
           autoReplyData: emailData.autoReplyData,
+        }).mapErr((error) => {
+          logger.error({
+            message: 'Error while sending email confirmations',
+            meta: logMeta,
+            error,
+          })
+        })
+        // MyInfo access token is single-use, so clear it
+        return res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS).json({
+          // Return the reply early to the submitter
+          message: 'Form submission successful.',
+          submissionId: submission.id,
         })
       })
       .mapErr((error) => {
