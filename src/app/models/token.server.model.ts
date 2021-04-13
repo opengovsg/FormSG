@@ -4,7 +4,7 @@ import { IToken, ITokenModel, ITokenSchema } from '../../types'
 
 export const TOKEN_SCHEMA_ID = 'Token'
 
-const TokenSchema = new Schema<ITokenSchema>({
+const TokenSchema = new Schema<ITokenSchema, ITokenModel>({
   email: {
     type: String,
     required: true,

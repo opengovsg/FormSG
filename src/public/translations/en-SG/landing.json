@@ -63,16 +63,16 @@
     "SUBSECTION_3": {
       "HEADER": "Integrated with government systems",
       "POINT_1": {
-        "TITLE": "SingPass",
-        "TEXT": "With the push of a button you can authenticate citizens filling in your form with SingPass Login"
+        "TITLE": "Singpass",
+        "TEXT": "With the push of a button you can authenticate citizens filling in your form with Singpass Login"
       },
       "POINT_2": {
-        "TITLE": "CorpPass",
-        "TEXT": "With the push of a button you can enable CorpPass Login on your form to authenticate companies"
+        "TITLE": "Corppass",
+        "TEXT": "With the push of a button you can enable Corppass Login on your form to authenticate companies"
       },
       "POINT_3": {
         "TITLE": "MyInfo",
-        "TEXT": "Select which MyInfo fields you want to collect. These fields will be pre-filled once citizens log in through SingPass"
+        "TEXT": "Select which MyInfo fields you want to collect. These fields will be pre-filled once citizens log in through Singpass"
       }
     }
   },

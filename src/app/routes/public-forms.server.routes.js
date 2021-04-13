@@ -5,19 +5,14 @@
  */
 const forms = require('../../app/controllers/forms.server.controller')
 const publicForms = require('../modules/form/public-form/public-form.middlewares')
-const encryptSubmissions = require('../../app/controllers/encrypt-submissions.server.controller')
 const MyInfoMiddleware = require('../modules/myinfo/myinfo.middleware')
 const { celebrate, Joi, Segments } = require('celebrate')
-const webhookVerifiedContentFactory = require('../factories/webhook-verified-content.factory')
 const { CaptchaFactory } = require('../services/captcha/captcha.factory')
-const SubmissionsMiddleware = require('../../app/modules/submission/submission.middleware')
 const { limitRate } = require('../utils/limit-rate')
 const { rateLimitConfig } = require('../../config/config')
 const PublicFormController = require('../modules/form/public-form/public-form.controller')
 const SpcpController = require('../modules/spcp/spcp.controller')
 const { BasicField } = require('../../types')
-const EncryptSubmissionMiddleware = require('../modules/submission/encrypt-submission/encrypt-submission.middleware')
-const VerifiedContentMiddleware = require('../modules/verified-content/verified-content.middlewares')
 const EncryptSubmissionController = require('../modules/submission/encrypt-submission/encrypt-submission.controller')
 
 module.exports = function (app) {
@@ -209,10 +204,5 @@ module.exports = function (app) {
     }),
     forms.formById,
     EncryptSubmissionController.handleEncryptedSubmission,
-    VerifiedContentMiddleware.encryptVerifiedSpcpFields,
-    EncryptSubmissionMiddleware.prepareEncryptSubmission,
-    encryptSubmissions.saveResponseToDb,
-    webhookVerifiedContentFactory.post,
-    SubmissionsMiddleware.sendEmailConfirmations,
   )
 }
