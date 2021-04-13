@@ -46,6 +46,9 @@ function SubmissionsFactory(
   const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
   const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
 
+  const API_VERSION_PREFIX = '/api/v3'
+  const ADMIN_FORMS_PREFIX = '/admin/forms'
+
   const generateDownloadUrl = (params, downloadAttachments) => {
     let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
     if (params.startDate && params.endDate) {
@@ -159,7 +162,13 @@ function SubmissionsFactory(
     },
     count: function (params) {
       const deferred = $q.defer()
-      let resUrl = fixParamsToUrl(params, submitAdminUrl) + '/count'
+      let resUrl =
+        fixParamsToUrl(
+          params,
+          `${
+            API_VERSION_PREFIX + ADMIN_FORMS_PREFIX
+          }/:formId/submissions/count`,
+        ) + '/count'
       if (params.startDate && params.endDate) {
         resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
       }
