@@ -120,10 +120,10 @@ export const handleEmailSubmission: RequestHandler<
               .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
               .map((jwt) => ({
                 form,
-                parsedResponses: createCorppassParsedResponses(
-                  jwt.userName,
-                  jwt.userInfo,
-                ),
+                parsedResponses: [
+                  ...parsedResponses,
+                  ...createCorppassParsedResponses(jwt.userName, jwt.userInfo),
+                ],
                 hashedFields: new Set<string>(),
               }))
               .mapErr((error) => {
@@ -137,7 +137,10 @@ export const handleEmailSubmission: RequestHandler<
               .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
               .map((jwt) => ({
                 form,
-                parsedResponses: createSingpassParsedResponses(jwt.userName),
+                parsedResponses: [
+                  ...parsedResponses,
+                  ...createSingpassParsedResponses(jwt.userName),
+                ],
                 hashedFields: new Set<string>(),
               }))
               .mapErr((error) => {
