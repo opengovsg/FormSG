@@ -14,7 +14,7 @@ export const PublicFormsRouter = Router()
 
 /**
  * Send feedback for a public form
- * @route POST /:formId/feedbacks (note the plural form of feedback)
+ * @route POST /:formId/feedback
  * @group forms - endpoints to serve forms
  * @param {string} formId.path.required - the form id
  * @param {Feedback.model} feedback.body.required - the user's feedback
