@@ -3,9 +3,7 @@ import { Router } from 'express'
 import { rateLimitConfig } from '../../../../config/config'
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
-import * as EmailSubmissionMiddleware from '../../../../modules/submission/email-submission/email-submission.middleware'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
-import * as EncryptSubmissionMiddleware from '../../../../modules/submission/encrypt-submission/encrypt-submission.middleware'
 import { CaptchaFactory } from '../../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../../utils/limit-rate'
 
@@ -48,8 +46,6 @@ PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/feedback').post(
 PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/submissions/email').post(
   limitRate({ max: rateLimitConfig.submissions }),
   CaptchaFactory.validateCaptchaParams,
-  EmailSubmissionMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
   EmailSubmissionController.handleEmailSubmission,
 )
 
@@ -68,7 +64,6 @@ PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/submissions/email').post(
 PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/submissions/encrypt').post(
   limitRate({ max: rateLimitConfig.submissions }),
   CaptchaFactory.validateCaptchaParams,
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   EncryptSubmissionController.handleEncryptedSubmission,
 )
 
