@@ -78,7 +78,7 @@ function FormApi($resource, FormErrorService, FormFields) {
 
   // accessMode is either adminForm or publicForm
   let resourceUrl = '/:formId/:accessMode'
-  const V3_PUBLICFORM_URL = ':/formId'
+  const V3_PUBLICFORM_URL = '/api/v3/forms/:formId'
 
   return $resource(
     resourceUrl,
