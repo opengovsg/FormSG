@@ -677,7 +677,7 @@ export const deleteFormLogic = (
         },
         error,
       })
-      return new DatabaseError(getMongoErrorMessage(error))
+      return transformMongoError(error)
     },
     // On success, return true
   ).map(() => true)
