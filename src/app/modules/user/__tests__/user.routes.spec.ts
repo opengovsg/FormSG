@@ -14,6 +14,7 @@ import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { DatabaseError } from '../../core/core.errors'
 import UserRouter from '../user.routes'
@@ -69,9 +70,9 @@ describe('user.routes', () => {
       // Response should contain user object.
       expect(response.body).toEqual(
         expect.objectContaining({
-          ...JSON.parse(JSON.stringify(defaultUser.toObject())),
+          ...jsonParseStringify(defaultUser.toObject()),
           // Should be object since agency key should be populated.
-          agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
+          agency: jsonParseStringify(defaultAgency.toObject()),
         }),
       )
     })
@@ -266,8 +267,8 @@ describe('user.routes', () => {
       expect(response.status).toEqual(200)
       // Body should be an user object.
       expect(response.body).toEqual({
-        ...JSON.parse(JSON.stringify(defaultUser.toObject())),
-        agency: JSON.parse(JSON.stringify(defaultAgency.toObject())),
+        ...jsonParseStringify(defaultUser.toObject()),
+        agency: jsonParseStringify(defaultAgency.toObject()),
         // This time with the new contact number.
         contact: VALID_CONTACT,
         // Dynamic date strings to be returned.

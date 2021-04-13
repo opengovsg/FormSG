@@ -1,7 +1,7 @@
 import { mocked } from 'ts-jest/utils'
 
+import { FeatureNames } from 'src/app/config/feature-manager'
 import { MissingFeatureError } from 'src/app/modules/core/core.errors'
-import { FeatureNames } from 'src/config/feature-manager'
 
 import { createIntranetFactory } from '../intranet.factory'
 import { IntranetService } from '../intranet.service'

@@ -4,9 +4,9 @@ import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { ISpcpMyInfo } from '../../../config/feature-manager'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
+import { ISpcpMyInfo } from '../../config/feature-manager'
+import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
 import {
@@ -22,11 +22,13 @@ import {
 } from './spcp.errors'
 import {
   CorppassAttributes,
+  CorppassJwtPayload,
   JwtName,
   JwtPayload,
   LoginPageValidationResult,
   ParsedSpcpParams,
   SingpassAttributes,
+  SingpassJwtPayload,
   SpcpCookies,
   SpcpDomainSettings,
 } from './spcp.types'
@@ -34,7 +36,8 @@ import {
   extractFormId,
   getAttributesPromise,
   getSubstringBetween,
-  isJwtPayload,
+  isCorppassJwtPayload,
+  isSingpassJwtPayload,
   isValidAuthenticationQuery,
   verifyJwtPromise,
 } from './spcp.util'
@@ -201,26 +204,20 @@ export class SpcpService {
   ): Result<string, MissingJwtError> {
     const jwtName = authType === AuthType.SP ? JwtName.SP : JwtName.CP
     const cookie = cookies[jwtName]
-    if (!cookie) {
-      return err(new MissingJwtError())
-    }
-    return ok(cookie)
+    return cookie ? ok(cookie) : err(new MissingJwtError())
   }
 
   /**
-   * Verifies a JWT and extracts its payload.
+   * Verifies a Singpass JWT and extracts its payload.
    * @param jwt The contents of the JWT cookie
-   * @param authType 'SP' or 'CP'
    */
-  extractJwtPayload(
+  extractSingpassJwtPayload(
     jwt: string,
-    authType: AuthType.SP | AuthType.CP,
-  ): ResultAsync<JwtPayload, VerifyJwtError | InvalidJwtError> {
+  ): ResultAsync<SingpassJwtPayload, VerifyJwtError | InvalidJwtError> {
     const logMeta = {
-      action: 'extractJwtPayload',
-      authType,
+      action: 'extractSingpassJwtPayload',
     }
-    const authClient = this.getAuthClient(authType)
+    const authClient = this.getAuthClient(AuthType.SP)
     return ResultAsync.fromPromise(
       verifyJwtPromise(authClient, jwt),
       (error) => {
@@ -232,7 +229,47 @@ export class SpcpService {
         return new VerifyJwtError()
       },
     ).andThen((payload) => {
-      if (isJwtPayload(payload, authType)) {
+      if (isSingpassJwtPayload(payload)) {
+        return okAsync(payload)
+      }
+      const payloadIsDefined = !!payload
+      const payloadKeys =
+        typeof payload === 'object' && !!payload && Object.keys(payload)
+      logger.error({
+        message: 'JWT has incorrect shape',
+        meta: {
+          ...logMeta,
+          payloadIsDefined,
+          payloadKeys,
+        },
+      })
+      return errAsync(new InvalidJwtError())
+    })
+  }
+
+  /**
+   * Verifies a Corppass JWT and extracts its payload.
+   * @param jwt The contents of the JWT cookie
+   */
+  extractCorppassJwtPayload(
+    jwt: string,
+  ): ResultAsync<CorppassJwtPayload, VerifyJwtError | InvalidJwtError> {
+    const logMeta = {
+      action: 'extractCorppassJwtPayload',
+    }
+    const authClient = this.getAuthClient(AuthType.CP)
+    return ResultAsync.fromPromise(
+      verifyJwtPromise(authClient, jwt),
+      (error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: logMeta,
+          error,
+        })
+        return new VerifyJwtError()
+      },
+    ).andThen((payload) => {
+      if (isCorppassJwtPayload(payload)) {
         return okAsync(payload)
       }
       const payloadIsDefined = !!payload
@@ -393,5 +430,31 @@ export class SpcpService {
   getCookieSettings(): SpcpDomainSettings {
     const spcpCookieDomain = this.#spcpProps.spcpCookieDomain
     return spcpCookieDomain ? { domain: spcpCookieDomain, path: '/' } : {}
+  }
+
+  /**
+   * Gets the spcp session info from the auth, cookies
+   * @param authType The authentication type of the user
+   * @param cookies The spcp cookies set by the redirect
+   * @return ok(jwtPayload) if successful
+   * @return err(MissingJwtError) if the specified cookie for the authType (spcp) does not exist
+   * @return err(VerifyJwtError) if the jwt exists but could not be authenticated
+   * @return err(InvalidJwtError) if the jwt exists but the payload is invalid
+   */
+  extractJwtPayloadFromRequest(
+    authType: AuthType.SP | AuthType.CP,
+    cookies: SpcpCookies,
+  ): ResultAsync<
+    JwtPayload,
+    VerifyJwtError | InvalidJwtError | MissingJwtError
+  > {
+    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) => {
+      switch (authType) {
+        case AuthType.SP:
+          return this.extractSingpassJwtPayload(jwtResult)
+        case AuthType.CP:
+          return this.extractCorppassJwtPayload(jwtResult)
+      }
+    })
   }
 }

@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   IFieldSchema,
@@ -9,6 +8,7 @@ import {
   ResponseMode,
   Status,
 } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { reorder, replaceAt } from '../../../utils/immutable-array-fns'
 import {
   ApplicationError,

@@ -1,13 +1,12 @@
-import { Result } from 'neverthrow'
-
 import {
   IBounceNotification,
   IDeliveryNotification,
   IEmailNotification,
 } from '../../../types'
-import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
+import { UserWithContactNumber } from '../user/user.types'
 
-import { UserWithContactNumber } from './bounce.types'
+import { SendBounceSmsNotificationError } from './bounce.errors'
+
 /**
  * Extracts custom headers which we send with all emails, such as form ID, submission ID
  * and email type (admin response, email confirmation OTP etc).
@@ -70,39 +69,17 @@ export const isDeliveryNotification = (
 
 /**
  * Filters the given SMS recipients to only those which were sent succesfully
- * @param smsResults Array of sms results
- * @param smsRecipients Recipients who were SMSed. This array must correspond
- * exactly to smsResults, i.e. the result at smsResults[i] corresponds
- * to the result of the attempt to SMS smsRecipients[i]
+ * @param smsErrors Array of sms errors
+ * @param smsRecipients Recipients who were SMSed
  * @returns the contact details of SMSes sent successfully
  */
 export const extractSuccessfulSmsRecipients = (
-  smsResults: Result<true, unknown>[],
+  smsErrors: SendBounceSmsNotificationError[],
   smsRecipients: UserWithContactNumber[],
 ): UserWithContactNumber[] => {
-  return smsResults.reduce<UserWithContactNumber[]>((acc, result, index) => {
-    if (result.isOk()) {
-      acc.push(smsRecipients[index])
-    }
-    return acc
-  }, [])
-}
-
-/**
- * Extracts the errors from results of attempting to send SMSes
- * @param smsResults Array of Promise.allSettled results
- * @returns Array of errors
- */
-export const extractSmsErrors = (
-  smsResults: Result<true, SmsSendError | InvalidNumberError>[],
-): (SmsSendError | InvalidNumberError)[] => {
-  return smsResults.reduce<(SmsSendError | InvalidNumberError)[]>(
-    (acc, result) => {
-      if (result.isErr()) {
-        acc.push(result.error)
-      }
-      return acc
-    },
-    [],
+  // Get recipients which errored
+  const failedRecipients = smsErrors.map((error) => error.meta.contact)
+  return smsRecipients.filter(
+    (recipient) => !failedRecipients.includes(recipient.contact),
   )
 }

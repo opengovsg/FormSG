@@ -1,9 +1,7 @@
 import fs from 'fs'
-import { ok, Result } from 'neverthrow'
 
-import { IIntranet } from '../../../config/feature-manager'
-import { createLoggerWithLabel } from '../../../config/logger'
-import { ApplicationError } from '../../modules/core/core.errors'
+import { IIntranet } from '../../config/feature-manager'
+import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
 
@@ -42,7 +40,7 @@ export class IntranetService {
    * @param ip IP address to check
    * @returns Whether the IP address originated from the intranet
    */
-  isIntranetIp(ip: string): Result<boolean, ApplicationError> {
-    return ok(this.intranetIps.includes(ip))
+  isIntranetIp(ip: string): boolean {
+    return this.intranetIps.includes(ip)
   }
 }

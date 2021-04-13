@@ -1,5 +1,7 @@
 'use strict'
 
+const ExamplesService = require('../../../services/ExamplesService')
+
 // Setting up route
 angular.module('forms').config([
   '$stateProvider',
@@ -72,22 +74,22 @@ angular.module('forms').config([
         url: '/{formId:[0-9a-fA-F]{24}}/use-template',
         templateUrl: 'modules/users/views/examples.client.view.html',
         resolve: {
-          AdminConsole: 'AdminConsole',
           Auth: 'Auth',
           FormErrorService: 'FormErrorService',
           // If the user is logged in, this field will contain the form data of the provided formId,
           // otherwise it will only contain the formId itself.
           FormData: [
-            'AdminConsole',
+            '$q',
             'Auth',
             'FormErrorService',
             '$stateParams',
-            function (AdminConsole, Auth, FormErrorService, $stateParams) {
+            function ($q, Auth, FormErrorService, $stateParams) {
               if (!Auth.getUser()) {
                 return $stateParams.formId
               }
 
-              return AdminConsole.getSingleExampleForm($stateParams.formId)
+              return $q
+                .when(ExamplesService.getSingleExampleForm($stateParams.formId))
                 .then(function (response) {
                   response.form.isTemplate = true
                   return response.form

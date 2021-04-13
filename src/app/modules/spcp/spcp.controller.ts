@@ -2,21 +2,16 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import config from '../../../config/config'
-import { createLoggerWithLabel } from '../../../config/logger'
-import { AuthType, WithForm } from '../../../types'
+import { AuthType } from '../../../types'
+import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
-import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { SpcpFactory } from './spcp.factory'
 import { JwtName, LoginPageValidationResult } from './spcp.types'
-import {
-  createCorppassParsedResponses,
-  createSingpassParsedResponses,
-  mapRouteError,
-} from './spcp.util'
+import { mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -92,42 +87,6 @@ export const handleValidate: RequestHandler<
       })
       const { statusCode, errorMessage } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Adds session to returned JSON if form-filler is SPCP Authenticated
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const addSpcpSessionInfo: RequestHandler<ParamsDictionary> = async (
-  req,
-  res,
-  next,
-) => {
-  const { authType } = (req as WithForm<typeof req>).form
-  if (authType !== AuthType.SP && authType !== AuthType.CP) return next()
-
-  const jwtResult = SpcpFactory.extractJwt(req.cookies, authType)
-  // No action needed if JWT is missing, just means user is not logged in
-  if (jwtResult.isErr()) return next()
-
-  return SpcpFactory.extractJwtPayload(jwtResult.value, authType)
-    .map(({ userName }) => {
-      res.locals.spcpSession = { userName }
-      return next()
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Failed to verify JWT with auth client',
-        meta: {
-          action: 'addSpcpSessionInfo',
-          ...createReqMeta(req),
-        },
-        error,
-      })
-      return next()
     })
 }
 
@@ -222,32 +181,4 @@ export const handleLogin: (
       res.cookie('isLoginError', true)
       return res.redirect(destination)
     })
-}
-
-/**
- * Append additional verified responses(s) for SP and CP responses so that they show up in email response
- * @param req - Express request object
- * @param res - Express response object
- */
-export const appendVerifiedSPCPResponses: RequestHandler<
-  ParamsDictionary,
-  unknown,
-  { parsedResponses: ProcessedFieldResponse[] }
-> = (req, res, next) => {
-  const { form } = req as WithForm<typeof req>
-  const { uinFin, userInfo } = res.locals
-  switch (form.authType) {
-    case AuthType.MyInfo:
-    case AuthType.SP:
-      req.body.parsedResponses.push(...createSingpassParsedResponses(uinFin))
-      break
-    case AuthType.CP:
-      // Note that maskUidOnLastField() relies on the fact that userInfo is pushed in last to parsedResponses
-      // TODO(#1104): Remove this comment after refactoring
-      req.body.parsedResponses.push(
-        ...createCorppassParsedResponses(uinFin, userInfo),
-      )
-      break
-  }
-  return next()
 }

@@ -7,13 +7,13 @@
 import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   AuthType,
   ILoginSchema,
   IPopulatedForm,
   LoginStatistic,
 } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import getLoginModel from '../../models/login.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'

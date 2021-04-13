@@ -5,7 +5,6 @@ import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import { types as myInfoTypes } from '../../../shared/resources/myinfo'
 import {
   AuthType,
@@ -16,6 +15,8 @@ import {
   IPopulatedForm,
   MapRouteError,
 } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
+import { hasProp } from '../../utils/has-prop'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import {
@@ -28,6 +29,7 @@ import { ProcessedFieldResponse } from '../submission/submission.types'
 import { MYINFO_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoAuthTypeError,
+  MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -43,6 +45,7 @@ import {
   MyInfoCookieState,
   MyInfoHashPromises,
   MyInfoRelayState,
+  MyInfoSuccessfulCookiePayload,
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
@@ -80,16 +83,6 @@ const hasMyInfoAnswer = (
   return !!field.isVisible && !!field.myInfo?.attr
 }
 
-const filterFieldsWithHashes = (
-  responses: ProcessedFieldResponse[],
-  hashes: IHashes,
-): VisibleMyInfoResponse[] => {
-  // Filter twice to get types to cooperate
-  return responses
-    .filter(hasMyInfoAnswer)
-    .filter((response) => !!hashes[response.myInfo.attr])
-}
-
 const transformAnswer = (field: VisibleMyInfoResponse): string => {
   const answer = field.answer
   return field.fieldType === BasicField.Date
@@ -114,14 +107,15 @@ export const compareHashedValues = (
   responses: ProcessedFieldResponse[],
   hashes: IHashes,
 ): MyInfoComparePromises => {
-  // Filter responses to only those fields with a corresponding hash
-  const fieldsWithHashes = filterFieldsWithHashes(responses, hashes)
   // Map MyInfoAttribute to response
   const myInfoResponsesMap: MyInfoComparePromises = new Map()
-  fieldsWithHashes.forEach((field) => {
-    const attr = field.myInfo.attr
-    // Already checked that hashes contains this attr
-    myInfoResponsesMap.set(field._id, compareSingleHash(hashes[attr]!, field))
+  responses.forEach((field) => {
+    if (hasMyInfoAnswer(field)) {
+      const hash = hashes[field.myInfo.attr]
+      if (hash) {
+        myInfoResponsesMap.set(field._id, compareSingleHash(hash, field))
+      }
+    }
   })
   return myInfoResponsesMap
 }
@@ -304,20 +298,6 @@ export const validateMyInfoForm = (
 }
 
 /**
- * Utility to narrow type of an object by determining whether
- * it contains the given property.
- * @param obj Object
- * @param prop Property to check
- */
-export const hasProp = <K extends string>(
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  obj: object | Record<string, unknown>,
-  prop: K,
-): obj is Record<K, unknown> => {
-  return prop in obj
-}
-
-/**
  * Type guard for MyInfo cookie.
  * @param cookie Unknown object
  */
@@ -358,6 +338,53 @@ export const extractMyInfoCookie = (
   }
   return err(new MyInfoMissingAccessTokenError())
 }
+
+/**
+ * Asserts that myInfoCookie is in success state
+ * This function acts as a discriminator so that the type of the cookie is encoded in its type
+ * @param cookie the cookie to
+ * @returns ok(cookie) the successful myInfoCookie
+ * @returns err(cookie) the errored cookie
+ */
+export const assertMyInfoCookieSuccessState = (
+  cookie: MyInfoCookiePayload,
+): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieStateError> =>
+  cookie.state === MyInfoCookieState.Success
+    ? ok(cookie)
+    : err(new MyInfoCookieStateError())
+
+/**
+ * Extracts and asserts a successful myInfoCookie from a request's cookies
+ * @param cookies Cookies in a request
+ * @return ok(cookie) the successful myInfoCookie
+ * @return err(MyInfoMissingAccessTokenError) if myInfoCookie is not present on the request
+ * @return err(MyInfoCookieStateError) if the extracted myInfoCookie was in an error state
+ * @return err(MyInfoCookieAccessError) if the cookie has been accessed before
+ */
+export const extractAndAssertMyInfoCookieValidity = (
+  cookies: Record<string, unknown>,
+): Result<
+  MyInfoSuccessfulCookiePayload,
+  | MyInfoCookieStateError
+  | MyInfoMissingAccessTokenError
+  | MyInfoCookieAccessError
+> =>
+  extractMyInfoCookie(cookies)
+    .andThen((cookiePayload) => assertMyInfoCookieSuccessState(cookiePayload))
+    .andThen((cookiePayload) => assertMyInfoCookieUnused(cookiePayload))
+
+/**
+ * Asserts that the myInfoCookie has not been used before
+ * @param myInfoCookie
+ * @returns ok(myInfoCookie) if the cookie has not been used before
+ * @returns err(MyInfoCookieAccessError) if the cookie has been used before
+ */
+export const assertMyInfoCookieUnused = (
+  myInfoCookie: MyInfoSuccessfulCookiePayload,
+): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieAccessError> =>
+  myInfoCookie.usedCount <= 0
+    ? ok(myInfoCookie)
+    : err(new MyInfoCookieAccessError())
 
 /**
  * Extracts access token from a MyInfo cookie

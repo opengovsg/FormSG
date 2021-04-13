@@ -1,15 +1,17 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import { EncryptedSubmissionDto, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
 import {
   CaptchaConnectionError,
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
 import {
+  AttachmentUploadError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
@@ -54,6 +56,12 @@ export const mapRouteError: MapRouteError = (
   coreErrorMessage = 'Sorry, something went wrong. Please try again.',
 ) => {
   switch (error.constructor) {
+    case AttachmentUploadError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
     case MissingFeatureError:
     case CreateRedirectUrlError:
       return {
@@ -73,6 +81,7 @@ export const mapRouteError: MapRouteError = (
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
+    case MalformedVerifiedContentError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:

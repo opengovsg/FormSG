@@ -66,9 +66,9 @@
     { "files": ["*.spec.ts"], "extends": ["plugin:jest/recommended"] },
     {
       "files": ["*.ts", "*.js"],
-      "excludedFiles": ["**/*.spec.ts", "**/.spec.js"],
+      "excludedFiles": ["**/*.spec.ts", "**/.spec.js", "**/__tests__/**/*.ts"],
       "rules": {
-        "typesafe/no-await-without-trycatch": "warn"
+        "@typescript-eslint/no-non-null-assertion": "error"
       }
     }
   ],

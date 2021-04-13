@@ -1,8 +1,8 @@
 import crypto from 'crypto'
 import { Mongoose, Schema } from 'mongoose'
 
-import { sessionSecret } from '../../../config/config'
 import { IHashes, IMyInfoHashModel, IMyInfoHashSchema } from '../../../types'
+import { sessionSecret } from '../../config/config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 export const MYINFO_HASH_SCHEMA_ID = 'MyInfoHash'

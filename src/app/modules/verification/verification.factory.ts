@@ -3,7 +3,7 @@ import { errAsync } from 'neverthrow'
 import featureManager, {
   FeatureNames,
   RegisteredFeature,
-} from '../../../config/feature-manager'
+} from '../../config/feature-manager'
 import { MissingFeatureError } from '../core/core.errors'
 
 import * as VerificationService from './verification.service'

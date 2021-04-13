@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson-ext'
+import compareAsc from 'date-fns/compareAsc'
 import { times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
@@ -125,15 +126,17 @@ describe('feedback.service', () => {
         rating: 1,
       })
       const expectedCreatedFbs = await Promise.all(expectedFbPromises)
-      const expectedFeedbackList = expectedCreatedFbs.map((fb, idx) => ({
-        index: idx + 1,
-        timestamp: moment(fb.created).valueOf(),
-        rating: fb.rating,
-        comment: fb.comment,
-        date: moment(fb.created).tz('Asia/Singapore').format('D MMM YYYY'),
-        dateShort: moment(fb.created).tz('Asia/Singapore').format('D MMM'),
-      }))
-
+      const expectedFeedbackList = expectedCreatedFbs
+        // Feedback is returned in date order
+        .sort((a, b) => compareAsc(a.created!, b.created!))
+        .map((fb, idx) => ({
+          index: idx + 1,
+          timestamp: moment(fb.created).valueOf(),
+          rating: fb.rating,
+          comment: fb.comment,
+          date: moment(fb.created).tz('Asia/Singapore').format('D MMM YYYY'),
+          dateShort: moment(fb.created).tz('Asia/Singapore').format('D MMM'),
+        }))
       // Act
       const actualResult = await FeedbackService.getFormFeedbacks(mockFormId)
 

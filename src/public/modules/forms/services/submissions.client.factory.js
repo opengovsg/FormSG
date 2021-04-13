@@ -274,6 +274,8 @@ function SubmissionsFactory(
       downloadAttachments,
       secretKey,
     ) {
+      // Clear current worker pool.
+      workerPool = []
       // Creates a new AbortController for every request
       downloadAbortController = new AbortController()
 

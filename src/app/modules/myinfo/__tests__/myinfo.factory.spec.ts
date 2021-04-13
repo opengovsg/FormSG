@@ -1,8 +1,8 @@
 import { mocked } from 'ts-jest/utils'
 
-import config from 'src/config/config'
-import { ISpcpMyInfo } from 'src/config/feature-manager'
-import { Environment } from 'src/types'
+import config from 'src/app/config/config'
+import { ISpcpMyInfo } from 'src/app/config/feature-manager'
+import { Environment, IPopulatedForm } from 'src/types'
 
 import { MyInfoData } from '../myinfo.adapter'
 import { createMyInfoFactory } from '../myinfo.factory'
@@ -15,7 +15,7 @@ jest.mock('../myinfo.service', () => ({
   MyInfoService: jest.fn(),
 }))
 const MockMyInfoService = mocked(MyInfoServiceModule, true)
-jest.mock('src/config/config')
+jest.mock('src/app/config/config')
 const MockConfig = mocked(config, true)
 MockConfig.nodeEnv = MOCK_NODE_ENV as Environment
 MockConfig.app = {
@@ -45,12 +45,12 @@ describe('myinfo.factory', () => {
     )
     const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
     const extractUinFinResult = MyInfoFactory.extractUinFin('')
-    const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
-      '',
-      [],
-      '',
+    const getMyInfoDataForFormResult = await MyInfoFactory.getMyInfoDataForForm(
+      ({} as unknown) as IPopulatedForm,
+      {},
     )
-    const prefillMyInfoFieldsResult = MyInfoFactory.prefillMyInfoFields(
+    const prefillAndSaveMyInfoFieldsResult = await MyInfoFactory.prefillAndSaveMyInfoFields(
+      '',
       {} as MyInfoData,
       [],
     )
@@ -71,8 +71,8 @@ describe('myinfo.factory', () => {
     expect(parseMyInfoRelayStateResult._unsafeUnwrapErr()).toEqual(error)
     expect(createRedirectURLResult._unsafeUnwrapErr()).toEqual(error)
     expect(extractUinFinResult._unsafeUnwrapErr()).toEqual(error)
-    expect(fetchMyInfoPersonDataResult._unsafeUnwrapErr()).toEqual(error)
-    expect(prefillMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
+    expect(getMyInfoDataForFormResult._unsafeUnwrapErr()).toEqual(error)
+    expect(prefillAndSaveMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
     expect(saveMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
     expect(checkMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
@@ -94,12 +94,12 @@ describe('myinfo.factory', () => {
     )
     const parseMyInfoRelayStateResult = MyInfoFactory.parseMyInfoRelayState('')
     const extractUinFinResult = MyInfoFactory.extractUinFin('')
-    const fetchMyInfoPersonDataResult = await MyInfoFactory.fetchMyInfoPersonData(
-      '',
-      [],
-      '',
+    const getMyInfoDataForFormResult = await MyInfoFactory.getMyInfoDataForForm(
+      ({} as unknown) as IPopulatedForm,
+      {},
     )
-    const prefillMyInfoFieldsResult = MyInfoFactory.prefillMyInfoFields(
+    const prefillAndSaveMyInfoFieldsResult = await MyInfoFactory.prefillAndSaveMyInfoFields(
+      '',
       {} as MyInfoData,
       [],
     )
@@ -120,8 +120,8 @@ describe('myinfo.factory', () => {
     expect(parseMyInfoRelayStateResult._unsafeUnwrapErr()).toEqual(error)
     expect(createRedirectURLResult._unsafeUnwrapErr()).toEqual(error)
     expect(extractUinFinResult._unsafeUnwrapErr()).toEqual(error)
-    expect(fetchMyInfoPersonDataResult._unsafeUnwrapErr()).toEqual(error)
-    expect(prefillMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
+    expect(getMyInfoDataForFormResult._unsafeUnwrapErr()).toEqual(error)
+    expect(prefillAndSaveMyInfoFieldsResult._unsafeUnwrapErr()).toEqual(error)
     expect(saveMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
     expect(fetchMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)
     expect(checkMyInfoHashesResult._unsafeUnwrapErr()).toEqual(error)

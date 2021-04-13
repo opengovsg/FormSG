@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { rateLimitConfig } from '../../../config/config'
+import { rateLimitConfig } from '../../config/config'
 import { limitRate } from '../../utils/limit-rate'
 
 import * as AuthController from './auth.controller'

@@ -1,8 +1,9 @@
 import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
+import _ from 'lodash'
 
-import { ISpcpMyInfo } from 'src/config/feature-manager'
+import { ISpcpMyInfo } from 'src/app/config/feature-manager'
 import { ILoginSchema, IPopulatedForm } from 'src/types'
 
 import { JwtName } from '../spcp.types'
@@ -114,11 +115,23 @@ export const MOCK_SP_FORM = ({
     _id: new ObjectId().toHexString(),
     agency: new ObjectId().toHexString(),
   },
+  getPublicView: () => _.omit(this, 'admin'),
 } as unknown) as IPopulatedForm
 
 export const MOCK_CP_FORM = ({
   authType: 'CP',
   title: 'Mock CP form',
+  _id: new ObjectId().toHexString(),
+  admin: {
+    _id: new ObjectId().toHexString(),
+    agency: new ObjectId().toHexString(),
+  },
+  getPublicView: () => _.omit(this, 'admin'),
+} as unknown) as IPopulatedForm
+
+export const MOCK_MYINFO_FORM = ({
+  authType: 'MyInfo',
+  title: 'Mock MyInfo form',
   _id: new ObjectId().toHexString(),
   admin: {
     _id: new ObjectId().toHexString(),

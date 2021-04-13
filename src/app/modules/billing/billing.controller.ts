@@ -3,7 +3,8 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import { BillingInfoDto, BillingQueryDto, ErrorDto } from '../../../types/api'
+import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
 import { BillingFactory } from './billing.factory'
@@ -20,13 +21,9 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleGetBillInfo: RequestHandler<
   ParamsDictionary,
+  ErrorDto | BillingInfoDto,
   unknown,
-  unknown,
-  {
-    esrvcId: string
-    yr: string
-    mth: string
-  }
+  BillingQueryDto
 > = async (req, res) => {
   const { esrvcId, mth, yr } = req.query
   const authedUser = (req.session as Express.AuthedSession).user
@@ -54,7 +51,7 @@ export const handleGetBillInfo: RequestHandler<
     })
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json('Error in retrieving billing records')
+      .json({ message: 'Error in retrieving billing records' })
   }
 
   // Retrieved login stats successfully.

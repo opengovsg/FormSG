@@ -3,7 +3,7 @@ import { err, errAsync } from 'neverthrow'
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
-} from '../../../config/feature-manager'
+} from '../../config/feature-manager'
 import { MissingFeatureError } from '../core/core.errors'
 
 import { SpcpService } from './spcp.service'
@@ -13,12 +13,14 @@ interface ISpcpFactory {
   fetchLoginPage: SpcpService['fetchLoginPage']
   validateLoginPage: SpcpService['validateLoginPage']
   extractJwt: SpcpService['extractJwt']
-  extractJwtPayload: SpcpService['extractJwtPayload']
+  extractSingpassJwtPayload: SpcpService['extractSingpassJwtPayload']
+  extractCorppassJwtPayload: SpcpService['extractCorppassJwtPayload']
   parseOOBParams: SpcpService['parseOOBParams']
   getSpcpAttributes: SpcpService['getSpcpAttributes']
   createJWT: SpcpService['createJWT']
   createJWTPayload: SpcpService['createJWTPayload']
   getCookieSettings: SpcpService['getCookieSettings']
+  extractJwtPayloadFromRequest: SpcpService['extractJwtPayloadFromRequest']
 }
 
 export const createSpcpFactory = ({
@@ -31,13 +33,15 @@ export const createSpcpFactory = ({
       createRedirectUrl: () => err(error),
       fetchLoginPage: () => errAsync(error),
       validateLoginPage: () => err(error),
-      extractJwtPayload: () => errAsync(error),
+      extractSingpassJwtPayload: () => errAsync(error),
+      extractCorppassJwtPayload: () => errAsync(error),
       extractJwt: () => err(error),
       parseOOBParams: () => err(error),
       getSpcpAttributes: () => errAsync(error),
       createJWT: () => err(error),
       createJWTPayload: () => err(error),
       getCookieSettings: () => ({}),
+      extractJwtPayloadFromRequest: () => errAsync(error),
     }
   }
   return new SpcpService(props)

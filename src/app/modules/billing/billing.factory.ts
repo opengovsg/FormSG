@@ -1,10 +1,10 @@
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { ILoginSchema, IPopulatedForm } from '../../../types'
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
-} from '../../../config/feature-manager'
-import { ILoginSchema, IPopulatedForm } from '../../../types'
+} from '../../config/feature-manager'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 
 import { FormHasNoAuthError } from './billing.errors'
