@@ -98,6 +98,6 @@ PublicFormsRouter.route('/:formId([a-fA-F0-9]{24})/submissions/encrypt').post(
  * @returns 500 when database error occurs
  */
 PublicFormsRouter.get(
-  '/:formId([a-fA-F0-9]{24})/',
+  '/:formId([a-fA-F0-9]{24})',
   PublicFormController.handleGetPublicForm,
 )

@@ -103,7 +103,6 @@ function FormApi($resource, FormErrorService, FormFields) {
         method: 'GET',
         // disable IE ajax request caching (so new fields show on build panel)
         headers: { 'If-Modified-Since': '0' },
-        params: { accessMode: 'publicform' },
         interceptor: getInterceptor(true),
       },
       update: {
