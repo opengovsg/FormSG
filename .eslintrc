@@ -68,7 +68,6 @@
       "files": ["*.ts", "*.js"],
       "excludedFiles": ["**/*.spec.ts", "**/.spec.js", "**/__tests__/**/*.ts"],
       "rules": {
-        "typesafe/no-await-without-trycatch": "warn",
         "@typescript-eslint/no-non-null-assertion": "error"
       }
     }

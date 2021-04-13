@@ -30,7 +30,7 @@ angular.module('forms').factory('FormFeedback', ['$q', '$http', FormFeedback])
 
 function FormFeedback($q, $http) {
   let resourceUrl = '/api/v3/forms/:formId/feedback'
-  const feedbackAdminUrl = '/:formId/adminform/feedback'
+  const feedbackAdminUrl = '/api/v3/admin/forms/:formId/feedback'
   let feedbackService = {
     postFeedback: function (params, body) {
       let deferred = $q.defer()

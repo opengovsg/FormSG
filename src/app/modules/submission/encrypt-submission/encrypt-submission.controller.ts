@@ -392,7 +392,6 @@ export const handleStreamEncryptedResponses: RequestHandler<
   const { startDate, endDate } = req.query
 
   // Step 1: Retrieve currently logged in user.
-  // eslint-disable-next-line typesafe/no-await-without-trycatch
   const cursorResult = await getPopulatedUserById(sessionUserId)
     .andThen((user) =>
       // Step 2: Check whether user has read permissions to form
