@@ -55,7 +55,6 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
-    case EditFieldError:
     case InvalidFileTypeError:
     case CreatePresignedUrlError:
       return {
@@ -78,6 +77,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
+    case EditFieldError:
     case DatabaseValidationError:
     case MissingUserError:
       return {
