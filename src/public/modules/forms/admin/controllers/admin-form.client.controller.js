@@ -1,8 +1,10 @@
 'use strict'
 
 const { StatusCodes } = require('http-status-codes')
+const get = require('lodash/get')
 const { LogicType } = require('../../../../../types')
 const AdminFormService = require('../../../../services/AdminFormService')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 // All viewable tabs. readOnly is true if that tab cannot be used to edit form.
 const VIEW_TABS = [
@@ -151,7 +153,7 @@ function AdminFormController(
         break
       case StatusCodes.UNPROCESSABLE_ENTITY:
         // Validation can fail for many reasons, so return more specific message
-        errorMessage = _.get(
+        errorMessage = get(
           error,
           'data.message',
           'Your changes contain invalid input.',
@@ -179,13 +181,37 @@ function AdminFormController(
    * @returns Promise
    */
   $scope.updateForm = (update) => {
-    return FormApi.update({ formId: $scope.myform._id }, { form: update })
-      .$promise.then((savedForm) => {
-        // Updating this form updates lastModified
-        // and also updates myform if a formToUse is passed in
-        $scope.myform = savedForm
-      })
-      .catch(handleUpdateError)
+    const updateType = get(update, 'type')
+
+    switch (updateType) {
+      case UPDATE_FORM_TYPES.UpdateField: {
+        const { fieldId, body } = update
+        return $q
+          .when(
+            AdminFormService.updateSingleFormField(
+              $scope.myform._id,
+              fieldId,
+              body,
+            ),
+          )
+          .then((updatedFormField) => {
+            // merge back into the form fields
+            const updateIndex = $scope.myform.form_fields.findIndex(
+              (f) => f._id === fieldId,
+            )
+            $scope.myform.form_fields[updateIndex] = updatedFormField
+          })
+          .catch(handleUpdateError)
+      }
+      default:
+        return FormApi.update({ formId: $scope.myform._id }, { form: update })
+          .$promise.then((savedForm) => {
+            // Updating this form updates lastModified
+            // and also updates myform if a formToUse is passed in
+            $scope.myform = savedForm
+          })
+          .catch(handleUpdateError)
+    }
   }
 
   /**
