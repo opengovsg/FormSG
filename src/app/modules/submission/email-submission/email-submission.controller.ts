@@ -16,8 +16,8 @@ import { MyInfoFactory } from '../../myinfo/myinfo.factory'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import {
+  createCorppassParsedResponses,
   createSingpassParsedResponses,
-  createSpcpFieldResponsesFromJwt,
 } from '../../spcp/spcp.util'
 import * as SubmissionService from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
@@ -114,61 +114,80 @@ export const handleEmailSubmission: RequestHandler<
       )
       .andThen(({ parsedResponses, form }) => {
         const { authType } = form
-        if (authType === AuthType.SP || authType === AuthType.CP) {
-          // Verify NRIC and/or UEN
-          return SpcpFactory.extractJwtPayloadFromRequest(authType, req.cookies)
-            .map((jwt) => ({
-              form,
-              parsedResponses: createSpcpFieldResponsesFromJwt(
-                authType,
-                jwt,
-                parsedResponses,
-              ),
-              hashedFields: new Set<string>(),
-            }))
-            .mapErr((error) => {
-              spcpSubmissionFailure = true
-              return logErrorWithReqMeta(
-                'Failed to verify JWT with auth client',
-              )(error)
-            })
-        } else if (authType === AuthType.MyInfo) {
-          return MyInfoUtil.extractMyInfoCookie(req.cookies)
-            .andThen(MyInfoUtil.extractAccessTokenFromCookie)
-            .andThen((accessToken) => MyInfoFactory.extractUinFin(accessToken))
-            .asyncAndThen((uinFin) =>
-              MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
-                .andThen((hashes) =>
-                  MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+        switch (authType) {
+          case AuthType.CP:
+            return SpcpFactory.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+              .map((jwt) => ({
+                form,
+                parsedResponses: createCorppassParsedResponses(
+                  jwt.userName,
+                  jwt.userInfo,
+                ),
+                hashedFields: new Set<string>(),
+              }))
+              .mapErr((error) => {
+                spcpSubmissionFailure = true
+                return logErrorWithReqMeta(
+                  'Failed to verify JWT with auth client',
+                )(error)
+              })
+          case AuthType.SP:
+            return SpcpFactory.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+              .map((jwt) => ({
+                form,
+                parsedResponses: createSingpassParsedResponses(jwt.userName),
+                hashedFields: new Set<string>(),
+              }))
+              .mapErr((error) => {
+                spcpSubmissionFailure = true
+                return logErrorWithReqMeta(
+                  'Failed to verify JWT with auth client',
+                )(error)
+              })
+          case AuthType.MyInfo:
+            return MyInfoUtil.extractMyInfoCookie(req.cookies)
+              .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+              .andThen((accessToken) =>
+                MyInfoFactory.extractUinFin(accessToken),
+              )
+              .asyncAndThen((uinFin) =>
+                MyInfoFactory.fetchMyInfoHashes(uinFin, formId)
+                  .andThen((hashes) =>
+                    MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
+                  )
+                  .map((hashedFields) => ({
+                    form,
+                    hashedFields,
+                    parsedResponses: [
+                      ...parsedResponses,
+                      ...createSingpassParsedResponses(uinFin),
+                    ],
+                  })),
+              )
+              .mapErr((error) => {
+                spcpSubmissionFailure = true
+                return logErrorWithReqMeta('Error verifying MyInfo hashes')(
+                  error,
                 )
-                .map((hashedFields) => ({
-                  form,
-                  hashedFields,
-                  parsedResponses: [
-                    ...parsedResponses,
-                    ...createSingpassParsedResponses(uinFin),
-                  ],
-                })),
-            )
-            .mapErr((error) => {
-              spcpSubmissionFailure = true
-              return logErrorWithReqMeta('Error verifying MyInfo hashes')(error)
-            })
+              })
+          default:
+            return ok({
+              form,
+              parsedResponses,
+              hashedFields: new Set<string>(),
+            }) as Result<
+              {
+                form: IPopulatedEmailForm
+                parsedResponses: ProcessedFieldResponse[]
+                hashedFields: Set<string>
+              },
+              never
+            >
         }
-        return ok({
-          form,
-          parsedResponses,
-          hashedFields: new Set<string>(),
-        }) as Result<
-          {
-            form: IPopulatedEmailForm
-            parsedResponses: ProcessedFieldResponse[]
-            hashedFields: Set<string>
-          },
-          never
-        >
       })
-      // If this fails, spcpSubmissionFailure is false
+
       .andThen(({ form, parsedResponses, hashedFields }) => {
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
@@ -211,6 +230,8 @@ export const handleEmailSubmission: RequestHandler<
           meta: logMetaWithSubmission,
         })
 
+        // NOTE: This should short circuit in the event of an error.
+        // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
           replyToEmails: EmailSubmissionService.extractEmailAnswers(
             parsedResponses,
@@ -226,6 +247,7 @@ export const handleEmailSubmission: RequestHandler<
             logErrorWithSubmissionMeta('Error sending submission to admin'),
           )
       })
+      // NOTE: The final step returns a ResultAsync so it is not a map
       .andThen(({ form, parsedResponses, submission, emailData }) => {
         // MyInfo access token is single-use, so clear it
         res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
