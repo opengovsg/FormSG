@@ -28,6 +28,7 @@ import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import {
   getProcessedResponses,
   sendEmailConfirmations,
@@ -51,7 +52,7 @@ import {
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
-export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
+const submitEncryptModeForm: RequestHandler = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
     action: 'handleEncryptedSubmission',
@@ -367,6 +368,11 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     })
   })
 }
+
+export const handleEncryptedSubmission = [
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptModeForm,
+] as RequestHandler[]
 
 /**
  * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download

@@ -5,7 +5,6 @@ import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../utils/limit-rate'
 
 import * as EncryptSubmissionController from './encrypt-submission.controller'
-import * as EncryptSubmissionMiddleware from './encrypt-submission.middleware'
 
 export const EncryptSubmissionRouter = Router()
 
@@ -25,6 +24,5 @@ EncryptSubmissionRouter.post(
   '/:formId([a-fA-F0-9]{24})',
   limitRate({ max: rateLimitConfig.submissions }),
   CaptchaFactory.validateCaptchaParams,
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   EncryptSubmissionController.handleEncryptedSubmission,
 )
