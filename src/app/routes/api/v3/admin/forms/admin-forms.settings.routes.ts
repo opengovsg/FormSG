@@ -3,7 +3,10 @@ import { Router } from 'express'
 
 import { AuthType, Status } from '../../../../../../types'
 import { SettingsUpdateDto } from '../../../../../../types/api'
-import { handleUpdateSettings } from '../../../../../modules/form/admin-form/admin-form.controller'
+import {
+  handleGetSettings,
+  handleUpdateSettings,
+} from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsSettingsRouter = Router()
 
@@ -51,4 +54,20 @@ const updateSettingsValidator = celebrate({
 AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings').patch(
   updateSettingsValidator,
   handleUpdateSettings,
+)
+
+/**
+ * Retrieve the settings of the specified form
+ * @route GET /admin/forms/:formId/settings
+ * @group admin
+ * @produces application/json
+ * @returns 200 with latest form settings on successful update
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings').get(
+  handleGetSettings,
 )

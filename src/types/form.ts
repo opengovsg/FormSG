@@ -196,6 +196,10 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
+  /**
+   *
+   */
+  pick(fields: (keyof IFormSchema)[]): Pick<IFormSchema, keyof IFormSchema>
 }
 
 /**
@@ -248,7 +252,10 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
-  getFullFormById(formId: string): Promise<IPopulatedForm | null>
+  getFullFormById(
+    formId: string,
+    fields?: (keyof IPopulatedForm)[],
+  ): Promise<IPopulatedForm | null>
   deactivateById(formId: string): Promise<IFormSchema | null>
   getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],

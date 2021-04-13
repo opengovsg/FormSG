@@ -298,6 +298,45 @@ export const getFormAfterPermissionChecks = ({
 }
 
 /**
+ * Retrieves the form fields of given formId provided that the given user has the
+ * required permissions.
+ *
+ * @returns ok(form) if the user has the required permissions
+ * @returns err(FormNotFoundError) if form does not exist in the database
+ * @returns err(FormDeleteError) if form is already archived
+ * @returns err(ForbiddenFormError if user does not have permission
+ * @returns err(DatabaseError) if any database error occurs
+ */
+export const getFormFieldsAfterPermissionChecks = ({
+  user,
+  formId,
+  fields,
+  level,
+}: {
+  user: IUserSchema
+  formId: string
+  fields: (keyof IPopulatedForm)[]
+  level: PermissionLevel
+}): ResultAsync<
+  IPopulatedForm,
+  FormNotFoundError | FormDeletedError | DatabaseError | ForbiddenFormError
+> => {
+  // Step 1: Retrieve both admin-related and requested fields of form.
+  return FormService.retrieveFormFields(formId, [
+    'status',
+    'admin',
+    'permissionList',
+    ...fields,
+  ]).andThen((form) =>
+    // Step 2: Check whether form is available to be retrieved.
+    assertFormAvailable(form)
+      // Step 3: Check required permission levels.
+      .andThen(() => getAssertPermissionFn(level)(user, form))
+      .map(() => form.pick(fields) as IPopulatedForm),
+  )
+}
+
+/**
  * Retrieves the form of given formId provided that the form is public.
  *
  * @returns ok(form) if the form is public

@@ -113,6 +113,39 @@ export const retrieveFullFormById = (
 }
 
 /**
+ * Retrieves the specified form fields of the given formId
+ * @param formId the id of the form
+ * @param fields an array of field names to retrieve
+ * @returns ok(form) if form exists
+ * @returns err(FormNotFoundError) if the form or form admin does not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const retrieveFormFields = (
+  formId: string,
+  fields: (keyof IPopulatedForm)[],
+): ResultAsync<IPopulatedForm, FormNotFoundError | DatabaseError> => {
+  if (!mongoose.Types.ObjectId.isValid(formId)) {
+    return errAsync(new FormNotFoundError())
+  }
+
+  return ResultAsync.fromPromise(
+    FormModel.getFullFormById(formId, fields),
+    (error) => {
+      logger.error({
+        message: 'Error retrieving form from database',
+        meta: {
+          action: 'retrieveFormFields',
+        },
+        error,
+      })
+      return new DatabaseError()
+    },
+  ).andThen((result) =>
+    result ? okAsync(result) : errAsync(new FormNotFoundError()),
+  )
+}
+
+/**
  * Retrieves (non-populated) form document of the given formId.
  * @param formId the id of the form to retrieve
  * @returns ok(form) if form exists

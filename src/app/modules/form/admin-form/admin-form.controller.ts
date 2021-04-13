@@ -18,6 +18,7 @@ import {
   SettingsUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { FORM_SETTING_FIELDS } from '../../../models/form.server.model'
 import MailService from '../../../services/mail/mail.service'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta } from '../../../utils/request'
@@ -1012,6 +1013,52 @@ export const handleUpdateSettings: RequestHandler<
           userId: sessionUserId,
           formId,
           settingsKeysToUpdate: Object.keys(settingsToPatch),
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for GET /form/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with latest form settings on successful update
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetSettings: RequestHandler<
+  { formId: string },
+  FormSettings | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with read permission check.
+      AuthService.getFormFieldsAfterPermissionChecks({
+        user,
+        formId,
+        fields: FORM_SETTING_FIELDS,
+        level: PermissionLevel.Read,
+      }),
+    )
+    .map((formSettings) => res.status(StatusCodes.OK).json(formSettings))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form settings',
+        meta: {
+          action: 'handleGetSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
         },
         error,
       })
