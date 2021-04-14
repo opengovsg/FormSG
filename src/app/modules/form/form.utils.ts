@@ -1,4 +1,3 @@
-import { has } from 'lodash'
 import { Document, Types } from 'mongoose'
 
 import {
@@ -86,12 +85,12 @@ export const isEmailModeForm = (
  * @param array the array to check
  */
 export const isMongooseDocumentArray = <T extends Document>(
-  array: T[],
+  array: T[] & { isMongooseDocumentArray?: boolean },
 ): array is Types.DocumentArray<T> => {
   /**
    * @see {mongoose.Types.DocumentArray.isMongooseDocumentArray}
    */
-  return has(array, 'isMongooseDocumentArray')
+  return !!array.isMongooseDocumentArray
 }
 
 /**
