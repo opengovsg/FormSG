@@ -162,13 +162,10 @@ function SubmissionsFactory(
     },
     count: function (params) {
       const deferred = $q.defer()
-      let resUrl =
-        fixParamsToUrl(
-          params,
-          `${
-            API_VERSION_PREFIX + ADMIN_FORMS_PREFIX
-          }/:formId/submissions/count`,
-        ) + '/count'
+      let resUrl = fixParamsToUrl(
+        params,
+        `${API_VERSION_PREFIX + ADMIN_FORMS_PREFIX}/:formId/submissions/count`,
+      )
       if (params.startDate && params.endDate) {
         resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
       }
