@@ -14,10 +14,12 @@ import getUserModel from 'src/app/models/user.server.model'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
 import {
+  IFormDocument,
   IPopulatedEmailForm,
   IUserSchema,
   ResponseMode,
   Status,
+  SubmissionCursorData,
   SubmissionType,
 } from 'src/types'
 
@@ -28,6 +30,7 @@ import {
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { AdminFormsRouter } from '../admin-forms.routes'
 
@@ -48,7 +51,7 @@ const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })
 
-describe('GET /:formId/adminform/submissions/count', () => {
+describe('admin-form.submissions.routes', () => {
   let defaultUser: IUserSchema
   let request: Session
 
@@ -65,410 +68,758 @@ describe('GET /:formId/adminform/submissions/count', () => {
     jest.restoreAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
+  describe('GET /:formId/submissions/count', () => {
+    it('should return 200 with 0 count when email mode form has no submissions', async () => {
+      // Arrange
+      const newForm = await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
 
-  it('should return 200 with 0 count when email mode form has no submissions', async () => {
-    // Arrange
-    const newForm = await EmailFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Email,
-      emails: [defaultUser.email],
-      admin: defaultUser._id,
+      // Act
+      const response = await request.get(
+        `/admin/forms/${newForm._id}/submissions/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(0)
     })
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${newForm._id}/submissions/count`,
-    )
+    it('should return 200 with 0 count when storage mode form has no submissions', async () => {
+      // Arrange
+      const newForm = await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: defaultUser._id,
+      })
 
-    // Assert
-    expect(response.status).toEqual(200)
-    expect(response.body).toEqual(0)
-  })
+      // Act
+      const response = await request.get(
+        `/admin/forms/${newForm._id}/submissions/count`,
+      )
 
-  it('should return 200 with 0 count when storage mode form has no submissions', async () => {
-    // Arrange
-    const newForm = await EncryptFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'some public key',
-      admin: defaultUser._id,
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(0)
     })
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${newForm._id}/submissions/count`,
-    )
+    it('should return 200 with form submission counts for email mode forms', async () => {
+      // Arrange
+      const expectedSubmissionCount = 5
+      const newForm = (await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })) as IPopulatedEmailForm
+      // Insert submissions
+      const mockSubmissionHash: SubmissionHash = {
+        hash: 'some hash',
+        salt: 'some salt',
+      }
+      await Promise.all(
+        times(expectedSubmissionCount, () =>
+          saveSubmissionMetadata(newForm, mockSubmissionHash),
+        ),
+      )
 
-    // Assert
-    expect(response.status).toEqual(200)
-    expect(response.body).toEqual(0)
-  })
+      // Act
+      const response = await request.get(
+        `/admin/forms/${newForm._id}/submissions/count`,
+      )
 
-  it('should return 200 with form submission counts for email mode forms', async () => {
-    // Arrange
-    const expectedSubmissionCount = 5
-    const newForm = (await EmailFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Email,
-      emails: [defaultUser.email],
-      admin: defaultUser._id,
-    })) as IPopulatedEmailForm
-    // Insert submissions
-    const mockSubmissionHash: SubmissionHash = {
-      hash: 'some hash',
-      salt: 'some salt',
-    }
-    await Promise.all(
-      times(expectedSubmissionCount, () =>
-        saveSubmissionMetadata(newForm, mockSubmissionHash),
-      ),
-    )
-
-    // Act
-    const response = await request.get(
-      `/admin/forms/${newForm._id}/submissions/count`,
-    )
-
-    // Assert
-    expect(response.status).toEqual(200)
-    expect(response.body).toEqual(expectedSubmissionCount)
-  })
-
-  it('should return 200 with form submission counts for storage mode forms', async () => {
-    // Arrange
-    const expectedSubmissionCount = 3
-    const newForm = await EncryptFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'some public key',
-      admin: defaultUser._id,
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(expectedSubmissionCount)
     })
-    await Promise.all(
-      times(expectedSubmissionCount, (count) => {
-        return SubmissionModel.create({
-          submissionType: SubmissionType.Encrypt,
-          form: newForm._id,
-          authType: newForm.authType,
-          myInfoFields: newForm.getUniqueMyInfoAttrs(),
-          encryptedContent: `any encrypted content ${count}`,
-          verifiedContent: `any verified content ${count}`,
-          attachmentMetadata: new Map(),
-          version: 1,
+
+    it('should return 200 with form submission counts for storage mode forms', async () => {
+      // Arrange
+      const expectedSubmissionCount = 3
+      const newForm = await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: defaultUser._id,
+      })
+      await Promise.all(
+        times(expectedSubmissionCount, (count) => {
+          return SubmissionModel.create({
+            submissionType: SubmissionType.Encrypt,
+            form: newForm._id,
+            authType: newForm.authType,
+            myInfoFields: newForm.getUniqueMyInfoAttrs(),
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map(),
+            version: 1,
+          })
+        }),
+      )
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${newForm._id}/submissions/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(expectedSubmissionCount)
+    })
+
+    it('should return 200 with counts of submissions made between given start and end dates.', async () => {
+      // Arrange
+      const expectedSubmissionCount = 3
+      const newForm = (await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })) as IPopulatedEmailForm
+      // Insert submissions
+      const mockSubmissionHash: SubmissionHash = {
+        hash: 'some hash',
+        salt: 'some salt',
+      }
+      const results = await Promise.all(
+        times(expectedSubmissionCount, () =>
+          saveSubmissionMetadata(newForm, mockSubmissionHash),
+        ),
+      )
+      // Update first submission to be 5 days ago.
+      const now = new Date()
+      const firstSubmission = results[0]._unsafeUnwrap()
+      firstSubmission.created = subDays(now, 5)
+      await firstSubmission.save()
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .query({
+          startDate: format(subDays(now, 6), 'yyyy-MM-dd'),
+          endDate: format(subDays(now, 3), 'yyyy-MM-dd'),
         })
-      }),
-    )
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${newForm._id}/submissions/count`,
-    )
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(1)
+    })
 
-    // Assert
-    expect(response.status).toEqual(200)
-    expect(response.body).toEqual(expectedSubmissionCount)
-  })
-
-  it('should return 200 with counts of submissions made between given start and end dates.', async () => {
-    // Arrange
-    const expectedSubmissionCount = 3
-    const newForm = (await EmailFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Email,
-      emails: [defaultUser.email],
-      admin: defaultUser._id,
-    })) as IPopulatedEmailForm
-    // Insert submissions
-    const mockSubmissionHash: SubmissionHash = {
-      hash: 'some hash',
-      salt: 'some salt',
-    }
-    const results = await Promise.all(
-      times(expectedSubmissionCount, () =>
-        saveSubmissionMetadata(newForm, mockSubmissionHash),
-      ),
-    )
-    // Update first submission to be 5 days ago.
-    const now = new Date()
-    const firstSubmission = results[0]._unsafeUnwrap()
-    firstSubmission.created = subDays(now, 5)
-    await firstSubmission.save()
-
-    // Act
-    const response = await request
-      .get(`/admin/forms/${newForm._id}/submissions/count`)
-      .query({
-        startDate: format(subDays(now, 6), 'yyyy-MM-dd'),
-        endDate: format(subDays(now, 3), 'yyyy-MM-dd'),
+    it('should return 400 when query.startDate is missing when query.endDate is provided', async () => {
+      // Arrange
+      const newForm = await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: defaultUser._id,
       })
 
-    // Assert
-    expect(response.status).toEqual(200)
-    expect(response.body).toEqual(1)
-  })
+      // Act
+      const response = await request
+        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .query({
+          endDate: '2021-04-06',
+        })
 
-  it('should return 400 when query.startDate is missing when query.endDate is provided', async () => {
-    // Arrange
-    const newForm = await EncryptFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'some public key',
-      admin: defaultUser._id,
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          query: {
+            key: 'endDate',
+            message:
+              '"endDate" date references "ref:startDate" which must have a valid date format',
+          },
+        }),
+      )
     })
 
-    // Act
-    const response = await request
-      .get(`/admin/forms/${newForm._id}/submissions/count`)
-      .query({
-        endDate: '2021-04-06',
+    it('should return 400 when query.endDate is missing when query.startDate is provided', async () => {
+      // Arrange
+      const newForm = await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: defaultUser._id,
       })
 
-    // Assert
-    expect(response.status).toEqual(400)
-    expect(response.body).toEqual(
-      buildCelebrateError({
-        query: {
-          key: 'endDate',
-          message:
-            '"endDate" date references "ref:startDate" which must have a valid date format',
-        },
-      }),
-    )
-  })
+      // Act
+      const response = await request
+        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .query({
+          startDate: '2021-04-06',
+        })
 
-  it('should return 400 when query.endDate is missing when query.startDate is provided', async () => {
-    // Arrange
-    const newForm = await EncryptFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'some public key',
-      admin: defaultUser._id,
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          query: {
+            key: '',
+            message:
+              '"value" contains [startDate] without its required peers [endDate]',
+          },
+        }),
+      )
     })
 
-    // Act
-    const response = await request
-      .get(`/admin/forms/${newForm._id}/submissions/count`)
-      .query({
-        startDate: '2021-04-06',
+    it('should return 400 when query.startDate is malformed', async () => {
+      // Arrange
+      const newForm = await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: defaultUser._id,
       })
 
-    // Assert
-    expect(response.status).toEqual(400)
-    expect(response.body).toEqual(
-      buildCelebrateError({
-        query: {
-          key: '',
-          message:
-            '"value" contains [startDate] without its required peers [endDate]',
-        },
-      }),
-    )
-  })
+      // Act
+      const response = await request
+        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .query({
+          startDate: 'not a date',
+          endDate: '2021-04-06',
+        })
 
-  it('should return 400 when query.startDate is malformed', async () => {
-    // Arrange
-    const newForm = await EncryptFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'some public key',
-      admin: defaultUser._id,
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          query: {
+            key: 'startDate',
+            message: '"startDate" must be in YYYY-MM-DD format',
+          },
+        }),
+      )
     })
 
-    // Act
-    const response = await request
-      .get(`/admin/forms/${newForm._id}/submissions/count`)
-      .query({
-        startDate: 'not a date',
-        endDate: '2021-04-06',
+    it('should return 400 when query.endDate is malformed', async () => {
+      // Arrange
+      const newForm = await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: defaultUser._id,
       })
 
-    // Assert
-    expect(response.status).toEqual(400)
-    expect(response.body).toEqual(
-      buildCelebrateError({
-        query: {
-          key: 'startDate',
-          message: '"startDate" must be in YYYY-MM-DD format',
-        },
-      }),
-    )
-  })
+      // Act
+      const response = await request
+        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .query({
+          startDate: '2021-04-06',
+          // Wrong format
+          endDate: '04-06-1993',
+        })
 
-  it('should return 400 when query.endDate is malformed', async () => {
-    // Arrange
-    const newForm = await EncryptFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'some public key',
-      admin: defaultUser._id,
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          query: {
+            key: 'endDate',
+            message: '"endDate" must be in YYYY-MM-DD format',
+          },
+        }),
+      )
     })
 
-    // Act
-    const response = await request
-      .get(`/admin/forms/${newForm._id}/submissions/count`)
-      .query({
-        startDate: '2021-04-06',
-        // Wrong format
-        endDate: '04-06-1993',
+    it('should return 400 when query.endDate is before query.startDate', async () => {
+      // Arrange
+      const newForm = await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'some public key',
+        admin: defaultUser._id,
       })
 
-    // Assert
-    expect(response.status).toEqual(400)
-    expect(response.body).toEqual(
-      buildCelebrateError({
-        query: {
-          key: 'endDate',
-          message: '"endDate" must be in YYYY-MM-DD format',
-        },
-      }),
-    )
-  })
+      // Act
+      const response = await request
+        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .query({
+          startDate: '2021-04-06',
+          endDate: '2020-01-01',
+        })
 
-  it('should return 400 when query.endDate is before query.startDate', async () => {
-    // Arrange
-    const newForm = await EncryptFormModel.create({
-      title: 'new form',
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'some public key',
-      admin: defaultUser._id,
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          query: {
+            key: 'endDate',
+            message: '"endDate" must be greater than "ref:startDate"',
+          },
+        }),
+      )
     })
 
-    // Act
-    const response = await request
-      .get(`/admin/forms/${newForm._id}/submissions/count`)
-      .query({
-        startDate: '2021-04-06',
-        endDate: '2020-01-01',
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${new ObjectId()}/submissions/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Form that defaultUser has no access to.
+      const inaccessibleForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        permissionList: [],
       })
 
-    // Assert
-    expect(response.status).toEqual(400)
-    expect(response.body).toEqual(
-      buildCelebrateError({
-        query: {
-          key: 'endDate',
-          message: '"endDate" must be greater than "ref:startDate"',
-        },
-      }),
-    )
-  })
+      // Act
+      const response = await request.get(
+        `/admin/forms/${inaccessibleForm._id}/submissions/count`,
+      )
 
-  it('should return 401 when user is not logged in', async () => {
-    // Arrange
-    await logoutSession(request)
-
-    // Act
-    const response = await request.get(
-      `/admin/forms/${new ObjectId()}/submissions/count`,
-    )
-
-    // Assert
-    expect(response.status).toEqual(401)
-    expect(response.body).toEqual({ message: 'User is unauthorized.' })
-  })
-
-  it('should return 403 when user does not have read permissions to form', async () => {
-    // Arrange
-    const anotherUser = (
-      await dbHandler.insertFormCollectionReqs({
-        userId: new ObjectId(),
-        mailName: 'some-user',
-        shortName: 'someUser',
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
       })
-    ).user
-    // Form that defaultUser has no access to.
-    const inaccessibleForm = await EncryptFormModel.create({
-      title: 'Collab form',
-      publicKey: 'some public key',
-      admin: anotherUser._id,
-      permissionList: [],
     })
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${inaccessibleForm._id}/submissions/count`,
-    )
+    it('should return 404 when form to retrieve submission counts for cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
 
-    // Assert
-    expect(response.status).toEqual(403)
-    expect(response.body).toEqual({
-      message: expect.stringContaining(
-        'not authorized to perform read operation',
-      ),
+      // Act
+      const response = await request.get(
+        `/admin/forms/${invalidFormId}/submissions/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form to retrieve submission counts for is archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${archivedForm._id}/submissions/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Clear user collection
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${new ObjectId()}/submissions/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst counting submissions', async () => {
+      // Arrange
+      const form = await EmailFormModel.create({
+        title: 'normal form',
+        status: Status.Private,
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+      // @ts-ignore
+      jest.spyOn(SubmissionModel, 'countDocuments').mockReturnValueOnce({
+        exec: jest.fn().mockRejectedValueOnce(new Error('some error')),
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${form._id}/submissions/count`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
     })
   })
 
-  it('should return 404 when form to retrieve submission counts for cannot be found', async () => {
-    // Arrange
-    const invalidFormId = new ObjectId().toHexString()
+  describe('GET /:formId/submissions/download', () => {
+    let defaultForm: IFormDocument
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${invalidFormId}/submissions/count`,
-    )
-
-    // Assert
-    expect(response.status).toEqual(404)
-    expect(response.body).toEqual({ message: 'Form not found' })
-  })
-
-  it('should return 410 when form to retrieve submission counts for is archived', async () => {
-    // Arrange
-    const archivedForm = await EncryptFormModel.create({
-      title: 'archived form',
-      status: Status.Archived,
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'does not matter',
-      admin: defaultUser._id,
+    beforeEach(async () => {
+      defaultForm = (await EncryptFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'any public key',
+        admin: defaultUser._id,
+      })) as IFormDocument
     })
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${archivedForm._id}/submissions/count`,
-    )
+    it('should return 200 with stream of encrypted responses without attachment URLs when query.downloadAttachments is false', async () => {
+      // Arrange
+      const submissions = await Promise.all(
+        times(11, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map([
+              ['fieldId1', `some.attachment.url.${count}`],
+              ['fieldId2', `some.other.attachment.url.${count}`],
+            ]),
+          }),
+        ),
+      )
 
-    // Assert
-    expect(response.status).toEqual(410)
-    expect(response.body).toEqual({ message: 'Form has been archived' })
-  })
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .query({ downloadAttachments: false })
+        .buffer()
+        .parse((res, cb) => {
+          let buffer = ''
+          res.on('data', (chunk) => {
+            buffer += chunk
+          })
+          res.on('end', () => cb(null, buffer))
+        })
 
-  it('should return 422 when user in session cannot be retrieved from the database', async () => {
-    // Arrange
-    // Clear user collection
-    await dbHandler.clearCollection(UserModel.collection.name)
+      // Assert
+      const expectedSorted = submissions
+        .map((s) =>
+          jsonParseStringify({
+            _id: s._id,
+            submissionType: s.submissionType,
+            // Expect returned submissions to not have attachment metadata.
+            attachmentMetadata: {},
+            encryptedContent: s.encryptedContent,
+            verifiedContent: s.verifiedContent,
+            created: s.created,
+          }),
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${new ObjectId()}/submissions/count`,
-    )
+      const actualSorted = (response.body as string)
+        .split('\n')
+        .map(
+          (submissionStr: string) =>
+            JSON.parse(submissionStr) as SubmissionCursorData,
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
-    // Assert
-    expect(response.status).toEqual(422)
-    expect(response.body).toEqual({ message: 'User not found' })
-  })
-
-  it('should return 500 when database error occurs whilst counting submissions', async () => {
-    // Arrange
-    const form = await EmailFormModel.create({
-      title: 'normal form',
-      status: Status.Private,
-      responseMode: ResponseMode.Email,
-      emails: [defaultUser.email],
-      admin: defaultUser._id,
+      expect(response.status).toEqual(200)
+      expect(actualSorted).toEqual(expectedSorted)
     })
-    // @ts-ignore
-    jest.spyOn(SubmissionModel, 'countDocuments').mockReturnValueOnce({
-      exec: jest.fn().mockRejectedValueOnce(new Error('some error')),
+
+    it('should return 200 with stream of encrypted responses with attachment URLs when query.downloadAttachments is true', async () => {
+      // Arrange
+      const submissions = await Promise.all(
+        times(5, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map([
+              ['fieldId1', `some.attachment.url.${count}`],
+              ['fieldId2', `some.other.attachment.url.${count}`],
+            ]),
+          }),
+        ),
+      )
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .query({ downloadAttachments: true })
+        .buffer()
+        .parse((res, cb) => {
+          let buffer = ''
+          res.on('data', (chunk) => {
+            buffer += chunk
+          })
+          res.on('end', () => cb(null, buffer))
+        })
+
+      // Assert
+      const expectedSorted = submissions
+        .map((s) =>
+          jsonParseStringify({
+            _id: s._id,
+            submissionType: s.submissionType,
+            // Expect returned submissions to also have attachment metadata.
+            attachmentMetadata: s.attachmentMetadata,
+            encryptedContent: s.encryptedContent,
+            verifiedContent: s.verifiedContent,
+            created: s.created,
+          }),
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+        .map((s) => ({
+          ...s,
+          // Require second map due to stringify stage prior to this.
+          attachmentMetadata: {
+            fieldId1: expect.stringContaining(s.attachmentMetadata['fieldId1']),
+            fieldId2: expect.stringContaining(s.attachmentMetadata['fieldId2']),
+          },
+        }))
+
+      const actualSorted = (response.body as string)
+        .split('\n')
+        .map(
+          (submissionStr: string) =>
+            JSON.parse(submissionStr) as SubmissionCursorData,
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      expect(response.status).toEqual(200)
+      expect(actualSorted).toEqual(expectedSorted)
     })
 
-    // Act
-    const response = await request.get(
-      `/admin/forms/${form._id}/submissions/count`,
-    )
+    it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
+      // Arrange
+      const submissions = await Promise.all(
+        times(5, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map([
+              ['fieldId1', `some.attachment.url.${count}`],
+              ['fieldId2', `some.other.attachment.url.${count}`],
+            ]),
+          }),
+        ),
+      )
 
-    // Assert
-    expect(response.status).toEqual(500)
-    expect(response.body).toEqual({
-      message: 'Something went wrong. Please try again.',
+      const startDateStr = '2020-02-03'
+      const endDateStr = '2020-02-04'
+      // Set 2 submissions to be submitted with specific date
+      submissions[2].created = new Date(startDateStr)
+      submissions[4].created = new Date(endDateStr)
+      await submissions[2].save()
+      await submissions[4].save()
+      const expectedSubmissionIds = [
+        String(submissions[2]._id),
+        String(submissions[4]._id),
+      ]
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .query({
+          startDate: startDateStr,
+          endDate: endDateStr,
+        })
+        .buffer()
+        .parse((res, cb) => {
+          let buffer = ''
+          res.on('data', (chunk) => {
+            buffer += chunk
+          })
+          res.on('end', () => cb(null, buffer))
+        })
+
+      // Assert
+      const expectedSorted = submissions
+        .map((s) =>
+          jsonParseStringify({
+            _id: s._id,
+            submissionType: s.submissionType,
+            // Expect returned submissions to not have attachment metadata since query is false.
+            attachmentMetadata: {},
+            encryptedContent: s.encryptedContent,
+            verifiedContent: s.verifiedContent,
+            created: s.created,
+          }),
+        )
+        .filter((s) => expectedSubmissionIds.includes(s._id))
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      const actualSorted = (response.body as string)
+        .split('\n')
+        .map(
+          (submissionStr: string) =>
+            JSON.parse(submissionStr) as SubmissionCursorData,
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      expect(response.status).toEqual(200)
+      expect(actualSorted).toEqual(expectedSorted)
+    })
+
+    it('should return 400 when form of given formId is not an encrypt mode form', async () => {
+      // Arrange
+      const emailForm = await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${emailForm._id}/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: 'Attempted to submit encrypt form to email endpoint',
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${defaultForm._id}/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not have read permissions to form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      // Form that defaultUser has no access to.
+      const inaccessibleForm = await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: anotherUser._id,
+        permissionList: [],
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${inaccessibleForm._id}/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form to download submissions for cannot be found', async () => {
+      // Arrange
+      const invalidFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${invalidFormId}/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 410 when form to download submissions for is archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: Status.Archived,
+        responseMode: ResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${archivedForm._id}/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      // Clear user collection
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${new ObjectId()}/submissions/download`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
     })
   })
 })
+
+// Helper utils
+const createSubmission = ({
+  form,
+  encryptedContent,
+  verifiedContent,
+  attachmentMetadata,
+  created,
+}: {
+  form: IFormDocument
+  encryptedContent: string
+  attachmentMetadata?: Map<string, string>
+  verifiedContent?: string
+  created?: Date
+}) => {
+  return SubmissionModel.create({
+    submissionType: SubmissionType.Encrypt,
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    attachmentMetadata,
+    encryptedContent,
+    verifiedContent,
+    created,
+    version: 1,
+  })
+}

@@ -513,7 +513,7 @@ export const streamEncryptedResponses: RequestHandler<
     })
 }
 
-// Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
+// Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
 export const handleStreamEncryptedResponses = [
   validateDateRange,
   streamEncryptedResponses,

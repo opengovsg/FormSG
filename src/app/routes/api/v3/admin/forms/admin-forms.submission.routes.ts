@@ -39,5 +39,5 @@ AdminFormsSubmissionRouter.route(
  * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
 AdminFormsSubmissionRouter.route(
-  '/:formId([a-fA-F0-9]{24})/adminform/submissions/download',
+  '/:formId([a-fA-F0-9]{24})/submissions/download',
 ).get(EncryptSubmissionController.handleStreamEncryptedResponses)
