@@ -443,13 +443,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return { ...newForm, ...overrideProps }
   }
 
-  FormSchema.methods.pick = function (
-    this: IFormSchema,
-    fields: (keyof IFormSchema)[],
-  ) {
-    return pick(this, fields)
-  }
-
   FormSchema.methods.getPublicView = function (this: IFormSchema): PublicForm {
     const basePublicView = pick(this, FORM_PUBLIC_FIELDS) as PublicFormValues
 

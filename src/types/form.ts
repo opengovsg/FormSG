@@ -196,10 +196,6 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
-  /**
-   *
-   */
-  pick(fields: (keyof IFormSchema)[]): Pick<IFormSchema, keyof IFormSchema>
 }
 
 /**

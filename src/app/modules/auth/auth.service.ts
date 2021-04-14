@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import { LINKS } from '../../../shared/constants'
@@ -285,16 +285,9 @@ export const getFormAfterPermissionChecks = ({
   IPopulatedForm,
   FormNotFoundError | FormDeletedError | DatabaseError | ForbiddenFormError
 > => {
-  // Step 1: Retrieve full form.
-  return FormService.retrieveFullFormById(formId).andThen((fullForm) =>
-    // Step 2: Check whether form is available to be retrieved.
-    assertFormAvailable(fullForm).andThen(() =>
-      // Step 3: Check required permission levels.
-      getAssertPermissionFn(level)(user, fullForm)
-        // Step 4: If success, return retrieved form.
-        .map(() => fullForm),
-    ),
-  )
+  return FormService.retrieveFullFormById(formId)
+    .map((form) => ({ form, user }))
+    .andThen(checkFormForPermissions(level))
 }
 
 /**
@@ -307,34 +300,18 @@ export const getFormAfterPermissionChecks = ({
  * @returns err(ForbiddenFormError if user does not have permission
  * @returns err(DatabaseError) if any database error occurs
  */
-export const getFormFieldsAfterPermissionChecks = ({
+export const checkFormForPermissions = (level: PermissionLevel) => ({
   user,
-  formId,
-  fields,
-  level,
+  form,
 }: {
   user: IUserSchema
-  formId: string
-  fields: (keyof IPopulatedForm)[]
-  level: PermissionLevel
-}): ResultAsync<
-  IPopulatedForm,
-  FormNotFoundError | FormDeletedError | DatabaseError | ForbiddenFormError
-> => {
-  // Step 1: Retrieve both admin-related and requested fields of form.
-  return FormService.retrieveFormFields(formId, [
-    'status',
-    'admin',
-    'permissionList',
-    ...fields,
-  ]).andThen((form) =>
-    // Step 2: Check whether form is available to be retrieved.
-    assertFormAvailable(form)
-      // Step 3: Check required permission levels.
-      .andThen(() => getAssertPermissionFn(level)(user, form))
-      .map(() => form.pick(fields) as IPopulatedForm),
-  )
-}
+  form: IPopulatedForm
+}): Result<IPopulatedForm, FormDeletedError | ForbiddenFormError> =>
+  // Step 1: Check whether form is available to be retrieved.
+  assertFormAvailable(form)
+    // Step 2: Check required permission levels.
+    .andThen(() => getAssertPermissionFn(level)(user, form))
+    .map(() => form)
 
 /**
  * Retrieves the form of given formId provided that the form is public.
