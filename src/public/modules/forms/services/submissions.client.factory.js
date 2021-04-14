@@ -50,7 +50,13 @@ function SubmissionsFactory(
   const ADMIN_FORMS_PREFIX = '/admin/forms'
 
   const generateDownloadUrl = (params, downloadAttachments) => {
-    let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
+    // NOTE: The ? is appended behind to ensure that the query parameters in url are constructed correctly
+    let resUrl = `${fixParamsToUrl(
+      params,
+      `${
+        API_VERSION_PREFIX + ADMIN_FORMS_PREFIX
+      }/:formId/submissions/download?`,
+    )}`
     if (params.startDate && params.endDate) {
       resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
     }
