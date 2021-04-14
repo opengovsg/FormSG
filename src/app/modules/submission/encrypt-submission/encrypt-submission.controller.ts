@@ -602,7 +602,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
 ] as RequestHandler[]
 
 /**
- * Handler for GET /:formId/submissions/submissionId
+ * Handler for GET /:formId/submissions/:submissionId
  * @security session
  *
  * @returns 200 with encrypted submission data response

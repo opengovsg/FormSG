@@ -86,7 +86,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${newForm._id}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`,
       )
 
       // Assert
@@ -105,7 +105,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${newForm._id}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`,
       )
 
       // Assert
@@ -135,7 +135,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${newForm._id}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`,
       )
 
       // Assert
@@ -169,7 +169,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${newForm._id}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`,
       )
 
       // Assert
@@ -204,7 +204,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .get(`${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`)
         .query({
           startDate: format(subDays(now, 6), 'yyyy-MM-dd'),
           endDate: format(subDays(now, 3), 'yyyy-MM-dd'),
@@ -242,7 +242,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .get(`${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`)
         .query({
           startDate: format(expectedDate, 'yyyy-MM-dd'),
           endDate: format(expectedDate, 'yyyy-MM-dd'),
@@ -264,7 +264,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .get(`${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`)
         .query({
           endDate: '2021-04-06',
         })
@@ -293,7 +293,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .get(`${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`)
         .query({
           startDate: '2021-04-06',
         })
@@ -322,7 +322,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .get(`${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`)
         .query({
           startDate: 'not a date',
           endDate: '2021-04-06',
@@ -351,7 +351,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .get(`${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`)
         .query({
           startDate: '2021-04-06',
           // Wrong format
@@ -381,7 +381,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .get(`${ADMIN_FORMS_PREFIX}/${newForm._id}/submissions/count`)
         .query({
           startDate: '2021-04-06',
           endDate: '2020-01-01',
@@ -406,7 +406,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${new ObjectId()}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${new ObjectId()}/submissions/count`,
       )
 
       // Assert
@@ -433,7 +433,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${inaccessibleForm._id}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${inaccessibleForm._id}/submissions/count`,
       )
 
       // Assert
@@ -451,7 +451,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${invalidFormId}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${invalidFormId}/submissions/count`,
       )
 
       // Assert
@@ -471,7 +471,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${archivedForm._id}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${archivedForm._id}/submissions/count`,
       )
 
       // Assert
@@ -486,7 +486,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${new ObjectId()}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${new ObjectId()}/submissions/count`,
       )
 
       // Assert
@@ -510,7 +510,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${form._id}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${form._id}/submissions/count`,
       )
 
       // Assert
@@ -551,7 +551,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .get(`${ADMIN_FORMS_PREFIX}/${defaultForm._id}/submissions/download`)
         .query({ downloadAttachments: false })
         .buffer()
         .parse((res, cb) => {
@@ -607,7 +607,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .get(`${ADMIN_FORMS_PREFIX}/${defaultForm._id}/submissions/download`)
         .query({ downloadAttachments: true })
         .buffer()
         .parse((res, cb) => {
@@ -682,7 +682,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .get(`${ADMIN_FORMS_PREFIX}/${defaultForm._id}/submissions/download`)
         .query({
           startDate: expectedDate,
           endDate: expectedDate,
@@ -754,7 +754,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .get(`${ADMIN_FORMS_PREFIX}/${defaultForm._id}/submissions/download`)
         .query({
           startDate: startDateStr,
           endDate: endDateStr,
@@ -807,7 +807,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${emailForm._id}/submissions/download`,
+        `${ADMIN_FORMS_PREFIX}/${emailForm._id}/submissions/download`,
       )
 
       // Assert
@@ -823,7 +823,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${defaultForm._id}/submissions/download`,
+        `${ADMIN_FORMS_PREFIX}/${defaultForm._id}/submissions/download`,
       )
 
       // Assert
@@ -850,7 +850,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${inaccessibleForm._id}/submissions/download`,
+        `${ADMIN_FORMS_PREFIX}/${inaccessibleForm._id}/submissions/download`,
       )
 
       // Assert
@@ -868,7 +868,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${invalidFormId}/submissions/download`,
+        `${ADMIN_FORMS_PREFIX}/${invalidFormId}/submissions/download`,
       )
 
       // Assert
@@ -888,7 +888,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${archivedForm._id}/submissions/download`,
+        `${ADMIN_FORMS_PREFIX}/${archivedForm._id}/submissions/download`,
       )
 
       // Assert
@@ -903,7 +903,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${new ObjectId()}/submissions/download`,
+        `${ADMIN_FORMS_PREFIX}/${new ObjectId()}/submissions/download`,
       )
 
       // Assert
@@ -937,7 +937,9 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `/admin/forms/${defaultForm._id}/submissions/${String(submission._id)}`,
+        `${ADMIN_FORMS_PREFIX}/${defaultForm._id}/submissions/${String(
+          submission._id,
+        )}`,
       )
 
       // Assert
