@@ -414,43 +414,41 @@ export const duplicateForm = (
   )
 }
 
+/**
+ * Updates the targeted form field with the new field provided
+ * @param form the form the field to update belongs to
+ * @param fieldId the id of the field to update
+ * @param newField the new field to replace with
+ * @returns ok(updatedField)
+ * @returns err(FieldNotFoundError) if fieldId does not correspond to any field in the form
+ * @returns err(EditFieldError) if field type of new field does not match the field to update
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
 export const updateFormField = (
   form: IPopulatedForm,
   fieldId: string,
   newField: FieldUpdateDto,
 ): ResultAsync<IFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
-  const fieldToUpdate = getFormFieldById(form.form_fields, fieldId)
-  if (!fieldToUpdate) {
-    return errAsync(new FieldNotFoundError())
-  }
+  return ResultAsync.fromPromise(
+    form.updateFormFieldById(fieldId, newField),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form field',
+        meta: {
+          action: 'updateFormField',
+          formId: form._id,
+          fieldId,
+          newField,
+        },
+        error,
+      })
 
-  // Double check that fields types are not changed.
-  if (fieldToUpdate.fieldType !== newField.fieldType) {
-    return errAsync(
-      new EditFieldError(
-        'Provided field type does not match current field type',
-      ),
-    )
-  }
-
-  // Unable to do this atomically with Model#findByIdAndUpdate as some fields
-  // uses`this.parent()` calls which is unavailable in that function.
-  fieldToUpdate.set(newField)
-
-  return ResultAsync.fromPromise(form.save(), (error) => {
-    logger.error({
-      message: 'Error encountered while updating form field',
-      meta: {
-        action: 'updateFormField',
-        formId: form._id,
-        fieldId,
-        newField,
-      },
-      error,
-    })
-
-    return transformMongoError(error)
-  }).andThen<IFieldSchema, FieldNotFoundError>((updatedForm) => {
+      return transformMongoError(error)
+    },
+  ).andThen<IFieldSchema, FieldNotFoundError>((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FieldNotFoundError())
+    }
     const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
     return updatedFormField
       ? okAsync(updatedFormField)
