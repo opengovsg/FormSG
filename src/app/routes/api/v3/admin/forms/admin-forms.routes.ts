@@ -5,6 +5,7 @@ import { handleDeleteLogic } from '../../../../../modules/form/admin-form/admin-
 
 import { AdminFormsFeedbackRouter } from './admin-forms.feedback.routes'
 import { AdminFormsFormRouter } from './admin-forms.form.routes'
+import { AdminFormsLogicRouter } from './admin-forms.logic.routes'
 import { AdminFormsPreviewRouter } from './admin-forms.preview.routes'
 import { AdminFormsSettingsRouter } from './admin-forms.settings.routes'
 import { AdminFormsSubmissionsRouter } from './admin-forms.submissions.routes'
@@ -19,6 +20,7 @@ AdminFormsRouter.use(AdminFormsFeedbackRouter)
 AdminFormsRouter.use(AdminFormsFormRouter)
 AdminFormsRouter.use(AdminFormsSubmissionsRouter)
 AdminFormsRouter.use(AdminFormsPreviewRouter)
+AdminFormsRouter.use(AdminFormsLogicRouter)
 
 /**
  * Deletes a logic.
