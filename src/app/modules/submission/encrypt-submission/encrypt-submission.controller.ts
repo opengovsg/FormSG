@@ -603,7 +603,6 @@ export const handleGetEncryptedResponseUsingQueryParams = [
 
 /**
  * Handler for GET /:formId/submissions/submissionId
- * NOTE: This is exported solely for testing
  * @security session
  *
  * @returns 200 with encrypted submission data response
@@ -615,7 +614,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const getEncryptedResponse: RequestHandler<
+export const handleGetEncryptedResponse: RequestHandler<
   { formId: string; submissionId: string },
   EncryptedSubmissionDto | ErrorDto,
   unknown,
@@ -670,12 +669,6 @@ export const getEncryptedResponse: RequestHandler<
       })
   )
 }
-
-// Exported as an array to ensure that the handler always a valid submissionId
-export const handleGetEncryptedResponse = [
-  validateSubmissionId,
-  getEncryptedResponse,
-] as RequestHandler[]
 
 /**
  * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/metadata
