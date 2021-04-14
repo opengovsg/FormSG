@@ -7,6 +7,7 @@ import {
   AuthType,
   BasicField,
   Colors,
+  FormField,
   FormLogoState,
   FormMetaView,
   FormOtpData,
@@ -30,7 +31,7 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
-import { transformEmails } from '../modules/form/form.utils'
+import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import getAgencyModel from './agency.server.model'
@@ -491,6 +492,23 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       (item) => item.email !== newOwner.email,
     )
     this.permissionList.push({ email: currentOwner.email, write: true })
+
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.updateFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+    newField: FormField,
+  ) {
+    const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
+    if (!fieldToUpdate) return Promise.resolve(null)
+
+    if (fieldToUpdate.fieldType !== newField.fieldType) {
+      this.invalidate('form_fields', 'Changing form field type is not allowed')
+    } else {
+      fieldToUpdate.set(newField)
+    }
 
     return this.save()
   }

@@ -4,7 +4,7 @@ import { Merge, SetRequired } from 'type-fest'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
-import { IFieldSchema, MyInfoAttribute } from './field'
+import { FormField, IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
@@ -163,6 +163,21 @@ export type FormSettings = Pick<
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   form_fields?: Types.DocumentArray<IFieldSchema> | IFieldSchema[]
   form_logics?: Types.DocumentArray<ILogicSchema> | ILogicSchema[]
+
+  /**
+   * Replaces the field corresponding to given id to given new field
+   * @param fieldId the id of the field to update
+   * @param newField the new field to replace with
+   * @returns updated form after the update if field update is successful
+   * @returns null if field not found
+   * @throws validation error on invalid updates, or if new field type is different from current field type
+   */
+  updateFormFieldById<T>(
+    this: T,
+    fieldId: string,
+    newField: FormField,
+  ): Promise<T | null>
+
   /**
    * Returns the dashboard form view of the form.
    * @param admin the admin to inject into the returned object
