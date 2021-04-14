@@ -56,7 +56,7 @@ export class TransferOwnershipError extends ApplicationError {
  * Error to be returned when form logic cannot be found
  */
 export class LogicNotFoundError extends ApplicationError {
-  constructor(message: string) {
+  constructor(message = 'logicId does not exist on form') {
     super(message)
   }
 }

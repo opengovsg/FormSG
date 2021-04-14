@@ -650,7 +650,7 @@ export const deleteFormLogic = (
         logicId,
       },
     })
-    return err(new LogicNotFoundError('logicId does not exist on form'))
+    return err(new LogicNotFoundError())
   }
 
   // Remove specified logic and then update form logic

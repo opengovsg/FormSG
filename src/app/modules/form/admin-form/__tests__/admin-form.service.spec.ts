@@ -1421,9 +1421,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new LogicNotFoundError('logicId does not exist on form'),
-      )
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new LogicNotFoundError())
     })
   })
 })
