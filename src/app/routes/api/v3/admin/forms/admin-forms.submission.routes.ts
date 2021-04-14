@@ -1,12 +1,7 @@
-import JoiDate from '@joi/date'
-import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
-
-// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
-const Joi = BaseJoi.extend(JoiDate)
 
 export const AdminFormsSubmissionRouter = Router()
 
@@ -45,18 +40,4 @@ AdminFormsSubmissionRouter.route(
  */
 AdminFormsSubmissionRouter.route(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/download',
-).get(
-  celebrate({
-    [Segments.QUERY]: Joi.object()
-      .keys({
-        startDate: Joi.date().format('YYYY-MM-DD').raw(),
-        endDate: Joi.date()
-          .format('YYYY-MM-DD')
-          .greater(Joi.ref('startDate'))
-          .raw(),
-        downloadAttachments: Joi.boolean().default(false),
-      })
-      .and('startDate', 'endDate'),
-  }),
-  EncryptSubmissionController.handleStreamEncryptedResponses,
-)
+).get(EncryptSubmissionController.handleStreamEncryptedResponses)

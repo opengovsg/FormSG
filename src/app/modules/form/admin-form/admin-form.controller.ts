@@ -312,6 +312,7 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
   )
 }
 
+// Validates that the ending date is greater than the starting date
 const validateDateRange = celebrate({
   [Segments.QUERY]: Joi.object()
     .keys({
