@@ -29,7 +29,7 @@ import {
   SubmissionNotFoundError,
 } from '../../submission.errors'
 import {
-  handleGetEncryptedResponse,
+  getEncryptedResponseUsingQueryParams,
   handleGetMetadata,
   streamEncryptedResponses,
 } from '../encrypt-submission.controller'
@@ -45,7 +45,7 @@ const MockAuthService = mocked(AuthService)
 describe('encrypt-submission.controller', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  describe('handleGetEncryptedResponse', () => {
+  describe('getEncryptedResponseUsingQueryParams', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER_ID = new ObjectId().toHexString()
 
@@ -105,7 +105,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       const expected = {
@@ -144,7 +144,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
@@ -166,7 +166,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
@@ -188,7 +188,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
@@ -209,7 +209,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
@@ -239,7 +239,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(410)
@@ -261,7 +261,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(422)
@@ -285,7 +285,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
@@ -318,7 +318,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+      await getEncryptedResponseUsingQueryParams(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
