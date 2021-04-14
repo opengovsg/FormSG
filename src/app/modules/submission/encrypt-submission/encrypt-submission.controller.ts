@@ -50,6 +50,8 @@ import {
   mapRouteError,
 } from './encrypt-submission.utils'
 
+const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
+
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
@@ -516,7 +518,16 @@ export const handleStreamEncryptedResponses = [
   streamEncryptedResponses,
 ] as RequestHandler[]
 
+const validateSubmissionId = celebrate({
+  [Segments.QUERY]: {
+    submissionId: Joi.string()
+      .regex(/^[0-9a-fA-F]{24}$/)
+      .required(),
+  },
+})
+
 /**
+ * Exported solely for testing
  * Handler for GET /:formId/adminform/submissions
  * @security session
  *
@@ -529,7 +540,7 @@ export const handleStreamEncryptedResponses = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const handleGetEncryptedResponse: RequestHandler<
+export const getEncryptedResponseUsingQueryParams: RequestHandler<
   { formId: string },
   EncryptedSubmissionDto | ErrorDto,
   unknown,
@@ -585,6 +596,12 @@ export const handleGetEncryptedResponse: RequestHandler<
       })
   )
 }
+
+// Exported as an array to ensure that the handler always a valid submissionId
+export const handleGetEncryptedResponseUsingQueryParams = [
+  validateSubmissionId,
+  getEncryptedResponseUsingQueryParams,
+] as RequestHandler[]
 
 /**
  * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/metadata

@@ -353,14 +353,7 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions',
   withUserAuthentication,
-  celebrate({
-    [Segments.QUERY]: {
-      submissionId: Joi.string()
-        .regex(/^[0-9a-fA-F]{24}$/)
-        .required(),
-    },
-  }),
-  EncryptSubmissionController.handleGetEncryptedResponse,
+  EncryptSubmissionController.handleGetEncryptedResponseUsingQueryParams,
 )
 
 /**
