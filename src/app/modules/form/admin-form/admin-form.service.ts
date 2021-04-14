@@ -1,6 +1,6 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, omit } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
@@ -418,7 +418,9 @@ export const updateFormField = (
   fieldId: string,
   newField: FieldUpdateDto,
 ): ResultAsync<IFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
-  const fieldToUpdate = form.form_fields.id(fieldId)
+  const fieldToUpdate = (form.form_fields as Types.DocumentArray<IFieldSchema>).id(
+    fieldId,
+  )
   if (!fieldToUpdate) {
     return errAsync(new FieldNotFoundError())
   }

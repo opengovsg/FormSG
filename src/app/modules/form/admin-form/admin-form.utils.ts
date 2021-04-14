@@ -347,7 +347,7 @@ const reorderField = (
  * @returns err(EditFieldError) if any errors occur whilst updating fields
  */
 export const getUpdatedFormFields = (
-  currentFormFields: IPopulatedForm['form_fields'],
+  currentFormFields: IFieldSchema[],
   editFieldParams: EditFormFieldParams,
 ): EditFormFieldResult => {
   const { field: fieldToUpdate, action } = editFieldParams
