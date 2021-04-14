@@ -46,16 +46,13 @@ function SubmissionsFactory(
   const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
   const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
 
-  const API_VERSION_PREFIX = '/api/v3'
-  const ADMIN_FORMS_PREFIX = '/admin/forms'
+  const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
 
   const generateDownloadUrl = (params, downloadAttachments) => {
     // NOTE: The ? is appended behind to ensure that the query parameters in url are constructed correctly
     let resUrl = `${fixParamsToUrl(
       params,
-      `${
-        API_VERSION_PREFIX + ADMIN_FORMS_PREFIX
-      }/:formId/submissions/download?`,
+      `${ADMIN_FORMS_PREFIX}/:formId/submissions/download?`,
     )}`
     if (params.startDate && params.endDate) {
       resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
@@ -170,7 +167,7 @@ function SubmissionsFactory(
       const deferred = $q.defer()
       let resUrl = fixParamsToUrl(
         params,
-        `${API_VERSION_PREFIX + ADMIN_FORMS_PREFIX}/:formId/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/:formId/submissions/count`,
       )
       if (params.startDate && params.endDate) {
         resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
