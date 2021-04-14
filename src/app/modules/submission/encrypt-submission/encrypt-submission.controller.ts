@@ -1,3 +1,5 @@
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
@@ -50,6 +52,9 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+
+// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
+const Joi = BaseJoi.extend(JoiDate)
 
 export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   const { formId } = req.params
@@ -368,8 +373,20 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   })
 }
 
+// Validates that the ending date >= starting date
+const validateDateRange = celebrate({
+  [Segments.QUERY]: Joi.object()
+    .keys({
+      startDate: Joi.date().format('YYYY-MM-DD').raw(),
+      endDate: Joi.date().format('YYYY-MM-DD').min(Joi.ref('startDate')).raw(),
+      downloadAttachments: Joi.boolean().default(false),
+    })
+    .and('startDate', 'endDate'),
+})
+
 /**
- * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
+ * NOTE: This is exported solely for testing
+ * Streams and downloads for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
  * @security session
  *
  * @returns 200 with stream of encrypted responses
@@ -381,7 +398,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
-export const handleStreamEncryptedResponses: RequestHandler<
+export const streamEncryptedResponses: RequestHandler<
   { formId: string },
   unknown,
   unknown,
@@ -492,6 +509,12 @@ export const handleStreamEncryptedResponses: RequestHandler<
       return res.end()
     })
 }
+
+// Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
+export const handleStreamEncryptedResponses = [
+  validateDateRange,
+  streamEncryptedResponses,
+] as RequestHandler[]
 
 /**
  * Handler for GET /:formId/adminform/submissions

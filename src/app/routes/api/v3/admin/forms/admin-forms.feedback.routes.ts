@@ -6,7 +6,7 @@ export const AdminFormsFeedbackRouter = Router()
 
 /**
  * Retrieve feedback for a public form
- * @route GET /api/v3/admim/forms/:formId/feedback
+ * @route GET /api/v3/admin/forms/:formId/feedback
  * @security session
  *
  * @returns 200 with feedback response
@@ -24,7 +24,7 @@ AdminFormsFeedbackRouter.get(
 
 /**
  * Count the number of feedback for a form
- * @route GET /api/v3/admim/forms/{formId}/feedback/count
+ * @route GET /api/v3/admin/forms/{formId}/feedback/count
  * @security session
  *
  * @returns 200 with feedback counts of given form
@@ -42,7 +42,7 @@ AdminFormsFeedbackRouter.get(
 
 /**
  * Stream download all feedback for a form
- * @route GET /api/v3/admim/forms/{formId}/feedback/download
+ * @route GET /api/v3/admin/forms/{formId}/feedback/download
  * @security session
  *
  * @returns 200 with feedback stream
