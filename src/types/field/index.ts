@@ -1,22 +1,22 @@
-import { IAttachmentField } from './attachmentField'
-import { ICheckboxField } from './checkboxField'
-import { IDateField } from './dateField'
-import { IDecimalField } from './decimalField'
-import { IDropdownField } from './dropdownField'
-import { IEmailField } from './emailField'
-import { IHomenoField } from './homeNoField'
-import { IImageField } from './imageField'
-import { ILongTextField } from './longTextField'
-import { IMobileField } from './mobileField'
-import { INricField } from './nricField'
-import { INumberField } from './numberField'
-import { IRadioField } from './radioField'
-import { IRatingField } from './ratingField'
-import { ISectionField } from './sectionField'
-import { IShortTextField } from './shortTextField'
-import { IStatementField } from './statementField'
-import { ITableField } from './tableField'
-import { IYesNoField } from './yesNoField'
+import { IAttachmentField, IAttachmentFieldSchema } from './attachmentField'
+import { ICheckboxField, ICheckboxFieldSchema } from './checkboxField'
+import { IDateField, IDateFieldSchema } from './dateField'
+import { IDecimalField, IDecimalFieldSchema } from './decimalField'
+import { IDropdownField, IDropdownFieldSchema } from './dropdownField'
+import { IEmailField, IEmailFieldSchema } from './emailField'
+import { IHomenoField, IHomenoFieldSchema } from './homeNoField'
+import { IImageField, IImageFieldSchema } from './imageField'
+import { ILongTextField, ILongTextFieldSchema } from './longTextField'
+import { IMobileField, IMobileFieldSchema } from './mobileField'
+import { INricField, INricFieldSchema } from './nricField'
+import { INumberField, INumberFieldSchema } from './numberField'
+import { IRadioField, IRadioFieldSchema } from './radioField'
+import { IRatingField, IRatingFieldSchema } from './ratingField'
+import { ISectionField, ISectionFieldSchema } from './sectionField'
+import { IShortTextField, IShortTextFieldSchema } from './shortTextField'
+import { IStatementField, IStatementFieldSchema } from './statementField'
+import { ITableField, ITableFieldSchema } from './tableField'
+import { IYesNoField, IYesNoFieldSchema } from './yesNoField'
 
 export * from './fieldTypes'
 export * from './baseField'
@@ -39,6 +39,27 @@ export * from './shortTextField'
 export * from './statementField'
 export * from './tableField'
 export * from './yesNoField'
+
+export type FormFieldSchema =
+  | IAttachmentFieldSchema
+  | ICheckboxFieldSchema
+  | IDateFieldSchema
+  | IDecimalFieldSchema
+  | IDropdownFieldSchema
+  | IEmailFieldSchema
+  | IHomenoFieldSchema
+  | IImageFieldSchema
+  | ILongTextFieldSchema
+  | IMobileFieldSchema
+  | INricFieldSchema
+  | INumberFieldSchema
+  | IRadioFieldSchema
+  | IRatingFieldSchema
+  | ISectionFieldSchema
+  | IShortTextFieldSchema
+  | IStatementFieldSchema
+  | ITableFieldSchema
+  | IYesNoFieldSchema
 
 export type FormField =
   | IAttachmentField

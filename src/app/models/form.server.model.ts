@@ -7,7 +7,7 @@ import {
   AuthType,
   BasicField,
   Colors,
-  FormField,
+  FormFieldWithId,
   FormLogoState,
   FormMetaView,
   FormOtpData,
@@ -499,7 +499,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormDocumentSchema.methods.updateFormFieldById = function (
     this: IFormDocument,
     fieldId: string,
-    newField: FormField,
+    newField: FormFieldWithId,
   ) {
     const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToUpdate) return Promise.resolve(null)

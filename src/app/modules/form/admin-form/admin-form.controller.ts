@@ -18,6 +18,7 @@ import {
   EncryptSubmissionDto,
   ErrorDto,
   FieldUpdateDto,
+  FormFieldDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -1061,7 +1062,7 @@ export const handleUpdateFormField: RequestHandler<
     formId: string
     fieldId: string
   },
-  FieldUpdateDto | ErrorDto,
+  FormFieldDto | ErrorDto,
   FieldUpdateDto
 > = (req, res) => {
   const { formId, fieldId } = req.params
