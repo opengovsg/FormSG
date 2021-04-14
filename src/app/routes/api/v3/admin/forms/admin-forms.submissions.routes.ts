@@ -6,7 +6,7 @@ import * as EncryptSubmissionController from '../../../../../modules/submission/
 export const AdminFormsSubmissionsRouter = Router()
 
 /**
- * Count the number of submissions for a public form
+ * Count the number of submissions for a form
  * @route GET /:formId/submissions/count
  * @security session
  *
