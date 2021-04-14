@@ -1,13 +1,10 @@
-import JoiDate from '@joi/date'
-import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
+import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { IForm, ResponseMode } from '../../../../../../types'
 import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import { DuplicateFormBody } from '../../../../../modules/form/admin-form/admin-form.types'
-
-const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 export const AdminFormsFormRouter = Router()
 
