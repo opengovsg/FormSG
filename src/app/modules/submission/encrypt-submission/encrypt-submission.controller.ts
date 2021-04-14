@@ -50,8 +50,6 @@ import {
   mapRouteError,
 } from './encrypt-submission.utils'
 
-const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
-
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
