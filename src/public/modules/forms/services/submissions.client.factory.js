@@ -44,7 +44,8 @@ function SubmissionsFactory(
 ) {
   const submitAdminUrl = '/:formId/adminform/submissions'
   const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
-  const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
+  const previewSubmitUrl =
+    '/api/v3/admin/forms/:formId/preview/submissions/:responseMode'
 
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
 
