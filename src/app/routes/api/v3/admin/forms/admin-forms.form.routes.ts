@@ -1,6 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
+import { FieldUpdateDto } from 'src/types/api'
+
 import { BasicField } from '../../../../../../types'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
@@ -23,18 +25,26 @@ export const AdminFormsFormRouter = Router()
  */
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})',
-  celebrate({
-    [Segments.BODY]: Joi.object({
-      fieldType: Joi.string()
-        .valid(...Object.values(BasicField))
-        .required(),
-      description: Joi.string().allow('').required(),
-      required: Joi.boolean().required(),
-      title: Joi.string().required(),
-      disabled: Joi.boolean().required(),
-      // Allow other field related key-values to be provided and let the model
-      // layer handle the validation.
-    }).unknown(true),
-  }),
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object<FieldUpdateDto>({
+        // Ensures given field is same as accessed field.
+        _id: Joi.string().valid(Joi.ref('$params.fieldId')).required(),
+        fieldType: Joi.string()
+          .valid(...Object.values(BasicField))
+          .required(),
+        description: Joi.string().allow('').required(),
+        required: Joi.boolean().required(),
+        title: Joi.string().required(),
+        disabled: Joi.boolean().required(),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
+    },
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
   AdminFormController.handleUpdateFormField,
 )

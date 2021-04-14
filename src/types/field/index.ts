@@ -60,3 +60,8 @@ export type FormField =
   | IStatementField
   | ITableField
   | IYesNoField
+
+/**
+ * Form field POJO with id
+ */
+export type FormFieldWithId = FormField & { _id: string }

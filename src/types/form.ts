@@ -4,7 +4,7 @@ import { Merge, SetRequired } from 'type-fest'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
-import { FormField, IFieldSchema, MyInfoAttribute } from './field'
+import { FormFieldWithId, IFieldSchema, MyInfoAttribute } from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
@@ -175,7 +175,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   updateFormFieldById<T>(
     this: T,
     fieldId: string,
-    newField: FormField,
+    newField: FormFieldWithId,
   ): Promise<T | null>
 
   /**
