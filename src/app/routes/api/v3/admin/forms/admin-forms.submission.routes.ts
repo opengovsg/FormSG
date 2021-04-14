@@ -1,10 +1,14 @@
-import { celebrate, Joi, Segments } from 'celebrate'
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 
-const AdminFormsSubmissionRouter = Router()
+// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
+const Joi = BaseJoi.extend(JoiDate)
+
+export const AdminFormsSubmissionRouter = Router()
 
 /**
  * Count the number of submissions for a public form

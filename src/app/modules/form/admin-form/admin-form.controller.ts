@@ -61,6 +61,7 @@ import {
 } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
+// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
 const logger = createLoggerWithLabel(module)
