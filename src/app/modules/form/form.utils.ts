@@ -102,7 +102,7 @@ export const isMongooseDocumentArray = <T extends Document>(
  */
 export const getFormFieldById = (
   formFields: IFormSchema['form_fields'],
-  fieldId: string,
+  fieldId: IFieldSchema['_id'],
 ): IFieldSchema | null => {
   if (!formFields) {
     return null
