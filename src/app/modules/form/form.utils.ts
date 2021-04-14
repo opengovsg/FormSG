@@ -1,5 +1,9 @@
+import { has } from 'lodash'
+import { Document, Types } from 'mongoose'
+
 import {
   IEncryptedFormSchema,
+  IFieldSchema,
   IFormSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
@@ -75,4 +79,38 @@ export const isEmailModeForm = (
   form: IPopulatedForm,
 ): form is IPopulatedEmailForm => {
   return form.responseMode === ResponseMode.Email
+}
+
+/**
+ * Type guard for whether given array is a mongoose DocumentArray
+ * @param array the array to check
+ */
+export const isMongooseDocumentArray = <T extends Document>(
+  array: T[],
+): array is Types.DocumentArray<T> => {
+  /**
+   * @see {mongoose.Types.DocumentArray.isMongooseDocumentArray}
+   */
+  return has(array, 'isMongooseDocumentArray')
+}
+
+/**
+ * Finds and returns form field in given form by its id
+ * @param formFields the form fields to search from
+ * @param fieldId the id of the field to retrieve
+ * @returns the form field if found, `null` otherwise
+ */
+export const getFormFieldById = (
+  formFields: IFormSchema['form_fields'],
+  fieldId: string,
+): IFieldSchema | null => {
+  if (!formFields) {
+    return null
+  }
+
+  if (isMongooseDocumentArray(formFields)) {
+    return formFields.id(fieldId)
+  } else {
+    return formFields.find((f) => fieldId === String(f._id)) ?? null
+  }
 }

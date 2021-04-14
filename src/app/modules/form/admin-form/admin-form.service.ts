@@ -1,6 +1,6 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, omit } from 'lodash'
-import mongoose, { Types } from 'mongoose'
+import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
@@ -39,6 +39,7 @@ import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
+import { getFormFieldById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -418,9 +419,7 @@ export const updateFormField = (
   fieldId: string,
   newField: FieldUpdateDto,
 ): ResultAsync<IFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
-  const fieldToUpdate = (form.form_fields as Types.DocumentArray<IFieldSchema>).id(
-    fieldId,
-  )
+  const fieldToUpdate = getFormFieldById(form.form_fields, fieldId)
   if (!fieldToUpdate) {
     return errAsync(new FieldNotFoundError())
   }
@@ -452,9 +451,7 @@ export const updateFormField = (
 
     return transformMongoError(error)
   }).andThen<IFieldSchema, FieldNotFoundError>((updatedForm) => {
-    const updatedFormField = updatedForm?.form_fields?.find(
-      (f) => fieldId === String(f._id),
-    )
+    const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
     return updatedFormField
       ? okAsync(updatedFormField)
       : errAsync(new FieldNotFoundError())
