@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import { merge, omit, orderBy, pick } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 
 import getFormModel, {
   FORM_PUBLIC_FIELDS,
@@ -8,7 +9,10 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  BasicField,
+  FormFieldWithId,
   IEncryptedForm,
+  IFieldSchema,
   IFormSchema,
   IPopulatedUser,
   Permission,
@@ -16,6 +20,7 @@ import {
   Status,
 } from 'src/types'
 
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Form = getFormModel(mongoose)
@@ -1304,6 +1309,106 @@ describe('Form Model', () => {
             },
           }),
         )
+      })
+    })
+
+    describe('updateFormFieldById', () => {
+      let form: IFormSchema
+
+      beforeEach(async () => {
+        form = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Checkbox),
+            generateDefaultField(BasicField.HomeNo, {
+              title: 'some mock title',
+            }),
+            generateDefaultField(BasicField.Email),
+          ],
+        })
+      })
+
+      it('should return updated form when successfully updating form field', async () => {
+        // Arrange
+        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+
+        const newField = {
+          ...originalFormFields[1],
+          title: 'another mock title',
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        // Current fields should not be touched
+        expect(
+          (actual?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+        ).toEqual([originalFormFields[0], newField, originalFormFields[2]])
+      })
+
+      it('should return null if fieldId does not correspond to any field in the form', async () => {
+        // Arrange
+        const invalidFieldId = new ObjectId().toHexString()
+        const someNewField = {
+          description: 'this does not matter',
+        } as FormFieldWithId
+
+        // Act
+        const actual = await form.updateFormFieldById(
+          invalidFieldId,
+          someNewField,
+        )
+
+        // Assert
+        expect(actual).toBeNull()
+      })
+
+      it('should return validation error if field type of new field does not match the field to update', async () => {
+        // Arrange
+        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+
+        const newField: FormFieldWithId = {
+          ...originalFormFields[1],
+          // Updating field type from HomeNo to Mobile.
+          fieldType: BasicField.Mobile,
+          title: 'another mock title',
+        }
+
+        // Act
+        const actual = await form
+          .updateFormFieldById(newField._id, newField)
+          .catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+        expect(actual.message).toEqual(
+          expect.stringContaining('Changing form field type is not allowed'),
+        )
+      })
+
+      it('should return validation error if model validation fails whilst updating field', async () => {
+        // Arrange
+        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+
+        const newField: FormFieldWithId = {
+          ...originalFormFields[2],
+          title: 'another mock title',
+          // Invalid value for email field.
+          isVerifiable: 'some string, but this should be boolean',
+        }
+
+        // Act
+        const actual = await form
+          .updateFormFieldById(newField._id, newField)
+          .catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
       })
     })
   })
