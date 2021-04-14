@@ -4,7 +4,7 @@ import { Router } from 'express'
 import { BasicField } from '../../../../../../types'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
-export const AdminFormsBuildRouter = Router()
+export const AdminFormsFormRouter = Router()
 /**
  * Update form field according to given new body.
  * @route PUT /admin/forms/:formId/fields/:fieldId
@@ -21,7 +21,7 @@ export const AdminFormsBuildRouter = Router()
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-AdminFormsBuildRouter.put(
+AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})',
   celebrate({
     [Segments.BODY]: Joi.object({
