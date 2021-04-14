@@ -209,6 +209,44 @@ describe('admin-form.submissions.routes', () => {
       expect(response.body).toEqual(1)
     })
 
+    it('should return 200 with counts of submissions made with same start and end dates.', async () => {
+      // Arrange
+      const expectedSubmissionCount = 3
+      const newForm = (await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })) as IPopulatedEmailForm
+      // Insert submissions
+      const mockSubmissionHash: SubmissionHash = {
+        hash: 'some hash',
+        salt: 'some salt',
+      }
+      const results = await Promise.all(
+        times(expectedSubmissionCount, () =>
+          saveSubmissionMetadata(newForm, mockSubmissionHash),
+        ),
+      )
+      // Update first submission to be 5 days ago.
+      const expectedDate = subDays(new Date(), 5)
+      const firstSubmission = results[0]._unsafeUnwrap()
+      firstSubmission.created = expectedDate
+      await firstSubmission.save()
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${newForm._id}/submissions/count`)
+        .query({
+          startDate: format(expectedDate, 'yyyy-MM-dd'),
+          endDate: format(expectedDate, 'yyyy-MM-dd'),
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(1)
+    })
+
     it('should return 400 when query.startDate is missing when query.endDate is provided', async () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
@@ -349,7 +387,8 @@ describe('admin-form.submissions.routes', () => {
         buildCelebrateError({
           query: {
             key: 'endDate',
-            message: '"endDate" must be greater than "ref:startDate"',
+            message:
+              '"endDate" must be greater than or equal to "ref:startDate"',
           },
         }),
       )
@@ -595,6 +634,77 @@ describe('admin-form.submissions.routes', () => {
             fieldId2: expect.stringContaining(s.attachmentMetadata['fieldId2']),
           },
         }))
+
+      const actualSorted = (response.body as string)
+        .split('\n')
+        .map(
+          (submissionStr: string) =>
+            JSON.parse(submissionStr) as SubmissionCursorData,
+        )
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
+
+      expect(response.status).toEqual(200)
+      expect(actualSorted).toEqual(expectedSorted)
+    })
+
+    it('should return 200 with stream of encrypted responses when query.startDate is the same as query.endDate', async () => {
+      // Arrange
+      const submissions = await Promise.all(
+        times(5, (count) =>
+          createSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            attachmentMetadata: new Map([
+              ['fieldId1', `some.attachment.url.${count}`],
+              ['fieldId2', `some.other.attachment.url.${count}`],
+            ]),
+          }),
+        ),
+      )
+
+      const expectedDate = '2020-02-03'
+      // Set 2 submissions to be submitted with specific date
+      submissions[2].created = new Date(expectedDate)
+      submissions[4].created = new Date(expectedDate)
+      await submissions[2].save()
+      await submissions[4].save()
+      const expectedSubmissionIds = [
+        String(submissions[2]._id),
+        String(submissions[4]._id),
+      ]
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/download`)
+        .query({
+          startDate: expectedDate,
+          endDate: expectedDate,
+        })
+        .buffer()
+        .parse((res, cb) => {
+          let buffer = ''
+          res.on('data', (chunk) => {
+            buffer += chunk
+          })
+          res.on('end', () => cb(null, buffer))
+        })
+
+      // Assert
+      const expectedSorted = submissions
+        .map((s) =>
+          jsonParseStringify({
+            _id: s._id,
+            submissionType: s.submissionType,
+            // Expect returned submissions to not have attachment metadata since query is false.
+            attachmentMetadata: {},
+            encryptedContent: s.encryptedContent,
+            verifiedContent: s.verifiedContent,
+            created: s.created,
+          }),
+        )
+        .filter((s) => expectedSubmissionIds.includes(s._id))
+        .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
       const actualSorted = (response.body as string)
         .split('\n')
