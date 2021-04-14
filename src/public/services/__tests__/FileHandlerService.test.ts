@@ -40,7 +40,7 @@ describe('FileHandlerService', () => {
       // Assert
       expect(actual).toEqual(expected)
       expect(uploadSpy).toHaveBeenCalledWith({
-        url: `/${mockFormId}/adminform/images`,
+        url: `/api/v3/admin/forms/${mockFormId}/images/presign`,
         file: mockImage,
         fileId: expectedFileId,
       })
@@ -80,7 +80,7 @@ describe('FileHandlerService', () => {
       // Assert
       expect(actual).toEqual(expected)
       expect(uploadSpy).toHaveBeenCalledWith({
-        url: `/${mockFormId}/adminform/logos`,
+        url: `/api/v3/admin/forms/${mockFormId}/logos/presign`,
         file: mockLogo,
         fileId: expectedFileId,
       })
