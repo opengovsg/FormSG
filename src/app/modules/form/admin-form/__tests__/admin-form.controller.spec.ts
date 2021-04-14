@@ -4177,39 +4177,6 @@ describe('admin-form.controller', () => {
       expect(editFormFieldSpy).not.toHaveBeenCalled()
     })
 
-    it('should return 400 when performing invalid update to form fields', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock services to return expected results.
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      // Return error when editing form fields
-      const expectedErrorString = 'invalid field update'
-      editFormFieldSpy.mockReturnValueOnce(
-        errAsync(new EditFieldError(expectedErrorString)),
-      )
-
-      // Act
-      await AdminFormController.handleUpdateForm(
-        MOCK_EDIT_FIELD_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expectedErrorString,
-      })
-      expect(editFormFieldSpy).toHaveBeenCalledTimes(1)
-      expect(updateFormSpy).not.toHaveBeenCalled()
-    })
-
     it('should return 403 when current user does not have permissions to update form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -4354,6 +4321,39 @@ describe('admin-form.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(413)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(editFormFieldSpy).toHaveBeenCalledTimes(1)
+      expect(updateFormSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when performing invalid update to form fields', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Mock services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      // Return error when editing form fields
+      const expectedErrorString = 'invalid field update'
+      editFormFieldSpy.mockReturnValueOnce(
+        errAsync(new EditFieldError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleUpdateForm(
+        MOCK_EDIT_FIELD_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expectedErrorString,
       })
