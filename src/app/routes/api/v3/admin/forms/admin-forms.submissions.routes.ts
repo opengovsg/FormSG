@@ -3,7 +3,7 @@ import { Router } from 'express'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 
-export const AdminFormsSubmissionRouter = Router()
+export const AdminFormsSubmissionsRouter = Router()
 
 /**
  * Count the number of submissions for a public form
@@ -19,7 +19,7 @@ export const AdminFormsSubmissionRouter = Router()
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-AdminFormsSubmissionRouter.route(
+AdminFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/count',
 ).get(AdminFormController.handleCountFormSubmissions)
 
@@ -38,6 +38,6 @@ AdminFormsSubmissionRouter.route(
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
-AdminFormsSubmissionRouter.route(
+AdminFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/download',
 ).get(EncryptSubmissionController.handleStreamEncryptedResponses)

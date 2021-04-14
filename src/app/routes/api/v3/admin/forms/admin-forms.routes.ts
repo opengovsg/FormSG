@@ -4,7 +4,7 @@ import { withUserAuthentication } from '../../../../../modules/auth/auth.middlew
 
 import { AdminFormsFeedbackRouter } from './admin-forms.feedback.routes'
 import { AdminFormsSettingsRouter } from './admin-forms.settings.routes'
-import { AdminFormsSubmissionRouter } from './admin-forms.submissions.routes'
+import { AdminFormsSubmissionsRouter } from './admin-forms.submissions.routes'
 
 export const AdminFormsRouter = Router()
 
@@ -13,4 +13,4 @@ AdminFormsRouter.use(withUserAuthentication)
 
 AdminFormsRouter.use(AdminFormsSettingsRouter)
 AdminFormsRouter.use(AdminFormsFeedbackRouter)
-AdminFormsRouter.use(AdminFormsSubmissionRouter)
+AdminFormsRouter.use(AdminFormsSubmissionsRouter)
