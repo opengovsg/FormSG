@@ -1362,7 +1362,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleCountFormSubmissions', () => {
+  describe('countFormSubmissions', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -1403,7 +1403,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1454,7 +1454,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         mockReqWithQuery,
         mockRes,
         jest.fn(),
@@ -1493,7 +1493,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1534,7 +1534,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1575,7 +1575,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1612,7 +1612,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1645,7 +1645,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1682,7 +1682,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1725,7 +1725,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCountFormSubmissions(
+      await AdminFormController.countFormSubmissions(
         MOCK_REQ,
         mockRes,
         jest.fn(),
