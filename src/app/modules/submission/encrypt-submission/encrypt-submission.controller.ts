@@ -385,6 +385,7 @@ const validateDateRange = celebrate({
 })
 
 /**
+ * Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
  * NOTE: This is exported solely for testing
  * Streams and downloads for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
  * @security session
@@ -595,7 +596,11 @@ export const getEncryptedResponseUsingQueryParams: RequestHandler<
   )
 }
 
-// Exported as an array to ensure that the handler always a valid submissionId
+/**
+ * Handler for GET /:formId/adminform/submission
+ * @deprecated in favour of GET api/v3/admin/forms/:formId/submissions/:submissionId
+ * Exported as an array to ensure that the handler always a valid submissionId
+ */
 export const handleGetEncryptedResponseUsingQueryParams = [
   validateSubmissionId,
   getEncryptedResponseUsingQueryParams,
