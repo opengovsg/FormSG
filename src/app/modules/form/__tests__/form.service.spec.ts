@@ -142,6 +142,98 @@ describe('FormService', () => {
     })
   })
 
+  describe('retrieveFormFieldsById', () => {
+    it('should return form successfully', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      const expectedForm = ({
+        _id: formId,
+        title: 'mock title',
+        admin: {
+          _id: new ObjectId(),
+          email: 'mockEmail@example.com',
+        },
+      } as unknown) as IPopulatedForm
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'getFullFormById')
+        .mockResolvedValueOnce(expectedForm)
+
+      // Act
+      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+        'title',
+        'admin',
+      ])
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+    })
+
+    it('should return FormNotFoundError if formId is invalid', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      // Resolve query to null.
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'getFullFormById')
+        .mockResolvedValueOnce(null)
+
+      // Act
+      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+        'title',
+        'admin',
+      ])
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
+    })
+
+    it('should still return retrieved form even when it does not contain admin', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      const expectedForm = ({
+        _id: formId,
+        title: 'mock title',
+        // Note no admin key-value.
+      } as unknown) as IPopulatedForm
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'getFullFormById')
+        .mockResolvedValueOnce(expectedForm)
+
+      // Act
+      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+        'title',
+      ])
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      // Arrange
+      const formId = new ObjectId().toHexString()
+      // Mock rejection.
+      const retrieveFormSpy = jest
+        .spyOn(Form, 'getFullFormById')
+        .mockRejectedValueOnce(new Error('Some error'))
+
+      // Act
+      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+        'title',
+        'admin',
+      ])
+
+      // Assert
+      expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
   describe('retrieveFormById', () => {
     it('should return form successfully', async () => {
       // Arrange

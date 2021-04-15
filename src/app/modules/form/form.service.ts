@@ -120,7 +120,7 @@ export const retrieveFullFormById = (
  * @returns err(FormNotFoundError) if the form or form admin does not exist
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
-export const retrieveFormFields = (
+export const retrieveFormFieldsById = (
   formId: string,
   fields: (keyof IPopulatedForm)[],
 ): ResultAsync<IPopulatedForm, FormNotFoundError | DatabaseError> => {
@@ -134,7 +134,7 @@ export const retrieveFormFields = (
       logger.error({
         message: 'Error retrieving form from database',
         meta: {
-          action: 'retrieveFormFields',
+          action: 'retrieveFormFieldsById',
         },
         error,
       })
