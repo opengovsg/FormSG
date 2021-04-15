@@ -1,7 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
-import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
@@ -639,7 +639,7 @@ export const updateFormSettings = (
 export const deleteFormLogic = (
   form: IPopulatedForm,
   logicId: string,
-): Result<never, LogicNotFoundError> | ResultAsync<true, DatabaseError> => {
+): ResultAsync<true, DatabaseError | LogicNotFoundError> => {
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic.id === logicId)) {
     logger.error({
@@ -650,7 +650,7 @@ export const deleteFormLogic = (
         logicId,
       },
     })
-    return err(new LogicNotFoundError())
+    return errAsync(new LogicNotFoundError())
   }
 
   // Remove specified logic and then update form logic
