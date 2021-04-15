@@ -29,5 +29,5 @@ export interface SubmissionHash {
 export interface IPopulatedEmailFormWithResponsesAndHash {
   form: IPopulatedEmailForm
   parsedResponses: ProcessedFieldResponse[]
-  hashedFields: Set<string>
+  hashedFields?: Set<string>
 }

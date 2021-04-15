@@ -1,5 +1,5 @@
 import { Request, RequestHandler } from 'express'
-import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import { AuthType, FieldResponse, IPopulatedEmailForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -128,13 +128,12 @@ export const handleEmailSubmission: RequestHandler<
           case AuthType.CP:
             return SpcpFactory.extractJwt(req.cookies, authType)
               .asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
-              .map((jwt) => ({
+              .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: [
                   ...parsedResponses,
                   ...createCorppassParsedResponses(jwt.userName, jwt.userInfo),
                 ],
-                hashedFields: new Set<string>(),
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -148,13 +147,12 @@ export const handleEmailSubmission: RequestHandler<
           case AuthType.SP:
             return SpcpFactory.extractJwt(req.cookies, authType)
               .asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
-              .map((jwt) => ({
+              .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: [
                   ...parsedResponses,
                   ...createSingpassParsedResponses(jwt.userName),
                 ],
-                hashedFields: new Set<string>(),
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -176,14 +174,16 @@ export const handleEmailSubmission: RequestHandler<
                   .andThen((hashes) =>
                     MyInfoFactory.checkMyInfoHashes(parsedResponses, hashes),
                   )
-                  .map((hashedFields) => ({
-                    form,
-                    hashedFields,
-                    parsedResponses: [
-                      ...parsedResponses,
-                      ...createSingpassParsedResponses(uinFin),
-                    ],
-                  })),
+                  .map<IPopulatedEmailFormWithResponsesAndHash>(
+                    (hashedFields) => ({
+                      form,
+                      hashedFields,
+                      parsedResponses: [
+                        ...parsedResponses,
+                        ...createSingpassParsedResponses(uinFin),
+                      ],
+                    }),
+                  ),
               )
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -195,11 +195,10 @@ export const handleEmailSubmission: RequestHandler<
                 return error
               })
           default:
-            return ok({
+            return ok<IPopulatedEmailFormWithResponsesAndHash, never>({
               form,
               parsedResponses,
-              hashedFields: new Set<string>(),
-            }) as Result<IPopulatedEmailFormWithResponsesAndHash, never>
+            })
         }
       })
       .andThen(({ form, parsedResponses, hashedFields }) => {
@@ -262,7 +261,7 @@ export const handleEmailSubmission: RequestHandler<
             parsedResponses,
             submission,
             emailData,
-            logMeta,
+            logMetaWithSubmission,
           }))
           .mapErr((error) => {
             logger.error({
@@ -273,28 +272,38 @@ export const handleEmailSubmission: RequestHandler<
             return error
           })
       })
-      .map(({ form, parsedResponses, submission, emailData, logMeta }) => {
-        // Send email confirmations
-        void SubmissionService.sendEmailConfirmations({
+      .map(
+        ({
           form,
           parsedResponses,
           submission,
-          attachments,
-          autoReplyData: emailData.autoReplyData,
-        }).mapErr((error) => {
-          logger.error({
-            message: 'Error while sending email confirmations',
-            meta: logMeta,
-            error,
+          emailData,
+          logMetaWithSubmission,
+        }) => {
+          // Send email confirmations
+          void SubmissionService.sendEmailConfirmations({
+            form,
+            parsedResponses,
+            submission,
+            attachments,
+            autoReplyData: emailData.autoReplyData,
+          }).mapErr((error) => {
+            logger.error({
+              message: 'Error while sending email confirmations',
+              meta: logMetaWithSubmission,
+              error,
+            })
           })
-        })
-        // MyInfo access token is single-use, so clear it
-        return res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS).json({
-          // Return the reply early to the submitter
-          message: 'Form submission successful.',
-          submissionId: submission.id,
-        })
-      })
+          // MyInfo access token is single-use, so clear it
+          return res
+            .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+            .json({
+              // Return the reply early to the submitter
+              message: 'Form submission successful.',
+              submissionId: submission.id,
+            })
+        },
+      )
       .mapErr((error) => {
         const { errorMessage, statusCode } = mapRouteError(error)
         return res
