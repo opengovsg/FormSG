@@ -109,7 +109,7 @@ AdminFormsFormRouter.route('/')
  * @returns 500 when database error occurs
  */
 AdminFormsFormRouter.delete(
-  '/:formId([a-fA-F0-9]{24})/',
+  '/:formId([a-fA-F0-9]{24})',
   AdminFormController.handleArchiveForm,
 )
 
