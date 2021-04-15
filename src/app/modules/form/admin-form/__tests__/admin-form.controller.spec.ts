@@ -77,6 +77,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  LogicNotFoundError,
   PrivateFormError,
   TransferOwnershipError,
 } from '../../form.errors'
@@ -7392,6 +7393,53 @@ describe('admin-form.controller', () => {
 
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'not authorized to perform write operation',
+      })
+    })
+
+    it('should return 404 when logicId cannot be found', async () => {
+      const wrongLogicId = new ObjectId().toHexString()
+      const mockReqWrongLogic = expressHandler.mockRequest({
+        params: {
+          formId: MOCK_FORM_ID,
+          logicId: wrongLogicId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+
+      MockAdminFormService.deleteFormLogic.mockReturnValue(
+        err(new LogicNotFoundError()),
+      )
+
+      await AdminFormController.handleDeleteLogic(
+        mockReqWrongLogic,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+
+      expect(MockAdminFormService.deleteFormLogic).toHaveBeenCalledWith(
+        MOCK_FORM,
+        wrongLogicId,
+      )
+
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'logicId does not exist on form',
       })
     })
 
