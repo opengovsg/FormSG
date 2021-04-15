@@ -14,6 +14,7 @@ export const EncryptSubmissionRouter = Router()
  * Optionally, an autoreply confirming submission is sent back to the user, if
  * an email address was given. SMS autoreplies for mobile number fields are also
  * sent if the feature is enabled.
+ * @deprecated in favour of POST /api/v3/forms/:formId/submissions/encrypt
  * @route POST /v2/submissions/encrypt/:formId
  * @param response.body.required - contains the entire form submission
  * @param captchaResponse.query - contains the reCAPTCHA response artifact, if any

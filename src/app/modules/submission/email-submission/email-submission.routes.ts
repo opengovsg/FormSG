@@ -15,6 +15,7 @@ export const EmailSubmissionRouter = Router()
  * was given. SMS autoreplies for mobile number fields are also sent if feature
  * is enabled.
  * Note that v2 endpoint no longer accepts body.captchaResponse
+ * @deprecated in favour of POST /api/v3/forms/:formId/submissions/email
  * @route POST /v2/submissions/email/{formId}
  * @group forms - endpoints to serve forms
  * @param formId.path.required - the form id
