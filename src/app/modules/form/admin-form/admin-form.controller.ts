@@ -1,3 +1,5 @@
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Request, RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
@@ -58,6 +60,9 @@ import {
   PermissionLevel,
 } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
+
+// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
+const Joi = BaseJoi.extend(JoiDate)
 
 const logger = createLoggerWithLabel(module)
 
@@ -307,8 +312,18 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
   )
 }
 
+// Validates that the ending date >= starting date
+const validateDateRange = celebrate({
+  [Segments.QUERY]: Joi.object()
+    .keys({
+      startDate: Joi.date().format('YYYY-MM-DD').raw(),
+      endDate: Joi.date().format('YYYY-MM-DD').min(Joi.ref('startDate')).raw(),
+    })
+    .and('startDate', 'endDate'),
+})
+
 /**
- * Handler for GET /{formId}/adminform/submissions/count.
+ * NOTE: This is exported solely for testing
  * @security session
  *
  * @returns 200 with submission counts of given form
@@ -319,7 +334,7 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCountFormSubmissions: RequestHandler<
+export const countFormSubmissions: RequestHandler<
   { formId: string },
   unknown,
   unknown,
@@ -379,6 +394,12 @@ export const handleCountFormSubmissions: RequestHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+// Handler for GET /admin/forms/:formId/submissions/count
+export const handleCountFormSubmissions = [
+  validateDateRange,
+  countFormSubmissions,
+] as RequestHandler[]
 
 /**
  * Handler for GET /{formId}/adminform/feedback/count.
@@ -534,7 +555,7 @@ export const handleStreamFormFeedback: RequestHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetFormFeedbacks: RequestHandler<{
+export const handleGetFormFeedback: RequestHandler<{
   formId: string
 }> = (req, res) => {
   const { formId } = req.params
@@ -554,7 +575,7 @@ export const handleGetFormFeedbacks: RequestHandler<{
       logger.error({
         message: 'Error retrieving form feedbacks',
         meta: {
-          action: 'handleGetFormFeedbacks',
+          action: 'handleGetFormFeedback',
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,

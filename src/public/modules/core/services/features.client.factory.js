@@ -9,7 +9,7 @@ function featureFactory($resource) {
       if (this.states) {
         return this.states
       } else {
-        this.states = await $resource('/frontend/features').get().$promise
+        this.states = await $resource('/api/v3/client/features').get().$promise
         return this.states
       }
     },

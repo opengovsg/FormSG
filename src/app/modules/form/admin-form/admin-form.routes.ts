@@ -293,7 +293,7 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/feedback',
   withUserAuthentication,
-  AdminFormController.handleGetFormFeedbacks,
+  AdminFormController.handleGetFormFeedback,
 )
 
 /**
@@ -380,17 +380,6 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/count',
   withUserAuthentication,
-  celebrate({
-    [Segments.QUERY]: Joi.object()
-      .keys({
-        startDate: Joi.date().format('YYYY-MM-DD').raw(),
-        endDate: Joi.date()
-          .format('YYYY-MM-DD')
-          .min(Joi.ref('startDate'))
-          .raw(),
-      })
-      .and('startDate', 'endDate'),
-  }),
   AdminFormController.handleCountFormSubmissions,
 )
 
@@ -441,18 +430,6 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/download',
   withUserAuthentication,
-  celebrate({
-    [Segments.QUERY]: Joi.object()
-      .keys({
-        startDate: Joi.date().format('YYYY-MM-DD').raw(),
-        endDate: Joi.date()
-          .format('YYYY-MM-DD')
-          .min(Joi.ref('startDate'))
-          .raw(),
-        downloadAttachments: Joi.boolean().default(false),
-      })
-      .and('startDate', 'endDate'),
-  }),
   EncryptSubmissionController.handleStreamEncryptedResponses,
 )
 
