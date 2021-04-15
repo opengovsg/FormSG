@@ -421,7 +421,6 @@ export const duplicateForm = (
  * @param newField the new field to replace with
  * @returns ok(updatedField)
  * @returns err(FieldNotFoundError) if fieldId does not correspond to any field in the form
- * @returns err(EditFieldError) if field type of new field does not match the field to update
  * @returns err(PossibleDatabaseError) when database errors arise
  */
 export const updateFormField = (

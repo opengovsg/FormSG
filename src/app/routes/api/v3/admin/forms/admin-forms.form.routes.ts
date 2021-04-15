@@ -1,9 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { FieldUpdateDto } from 'src/types/api'
-
 import { BasicField } from '../../../../../../types'
+import { FieldUpdateDto } from '../../../../../../types/api'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsFormRouter = Router()
