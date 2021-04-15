@@ -385,6 +385,7 @@ const validateDateRange = celebrate({
 })
 
 /**
+ * Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
  * NOTE: This is exported solely for testing
  * Streams and downloads for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
  * @security session
@@ -516,7 +517,16 @@ export const handleStreamEncryptedResponses = [
   streamEncryptedResponses,
 ] as RequestHandler[]
 
+const validateSubmissionId = celebrate({
+  [Segments.QUERY]: {
+    submissionId: Joi.string()
+      .regex(/^[0-9a-fA-F]{24}$/)
+      .required(),
+  },
+})
+
 /**
+ * Exported solely for testing
  * Handler for GET /:formId/adminform/submissions
  * @security session
  *
@@ -529,7 +539,7 @@ export const handleStreamEncryptedResponses = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const handleGetEncryptedResponse: RequestHandler<
+export const getEncryptedResponseUsingQueryParams: RequestHandler<
   { formId: string },
   EncryptedSubmissionDto | ErrorDto,
   unknown,
@@ -538,6 +548,85 @@ export const handleGetEncryptedResponse: RequestHandler<
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { submissionId } = req.query
   const { formId } = req.params
+
+  return (
+    // Step 1: Retrieve logged in user.
+    getPopulatedUserById(sessionUserId)
+      // Step 2: Check whether user has read permissions to form.
+      .andThen((user) =>
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Check whether form is encrypt mode.
+      .andThen(checkFormIsEncryptMode)
+      // Step 4: Is encrypt mode form, retrieve submission data.
+      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
+      // Step 5: Retrieve presigned URLs for attachments.
+      .andThen((submissionData) => {
+        // Remaining login duration in seconds.
+        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
+        return transformAttachmentMetasToSignedUrls(
+          submissionData.attachmentMetadata,
+          urlExpiry,
+        ).map((presignedUrls) =>
+          createEncryptedSubmissionDto(submissionData, presignedUrls),
+        )
+      })
+      .map((responseData) => res.json(responseData))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: {
+            action: 'handleGetEncryptedResponse',
+            submissionId,
+            formId,
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  )
+}
+
+/**
+ * Handler for GET /:formId/adminform/submission
+ * @deprecated in favour of handleGetEncryptedResponse
+ * Exported as an array to ensure that the handler always a valid submissionId
+ */
+export const handleGetEncryptedResponseUsingQueryParams = [
+  validateSubmissionId,
+  getEncryptedResponseUsingQueryParams,
+] as RequestHandler[]
+
+/**
+ * Handler for GET /:formId/submissions/:submissionId
+ * @security session
+ *
+ * @returns 200 with encrypted submission data response
+ * @returns 400 when form is not an encrypt mode form
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when submissionId cannot be found in the database
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when any errors occurs in database query or generating signed URL
+ */
+export const handleGetEncryptedResponse: RequestHandler<
+  { formId: string; submissionId: string },
+  EncryptedSubmissionDto | ErrorDto,
+  unknown,
+  Query
+> = async (req, res) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const { formId, submissionId } = req.params
 
   return (
     // Step 1: Retrieve logged in user.
