@@ -43,7 +43,8 @@ function SubmissionsFactory(
   FormSgSdk,
 ) {
   const submitAdminUrl = '/:formId/adminform/submissions'
-  const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
+  const publicSubmitUrl = '/api/v3/forms/:formId/submissions/:responseMode'
+
   const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
 
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'

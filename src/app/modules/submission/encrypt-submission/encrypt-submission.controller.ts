@@ -30,6 +30,7 @@ import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import {
   getProcessedResponses,
   sendEmailConfirmations,
@@ -56,7 +57,7 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
+const submitEncryptModeForm: RequestHandler = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
     action: 'handleEncryptedSubmission',
@@ -372,6 +373,11 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     })
   })
 }
+
+export const handleEncryptedSubmission = [
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptModeForm,
+] as RequestHandler[]
 
 // Validates that the ending date >= starting date
 const validateDateRange = celebrate({
