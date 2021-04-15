@@ -7,7 +7,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
-import { IForm, ResponseMode } from '../../../../types'
+import { ResponseMode } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
@@ -21,38 +21,6 @@ export const AdminFormsRouter = Router()
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 // Validators
-const createFormValidator = celebrate({
-  [Segments.BODY]: {
-    form: Joi.object<Omit<IForm, 'admin'>>()
-      .keys({
-        // Require valid responsesMode field.
-        responseMode: Joi.string()
-          .valid(...Object.values(ResponseMode))
-          .required(),
-        // Require title field.
-        title: Joi.string().min(4).max(200).required(),
-        // Require emails string (for backwards compatibility) or string
-        // array if form to be created in Email mode.
-        emails: Joi.alternatives()
-          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-          .when('responseMode', {
-            is: ResponseMode.Email,
-            then: Joi.required(),
-          }),
-        // Require publicKey field if form to be created in Storage mode.
-        publicKey: Joi.string()
-          .allow('')
-          .when('responseMode', {
-            is: ResponseMode.Encrypt,
-            then: Joi.string().required().disallow(''),
-          }),
-      })
-      .required()
-      // Allow other form schema keys to be passed for form creation.
-      .unknown(true),
-  },
-})
-
 const duplicateFormValidator = celebrate({
   [Segments.BODY]: Joi.object<DuplicateFormBody>({
     // Require valid responsesMode field.
@@ -117,7 +85,7 @@ AdminFormsRouter.route('/adminform')
    * @returns 422 when form parameters are invalid
    * @returns 500 when database error occurs
    */
-  .post(createFormValidator, AdminFormController.handleCreateForm)
+  .post(AdminFormController.handleCreateForm)
 
 AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
   // All HTTP methods of route protected with authentication.
@@ -182,7 +150,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
    * @returns 422 when user in session cannot be retrieved from the database
    * @returns 500 when database error occurs
    */
-  .post(duplicateFormValidator, AdminFormController.handleDuplicateAdminForm)
+  .post(AdminFormController.handleDuplicateAdminForm)
 
 /**
  * Transfer form ownership to another user
@@ -203,18 +171,6 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/transfer-owner',
   withUserAuthentication,
-  celebrate({
-    [Segments.BODY]: {
-      email: Joi.string()
-        .required()
-        .email({
-          minDomainSegments: 2, // Number of segments required for the domain
-          tlds: { allow: true }, // TLD (top level domain) validation
-          multiple: false, // Disallow multiple emails
-        })
-        .message('Please enter a valid email'),
-    },
-  }),
   AdminFormController.handleTransferFormOwnership,
 )
 
