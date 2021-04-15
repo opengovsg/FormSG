@@ -5,7 +5,7 @@ import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
-import { SetOptional } from 'type-fest'
+import { RequireAtLeastOne, SetOptional } from 'type-fest'
 
 import {
   AuthType,
@@ -681,8 +681,21 @@ export const handleGetEncryptedResponse: RequestHandler<
   )
 }
 
+// NOTE: If submissionId is set, then page is optional.
+// Otherwise, if there is no submissionId, then page >= 1
+const validateSubmissionIdOrPageNum = celebrate({
+  [Segments.QUERY]: {
+    submissionId: Joi.string().optional(),
+    page: Joi.number().min(1).when('submissionId', {
+      not: Joi.exist(),
+      then: Joi.required(),
+    }),
+  },
+})
+
 /**
- * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/metadata
+ * Handler for GET /:formId/submissions/metadata
+ * This is exported solely for testing purposes
  *
  * @returns 200 with single submission metadata if query.submissionId is provided
  * @returns 200 with list of submission metadata with total count (and optional offset if query.page is provided) if query.submissionId is not provided
@@ -693,15 +706,19 @@ export const handleGetEncryptedResponse: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs whilst querying database
  */
-export const handleGetMetadata: RequestHandler<
+export const getMetadata: RequestHandler<
   { formId: string },
   SubmissionMetadataList | ErrorDto,
   unknown,
-  Query & { page?: number; submissionId?: string }
+  Query &
+    RequireAtLeastOne<
+      { page?: number; submissionId?: string },
+      'page' | 'submissionId'
+    >
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
-  const { page, submissionId } = req.query
+  const { page = 1, submissionId } = req.query
 
   const logMeta = {
     action: 'handleGetMetadata',
@@ -753,3 +770,9 @@ export const handleGetMetadata: RequestHandler<
       })
   )
 }
+
+// Handler for GET /:formId/submissions/metadata
+export const handleGetMetadata = [
+  validateSubmissionIdOrPageNum,
+  getMetadata,
+] as RequestHandler[]
