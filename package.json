@@ -202,7 +202,7 @@
     "coveralls": "^3.1.0",
     "css-loader": "^2.1.1",
     "csv-parse": "^4.15.3",
-    "date-fns": "^2.20.3",
+    "date-fns": "^2.21.0",
     "env-cmd": "^10.1.0",
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.2.0",
