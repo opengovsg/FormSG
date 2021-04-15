@@ -598,7 +598,7 @@ export const getEncryptedResponseUsingQueryParams: RequestHandler<
 
 /**
  * Handler for GET /:formId/adminform/submission
- * @deprecated in favour of GET api/v3/admin/forms/:formId/submissions/:submissionId
+ * @deprecated in favour of handleGetEncryptedResponse
  * Exported as an array to ensure that the handler always a valid submissionId
  */
 export const handleGetEncryptedResponseUsingQueryParams = [

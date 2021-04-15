@@ -336,6 +336,7 @@ AdminFormsRouter.get(
 
 /**
  * Retrieve actual response for a storage mode form
+ * @deprecated in favour of GET api/v3/admin/forms/:formId/submissions/:submissionId
  * @route GET /:formId/adminform/submissions
  * @security session
  *
