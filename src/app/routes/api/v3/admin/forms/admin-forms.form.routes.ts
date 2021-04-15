@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { IForm, ResponseMode } from '../../../../../../types'
-import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import { DuplicateFormBody } from '../../../../../modules/form/admin-form/admin-form.types'
 
@@ -152,7 +151,6 @@ AdminFormsFormRouter.post(
  */
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/collaborators/transfer-owner',
-  withUserAuthentication,
   celebrate({
     [Segments.BODY]: {
       email: Joi.string()
