@@ -6614,7 +6614,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6638,7 +6638,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6665,7 +6665,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6689,7 +6689,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6713,7 +6713,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6737,7 +6737,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6764,7 +6764,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6792,7 +6792,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -6819,7 +6819,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleUpdateFormField(
+      await AdminFormController._handleUpdateFormField(
         MOCK_REQ,
         mockRes,
         jest.fn(),

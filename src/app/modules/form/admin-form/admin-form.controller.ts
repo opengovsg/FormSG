@@ -8,6 +8,7 @@ import { ResultAsync } from 'neverthrow'
 
 import {
   AuthType,
+  BasicField,
   FieldResponse,
   FormMetaView,
   FormSettings,
@@ -1044,20 +1045,11 @@ export const handleUpdateSettings: RequestHandler<
 }
 
 /**
- * Handler for PUT /forms/:formId/fields/:fieldId
- * @security session
- *
- * @returns 200 with updated form field
- * @returns 403 when current user does not have permissions to update form field
- * @returns 404 when form cannot be found
- * @returns 404 when form field cannot be found
- * @returns 410 when updating form field of an archived form
- * @returns 413 when updating form field causes form to be too large to be saved in the database
- * @returns 422 when an invalid form field update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/fields/:fieldId
+ * @precondition Must be preceded by request validation
  */
-export const handleUpdateFormField: RequestHandler<
+export const _handleUpdateFormField: RequestHandler<
   {
     formId: string
     fieldId: string
@@ -1330,3 +1322,42 @@ export const handleEmailPreviewSubmission: RequestHandler<
     submissionId: submission.id,
   })
 }
+
+/**
+ * Handler for PUT /forms/:formId/fields/:fieldId
+ * @security session
+ *
+ * @returns 200 with updated form field
+ * @returns 403 when current user does not have permissions to update form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field cannot be found
+ * @returns 410 when updating form field of an archived form
+ * @returns 413 when updating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateFormField = [
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object({
+        // Ensures given field is same as accessed field.
+        _id: Joi.string().valid(Joi.ref('$params.fieldId')).required(),
+        fieldType: Joi.string()
+          .valid(...Object.values(BasicField))
+          .required(),
+        description: Joi.string().allow('').required(),
+        required: Joi.boolean().required(),
+        title: Joi.string().required(),
+        disabled: Joi.boolean().required(),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
+    },
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
+  _handleUpdateFormField,
+]
