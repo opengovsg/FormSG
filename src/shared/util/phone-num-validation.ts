@@ -54,11 +54,21 @@ export const isMobilePhoneNumber = (mobileNumber: string): boolean => {
  */
 export const isHomePhoneNumber = (phoneNum: string): boolean => {
   const parsedNumber = parsePhoneNumberFromString(phoneNum)
+
   if (!parsedNumber) return false
 
+  // For SG numbers only check if it starts with 3 or 6 and has 8 digits
+  if (parsedNumber.countryCallingCode === '65') {
+    return (
+      isPhoneNumber(phoneNum) &&
+      // Regex checks if the national number starts with 3 or 6, and is of
+      // length 8.
+      !!parsedNumber.nationalNumber.match(/^[36][0-9]{7}$/g)
+    )
+  }
+  // For intl numbers check number type as well
   const parsedType = parsedNumber.getType()
   if (!parsedType) return false
-
   return (
     isPhoneNumber(phoneNum) &&
     // Have to include both FIXED_LINE, FIXED_LINE_OR_MOBILE as some countries lump
