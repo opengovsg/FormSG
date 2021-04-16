@@ -1,5 +1,10 @@
-import { BasicField, FieldResponse, IBaseResponse } from '../../../../types'
-import { ProcessedResponse } from '../submission.types'
+import {
+  BasicField,
+  FieldResponse,
+  IBaseResponse,
+  IPopulatedEmailForm,
+} from '../../../../types'
+import { ProcessedFieldResponse, ProcessedResponse } from '../submission.types'
 
 // When a response has been formatted for email, all answerArray
 // should have been converted to answer
@@ -19,4 +24,10 @@ export interface ParsedMultipartForm {
 export interface SubmissionHash {
   hash: string
   salt: string
+}
+
+export interface IPopulatedEmailFormWithResponsesAndHash {
+  form: IPopulatedEmailForm
+  parsedResponses: ProcessedFieldResponse[]
+  hashedFields?: Set<string>
 }
