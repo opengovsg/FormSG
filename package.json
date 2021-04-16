@@ -133,7 +133,7 @@
     "nocache": "^2.1.0",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.5.0",
-    "opossum": "^6.0.0",
+    "opossum": "^6.0.1",
     "p-queue": "^6.6.2",
     "promise-retry": "^2.0.1",
     "puppeteer-core": "^5.3.1",
