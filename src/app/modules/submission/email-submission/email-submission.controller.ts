@@ -288,7 +288,7 @@ export const handleEmailSubmission: RequestHandler<
             attachments,
             autoReplyData: emailData.autoReplyData,
           }).mapErr((error) => {
-            // NOTE: MyInfo accses token is not cleared here.
+            // NOTE: MyInfo access token is not cleared here.
             // This is because if the reason for failure is not on the users' end,
             // they should not be randomly signed out.
             logger.error({
