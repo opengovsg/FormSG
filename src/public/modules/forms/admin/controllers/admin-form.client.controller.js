@@ -199,7 +199,9 @@ function AdminFormController(
             const updateIndex = $scope.myform.form_fields.findIndex(
               (f) => f._id === fieldId,
             )
-            $scope.myform.form_fields[updateIndex] = updatedFormField
+            if (updateIndex !== -1) {
+              $scope.myform.form_fields[updateIndex] = updatedFormField
+            }
           })
           .catch(handleUpdateError)
       }
