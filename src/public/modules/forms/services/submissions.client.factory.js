@@ -43,11 +43,18 @@ function SubmissionsFactory(
   FormSgSdk,
 ) {
   const submitAdminUrl = '/:formId/adminform/submissions'
-  const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
+  const publicSubmitUrl = '/api/v3/forms/:formId/submissions/:responseMode'
+
   const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
 
+  const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
+
   const generateDownloadUrl = (params, downloadAttachments) => {
-    let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/download?`
+    // NOTE: The ? is appended behind to ensure that the query parameters in url are constructed correctly
+    let resUrl = `${fixParamsToUrl(
+      params,
+      `${ADMIN_FORMS_PREFIX}/:formId/submissions/download?`,
+    )}`
     if (params.startDate && params.endDate) {
       resUrl += `startDate=${params.startDate}&endDate=${params.endDate}&`
     }
@@ -159,7 +166,10 @@ function SubmissionsFactory(
     },
     count: function (params) {
       const deferred = $q.defer()
-      let resUrl = fixParamsToUrl(params, submitAdminUrl) + '/count'
+      let resUrl = fixParamsToUrl(
+        params,
+        `${ADMIN_FORMS_PREFIX}/:formId/submissions/count`,
+      )
       if (params.startDate && params.endDate) {
         resUrl += `?startDate=${params.startDate}&endDate=${params.endDate}`
       }
@@ -196,9 +206,10 @@ function SubmissionsFactory(
     },
     getEncryptedResponse: function (params) {
       const deferred = $q.defer()
-      const resUrl = `${fixParamsToUrl(params, submitAdminUrl)}?submissionId=${
-        params.submissionId
-      }`
+      const resUrl = `${fixParamsToUrl(
+        params,
+        `${ADMIN_FORMS_PREFIX}/:formId/submissions/:submissionId`,
+      )}`
 
       $http.get(resUrl).then(
         function (response) {

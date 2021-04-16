@@ -18,6 +18,7 @@ import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
 } from '../../spcp/spcp.util'
+import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
 
 import * as EmailSubmissionService from './email-submission.service'
@@ -30,7 +31,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-export const handleEmailSubmission: RequestHandler<
+const submitEmailModeForm: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string; spcpSubmissionFailure?: true },
   { responses: FieldResponse[]; isPreview: boolean },
@@ -315,3 +316,9 @@ export const handleEmailSubmission: RequestHandler<
       })
   )
 }
+
+export const handleEmailSubmission = [
+  EmailSubmissionMiddleware.receiveEmailSubmission,
+  EmailSubmissionMiddleware.validateResponseParams,
+  submitEmailModeForm,
+] as RequestHandler[]

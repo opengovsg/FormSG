@@ -5,7 +5,6 @@ import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../utils/limit-rate'
 
 import * as EncryptSubmissionController from './encrypt-submission.controller'
-import * as EncryptSubmissionMiddleware from './encrypt-submission.middleware'
 
 export const EncryptSubmissionRouter = Router()
 
@@ -15,6 +14,7 @@ export const EncryptSubmissionRouter = Router()
  * Optionally, an autoreply confirming submission is sent back to the user, if
  * an email address was given. SMS autoreplies for mobile number fields are also
  * sent if the feature is enabled.
+ * @deprecated in favour of POST /api/v3/forms/:formId/submissions/encrypt
  * @route POST /v2/submissions/encrypt/:formId
  * @param response.body.required - contains the entire form submission
  * @param captchaResponse.query - contains the reCAPTCHA response artifact, if any
@@ -25,6 +25,5 @@ EncryptSubmissionRouter.post(
   '/:formId([a-fA-F0-9]{24})',
   limitRate({ max: rateLimitConfig.submissions }),
   CaptchaFactory.validateCaptchaParams,
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   EncryptSubmissionController.handleEncryptedSubmission,
 )
