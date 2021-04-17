@@ -36,6 +36,7 @@ import {
   MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
   MyInfoNoESrvcIdError,
+  MyInfoTooManyFieldsError,
 } from './myinfo.errors'
 import {
   IMyInfoForm,
@@ -231,6 +232,12 @@ export const mapEServiceIdCheckError: MapRouteError = (
         errorMessage:
           'This form does not have valid MyInfo credentials. Please contact the form administrator.',
       }
+    case MyInfoTooManyFieldsError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This form contains invalid MyInfo requests. Please contact the form administrator.',
+      }
     case FetchLoginPageError:
     case LoginPageValidationError:
       return {
@@ -287,12 +294,26 @@ export const createRelayState = (formId: string): string =>
  */
 export const validateMyInfoForm = (
   form: IFormSchema | IPopulatedForm,
-): Result<IMyInfoForm, MyInfoNoESrvcIdError | MyInfoAuthTypeError> => {
+): Result<
+  IMyInfoForm,
+  MyInfoNoESrvcIdError | MyInfoAuthTypeError | MyInfoTooManyFieldsError
+> => {
   if (!form.esrvcId) {
     return err(new MyInfoNoESrvcIdError())
   }
   if (form.authType !== AuthType.MyInfo) {
     return err(new MyInfoAuthTypeError())
+  }
+  let count = 0
+  if (form.form_fields !== undefined) {
+    form.form_fields.forEach((field) => {
+      if (field.myInfo !== undefined) {
+        count++
+      }
+    })
+  }
+  if (count > 30) {
+    return err(new MyInfoTooManyFieldsError())
   }
   return ok(form as IMyInfoForm)
 }

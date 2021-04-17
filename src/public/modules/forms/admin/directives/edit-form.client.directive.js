@@ -134,6 +134,31 @@ function editFormController(
     return conditionFieldSet.has(field._id)
   }
 
+  /**
+   * Returns the number of myInfo fields in a form
+   * @param {Object} A form object
+   * @returns {Integer} The number of MyInfo fields
+   */
+  $scope.countMyInfoFields = function (form) {
+    let count = 0
+    form.form_fields.forEach(function (field) {
+      if (field.myInfo !== undefined) {
+        count++
+      }
+    })
+    return count
+  }
+
+  // Update myInfo counts when the form field changes
+  $scope.maxMyInfoFields = 30
+  $scope.numMyInfoFields = $scope.countMyInfoFields($scope.myform)
+  $scope.$watch(
+    (scope) => scope.myform.form_fields,
+    function (_newVal, _oldVal) {
+      $scope.numMyInfoFields = $scope.countMyInfoFields($scope.myform)
+    },
+  )
+
   // Default Attachments Total Size
   if ($scope.myform.responseMode === responseModeEnum.ENCRYPT) {
     Attachment.attachmentsTotal = 20
@@ -327,6 +352,7 @@ function editFormController(
   }
 
   $scope.addNewMyInfoField = function (myInfoAttr) {
+    if ($scope.numMyInfoFields >= $scope.maxMyInfoFields) return
     let newField = FormFields.createMyInfoField(myInfoAttr)
     $scope.openMyInfoEditModal(newField)
   }
@@ -442,6 +468,11 @@ function editFormController(
   }
 
   const duplicateField = (fieldToDuplicate) => {
+    if (
+      fieldToDuplicate.myInfo !== undefined &&
+      $scope.numMyInfoFields >= $scope.maxMyInfoFields
+    )
+      return
     let duplicatedField = _.cloneDeep(fieldToDuplicate)
     // Remove unique ids before saving
     delete duplicatedField.globalId

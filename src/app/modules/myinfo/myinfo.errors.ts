@@ -112,3 +112,12 @@ export class MyInfoCookieAccessError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * MyInfo form has too many MyInfo fields
+ */
+export class MyInfoTooManyFieldsError extends ApplicationError {
+  constructor(message = 'MyInfo form has too many fields') {
+    super(message)
+  }
+}
