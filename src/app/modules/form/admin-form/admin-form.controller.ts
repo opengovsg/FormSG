@@ -13,6 +13,7 @@ import {
   FormSettings,
   IForm,
   IPopulatedForm,
+  ResponseMode,
 } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -65,6 +66,78 @@ import { mapRouteError } from './admin-form.utils'
 const Joi = BaseJoi.extend(JoiDate)
 
 const logger = createLoggerWithLabel(module)
+
+// Validators
+const createFormValidator = celebrate({
+  [Segments.BODY]: {
+    form: BaseJoi.object<Omit<IForm, 'admin'>>()
+      .keys({
+        // Require valid responsesMode field.
+        responseMode: Joi.string()
+          .valid(...Object.values(ResponseMode))
+          .required(),
+        // Require title field.
+        title: Joi.string().min(4).max(200).required(),
+        // Require emails string (for backwards compatibility) or string
+        // array if form to be created in Email mode.
+        emails: Joi.alternatives()
+          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+          .when('responseMode', {
+            is: ResponseMode.Email,
+            then: Joi.required(),
+          }),
+        // Require publicKey field if form to be created in Storage mode.
+        publicKey: Joi.string()
+          .allow('')
+          .when('responseMode', {
+            is: ResponseMode.Encrypt,
+            then: Joi.string().required().disallow(''),
+          }),
+      })
+      .required()
+      // Allow other form schema keys to be passed for form creation.
+      .unknown(true),
+  },
+})
+
+const duplicateFormValidator = celebrate({
+  [Segments.BODY]: BaseJoi.object<DuplicateFormBody>({
+    // Require valid responsesMode field.
+    responseMode: Joi.string()
+      .valid(...Object.values(ResponseMode))
+      .required(),
+    // Require title field.
+    title: Joi.string().min(4).max(200).required(),
+    // Require emails string (for backwards compatibility) or string array
+    // if form to be duplicated in Email mode.
+    emails: Joi.alternatives()
+      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+      .when('responseMode', {
+        is: ResponseMode.Email,
+        then: Joi.required(),
+      }),
+    // Require publicKey field if form to be duplicated in Storage mode.
+    publicKey: Joi.string()
+      .allow('')
+      .when('responseMode', {
+        is: ResponseMode.Encrypt,
+        then: Joi.string().required().disallow(''),
+      }),
+  }),
+})
+
+const transferFormOwnershipValidator = celebrate({
+  [Segments.BODY]: {
+    email: Joi.string()
+      .required()
+      .email({
+        minDomainSegments: 2, // Number of segments required for the domain
+        tlds: { allow: true }, // TLD (top level domain) validation
+        multiple: false, // Disallow multiple emails
+      })
+      .message('Please enter a valid email'),
+  },
+})
 
 /**
  * Handler for GET /adminform endpoint.
@@ -650,7 +723,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleDuplicateAdminForm: RequestHandler<
+export const duplicateAdminForm: RequestHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
@@ -687,7 +760,7 @@ export const handleDuplicateAdminForm: RequestHandler<
         logger.error({
           message: 'Error duplicating form',
           meta: {
-            action: 'handleDuplicateAdminForm',
+            action: 'duplicateAdminForm',
             ...createReqMeta(req),
             userId,
             formId,
@@ -699,6 +772,11 @@ export const handleDuplicateAdminForm: RequestHandler<
       })
   )
 }
+
+export const handleDuplicateAdminForm = [
+  duplicateFormValidator,
+  duplicateAdminForm,
+] as RequestHandler[]
 
 /**
  * Handler for GET /:formId/adminform/template
@@ -828,7 +906,7 @@ export const handleCopyTemplateForm: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleTransferFormOwnership: RequestHandler<
+export const transferFormOwnership: RequestHandler<
   { formId: string },
   unknown,
   { email: string }
@@ -859,7 +937,7 @@ export const handleTransferFormOwnership: RequestHandler<
         logger.error({
           message: 'Error occurred whilst transferring form ownership',
           meta: {
-            action: 'handleTransferFormOwnership',
+            action: 'transferFormOwnership',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
@@ -873,6 +951,11 @@ export const handleTransferFormOwnership: RequestHandler<
   )
 }
 
+export const handleTransferFormOwnership = [
+  transferFormOwnershipValidator,
+  transferFormOwnership,
+] as RequestHandler[]
+
 /**
  * Handler for POST /adminform.
  * @security session
@@ -883,7 +966,7 @@ export const handleTransferFormOwnership: RequestHandler<
  * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
  * @returns 500 when database error occurs
  */
-export const handleCreateForm: RequestHandler<
+export const createForm: RequestHandler<
   ParamsDictionary,
   unknown,
   { form: Omit<IForm, 'admin'> }
@@ -903,7 +986,7 @@ export const handleCreateForm: RequestHandler<
         logger.error({
           message: 'Error occurred when creating form',
           meta: {
-            action: 'handleCreateForm',
+            action: 'createForm',
             ...createReqMeta(req),
             userId: sessionUserId,
           },
@@ -914,6 +997,11 @@ export const handleCreateForm: RequestHandler<
       })
   )
 }
+
+export const handleCreateForm = [
+  createFormValidator,
+  createForm,
+] as RequestHandler[]
 
 /**
  * Handler for PUT /:formId/adminform.
