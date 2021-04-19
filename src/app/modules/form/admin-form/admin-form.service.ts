@@ -9,6 +9,7 @@ import {
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
 import {
+  FormFieldWithId,
   FormLogoState,
   FormMetaView,
   FormSettings,
@@ -19,7 +20,11 @@ import {
   IPopulatedForm,
   IUserSchema,
 } from '../../../../types'
-import { FieldUpdateDto, SettingsUpdateDto } from '../../../../types/api'
+import {
+  FieldCreateDto,
+  FieldUpdateDto,
+  SettingsUpdateDto,
+} from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
@@ -453,6 +458,16 @@ export const updateFormField = (
       ? okAsync(updatedFormField)
       : errAsync(new FieldNotFoundError())
   })
+}
+
+export const createFormField = (
+  form: IPopulatedForm,
+  newField: FieldCreateDto,
+): ResultAsync<FormFieldWithId, PossibleDatabaseError> => {
+  console.log('form', form)
+  console.log('newField', newField)
+
+  return okAsync({ ...newField, _id: 'some id' })
 }
 
 /**
