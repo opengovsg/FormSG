@@ -142,7 +142,7 @@ describe('FormService', () => {
     })
   })
 
-  describe('retrieveFormFieldsById', () => {
+  describe('retrieveFormKeysById', () => {
     it('should return form successfully', async () => {
       // Arrange
       const formId = new ObjectId().toHexString()
@@ -159,7 +159,7 @@ describe('FormService', () => {
         .mockResolvedValueOnce(expectedForm)
 
       // Act
-      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+      const actualResult = await FormService.retrieveFormKeysById(formId, [
         'title',
         'admin',
       ])
@@ -179,7 +179,7 @@ describe('FormService', () => {
         .mockResolvedValueOnce(null)
 
       // Act
-      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+      const actualResult = await FormService.retrieveFormKeysById(formId, [
         'title',
         'admin',
       ])
@@ -203,7 +203,7 @@ describe('FormService', () => {
         .mockResolvedValueOnce(expectedForm)
 
       // Act
-      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+      const actualResult = await FormService.retrieveFormKeysById(formId, [
         'title',
       ])
 
@@ -222,7 +222,7 @@ describe('FormService', () => {
         .mockRejectedValueOnce(new Error('Some error'))
 
       // Act
-      const actualResult = await FormService.retrieveFormFieldsById(formId, [
+      const actualResult = await FormService.retrieveFormKeysById(formId, [
         'title',
         'admin',
       ])
