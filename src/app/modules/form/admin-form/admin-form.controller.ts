@@ -1048,9 +1048,7 @@ export const handleGetSettings: RequestHandler<
       })),
     )
     .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
-    .map((form) =>
-      res.status(StatusCodes.OK).json(form.getSettings() as IPopulatedForm),
-    )
+    .map((form) => res.status(StatusCodes.OK).json(form.getSettings()))
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when retrieving form settings',
