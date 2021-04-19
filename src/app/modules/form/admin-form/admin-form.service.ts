@@ -1,5 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, omit } from 'lodash'
+import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
@@ -9,7 +9,6 @@ import {
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
 import {
-  FormFieldWithId,
   FormLogoState,
   FormMetaView,
   FormSettings,
@@ -463,11 +462,31 @@ export const updateFormField = (
 export const createFormField = (
   form: IPopulatedForm,
   newField: FieldCreateDto,
-): ResultAsync<FormFieldWithId, PossibleDatabaseError> => {
-  console.log('form', form)
-  console.log('newField', newField)
+): ResultAsync<
+  IFieldSchema,
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  return ResultAsync.fromPromise(form.insertFormField(newField), (error) => {
+    logger.error({
+      message: 'Error encountered while inserting new form field',
+      meta: {
+        action: 'createFormField',
+        formId: form._id,
+        newField,
+      },
+      error,
+    })
 
-  return okAsync({ ...newField, _id: 'some id' })
+    return transformMongoError(error)
+  }).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedField = last(updatedForm.form_fields)
+    return updatedField
+      ? okAsync(updatedField)
+      : errAsync(new FieldNotFoundError())
+  })
 }
 
 /**

@@ -1520,10 +1520,10 @@ export const _handleCreateFormField: RequestHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: User has permissions, update form field of retrieved form.
+      // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) => AdminFormService.createFormField(form, req.body))
-      .map((updatedFormField) =>
-        res.status(StatusCodes.OK).json(updatedFormField),
+      .map((createdFormField) =>
+        res.status(StatusCodes.OK).json(createdFormField),
       )
       .mapErr((error) => {
         logger.error({
