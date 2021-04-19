@@ -2,7 +2,7 @@
 const { cloneDeep } = require('lodash')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
-const MyInfoService = require('../../../../services/MyInfoService')
+const AuthService = require('../../../../services/AuthService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -90,44 +90,26 @@ function submitFormDirective(
         $('head').append(meta)
       }
 
-      scope.formLogin = function (authType, rememberMe) {
-        if (authType === 'MyInfo') {
-          return $q
-            .when(MyInfoService.createRedirectURL(scope.form._id))
-            .then((response) => {
-              setReferrerToNull()
-              $window.location.href = response.redirectURL
-            })
-            .catch((error) => {
-              console.error(error)
-              Toastr.error(
-                'Sorry, there was a problem with your login. Please try again.',
-              )
-            })
-        }
+      scope.formLogin = function (authType, isPersistentLogin) {
         // Fire GA tracking event
-        if (rememberMe) {
-          GTag.persistentLoginUse(scope.form)
-        }
+        if (isPersistentLogin) GTag.persistentLoginUse(scope.form)
 
-        // redirect to SPCP log in page
-        let destination =
-          '/' + scope.form._id + (scope.form.isPreview ? '/preview' : '')
-        rememberMe = authType === 'SP' ? rememberMe : false
-        // We are not following corppass's official spec for
-        // the target parameter
-        let target = `${destination},${rememberMe}`
-        let esrvcId = scope.form.esrvcId
-        SpcpRedirect(target, authType, esrvcId).then(
-          function (response) {
+        return $q
+          .when(
+            AuthService.createRedirectURL(scope.form._id, isPersistentLogin),
+          )
+          .then((response) => {
             setReferrerToNull()
             $window.location.href = response.redirectURL
-          },
-          function (error) {
+          })
+          .catch((error) => {
             console.error(error)
-          },
-        )
+            Toastr.error(
+              'Sorry, there was a problem with your login. Please try again.',
+            )
+          })
       }
+
       /*
        ** Private function that shows all invalid fields and fade in
        *  error message if Submit is pressed.

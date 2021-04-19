@@ -7,6 +7,7 @@ import { err } from 'neverthrow'
 
 import { AuthType } from 'src/types'
 import { ErrorDto } from 'src/types/api'
+import { RedirectUrlDto } from 'src/types/api/auth'
 
 import { LINKS } from '../../../shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -242,7 +243,7 @@ const validatePersistentLogin = celebrate({
  */
 export const getRedirectLink: RequestHandler<
   { formId: string },
-  { redirectURL: string } | ErrorDto,
+  RedirectUrlDto | ErrorDto,
   unknown,
   Query & { isPersistentLogin: boolean }
 > = (req, res) => {
