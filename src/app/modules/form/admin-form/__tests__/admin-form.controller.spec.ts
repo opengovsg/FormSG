@@ -7328,7 +7328,7 @@ describe('admin-form.controller', () => {
     const mockReq = expressHandler.mockRequest({
       params: {
         formId: MOCK_FORM_ID,
-        logicId: logicId,
+        logicId,
       },
       session: {
         user: {
@@ -7397,28 +7397,11 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 404 when logicId cannot be found', async () => {
-      const wrongLogicId = new ObjectId().toHexString()
-      const mockReqWrongLogic = expressHandler.mockRequest({
-        params: {
-          formId: MOCK_FORM_ID,
-          logicId: wrongLogicId,
-        },
-        session: {
-          user: {
-            _id: MOCK_USER_ID,
-          },
-        },
-      })
-
       MockAdminFormService.deleteFormLogic.mockReturnValue(
-        err(new LogicNotFoundError()),
+        errAsync(new LogicNotFoundError()),
       )
 
-      await AdminFormController.handleDeleteLogic(
-        mockReqWrongLogic,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.handleDeleteLogic(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -7433,7 +7416,7 @@ describe('admin-form.controller', () => {
 
       expect(MockAdminFormService.deleteFormLogic).toHaveBeenCalledWith(
         MOCK_FORM,
-        wrongLogicId,
+        logicId,
       )
 
       expect(mockRes.status).toHaveBeenCalledWith(404)
