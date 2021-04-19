@@ -1562,6 +1562,7 @@ export const handleCreateFormField = [
     [Segments.BODY]: Joi.object({
       // Ensures id is not provided.
       _id: Joi.any().forbidden(),
+      globalId: Joi.any().forbidden(),
       fieldType: Joi.string()
         .valid(...Object.values(BasicField))
         .required(),
