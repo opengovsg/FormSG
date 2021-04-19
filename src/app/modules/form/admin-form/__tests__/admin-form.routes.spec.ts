@@ -4050,7 +4050,7 @@ describe('admin-form.routes', () => {
       expect(response.body).toEqual(1)
     })
 
-    it('should return 200 with counts of submissions made with same start and end dates.', async () => {
+    it('should return 200 with counts of submissions made with same start and end dates', async () => {
       // Arrange
       const expectedSubmissionCount = 3
       const newForm = (await EmailFormModel.create({
@@ -4069,18 +4069,17 @@ describe('admin-form.routes', () => {
           saveSubmissionMetadata(newForm, mockSubmissionHash),
         ),
       )
-      // Update first submission to be 5 days ago.
-      const expectedDate = subDays(new Date(), 5)
+      const expectedDate = '2021-04-04'
       const firstSubmission = results[0]._unsafeUnwrap()
-      firstSubmission.created = expectedDate
+      firstSubmission.created = new Date(expectedDate)
       await firstSubmission.save()
 
       // Act
       const response = await request
         .get(`/${newForm._id}/adminform/submissions/count`)
         .query({
-          startDate: format(expectedDate, 'yyyy-MM-dd'),
-          endDate: format(expectedDate, 'yyyy-MM-dd'),
+          startDate: expectedDate,
+          endDate: expectedDate,
         })
 
       // Assert
