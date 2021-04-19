@@ -19,6 +19,7 @@ import {
 import {
   EncryptSubmissionDto,
   ErrorDto,
+  FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
   SettingsUpdateDto,
@@ -1493,4 +1494,84 @@ export const handleUpdateFormField = [
     { reqContext: true },
   ),
   _handleUpdateFormField,
+]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/fields
+ * @precondition Must be preceded by request validation
+ */
+export const _handleCreateFormField: RequestHandler<
+  { formId: string; fieldId: string },
+  FormFieldDto | ErrorDto,
+  FieldCreateDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, update form field of retrieved form.
+      .andThen((form) => AdminFormService.createFormField(form, req.body))
+      .map((updatedFormField) =>
+        res.status(StatusCodes.OK).json(updatedFormField),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form field',
+          meta: {
+            action: '_handleCreateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+            createFieldBody: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /forms/:formId/fields
+ * @security session
+ *
+ * @returns 200 with created form field
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 410 when creating form field for an archived form
+ * @returns 413 when creating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field creation is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleCreateFormField = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      // Ensures id is not provided.
+      _id: Joi.any().forbidden(),
+      fieldType: Joi.string()
+        .valid(...Object.values(BasicField))
+        .required(),
+      description: Joi.string().allow('').required(),
+      required: Joi.boolean().required(),
+      title: Joi.string().required(),
+      disabled: Joi.boolean().required(),
+      // Allow other field related key-values to be provided and let the model
+      // layer handle the validation.
+    }).unknown(true),
+  }),
+  _handleCreateFormField,
 ]

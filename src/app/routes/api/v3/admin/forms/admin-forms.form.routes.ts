@@ -111,3 +111,8 @@ AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})',
   AdminFormController.handleUpdateFormField,
 )
+
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/fields',
+  AdminFormController.handleCreateFormField,
+)
