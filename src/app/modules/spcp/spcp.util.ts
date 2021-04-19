@@ -1,8 +1,16 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
 
-import { BasicField, MapRouteError, SPCPFieldTitle } from '../../../types'
+import {
+  AuthType,
+  BasicField,
+  IFormSchema,
+  IPopulatedForm,
+  MapRouteError,
+  SPCPFieldTitle,
+} from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { hasProp } from '../../utils/has-prop'
 import { MissingFeatureError } from '../core/core.errors'
@@ -14,9 +22,11 @@ import {
   InvalidJwtError,
   LoginPageValidationError,
   MissingJwtError,
+  SpcpAuthTypeError,
+  SpcpNoESrvcIdError,
   VerifyJwtError,
 } from './spcp.errors'
-import { CorppassJwtPayload, SingpassJwtPayload } from './spcp.types'
+import { CorppassJwtPayload, ISPCPForm, SingpassJwtPayload } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -208,6 +218,22 @@ export const createCorppassParsedResponses = (
       answer: userInfo,
     },
   ]
+}
+
+/**
+ * Validates that a form is a SPCP form with an e-service ID
+ * @param form Form to validate
+ */
+export const validateSpcpForm = (
+  form: IFormSchema | IPopulatedForm,
+): Result<ISPCPForm, SpcpNoESrvcIdError | SpcpAuthTypeError> => {
+  if (!form.esrvcId) {
+    return err(new SpcpNoESrvcIdError())
+  }
+  if (form.authType !== AuthType.SP && form.authType !== AuthType.CP) {
+    return err(new SpcpAuthTypeError())
+  }
+  return ok(form as ISPCPForm)
 }
 
 /**
