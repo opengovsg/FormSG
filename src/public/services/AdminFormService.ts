@@ -51,7 +51,5 @@ export const deleteFormLogic = async (
   formId: string,
   logicId: string,
 ): Promise<true> => {
-  return axios
-    .delete(`${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`)
-    .then(({ data }) => data)
+  return axios.delete(`${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`)
 }
