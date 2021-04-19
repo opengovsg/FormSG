@@ -4,7 +4,12 @@ import { Merge, SetRequired } from 'type-fest'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
-import { FormFieldWithId, IFieldSchema, MyInfoAttribute } from './field'
+import {
+  FormField,
+  FormFieldWithId,
+  IFieldSchema,
+  MyInfoAttribute,
+} from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
@@ -177,6 +182,14 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     fieldId: string,
     newField: FormFieldWithId,
   ): Promise<T | null>
+
+  /**
+   * Inserts a form field into the form
+   * @param newField the new field to insert
+   * @returns updated form after the insertion if field insertion is successful
+   * @throws validation error on invalid updates
+   */
+  insertFormField<T>(this: T, newField: FormField): Promise<T | null>
 
   /**
    * Returns the dashboard form view of the form.
