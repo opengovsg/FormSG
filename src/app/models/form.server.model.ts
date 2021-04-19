@@ -613,6 +613,24 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     )
   }
 
+  // Deletes specified form logic.
+  FormSchema.statics.deleteFormLogic = async function (
+    this: IFormModel,
+    form: IPopulatedForm,
+    logicId: string,
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      form._id,
+      {
+        $pull: { form_logics: { _id: logicId } },
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec()
+  }
+
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
