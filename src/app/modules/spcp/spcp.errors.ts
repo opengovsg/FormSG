@@ -96,3 +96,24 @@ export class MissingJwtError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * SPCP form missing e-service ID.
+ */
+export class SpcpNoESrvcIdError extends ApplicationError {
+  constructor(message = 'Form does not have e-service ID') {
+    super(message)
+  }
+}
+
+/**
+ * Attempt to perform a Spcp-related operation on a form without Spcp
+ * authentication enabled.
+ */
+export class SpcpAuthTypeError extends ApplicationError {
+  constructor(
+    message = 'SPCP function called on form without SPCP authentication type',
+  ) {
+    super(message)
+  }
+}
