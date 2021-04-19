@@ -196,7 +196,6 @@ describe('admin-form.submissions.routes', () => {
           saveSubmissionMetadata(newForm, mockSubmissionHash),
         ),
       )
-      // Update first submission to be 5 days ago.
       const now = new Date()
       const firstSubmission = results[0]._unsafeUnwrap()
       firstSubmission.created = subDays(now, 5)
@@ -234,7 +233,6 @@ describe('admin-form.submissions.routes', () => {
           saveSubmissionMetadata(newForm, mockSubmissionHash),
         ),
       )
-      // Update first submission to be 5 days ago.
       const expectedDate = '2021-04-04'
       const firstSubmission = results[0]._unsafeUnwrap()
       firstSubmission.created = new Date(expectedDate)
