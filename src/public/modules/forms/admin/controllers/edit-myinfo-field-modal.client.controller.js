@@ -1,6 +1,5 @@
 'use strict'
 
-const { EditFieldActions } = require('shared/constants')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 angular
@@ -36,12 +35,8 @@ function EditMyInfoFieldController(
     // Field creation
     if (!field._id) {
       updateFieldPromise = updateField({
-        editFormField: {
-          action: {
-            name: EditFieldActions.Create,
-          },
-          field,
-        },
+        body: field,
+        type: UPDATE_FORM_TYPES.CreateField,
       })
     } else {
       // Update field
