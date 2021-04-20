@@ -6547,7 +6547,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleUpdateFormField', () => {
+  describe('_handleUpdateFormField', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
