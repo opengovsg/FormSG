@@ -295,7 +295,6 @@ export const getRedirectLink: RequestHandler<
       return res.status(StatusCodes.OK).json({ redirectURL })
     })
     .mapErr((error) => {
-      console.log(error)
       logger.error({
         message: 'Error while creating redirect URL',
         meta: logMeta,
