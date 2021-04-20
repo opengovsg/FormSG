@@ -4807,7 +4807,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleEmailPreviewSubmission', () => {
+  describe('submitEmailPreview', () => {
     const MOCK_FIELD_ID = new ObjectId().toHexString()
     const MOCK_RESPONSES = [
       generateUnprocessedSingleAnswerResponse(BasicField.Email, {
@@ -4895,11 +4895,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -4970,11 +4966,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5023,11 +5015,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5076,11 +5064,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5133,11 +5117,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5190,11 +5170,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5247,11 +5223,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5304,11 +5276,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5361,11 +5329,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5418,11 +5382,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5475,11 +5435,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5535,11 +5491,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5595,11 +5547,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5655,11 +5603,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5724,11 +5668,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5793,11 +5733,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5852,7 +5788,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleEncryptPreviewSubmission', () => {
+  describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
       generateUnprocessedSingleAnswerResponse(BasicField.Email),
     ]
@@ -5924,7 +5860,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -5988,7 +5924,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6036,7 +5972,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6084,7 +6020,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6136,7 +6072,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6188,7 +6124,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6240,7 +6176,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6292,7 +6228,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6344,7 +6280,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6396,7 +6332,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6451,7 +6387,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6506,7 +6442,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),

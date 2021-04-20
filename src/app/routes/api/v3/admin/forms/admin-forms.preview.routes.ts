@@ -1,8 +1,6 @@
 import { Router } from 'express'
 
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
-import * as EmailSubmissionMiddleware from '../../../../../modules/submission/email-submission/email-submission.middleware'
-import * as EncryptSubmissionMiddleware from '../../../../../modules/submission/encrypt-submission/encrypt-submission.middleware'
 
 export const AdminFormsPreviewRouter = Router()
 
@@ -39,8 +37,6 @@ AdminFormsPreviewRouter.get(
  */
 AdminFormsPreviewRouter.post(
   '/:formId([a-fA-F0-9]{24})/preview/submissions/email',
-  EmailSubmissionMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
   AdminFormController.handleEmailPreviewSubmission,
 )
 
@@ -59,6 +55,5 @@ AdminFormsPreviewRouter.post(
  */
 AdminFormsPreviewRouter.post(
   '/:formId([a-fA-F0-9]{24})/preview/submissions/encrypt',
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   AdminFormController.handleEncryptPreviewSubmission,
 )

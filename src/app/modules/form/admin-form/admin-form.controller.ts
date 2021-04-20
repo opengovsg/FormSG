@@ -36,12 +36,14 @@ import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
 } from '../../spcp/spcp.util'
+import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
   mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
+import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
@@ -1141,7 +1143,7 @@ export const handleUpdateSettings: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEncryptPreviewSubmission: RequestHandler<
+export const submitEncryptPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
   EncryptSubmissionDto
@@ -1151,7 +1153,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { encryptedContent, responses, version } = req.body
   const logMeta = {
-    action: 'handleEncryptPreviewSubmission',
+    action: 'submitEncryptPreview',
     formId,
   }
 
@@ -1217,6 +1219,11 @@ export const handleEncryptPreviewSubmission: RequestHandler<
     })
 }
 
+export const handleEncryptPreviewSubmission = [
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptPreview,
+] as RequestHandler[]
+
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
  * @security session
@@ -1229,7 +1236,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEmailPreviewSubmission: RequestHandler<
+export const submitEmailPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string },
   { responses: FieldResponse[]; isPreview: boolean },
@@ -1240,7 +1247,7 @@ export const handleEmailPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { responses } = req.body
   const logMeta = {
-    action: 'handleEmailPreviewSubmission',
+    action: 'submitEmailPreview',
     formId,
     ...createReqMeta(req as Request),
   }
@@ -1354,3 +1361,9 @@ export const handleEmailPreviewSubmission: RequestHandler<
     submissionId: submission.id,
   })
 }
+
+export const handleEmailPreviewSubmission = [
+  EmailSubmissionMiddleware.receiveEmailSubmission,
+  EmailSubmissionMiddleware.validateResponseParams,
+  submitEmailPreview,
+] as RequestHandler[]

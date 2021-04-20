@@ -9,9 +9,7 @@ import { Router } from 'express'
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import { ResponseMode } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
-import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
-import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 
 import * as AdminFormController from './admin-form.controller'
 import { DuplicateFormBody } from './admin-form.types'
@@ -433,7 +431,6 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})',
   withUserAuthentication,
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   AdminFormController.handleEncryptPreviewSubmission,
 )
 
@@ -453,7 +450,5 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})',
   withUserAuthentication,
-  EmailSubmissionMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
   AdminFormController.handleEmailPreviewSubmission,
 )
