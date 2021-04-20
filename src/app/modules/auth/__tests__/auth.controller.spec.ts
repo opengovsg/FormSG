@@ -372,7 +372,7 @@ describe('auth.controller', () => {
         isPersistentLogin: true,
       },
     })
-    const MOCK_REDIRECT_URL = { redirectURL: 'www.mockata.com' }
+    const MOCK_REDIRECT_URL = 'www.mockata.com'
 
     it('should return 200 with the redirect url when the request is valid and the form has authType SP', async () => {
       // Arrange
