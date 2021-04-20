@@ -681,18 +681,6 @@ export const handleGetEncryptedResponse: RequestHandler<
   )
 }
 
-// NOTE: If submissionId is set, then page is optional.
-// Otherwise, if there is no submissionId, then page >= 1
-const validateSubmissionIdOrPageNum = celebrate({
-  [Segments.QUERY]: {
-    submissionId: Joi.string().optional(),
-    page: Joi.number().min(1).when('submissionId', {
-      not: Joi.exist(),
-      then: Joi.required(),
-    }),
-  },
-})
-
 /**
  * Handler for GET /:formId/submissions/metadata
  * This is exported solely for testing purposes
@@ -718,7 +706,7 @@ export const getMetadata: RequestHandler<
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
-  const { page = 1, submissionId } = req.query
+  const { page, submissionId } = req.query
 
   const logMeta = {
     action: 'handleGetMetadata',
@@ -773,6 +761,16 @@ export const getMetadata: RequestHandler<
 
 // Handler for GET /:formId/submissions/metadata
 export const handleGetMetadata = [
-  validateSubmissionIdOrPageNum,
+  // NOTE: If submissionId is set, then page is optional.
+  // Otherwise, if there is no submissionId, then page >= 1
+  celebrate({
+    [Segments.QUERY]: {
+      submissionId: Joi.string().optional(),
+      page: Joi.number().min(1).when('submissionId', {
+        not: Joi.exist(),
+        then: Joi.required(),
+      }),
+    },
+  }),
   getMetadata,
 ] as RequestHandler[]
