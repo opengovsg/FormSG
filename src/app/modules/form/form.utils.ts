@@ -95,7 +95,7 @@ export const getFormFieldById = (
 
   if (isMongooseDocumentArray(formFields)) {
     return formFields.id(fieldId)
-  } else {
-    return formFields.find((f) => fieldId === String(f._id)) ?? null
   }
+
+  return formFields.find((f) => fieldId === String(f._id)) ?? null
 }
