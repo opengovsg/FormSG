@@ -6,10 +6,11 @@ angular
     '$window',
     'vcRecaptchaService',
     'Toastr',
+    'GTag',
     captchaService,
   ])
 
-function captchaService($window, vcRecaptchaService, Toastr) {
+function captchaService($window, vcRecaptchaService, Toastr, GTag) {
   /**
    * Captcha public key associated with app
    */
@@ -68,6 +69,7 @@ function captchaService($window, vcRecaptchaService, Toastr) {
     Toastr.error(
       'Error: Cannot connect to reCAPTCHA. Please check your internet connectivity or try submitting on another device.',
     )
+    GTag.reCaptchaOnError()
   }
 
   /**
