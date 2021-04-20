@@ -55,6 +55,26 @@ describe('Home phone number validation tests', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
+  it('should allow valid sg home numbers starting with 666 for homeno fieldType', () => {
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
+      answer: '+6566634424',
+    })
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow valid sg home numbers starting with 3 for homeno fieldType', () => {
+    const formField = generateDefaultField(BasicField.HomeNo)
+    const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {
+      answer: '+6536634424',
+    })
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
   it('should disallow home numbers without "+" prefix', () => {
     const formField = generateDefaultField(BasicField.HomeNo)
     const response = generateNewSingleAnswerResponse(BasicField.HomeNo, {

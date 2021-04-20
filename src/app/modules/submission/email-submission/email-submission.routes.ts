@@ -5,7 +5,6 @@ import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { limitRate } from '../../../utils/limit-rate'
 
 import { handleEmailSubmission } from './email-submission.controller'
-import * as EmailSubmissionMiddleware from './email-submission.middleware'
 
 export const EmailSubmissionRouter = Router()
 
@@ -16,6 +15,7 @@ export const EmailSubmissionRouter = Router()
  * was given. SMS autoreplies for mobile number fields are also sent if feature
  * is enabled.
  * Note that v2 endpoint no longer accepts body.captchaResponse
+ * @deprecated in favour of POST /api/v3/forms/:formId/submissions/email
  * @route POST /v2/submissions/email/{formId}
  * @group forms - endpoints to serve forms
  * @param formId.path.required - the form id
@@ -30,7 +30,5 @@ EmailSubmissionRouter.post(
   '/:formId([a-fA-F0-9]{24})',
   limitRate({ max: rateLimitConfig.submissions }),
   CaptchaFactory.validateCaptchaParams,
-  EmailSubmissionMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
   handleEmailSubmission,
 )

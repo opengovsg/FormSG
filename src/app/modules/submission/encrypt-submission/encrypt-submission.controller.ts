@@ -1,3 +1,5 @@
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
@@ -28,6 +30,7 @@ import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import {
   getProcessedResponses,
   sendEmailConfirmations,
@@ -51,7 +54,10 @@ import {
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
-export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
+// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
+const Joi = BaseJoi.extend(JoiDate)
+
+const submitEncryptModeForm: RequestHandler = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
     action: 'handleEncryptedSubmission',
@@ -368,8 +374,26 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   })
 }
 
+export const handleEncryptedSubmission = [
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptModeForm,
+] as RequestHandler[]
+
+// Validates that the ending date >= starting date
+const validateDateRange = celebrate({
+  [Segments.QUERY]: Joi.object()
+    .keys({
+      startDate: Joi.date().format('YYYY-MM-DD').raw(),
+      endDate: Joi.date().format('YYYY-MM-DD').min(Joi.ref('startDate')).raw(),
+      downloadAttachments: Joi.boolean().default(false),
+    })
+    .and('startDate', 'endDate'),
+})
+
 /**
- * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
+ * Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
+ * NOTE: This is exported solely for testing
+ * Streams and downloads for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
  * @security session
  *
  * @returns 200 with stream of encrypted responses
@@ -381,7 +405,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
-export const handleStreamEncryptedResponses: RequestHandler<
+export const streamEncryptedResponses: RequestHandler<
   { formId: string },
   unknown,
   unknown,
@@ -493,7 +517,22 @@ export const handleStreamEncryptedResponses: RequestHandler<
     })
 }
 
+// Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
+export const handleStreamEncryptedResponses = [
+  validateDateRange,
+  streamEncryptedResponses,
+] as RequestHandler[]
+
+const validateSubmissionId = celebrate({
+  [Segments.QUERY]: {
+    submissionId: Joi.string()
+      .regex(/^[0-9a-fA-F]{24}$/)
+      .required(),
+  },
+})
+
 /**
+ * Exported solely for testing
  * Handler for GET /:formId/adminform/submissions
  * @security session
  *
@@ -506,7 +545,7 @@ export const handleStreamEncryptedResponses: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when any errors occurs in database query or generating signed URL
  */
-export const handleGetEncryptedResponse: RequestHandler<
+export const getEncryptedResponseUsingQueryParams: RequestHandler<
   { formId: string },
   EncryptedSubmissionDto | ErrorDto,
   unknown,
@@ -515,6 +554,85 @@ export const handleGetEncryptedResponse: RequestHandler<
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { submissionId } = req.query
   const { formId } = req.params
+
+  return (
+    // Step 1: Retrieve logged in user.
+    getPopulatedUserById(sessionUserId)
+      // Step 2: Check whether user has read permissions to form.
+      .andThen((user) =>
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Check whether form is encrypt mode.
+      .andThen(checkFormIsEncryptMode)
+      // Step 4: Is encrypt mode form, retrieve submission data.
+      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
+      // Step 5: Retrieve presigned URLs for attachments.
+      .andThen((submissionData) => {
+        // Remaining login duration in seconds.
+        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
+        return transformAttachmentMetasToSignedUrls(
+          submissionData.attachmentMetadata,
+          urlExpiry,
+        ).map((presignedUrls) =>
+          createEncryptedSubmissionDto(submissionData, presignedUrls),
+        )
+      })
+      .map((responseData) => res.json(responseData))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: {
+            action: 'handleGetEncryptedResponse',
+            submissionId,
+            formId,
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  )
+}
+
+/**
+ * Handler for GET /:formId/adminform/submission
+ * @deprecated in favour of handleGetEncryptedResponse
+ * Exported as an array to ensure that the handler always a valid submissionId
+ */
+export const handleGetEncryptedResponseUsingQueryParams = [
+  validateSubmissionId,
+  getEncryptedResponseUsingQueryParams,
+] as RequestHandler[]
+
+/**
+ * Handler for GET /:formId/submissions/:submissionId
+ * @security session
+ *
+ * @returns 200 with encrypted submission data response
+ * @returns 400 when form is not an encrypt mode form
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when submissionId cannot be found in the database
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when any errors occurs in database query or generating signed URL
+ */
+export const handleGetEncryptedResponse: RequestHandler<
+  { formId: string; submissionId: string },
+  EncryptedSubmissionDto | ErrorDto,
+  unknown,
+  Query
+> = async (req, res) => {
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  const { formId, submissionId } = req.params
 
   return (
     // Step 1: Retrieve logged in user.
