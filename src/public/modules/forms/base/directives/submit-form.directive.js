@@ -28,7 +28,6 @@ angular
     '$q',
     '$window',
     'GTag',
-    'SpcpRedirect',
     'SpcpSession',
     'captchaService',
     'Toastr',
