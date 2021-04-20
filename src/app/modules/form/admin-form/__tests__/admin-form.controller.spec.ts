@@ -180,7 +180,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleCreateForm', () => {
+  describe('createForm', () => {
     const MOCK_USER_ID = new ObjectId()
     const MOCK_USER = {
       _id: MOCK_USER_ID,
@@ -214,7 +214,7 @@ describe('admin-form.controller', () => {
       MockAdminFormService.createForm.mockReturnValueOnce(okAsync(MOCK_FORM))
 
       // Act
-      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith(MOCK_FORM)
@@ -237,7 +237,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(409)
@@ -261,7 +261,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(413)
@@ -285,7 +285,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -307,7 +307,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(422)
@@ -328,7 +328,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -351,7 +351,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreateForm(MOCK_REQ, mockRes, jest.fn())
+      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
@@ -2964,7 +2964,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleDuplicateAdminForm', () => {
+  describe('duplicateAdminForm', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -3017,7 +3017,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
+      await AdminFormController.duplicateAdminForm(
         mockReqWithParams,
         mockRes,
         jest.fn(),
@@ -3048,11 +3048,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.duplicateAdminForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
@@ -3087,7 +3083,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
+      await AdminFormController.duplicateAdminForm(
         mockReqWithParams,
         mockRes,
         jest.fn(),
@@ -3120,11 +3116,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.duplicateAdminForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(410)
@@ -3145,11 +3137,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.duplicateAdminForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(422)
@@ -3170,11 +3158,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.duplicateAdminForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
@@ -3198,11 +3182,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.duplicateAdminForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
@@ -3237,7 +3217,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleDuplicateAdminForm(
+      await AdminFormController.duplicateAdminForm(
         mockReqWithParams,
         mockRes,
         jest.fn(),
@@ -3706,7 +3686,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleTransferFormOwnership', () => {
+  describe('transferFormOwnership', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -3754,7 +3734,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -3797,7 +3777,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -3836,7 +3816,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -3873,7 +3853,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -3910,7 +3890,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -3943,7 +3923,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -3972,7 +3952,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4004,7 +3984,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -4044,7 +4024,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleTransferFormOwnership(
+      await AdminFormController.transferFormOwnership(
         MOCK_REQ,
         mockRes,
         jest.fn(),

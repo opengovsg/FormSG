@@ -14,5 +14,6 @@ AdminFormsRouter.use(withUserAuthentication)
 
 AdminFormsRouter.use(AdminFormsSettingsRouter)
 AdminFormsRouter.use(AdminFormsFeedbackRouter)
+AdminFormsRouter.use(AdminFormsFormRouter)
 AdminFormsRouter.use(AdminFormsSubmissionsRouter)
 AdminFormsRouter.use(AdminFormsFormRouter)

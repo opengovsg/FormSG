@@ -1,3 +1,4 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import querystring from 'querystring'
@@ -30,7 +31,19 @@ import { mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
+const validateSubmitFormFeedbackParams = celebrate({
+  [Segments.BODY]: Joi.object()
+    .keys({
+      rating: Joi.number().min(1).max(5).cast('string').required(),
+      comment: Joi.string().allow('').required(),
+    })
+    // Allow other keys for backwards compability as frontend might put
+    // extra keys in the body.
+    .unknown(true),
+})
+
 /**
+ * NOTE: This is exported solely for unit testing
  * Handler for POST /:formId/feedback endpoint
  * @precondition formId should be present in req.params.
  * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
@@ -40,9 +53,9 @@ const logger = createLoggerWithLabel(module)
  * @returns 410 if form has been archived
  * @returns 500 if database error occurs
  */
-export const handleSubmitFeedback: RequestHandler<
+export const submitFormFeedback: RequestHandler<
   { formId: string },
-  unknown,
+  ErrorDto | PrivateFormErrorDto,
   { rating: number; comment: string }
 > = async (req, res) => {
   const { formId } = req.params
@@ -122,6 +135,11 @@ export const handleSubmitFeedback: RequestHandler<
     .status(StatusCodes.OK)
     .json({ message: 'Successfully submitted feedback' })
 }
+
+export const handleSubmitFeedback = [
+  validateSubmitFormFeedbackParams,
+  submitFormFeedback,
+] as RequestHandler[]
 
 /**
  * Handler for various endpoints to redirect to their hashbanged versions.

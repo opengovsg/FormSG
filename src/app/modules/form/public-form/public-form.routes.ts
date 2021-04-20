@@ -12,6 +12,7 @@ export const PublicFormRouter = Router()
  * WARNING: TemperatureSG batch jobs rely on this endpoint to
  * retrieve the master list of personnel for daily reporting.
  * Please strictly ensure backwards compatibility.
+ * @deprecate in favour of GET /api/v3/forms/:formId
  * @route GET /:formId/publicform
  *
  * @returns 200 with form when form exists and is public
@@ -63,6 +64,7 @@ PublicFormRouter.get(
 
 /**
  * Send feedback for a public form
+ * @deprecate in favour of POST api/v3/forms/:formId/feedback
  * @route POST /:formId/feedback
  * @returns 200 if feedback was successfully saved
  * @returns 400 if form feedback was malformed and hence cannot be saved

@@ -78,6 +78,7 @@ function FormApi($resource, FormErrorService, FormFields) {
 
   // accessMode is either adminForm or publicForm
   let resourceUrl = '/:formId/:accessMode'
+  const V3_PUBLICFORM_URL = '/api/v3/forms/:formId'
 
   return $resource(
     resourceUrl,
@@ -85,6 +86,7 @@ function FormApi($resource, FormErrorService, FormFields) {
     { accessMode: 'adminform' },
     {
       query: {
+        url: '/api/v3/admin/forms',
         method: 'GET',
         isArray: true,
         headers: { 'If-Modified-Since': '0' },
@@ -98,10 +100,10 @@ function FormApi($resource, FormErrorService, FormFields) {
         // disable IE ajax request caching (so new fields show on build panel)
       },
       getPublic: {
+        url: V3_PUBLICFORM_URL,
         method: 'GET',
         // disable IE ajax request caching (so new fields show on build panel)
         headers: { 'If-Modified-Since': '0' },
-        params: { accessMode: 'publicform' },
         interceptor: getInterceptor(true),
       },
       update: {
@@ -109,11 +111,18 @@ function FormApi($resource, FormErrorService, FormFields) {
         interceptor: getInterceptor(false),
       },
       save: {
+        url: '/api/v3/admin/forms/:formId/duplicate',
         method: 'POST',
+        interceptor: getInterceptor(false),
+      },
+      delete: {
+        url: '/api/v3/admin/forms/:formId',
+        method: 'DELETE',
         interceptor: getInterceptor(false),
       },
       // create is called without formId, so the endpoint is just /adminform
       create: {
+        url: '/api/v3/admin/forms',
         method: 'POST',
         interceptor: getInterceptor(true, 'listForms'),
       },
@@ -135,7 +144,7 @@ function FormApi($resource, FormErrorService, FormFields) {
         interceptor: getInterceptor(true, 'useTemplate'),
       },
       transferOwner: {
-        url: resourceUrl + '/transfer-owner',
+        url: '/api/v3/admin/forms/:formId/collaborators/transfer-owner',
         method: 'POST',
         interceptor: getInterceptor(false),
       },

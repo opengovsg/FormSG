@@ -43,7 +43,8 @@ function SubmissionsFactory(
   FormSgSdk,
 ) {
   const submitAdminUrl = '/:formId/adminform/submissions'
-  const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
+  const publicSubmitUrl = '/api/v3/forms/:formId/submissions/:responseMode'
+
   const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
 
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
@@ -205,9 +206,10 @@ function SubmissionsFactory(
     },
     getEncryptedResponse: function (params) {
       const deferred = $q.defer()
-      const resUrl = `${fixParamsToUrl(params, submitAdminUrl)}?submissionId=${
-        params.submissionId
-      }`
+      const resUrl = `${fixParamsToUrl(
+        params,
+        `${ADMIN_FORMS_PREFIX}/:formId/submissions/:submissionId`,
+      )}`
 
       $http.get(resUrl).then(
         function (response) {
