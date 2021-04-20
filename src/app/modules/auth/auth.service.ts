@@ -291,8 +291,8 @@ export const getFormAfterPermissionChecks = ({
 }
 
 /**
- * Retrieves the form fields of given formId provided that the given user has the
- * required permissions.
+ * Ensures that the given user has the required pre-specified permissions
+ * for the form.
  *
  * @returns ok(form) if the user has the required permissions
  * @returns err(FormNotFoundError) if form does not exist in the database
