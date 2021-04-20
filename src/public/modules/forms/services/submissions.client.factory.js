@@ -42,10 +42,9 @@ function SubmissionsFactory(
   responseModeEnum,
   FormSgSdk,
 ) {
-  const submitAdminUrl = '/:formId/adminform/submissions'
-  const publicSubmitUrl = '/v2/submissions/:responseMode/:formId'
   const previewSubmitUrl =
     '/api/v3/admin/forms/:formId/preview/submissions/:responseMode'
+  const publicSubmitUrl = '/api/v3/forms/:formId/submissions/:responseMode'
 
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
 
@@ -186,9 +185,10 @@ function SubmissionsFactory(
     },
     getMetadata: function (params) {
       const deferred = $q.defer()
-      let resUrl = `${fixParamsToUrl(params, submitAdminUrl)}/metadata?page=${
-        params.page
-      }`
+      let resUrl = `${fixParamsToUrl(
+        params,
+        `${ADMIN_FORMS_PREFIX}/:formId/submissions/metadata`,
+      )}?page=${params.page}`
 
       if (params.filterBySubmissionRefId) {
         resUrl += `&submissionId=${params.filterBySubmissionRefId}`

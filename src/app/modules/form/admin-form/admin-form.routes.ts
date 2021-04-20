@@ -337,6 +337,7 @@ AdminFormsRouter.get(
  * Retrieve metadata of responses for a form with encrypted storage
  * @route GET /:formId/adminform/submissions/metadata
  * @security session
+ * @deprecated in favour of GET /api/v3/admin/forms/:formId/submissions/metadata
  *
  * @returns 200 with paginated submission metadata when no submissionId is provided
  * @returns 200 with single submission metadata of submissionId when provided
@@ -350,15 +351,6 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata',
   withUserAuthentication,
-  celebrate({
-    [Segments.QUERY]: {
-      submissionId: Joi.string().optional(),
-      page: Joi.number().min(1).when('submissionId', {
-        not: Joi.exist(),
-        then: Joi.required(),
-      }),
-    },
-  }),
   EncryptSubmissionController.handleGetMetadata,
 )
 

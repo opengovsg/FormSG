@@ -61,3 +61,22 @@ AdminFormsSubmissionsRouter.route(
 AdminFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})',
 ).get(EncryptSubmissionController.handleGetEncryptedResponse)
+
+/**
+ * Retrieve metadata of responses for a form with encrypted storage
+ * @route GET /:formId/submissions/metadata
+ * @security session
+ *
+ * @returns 200 with paginated submission metadata when no submissionId is provided
+ * @returns 200 with single submission metadata of submissionId when provided
+ * @returns 401 when user does not exist in session
+ * @returns 403 when user does not have permissions to access form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsSubmissionsRouter.get(
+  '/:formId([a-fA-F0-9]{24})/submissions/metadata',
+  EncryptSubmissionController.handleGetMetadata,
+)
