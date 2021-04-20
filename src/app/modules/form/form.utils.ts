@@ -1,5 +1,3 @@
-import { Document, Types } from 'mongoose'
-
 import {
   IEncryptedFormSchema,
   IFieldSchema,
@@ -9,6 +7,7 @@ import {
   Permission,
   ResponseMode,
 } from '../../../types'
+import { isMongooseDocumentArray } from '../../utils/mongoose'
 
 // Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
 export const transformEmailString = (v: string): string[] => {
@@ -78,19 +77,6 @@ export const isEmailModeForm = (
   form: IPopulatedForm,
 ): form is IPopulatedEmailForm => {
   return form.responseMode === ResponseMode.Email
-}
-
-/**
- * Type guard for whether given array is a mongoose DocumentArray
- * @param array the array to check
- */
-export const isMongooseDocumentArray = <T extends Document>(
-  array: T[] & { isMongooseDocumentArray?: boolean },
-): array is Types.DocumentArray<T> => {
-  /**
-   * @see {mongoose.Types.DocumentArray.isMongooseDocumentArray}
-   */
-  return !!array.isMongooseDocumentArray
 }
 
 /**
