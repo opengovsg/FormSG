@@ -11,9 +11,9 @@ export const PublicFormsAuthRouter = Router()
  * @param isPersistentLogin if the user chooses to have their information saved to avoid future logins
  *
  * @returns 200 with the redirect url when the user authenticates successfully
- * @returns 400 when there is an error on the authType of the user
- * @returns 400 when the serviceId of the form does not exist
- * @returns 404 when form is private or form with given ID does not exist
+ * @returns 400 when there is an error on the authType of the form
+ * @returns 400 when the eServiceId of the form does not exist
+ * @returns 404 when form with given ID does not exist
  * @returns 500 when database error occurs
  * @returns 500 when the redirect url could not be created
  * @returns 500 when the redirect feature is not enabled
