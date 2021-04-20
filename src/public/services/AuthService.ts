@@ -4,8 +4,8 @@ import { RedirectUrlDto } from 'src/types/api/auth'
 
 // Exported for testing
 export const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'
-export const REDIRECT_URL_ENDPOINT = '/auth/redirect'
-export const VALIDATE_ESRVCID_ENDPOINT = '/auth/validate'
+export const REDIRECT_URL_ENDPOINT = 'auth/redirect'
+export const VALIDATE_ESRVCID_ENDPOINT = 'auth/validate'
 
 export const createRedirectURL = (
   formId: string,
