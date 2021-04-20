@@ -5,8 +5,8 @@ import { AnalyticsRouter } from './analytics'
 import { AuthRouter } from './auth'
 import { BillingsRouter } from './billings'
 import { ClientRouter } from './client'
+import { PublicFormsRouter } from './forms'
 import { NotificationsRouter } from './notifications'
-import { PublicFormsRouter } from './public'
 import { UserRouter } from './user'
 
 export const V3Router = Router()
