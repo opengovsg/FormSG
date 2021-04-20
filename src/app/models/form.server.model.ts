@@ -525,8 +525,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.statics.getFullFormById = async function (
     this: IFormModel,
     formId: string,
+    fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId).populate({
+    return this.findById(formId, fields).populate({
       path: 'admin',
       populate: {
         path: 'agency',
