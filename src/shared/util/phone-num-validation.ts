@@ -58,6 +58,10 @@ export const isHomePhoneNumber = (phoneNum: string): boolean => {
   if (!parsedNumber) return false
 
   // For SG numbers only check if it starts with 3 or 6 and has 8 digits
+  // Leading number 3 is for IP Telephony (IPT) service and User-Centric Data-Only (UCDO) service
+  // Leading number 6 is for  PSTN service and IP Telephony (IPT) service.
+  // In both cases the length is 8
+  // See IMDA's national numbering plan for specifications: https://www.imda.gov.sg/-/media/imda/files/regulation-licensing-and-consultations/frameworks-and-policies/numbering/national-numbering-plan-and-allocation-process/national-numbering-plan-30-nov-2017.pdf?la=en
   if (parsedNumber.countryCallingCode === '65') {
     return (
       isPhoneNumber(phoneNum) &&
