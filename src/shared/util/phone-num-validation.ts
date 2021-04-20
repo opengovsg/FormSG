@@ -25,7 +25,7 @@ export const isMobilePhoneNumber = (mobileNumber: string): boolean => {
 
   if (!parsedNumber) return false
 
-  if (parsedNumber.countryCallingCode === '65') {
+  if (startsWithSgPrefix(mobileNumber)) {
     return (
       isPhoneNumber(mobileNumber) &&
       // Regex checks if the national number starts with 8 or 9, and is of
@@ -62,7 +62,7 @@ export const isHomePhoneNumber = (phoneNum: string): boolean => {
   // Leading number 6 is for  PSTN service and IP Telephony (IPT) service.
   // In both cases the length is 8
   // See IMDA's national numbering plan for specifications: https://www.imda.gov.sg/-/media/imda/files/regulation-licensing-and-consultations/frameworks-and-policies/numbering/national-numbering-plan-and-allocation-process/national-numbering-plan-30-nov-2017.pdf?la=en
-  if (parsedNumber.countryCallingCode === '65') {
+  if (startsWithSgPrefix(phoneNum)) {
     return (
       isPhoneNumber(phoneNum) &&
       // Regex checks if the national number starts with 3 or 6, and is of
@@ -81,6 +81,6 @@ export const isHomePhoneNumber = (phoneNum: string): boolean => {
   )
 }
 
-export const startsWithSgPrefix = (mobileNumber: string): boolean => {
-  return mobileNumber.startsWith('+65')
+export const startsWithSgPrefix = (phoneNumber: string): boolean => {
+  return phoneNumber.startsWith('+65')
 }
