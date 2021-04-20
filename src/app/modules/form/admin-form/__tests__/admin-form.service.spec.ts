@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import { assignIn, cloneDeep, merge, omit } from 'lodash'
+import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -38,7 +38,11 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
-import { FieldUpdateDto, SettingsUpdateDto } from 'src/types/api'
+import {
+  FieldCreateDto,
+  FieldUpdateDto,
+  SettingsUpdateDto,
+} from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
@@ -52,6 +56,7 @@ import {
 import {
   archiveForm,
   createForm,
+  createFormField,
   createPresignedPostUrlForImages,
   createPresignedPostUrlForLogos,
   duplicateForm,
@@ -1274,6 +1279,66 @@ describe('admin-form.service', () => {
         invalidFieldId,
         mockNewField,
       )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+  })
+
+  describe('createFormField', () => {
+    it('should return created form field', async () => {
+      // Arrange
+      const initialFields = [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Image),
+      ]
+      const expectedCreatedField = generateDefaultField(BasicField.Nric, {
+        title: 'some nric title',
+      })
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        // Append created field to end of form_fields.
+        form_fields: [...initialFields, expectedCreatedField],
+      }
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        insertFormField: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IPopulatedForm
+      const formCreateParams = pick(expectedCreatedField, [
+        'title',
+        'fieldType',
+      ]) as FieldCreateDto
+
+      // Act
+      const actual = await createFormField(mockForm, formCreateParams)
+
+      // Assert
+      // Should return last element in form_field
+      expect(actual._unsafeUnwrap()).toEqual(expectedCreatedField)
+    })
+
+    it('should return DatabaseValidationError when field model update throws a validation error', async () => {
+      // Arrange
+      const initialFields = [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Image),
+      ]
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        insertFormField: jest.fn().mockRejectedValue(
+          // @ts-ignore
+          new mongoose.Error.ValidationError({ errors: 'does not matter' }),
+        ),
+      } as unknown) as IPopulatedForm
+      const formCreateParams = {
+        fieldType: BasicField.ShortText,
+        title: 'some title',
+      } as FieldCreateDto
+
+      // Act
+      const actual = await createFormField(mockForm, formCreateParams)
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)

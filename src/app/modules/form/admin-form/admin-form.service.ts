@@ -459,6 +459,13 @@ export const updateFormField = (
   })
 }
 
+/**
+ * Inserts a new form field into given form's fields with the field provided
+ * @param form the form to insert the new field into
+ * @param newField the new field to insert
+ * @returns ok(created form field)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
 export const createFormField = (
   form: IPopulatedForm,
   newField: FieldCreateDto,
