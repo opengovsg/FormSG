@@ -14,6 +14,7 @@ import {
   IEncryptedForm,
   IFieldSchema,
   IFormSchema,
+  ILogicSchema,
   IPopulatedUser,
   Permission,
   ResponseMode,
@@ -384,7 +385,7 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Remove indeterministic id from actual permission list
-        const actualPermissionList = (saved.toObject() as IEncryptedForm).permissionList?.map(
+        const actualPermissionList = ((saved.toObject() as unknown) as IEncryptedForm).permissionList?.map(
           (permission) => omit(permission, '_id'),
         )
         expect(actualPermissionList).toEqual(permissionList)
@@ -1051,6 +1052,58 @@ describe('Form Model', () => {
         await expect(Form.countDocuments()).resolves.toEqual(5)
         expect(actual.length).toEqual(3)
         expect(actual).toEqual(expected)
+      })
+    })
+
+    describe('deleteFormLogic', () => {
+      const logicId = new ObjectId().toHexString()
+      const mockFormLogic = {
+        form_logics: [
+          {
+            _id: logicId,
+            id: logicId,
+          } as ILogicSchema,
+        ],
+      }
+
+      it('should return form upon for successful delete', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          ...mockFormLogic,
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.deleteFormLogic(form._id, logicId)
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that form logic has been deleted
+        expect(modifiedForm?.form_logics).toBeEmpty()
+      })
+
+      it('should return null if formId is invalid', async () => {
+        // arrange
+
+        const invalidFormId = new ObjectId().toHexString()
+
+        // act
+        const modifiedForm = await Form.deleteFormLogic(invalidFormId, logicId)
+
+        // assert
+        // should return null
+        expect(modifiedForm).toBeNull()
       })
     })
   })
