@@ -616,11 +616,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Deletes specified form logic.
   FormSchema.statics.deleteFormLogic = async function (
     this: IFormModel,
-    form: IPopulatedForm,
+    formId: string,
     logicId: string,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
-      form._id,
+      mongoose.Types.ObjectId(formId),
       {
         $pull: { form_logics: { _id: logicId } },
       },

@@ -282,10 +282,7 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null>
-  deleteFormLogic(
-    formId: IPopulatedForm,
-    logicId: string,
-  ): Promise<IFormSchema | true>
+  deleteFormLogic(formId: string, logicId: string): Promise<IFormSchema | true>
   deactivateById(formId: string): Promise<IFormSchema | null>
   getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],
