@@ -639,7 +639,7 @@ export const updateFormSettings = (
 export const deleteFormLogic = (
   form: IPopulatedForm,
   logicId: string,
-): ResultAsync<true, DatabaseError | LogicNotFoundError> => {
+): ResultAsync<IFormSchema, DatabaseError | LogicNotFoundError> => {
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic.id === logicId)) {
     logger.error({
@@ -669,5 +669,10 @@ export const deleteFormLogic = (
       return transformMongoError(error)
     },
     // On success, return true
-  ).map(() => true)
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm)
+  })
 }
