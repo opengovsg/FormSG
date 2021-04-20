@@ -41,3 +41,23 @@ AdminFormsSubmissionsRouter.route(
 AdminFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/download',
 ).get(EncryptSubmissionController.handleStreamEncryptedResponses)
+
+/**
+ * Retrieve actual response for a storage mode form
+ * @route GET /:formId/submissions/:submissionId
+ * @security session
+ *
+ * @returns 200 with encrypted submission data response
+ * @returns 400 when form is not an encrypt mode form
+ * @returns 400 when Joi validation fails
+ * @returns 401 when user does not exist in session
+ * @returns 403 when user does not have read permissions for form
+ * @returns 404 when submissionId cannot be found in the database
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when any errors occurs in database query or generating signed URL
+ */
+AdminFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})',
+).get(EncryptSubmissionController.handleGetEncryptedResponse)

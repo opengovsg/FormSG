@@ -701,7 +701,7 @@ export class SubmissionEmailObj {
 
   constructor(
     parsedResponses: ProcessedFieldResponse[],
-    hashedFields: Set<string>,
+    hashedFields: Set<string> = new Set<string>(),
     authType: AuthType,
   ) {
     this.parsedResponses = parsedResponses

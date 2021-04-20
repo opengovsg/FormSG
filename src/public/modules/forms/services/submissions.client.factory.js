@@ -206,9 +206,10 @@ function SubmissionsFactory(
     },
     getEncryptedResponse: function (params) {
       const deferred = $q.defer()
-      const resUrl = `${fixParamsToUrl(params, submitAdminUrl)}?submissionId=${
-        params.submissionId
-      }`
+      const resUrl = `${fixParamsToUrl(
+        params,
+        `${ADMIN_FORMS_PREFIX}/:formId/submissions/:submissionId`,
+      )}`
 
       $http.get(resUrl).then(
         function (response) {
