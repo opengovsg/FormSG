@@ -5,11 +5,9 @@ import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 import { err } from 'neverthrow'
 
-import { AuthType } from 'src/types'
-import { ErrorDto } from 'src/types/api'
-import { RedirectUrlDto } from 'src/types/api/auth'
-
 import { LINKS } from '../../../shared/constants'
+import { AuthType } from '../../../types'
+import { ErrorDto, RedirectUrlDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../utils/request'
