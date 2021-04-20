@@ -4,7 +4,7 @@ import Twilio from 'twilio'
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,
-} from '../../../config/feature-manager'
+} from '../../config/feature-manager'
 import { MissingFeatureError } from '../../modules/core/core.errors'
 
 import {

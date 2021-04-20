@@ -1,4 +1,5 @@
-import crypto from 'crypto'
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
@@ -6,32 +7,29 @@ import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
 import { SetOptional } from 'type-fest'
 
-import { aws as AwsConfig } from '../../../../config/config'
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   AuthType,
   EncryptedSubmissionDto,
-  ResWithHashedFields,
-  ResWithUinFin,
   SubmissionMetadataList,
-  WithParsedResponses,
 } from '../../../../types'
-import { ErrorDto } from '../../../../types/api'
+import { EncryptSubmissionDto, ErrorDto } from '../../../../types/api'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
-import { MissingFeatureError } from '../../core/core.errors'
+import {
+  MalformedParametersError,
+  MissingFeatureError,
+} from '../../core/core.errors'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
-import { MyInfoFactory } from '../../myinfo/myinfo.factory'
-import { mapVerifyMyInfoError } from '../../myinfo/myinfo.util'
 import { SpcpFactory } from '../../spcp/spcp.factory'
 import { getPopulatedUserById } from '../../user/user.service'
 import { VerifiedContentFactory } from '../../verified-content/verified-content.factory'
-import { pushData as webhookPushData } from '../../webhook/webhook.service'
+import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
   getProcessedResponses,
   sendEmailConfirmations,
@@ -45,8 +43,8 @@ import {
   getSubmissionMetadataList,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
+  uploadAttachments,
 } from './encrypt-submission.service'
-import { EncryptSubmissionBody } from './encrypt-submission.types'
 import {
   createEncryptedSubmissionDto,
   mapRouteError,
@@ -54,6 +52,9 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+
+// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
+const Joi = BaseJoi.extend(JoiDate)
 
 export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   const { formId } = req.params
@@ -167,72 +168,71 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     })
   }
   const processedResponses = processedResponsesResult.value
-  // eslint-disable-next-line @typescript-eslint/no-extra-semi
-  ;(req.body as WithParsedResponses<
-    typeof req.body
-  >).parsedResponses = processedResponses
-  // Prevent downstream functions from using responses by deleting it.
-  // TODO(#1104): We want to remove the mutability of state that comes with delete.
-  delete (req.body as SetOptional<EncryptSubmissionBody, 'responses'>).responses
+  delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
+  let uinFin
+  let userInfo
   const { authType } = form
-  if (authType === AuthType.SP || authType === AuthType.CP) {
-    const spcpResult = await SpcpFactory.extractJwt(
-      req.cookies,
-      authType,
-    ).asyncAndThen((jwt) => SpcpFactory.extractJwtPayload(jwt, authType))
-    if (spcpResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(spcpResult.error)
+  switch (authType) {
+    case AuthType.MyInfo: {
       logger.error({
-        message: 'Failed to verify JWT with auth client',
+        message:
+          'Storage mode form is not allowed to have MyInfo authorisation',
         meta: logMeta,
-        error: spcpResult.error,
       })
-      return res.status(statusCode).json({
-        message: errorMessage,
-        spcpSubmissionFailure: true,
-      })
-    }
-    res.locals.uinFin = spcpResult.value.userName
-    res.locals.userInfo = spcpResult.value.userInfo
-  }
-
-  // validating that submitted MyInfo field values match the values
-  // originally retrieved from MyInfo.
-  // TODO(frankchn): Roll into a single service call as part of internal refactoring
-  const uinFin = (res as ResWithUinFin<typeof res>).locals.uinFin
-  const requestedAttributes = form.getUniqueMyInfoAttrs()
-  if (authType === AuthType.SP && requestedAttributes.length > 0) {
-    if (!uinFin) {
-      return res.status(StatusCodes.UNAUTHORIZED).send({
-        message: 'Please log in to SingPass and try again.',
-        spcpSubmissionFailure: true,
-      })
-    }
-    const myinfoResult = await MyInfoFactory.fetchMyInfoHashes(
-      uinFin,
-      formId,
-    ).andThen((hashes) =>
-      MyInfoFactory.checkMyInfoHashes(req.body.parsedResponses, hashes),
-    )
-    if (myinfoResult.isErr()) {
-      logger.error({
-        message: 'Error verifying MyInfo hashes',
-        meta: logMeta,
-        error: myinfoResult.error,
-      })
-      const { statusCode, errorMessage } = mapVerifyMyInfoError(
-        myinfoResult.error,
+      const { errorMessage, statusCode } = mapRouteError(
+        new MalformedParametersError(
+          'Storage mode form is not allowed to have MyInfo authType',
+        ),
       )
-      return res.status(statusCode).send({
-        message: errorMessage,
-        spcpSubmissionFailure: true,
-      })
+      return res.status(statusCode).json({ message: errorMessage })
     }
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(res as ResWithHashedFields<typeof res>).locals.hashedFields =
-      myinfoResult.value
+    case AuthType.SP: {
+      const jwtPayloadResult = await SpcpFactory.extractJwt(
+        req.cookies,
+        authType,
+      ).asyncAndThen((jwt) => SpcpFactory.extractSingpassJwtPayload(jwt))
+      if (jwtPayloadResult.isErr()) {
+        const { statusCode, errorMessage } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        logger.error({
+          message: 'Failed to verify Singpass JWT with auth client',
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        return res.status(statusCode).json({
+          message: errorMessage,
+          spcpSubmissionFailure: true,
+        })
+      }
+      uinFin = jwtPayloadResult.value.userName
+      break
+    }
+    case AuthType.CP: {
+      const jwtPayloadResult = await SpcpFactory.extractJwt(
+        req.cookies,
+        authType,
+      ).asyncAndThen((jwt) => SpcpFactory.extractCorppassJwtPayload(jwt))
+      if (jwtPayloadResult.isErr()) {
+        const { statusCode, errorMessage } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        logger.error({
+          message: 'Failed to verify Corppass JWT with auth client',
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        return res.status(statusCode).json({
+          message: errorMessage,
+          spcpSubmissionFailure: true,
+        })
+      }
+      uinFin = jwtPayloadResult.value.userName
+      userInfo = jwtPayloadResult.value.userInfo
+      break
+    }
   }
 
   // Encrypt Verified SPCP Fields
@@ -248,9 +248,10 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     })
   }
 
+  let verified
   if (form.authType === AuthType.SP || form.authType === AuthType.CP) {
     const encryptVerifiedContentResult = VerifiedContentFactory.getVerifiedContent(
-      { type: form.authType, data: res.locals },
+      { type: form.authType, data: { uinFin, userInfo } },
     ).andThen((verifiedContent) =>
       VerifiedContentFactory.encryptVerifiedContent({
         verifiedContent,
@@ -274,40 +275,30 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
       }
     } else {
       // No errors, set local variable to the encrypted string.
-      res.locals.verified = encryptVerifiedContentResult.value
+      verified = encryptVerifiedContentResult.value
     }
   }
 
   // Save Responses to Database
-  // TODO(frankchn): Extract S3 upload functionality to a service
   const formData = req.body.encryptedContent
-  const attachmentData = req.body.attachments || {}
-  const { verified } = res.locals
-  const attachmentMetadata = new Map()
-  const attachmentUploadPromises = []
+  let attachmentMetadata = new Map<string, string>()
 
-  // Object.keys(attachmentData[fieldId].encryptedFile) [ 'submissionPublicKey', 'nonce', 'binary' ]
-  for (const fieldId in attachmentData) {
-    const individualAttachment = JSON.stringify(attachmentData[fieldId])
-
-    const hashStr = crypto
-      .createHash('sha256')
-      .update(individualAttachment)
-      .digest('hex')
-
-    const uploadKey =
-      form._id + '/' + crypto.randomBytes(20).toString('hex') + '/' + hashStr
-
-    attachmentMetadata.set(fieldId, uploadKey)
-    attachmentUploadPromises.push(
-      AwsConfig.s3
-        .upload({
-          Bucket: AwsConfig.attachmentS3Bucket,
-          Key: uploadKey,
-          Body: Buffer.from(individualAttachment),
-        })
-        .promise(),
+  if (req.body.attachments) {
+    const attachmentUploadResult = await uploadAttachments(
+      form._id,
+      req.body.attachments,
     )
+
+    if (attachmentUploadResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(
+        attachmentUploadResult.error,
+      )
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    } else {
+      attachmentMetadata = attachmentUploadResult.value
+    }
   }
 
   const submission = new EncryptSubmission({
@@ -319,22 +310,6 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
     attachmentMetadata,
     version: req.body.version,
   })
-
-  try {
-    await Promise.all(attachmentUploadPromises)
-  } catch (err) {
-    logger.error({
-      message: 'Attachment upload error',
-      meta: logMeta,
-      error: err,
-    })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
-      spcpSubmissionFailure: false,
-    })
-  }
 
   let savedSubmission
   try {
@@ -365,12 +340,16 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   })
 
   // Fire webhooks if available
+  // Note that we push data to webhook endpoints on a best effort basis
+  // As such, we should not await on these post requests
   const webhookUrl = form.webhook?.url
-  const submissionWebhookView = submission.getWebhookView()
   if (webhookUrl) {
-    // Note that we push data to webhook endpoints on a best effort basis
-    // As such, we should not await on these post requests
-    void webhookPushData(webhookUrl, submissionWebhookView)
+    void WebhookFactory.sendWebhook(
+      submission,
+      webhookUrl,
+    ).andThen((response) =>
+      WebhookFactory.saveWebhookRecord(submission._id, response),
+    )
   }
 
   // Send Email Confirmations
@@ -381,7 +360,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
 
   return sendEmailConfirmations({
     form,
-    parsedResponses: req.body.parsedResponses,
+    parsedResponses: processedResponses,
     submission: savedSubmission,
   }).mapErr((error) => {
     logger.error({
@@ -394,8 +373,20 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
   })
 }
 
+// Validates that the ending date >= starting date
+const validateDateRange = celebrate({
+  [Segments.QUERY]: Joi.object()
+    .keys({
+      startDate: Joi.date().format('YYYY-MM-DD').raw(),
+      endDate: Joi.date().format('YYYY-MM-DD').min(Joi.ref('startDate')).raw(),
+      downloadAttachments: Joi.boolean().default(false),
+    })
+    .and('startDate', 'endDate'),
+})
+
 /**
- * Handler for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
+ * NOTE: This is exported solely for testing
+ * Streams and downloads for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
  * @security session
  *
  * @returns 200 with stream of encrypted responses
@@ -407,7 +398,7 @@ export const handleEncryptedSubmission: RequestHandler = async (req, res) => {
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 if any errors occurs in stream pipeline or error retrieving form
  */
-export const handleStreamEncryptedResponses: RequestHandler<
+export const streamEncryptedResponses: RequestHandler<
   { formId: string },
   unknown,
   unknown,
@@ -418,7 +409,6 @@ export const handleStreamEncryptedResponses: RequestHandler<
   const { startDate, endDate } = req.query
 
   // Step 1: Retrieve currently logged in user.
-  // eslint-disable-next-line typesafe/no-await-without-trycatch
   const cursorResult = await getPopulatedUserById(sessionUserId)
     .andThen((user) =>
       // Step 2: Check whether user has read permissions to form
@@ -520,8 +510,15 @@ export const handleStreamEncryptedResponses: RequestHandler<
     })
 }
 
+// Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
+export const handleStreamEncryptedResponses = [
+  validateDateRange,
+  streamEncryptedResponses,
+] as RequestHandler[]
+
 /**
  * Handler for GET /:formId/adminform/submissions
+ * @security session
  *
  * @returns 200 with encrypted submission data response
  * @returns 400 when form is not an encrypt mode form

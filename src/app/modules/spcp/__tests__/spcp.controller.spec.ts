@@ -1,9 +1,9 @@
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
+import config from 'src/app/config/config'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-import config from 'src/config/config'
 import { AuthType } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
@@ -48,7 +48,7 @@ jest.mock('../../billing/billing.factory')
 const MockBillingFactory = mocked(BillingFactory, true)
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = mocked(FormService, true)
-jest.mock('src/config/config')
+jest.mock('src/app/config/config')
 const MockConfig = mocked(config, true)
 MockConfig.isDev = false
 

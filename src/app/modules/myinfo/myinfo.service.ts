@@ -10,15 +10,16 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   Environment,
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
+  IPopulatedForm,
   MyInfoAttribute,
 } from '../../../types'
-import { DatabaseError } from '../core/core.errors'
+import { createLoggerWithLabel } from '../../config/logger'
+import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
@@ -28,12 +29,17 @@ import {
   MYINFO_ROUTER_PREFIX,
 } from './myinfo.constants'
 import {
+  MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
+  MyInfoCookieAccessError,
+  MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
+  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoNoESrvcIdError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
@@ -43,10 +49,13 @@ import {
   MyInfoParsedRelayState,
 } from './myinfo.types'
 import {
+  assertMyInfoCookieUnused,
   compareHashedValues,
   createRelayState,
+  extractAndAssertMyInfoCookieValidity,
   hashFieldValues,
   isMyInfoRelayState,
+  validateMyInfoForm,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -86,6 +95,12 @@ export class MyInfoService {
    */
   #spCookieMaxAge: number
 
+  #fetchMyInfoPersonData: (
+    accessToken: string,
+    requestedAttributes: MyInfoAttribute[],
+    singpassEserviceId: string,
+  ) => ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError>
+
   /**
    *
    * @param myInfoConfig Environment variables including myInfoClientMode and myInfoKeyPath
@@ -118,6 +133,54 @@ export class MyInfoService {
         this.#myInfoGovClient.getPerson(accessToken, attributes, eSrvcId),
       BREAKER_PARAMS,
     )
+
+    /**
+     * Fetches MyInfo person detail with given params.
+     * This function has circuit breaking built into it, and will throw an error
+     * if any recent usages of this function returned an error.
+     * @param params The params required to retrieve the data.
+     * @param params.uinFin The uin/fin of the person's data to retrieve.
+     * @param params.requestedAttributes The requested attributes to fetch.
+     * @param params.singpassEserviceId The eservice id of the form requesting the data.
+     * @returns the person object retrieved.
+     * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
+     */
+    this.#fetchMyInfoPersonData = function (
+      accessToken: string,
+      requestedAttributes: MyInfoAttribute[],
+      singpassEserviceId: string,
+    ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
+      return ResultAsync.fromPromise(
+        this.#myInfoPersonBreaker
+          .fire(
+            accessToken,
+            internalAttrListToScopes(requestedAttributes),
+            singpassEserviceId,
+          )
+          .then((response) => new MyInfoData(response)),
+        (error) => {
+          const logMeta = {
+            action: 'fetchMyInfoPersonData',
+            requestedAttributes,
+          }
+          if (CircuitBreaker.isOurError(error)) {
+            logger.error({
+              message: 'Circuit breaker tripped',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoCircuitBreakerError()
+          } else {
+            logger.error({
+              message: 'Error retrieving data from MyInfo',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoFetchError()
+          }
+        },
+      )
+    }
   }
 
   /**
@@ -219,63 +282,20 @@ export class MyInfoService {
   }
 
   /**
-   * Fetches MyInfo person detail with given params.
-   * This function has circuit breaking built into it, and will throw an error
-   * if any recent usages of this function returned an error.
-   * @param params The params required to retrieve the data.
-   * @param params.uinFin The uin/fin of the person's data to retrieve.
-   * @param params.requestedAttributes The requested attributes to fetch.
-   * @param params.singpassEserviceId The eservice id of the form requesting the data.
-   * @returns the person object retrieved.
-   * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
-   */
-  fetchMyInfoPersonData(
-    accessToken: string,
-    requestedAttributes: MyInfoAttribute[],
-    singpassEserviceId: string,
-  ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
-    return ResultAsync.fromPromise(
-      this.#myInfoPersonBreaker
-        .fire(
-          accessToken,
-          internalAttrListToScopes(requestedAttributes),
-          singpassEserviceId,
-        )
-        .then((response) => new MyInfoData(response)),
-      (error) => {
-        const logMeta = {
-          action: 'fetchMyInfoPersonData',
-          requestedAttributes,
-        }
-        if (CircuitBreaker.isOurError(error)) {
-          logger.error({
-            message: 'Circuit breaker tripped',
-            meta: logMeta,
-            error,
-          })
-          return new MyInfoCircuitBreakerError()
-        } else {
-          logger.error({
-            message: 'Error retrieving data from MyInfo',
-            meta: logMeta,
-            error,
-          })
-          return new MyInfoFetchError()
-        }
-      },
-    )
-  }
-
-  /**
    * Prefill given current form fields with given MyInfo data.
+   * Saves the has of the prefilled fields as well because the two operations are atomic and should not be separated
    * @param myInfoData
    * @param currFormFields
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
    */
-  prefillMyInfoFields(
+  prefillAndSaveMyInfoFields(
+    formId: string,
     myInfoData: MyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
-  ): Result<IPossiblyPrefilledField[], never> {
+  ): ResultAsync<
+    IPossiblyPrefilledField[],
+    MyInfoHashingError | DatabaseError
+  > {
     const prefilledFields = currFormFields.map((field) => {
       if (!field.myInfo?.attr) return field
 
@@ -290,7 +310,11 @@ export class MyInfoService {
       prefilledField.disabled = isReadOnly
       return prefilledField
     })
-    return ok(prefilledFields)
+    return this.saveMyInfoHashes(
+      myInfoData.getUinFin(),
+      formId,
+      prefilledFields,
+    ).map(() => prefilledFields)
   }
 
   /**
@@ -450,5 +474,47 @@ export class MyInfoService {
         return new MyInfoInvalidAccessTokenError()
       },
     )()
+  }
+
+  /**
+   * Gets myInfo data using the provided form and the cookies of the request
+   * @param form the form to validate
+   * @param cookies cookies of the request
+   * @returns ok(MyInfoData) if the form has been validated successfully
+   * @returns err(MyInfoMissingAccessTokenError) if no myInfoCookie was found on the request
+   * @returns err(MyInfoCookieStateError) if cookie was not successful
+   * @returns err(MyInfoCookieAccessError) if the cookie has already been used before
+   * @returns err(MyInfoNoESrvcIdError) if form has no eserviceId
+   * @returns err(MyInfoAuthTypeError) if the client was not authenticated using MyInfo
+   * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
+   * @returns err(MyInfoFetchError) if validated but the data could not be retrieved
+   * @returns err(MissingFeatureError) if using an outdated version that does not support myInfo
+   */
+  getMyInfoDataForForm(
+    form: IPopulatedForm,
+    cookies: Record<string, unknown>,
+  ): ResultAsync<
+    MyInfoData,
+    | MyInfoMissingAccessTokenError
+    | MyInfoCookieStateError
+    | MyInfoNoESrvcIdError
+    | MyInfoAuthTypeError
+    | MyInfoCircuitBreakerError
+    | MyInfoFetchError
+    | MissingFeatureError
+    | MyInfoCookieAccessError
+  > {
+    const requestedAttributes = form.getUniqueMyInfoAttrs()
+    return extractAndAssertMyInfoCookieValidity(cookies)
+      .andThen((myInfoCookie) => assertMyInfoCookieUnused(myInfoCookie))
+      .asyncAndThen((cookiePayload) =>
+        validateMyInfoForm(form).asyncAndThen((form) =>
+          this.#fetchMyInfoPersonData(
+            cookiePayload.accessToken,
+            requestedAttributes,
+            form.esrvcId,
+          ),
+        ),
+      )
   }
 }

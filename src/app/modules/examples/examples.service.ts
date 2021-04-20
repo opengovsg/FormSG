@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
 import getFormStatisticsTotalModel from '../../models/form_statistics_total.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
@@ -157,10 +157,6 @@ const execExamplesQuery = (
 ): ResultAsync<QueryPageResult, DatabaseError> => {
   return ResultAsync.fromPromise(
     queryBuilder
-      // TODO(#42): Missing type in native typescript, waiting on upstream fixes.
-      // Tracking at https://github.com/Automattic/mongoose/issues/9714.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       .append(
         selectAndProjectCardInfo(/* limit= */ PAGE_SIZE, /* offset= */ offset),
       )

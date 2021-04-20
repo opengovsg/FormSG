@@ -128,13 +128,15 @@ export const getLogicUnitPreventingSubmit = (
   form: IFormDocument,
   visibleFieldIds?: FieldIdSet,
 ): IPreventSubmitLogicSchema | undefined => {
-  if (!visibleFieldIds) {
-    visibleFieldIds = getVisibleFieldIds(submission, form)
-  }
+  const definedVisibleFieldIds =
+    visibleFieldIds ?? getVisibleFieldIds(submission, form)
   const preventSubmitConditions = getPreventSubmitConditions(form)
   return preventSubmitConditions.find((logicUnit) =>
-    // TODO (#317): remove usage of non-null assertion
-    isLogicUnitSatisfied(submission, logicUnit.conditions, visibleFieldIds!),
+    isLogicUnitSatisfied(
+      submission,
+      logicUnit.conditions,
+      definedVisibleFieldIds,
+    ),
   )
 }
 

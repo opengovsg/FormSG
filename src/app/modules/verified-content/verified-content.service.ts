@@ -1,8 +1,8 @@
 import { err, ok, Result } from 'neverthrow'
 
-import formsgSdk from '../../../config/formsg-sdk'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { AuthType } from '../../../types'
+import formsgSdk from '../../config/formsg-sdk'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import { EncryptVerifiedContentError } from './verified-content.errors'
 import {

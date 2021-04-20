@@ -20,6 +20,7 @@ import {
   generateNewAttachmentResponse,
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { ProcessedSingleAnswerResponse } from '../../submission.types'
 import {
@@ -42,6 +43,40 @@ const MOCK_HASH = Buffer.from('mockHash')
 const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
 
 describe('email-submission.service', () => {
+  beforeAll(async () => await dbHandler.connect())
+  afterEach(async () => await dbHandler.clearDatabase())
+  afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('createEmailSubmissionWithoutSave', () => {
+    const MOCK_EMAIL = 'a@abc.com'
+    const MOCK_RESPONSE_HASH = 'mockHash'
+    const MOCK_RESPONSE_SALT = 'mockSalt'
+    const MOCK_FORM = ({
+      admin: new ObjectId(),
+      _id: new ObjectId(),
+      title: 'mock title',
+      getUniqueMyInfoAttrs: () => [],
+      authType: 'NIL',
+      emails: [MOCK_EMAIL],
+    } as unknown) as IPopulatedEmailForm
+
+    it('should create a new submission without saving it to the database', async () => {
+      const result = EmailSubmissionService.createEmailSubmissionWithoutSave(
+        MOCK_FORM,
+        MOCK_RESPONSE_HASH,
+        MOCK_RESPONSE_SALT,
+      )
+      const foundInDatabase = await EmailSubmissionModel.findOne({
+        _id: result._id,
+      })
+
+      expect(result.form).toEqual(MOCK_FORM._id)
+      expect(result.responseHash).toEqual(MOCK_RESPONSE_HASH)
+      expect(result.responseSalt).toEqual(MOCK_RESPONSE_SALT)
+      expect(foundInDatabase).toBeNull()
+    })
+  })
+
   describe('validateAttachments', () => {
     it('should reject submissions when attachments are more than 7MB', async () => {
       const processedResponse1 = generateNewAttachmentResponse({

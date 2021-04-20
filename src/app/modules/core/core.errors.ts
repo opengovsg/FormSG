@@ -1,4 +1,4 @@
-import { FeatureNames } from 'src/config/feature-manager'
+import { FeatureNames } from '../../config/feature-manager'
 
 /**
  * A custom base error class that encapsulates the name, message, status code,
@@ -71,5 +71,14 @@ export class MissingFeatureError extends ApplicationError {
     super(
       `${missingFeature} is not activated, but a feature-specific function was called.`,
     )
+  }
+}
+
+/**
+ * Error thrown when attachment upload fails
+ */
+export class AttachmentUploadError extends ApplicationError {
+  constructor(message = 'Error while uploading encrypted attachments to S3') {
+    super(message)
   }
 }

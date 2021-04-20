@@ -3,7 +3,6 @@ import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
 import mongoose, { Query } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { ImportMock } from 'ts-mock-imports'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
 import getUserModel from 'src/app/models/user.server.model'
@@ -37,7 +36,6 @@ describe('user.service', () => {
 
   beforeAll(async () => {
     await dbHandler.connect()
-    ImportMock.mockFunction(OtpUtils, 'generateOtp', MOCK_OTP)
   })
   beforeEach(async () => {
     // Insert user into collections.
@@ -46,8 +44,8 @@ describe('user.service', () => {
       mailDomain: ALLOWED_DOMAIN,
     })
 
-    defaultAgency = agency.toObject()
-    defaultUser = user.toObject()
+    defaultAgency = agency
+    defaultUser = user
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
@@ -93,6 +91,7 @@ describe('user.service', () => {
     it('should create a new AdminVerification document and return otp', async () => {
       // Arrange
       // Should have no documents prior to this.
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValueOnce(MOCK_OTP)
       await expect(AdminVerification.countDocuments()).resolves.toEqual(0)
 
       // Act
@@ -149,6 +148,7 @@ describe('user.service', () => {
   describe('verifyContactOtp', () => {
     it('should successfully verify otp', async () => {
       // Arrange
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValueOnce(MOCK_OTP)
       // Add a AdminVerification document to verify against.
       await UserService.createContactOtp(USER_ID, MOCK_CONTACT)
       await expect(AdminVerification.countDocuments()).resolves.toEqual(1)
@@ -248,6 +248,7 @@ describe('user.service', () => {
 
     it('should return InvalidOtpError when contact hash does not match', async () => {
       // Arrange
+      jest.spyOn(OtpUtils, 'generateOtp').mockReturnValueOnce(MOCK_OTP)
       // Insert new AdminVerification document.
       await UserService.createContactOtp(USER_ID, MOCK_CONTACT)
       const invalidContact = '123456'
@@ -291,7 +292,7 @@ describe('user.service', () => {
       const actualUser = actualResult._unsafeUnwrap()
       expect(actualUser.contact).toEqual(MOCK_CONTACT)
       // Returned document's agency should be populated.
-      expect(actualUser.agency.toObject()).toEqual(defaultAgency)
+      expect(actualUser.agency.toObject()).toEqual(defaultAgency.toObject())
     })
 
     it('should return MissingUserError if userId is invalid', async () => {
@@ -314,8 +315,8 @@ describe('user.service', () => {
     it('should return populated user successfully', async () => {
       // Arrange
       const expected = {
-        ...defaultUser,
-        agency: defaultAgency,
+        ...defaultUser.toObject(),
+        agency: defaultAgency.toObject(),
       }
 
       // Act
@@ -369,7 +370,7 @@ describe('user.service', () => {
 
       // Assert
       const expectedUser: Partial<IPopulatedUser> = {
-        agency: defaultAgency,
+        agency: defaultAgency.toObject() as IAgencySchema,
         email: newUserEmail,
         lastAccessed: MOCKED_DATE,
       }
@@ -395,8 +396,8 @@ describe('user.service', () => {
 
       // Assert
       const expectedUser: Partial<IPopulatedUser> = {
-        ...defaultUser,
-        agency: defaultAgency,
+        ...defaultUser.toObject(),
+        agency: defaultAgency.toObject() as IAgencySchema,
         lastAccessed: MOCKED_DATE,
       }
       expect(actualResult.isOk()).toBe(true)
@@ -412,12 +413,9 @@ describe('user.service', () => {
     it('should return admin successfully', async () => {
       // Arrange
       const mockUserId = new ObjectID().toHexString()
-      const findSpy = jest.spyOn(UserModel, 'findById').mockImplementationOnce(
-        () =>
-          (({
-            exec: jest.fn().mockResolvedValue(defaultUser),
-          } as unknown) as Query<any>),
-      )
+      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce(({
+        exec: jest.fn().mockResolvedValue(defaultUser),
+      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserById(mockUserId)
@@ -431,12 +429,9 @@ describe('user.service', () => {
     it('should return DatabaseError when query throws an error', async () => {
       // Arrange
       const mockUserId = new ObjectID().toHexString()
-      const findSpy = jest.spyOn(UserModel, 'findById').mockImplementationOnce(
-        () =>
-          (({
-            exec: jest.fn().mockRejectedValue(new Error('database bad!')),
-          } as unknown) as Query<any>),
-      )
+      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce(({
+        exec: jest.fn().mockRejectedValue(new Error('database bad')),
+      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserById(mockUserId)
@@ -450,12 +445,9 @@ describe('user.service', () => {
     it('should return MissingUserError when query returns null', async () => {
       // Arrange
       const mockUserId = new ObjectID().toHexString()
-      const findSpy = jest.spyOn(UserModel, 'findById').mockImplementationOnce(
-        () =>
-          (({
-            exec: jest.fn().mockResolvedValue(null),
-          } as unknown) as Query<any>),
-      )
+      const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce(({
+        exec: jest.fn().mockResolvedValue(null),
+      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserById(mockUserId)
@@ -471,12 +463,9 @@ describe('user.service', () => {
     it('should return admin successfully', async () => {
       // Arrange
       const mockEmail = 'someemail@example.com'
-      const findSpy = jest.spyOn(UserModel, 'findOne').mockImplementationOnce(
-        () =>
-          (({
-            exec: jest.fn().mockResolvedValue(defaultUser),
-          } as unknown) as Query<any>),
-      )
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce(({
+        exec: jest.fn().mockResolvedValue(defaultUser),
+      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserByEmail(mockEmail)
@@ -490,12 +479,9 @@ describe('user.service', () => {
     it('should return DatabaseError when query throws an error', async () => {
       // Arrange
       const mockEmail = 'another@example.com'
-      const findSpy = jest.spyOn(UserModel, 'findOne').mockImplementationOnce(
-        () =>
-          (({
-            exec: jest.fn().mockRejectedValue(new Error('database bad!')),
-          } as unknown) as Query<any>),
-      )
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce(({
+        exec: jest.fn().mockRejectedValue(new Error('database bad!')),
+      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserByEmail(mockEmail)
@@ -509,12 +495,9 @@ describe('user.service', () => {
     it('should return MissingUserError when query returns null', async () => {
       // Arrange
       const mockEmail = 'mockEmail@example.com'
-      const findSpy = jest.spyOn(UserModel, 'findOne').mockImplementationOnce(
-        () =>
-          (({
-            exec: jest.fn().mockResolvedValue(null),
-          } as unknown) as Query<any>),
-      )
+      const findSpy = jest.spyOn(UserModel, 'findOne').mockReturnValueOnce(({
+        exec: jest.fn().mockResolvedValue(null),
+      } as unknown) as Query<IUserSchema | null, IUserSchema, unknown>)
 
       // Act
       const actualResult = await UserService.findUserByEmail(mockEmail)

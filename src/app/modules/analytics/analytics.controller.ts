@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { AnalyticStatsDto } from 'src/types/analytics'
 
-import { createLoggerWithLabel } from '../../../config/logger'
+import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
 import {

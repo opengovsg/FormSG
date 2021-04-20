@@ -2,8 +2,8 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from '../../../config/logger'
 import { IPopulatedUser } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
@@ -20,7 +20,7 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Generates an OTP and sends the OTP to the given contact in request body.
- * @route POST /contact/sendotp
+ * @route POST /contact/otp/generate
  * @returns 200 if OTP was successfully sent
  * @returns 401 if user id does not match current session user or if user is not currently logged in
  * @returns 422 on OTP creation or SMS send failure
@@ -95,7 +95,7 @@ export const handleContactSendOtp: RequestHandler<
 /**
  * Verifies given OTP with the hashed OTP data, and updates the user's contact
  * number if the hash matches.
- * @route POST /contact/verifyotp
+ * @route POST /contact/otp/verify
  * @returns 200 when user contact update success
  * @returns 401 if user id does not match current session user or if user is not currently logged in
  * @returns 422 when OTP is invalid

@@ -1,6 +1,5 @@
 import { LeanDocument } from 'mongoose'
 
-import { ISpcpMyInfo } from '../../../config/feature-manager'
 import {
   AuthType,
   Environment,
@@ -9,6 +8,7 @@ import {
   IMyInfo,
   MyInfoAttribute,
 } from '../../../types'
+import { ISpcpMyInfo } from '../../config/feature-manager'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 export interface IMyInfoServiceConfig {
@@ -44,15 +44,15 @@ export enum MyInfoCookieState {
   Error = 'error',
 }
 
+export type MyInfoSuccessfulCookiePayload = {
+  accessToken: string
+  usedCount: number
+  state: MyInfoCookieState.Success
+}
+
 export type MyInfoCookiePayload =
-  | {
-      accessToken: string
-      usedCount: number
-      state: MyInfoCookieState.Success
-    }
-  | {
-      state: Exclude<MyInfoCookieState, MyInfoCookieState.Success>
-    }
+  | MyInfoSuccessfulCookiePayload
+  | { state: Exclude<MyInfoCookieState, MyInfoCookieState.Success> }
 
 /**
  * The stringified properties included in the state sent to MyInfo.

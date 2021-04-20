@@ -7,13 +7,13 @@
       async
       src="https://www.googletagmanager.com/gtag/js?id=<%= GATrackingID%>"
     ></script>
-    <script src="/frontend/datalayer"></script>
+    <script src="/api/v3/client/analytics/google"></script>
     <% } %>
     <!--Embedding custom variables in window-->
-    <script src="/frontend/environment"></script>
+    <script src="/api/v3/client/environment"></script>
 
     <%if (redirectPath) { %>
-    <script src="/frontend/redirect?redirectPath=<%= redirectPath%>"></script>
+    <script src="/api/v3/client/redirect?redirectPath=<%= redirectPath%>"></script>
     <% } %>
 
     <title><%= title %></title>

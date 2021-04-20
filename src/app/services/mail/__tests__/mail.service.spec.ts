@@ -2,7 +2,6 @@ import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { err, ok, okAsync } from 'neverthrow'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
-import { ImportMock } from 'ts-mock-imports'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { MailService } from 'src/app/services/mail/mail.service'
@@ -23,7 +22,7 @@ const MOCK_SENDER_EMAIL = 'from@example.com'
 const MOCK_APP_NAME = 'mockApp'
 const MOCK_APP_URL = 'mockApp.example.com'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
-const MOCK_PDF = 'fake pdf'
+const MOCK_PDF = Buffer.from('fake pdf')
 
 const MOCK_RETRY_COUNT = 10
 
@@ -35,14 +34,11 @@ describe('mail.service', () => {
 
   // Set up mocks for MailUtils
   beforeAll(() => {
-    ImportMock.mockFunction(
-      MailUtils,
-      'generateAutoreplyPdf',
-      okAsync(MOCK_PDF),
-    )
+    jest
+      .spyOn(MailUtils, 'generateAutoreplyPdf')
+      .mockReturnValue(okAsync(MOCK_PDF))
   })
   beforeEach(() => sendMailSpy.mockReset())
-  afterAll(() => ImportMock.restore())
 
   const mailService = new MailService({
     transporter: mockTransporter,

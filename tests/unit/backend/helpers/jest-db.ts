@@ -11,6 +11,7 @@ import {
   IAgencySchema,
   IEmailFormSchema,
   IEncryptedFormSchema,
+  IPopulatedForm,
   IUserSchema,
   ResponseMode,
 } from 'src/types'
@@ -153,7 +154,6 @@ const insertEmailForm = async ({
   })
 
   const EmailFormModel = getEmailFormModel(mongoose)
-
   const form = await EmailFormModel.create({
     title: 'example form title',
     admin: user._id,
@@ -214,6 +214,11 @@ const insertEncryptForm = async ({
   }
 }
 
+const getFullFormById = async (
+  formId: string,
+): Promise<IPopulatedForm | null> =>
+  await getEmailFormModel(mongoose).getFullFormById(formId)
+
 const dbHandler = {
   connect,
   closeDatabase,
@@ -224,6 +229,7 @@ const dbHandler = {
   clearCollection,
   insertEmailForm,
   insertEncryptForm,
+  getFullFormById,
 }
 
 export default dbHandler

@@ -92,7 +92,9 @@ describe('billing.controller', () => {
         ...EXPECTED_SERVICE_CALL_ARGS,
       )
       expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith('Error in retrieving billing records')
+      expect(mockRes.json).toBeCalledWith({
+        message: 'Error in retrieving billing records',
+      })
     })
   })
 })

@@ -4,7 +4,7 @@ import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submis
 import { IEmailFieldSchema, IMobileFieldSchema } from 'src/types/field'
 import { ResponseValidator } from 'src/types/field/utils/validation'
 
-import formsgSdk from '../../../../config/formsg-sdk'
+import formsgSdk from '../../../config/formsg-sdk'
 
 /**
  * A function which returns a validator to check if single answer has a non-empty response

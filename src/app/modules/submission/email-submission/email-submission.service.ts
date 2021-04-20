@@ -2,7 +2,6 @@ import crypto from 'crypto'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   BasicField,
   EmailAdminDataField,
@@ -14,6 +13,7 @@ import {
   ResponseMode,
   SubmissionType,
 } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import { DatabaseError } from '../../core/core.errors'
 import { isEmailModeForm, transformEmails } from '../../form/form.utils'
@@ -189,4 +189,26 @@ export const checkFormIsEmailMode = (
     return ok(form)
   }
   return err(new ResponseModeError(ResponseMode.Email, form.responseMode))
+}
+
+/**
+ * Creates an email submission without saving it to the database.
+ * @param form Form document
+ * @param responseHash Hash of response
+ * @param responseSalt Salt used to hash response
+ * @returns Submission document which has not been saved to database
+ */
+export const createEmailSubmissionWithoutSave = (
+  form: IPopulatedEmailForm,
+  responseHash: string,
+  responseSalt: string,
+): IEmailSubmissionSchema => {
+  return new EmailSubmissionModel({
+    form: form._id,
+    authType: form.authType,
+    myInfoFields: form.getUniqueMyInfoAttrs(),
+    recipientEmails: transformEmails(form.emails),
+    responseHash,
+    responseSalt,
+  })
 }

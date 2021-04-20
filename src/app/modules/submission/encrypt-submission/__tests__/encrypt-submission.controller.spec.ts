@@ -31,7 +31,7 @@ import {
 import {
   handleGetEncryptedResponse,
   handleGetMetadata,
-  handleStreamEncryptedResponses,
+  streamEncryptedResponses,
 } from '../encrypt-submission.controller'
 import * as EncryptSubmissionService from '../encrypt-submission.service'
 
@@ -739,7 +739,7 @@ describe('encrypt-submission.controller', () => {
     })
   })
 
-  describe('handleStreamEncryptedResponses', () => {
+  describe('streamEncryptedResponses', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -786,7 +786,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+      await streamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
@@ -809,7 +809,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+      await streamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
@@ -835,7 +835,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+      await streamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
@@ -861,7 +861,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+      await streamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(410)
@@ -884,7 +884,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+      await streamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(422)
@@ -910,7 +910,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+      await streamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
@@ -939,7 +939,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await handleStreamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
+      await streamEncryptedResponses(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)

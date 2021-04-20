@@ -2,8 +2,6 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import config from '../../../config/config'
-import { createLoggerWithLabel } from '../../../config/logger'
 import {
   IAdminVerificationDoc,
   IAgencySchema,
@@ -12,6 +10,8 @@ import {
   UpsertOtpParams,
   UserContactView,
 } from '../../../types'
+import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 import getAdminVerificationModel from '../../models/admin_verification.server.model'
 import { AGENCY_SCHEMA_ID } from '../../models/agency.server.model'
 import getUserModel from '../../models/user.server.model'
