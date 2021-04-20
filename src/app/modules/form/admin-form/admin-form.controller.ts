@@ -47,6 +47,7 @@ import { mapRouteError as mapEncryptSubmissionError } from '../../submission/enc
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
+import * as FormService from '../form.service'
 
 import {
   PREVIEW_CORPPASS_UID,
@@ -1121,6 +1122,50 @@ export const handleUpdateSettings: RequestHandler<
           userId: sessionUserId,
           formId,
           settingsKeysToUpdate: Object.keys(settingsToPatch),
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for GET /form/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with latest form settings on successful update
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetSettings: RequestHandler<
+  { formId: string },
+  FormSettings | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .map((form) => res.status(StatusCodes.OK).json(form.getSettings()))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form settings',
+        meta: {
+          action: 'handleGetSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
         },
         error,
       })
