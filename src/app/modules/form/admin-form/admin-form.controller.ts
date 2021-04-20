@@ -1500,13 +1500,23 @@ export const handleUpdateFormField = [
  * NOTE: Exported for testing.
  * Private handler for POST /forms/:formId/fields
  * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with created form field
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 410 when creating form field for an archived form
+ * @returns 413 when creating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field creation is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
  */
 export const _handleCreateFormField: RequestHandler<
-  { formId: string; fieldId: string },
+  { formId: string },
   FormFieldDto | ErrorDto,
   FieldCreateDto
 > = (req, res) => {
-  const { formId, fieldId } = req.params
+  const { formId } = req.params
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -1533,7 +1543,6 @@ export const _handleCreateFormField: RequestHandler<
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
-            fieldId,
             createFieldBody: req.body,
           },
           error,
@@ -1546,16 +1555,6 @@ export const _handleCreateFormField: RequestHandler<
 
 /**
  * Handler for POST /forms/:formId/fields
- * @security session
- *
- * @returns 200 with created form field
- * @returns 403 when current user does not have permissions to create a form field
- * @returns 404 when form cannot be found
- * @returns 410 when creating form field for an archived form
- * @returns 413 when creating form field causes form to be too large to be saved in the database
- * @returns 422 when an invalid form field creation is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
  */
 export const handleCreateFormField = [
   celebrate({
