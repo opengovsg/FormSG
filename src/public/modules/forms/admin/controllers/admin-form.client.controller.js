@@ -201,6 +201,8 @@ function AdminFormController(
             )
             if (updateIndex !== -1) {
               $scope.myform.form_fields[updateIndex] = updatedFormField
+            } else {
+              Toastr.error('An error occurred while saving your changes.')
             }
           })
           .catch(handleUpdateError)
