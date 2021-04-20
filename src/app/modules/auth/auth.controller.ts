@@ -14,7 +14,7 @@ import { createReqMeta, getRequestIp } from '../../utils/request'
 import * as FormService from '../form/form.service'
 import { MyInfoFactory } from '../myinfo/myinfo.factory'
 import { validateMyInfoForm } from '../myinfo/myinfo.util'
-import { CreateRedirectUrlError } from '../spcp/spcp.errors'
+import { AuthTypeMismatchError } from '../spcp/spcp.errors'
 import { SpcpFactory } from '../spcp/spcp.factory'
 import { validateSpcpForm } from '../spcp/spcp.util'
 import * as UserService from '../user/user.service'
@@ -115,7 +115,7 @@ export const handleLoginSendOtp: RequestHandler<
 }
 
 /**
- *  Handler for POST /auth/verifyotp endpoint.
+ * Handler for POST /auth/verifyotp endpoint.
  * @returns 200 when user has successfully logged in, with session cookie set
  * @returns 401 when the email domain is invalid
  * @returns 422 when the OTP is invalid
@@ -228,16 +228,17 @@ export const handleSignout: RequestHandler = async (req, res) => {
   })
 }
 
-const validatePersistentLogin = celebrate({
-  [Segments.QUERY]: Joi.object({
-    isPersistentLogin: Joi.boolean().optional(),
-  }),
-})
-
 /**
  * NOTE: This is exported only for testing
  * Generates redirect URL to Official SingPass/CorpPass log in page
  * @param isPersistentLogin whether the client wants to have their login information stored
+ * @returns 200 with the redirect url when the user authenticates successfully
+ * @returns 400 when there is an error on the authType of the user
+ * @returns 400 when the serviceId of the form does not exist
+ * @returns 404 when form is private or form with given ID does not exist
+ * @returns 500 when database error occurs
+ * @returns 500 when the redirect url could not be created
+ * @returns 500 when the redirect feature is not enabled
  */
 export const getRedirectLink: RequestHandler<
   { formId: string },
@@ -285,8 +286,8 @@ export const getRedirectLink: RequestHandler<
         // NOTE: Only MyInfo and SPCP should have redirects as the point of a redirect is
         // to provide auth for users from a third party
         default:
-          return err<never, CreateRedirectUrlError>(
-            new CreateRedirectUrlError(),
+          return err<never, AuthTypeMismatchError>(
+            new AuthTypeMismatchError(form.authType),
           )
       }
     })
@@ -308,6 +309,10 @@ export const getRedirectLink: RequestHandler<
  * Handler for /forms/:formId/auth/redirect
  */
 export const handleRedirect = [
-  validatePersistentLogin,
+  celebrate({
+    [Segments.QUERY]: Joi.object({
+      isPersistentLogin: Joi.boolean().optional(),
+    }),
+  }),
   getRedirectLink,
 ] as RequestHandler[]

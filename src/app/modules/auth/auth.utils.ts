@@ -11,6 +11,7 @@ import {
   MyInfoNoESrvcIdError,
 } from '../myinfo/myinfo.errors'
 import {
+  AuthTypeMismatchError,
   CreateRedirectUrlError,
   SpcpAuthTypeError,
   SpcpNoESrvcIdError,
@@ -109,6 +110,12 @@ export const mapRedirectUrlError: MapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
+      }
+    case AuthTypeMismatchError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Please ensure that the form has authentication enabled. Please refresh and try again.',
       }
     default:
       logger.error({
