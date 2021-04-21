@@ -1066,7 +1066,7 @@ describe('Form Model', () => {
         ],
       }
 
-      it('should return form upon for successful delete', async () => {
+      it('should return form upon successful delete', async () => {
         // arrange
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: populatedAdmin,
