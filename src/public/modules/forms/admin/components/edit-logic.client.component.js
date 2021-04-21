@@ -1,6 +1,7 @@
 'use strict'
 
 const { LogicType } = require('../../../../../types')
+const AdminFormService = require('../../../../services/AdminFormService')
 
 angular.module('forms').component('editLogicComponent', {
   templateUrl: 'modules/forms/admin/componentViews/edit-logic.client.view.html',
@@ -9,11 +10,17 @@ angular.module('forms').component('editLogicComponent', {
     isLogicError: '<',
     updateForm: '&',
   },
-  controller: ['$uibModal', 'FormFields', editLogicComponentController],
+  controller: [
+    '$uibModal',
+    'FormFields',
+    'Toastr',
+    '$q',
+    editLogicComponentController,
+  ],
   controllerAs: 'vm',
 })
 
-function editLogicComponentController($uibModal, FormFields) {
+function editLogicComponentController($uibModal, FormFields, Toastr, $q) {
   const vm = this
   vm.LogicType = LogicType
   const getNewCondition = function () {
@@ -74,8 +81,15 @@ function editLogicComponentController($uibModal, FormFields) {
   }
 
   vm.deleteLogic = function (logicIndex) {
-    vm.myform.form_logics.splice(logicIndex, 1)
-    updateLogic({ form_logics: vm.myform.form_logics })
+    const logicIdToDelete = vm.myform.form_logics[logicIndex]._id
+    $q.when(AdminFormService.deleteFormLogic(vm.myform._id, logicIdToDelete))
+      .then(() => {
+        vm.myform.form_logics.splice(logicIndex, 1)
+      })
+      .catch((logicDeleteError) => {
+        console.error(logicDeleteError)
+        Toastr.error('Failed to delete logic, please refresh and try again!')
+      })
   }
 
   vm.openEditLogicModal = function (currLogic, isNew, logicIndex = -1) {

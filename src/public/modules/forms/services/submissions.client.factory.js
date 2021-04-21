@@ -42,9 +42,9 @@ function SubmissionsFactory(
   responseModeEnum,
   FormSgSdk,
 ) {
+  const previewSubmitUrl =
+    '/api/v3/admin/forms/:formId/preview/submissions/:responseMode'
   const publicSubmitUrl = '/api/v3/forms/:formId/submissions/:responseMode'
-
-  const previewSubmitUrl = '/v2/submissions/:responseMode/preview/:formId'
 
   const ADMIN_FORMS_PREFIX = '/api/v3/admin/forms'
 

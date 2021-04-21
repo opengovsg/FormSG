@@ -40,12 +40,14 @@ import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
 } from '../../spcp/spcp.util'
+import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
   mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
+import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
@@ -1243,7 +1245,7 @@ export const handleGetSettings: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEncryptPreviewSubmission: RequestHandler<
+export const submitEncryptPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
   EncryptSubmissionDto
@@ -1253,7 +1255,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { encryptedContent, responses, version } = req.body
   const logMeta = {
-    action: 'handleEncryptPreviewSubmission',
+    action: 'submitEncryptPreview',
     formId,
   }
 
@@ -1319,6 +1321,11 @@ export const handleEncryptPreviewSubmission: RequestHandler<
     })
 }
 
+export const handleEncryptPreviewSubmission = [
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptPreview,
+] as RequestHandler[]
+
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
  * @security session
@@ -1331,7 +1338,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEmailPreviewSubmission: RequestHandler<
+export const submitEmailPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string },
   { responses: FieldResponse[]; isPreview: boolean },
@@ -1342,7 +1349,7 @@ export const handleEmailPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { responses } = req.body
   const logMeta = {
-    action: 'handleEmailPreviewSubmission',
+    action: 'submitEmailPreview',
     formId,
     ...createReqMeta(req as Request),
   }
@@ -1457,6 +1464,12 @@ export const handleEmailPreviewSubmission: RequestHandler<
   })
 }
 
+export const handleEmailPreviewSubmission = [
+  EmailSubmissionMiddleware.receiveEmailSubmission,
+  EmailSubmissionMiddleware.validateResponseParams,
+  submitEmailPreview,
+] as RequestHandler[]
+
 /**
  * Handler for PUT /forms/:formId/fields/:fieldId
  * @security session
@@ -1544,6 +1557,54 @@ export const _handleCreateFormField: RequestHandler<
             userId: sessionUserId,
             formId,
             createFieldBody: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+/*
+ * Handler for DELETE /forms/:formId/logic/:logicId
+ * @security session
+ *
+ * @returns 200 with success message when successfully deleted
+ * @returns 403 when user does not have permissions to delete logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDeleteLogic: RequestHandler = (req, res) => {
+  const { formId, logicId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+
+      // Step 3: Delete form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.deleteFormLogic(retrievedForm, logicId),
+      )
+      .map(() => res.sendStatus(StatusCodes.OK))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form logic',
+          meta: {
+            action: 'handleDeleteLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            logicId,
           },
           error,
         })

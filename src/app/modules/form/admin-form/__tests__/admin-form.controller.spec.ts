@@ -49,6 +49,7 @@ import {
   IFieldSchema,
   IForm,
   IFormSchema,
+  ILogicSchema,
   IPopulatedEmailForm,
   IPopulatedEncryptedForm,
   IPopulatedForm,
@@ -76,6 +77,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  LogicNotFoundError,
   PrivateFormError,
   TransferOwnershipError,
 } from '../../form.errors'
@@ -5065,7 +5067,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleEmailPreviewSubmission', () => {
+  describe('submitEmailPreview', () => {
     const MOCK_FIELD_ID = new ObjectId().toHexString()
     const MOCK_RESPONSES = [
       generateUnprocessedSingleAnswerResponse(BasicField.Email, {
@@ -5153,11 +5155,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5228,11 +5226,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5281,11 +5275,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5334,11 +5324,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5391,11 +5377,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5448,11 +5430,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5505,11 +5483,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5562,11 +5536,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5619,11 +5589,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5676,11 +5642,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5733,11 +5695,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5793,11 +5751,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5853,11 +5807,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5913,11 +5863,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -5982,11 +5928,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -6051,11 +5993,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEmailPreviewSubmission(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
+      await AdminFormController.submitEmailPreview(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -6110,7 +6048,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleEncryptPreviewSubmission', () => {
+  describe('submitEncryptPreview', () => {
     const MOCK_RESPONSES = [
       generateUnprocessedSingleAnswerResponse(BasicField.Email),
     ]
@@ -6182,7 +6120,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6246,7 +6184,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6294,7 +6232,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6342,7 +6280,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6394,7 +6332,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6446,7 +6384,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6498,7 +6436,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6550,7 +6488,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6602,7 +6540,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6654,7 +6592,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6709,7 +6647,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6764,7 +6702,7 @@ describe('admin-form.controller', () => {
       })
       const mockRes = expressHandler.mockResponse()
 
-      await AdminFormController.handleEncryptPreviewSubmission(
+      await AdminFormController.submitEncryptPreview(
         mockReq,
         mockRes,
         jest.fn(),
@@ -6841,6 +6779,7 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
         okAsync(MOCK_FORM),
       )
+
       MockAdminFormService.updateFormField.mockReturnValue(
         okAsync(MOCK_UPDATED_FIELD as IFieldSchema),
       )
@@ -7081,6 +7020,7 @@ describe('admin-form.controller', () => {
       _id: MOCK_USER_ID,
       email: 'somerandom@example.com',
     } as IPopulatedUser
+
     const MOCK_FORM = {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
@@ -7103,7 +7043,6 @@ describe('admin-form.controller', () => {
       },
       body: MOCK_CREATE_FIELD_BODY,
     })
-
     beforeEach(() => {
       MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
@@ -7358,6 +7297,203 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
       )
+    })
+  })
+
+  describe('handleDeleteLogic', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const logicId = new ObjectId().toHexString()
+    const mockFormLogic = {
+      form_logics: [
+        {
+          _id: logicId,
+          id: logicId,
+        } as ILogicSchema,
+      ],
+    }
+
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+      ...mockFormLogic,
+    } as IPopulatedForm
+
+    const mockReq = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+        logicId,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+    const mockRes = expressHandler.mockResponse()
+    beforeEach(() => {
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.deleteFormLogic.mockReturnValue(okAsync(true))
+    })
+
+    it('should call all services correctly when request is valid', async () => {
+      await AdminFormController.handleDeleteLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.deleteFormLogic).toHaveBeenCalledWith(
+        MOCK_FORM,
+        logicId,
+      )
+
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(200)
+    })
+
+    it('should return 403 when user does not have permissions to delete logic', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        errAsync(
+          new ForbiddenFormError('not authorized to perform write operation'),
+        ),
+      )
+
+      await AdminFormController.handleDeleteLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.deleteFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'not authorized to perform write operation',
+      })
+    })
+
+    it('should return 404 when logicId cannot be found', async () => {
+      MockAdminFormService.deleteFormLogic.mockReturnValue(
+        errAsync(new LogicNotFoundError()),
+      )
+
+      await AdminFormController.handleDeleteLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+
+      expect(MockAdminFormService.deleteFormLogic).toHaveBeenCalledWith(
+        MOCK_FORM,
+        logicId,
+      )
+
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'logicId does not exist on form',
+      })
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        errAsync(new FormNotFoundError()),
+      )
+
+      await AdminFormController.handleDeleteLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.deleteFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Form not found',
+      })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValue(
+        errAsync(new MissingUserError()),
+      )
+
+      await AdminFormController.handleDeleteLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+
+      expect(MockAdminFormService.deleteFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User not found',
+      })
+    })
+
+    it('should return 500 when database error occurs', async () => {
+      MockUserService.getPopulatedUserById.mockReturnValue(
+        errAsync(new DatabaseError()),
+      )
+
+      await AdminFormController.handleDeleteLogic(mockReq, mockRes, jest.fn())
+
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+
+      expect(MockAdminFormService.deleteFormLogic).not.toHaveBeenCalled()
+
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Something went wrong. Please try again.',
+      })
     })
   })
 })
