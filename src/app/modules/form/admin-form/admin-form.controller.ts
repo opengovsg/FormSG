@@ -8,6 +8,7 @@ import { ResultAsync } from 'neverthrow'
 
 import {
   AuthType,
+  BasicField,
   FieldResponse,
   FormMetaView,
   FormSettings,
@@ -18,6 +19,8 @@ import {
 import {
   EncryptSubmissionDto,
   ErrorDto,
+  FieldUpdateDto,
+  FormFieldDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -1076,7 +1079,7 @@ export const handleUpdateForm: RequestHandler<
 }
 
 /**
- * Handler for PATCH /form/:formId/settings.
+ * Handler for PATCH /forms/:formId/settings.
  * @security session
  *
  * @returns 200 with updated form settings
@@ -1128,6 +1131,59 @@ export const handleUpdateSettings: RequestHandler<
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
+}
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/fields/:fieldId
+ * @precondition Must be preceded by request validation
+ */
+export const _handleUpdateFormField: RequestHandler<
+  {
+    formId: string
+    fieldId: string
+  },
+  FormFieldDto | ErrorDto,
+  FieldUpdateDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, update form field of retrieved form.
+      .andThen((form) =>
+        AdminFormService.updateFormField(form, fieldId, req.body),
+      )
+      .map((updatedFormField) =>
+        res.status(StatusCodes.OK).json(updatedFormField),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating form field',
+          meta: {
+            action: 'handleUpdateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+            updateFieldBody: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }
 
 /**
@@ -1399,3 +1455,42 @@ export const handleEmailPreviewSubmission: RequestHandler<
     submissionId: submission.id,
   })
 }
+
+/**
+ * Handler for PUT /forms/:formId/fields/:fieldId
+ * @security session
+ *
+ * @returns 200 with updated form field
+ * @returns 403 when current user does not have permissions to update form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field cannot be found
+ * @returns 410 when updating form field of an archived form
+ * @returns 413 when updating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateFormField = [
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object({
+        // Ensures given field is same as accessed field.
+        _id: Joi.string().valid(Joi.ref('$params.fieldId')).required(),
+        fieldType: Joi.string()
+          .valid(...Object.values(BasicField))
+          .required(),
+        description: Joi.string().allow('').required(),
+        required: Joi.boolean().required(),
+        title: Joi.string().required(),
+        disabled: Joi.boolean().required(),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
+    },
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
+  _handleUpdateFormField,
+]

@@ -1524,41 +1524,6 @@ describe('admin-form.routes', () => {
       expect(response.body).toEqual(jsonParseStringify(expected))
     })
 
-    it('should return 400 when form has invalid updates to be performed', async () => {
-      // Arrange
-      const formToUpdate = (await EmailFormModel.create({
-        title: 'Form to update',
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-        form_fields: [generateDefaultField(BasicField.Date)],
-      })) as IPopulatedForm
-      // Delete field
-      const clonedForm = cloneDeep(formToUpdate)
-      clonedForm.form_fields = []
-      await clonedForm.save()
-
-      // Act
-      const response = await request
-        .put(`/${formToUpdate._id}/adminform`)
-        .send({
-          form: {
-            editFormField: {
-              action: { name: EditFieldActions.Update },
-              field: {
-                ...formToUpdate.form_fields[0].toObject(),
-                description: 'some new description',
-              },
-            },
-          },
-        })
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Field to be updated does not exist',
-      })
-    })
-
     it('should return 401 when user is not logged in', async () => {
       // Arrange
       await logoutSession(request)
@@ -1645,6 +1610,41 @@ describe('admin-form.routes', () => {
       // Assert
       expect(response.status).toEqual(410)
       expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when form has invalid updates to be performed', async () => {
+      // Arrange
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+      // Delete field
+      const clonedForm = cloneDeep(formToUpdate)
+      clonedForm.form_fields = []
+      await clonedForm.save()
+
+      // Act
+      const response = await request
+        .put(`/${formToUpdate._id}/adminform`)
+        .send({
+          form: {
+            editFormField: {
+              action: { name: EditFieldActions.Update },
+              field: {
+                ...formToUpdate.form_fields[0].toObject(),
+                description: 'some new description',
+              },
+            },
+          },
+        })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({
+        message: 'Field to be updated does not exist',
+      })
     })
 
     it('should return 422 when user in session cannot be found in the database', async () => {

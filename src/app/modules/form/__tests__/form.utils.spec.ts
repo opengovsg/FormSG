@@ -1,6 +1,11 @@
-import { Permission } from 'src/types'
+import { ObjectId } from 'bson-ext'
+import { Types } from 'mongoose'
 
-import { getCollabEmailsWithPermission } from '../form.utils'
+import { BasicField, IFieldSchema, Permission } from 'src/types'
+
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
+
+import { getCollabEmailsWithPermission, getFormFieldById } from '../form.utils'
 
 const MOCK_EMAIL_1 = 'a@abc.com'
 const MOCK_EMAIL_2 = 'b@def.com'
@@ -40,6 +45,65 @@ describe('form.utils', () => {
       ]
       const result = getCollabEmailsWithPermission(collabs, false)
       expect(result).toEqual([MOCK_EMAIL_2])
+    })
+  })
+
+  describe('getFormFieldById', () => {
+    it('should return form field with valid id when form fields given is a primitive array', async () => {
+      // Arrange
+      const fieldToFind = generateDefaultField(BasicField.HomeNo)
+      const formFields = [generateDefaultField(BasicField.Date), fieldToFind]
+
+      // Act
+      const result = getFormFieldById(formFields, fieldToFind._id)
+
+      // Assert
+      expect(result).toEqual(fieldToFind)
+    })
+
+    it('should return form field with valid id when form fields given is a mongoose document array', async () => {
+      // Arrange
+      const fieldToFind = generateDefaultField(BasicField.Number)
+      // Should not turn this unit test into an integration test, so mocking return and leaving responsibility to mongoose.
+      const mockDocArray = ({
+        0: generateDefaultField(BasicField.LongText),
+        1: fieldToFind,
+        isMongooseDocumentArray: true,
+        id: jest.fn().mockReturnValue(fieldToFind),
+      } as unknown) as Types.DocumentArray<IFieldSchema>
+
+      // Act
+      const result = getFormFieldById(mockDocArray, fieldToFind._id)
+
+      // Assert
+      expect(result).toEqual(fieldToFind)
+      expect(mockDocArray.id).toHaveBeenCalledWith(fieldToFind._id)
+    })
+
+    it('should return null when given form fields are undefined', async () => {
+      // Arrange
+      const someFieldId = new ObjectId()
+
+      // Act
+      const result = getFormFieldById(undefined, someFieldId)
+
+      // Assert
+      expect(result).toEqual(null)
+    })
+
+    it('should return null when no fields correspond to given field id', async () => {
+      // Arrange
+      const invalidFieldId = new ObjectId()
+      const formFields = [
+        generateDefaultField(BasicField.Date),
+        generateDefaultField(BasicField.Date),
+      ]
+
+      // Act
+      const result = getFormFieldById(formFields, invalidFieldId)
+
+      // Assert
+      expect(result).toEqual(null)
     })
   })
 })

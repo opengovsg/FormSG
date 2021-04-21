@@ -1,6 +1,7 @@
 'use strict'
 
 const { EditFieldActions } = require('shared/constants')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 angular
   .module('forms')
@@ -29,25 +30,29 @@ function EditMyInfoFieldController(
   vm.verifiedForF = externalScope.currField.myInfo.verified.includes('F')
 
   vm.saveMyInfoField = function () {
-    // TODO: Separate code flow for create and update, ideally calling PUT and PATCH endpoints
-    const editFormField =
-      externalScope.currField.globalId === undefined
-        ? // Create a new field
-          {
-            action: {
-              name: EditFieldActions.Create,
-            },
-            field: externalScope.currField,
-          }
-        : // Edit existing field
-          {
-            action: {
-              name: EditFieldActions.Update,
-            },
-            field: externalScope.currField,
-          }
+    // No id, creation
+    let updateFieldPromise
+    const field = externalScope.currField
+    // Field creation
+    if (!field._id) {
+      updateFieldPromise = updateField({
+        editFormField: {
+          action: {
+            name: EditFieldActions.Create,
+          },
+          field,
+        },
+      })
+    } else {
+      // Update field
+      updateFieldPromise = updateField({
+        fieldId: field._id,
+        body: field,
+        type: UPDATE_FORM_TYPES.UpdateField,
+      })
+    }
 
-    updateField({ editFormField }).then((error) => {
+    return updateFieldPromise.then((error) => {
       if (!error) {
         $uibModalInstance.close()
         externalScope.closeMobileFields()
