@@ -655,7 +655,7 @@ export const deleteFormLogic = (
 
   // Remove specified logic and then update form logic
   return ResultAsync.fromPromise(
-    FormModel.deleteFormLogic(form._id, logicId),
+    FormModel.deleteFormLogic(String(form._id), logicId),
     (error) => {
       logger.error({
         message: 'Error occurred when deleting form logic',
