@@ -2,7 +2,7 @@
 const { cloneDeep } = require('lodash')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
-const AuthService = require('../../../../services/AuthService')
+const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
 const {
   getVisibleFieldIds,
   getLogicUnitPreventingSubmit,
@@ -94,7 +94,10 @@ function submitFormDirective(
 
         return $q
           .when(
-            AuthService.createRedirectURL(scope.form._id, isPersistentLogin),
+            PublicFormAuthService.createRedirectURL(
+              scope.form._id,
+              isPersistentLogin,
+            ),
           )
           .then((response) => {
             setReferrerToNull()
