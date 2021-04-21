@@ -1,27 +1,17 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
-import { ParamsDictionary, Query } from 'express-serve-static-core'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
-import { err } from 'neverthrow'
 
 import { LINKS } from '../../../shared/constants'
-import { AuthType } from '../../../types'
-import { ErrorDto, RedirectUrlDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../utils/request'
-import * as FormService from '../form/form.service'
-import { MyInfoFactory } from '../myinfo/myinfo.factory'
-import { validateMyInfoForm } from '../myinfo/myinfo.util'
-import { AuthTypeMismatchError } from '../spcp/spcp.errors'
-import { SpcpFactory } from '../spcp/spcp.factory'
-import { validateSpcpForm } from '../spcp/spcp.util'
 import * as UserService from '../user/user.service'
 
 import * as AuthService from './auth.service'
 import { SessionUser } from './auth.types'
-import { mapRedirectUrlError, mapRouteError } from './auth.utils'
+import { mapRouteError } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -227,90 +217,3 @@ export const handleSignout: RequestHandler = async (req, res) => {
     return res.status(StatusCodes.OK).json({ message: 'Sign out successful' })
   })
 }
-
-/**
- * NOTE: This is exported only for testing
- * Generates redirect URL to Official SingPass/CorpPass log in page
- * @param isPersistentLogin whether the client wants to have their login information stored
- * @returns 200 with the redirect url when the user authenticates successfully
- * @returns 400 when there is an error on the authType of the form
- * @returns 400 when the eServiceId of the form does not exist
- * @returns 404 when form with given ID does not exist
- * @returns 500 when database error occurs
- * @returns 500 when the redirect url could not be created
- * @returns 500 when the redirect feature is not enabled
- */
-export const getRedirectLink: RequestHandler<
-  { formId: string },
-  RedirectUrlDto | ErrorDto,
-  unknown,
-  Query & { isPersistentLogin: boolean }
-> = (req, res) => {
-  const { formId } = req.params
-  const { isPersistentLogin } = req.query
-  const logMeta = {
-    action: 'handleRedirect',
-    ...createReqMeta(req),
-    formId,
-  }
-  // NOTE: Using retrieveFullForm instead of retrieveForm to ensure authType always exists
-  return FormService.retrieveFullFormById(formId)
-    .andThen((form) => {
-      switch (form.authType) {
-        case AuthType.MyInfo:
-          return validateMyInfoForm(form).andThen((form) =>
-            MyInfoFactory.createRedirectURL({
-              formEsrvcId: form.esrvcId,
-              formId,
-              requestedAttributes: form.getUniqueMyInfoAttrs(),
-            }),
-          )
-        case AuthType.SP:
-        case AuthType.CP: {
-          // NOTE: Persistent login is only set (and relevant) when the authType is SP.
-          return validateSpcpForm(form).andThen((form) => {
-            const target = `/${formId},${
-              // We are not following corppass's official spec for
-              // the target parameter
-              form.authType === AuthType.SP ? isPersistentLogin : false
-            }`
-            return SpcpFactory.createRedirectUrl(
-              form.authType,
-              target,
-              form.esrvcId,
-            )
-          })
-        }
-        // NOTE: Only MyInfo and SPCP should have redirects as the point of a redirect is
-        // to provide auth for users from a third party
-        default:
-          return err<never, AuthTypeMismatchError>(
-            new AuthTypeMismatchError(form.authType),
-          )
-      }
-    })
-    .map((redirectURL) => {
-      return res.status(StatusCodes.OK).json({ redirectURL })
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while creating redirect URL',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRedirectUrlError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Handler for /forms/:formId/auth/redirect
- */
-export const handleRedirect = [
-  celebrate({
-    [Segments.QUERY]: Joi.object({
-      isPersistentLogin: Joi.boolean(),
-    }),
-  }),
-  getRedirectLink,
-] as RequestHandler[]

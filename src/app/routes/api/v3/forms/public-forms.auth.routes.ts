@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import * as AuthController from '../../../../modules/auth/auth.controller'
+import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 
 export const PublicFormsAuthRouter = Router()
 
@@ -19,5 +19,5 @@ export const PublicFormsAuthRouter = Router()
  * @returns 500 when the redirect feature is not enabled
  */
 PublicFormsAuthRouter.route('/:formId([a-fA-F0-9]{24})/auth/redirect').get(
-  AuthController.handleRedirect,
+  PublicFormController.handleFormAuthRedirect,
 )

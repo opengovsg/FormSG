@@ -1,11 +1,17 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
+import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
+import { err } from 'neverthrow'
 import querystring from 'querystring'
 import { UnreachableCaseError } from 'ts-essentials'
 
 import { AuthType } from '../../../../types'
-import { ErrorDto, PrivateFormErrorDto } from '../../../../types/api'
+import {
+  ErrorDto,
+  PrivateFormErrorDto,
+  RedirectUrlDto,
+} from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -19,9 +25,17 @@ import {
   MyInfoMissingAccessTokenError,
 } from '../../myinfo/myinfo.errors'
 import { MyInfoFactory } from '../../myinfo/myinfo.factory'
-import { extractAndAssertMyInfoCookieValidity } from '../../myinfo/myinfo.util'
-import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
+import {
+  extractAndAssertMyInfoCookieValidity,
+  validateMyInfoForm,
+} from '../../myinfo/myinfo.util'
+import {
+  AuthTypeMismatchError,
+  InvalidJwtError,
+  VerifyJwtError,
+} from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
+import { validateSpcpForm } from '../../spcp/spcp.util'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -350,3 +364,92 @@ export const handleGetPublicForm: RequestHandler<
       return new UnreachableCaseError(authType)
   }
 }
+
+/**
+ * NOTE: This is exported only for testing
+ * Generates redirect URL to Official SingPass/CorpPass log in page
+ * @param isPersistentLogin whether the client wants to have their login information stored
+ * @returns 200 with the redirect url when the user authenticates successfully
+ * @returns 400 when there is an error on the authType of the form
+ * @returns 400 when the eServiceId of the form does not exist
+ * @returns 404 when form with given ID does not exist
+ * @returns 500 when database error occurs
+ * @returns 500 when the redirect url could not be created
+ * @returns 500 when the redirect feature is not enabled
+ */
+export const _handleFormAuthRedirect: RequestHandler<
+  { formId: string },
+  RedirectUrlDto | ErrorDto,
+  unknown,
+  Query & { isPersistentLogin: boolean }
+> = (req, res) => {
+  const { formId } = req.params
+  const { isPersistentLogin } = req.query
+  const logMeta = {
+    action: 'handleFormAuthRedirect',
+    ...createReqMeta(req),
+    formId,
+  }
+  // NOTE: Using retrieveFullForm instead of retrieveForm to ensure authType always exists
+  return FormService.retrieveFullFormById(formId)
+    .andThen((form) => {
+      switch (form.authType) {
+        case AuthType.MyInfo:
+          return validateMyInfoForm(form).andThen((form) =>
+            MyInfoFactory.createRedirectURL({
+              formEsrvcId: form.esrvcId,
+              formId,
+              requestedAttributes: form.getUniqueMyInfoAttrs(),
+            }),
+          )
+        case AuthType.SP:
+        case AuthType.CP: {
+          // NOTE: Persistent login is only set (and relevant) when the authType is SP.
+          // If authType is not SP, assume that it was set erroneously and default it to false
+          return validateSpcpForm(form).andThen((form) => {
+            const target = `/${formId},${
+              // Need to cast to boolean because undefined is allowed as a valid value
+              // We are not following corppass's official spec for
+              // the target parameter
+              form.authType === AuthType.SP ? !!isPersistentLogin : false
+            }`
+            return SpcpFactory.createRedirectUrl(
+              form.authType,
+              target,
+              form.esrvcId,
+            )
+          })
+        }
+        // NOTE: Only MyInfo and SPCP should have redirects as the point of a redirect is
+        // to provide auth for users from a third party
+        default:
+          return err<never, AuthTypeMismatchError>(
+            new AuthTypeMismatchError(form.authType),
+          )
+      }
+    })
+    .map((redirectURL) => {
+      return res.status(StatusCodes.OK).json({ redirectURL })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while creating redirect URL',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for /forms/:formId/auth/redirect
+ */
+export const handleFormAuthRedirect = [
+  celebrate({
+    [Segments.QUERY]: Joi.object({
+      isPersistentLogin: Joi.boolean().optional(),
+    }),
+  }),
+  _handleFormAuthRedirect,
+] as RequestHandler[]
