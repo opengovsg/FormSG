@@ -268,13 +268,11 @@ export const getRedirectLink: RequestHandler<
         case AuthType.SP:
         case AuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
-          // If authType is not SP, assume that it was set erroneously and default it to false
           return validateSpcpForm(form).andThen((form) => {
             const target = `/${formId},${
-              // Need to cast to boolean because undefined is allowed as a valid value
               // We are not following corppass's official spec for
               // the target parameter
-              form.authType === AuthType.SP ? !!isPersistentLogin : false
+              form.authType === AuthType.SP ? isPersistentLogin : false
             }`
             return SpcpFactory.createRedirectUrl(
               form.authType,
@@ -311,7 +309,7 @@ export const getRedirectLink: RequestHandler<
 export const handleRedirect = [
   celebrate({
     [Segments.QUERY]: Joi.object({
-      isPersistentLogin: Joi.boolean().optional(),
+      isPersistentLogin: Joi.boolean(),
     }),
   }),
   getRedirectLink,

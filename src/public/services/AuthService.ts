@@ -9,7 +9,7 @@ export const VALIDATE_ESRVCID_ENDPOINT = 'auth/validate'
 
 export const createRedirectURL = (
   formId: string,
-  isPersistentLogin: boolean,
+  isPersistentLogin = false,
 ): Promise<RedirectUrlDto> => {
   return axios
     .get<RedirectUrlDto>(
