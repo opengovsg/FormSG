@@ -1,12 +1,20 @@
 import BSON from 'bson-ext'
 import { compact, pick, uniq } from 'lodash'
-import mongoose, { Mongoose, Query, Schema, SchemaOptions } from 'mongoose'
+import mongoose, {
+  Mongoose,
+  Query,
+  Schema,
+  SchemaOptions,
+  Types,
+} from 'mongoose'
 import validator from 'validator'
 
 import {
   AuthType,
   BasicField,
   Colors,
+  FormField,
+  FormFieldWithId,
   FormLogoState,
   FormMetaView,
   FormOtpData,
@@ -15,6 +23,7 @@ import {
   IEmailFormSchema,
   IEncryptedFormModel,
   IEncryptedFormSchema,
+  IFieldSchema,
   IFormDocument,
   IFormModel,
   IFormSchema,
@@ -30,7 +39,7 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
-import { transformEmails } from '../modules/form/form.utils'
+import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import getAgencyModel from './agency.server.model'
@@ -495,6 +504,32 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormDocumentSchema.methods.updateFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+    newField: FormFieldWithId,
+  ) {
+    const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
+    if (!fieldToUpdate) return Promise.resolve(null)
+
+    if (fieldToUpdate.fieldType !== newField.fieldType) {
+      this.invalidate('form_fields', 'Changing form field type is not allowed')
+    } else {
+      fieldToUpdate.set(newField)
+    }
+
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.insertFormField = function (
+    this: IFormDocument,
+    newField: FormField,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
+    return this.save()
+  }
+
   // Statics
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (
@@ -525,8 +560,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.statics.getFullFormById = async function (
     this: IFormModel,
     formId: string,
+    fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId).populate({
+    return this.findById(formId, fields).populate({
       path: 'admin',
       populate: {
         path: 'agency',

@@ -1,71 +1,8 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { IForm, ResponseMode } from '../../../../../../types'
-import { withUserAuthentication } from '../../../../../modules/auth/auth.middlewares'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
-import { DuplicateFormBody } from '../../../../../modules/form/admin-form/admin-form.types'
 
 export const AdminFormsFormRouter = Router()
-
-// Validators
-const createFormValidator = celebrate({
-  [Segments.BODY]: {
-    form: Joi.object<Omit<IForm, 'admin'>>()
-      .keys({
-        // Require valid responsesMode field.
-        responseMode: Joi.string()
-          .valid(...Object.values(ResponseMode))
-          .required(),
-        // Require title field.
-        title: Joi.string().min(4).max(200).required(),
-        // Require emails string (for backwards compatibility) or string
-        // array if form to be created in Email mode.
-        emails: Joi.alternatives()
-          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-          .when('responseMode', {
-            is: ResponseMode.Email,
-            then: Joi.required(),
-          }),
-        // Require publicKey field if form to be created in Storage mode.
-        publicKey: Joi.string()
-          .allow('')
-          .when('responseMode', {
-            is: ResponseMode.Encrypt,
-            then: Joi.string().required().disallow(''),
-          }),
-      })
-      .required()
-      // Allow other form schema keys to be passed for form creation.
-      .unknown(true),
-  },
-})
-
-const duplicateFormValidator = celebrate({
-  [Segments.BODY]: Joi.object<DuplicateFormBody>({
-    // Require valid responsesMode field.
-    responseMode: Joi.string()
-      .valid(...Object.values(ResponseMode))
-      .required(),
-    // Require title field.
-    title: Joi.string().min(4).max(200).required(),
-    // Require emails string (for backwards compatibility) or string array
-    // if form to be duplicated in Email mode.
-    emails: Joi.alternatives()
-      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-      .when('responseMode', {
-        is: ResponseMode.Email,
-        then: Joi.required(),
-      }),
-    // Require publicKey field if form to be duplicated in Storage mode.
-    publicKey: Joi.string()
-      .allow('')
-      .when('responseMode', {
-        is: ResponseMode.Encrypt,
-        then: Joi.string().required().disallow(''),
-      }),
-  }),
-})
 
 AdminFormsFormRouter.route('/')
   /**
@@ -94,7 +31,7 @@ AdminFormsFormRouter.route('/')
    * @returns 422 when form parameters are invalid
    * @returns 500 when database error occurs
    */
-  .post(createFormValidator, AdminFormController.handleCreateForm)
+  .post(AdminFormController.handleCreateForm)
 
 /**
  * Archive the specified form.
@@ -110,7 +47,7 @@ AdminFormsFormRouter.route('/')
  * @returns 500 when database error occurs
  */
 AdminFormsFormRouter.delete(
-  '/:formId([a-fA-F0-9]{24})/',
+  '/:formId([a-fA-F0-9]{24})',
   AdminFormController.handleArchiveForm,
 )
 
@@ -130,7 +67,6 @@ AdminFormsFormRouter.delete(
  */
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/duplicate',
-  duplicateFormValidator,
   AdminFormController.handleDuplicateAdminForm,
 )
 
@@ -152,18 +88,31 @@ AdminFormsFormRouter.post(
  */
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/collaborators/transfer-owner',
-  withUserAuthentication,
-  celebrate({
-    [Segments.BODY]: {
-      email: Joi.string()
-        .required()
-        .email({
-          minDomainSegments: 2, // Number of segments required for the domain
-          tlds: { allow: true }, // TLD (top level domain) validation
-          multiple: false, // Disallow multiple emails
-        })
-        .message('Please enter a valid email'),
-    },
-  }),
   AdminFormController.handleTransferFormOwnership,
+)
+
+/**
+ * Update form field according to given new body.
+ * @route PUT /admin/forms/:formId/fields/:fieldId
+ *
+ * @param body the new field to override current field
+ * @returns 200 with updated form field
+ * @returns 400 when given body fails Joi validation
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to update form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when field cannot be found
+ * @returns 410 when updating form field for archived form
+ * @returns 422 when an invalid form field update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.put(
+  '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})',
+  AdminFormController.handleUpdateFormField,
+)
+
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/fields',
+  AdminFormController.handleCreateFormField,
 )

@@ -80,6 +80,8 @@ describe('Verification service', () => {
     jest.resetAllMocks()
   })
 
+  afterAll(async () => await dbHandler.closeDatabase())
+
   describe('createTransaction', () => {
     const mockForm = ({
       _id: new ObjectId(),

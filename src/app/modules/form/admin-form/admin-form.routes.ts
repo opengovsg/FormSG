@@ -7,11 +7,9 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
-import { IForm, ResponseMode } from '../../../../types'
+import { ResponseMode } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
-import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
-import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 
 import * as AdminFormController from './admin-form.controller'
 import { DuplicateFormBody } from './admin-form.types'
@@ -21,38 +19,6 @@ export const AdminFormsRouter = Router()
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 // Validators
-const createFormValidator = celebrate({
-  [Segments.BODY]: {
-    form: Joi.object<Omit<IForm, 'admin'>>()
-      .keys({
-        // Require valid responsesMode field.
-        responseMode: Joi.string()
-          .valid(...Object.values(ResponseMode))
-          .required(),
-        // Require title field.
-        title: Joi.string().min(4).max(200).required(),
-        // Require emails string (for backwards compatibility) or string
-        // array if form to be created in Email mode.
-        emails: Joi.alternatives()
-          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-          .when('responseMode', {
-            is: ResponseMode.Email,
-            then: Joi.required(),
-          }),
-        // Require publicKey field if form to be created in Storage mode.
-        publicKey: Joi.string()
-          .allow('')
-          .when('responseMode', {
-            is: ResponseMode.Encrypt,
-            then: Joi.string().required().disallow(''),
-          }),
-      })
-      .required()
-      // Allow other form schema keys to be passed for form creation.
-      .unknown(true),
-  },
-})
-
 const duplicateFormValidator = celebrate({
   [Segments.BODY]: Joi.object<DuplicateFormBody>({
     // Require valid responsesMode field.
@@ -117,7 +83,7 @@ AdminFormsRouter.route('/adminform')
    * @returns 422 when form parameters are invalid
    * @returns 500 when database error occurs
    */
-  .post(createFormValidator, AdminFormController.handleCreateForm)
+  .post(AdminFormController.handleCreateForm)
 
 AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
   // All HTTP methods of route protected with authentication.
@@ -182,7 +148,7 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
    * @returns 422 when user in session cannot be retrieved from the database
    * @returns 500 when database error occurs
    */
-  .post(duplicateFormValidator, AdminFormController.handleDuplicateAdminForm)
+  .post(AdminFormController.handleDuplicateAdminForm)
 
 /**
  * Transfer form ownership to another user
@@ -203,18 +169,6 @@ AdminFormsRouter.route('/:formId([a-fA-F0-9]{24})/adminform')
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/transfer-owner',
   withUserAuthentication,
-  celebrate({
-    [Segments.BODY]: {
-      email: Joi.string()
-        .required()
-        .email({
-          minDomainSegments: 2, // Number of segments required for the domain
-          tlds: { allow: true }, // TLD (top level domain) validation
-          multiple: false, // Disallow multiple emails
-        })
-        .message('Please enter a valid email'),
-    },
-  }),
   AdminFormController.handleTransferFormOwnership,
 )
 
@@ -336,6 +290,7 @@ AdminFormsRouter.get(
 
 /**
  * Retrieve actual response for a storage mode form
+ * @deprecated in favour of GET api/v3/admin/forms/:formId/submissions/:submissionId
  * @route GET /:formId/adminform/submissions
  * @security session
  *
@@ -353,14 +308,7 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions',
   withUserAuthentication,
-  celebrate({
-    [Segments.QUERY]: {
-      submissionId: Joi.string()
-        .regex(/^[0-9a-fA-F]{24}$/)
-        .required(),
-    },
-  }),
-  EncryptSubmissionController.handleGetEncryptedResponse,
+  EncryptSubmissionController.handleGetEncryptedResponseUsingQueryParams,
 )
 
 /**
@@ -387,6 +335,7 @@ AdminFormsRouter.get(
  * Retrieve metadata of responses for a form with encrypted storage
  * @route GET /:formId/adminform/submissions/metadata
  * @security session
+ * @deprecated in favour of GET /api/v3/admin/forms/:formId/submissions/metadata
  *
  * @returns 200 with paginated submission metadata when no submissionId is provided
  * @returns 200 with single submission metadata of submissionId when provided
@@ -400,15 +349,6 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata',
   withUserAuthentication,
-  celebrate({
-    [Segments.QUERY]: {
-      submissionId: Joi.string().optional(),
-      page: Joi.number().min(1).when('submissionId', {
-        not: Joi.exist(),
-        then: Joi.required(),
-      }),
-    },
-  }),
   EncryptSubmissionController.handleGetMetadata,
 )
 
@@ -491,7 +431,6 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})',
   withUserAuthentication,
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   AdminFormController.handleEncryptPreviewSubmission,
 )
 
@@ -511,7 +450,5 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})',
   withUserAuthentication,
-  EmailSubmissionMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
   AdminFormController.handleEmailPreviewSubmission,
 )

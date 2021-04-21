@@ -5,6 +5,7 @@ import { AnalyticsRouter } from './analytics'
 import { AuthRouter } from './auth'
 import { BillingsRouter } from './billings'
 import { ClientRouter } from './client'
+import { PublicFormsRouter } from './forms'
 import { NotificationsRouter } from './notifications'
 import { UserRouter } from './user'
 
@@ -17,3 +18,4 @@ V3Router.use('/client', ClientRouter)
 V3Router.use('/notifications', NotificationsRouter)
 V3Router.use('/billings', BillingsRouter)
 V3Router.use('/analytics', AnalyticsRouter)
+V3Router.use('/forms', PublicFormsRouter)

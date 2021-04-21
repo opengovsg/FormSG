@@ -78,6 +78,7 @@ function FormApi($resource, FormErrorService, FormFields) {
 
   // accessMode is either adminForm or publicForm
   let resourceUrl = '/:formId/:accessMode'
+  const V3_PUBLICFORM_URL = '/api/v3/forms/:formId'
 
   return $resource(
     resourceUrl,
@@ -99,10 +100,10 @@ function FormApi($resource, FormErrorService, FormFields) {
         // disable IE ajax request caching (so new fields show on build panel)
       },
       getPublic: {
+        url: V3_PUBLICFORM_URL,
         method: 'GET',
         // disable IE ajax request caching (so new fields show on build panel)
         headers: { 'If-Modified-Since': '0' },
-        params: { accessMode: 'publicform' },
         interceptor: getInterceptor(true),
       },
       update: {

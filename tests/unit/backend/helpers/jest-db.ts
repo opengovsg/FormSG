@@ -9,7 +9,9 @@ import {
 import getUserModel from 'src/app/models/user.server.model'
 import {
   IAgencySchema,
+  IEmailForm,
   IEmailFormSchema,
+  IEncryptedForm,
   IEncryptedFormSchema,
   IPopulatedForm,
   IUserSchema,
@@ -37,7 +39,8 @@ const connect = async (): Promise<typeof mongoose> => {
  * Disconnect all mongoose connections.
  */
 const closeDatabase = async (): Promise<void> => {
-  return mongoose.disconnect()
+  await mongoose.disconnect()
+  await MemoryDatabaseServer.stop()
 }
 
 /**
@@ -140,7 +143,7 @@ const insertEmailForm = async ({
   mailName?: string
   mailDomain?: string
   shortName?: string
-  formOptions?: Partial<IEmailFormSchema>
+  formOptions?: Partial<IEmailForm>
 } = {}): Promise<{
   form: IEmailFormSchema
   user: IUserSchema
@@ -183,7 +186,7 @@ const insertEncryptForm = async ({
   mailName?: string
   mailDomain?: string
   shortName?: string
-  formOptions?: Partial<IEncryptedFormSchema>
+  formOptions?: Partial<IEncryptedForm>
 } = {}): Promise<{
   form: IEncryptedFormSchema
   user: IUserSchema

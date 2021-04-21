@@ -2,12 +2,13 @@
 
 const axios = require('axios').default
 const values = require('lodash/values')
+const cloneDeep = require('lodash/cloneDeep')
 
 const {
-  EditFieldActions,
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
 } = require('shared/constants')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const { uploadImage } = require('../../../../services/FileHandlerService')
 
 const CancelToken = axios.CancelToken
@@ -456,9 +457,10 @@ function EditFieldsModalController(
       return
     }
 
-    const field = vm.field
+    const field = cloneDeep(vm.field)
     if (field.fieldOptionsFromText) {
       field.fieldOptions = field.fieldOptionsFromText.split('\n')
+      delete field.fieldOptionsFromText
     } else {
       field.fieldOptions = field.manualOptions
     }
@@ -473,6 +475,8 @@ function EditFieldsModalController(
           .map((s) => s.trim())
           .filter((s) => s)
       }
+      delete field.allowedEmailDomainsFromText
+      delete field.allowedEmailDomainsPlaceholder
     }
 
     // set total attachment size left
@@ -483,27 +487,24 @@ function EditFieldsModalController(
         previousAttachmentSize
     }
 
-    // TODO: Separate code flow for create and update, ideally calling PUT and PATCH endpoints
-    const editFormField =
-      vm.field.globalId === undefined
-        ? // Create a new field
-          {
-            action: {
-              name: EditFieldActions.Create,
-            },
-            field: vm.field,
-          }
-        : // Edit existing field
-          {
-            action: {
-              name: EditFieldActions.Update,
-            },
-            field: vm.field,
-          }
-
     vm.saveInProgress = true
-    externalScope
-      .updateField({ editFormField })
+    // No id, creation
+    let updateFieldPromise
+    if (!field._id) {
+      updateFieldPromise = externalScope.updateField({
+        body: field,
+        type: UPDATE_FORM_TYPES.CreateField,
+      })
+    } else {
+      // Update field
+      updateFieldPromise = externalScope.updateField({
+        fieldId: field._id,
+        body: field,
+        type: UPDATE_FORM_TYPES.UpdateField,
+      })
+    }
+
+    return updateFieldPromise
       .then((error) => {
         if (!error) {
           $uibModalInstance.close()

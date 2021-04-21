@@ -1,0 +1,57 @@
+import fs from 'fs'
+
+import {
+  BasicField,
+  IAttachmentFieldSchema,
+  ICheckboxFieldSchema,
+  IField,
+} from 'src/types'
+
+import {
+  generateAttachmentResponse,
+  generateCheckboxResponse,
+  generateDefaultField,
+  generateSingleAnswerResponse,
+} from 'tests/unit/backend/helpers/generate-form-data'
+
+export const MOCK_NO_RESPONSES_BODY = {
+  responses: [],
+  isPreview: false,
+}
+
+export const MOCK_TEXT_FIELD = generateDefaultField(BasicField.ShortText)
+export const MOCK_TEXTFIELD_RESPONSE = generateSingleAnswerResponse(
+  MOCK_TEXT_FIELD,
+)
+
+export const MOCK_ATTACHMENT_FIELD = generateDefaultField(BasicField.Attachment)
+export const MOCK_ATTACHMENT_RESPONSE = generateAttachmentResponse(
+  MOCK_ATTACHMENT_FIELD as IAttachmentFieldSchema,
+  'valid.txt',
+  fs.readFileSync('tests/unit/backend/resources/valid.txt'),
+)
+
+export const MOCK_SECTION_FIELD = generateDefaultField(BasicField.Section)
+export const MOCK_SECTION_RESPONSE = generateSingleAnswerResponse(
+  MOCK_SECTION_FIELD,
+)
+
+export const MOCK_CHECKBOX_FIELD = generateDefaultField(BasicField.Checkbox)
+export const MOCK_CHECKBOX_RESPONSE = generateCheckboxResponse(
+  MOCK_CHECKBOX_FIELD as ICheckboxFieldSchema,
+)
+
+export const MOCK_OPTIONAL_VERIFIED_FIELD = generateDefaultField(
+  BasicField.Email,
+  {
+    isVerifiable: true,
+    required: false,
+  } as Partial<IField>,
+)
+export const MOCK_OPTIONAL_VERIFIED_RESPONSE = generateSingleAnswerResponse(
+  MOCK_OPTIONAL_VERIFIED_FIELD,
+  '',
+)
+
+export const MOCK_COOKIE_AGE = 2000
+export const MOCK_UINFIN = 'S1234567A'

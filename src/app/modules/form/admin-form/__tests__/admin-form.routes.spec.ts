@@ -1524,41 +1524,6 @@ describe('admin-form.routes', () => {
       expect(response.body).toEqual(jsonParseStringify(expected))
     })
 
-    it('should return 400 when form has invalid updates to be performed', async () => {
-      // Arrange
-      const formToUpdate = (await EmailFormModel.create({
-        title: 'Form to update',
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-        form_fields: [generateDefaultField(BasicField.Date)],
-      })) as IPopulatedForm
-      // Delete field
-      const clonedForm = cloneDeep(formToUpdate)
-      clonedForm.form_fields = []
-      await clonedForm.save()
-
-      // Act
-      const response = await request
-        .put(`/${formToUpdate._id}/adminform`)
-        .send({
-          form: {
-            editFormField: {
-              action: { name: EditFieldActions.Update },
-              field: {
-                ...formToUpdate.form_fields[0].toObject(),
-                description: 'some new description',
-              },
-            },
-          },
-        })
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual({
-        message: 'Field to be updated does not exist',
-      })
-    })
-
     it('should return 401 when user is not logged in', async () => {
       // Arrange
       await logoutSession(request)
@@ -1645,6 +1610,41 @@ describe('admin-form.routes', () => {
       // Assert
       expect(response.status).toEqual(410)
       expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when form has invalid updates to be performed', async () => {
+      // Arrange
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Date)],
+      })) as IPopulatedForm
+      // Delete field
+      const clonedForm = cloneDeep(formToUpdate)
+      clonedForm.form_fields = []
+      await clonedForm.save()
+
+      // Act
+      const response = await request
+        .put(`/${formToUpdate._id}/adminform`)
+        .send({
+          form: {
+            editFormField: {
+              action: { name: EditFieldActions.Update },
+              field: {
+                ...formToUpdate.form_fields[0].toObject(),
+                description: 'some new description',
+              },
+            },
+          },
+        })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({
+        message: 'Field to be updated does not exist',
+      })
     })
 
     it('should return 422 when user in session cannot be found in the database', async () => {
@@ -4050,6 +4050,43 @@ describe('admin-form.routes', () => {
       expect(response.body).toEqual(1)
     })
 
+    it('should return 200 with counts of submissions made with same start and end dates', async () => {
+      // Arrange
+      const expectedSubmissionCount = 3
+      const newForm = (await EmailFormModel.create({
+        title: 'new form',
+        responseMode: ResponseMode.Email,
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })) as IPopulatedEmailForm
+      // Insert submissions
+      const mockSubmissionHash: SubmissionHash = {
+        hash: 'some hash',
+        salt: 'some salt',
+      }
+      const results = await Promise.all(
+        times(expectedSubmissionCount, () =>
+          saveSubmissionMetadata(newForm, mockSubmissionHash),
+        ),
+      )
+      const expectedDate = '2021-04-04'
+      const firstSubmission = results[0]._unsafeUnwrap()
+      firstSubmission.created = new Date(expectedDate)
+      await firstSubmission.save()
+
+      // Act
+      const response = await request
+        .get(`/${newForm._id}/adminform/submissions/count`)
+        .query({
+          startDate: expectedDate,
+          endDate: expectedDate,
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(1)
+    })
+
     it('should return 400 when query.startDate is missing when query.endDate is provided', async () => {
       // Arrange
       const newForm = await EncryptFormModel.create({
@@ -4165,44 +4202,6 @@ describe('admin-form.routes', () => {
           },
         }),
       )
-    })
-
-    it('should return 200 with counts of submissions made with same start and end dates.', async () => {
-      // Arrange
-      const expectedSubmissionCount = 3
-      const newForm = (await EmailFormModel.create({
-        title: 'new form',
-        responseMode: ResponseMode.Email,
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-      })) as IPopulatedEmailForm
-      // Insert submissions
-      const mockSubmissionHash: SubmissionHash = {
-        hash: 'some hash',
-        salt: 'some salt',
-      }
-      const results = await Promise.all(
-        times(expectedSubmissionCount, () =>
-          saveSubmissionMetadata(newForm, mockSubmissionHash),
-        ),
-      )
-      // Update first submission to be 5 days ago.
-      const expectedDate = subDays(new Date(), 5)
-      const firstSubmission = results[0]._unsafeUnwrap()
-      firstSubmission.created = expectedDate
-      await firstSubmission.save()
-
-      // Act
-      const response = await request
-        .get(`/${newForm._id}/adminform/submissions/count`)
-        .query({
-          startDate: format(expectedDate, 'yyyy-MM-dd'),
-          endDate: format(expectedDate, 'yyyy-MM-dd'),
-        })
-
-      // Assert
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual(1)
     })
 
     it('should return 400 when query.endDate is before query.startDate', async () => {

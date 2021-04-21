@@ -8,15 +8,20 @@ import { ResultAsync } from 'neverthrow'
 
 import {
   AuthType,
+  BasicField,
   FieldResponse,
   FormMetaView,
   FormSettings,
   IForm,
   IPopulatedForm,
+  ResponseMode,
 } from '../../../../types'
 import {
   EncryptSubmissionDto,
   ErrorDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormFieldDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -35,17 +40,20 @@ import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
 } from '../../spcp/spcp.util'
+import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
   mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
+import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
+import * as FormService from '../form.service'
 
 import {
   PREVIEW_CORPPASS_UID,
@@ -65,6 +73,78 @@ import { mapRouteError } from './admin-form.utils'
 const Joi = BaseJoi.extend(JoiDate)
 
 const logger = createLoggerWithLabel(module)
+
+// Validators
+const createFormValidator = celebrate({
+  [Segments.BODY]: {
+    form: BaseJoi.object<Omit<IForm, 'admin'>>()
+      .keys({
+        // Require valid responsesMode field.
+        responseMode: Joi.string()
+          .valid(...Object.values(ResponseMode))
+          .required(),
+        // Require title field.
+        title: Joi.string().min(4).max(200).required(),
+        // Require emails string (for backwards compatibility) or string
+        // array if form to be created in Email mode.
+        emails: Joi.alternatives()
+          .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+          .when('responseMode', {
+            is: ResponseMode.Email,
+            then: Joi.required(),
+          }),
+        // Require publicKey field if form to be created in Storage mode.
+        publicKey: Joi.string()
+          .allow('')
+          .when('responseMode', {
+            is: ResponseMode.Encrypt,
+            then: Joi.string().required().disallow(''),
+          }),
+      })
+      .required()
+      // Allow other form schema keys to be passed for form creation.
+      .unknown(true),
+  },
+})
+
+const duplicateFormValidator = celebrate({
+  [Segments.BODY]: BaseJoi.object<DuplicateFormBody>({
+    // Require valid responsesMode field.
+    responseMode: Joi.string()
+      .valid(...Object.values(ResponseMode))
+      .required(),
+    // Require title field.
+    title: Joi.string().min(4).max(200).required(),
+    // Require emails string (for backwards compatibility) or string array
+    // if form to be duplicated in Email mode.
+    emails: Joi.alternatives()
+      .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+      .when('responseMode', {
+        is: ResponseMode.Email,
+        then: Joi.required(),
+      }),
+    // Require publicKey field if form to be duplicated in Storage mode.
+    publicKey: Joi.string()
+      .allow('')
+      .when('responseMode', {
+        is: ResponseMode.Encrypt,
+        then: Joi.string().required().disallow(''),
+      }),
+  }),
+})
+
+const transferFormOwnershipValidator = celebrate({
+  [Segments.BODY]: {
+    email: Joi.string()
+      .required()
+      .email({
+        minDomainSegments: 2, // Number of segments required for the domain
+        tlds: { allow: true }, // TLD (top level domain) validation
+        multiple: false, // Disallow multiple emails
+      })
+      .message('Please enter a valid email'),
+  },
+})
 
 /**
  * Handler for GET /adminform endpoint.
@@ -650,7 +730,7 @@ export const handleArchiveForm: RequestHandler<{ formId: string }> = async (
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleDuplicateAdminForm: RequestHandler<
+export const duplicateAdminForm: RequestHandler<
   { formId: string },
   unknown,
   DuplicateFormBody
@@ -687,7 +767,7 @@ export const handleDuplicateAdminForm: RequestHandler<
         logger.error({
           message: 'Error duplicating form',
           meta: {
-            action: 'handleDuplicateAdminForm',
+            action: 'duplicateAdminForm',
             ...createReqMeta(req),
             userId,
             formId,
@@ -699,6 +779,11 @@ export const handleDuplicateAdminForm: RequestHandler<
       })
   )
 }
+
+export const handleDuplicateAdminForm = [
+  duplicateFormValidator,
+  duplicateAdminForm,
+] as RequestHandler[]
 
 /**
  * Handler for GET /:formId/adminform/template
@@ -828,7 +913,7 @@ export const handleCopyTemplateForm: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleTransferFormOwnership: RequestHandler<
+export const transferFormOwnership: RequestHandler<
   { formId: string },
   unknown,
   { email: string }
@@ -859,7 +944,7 @@ export const handleTransferFormOwnership: RequestHandler<
         logger.error({
           message: 'Error occurred whilst transferring form ownership',
           meta: {
-            action: 'handleTransferFormOwnership',
+            action: 'transferFormOwnership',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
@@ -873,6 +958,11 @@ export const handleTransferFormOwnership: RequestHandler<
   )
 }
 
+export const handleTransferFormOwnership = [
+  transferFormOwnershipValidator,
+  transferFormOwnership,
+] as RequestHandler[]
+
 /**
  * Handler for POST /adminform.
  * @security session
@@ -883,7 +973,7 @@ export const handleTransferFormOwnership: RequestHandler<
  * @returns 422 when user of given id cannnot be found in the database, or when form parameters are invalid
  * @returns 500 when database error occurs
  */
-export const handleCreateForm: RequestHandler<
+export const createForm: RequestHandler<
   ParamsDictionary,
   unknown,
   { form: Omit<IForm, 'admin'> }
@@ -903,7 +993,7 @@ export const handleCreateForm: RequestHandler<
         logger.error({
           message: 'Error occurred when creating form',
           meta: {
-            action: 'handleCreateForm',
+            action: 'createForm',
             ...createReqMeta(req),
             userId: sessionUserId,
           },
@@ -914,6 +1004,11 @@ export const handleCreateForm: RequestHandler<
       })
   )
 }
+
+export const handleCreateForm = [
+  createFormValidator,
+  createForm,
+] as RequestHandler[]
 
 /**
  * Handler for PUT /:formId/adminform.
@@ -987,7 +1082,7 @@ export const handleUpdateForm: RequestHandler<
 }
 
 /**
- * Handler for PATCH /form/:formId/settings.
+ * Handler for PATCH /forms/:formId/settings.
  * @security session
  *
  * @returns 200 with updated form settings
@@ -1042,6 +1137,103 @@ export const handleUpdateSettings: RequestHandler<
 }
 
 /**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/fields/:fieldId
+ * @precondition Must be preceded by request validation
+ */
+export const _handleUpdateFormField: RequestHandler<
+  {
+    formId: string
+    fieldId: string
+  },
+  FormFieldDto | ErrorDto,
+  FieldUpdateDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, update form field of retrieved form.
+      .andThen((form) =>
+        AdminFormService.updateFormField(form, fieldId, req.body),
+      )
+      .map((updatedFormField) =>
+        res.status(StatusCodes.OK).json(updatedFormField),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating form field',
+          meta: {
+            action: 'handleUpdateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+            updateFieldBody: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for GET /form/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with latest form settings on successful update
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetSettings: RequestHandler<
+  { formId: string },
+  FormSettings | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .map((form) => res.status(StatusCodes.OK).json(form.getSettings()))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form settings',
+        meta: {
+          action: 'handleGetSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
  * @security session
  *
@@ -1053,7 +1245,7 @@ export const handleUpdateSettings: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEncryptPreviewSubmission: RequestHandler<
+export const submitEncryptPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
   EncryptSubmissionDto
@@ -1063,7 +1255,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { encryptedContent, responses, version } = req.body
   const logMeta = {
-    action: 'handleEncryptPreviewSubmission',
+    action: 'submitEncryptPreview',
     formId,
   }
 
@@ -1129,6 +1321,11 @@ export const handleEncryptPreviewSubmission: RequestHandler<
     })
 }
 
+export const handleEncryptPreviewSubmission = [
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptPreview,
+] as RequestHandler[]
+
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
  * @security session
@@ -1141,7 +1338,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEmailPreviewSubmission: RequestHandler<
+export const submitEmailPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string },
   { responses: FieldResponse[]; isPreview: boolean },
@@ -1152,7 +1349,7 @@ export const handleEmailPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { responses } = req.body
   const logMeta = {
-    action: 'handleEmailPreviewSubmission',
+    action: 'submitEmailPreview',
     formId,
     ...createReqMeta(req as Request),
   }
@@ -1266,3 +1463,128 @@ export const handleEmailPreviewSubmission: RequestHandler<
     submissionId: submission.id,
   })
 }
+
+export const handleEmailPreviewSubmission = [
+  EmailSubmissionMiddleware.receiveEmailSubmission,
+  EmailSubmissionMiddleware.validateResponseParams,
+  submitEmailPreview,
+] as RequestHandler[]
+
+/**
+ * Handler for PUT /forms/:formId/fields/:fieldId
+ * @security session
+ *
+ * @returns 200 with updated form field
+ * @returns 403 when current user does not have permissions to update form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field cannot be found
+ * @returns 410 when updating form field of an archived form
+ * @returns 413 when updating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateFormField = [
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object({
+        // Ensures given field is same as accessed field.
+        _id: Joi.string().valid(Joi.ref('$params.fieldId')).required(),
+        fieldType: Joi.string()
+          .valid(...Object.values(BasicField))
+          .required(),
+        description: Joi.string().allow('').required(),
+        required: Joi.boolean().required(),
+        title: Joi.string().required(),
+        disabled: Joi.boolean().required(),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
+    },
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
+  _handleUpdateFormField,
+]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/fields
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with created form field
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 410 when creating form field for an archived form
+ * @returns 413 when creating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field creation is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleCreateFormField: RequestHandler<
+  { formId: string },
+  FormFieldDto | ErrorDto,
+  FieldCreateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to create form field with provided body.
+      .andThen((form) => AdminFormService.createFormField(form, req.body))
+      .map((createdFormField) =>
+        res.status(StatusCodes.OK).json(createdFormField),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form field',
+          meta: {
+            action: '_handleCreateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            createFieldBody: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /forms/:formId/fields
+ */
+export const handleCreateFormField = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      // Ensures id is not provided.
+      _id: Joi.any().forbidden(),
+      globalId: Joi.any().forbidden(),
+      fieldType: Joi.string()
+        .valid(...Object.values(BasicField))
+        .required(),
+      title: Joi.string().required(),
+      description: Joi.string().allow(''),
+      required: Joi.boolean(),
+      disabled: Joi.boolean(),
+      // Allow other field related key-values to be provided and let the model
+      // layer handle the validation.
+    }).unknown(true),
+  }),
+  _handleCreateFormField,
+]

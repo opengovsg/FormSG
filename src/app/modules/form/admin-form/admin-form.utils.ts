@@ -31,6 +31,7 @@ import {
 import {
   CreatePresignedUrlError,
   EditFieldError,
+  FieldNotFoundError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -55,13 +56,13 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
-    case EditFieldError:
     case InvalidFileTypeError:
     case CreatePresignedUrlError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
+    case FieldNotFoundError:
     case FormNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
@@ -78,6 +79,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
+    case EditFieldError:
     case DatabaseValidationError:
     case MissingUserError:
       return {
@@ -345,7 +347,7 @@ const reorderField = (
  * @returns err(EditFieldError) if any errors occur whilst updating fields
  */
 export const getUpdatedFormFields = (
-  currentFormFields: IPopulatedForm['form_fields'],
+  currentFormFields: IFieldSchema[],
   editFieldParams: EditFormFieldParams,
 ): EditFormFieldResult => {
   const { field: fieldToUpdate, action } = editFieldParams

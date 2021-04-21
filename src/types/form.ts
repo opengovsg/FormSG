@@ -1,10 +1,15 @@
-import { Document, LeanDocument, Model, ToObjectOptions } from 'mongoose'
+import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
 import { Merge, SetRequired } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
-import { IFieldSchema, MyInfoAttribute } from './field'
+import {
+  FormField,
+  FormFieldWithId,
+  IFieldSchema,
+  MyInfoAttribute,
+} from './field'
 import { ILogicSchema } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
@@ -161,6 +166,31 @@ export type FormSettings = Pick<
 >
 
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
+  form_fields?: Types.DocumentArray<IFieldSchema> | IFieldSchema[]
+  form_logics?: Types.DocumentArray<ILogicSchema> | ILogicSchema[]
+
+  /**
+   * Replaces the field corresponding to given id to given new field
+   * @param fieldId the id of the field to update
+   * @param newField the new field to replace with
+   * @returns updated form after the update if field update is successful
+   * @returns null if field not found
+   * @throws validation error on invalid updates, or if new field type is different from current field type
+   */
+  updateFormFieldById<T>(
+    this: T,
+    fieldId: string,
+    newField: FormFieldWithId,
+  ): Promise<T | null>
+
+  /**
+   * Inserts a form field into the form
+   * @param newField the new field to insert
+   * @returns updated form after the insertion if field insertion is successful
+   * @throws validation error on invalid updates
+   */
+  insertFormField<T>(this: T, newField: FormField): Promise<T | null>
+
   /**
    * Returns the dashboard form view of the form.
    * @param admin the admin to inject into the returned object
@@ -202,6 +232,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
  * Schema type with defaults populated and thus set to be defined.
  */
 export interface IFormDocument extends IFormSchema {
+  form_fields: NonNullable<IFormSchema['form_fields']>
   form_logics: NonNullable<IFormSchema['form_logics']>
   permissionList: NonNullable<IFormSchema['permissionList']>
   hasCaptcha: NonNullable<IFormSchema['hasCaptcha']>
@@ -212,7 +243,6 @@ export interface IFormDocument extends IFormSchema {
   // Hence, using Exclude here over NonNullable.
   submissionLimit: Exclude<IFormSchema['submissionLimit'], undefined>
   isListed: NonNullable<IFormSchema['isListed']>
-  form_fields: NonNullable<IFormSchema['form_fields']>
   startPage: SetRequired<NonNullable<IFormSchema['startPage']>, 'colorTheme'>
   endPage: SetRequired<
     NonNullable<IFormSchema['endPage']>,
@@ -228,7 +258,7 @@ export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
 
 export interface IEncryptedForm extends IForm {
   publicKey: string
-  emails: never
+  emails?: never
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
@@ -239,7 +269,7 @@ export interface IEmailForm extends IForm {
   // string type is allowed due to a setter on the form schema that transforms
   // strings to string array.
   emails: string[] | string
-  publicKey: never
+  publicKey?: never
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
@@ -248,7 +278,10 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
-  getFullFormById(formId: string): Promise<IPopulatedForm | null>
+  getFullFormById(
+    formId: string,
+    fields?: (keyof IPopulatedForm)[],
+  ): Promise<IPopulatedForm | null>
   deactivateById(formId: string): Promise<IFormSchema | null>
   getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],

@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
-import { assignIn, cloneDeep, merge, omit } from 'lodash'
+import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
@@ -37,7 +38,11 @@ import {
   ResponseMode,
   Status,
 } from 'src/types'
-import { SettingsUpdateDto } from 'src/types/api'
+import {
+  FieldCreateDto,
+  FieldUpdateDto,
+  SettingsUpdateDto,
+} from 'src/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
@@ -45,11 +50,13 @@ import { TransferOwnershipError } from '../../form.errors'
 import {
   CreatePresignedUrlError,
   EditFieldError,
+  FieldNotFoundError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import {
   archiveForm,
   createForm,
+  createFormField,
   createPresignedPostUrlForImages,
   createPresignedPostUrlForLogos,
   duplicateForm,
@@ -57,6 +64,7 @@ import {
   getDashboardForms,
   transferFormOwnership,
   updateForm,
+  updateFormField,
   updateFormSettings,
 } from '../admin-form.service'
 import {
@@ -167,7 +175,7 @@ describe('admin-form.service', () => {
       // Mock external service success.
       const s3Spy = jest
         .spyOn(aws.s3, 'createPresignedPost')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore
         .mockImplementationOnce((_obj, cb) => {
           cb(null, expectedPresignedPostUrl)
@@ -184,7 +192,7 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore
         expect.any(Function),
       )
@@ -233,7 +241,7 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore
         expect.any(Function),
       )
@@ -257,7 +265,7 @@ describe('admin-form.service', () => {
       // Mock external service success.
       const s3Spy = jest
         .spyOn(aws.s3, 'createPresignedPost')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore
         .mockImplementationOnce((_obj, cb) => {
           cb(null, expectedPresignedPostUrl)
@@ -274,7 +282,7 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore
         expect.any(Function),
       )
@@ -323,7 +331,7 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore
         expect.any(Function),
       )
@@ -818,7 +826,7 @@ describe('admin-form.service', () => {
       }
       const createSpy = jest
         .spyOn(FormModel, 'create')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-ignore
         .mockRejectedValueOnce(new mongoose.Error.ValidationError() as never)
 
@@ -841,7 +849,6 @@ describe('admin-form.service', () => {
         publicKey: 'some key',
       }
       const createSpy = jest.spyOn(FormModel, 'create').mockRejectedValueOnce(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         new mongoose.Error.VersionError({}, 1, ['none']) as never,
       )
@@ -980,7 +987,7 @@ describe('admin-form.service', () => {
         .spyOn(AdminFormUtils, 'getUpdatedFormFields')
         .mockReturnValueOnce(ok(mockUpdatedFields))
       // Mock database save error.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       // @ts-ignore
       const mockError = new mongoose.Error.VersionError({}, 1, ['none'])
       MOCK_INTIAL_FORM.save.mockRejectedValueOnce(mockError as never)
@@ -1095,14 +1102,14 @@ describe('admin-form.service', () => {
 
     const EMAIL_UPDATE_SPY = jest
       .spyOn(EmailFormModel, 'findByIdAndUpdate')
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       // @ts-ignore
       .mockReturnValue({
         exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
       })
     const ENCRYPT_UPDATE_SPY = jest
       .spyOn(EncryptFormModel, 'findByIdAndUpdate')
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
       // @ts-ignore
       .mockReturnValue({
         exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
@@ -1163,11 +1170,9 @@ describe('admin-form.service', () => {
         title: 'does not matter',
       }
       // Mock database error
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       ENCRYPT_UPDATE_SPY.mockReturnValueOnce({
         exec: jest.fn().mockRejectedValue(
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           new mongoose.Error.ValidationError({ errors: 'some error' }),
         ),
@@ -1189,6 +1194,154 @@ describe('admin-form.service', () => {
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('updateFormField', () => {
+    it('should return updated form field', async () => {
+      // Arrange
+      const fieldToUpdate = generateDefaultField(BasicField.YesNo, {
+        title: 'random title',
+      })
+      const mockNewField = {
+        ...fieldToUpdate,
+        title: 'new title',
+      } as FieldUpdateDto
+
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        form_fields: [mockNewField],
+      }
+      const mockForm = ({
+        ...mockUpdatedForm,
+        form_fields: [fieldToUpdate],
+        updateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await updateFormField(
+        mockForm,
+        fieldToUpdate._id,
+        mockNewField,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(mockNewField)
+      expect(mockForm.updateFormFieldById).toHaveBeenCalledWith(
+        fieldToUpdate._id,
+        mockNewField,
+      )
+    })
+
+    it('should return FieldNotFoundError when field update returns null', async () => {
+      // Arrange
+      const mockForm = ({
+        title: 'another mock form',
+        form_fields: [],
+        updateFormFieldById: jest.fn().mockResolvedValue(null),
+      } as unknown) as IPopulatedForm
+
+      const invalidFieldId = new ObjectId().toHexString()
+      const mockNewField = generateDefaultField(
+        BasicField.Number,
+      ) as FieldUpdateDto
+
+      // Act
+      const actual = await updateFormField(
+        mockForm,
+        invalidFieldId,
+        mockNewField,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FieldNotFoundError())
+    })
+
+    it('should return DatabaseValidationError when field model update throws a validation error', async () => {
+      // Arrange
+      const mockForm = ({
+        title: 'another another mock form',
+        form_fields: [],
+        updateFormFieldById: jest.fn().mockRejectedValue(
+          // @ts-ignore
+          new mongoose.Error.ValidationError(),
+        ),
+      } as unknown) as IPopulatedForm
+
+      const invalidFieldId = new ObjectId().toHexString()
+      const mockNewField = generateDefaultField(
+        BasicField.Number,
+      ) as FieldUpdateDto
+
+      // Act
+      const actual = await updateFormField(
+        mockForm,
+        invalidFieldId,
+        mockNewField,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+  })
+
+  describe('createFormField', () => {
+    it('should return created form field', async () => {
+      // Arrange
+      const initialFields = [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Image),
+      ]
+      const expectedCreatedField = generateDefaultField(BasicField.Nric, {
+        title: 'some nric title',
+      })
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        // Append created field to end of form_fields.
+        form_fields: [...initialFields, expectedCreatedField],
+      }
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        insertFormField: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IPopulatedForm
+      const formCreateParams = pick(expectedCreatedField, [
+        'title',
+        'fieldType',
+      ]) as FieldCreateDto
+
+      // Act
+      const actual = await createFormField(mockForm, formCreateParams)
+
+      // Assert
+      // Should return last element in form_field
+      expect(actual._unsafeUnwrap()).toEqual(expectedCreatedField)
+    })
+
+    it('should return DatabaseValidationError when field model update throws a validation error', async () => {
+      // Arrange
+      const initialFields = [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Image),
+      ]
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        insertFormField: jest.fn().mockRejectedValue(
+          // @ts-ignore
+          new mongoose.Error.ValidationError({ errors: 'does not matter' }),
+        ),
+      } as unknown) as IPopulatedForm
+      const formCreateParams = {
+        fieldType: BasicField.ShortText,
+        title: 'some title',
+      } as FieldCreateDto
+
+      // Act
+      const actual = await createFormField(mockForm, formCreateParams)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
     })
   })
 })
