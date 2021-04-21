@@ -18,6 +18,7 @@ MyInfoRouter.get('/redirect', handleRedirectURLRequest)
 
 /**
  * Serves requests to validate a MyInfo form's SingPass e-service ID.
+ * @deprecated in favour of POST /api/v3/forms/:formId/auth/validate
  */
 MyInfoRouter.get('/validate', handleEServiceIdCheck)
 
