@@ -1,5 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, omit } from 'lodash'
+import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
@@ -19,7 +19,11 @@ import {
   IPopulatedForm,
   IUserSchema,
 } from '../../../../types'
-import { FieldUpdateDto, SettingsUpdateDto } from '../../../../types/api'
+import {
+  FieldCreateDto,
+  FieldUpdateDto,
+  SettingsUpdateDto,
+} from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
@@ -451,6 +455,43 @@ export const updateFormField = (
     const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
     return updatedFormField
       ? okAsync(updatedFormField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
+ * Inserts a new form field into given form's fields with the field provided
+ * @param form the form to insert the new field into
+ * @param newField the new field to insert
+ * @returns ok(created form field)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const createFormField = (
+  form: IPopulatedForm,
+  newField: FieldCreateDto,
+): ResultAsync<
+  IFieldSchema,
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  return ResultAsync.fromPromise(form.insertFormField(newField), (error) => {
+    logger.error({
+      message: 'Error encountered while inserting new form field',
+      meta: {
+        action: 'createFormField',
+        formId: form._id,
+        newField,
+      },
+      error,
+    })
+
+    return transformMongoError(error)
+  }).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedField = last(updatedForm.form_fields)
+    return updatedField
+      ? okAsync(updatedField)
       : errAsync(new FieldNotFoundError())
   })
 }

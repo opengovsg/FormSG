@@ -1,12 +1,19 @@
 import BSON from 'bson-ext'
 import { compact, pick, uniq } from 'lodash'
-import mongoose, { Mongoose, Query, Schema, SchemaOptions } from 'mongoose'
+import mongoose, {
+  Mongoose,
+  Query,
+  Schema,
+  SchemaOptions,
+  Types,
+} from 'mongoose'
 import validator from 'validator'
 
 import {
   AuthType,
   BasicField,
   Colors,
+  FormField,
   FormFieldWithId,
   FormLogoState,
   FormMetaView,
@@ -16,6 +23,7 @@ import {
   IEmailFormSchema,
   IEncryptedFormModel,
   IEncryptedFormSchema,
+  IFieldSchema,
   IFormDocument,
   IFormModel,
   IFormSchema,
@@ -510,6 +518,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       fieldToUpdate.set(newField)
     }
 
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.insertFormField = function (
+    this: IFormDocument,
+    newField: FormField,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
     return this.save()
   }
 
