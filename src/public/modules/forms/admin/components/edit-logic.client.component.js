@@ -83,12 +83,8 @@ function editLogicComponentController($uibModal, FormFields, Toastr, $q) {
   vm.deleteLogic = function (logicIndex) {
     const logicIdToDelete = vm.myform.form_logics[logicIndex]._id
     $q.when(AdminFormService.deleteFormLogic(vm.myform._id, logicIdToDelete))
-      .then((result) => {
-        if (result.request.status == 200) {
-          vm.myform.form_logics.splice(logicIndex, 1)
-        } else {
-          Toastr.error('Failed to delete logic, please refresh and try again!')
-        }
+      .then(() => {
+        vm.myform.form_logics.splice(logicIndex, 1)
       })
       .catch((logicDeleteError) => {
         console.error(logicDeleteError)
