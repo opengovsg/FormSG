@@ -1404,7 +1404,10 @@ describe('admin-form.service', () => {
         },
       )
 
-      expect(DELETE_SPY).toHaveBeenCalledWith(mockEmailForm._id, logicId)
+      expect(DELETE_SPY).toHaveBeenCalledWith(
+        String(mockEmailForm._id),
+        logicId,
+      )
     })
 
     it('should return ok(form) on successful form logic delete for encrypt mode form', async () => {
@@ -1435,7 +1438,10 @@ describe('admin-form.service', () => {
         },
       )
 
-      expect(DELETE_SPY).toHaveBeenCalledWith(mockEncryptForm._id, logicId)
+      expect(DELETE_SPY).toHaveBeenCalledWith(
+        String(mockEncryptForm._id),
+        logicId,
+      )
     })
 
     it('should return LogicNotFoundError if logic does not exist on form', async () => {
