@@ -26,7 +26,7 @@ import {
   SpcpNoESrvcIdError,
   VerifyJwtError,
 } from './spcp.errors'
-import { CorppassJwtPayload, ISPCPForm, SingpassJwtPayload } from './spcp.types'
+import { CorppassJwtPayload, ISpcpForm, SingpassJwtPayload } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -226,14 +226,14 @@ export const createCorppassParsedResponses = (
  */
 export const validateSpcpForm = (
   form: IFormSchema | IPopulatedForm,
-): Result<ISPCPForm, SpcpNoESrvcIdError | SpcpAuthTypeError> => {
+): Result<ISpcpForm, SpcpNoESrvcIdError | SpcpAuthTypeError> => {
   if (!form.esrvcId) {
     return err(new SpcpNoESrvcIdError())
   }
   if (form.authType !== AuthType.SP && form.authType !== AuthType.CP) {
     return err(new SpcpAuthTypeError())
   }
-  return ok(form as ISPCPForm)
+  return ok(form as ISpcpForm)
 }
 
 /**

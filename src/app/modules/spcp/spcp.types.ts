@@ -46,7 +46,7 @@ export interface ParsedSpcpParams {
   cookieDuration: number
 }
 
-export interface ISPCPForm extends IFormSchema {
+export interface ISpcpForm extends IFormSchema {
   authType: AuthType.SP | AuthType.CP
   esrvcId: string
 }
