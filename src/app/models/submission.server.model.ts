@@ -139,14 +139,8 @@ const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
         type: Number,
         required: true,
       },
-      headers: {
-        type: String,
-        required: true,
-      },
-      data: {
-        type: String,
-        required: true,
-      },
+      headers: String,
+      data: String,
     },
   },
   {
