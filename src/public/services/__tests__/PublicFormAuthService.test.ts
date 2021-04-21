@@ -14,14 +14,17 @@ describe('PublicFormAuthService', () => {
   afterEach(() => jest.resetAllMocks())
   describe('createRedirectURL', () => {
     it('should return the redirect URL when retrieval succeeds and persistent login is not set', async () => {
+      // Arrange
       const mockData = { redirectURL: MOCK_REDIRECT_URL }
       MockAxios.get.mockResolvedValueOnce({ data: mockData })
 
+      // Act
       const result = await PublicFormAuthService.createRedirectURL(
         MOCK_FORM_ID,
         false,
       )
 
+      // Assert
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
         {
@@ -32,14 +35,17 @@ describe('PublicFormAuthService', () => {
     })
 
     it('should return the redirect URL when retrieval succeeds and persistent login is set', async () => {
+      // Arrange
       const mockData = { redirectURL: MOCK_REDIRECT_URL }
       MockAxios.get.mockResolvedValueOnce({ data: mockData })
 
+      // Act
       const result = await PublicFormAuthService.createRedirectURL(
         MOCK_FORM_ID,
         true,
       )
 
+      // Assert
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
         {
@@ -50,12 +56,15 @@ describe('PublicFormAuthService', () => {
     })
 
     it('should reject with error when API call fails', async () => {
+      // Arrange
       const error = new Error('rejected')
       MockAxios.get.mockRejectedValueOnce(error)
 
+      // Act
       const rejectFunction = () =>
         PublicFormAuthService.createRedirectURL(MOCK_FORM_ID)
 
+      // Assert
       await expect(rejectFunction).rejects.toThrowError(error)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
