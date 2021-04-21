@@ -1,8 +1,22 @@
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import {
+  ApplicationError,
+  DatabaseError,
+  MissingFeatureError,
+} from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
+import {
+  MyInfoAuthTypeError,
+  MyInfoNoESrvcIdError,
+} from '../../myinfo/myinfo.errors'
+import {
+  AuthTypeMismatchError,
+  CreateRedirectUrlError,
+  SpcpAuthTypeError,
+  SpcpNoESrvcIdError,
+} from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -34,9 +48,31 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case DatabaseError:
+    case MissingFeatureError:
+    case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,
+      }
+    case MyInfoAuthTypeError:
+    case MyInfoNoESrvcIdError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This form does not have MyInfo enabled. Please refresh and try again.',
+      }
+    case SpcpNoESrvcIdError:
+    case SpcpAuthTypeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This form does not have Singpass or Corppass enabled. Please refresh and try again.',
+      }
+    case AuthTypeMismatchError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Please ensure that the form has authentication enabled. Please refresh and try again.',
       }
     default:
       logger.error({
