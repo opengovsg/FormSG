@@ -9,6 +9,7 @@ import {
   Status,
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
 import { reorder, replaceAt } from '../../../utils/immutable-array-fns'
 import {
   ApplicationError,
@@ -268,6 +269,20 @@ const updateCurrentField = (
   existingFormFields: IFieldSchema[],
   fieldToUpdate: IFieldSchema,
 ): EditFormFieldResult => {
+  // TODO(#1210): Remove this function when no longer being called.
+  // Sync states for backwards compatibility with old clients send inconsistent
+  // email fields
+  if (isPossibleEmailFieldSchema(fieldToUpdate)) {
+    if (fieldToUpdate.hasAllowedEmailDomains === false) {
+      fieldToUpdate.allowedEmailDomains = []
+    } else {
+      fieldToUpdate.hasAllowedEmailDomains = fieldToUpdate.allowedEmailDomains
+        ?.length
+        ? fieldToUpdate.allowedEmailDomains.length > 0
+        : false
+    }
+  }
+
   const existingFieldPosition = existingFormFields.findIndex(
     (f) => f.globalId === fieldToUpdate.globalId,
   )
