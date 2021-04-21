@@ -19,7 +19,7 @@ import {
   IPopulatedForm,
   IUserSchema,
 } from '../../../../types'
-import { SettingsUpdateDto } from '../../../../types/api'
+import { FieldUpdateDto, SettingsUpdateDto } from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
@@ -33,16 +33,19 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  PossibleDatabaseError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
+import { getFormFieldById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
   EditFieldError,
+  FieldNotFoundError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -409,6 +412,47 @@ export const duplicateForm = (
       return new DatabaseError(getMongoErrorMessage(error))
     },
   )
+}
+
+/**
+ * Updates the targeted form field with the new field provided
+ * @param form the form the field to update belongs to
+ * @param fieldId the id of the field to update
+ * @param newField the new field to replace with
+ * @returns ok(updatedField)
+ * @returns err(FieldNotFoundError) if fieldId does not correspond to any field in the form
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const updateFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+  newField: FieldUpdateDto,
+): ResultAsync<IFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
+  return ResultAsync.fromPromise(
+    form.updateFormFieldById(fieldId, newField),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form field',
+        meta: {
+          action: 'updateFormField',
+          formId: form._id,
+          fieldId,
+          newField,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen<IFieldSchema, FieldNotFoundError>((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FieldNotFoundError())
+    }
+    const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
+    return updatedFormField
+      ? okAsync(updatedFormField)
+      : errAsync(new FieldNotFoundError())
+  })
 }
 
 /**

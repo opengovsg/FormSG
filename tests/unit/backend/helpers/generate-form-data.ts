@@ -24,6 +24,7 @@ import {
   IDropdownFieldSchema,
   IField,
   IFieldSchema,
+  IHomenoFieldSchema,
   IImageFieldSchema,
   ILongTextField,
   IMobileField,
@@ -145,6 +146,13 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IMobileFieldSchema
+    case BasicField.HomeNo:
+      return {
+        ...defaultParams,
+        allowIntlNumbers: false,
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as IHomenoFieldSchema
     default:
       return {
         ...defaultParams,
