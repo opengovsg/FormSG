@@ -5,7 +5,6 @@ import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
@@ -21,17 +20,11 @@ const VALID_EMAIL = 'test@example.com'
 jest.mock('../auth.service')
 jest.mock('../../user/user.service')
 jest.mock('src/app/services/mail/mail.service')
-jest.mock('../../form/form.service')
-jest.mock('../../spcp/spcp.factory')
-jest.mock('../../myinfo/myinfo.factory')
 const MockAuthService = mocked(AuthService)
 const MockMailService = mocked(MailService)
 const MockUserService = mocked(UserService)
 
 describe('auth.controller', () => {
-  beforeAll(async () => await dbHandler.connect())
-  beforeEach(async () => await dbHandler.clearDatabase())
-  afterAll(async () => await dbHandler.closeDatabase())
   afterEach(() => {
     jest.clearAllMocks()
   })
