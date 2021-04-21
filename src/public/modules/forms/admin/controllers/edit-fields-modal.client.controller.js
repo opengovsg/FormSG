@@ -90,7 +90,7 @@ function EditFieldsModalController(
         '\n',
       )
     }
-    $scope.$watch('vm.field.allowedEmailDomainsFromText', (newValue) => {
+    $scope.$watch('vm.field.isVerifiable', (newValue) => {
       if (newValue) {
         vm.tooltipHtml = 'e.g. @mom.gov.sg, @moe.gov.sg'
       } else {
