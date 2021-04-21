@@ -1182,20 +1182,78 @@ describe('public-form.controller', () => {
       expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
     })
 
+    it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
+      // Arrange
+      const MOCK_REQ_WITHOUT_PERSISTENT_LOGIN = expressHandler.mockRequest({
+        params: {
+          formId: new ObjectId().toHexString(),
+        },
+      })
+      const MOCK_FORM = {
+        authType: AuthType.SP,
+        esrvcId: '12345',
+      } as ISpcpForm
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+        ok(MOCK_REDIRECT_URL),
+      )
+
+      // Act
+      await PublicFormController._handleFormAuthRedirect(
+        MOCK_REQ_WITHOUT_PERSISTENT_LOGIN,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+    })
+
+    it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is false', async () => {
+      // Arrange
+      const MOCK_REQ_WITH_FALSE_PERSISTENT_LOGIN = expressHandler.mockRequest({
+        params: {
+          formId: new ObjectId().toHexString(),
+        },
+        query: {
+          isPersistentLogin: false,
+        },
+      })
+      const MOCK_FORM = {
+        authType: AuthType.SP,
+        esrvcId: '12345',
+      } as ISpcpForm
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
+        ok(MOCK_REDIRECT_URL),
+      )
+
+      // Act
+      await PublicFormController._handleFormAuthRedirect(
+        MOCK_REQ_WITH_FALSE_PERSISTENT_LOGIN,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+    })
+
     it('should return 200 with the redirect url when the request is valid and the form has authType CP', async () => {
       // Arrange
       const MOCK_FORM = {
         authType: AuthType.CP,
         esrvcId: '12345',
       } as ISpcpForm
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1223,14 +1281,7 @@ describe('public-form.controller', () => {
         esrvcId: '12345',
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
       } as unknown) as IMyInfoForm
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1257,14 +1308,7 @@ describe('public-form.controller', () => {
         authType: AuthType.NIL,
         esrvcId: '12345',
       }
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1290,14 +1334,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = ({
         authType: AuthType.MyInfo,
       } as unknown) as IMyInfoForm
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1323,14 +1360,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = ({
         authType: AuthType.SP,
       } as unknown) as ISpcpForm
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1356,14 +1386,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = ({
         authType: AuthType.CP,
       } as unknown) as ISpcpForm
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1386,14 +1409,7 @@ describe('public-form.controller', () => {
 
     it('should return 500 when the form could not be retrieved from the database', async () => {
       // Arrange
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         errAsync(new DatabaseError()),
@@ -1419,14 +1435,7 @@ describe('public-form.controller', () => {
         esrvcId: '234',
         authType: AuthType.CP,
       } as unknown) as ISpcpForm
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
+
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1456,14 +1465,6 @@ describe('public-form.controller', () => {
         authType: AuthType.MyInfo,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
       } as unknown) as ISpcpForm
-      const MOCK_REQ = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-      })
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
