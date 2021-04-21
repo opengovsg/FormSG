@@ -643,7 +643,7 @@ export const deleteFormLogic = (
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic.id === logicId)) {
     logger.error({
-      message: 'Error occurred when deleting form logic',
+      message: 'Error occurred - logicId to be deleted does not exist',
       meta: {
         action: 'deleteFormLogic',
         formId: form._id,
