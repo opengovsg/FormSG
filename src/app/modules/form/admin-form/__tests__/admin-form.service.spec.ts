@@ -31,6 +31,7 @@ import {
   IEmailFormSchema,
   IFormDocument,
   IFormSchema,
+  ILogicSchema,
   IPopulatedForm,
   IPopulatedUser,
   IUserSchema,
@@ -46,7 +47,7 @@ import {
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
-import { TransferOwnershipError } from '../../form.errors'
+import { LogicNotFoundError, TransferOwnershipError } from '../../form.errors'
 import {
   CreatePresignedUrlError,
   EditFieldError,
@@ -59,6 +60,7 @@ import {
   createFormField,
   createPresignedPostUrlForImages,
   createPresignedPostUrlForLogos,
+  deleteFormLogic,
   duplicateForm,
   editFormFields,
   getDashboardForms,
@@ -1342,6 +1344,115 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+  })
+  describe('deleteFormLogic', () => {
+    const logicId = new ObjectId().toHexString()
+    const mockFormLogic = {
+      form_logics: [
+        {
+          _id: logicId,
+          id: logicId,
+        } as ILogicSchema,
+      ],
+    }
+
+    const DELETE_SPY = jest.spyOn(FormModel, 'deleteFormLogic')
+
+    let mockEmailForm: IPopulatedForm, mockEncryptForm: IPopulatedForm
+
+    beforeEach(() => {
+      mockEmailForm = ({
+        _id: new ObjectId(),
+        status: Status.Public,
+        responseMode: ResponseMode.Email,
+        ...mockFormLogic,
+      } as unknown) as IPopulatedForm
+      mockEncryptForm = ({
+        _id: new ObjectId(),
+        status: Status.Public,
+        responseMode: ResponseMode.Encrypt,
+        ...mockFormLogic,
+      } as unknown) as IPopulatedForm
+    })
+
+    it('should return ok(form) on successful form logic delete for email mode form', async () => {
+      // Arrange
+      const UPDATE_SPY = jest
+        .spyOn(FormModel, 'findByIdAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockEmailForm),
+        })
+
+      // Act
+      const actualResult = await deleteFormLogic(mockEmailForm, logicId)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockEmailForm)
+
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        mockEmailForm._id,
+        {
+          $pull: { form_logics: { _id: logicId } },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+
+      expect(DELETE_SPY).toHaveBeenCalledWith(
+        String(mockEmailForm._id),
+        logicId,
+      )
+    })
+
+    it('should return ok(form) on successful form logic delete for encrypt mode form', async () => {
+      // Arrange
+      const UPDATE_SPY = jest
+        .spyOn(FormModel, 'findByIdAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockEncryptForm),
+        })
+
+      // Act
+      const actualResult = await deleteFormLogic(mockEncryptForm, logicId)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockEncryptForm)
+
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        mockEncryptForm._id,
+        {
+          $pull: { form_logics: { _id: logicId } },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+
+      expect(DELETE_SPY).toHaveBeenCalledWith(
+        String(mockEncryptForm._id),
+        logicId,
+      )
+    })
+
+    it('should return LogicNotFoundError if logic does not exist on form', async () => {
+      // Act
+      const wrongLogicId = new ObjectId().toHexString()
+      const actualResult = await deleteFormLogic(mockEmailForm, wrongLogicId)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new LogicNotFoundError())
+      expect(DELETE_SPY).not.toHaveBeenCalled()
     })
   })
 })

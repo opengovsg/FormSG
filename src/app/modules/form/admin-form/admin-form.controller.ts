@@ -1565,6 +1565,54 @@ export const _handleCreateFormField: RequestHandler<
       })
   )
 }
+/*
+ * Handler for DELETE /forms/:formId/logic/:logicId
+ * @security session
+ *
+ * @returns 200 with success message when successfully deleted
+ * @returns 403 when user does not have permissions to delete logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDeleteLogic: RequestHandler = (req, res) => {
+  const { formId, logicId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+
+      // Step 3: Delete form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.deleteFormLogic(retrievedForm, logicId),
+      )
+      .map(() => res.sendStatus(StatusCodes.OK))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form logic',
+          meta: {
+            action: 'handleDeleteLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            logicId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
 
 /**
  * Handler for POST /forms/:formId/fields
