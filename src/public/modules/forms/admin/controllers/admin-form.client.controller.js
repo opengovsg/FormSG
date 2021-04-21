@@ -184,6 +184,16 @@ function AdminFormController(
     const updateType = get(update, 'type')
 
     switch (updateType) {
+      case UPDATE_FORM_TYPES.CreateField: {
+        const { body } = update
+        return $q
+          .when(AdminFormService.createSingleFormField($scope.myform._id, body))
+          .then((updatedFormField) => {
+            // insert created field into form
+            $scope.myform.form_fields.push(updatedFormField)
+          })
+          .catch(handleUpdateError)
+      }
       case UPDATE_FORM_TYPES.UpdateField: {
         const { fieldId, body } = update
         return $q

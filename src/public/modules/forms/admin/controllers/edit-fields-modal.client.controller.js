@@ -5,7 +5,6 @@ const values = require('lodash/values')
 const cloneDeep = require('lodash/cloneDeep')
 
 const {
-  EditFieldActions,
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
 } = require('shared/constants')
@@ -493,12 +492,8 @@ function EditFieldsModalController(
     let updateFieldPromise
     if (!field._id) {
       updateFieldPromise = externalScope.updateField({
-        editFormField: {
-          action: {
-            name: EditFieldActions.Create,
-          },
-          field,
-        },
+        body: field,
+        type: UPDATE_FORM_TYPES.CreateField,
       })
     } else {
       // Update field

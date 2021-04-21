@@ -1411,5 +1411,41 @@ describe('Form Model', () => {
         expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
       })
     })
+
+    describe('insertFormField', () => {
+      it('should return updated document with inserted form field', async () => {
+        // Arrange
+        const newField = generateDefaultField(BasicField.Checkbox)
+        expect(validForm.form_fields).toBeEmpty()
+
+        // Act
+        const actual = await validForm.insertFormField(newField)
+
+        // Assert
+        const expectedField = {
+          ...omit(newField, 'getQuestion'),
+          _id: new ObjectId(newField._id),
+        }
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()).toEqual([expectedField])
+      })
+
+      it('should return validation error if model validation fails whilst creating field', async () => {
+        // Arrange
+        const newField = {
+          ...generateDefaultField(BasicField.Email),
+          // Invalid value for email field.
+          isVerifiable: 'some string, but this should be boolean',
+        }
+
+        // Act
+        const actual = await validForm
+          .insertFormField(newField)
+          .catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+    })
   })
 })
