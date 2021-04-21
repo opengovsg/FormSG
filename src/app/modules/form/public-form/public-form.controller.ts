@@ -31,6 +31,7 @@ import {
 } from '../../myinfo/myinfo.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
+import { LoginPageValidationResult } from '../../spcp/spcp.types'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -451,3 +452,50 @@ export const handleFormAuthRedirect = [
   }),
   _handleFormAuthRedirect,
 ] as RequestHandler[]
+
+/**
+ * Handler for validating the eServiceId of the form
+ * @returns 200 with eserviceId validation result
+ * @returns 400 when there is an error on the authType of the form
+ * @returns 400 when the eServiceId of the form does not exist
+ * @returns 404 when form with given ID does not exist
+ * @returns 500 when database error occurs
+ * @returns 503 when the login page for singpass could not be fetched
+ * @returns 503 when the login page is not valid
+ */
+export const handleValidateFormEsrvcId: RequestHandler<
+  { formId: string },
+  LoginPageValidationResult | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  return FormService.retrieveFormById(formId)
+    .andThen((form) => {
+      // NOTE: Because the check is based on parsing the html of the returned webpage,
+      // And because MyInfo login is beyond our control, we coerce MyInfo to SP.
+      // This is valid because a valid MyInfo eserviceId is also a valid SP eserviceId
+      if (form.authType === AuthType.MyInfo) {
+        return validateMyInfoForm(form).andThen((form) =>
+          SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+        )
+      }
+      return validateSpcpForm(form).andThen((form) =>
+        SpcpFactory.createRedirectUrl(form.authType, formId, form.esrvcId),
+      )
+    })
+    .andThen(SpcpFactory.fetchLoginPage)
+    .andThen(SpcpFactory.validateLoginPage)
+    .map((result) => res.status(StatusCodes.OK).json(result))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while validating e-service ID',
+        meta: {
+          action: '_handleValidateFormEsrvcId',
+          ...createReqMeta(req),
+          formId,
+        },
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
