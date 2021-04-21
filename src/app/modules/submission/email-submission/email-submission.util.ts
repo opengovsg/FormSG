@@ -110,7 +110,9 @@ const getMyInfoPrefix = (
  * @returns the prefix
  */
 const getVerifiedPrefix = (response: ResponseFormattedForEmail): string => {
-  return response.isUserVerified ? VERIFIED_PREFIX : ''
+  const { answer, isUserVerified } = response
+  const isAnswerBlank = answer === ''
+  return isUserVerified && !isAnswerBlank ? VERIFIED_PREFIX : ''
 }
 
 /**
