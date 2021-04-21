@@ -10,7 +10,6 @@ import {
   Status,
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
 import {
   ApplicationError,
   DatabaseConflictError,
@@ -358,20 +357,6 @@ export const getUpdatedFormFields = (
   editFieldParams: EditFormFieldParams,
 ): EditFormFieldResult => {
   const { field: fieldToUpdate, action } = editFieldParams
-
-  // TODO(#1210): Remove this function when no longer being called.
-  // Sync states for backwards compatibility with old clients send inconsistent
-  // email fields
-  if (isPossibleEmailFieldSchema(fieldToUpdate)) {
-    if (fieldToUpdate.hasAllowedEmailDomains === false) {
-      fieldToUpdate.allowedEmailDomains = []
-    } else {
-      fieldToUpdate.hasAllowedEmailDomains = fieldToUpdate.allowedEmailDomains
-        ?.length
-        ? fieldToUpdate.allowedEmailDomains.length > 0
-        : false
-    }
-  }
 
   switch (action.name) {
     // Duplicate is just an alias of create for the use case.
