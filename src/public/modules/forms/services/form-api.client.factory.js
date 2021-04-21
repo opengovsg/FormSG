@@ -134,7 +134,7 @@ function FormApi($resource, FormErrorService, FormFields) {
       },
       // Used for previewing the form from the form admin page. Must be a viewer, collaborator or admin.
       preview: {
-        url: resourceUrl + '/preview',
+        url: '/api/v3/admin/forms/:formId/preview',
         method: 'GET',
         interceptor: getInterceptor(true, 'previewForm'),
       },
