@@ -176,8 +176,7 @@ describe('public-form.auth.routes', () => {
     it('should return 404 when the form is not in the database', async () => {
       // Arrange
       const expectedResponse = jsonParseStringify({
-        message:
-          'Could not find the form requested. Please refresh and try again.',
+        message: 'Form not found',
       })
 
       // Act
@@ -200,7 +199,7 @@ describe('public-form.auth.routes', () => {
         },
       })
       const expectedResponse = jsonParseStringify({
-        message: 'Sorry, something went wrong. Please try again.',
+        message: 'Something went wrong. Please try again.',
       })
       jest
         .spyOn(FormService, 'retrieveFullFormById')
@@ -218,6 +217,7 @@ describe('public-form.auth.routes', () => {
 
     it('should return 500 when the redirect url feature is not enabled', async () => {
       // Arrange
+      const MOCK_FEATURE_NAME = 'no direct only direct'
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: AuthType.MyInfo,
@@ -226,13 +226,11 @@ describe('public-form.auth.routes', () => {
         },
       })
       const expectedResponse = jsonParseStringify({
-        message: 'Sorry, something went wrong. Please try again.',
+        message: `${MOCK_FEATURE_NAME} is not activated, but a feature-specific function was called.`,
       })
       jest
         .spyOn(MyInfoFactory, 'createRedirectURL')
-        .mockReturnValueOnce(
-          err(new MissingFeatureError('no redirect only direct')),
-        )
+        .mockReturnValueOnce(err(new MissingFeatureError(MOCK_FEATURE_NAME)))
 
       // Act
       const response = await request
@@ -254,7 +252,7 @@ describe('public-form.auth.routes', () => {
         },
       })
       const expectedResponse = jsonParseStringify({
-        message: 'Sorry, something went wrong. Please try again.',
+        message: 'Error while creating redirect URL',
       })
       jest
         .spyOn(SpcpFactory, 'createRedirectUrl')
