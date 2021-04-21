@@ -1093,6 +1093,51 @@ describe('Form Model', () => {
         expect(modifiedForm?.form_logics).toBeEmpty()
       })
 
+      it('should return form with remaining logic upon successful delete of one logic', async () => {
+        // arrange
+
+        const logicId2 = new ObjectId().toHexString()
+        const mockFormLogicMultiple = {
+          form_logics: [
+            {
+              _id: logicId,
+              id: logicId,
+            } as ILogicSchema,
+            {
+              _id: logicId2,
+              id: logicId2,
+            } as ILogicSchema,
+          ],
+        }
+
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          ...mockFormLogicMultiple,
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.deleteFormLogic(form._id, logicId)
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that correct form logic has been deleted
+        expect(modifiedForm?.form_logics).toBeDefined()
+        expect(modifiedForm?.form_logics).toHaveLength(1)
+        const logic = modifiedForm?.form_logics || ['some logic']
+        expect((logic[0] as any)['_id'].toString()).toEqual(logicId2)
+      })
+
       it('should return null if formId is invalid', async () => {
         // arrange
 
