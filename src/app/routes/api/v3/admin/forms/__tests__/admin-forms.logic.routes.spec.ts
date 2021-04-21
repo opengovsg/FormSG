@@ -31,7 +31,7 @@ describe('admin-form.logic.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('DELETE /forms/:formId/logic/:logicId', () => {
-    it('should return 200 with success message on successful form logic delete for email mode form', async () => {
+    it('should return 200 on successful form logic delete for email mode form', async () => {
       // Arrange
       const formLogicId = new ObjectId()
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm({
@@ -51,14 +51,10 @@ describe('admin-form.logic.routes', () => {
         .send()
 
       // Assert
-      const expectedResponse = {
-        message: 'Logic deleted successfully',
-      }
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 200 with success message on successful form logic delete for encrypt mode form', async () => {
+    it('should return 200 on successful form logic delete for encrypt mode form', async () => {
       // Arrange
       const formLogicId = new ObjectId()
       const { form: formToUpdate, user } = await dbHandler.insertEncryptForm({
@@ -78,11 +74,7 @@ describe('admin-form.logic.routes', () => {
         .send()
 
       // Assert
-      const expectedResponse = {
-        message: 'Logic deleted successfully',
-      }
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 403 when current user does not have permissions to delete form logic', async () => {

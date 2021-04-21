@@ -1595,7 +1595,7 @@ export const handleDeleteLogic: RequestHandler = (req, res) => {
       .andThen((retrievedForm) =>
         AdminFormService.deleteFormLogic(retrievedForm, logicId),
       )
-      .map(() => res.json({ message: 'Logic deleted successfully' }))
+      .map(() => res.sendStatus(StatusCodes.OK))
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when deleting form logic',

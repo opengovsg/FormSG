@@ -7363,9 +7363,7 @@ describe('admin-form.controller', () => {
         logicId,
       )
 
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Logic deleted successfully',
-      })
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(200)
     })
 
     it('should return 403 when user does not have permissions to delete logic', async () => {
