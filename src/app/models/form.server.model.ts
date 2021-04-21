@@ -586,6 +586,37 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return next(err)
     }
 
+    // Check if MyInfo fields exist and if they do, the total number of fields <= 30, and that
+    // the response mode and authType fields are set appropriately.
+    let myInfoFieldCount = 0
+    if (this.form_fields !== undefined) {
+      this.form_fields.forEach((field) => {
+        if (field.myInfo !== undefined) {
+          myInfoFieldCount++
+        }
+      })
+    }
+
+    if (
+      myInfoFieldCount > 0 &&
+      (this.authType !== AuthType.MyInfo ||
+        this.responseMode !== ResponseMode.Encrypt)
+    ) {
+      const validationError = this.invalidate(
+        'form_fields',
+        'This form contains MyInfo fields but does not have MyInfo enabled or is a storage mode form.',
+      ) as mongoose.Error.ValidationError
+      return next(validationError)
+    }
+
+    if (myInfoFieldCount > 30) {
+      const validationError = this.invalidate(
+        'form_fields',
+        'This form contains too many MyInfo fields. A maximum of 30 MyInfo fields are allowed.',
+      ) as mongoose.Error.ValidationError
+      return next(validationError)
+    }
+
     // Validate that admin exists before form is created.
     return User.findById(this.admin).then((admin) => {
       if (!admin) {

@@ -2,7 +2,6 @@ import { Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
 import {
-  AuthType,
   BasicField,
   IFieldSchema,
   IMyInfoSchema,
@@ -20,27 +19,6 @@ export const MyInfoSchema = new Schema<IMyInfoSchema>(
     attr: {
       type: String,
       enum: Object.values(MyInfoAttribute),
-      validate: {
-        validator: function (this: IMyInfoSchema) {
-          const form = this.ownerDocument()
-          const { authType, responseMode } = form
-          let myInfoCount = 0
-          if (form.form_fields !== undefined) {
-            form.form_fields.forEach((field) => {
-              if (field.myInfo !== undefined) {
-                myInfoCount++
-              }
-            })
-          }
-          return (
-            authType === AuthType.MyInfo &&
-            responseMode !== ResponseMode.Encrypt &&
-            myInfoCount <= 30
-          )
-        },
-        message:
-          'MyInfo field is invalid. Check that your form has MyInfo enabled, or is not an encrypted mode form, and has 30 or fewer MyInfo fields.',
-      },
     },
   },
   {
