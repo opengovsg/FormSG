@@ -351,7 +351,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Add discriminators for the various field types.
   const FormFieldPath = FormSchema.path(
     'form_fields',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
 
   const TableFieldSchema = createTableFieldSchema()
 
@@ -385,7 +385,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormFieldPath.discriminator(BasicField.Table, TableFieldSchema)
   const TableColumnPath = TableFieldSchema.path(
     'columns',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
   TableColumnPath.discriminator(
     BasicField.ShortText,
     createShortTextFieldSchema(),
@@ -398,13 +398,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Discriminator defines all possible values of startPage.logo
   const StartPageLogoPath = FormSchema.path(
     'startPage.logo',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
   StartPageLogoPath.discriminator(FormLogoState.Custom, CustomFormLogoSchema)
 
   // Discriminator defines different logic types
   const FormLogicPath = FormSchema.path(
     'form_logics',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
 
   FormLogicPath.discriminator(LogicType.ShowFields, ShowFieldsLogicSchema)
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
