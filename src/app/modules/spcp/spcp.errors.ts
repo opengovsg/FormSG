@@ -1,4 +1,3 @@
-import { AuthType } from '../../../types'
 import { ApplicationError } from '../../modules/core/core.errors'
 
 /**
@@ -56,17 +55,6 @@ export class RetrieveAttributesError extends ApplicationError {
 }
 
 /**
- * Form auth type did not match attempted auth method.
- */
-export class AuthTypeMismatchError extends ApplicationError {
-  constructor(attemptedAuthType: AuthType, formAuthType?: AuthType) {
-    super(
-      `Attempted authentication type ${attemptedAuthType} did not match form auth type ${formAuthType}`,
-    )
-  }
-}
-
-/**
  * Attributes given by SP/CP did not contain NRIC or entity ID/UID.
  */
 export class MissingAttributesError extends ApplicationError {
@@ -93,27 +81,6 @@ export class InvalidJwtError extends ApplicationError {
  */
 export class MissingJwtError extends ApplicationError {
   constructor(message = 'No JWT present in cookies') {
-    super(message)
-  }
-}
-
-/**
- * SPCP form missing e-service ID.
- */
-export class SpcpNoESrvcIdError extends ApplicationError {
-  constructor(message = 'Form does not have e-service ID') {
-    super(message)
-  }
-}
-
-/**
- * Attempt to perform a Spcp-related operation on a form without Spcp
- * authentication enabled.
- */
-export class SpcpAuthTypeError extends ApplicationError {
-  constructor(
-    message = 'SPCP function called on form without SPCP authentication type',
-  ) {
     super(message)
   }
 }
