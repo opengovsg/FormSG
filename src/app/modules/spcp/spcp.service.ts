@@ -173,7 +173,7 @@ export class SpcpService {
       })
       return err(new LoginPageValidationError())
     }
-    if (title.indexOf('Error') === -1) {
+    if (title.toLowerCase().indexOf('error') === -1) {
       return ok({ isValid: true })
     } else {
       // The error page should have text like 'System Code:&nbsp<b>138</b>'
