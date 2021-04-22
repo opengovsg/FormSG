@@ -29,19 +29,15 @@ import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
-import {
-  AuthTypeMismatchError,
-  InvalidJwtError,
-  VerifyJwtError,
-} from '../../spcp/spcp.errors'
+import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
-import { validateSpcpForm } from '../../spcp/spcp.util'
-import { PrivateFormError } from '../form.errors'
+import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
+import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
 import { PublicFormViewDto, RedirectParams } from './public-form.types'
-import { mapRouteError } from './public-form.utils'
+import { mapFormAuthRedirectError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -381,7 +377,7 @@ export const _handleFormAuthRedirect: RequestHandler<
   { formId: string },
   RedirectUrlDto | ErrorDto,
   unknown,
-  Query & { isPersistentLogin: boolean }
+  Query & { isPersistentLogin?: boolean }
 > = (req, res) => {
   const { formId } = req.params
   const { isPersistentLogin } = req.query
@@ -407,12 +403,11 @@ export const _handleFormAuthRedirect: RequestHandler<
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
           return validateSpcpForm(form).andThen((form) => {
-            const target = `/${formId},${
-              // Need to cast to boolean because undefined is allowed as a valid value
-              // We are not following corppass's official spec for
-              // the target parameter
-              form.authType === AuthType.SP ? !!isPersistentLogin : false
-            }`
+            const target = getRedirectTarget(
+              formId,
+              form.authType,
+              isPersistentLogin,
+            )
             return SpcpFactory.createRedirectUrl(
               form.authType,
               target,
@@ -437,7 +432,7 @@ export const _handleFormAuthRedirect: RequestHandler<
         meta: logMeta,
         error,
       })
-      const { statusCode, errorMessage } = mapRouteError(error)
+      const { statusCode, errorMessage } = mapFormAuthRedirectError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
