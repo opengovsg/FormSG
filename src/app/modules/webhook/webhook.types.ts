@@ -1,3 +1,5 @@
+import * as z from 'zod'
+
 import {
   IEncryptedSubmissionSchema,
   IFormSchema,
@@ -17,4 +19,18 @@ export interface WebhookParams {
 export interface WebhookRequestLocals {
   form: IFormSchema
   submission: IEncryptedSubmissionSchema
+}
+
+export const webhookMessageSchema = z.object({
+  submissionId: z.string(),
+  previousAttempts: z.array(z.number()),
+  nextAttempt: z.number(),
+  _v: z.number(),
+})
+
+export type WebhookQueueMessageObject = z.infer<typeof webhookMessageSchema>
+
+export type RetryInterval = {
+  base: number
+  jitter: number
 }
