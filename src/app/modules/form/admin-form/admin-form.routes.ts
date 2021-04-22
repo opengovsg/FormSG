@@ -6,7 +6,6 @@ import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import { ResponseMode } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
@@ -43,16 +42,6 @@ const duplicateFormValidator = celebrate({
         then: Joi.string().required().disallow(''),
       }),
   }),
-})
-
-const fileUploadValidator = celebrate({
-  [Segments.BODY]: {
-    fileId: Joi.string().required(),
-    fileMd5Hash: Joi.string().base64().required(),
-    fileType: Joi.string()
-      .valid(...VALID_UPLOAD_FILE_TYPES)
-      .required(),
-  },
 })
 
 AdminFormsRouter.route('/adminform')
@@ -390,7 +379,6 @@ AdminFormsRouter.get(
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/images',
   withUserAuthentication,
-  fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForImages,
 )
 
@@ -411,7 +399,6 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/logos',
   withUserAuthentication,
-  fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForLogos,
 )
 

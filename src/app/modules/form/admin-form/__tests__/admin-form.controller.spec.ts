@@ -903,7 +903,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleCreatePresignedPostUrlForImages', () => {
+  describe('createPresignedPostUrlForImages', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -953,7 +953,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForImages(
+      await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -980,7 +980,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForImages(
+      await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1010,7 +1010,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForImages(
+      await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1036,7 +1036,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForImages(
+      await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1065,7 +1065,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForImages(
+      await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1094,7 +1094,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForImages(
+      await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1120,7 +1120,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForImages(
+      await AdminFormController.createPresignedPostUrlForImages(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1138,7 +1138,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleCreatePresignedPostUrlForLogos', () => {
+  describe('createPresignedPostUrlForLogos', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -1188,7 +1188,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForLogos(
+      await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1215,7 +1215,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForLogos(
+      await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1245,7 +1245,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForLogos(
+      await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1271,7 +1271,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForLogos(
+      await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1300,7 +1300,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForLogos(
+      await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1329,7 +1329,7 @@ describe('admin-form.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForLogos(
+      await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1355,7 +1355,7 @@ describe('admin-form.controller', () => {
       )
 
       // Act
-      await AdminFormController.handleCreatePresignedPostUrlForLogos(
+      await AdminFormController.createPresignedPostUrlForLogos(
         MOCK_REQ,
         mockRes,
         jest.fn(),
