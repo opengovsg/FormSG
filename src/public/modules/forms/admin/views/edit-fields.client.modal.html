@@ -1123,7 +1123,10 @@
           </div>
         </div>
 
-        <div ng-if="vm.field.fieldType === 'textfield'" class="row">
+        <div
+          ng-if="vm.field.fieldType === 'textfield' && vm.field.allowPrefill"
+          class="row"
+        >
           <div class="row"><br /></div>
           <div class="col-md-12 label-custom label-medium label-bottom">
             Field ID
