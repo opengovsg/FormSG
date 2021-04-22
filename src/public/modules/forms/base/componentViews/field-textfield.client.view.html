@@ -29,6 +29,7 @@
       ng-required="vm.field.required"
       ng-disabled="vm.field.disabled"
       ng-pattern="vm.pattern"
+      ng-style="vm.field.allowPrefill && {'background-color': '#FEF8E3'}"
       ng-maxlength="{{vm.field.ValidationOptions ? vm.field.ValidationOptions.customMax : ''}}"
       ng-minlength="{{vm.field.ValidationOptions ? vm.field.ValidationOptions.customMin : ''}}"
       ng-model-options="{ allowInvalid: true }"

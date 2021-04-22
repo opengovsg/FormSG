@@ -259,6 +259,11 @@ textarea.input-custom {
   color: #23489b;
 }
 
+.alert-prefill {
+  background-color: #fef8e3;
+  color: #4b411f;
+}
+
 .alert-success,
 .alert-success a {
   background-color: #e5f6f2;
