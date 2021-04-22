@@ -74,3 +74,12 @@ export class WebhookPushToQueueError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * Cannot send webhook because form has no webhook URL.
+ */
+export class WebhookMissingUrlError extends ApplicationError {
+  constructor(message = 'Unable to send webhook as form has no webhook URL') {
+    super(message)
+  }
+}

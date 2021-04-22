@@ -7,7 +7,6 @@ import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
   IWebhookResponse,
-  SubmissionWebhookInfo,
   WebhookView,
 } from '../../../types'
 import formsgSdk from '../../config/formsg-sdk'
@@ -202,32 +201,3 @@ export const createInitialWebhookSender = (producer?: WebhookProducer) => (
       }),
   )
 }
-
-export const retrieveWebhookInfo = (
-  submissionId: string,
-): ResultAsync<
-  SubmissionWebhookInfo,
-  SubmissionNotFoundError | PossibleDatabaseError
-> =>
-  ResultAsync.fromPromise(
-    EncryptSubmission.retrieveWebhookInfoById(submissionId),
-    (error) => {
-      logger.error({
-        message: 'Error while retrieving webhook info for submission',
-        meta: {
-          action: 'retrieveWebhookInfo',
-          submissionId,
-        },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((submissionInfo) => {
-    if (!submissionInfo)
-      return errAsync(
-        new SubmissionNotFoundError(
-          'Could not retrieve webhook info as submission was not found',
-        ),
-      )
-    return okAsync(submissionInfo)
-  })
