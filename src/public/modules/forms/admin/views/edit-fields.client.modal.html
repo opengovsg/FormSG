@@ -1087,6 +1087,44 @@
         </div>
         <!-- End custom validation field -->
 
+        <!-- Short Text -->
+
+        <div
+          ng-show="vm.field.fieldType === 'textfield'"
+          class="edit-fields-line"
+        ></div>
+
+        <div ng-if="vm.field.fieldType === 'textfield'" class="row">
+          <div class="row"><br /></div>
+          <div class="toggle-option">
+            <div class="col-xs-8 label-custom label-medium">
+              Enable pre-fill
+              <i
+                class="glyphicon glyphicon-question-sign"
+                uib-tooltip="Allow this field to be pre-populated via URL"
+                tooltip-trigger="'click mouseenter'"
+              >
+              </i>
+            </div>
+            <div class="col-xs-4 field-input">
+              <label
+                class="toggle-selector pull-right"
+                ng-class="vm.field.allowPrefill ? 'toggle-selector-on' : ''"
+                onclick=""
+              >
+                <input type="checkbox" ng-model="vm.field.allowPrefill" />
+                <div class="toggle-selector-switch">
+                  <i
+                    ng-class="vm.field.allowPrefill ? 'bx bx-check' : 'bx bx-x' "
+                  ></i>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- End Short Text -->
+
         <!-- Decimal -->
         <div ng-if="vm.field.fieldType === 'decimal'">
           <div class="row">
