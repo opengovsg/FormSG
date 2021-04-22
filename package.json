@@ -242,7 +242,7 @@
     "testcafe": "^1.14.0",
     "ts-essentials": "^7.0.1",
     "ts-jest": "^26.5.5",
-    "ts-loader": "^7.0.5",
+    "ts-loader": "^9.1.0",
     "ts-node": "^9.1.1",
     "ts-node-dev": "^1.1.6",
     "type-fest": "^0.20.2",
