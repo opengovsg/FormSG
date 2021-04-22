@@ -57,27 +57,6 @@ export class MyInfoParseRelayStateError extends ApplicationError {
 }
 
 /**
- * Attempt to perform a MyInfo-related operation on a form without MyInfo
- * authentication enabled.
- */
-export class MyInfoAuthTypeError extends ApplicationError {
-  constructor(
-    message = 'MyInfo function called on form without MyInfo authentication type',
-  ) {
-    super(message)
-  }
-}
-
-/**
- * MyInfo form missing e-service ID.
- */
-export class MyInfoNoESrvcIdError extends ApplicationError {
-  constructor(message = 'Form does not have e-service ID') {
-    super(message)
-  }
-}
-
-/**
  * Submission on MyInfo form missing access token.
  */
 export class MyInfoMissingAccessTokenError extends ApplicationError {
