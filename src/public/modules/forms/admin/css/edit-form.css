@@ -1404,3 +1404,9 @@ a.modal-cancel-btn:hover {
   height: 2px;
   margin: 30px 0;
 }
+
+.prefill-copy-icon {
+  position: absolute;
+  top: 10px;
+  right: 25px;
+}

@@ -1135,11 +1135,17 @@
               class="input-custom input-medium"
               value="{{vm.field._id}}"
             />
+            <i
+              class="bx bx-copy bx-md copy-icon-overlay prefill-copy-icon"
+              ngclipboard
+              ng-click="vm.fieldIdCopied()"
+              data-clipboard-text="{{vm.field._id}}"
+            ></i>
           </div>
           <div class="col-md-12">
             <div>
               <div class="alert-custom alert-info">
-                <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                <i class="bx bx-info-circle bx-md icon-spacing"></i>
                 <span class="alert-msg"
                   >Use Field ID to pre-populate this field for your users.
                   <a
