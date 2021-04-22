@@ -11,7 +11,6 @@ export const formatWebhookResponse = (
   response?: AxiosResponse<unknown>,
 ): IWebhookResponse['response'] => ({
   status: response?.status ?? 0,
-  statusText: response?.statusText ?? '',
   headers: stringifySafe(response?.headers) ?? '',
   data: stringifySafe(response?.data) ?? '',
 })

@@ -126,12 +126,19 @@ EmailSubmissionSchema.methods.getWebhookView = function (): null {
 
 const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
   {
-    webhookUrl: String,
-    signature: String,
-    errorMessage: String,
+    webhookUrl: {
+      type: String,
+      required: true,
+    },
+    signature: {
+      type: String,
+      required: true,
+    },
     response: {
-      status: Number,
-      statusText: String,
+      status: {
+        type: Number,
+        required: true,
+      },
       headers: String,
       data: String,
     },

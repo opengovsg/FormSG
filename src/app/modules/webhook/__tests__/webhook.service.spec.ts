@@ -9,7 +9,6 @@ import { getEncryptSubmissionModel } from 'src/app/models/submission.server.mode
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
-import * as HasPropModule from 'src/app/utils/has-prop'
 import {
   IEncryptedSubmissionSchema,
   IWebhookResponse,
@@ -59,7 +58,6 @@ const MOCK_WEBHOOK_SUCCESS_RESPONSE: Pick<IWebhookResponse, 'response'> = {
   response: {
     data: '{"result":"test-result"}',
     status: 200,
-    statusText: 'success',
     headers: '{}',
   },
 }
@@ -67,7 +65,6 @@ const MOCK_WEBHOOK_FAILURE_RESPONSE: Pick<IWebhookResponse, 'response'> = {
   response: {
     data: '{"result":"test-result"}',
     status: 400,
-    statusText: 'failed',
     headers: '{}',
   },
 }
@@ -78,7 +75,6 @@ const MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE: Pick<
   response: {
     data: '',
     status: 0,
-    statusText: '',
     headers: '',
   },
 }
@@ -305,7 +301,6 @@ describe('webhook.service', () => {
 
       // Assert
       const expectedResult = {
-        errorMessage: AXIOS_ERROR_MSG,
         ...MOCK_WEBHOOK_FAILURE_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
@@ -334,7 +329,6 @@ describe('webhook.service', () => {
 
       // Assert
       const expectedResult = {
-        errorMessage: DEFAULT_ERROR_MSG,
         ...MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
@@ -359,9 +353,6 @@ describe('webhook.service', () => {
 
       MockAxios.post.mockRejectedValue(mockOriginalError)
       MockAxios.isAxiosError.mockReturnValue(false)
-      const hasPropSpy = jest
-        .spyOn(HasPropModule, 'hasProp')
-        .mockReturnValueOnce(false)
 
       // Act
       const actual = await sendWebhook(
@@ -371,7 +362,6 @@ describe('webhook.service', () => {
 
       // Assert
       const expectedResult = {
-        errorMessage: '',
         ...MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE,
         signature: testSignature,
         webhookUrl: MOCK_WEBHOOK_URL,
@@ -380,7 +370,6 @@ describe('webhook.service', () => {
       expect(
         MockWebhookValidationModule.validateWebhookUrl,
       ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
-      expect(hasPropSpy).toHaveBeenCalledWith(mockOriginalError, 'message')
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
         testSubmissionWebhookView,
