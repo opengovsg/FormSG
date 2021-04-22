@@ -1136,10 +1136,11 @@
               type="text"
               ng-disabled="true"
               class="input-custom input-medium"
-              value="{{vm.field._id}}"
+              value="{{vm.field._id || 'Field ID will be generated after field is saved'}}"
             />
             <i
               class="bx bx-copy bx-md copy-icon-overlay prefill-copy-icon"
+              ng-if="vm.field._id"
               ngclipboard
               ng-click="vm.fieldIdCopied()"
               data-clipboard-text="{{vm.field._id}}"
