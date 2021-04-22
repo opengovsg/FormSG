@@ -1,3 +1,5 @@
+import { AuthType } from 'src/types'
+
 import { ApplicationError } from '../core/core.errors'
 
 export class FormNotFoundError extends ApplicationError {
@@ -58,5 +60,28 @@ export class TransferOwnershipError extends ApplicationError {
 export class LogicNotFoundError extends ApplicationError {
   constructor(message = 'logicId does not exist on form') {
     super(message)
+  }
+}
+
+/**
+ * Error to be returned when the form's auth type does not match what is required
+ */
+export class AuthTypeMismatchError extends ApplicationError {
+  constructor(attemptedAuthType: AuthType, formAuthType?: AuthType) {
+    super(
+      `Attempted authentication type ${attemptedAuthType} did not match form auth type ${formAuthType}`,
+    )
+  }
+}
+
+/**
+ * Error to be returned when the form is lacking an eServiceId
+ */
+
+export class FormAuthNoEsrvcIdError extends ApplicationError {
+  constructor(formId: string) {
+    super(
+      `Attempted to validate form ${formId} whhich did not have an eServiceId`,
+    )
   }
 }
