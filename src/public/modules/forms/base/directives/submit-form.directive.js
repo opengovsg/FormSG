@@ -88,7 +88,7 @@ function submitFormDirective(
         $('head').append(meta)
       }
 
-      scope.formLogin = function (authType, isPersistentLogin) {
+      scope.formLogin = function (isPersistentLogin) {
         // Fire GA tracking event
         if (isPersistentLogin) GTag.persistentLoginUse(scope.form)
 
