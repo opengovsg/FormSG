@@ -41,6 +41,7 @@ import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
+import { reorder } from '../utils/immutable-array-fns'
 
 import getAgencyModel from './agency.server.model'
 import {
@@ -527,6 +528,27 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) {
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.reorderFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+    newPosition: number,
+  ) {
+    const existingFieldPosition = this.form_fields.findIndex(
+      (f) => String(f._id) === fieldId,
+    )
+
+    if (existingFieldPosition === -1) return Promise.resolve(null)
+
+    // Exist, reorder form fields and save.
+    const updatedFormFields = reorder(
+      this.form_fields,
+      existingFieldPosition,
+      newPosition,
+    )
+    this.form_fields = updatedFormFields
     return this.save()
   }
 
