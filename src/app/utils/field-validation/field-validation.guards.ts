@@ -1,5 +1,7 @@
+import { get } from 'lodash'
+
 import { types as basicTypes } from '../../../shared/resources/basic'
-import { BasicField, ITableRow } from '../../../types'
+import { BasicField, IEmailFieldSchema, ITableRow } from '../../../types'
 import {
   ColumnResponse,
   ProcessedAttachmentResponse,
@@ -73,4 +75,16 @@ export const isProcessedAttachmentResponse = (
     // No check for response.filename as response.filename is generated only when actual file is uploaded
     // Hence hidden attachment fields - which still return empty response - will not have response.filename property
   )
+}
+
+/**
+ * Utility to check if the given field is a possible IEmailFieldSchema object.
+ * Can be used to assign IEmailFieldSchema variables safely.
+ * @param field the field to check
+ * @returns true if given field's fieldType is BasicField.Email.
+ */
+export const isPossibleEmailFieldSchema = (
+  field: unknown,
+): field is Partial<IEmailFieldSchema> => {
+  return get(field, 'fieldType') === BasicField.Email
 }

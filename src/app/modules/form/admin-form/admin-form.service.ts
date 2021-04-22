@@ -5,6 +5,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
+  EditFieldActions,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
@@ -516,6 +517,22 @@ export const editFormFields = (
   IPopulatedForm,
   EditFieldError | ReturnType<typeof transformMongoError>
 > => {
+  // TODO(#1210): Remove this function when no longer being called.
+  if (
+    [EditFieldActions.Create, EditFieldActions.Update].includes(
+      editFormFieldParams.action.name,
+    )
+  ) {
+    logger.info({
+      message: 'deprecated editFormFields functions are still being used',
+      meta: {
+        action: 'editFormFields',
+        fieldAction: editFormFieldParams.action.name,
+        field: editFormFieldParams.field,
+      },
+    })
+  }
+
   // TODO(#815): Split out this function into their own separate service functions depending on the update type.
   return getUpdatedFormFields(
     originalForm.form_fields,

@@ -74,13 +74,23 @@ function EditFieldsModalController(
   vm.user = Auth.getUser() || $state.go('signin')
   if (vm.field.fieldType === 'email') {
     const userEmailDomain = '@' + vm.user.email.split('@').pop()
+
+    // Backwards compatibility and inconsistency fix.
+    // Set allowedEmailDomains array to empty if allow domains toggle is off.
+    if (vm.field.hasAllowedEmailDomains === false) {
+      vm.field.allowedEmailDomains = []
+    } else {
+      // hasAllowedEmailDomains is true, set "true" state based on length of allowedEmailDomains.
+      vm.field.hasAllowedEmailDomains = vm.field.allowedEmailDomains.length > 0
+    }
+
     vm.field.allowedEmailDomainsPlaceholder = `${userEmailDomain}\n@agency.gov.sg`
-    if (vm.field.allowedEmailDomains.length > 0) {
+    if (vm.field.hasAllowedEmailDomains) {
       vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
         '\n',
       )
     }
-    $scope.$watch('vm.field.allowedEmailDomainsFromText', (newValue) => {
+    $scope.$watch('vm.field.isVerifiable', (newValue) => {
       if (newValue) {
         vm.tooltipHtml = 'e.g. @mom.gov.sg, @moe.gov.sg'
       } else {
@@ -142,6 +152,14 @@ function EditFieldsModalController(
       field.fieldOptions = field.fieldOptionsFromText.split('\n')
     } else {
       field.fieldOptions = []
+    }
+  }
+
+  vm.handleRestrictEmailDomainsToggle = function () {
+    const field = vm.field
+    if (field.hasAllowedEmailDomains === false) {
+      // Reset email domains.
+      field.allowedEmailDomainsFromText = ''
     }
   }
 
@@ -475,6 +493,7 @@ function EditFieldsModalController(
           .map((s) => s.trim())
           .filter((s) => s)
       }
+      field.hasAllowedEmailDomains = field.allowedEmailDomains.length > 0
       delete field.allowedEmailDomainsFromText
       delete field.allowedEmailDomainsPlaceholder
     }
