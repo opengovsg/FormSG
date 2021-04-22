@@ -17,10 +17,10 @@ const minutes = (m: number) => m * 60
  * All units are in seconds.
  */
 export const RETRY_INTERVALS: RetryInterval[] = [
-  { base: minutes(3), jitter: minutes(2) },
+  { base: minutes(5), jitter: minutes(1) },
   { base: hours(1), jitter: minutes(30) },
-  { base: hours(2), jitter: hours(1) },
-  { base: hours(4), jitter: hours(1) },
-  { base: hours(8), jitter: hours(1) },
-  { base: hours(24), jitter: hours(1) },
+  { base: hours(2), jitter: minutes(30) },
+  { base: hours(4), jitter: minutes(30) },
+  { base: hours(8), jitter: minutes(30) },
+  { base: hours(24), jitter: minutes(30) },
 ]
