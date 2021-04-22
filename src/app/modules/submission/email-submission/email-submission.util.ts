@@ -106,6 +106,8 @@ const getMyInfoPrefix = (
 /**
  * Determines the prefix for a question based on whether it was verified
  * by a user during form submission.
+ *
+ * Verified prefixes are not added for optional fields that are left blank.
  * @param response
  * @returns the prefix
  */
