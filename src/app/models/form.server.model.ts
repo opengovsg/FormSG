@@ -600,7 +600,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     if (
       myInfoFieldCount > 0 &&
       (this.authType !== AuthType.MyInfo ||
-        this.responseMode !== ResponseMode.Encrypt)
+        this.responseMode === ResponseMode.Encrypt)
     ) {
       const validationError = this.invalidate(
         'form_fields',
