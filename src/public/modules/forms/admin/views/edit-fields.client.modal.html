@@ -1123,6 +1123,37 @@
           </div>
         </div>
 
+        <div ng-if="vm.field.fieldType === 'textfield'" class="row">
+          <div class="row"><br /></div>
+          <div class="col-md-12 label-custom label-medium label-bottom">
+            Field ID
+          </div>
+          <div class="col-md-12">
+            <input
+              type="text"
+              ng-disabled="true"
+              class="input-custom input-medium"
+              value="{{vm.field._id}}"
+            />
+          </div>
+          <div class="col-md-12">
+            <div>
+              <div class="alert-custom alert-info">
+                <i class="bx bx-exclamation bx-md icon-spacing"></i>
+                <span class="alert-msg"
+                  >Use Field ID to pre-populate this field for your users.
+                  <a
+                    href="https://guide.form.gov.sg/AdvancedGuide.html#prefill"
+                    target="_blank"
+                  >
+                    Learn how to pre-populate via URL.
+                  </a></span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- End Short Text -->
 
         <!-- Decimal -->
