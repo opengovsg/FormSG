@@ -2,6 +2,7 @@
 const { EditFieldActions } = require('shared/constants')
 const { groupLogicUnitsByField } = require('shared/util/logic')
 const FieldFactory = require('../../helpers/field-factory')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 const newFields = new Set() // Adding a fieldTypes will add a "new" label.
 
@@ -78,13 +79,9 @@ function editFormController(
       $scope.resetFieldMore()
       if (newIndex !== oldIndex) {
         updateField({
-          editFormField: {
-            action: {
-              name: EditFieldActions.Reorder,
-              position: newIndex,
-            },
-            field: model,
-          },
+          fieldId: model._id,
+          newPosition: newIndex,
+          type: UPDATE_FORM_TYPES.ReorderField,
         })
       }
     },
