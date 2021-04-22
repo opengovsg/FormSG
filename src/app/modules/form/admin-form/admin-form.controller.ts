@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
+import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import {
   AuthType,
   BasicField,
@@ -146,6 +147,16 @@ const transferFormOwnershipValidator = celebrate({
   },
 })
 
+const fileUploadValidator = celebrate({
+  [Segments.BODY]: {
+    fileId: Joi.string().required(),
+    fileMd5Hash: Joi.string().base64().required(),
+    fileType: Joi.string()
+      .valid(...VALID_UPLOAD_FILE_TYPES)
+      .required(),
+  },
+})
+
 /**
  * Handler for GET /adminform endpoint.
  * @security session
@@ -283,7 +294,7 @@ export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const handleCreatePresignedPostUrlForImages: RequestHandler<
+export const createPresignedPostUrlForImages: RequestHandler<
   { formId: string },
   unknown,
   {
@@ -320,7 +331,7 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
         logger.error({
           message: 'Presigning post data encountered an error',
           meta: {
-            action: 'handleCreatePresignedPostUrlForImages',
+            action: 'createPresignedPostUrlForImages',
             ...createReqMeta(req),
           },
           error,
@@ -331,6 +342,11 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
       })
   )
 }
+
+export const handleCreatePresignedPostUrlForImages = [
+  fileUploadValidator,
+  createPresignedPostUrlForImages,
+] as RequestHandler[]
 
 /**
  * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/logos.
@@ -343,7 +359,7 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const handleCreatePresignedPostUrlForLogos: RequestHandler<
+export const createPresignedPostUrlForLogos: RequestHandler<
   ParamsDictionary,
   unknown,
   {
@@ -380,7 +396,7 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
         logger.error({
           message: 'Presigning post data encountered an error',
           meta: {
-            action: 'handleCreatePresignedPostUrlForLogos',
+            action: 'createPresignedPostUrlForLogos',
             ...createReqMeta(req),
           },
           error,
@@ -391,6 +407,11 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
       })
   )
 }
+
+export const handleCreatePresignedPostUrlForLogos = [
+  fileUploadValidator,
+  createPresignedPostUrlForLogos,
+] as RequestHandler[]
 
 // Validates that the ending date >= starting date
 const validateDateRange = celebrate({

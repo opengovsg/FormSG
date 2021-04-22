@@ -1,21 +1,10 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsPresignRouter = Router()
 
 // Validators
-const fileUploadValidator = celebrate({
-  [Segments.BODY]: {
-    fileId: Joi.string().required(),
-    fileMd5Hash: Joi.string().base64().required(),
-    fileType: Joi.string()
-      .valid(...VALID_UPLOAD_FILE_TYPES)
-      .required(),
-  },
-})
 
 /**
  * Upload images
@@ -33,7 +22,6 @@ const fileUploadValidator = celebrate({
  */
 AdminFormsPresignRouter.post(
   '/:formId([a-fA-F0-9]{24})/images/presign',
-  fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForImages,
 )
 
@@ -53,6 +41,5 @@ AdminFormsPresignRouter.post(
  */
 AdminFormsPresignRouter.post(
   '/:formId([a-fA-F0-9]{24})/logos/presign',
-  fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForLogos,
 )
