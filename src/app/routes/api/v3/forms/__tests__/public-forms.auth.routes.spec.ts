@@ -160,7 +160,7 @@ describe('public-form.auth.routes', () => {
       })
       const expectedResponse = jsonParseStringify({
         message:
-          'This form does not have MyInfo enabled. Please refresh and try again.',
+          'This form does not have a valid eServiceId. Please refresh and try again.',
       })
 
       // Act
@@ -176,7 +176,8 @@ describe('public-form.auth.routes', () => {
     it('should return 404 when the form is not in the database', async () => {
       // Arrange
       const expectedResponse = jsonParseStringify({
-        message: 'Form not found',
+        message:
+          'Could not find the form requested. Please refresh and try again.',
       })
 
       // Act
@@ -199,7 +200,7 @@ describe('public-form.auth.routes', () => {
         },
       })
       const expectedResponse = jsonParseStringify({
-        message: 'Something went wrong. Please try again.',
+        message: 'Sorry, something went wrong. Please try again.',
       })
       jest
         .spyOn(FormService, 'retrieveFullFormById')
@@ -226,7 +227,7 @@ describe('public-form.auth.routes', () => {
         },
       })
       const expectedResponse = jsonParseStringify({
-        message: `${MOCK_FEATURE_NAME} is not activated, but a feature-specific function was called.`,
+        message: `Sorry, something went wrong. Please try again.`,
       })
       jest
         .spyOn(MyInfoFactory, 'createRedirectURL')
@@ -252,7 +253,7 @@ describe('public-form.auth.routes', () => {
         },
       })
       const expectedResponse = jsonParseStringify({
-        message: 'Error while creating redirect URL',
+        message: 'Sorry, something went wrong. Please try again.',
       })
       jest
         .spyOn(SpcpFactory, 'createRedirectUrl')

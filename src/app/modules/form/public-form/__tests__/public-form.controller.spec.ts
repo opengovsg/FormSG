@@ -17,11 +17,8 @@ import {
   MyInfoCookieAccessError,
   MyInfoMissingAccessTokenError,
 } from 'src/app/modules/myinfo/myinfo.errors'
-import {
-  IMyInfoForm,
-  MyInfoCookieState,
-} from 'src/app/modules/myinfo/myinfo.types'
-import { ISpcpForm, JwtPayload } from 'src/app/modules/spcp/spcp.types'
+import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
+import { JwtPayload } from 'src/app/modules/spcp/spcp.types'
 import {
   AuthType,
   IPopulatedForm,
@@ -1351,7 +1348,7 @@ describe('public-form.controller', () => {
       expect(mockRes.status).toBeCalledWith(400)
       expect(mockRes.json).toBeCalledWith({
         message:
-          'This form does not have MyInfo enabled. Please refresh and try again.',
+          'This form does not have a valid eServiceId. Please refresh and try again.',
       })
     })
 
@@ -1377,7 +1374,7 @@ describe('public-form.controller', () => {
       expect(mockRes.status).toBeCalledWith(400)
       expect(mockRes.json).toBeCalledWith({
         message:
-          'This form does not have Singpass or Corppass enabled. Please refresh and try again.',
+          'This form does not have a valid eServiceId. Please refresh and try again.',
       })
     })
 
@@ -1403,7 +1400,7 @@ describe('public-form.controller', () => {
       expect(mockRes.status).toBeCalledWith(400)
       expect(mockRes.json).toBeCalledWith({
         message:
-          'This form does not have Singpass or Corppass enabled. Please refresh and try again.',
+          'This form does not have a valid eServiceId. Please refresh and try again.',
       })
     })
 
@@ -1425,7 +1422,7 @@ describe('public-form.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.json).toBeCalledWith({
-        message: 'Something went wrong. Please try again.',
+        message: 'Sorry, something went wrong. Please try again.',
       })
     })
 
@@ -1454,7 +1451,7 @@ describe('public-form.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.json).toBeCalledWith({
-        message: 'Error while creating redirect URL',
+        message: 'Sorry, something went wrong. Please try again.',
       })
     })
 
@@ -1483,8 +1480,7 @@ describe('public-form.controller', () => {
       // Assert
       expect(mockRes.status).toBeCalledWith(500)
       expect(mockRes.json).toBeCalledWith({
-        message:
-          'Redirect url is not activated, but a feature-specific function was called.',
+        message: 'Sorry, something went wrong. Please try again.',
       })
     })
   })
