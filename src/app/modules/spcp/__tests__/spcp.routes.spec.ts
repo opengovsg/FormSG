@@ -236,7 +236,7 @@ describe('spcp.routes', () => {
 
     it('should return 200 with isValid false and errorCode when Singpass request is invalid', async () => {
       MockAxios.get.mockResolvedValueOnce({
-        data: `<title>Error</title>System Code:&nbsp<b>${MOCK_ERROR_CODE}</b>`,
+        data: `<title>Error</title>System Code:&nbsp;<b>${MOCK_ERROR_CODE}</b>`,
       })
       const response = await request
         .get(ROUTE)
@@ -251,7 +251,7 @@ describe('spcp.routes', () => {
 
     it('should return 200 with isValid false and errorCode when Corppass request is invalid', async () => {
       MockAxios.get.mockResolvedValueOnce({
-        data: `<title>Error</title>System Code:&nbsp<b>${MOCK_ERROR_CODE}</b>`,
+        data: `<title>Error</title>System Code:&nbsp;<b>${MOCK_ERROR_CODE}</b>`,
       })
       const response = await request
         .get(ROUTE)
