@@ -175,7 +175,25 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         trim: true,
       },
 
-      form_fields: [BaseFieldSchema],
+      form_fields: {
+        type: [BaseFieldSchema],
+        validate: {
+          validator: function (this: IFormSchema) {
+            const myInfoFieldCount = (this.form_fields ?? []).reduce(
+              (acc, field) => acc + (field.myInfo ? 1 : 0),
+              0,
+            )
+            return (
+              myInfoFieldCount === 0 ||
+              (this.authType === AuthType.MyInfo &&
+                this.responseMode === ResponseMode.Email &&
+                myInfoFieldCount <= 30)
+            )
+          },
+          message:
+            'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
+        },
+      },
       form_logics: [LogicSchema],
 
       admin: {
@@ -584,37 +602,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       const err = new Error('Form size exceeded.')
       err.name = 'FormSizeError'
       return next(err)
-    }
-
-    // Check if MyInfo fields exist and if they do, the total number of fields <= 30, and that
-    // the response mode and authType fields are set appropriately.
-    let myInfoFieldCount = 0
-    if (this.form_fields !== undefined) {
-      this.form_fields.forEach((field) => {
-        if (field.myInfo !== undefined) {
-          myInfoFieldCount++
-        }
-      })
-    }
-
-    if (
-      myInfoFieldCount > 0 &&
-      (this.authType !== AuthType.MyInfo ||
-        this.responseMode === ResponseMode.Encrypt)
-    ) {
-      const validationError = this.invalidate(
-        'form_fields',
-        'This form contains MyInfo fields but does not have MyInfo enabled or is a storage mode form.',
-      ) as mongoose.Error.ValidationError
-      return next(validationError)
-    }
-
-    if (myInfoFieldCount > 30) {
-      const validationError = this.invalidate(
-        'form_fields',
-        'This form contains too many MyInfo fields. A maximum of 30 MyInfo fields are allowed.',
-      ) as mongoose.Error.ValidationError
-      return next(validationError)
     }
 
     // Validate that admin exists before form is created.
