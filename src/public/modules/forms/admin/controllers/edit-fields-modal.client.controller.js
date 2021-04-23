@@ -266,7 +266,7 @@ function EditFieldsModalController(
 
   vm.dateValidationOptionList = values(DateValidationOptions)
 
-  // Make DATE_VALIDATION_OPTIONS accessible to view
+  // Make date validation option enum accessible to view
   vm.DateValidationOptions = DateValidationOptions
 
   vm.clearDateValidation = function () {
