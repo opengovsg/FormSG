@@ -204,7 +204,7 @@ function EditFieldsModalController(
       customMaxDate,
     } = dateValidation
 
-    if (selectedDateValidation !== DateValidationOptions.custom) {
+    if (selectedDateValidation !== DateValidationOptions.Custom) {
       return false
     }
     return !customMinDate && !customMaxDate
