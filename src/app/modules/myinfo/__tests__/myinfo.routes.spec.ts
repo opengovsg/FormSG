@@ -178,7 +178,7 @@ describe('myinfo.routes', () => {
 
     it('should return 200 with isValid false and errorCode when e-service ID is invalid', async () => {
       MockAxios.get.mockResolvedValueOnce({
-        data: `<title>Error</title>System Code:&nbsp<b>${MOCK_ERROR_CODE}</b>`,
+        data: `<title>Error</title>System Code:&nbsp;<b>${MOCK_ERROR_CODE}</b>`,
       })
       const response = await request.get(ROUTE).query({ formId: MOCK_FORM_ID })
 
