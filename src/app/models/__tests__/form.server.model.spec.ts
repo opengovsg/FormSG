@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
-import { merge, omit, orderBy, pick } from 'lodash'
+import { cloneDeep, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 
 import getFormModel, {
@@ -1543,6 +1543,62 @@ describe('Form Model', () => {
 
         // Assert
         expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+    })
+
+    describe('reorderFormFieldById', () => {
+      let form: IFormSchema
+      const FIELD_ID_TO_REORDER = new ObjectId().toHexString()
+
+      beforeEach(async () => {
+        form = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Checkbox),
+            generateDefaultField(BasicField.HomeNo, {
+              title: 'some mock title',
+              _id: FIELD_ID_TO_REORDER,
+            }),
+            generateDefaultField(BasicField.Email),
+          ],
+        })
+      })
+
+      it('should return updated form with reordered fields successfully', async () => {
+        // Act
+        const originalFields =
+          cloneDeep(
+            (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+          ) ?? []
+        const updatedForm = await form.reorderFormFieldById(
+          FIELD_ID_TO_REORDER,
+          0,
+        )
+
+        // Assert
+        expect(updatedForm).not.toBeNull()
+        expect(
+          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+        ).toEqual([
+          // Should be rearranged to the 0th index position, and the previously
+          // 0th index field should be pushed to 1st index.
+          originalFields[1],
+          originalFields[0],
+          originalFields[2],
+        ])
+      })
+
+      it('should return null if given fieldId is invalid', async () => {
+        const updatedForm = await form.reorderFormFieldById(
+          new ObjectId().toHexString(),
+          3,
+        )
+
+        // Assert
+        expect(updatedForm).toBeNull()
       })
     })
   })
