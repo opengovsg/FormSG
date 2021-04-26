@@ -732,3 +732,50 @@ export const deleteFormLogic = (
     return okAsync(updatedForm)
   })
 }
+
+/**
+ * Deletes a form field from the given form.
+ * @param form The form to delete the specified form field for
+ * @param fieldId the id of the form field to delete
+ * @returns ok(updated form) on success
+ * @returns err(PossibleDatabaseError) if db error is thrown during the deletion of form fields
+ * @returns err(FieldNotFoundError) if the fieldId does not exist in form's fields
+ */
+export const deleteFormField = <T extends IFormSchema>(
+  form: T,
+  fieldId: string,
+): ResultAsync<
+  IFormSchema,
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  const logMeta = {
+    action: 'deleteFormField',
+    formId: form._id,
+    fieldId,
+  }
+
+  if (!getFormFieldById(form.form_fields, fieldId)) {
+    logger.error({
+      message: 'Field to be deleted cannot be found',
+      meta: logMeta,
+    })
+    return errAsync(new FieldNotFoundError())
+  }
+
+  return ResultAsync.fromPromise(
+    FormModel.deleteFormFieldById(String(form._id), fieldId),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when deleting form logic',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm)
+  })
+}
