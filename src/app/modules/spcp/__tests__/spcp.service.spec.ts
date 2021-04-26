@@ -199,7 +199,7 @@ describe('spcp.service', () => {
 
     it('should return error code when there is error in title', () => {
       const spcpService = new SpcpService(MOCK_PARAMS)
-      const mockHtml = `<title>Error</title>System Code:&nbsp<b>${MOCK_ERROR_CODE}</b>`
+      const mockHtml = `<title>Error</title>System Code:&nbsp;<b>${MOCK_ERROR_CODE}</b>`
       const result = spcpService.validateLoginPage(mockHtml)
       expect(result._unsafeUnwrap()).toEqual({
         isValid: false,
