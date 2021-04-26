@@ -13,11 +13,14 @@ import FeatureManager, {
   RegisteredFeature,
 } from '../../config/feature-manager'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import {
+  AuthTypeMismatchError,
+  FormAuthNoEsrvcIdError,
+} from '../form/form.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MyInfoData } from './myinfo.adapter'
 import {
-  MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
@@ -27,7 +30,6 @@ import {
   MyInfoInvalidAccessTokenError,
   MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
-  MyInfoNoESrvcIdError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import { MyInfoService } from './myinfo.service'
@@ -91,8 +93,8 @@ interface IMyInfoFactory {
     MyInfoData,
     | MyInfoMissingAccessTokenError
     | MyInfoCookieStateError
-    | MyInfoNoESrvcIdError
-    | MyInfoAuthTypeError
+    | FormAuthNoEsrvcIdError
+    | AuthTypeMismatchError
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
     | MissingFeatureError

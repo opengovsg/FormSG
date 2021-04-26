@@ -50,7 +50,7 @@
           <button
             type="button"
             class="start-page-btn {{ vm.colorTheme }}-font"
-            ng-click="vm.formLogin({ authType: vm.authType, rememberMe: vm.rememberMe.checked })"
+            ng-click="vm.formLogin({ isPersistentLogin: vm.rememberMe.checked })"
             ng-if="['SP', 'MyInfo'].includes(vm.authType) && !vm.userName && !vm.isTemplate"
             ng-disabled="vm.isAdminPreview"
           >
@@ -62,7 +62,7 @@
           <button
             type="button"
             class="start-page-btn {{ vm.colorTheme }}-font start-page-multiline-btn"
-            ng-click="vm.formLogin({ authType: 'CP', rememberMe: false })"
+            ng-click="vm.formLogin({ isPersistentLogin: false })"
             ng-if="vm.authType==='CP' && !vm.userName && !vm.isTemplate"
             ng-disabled="vm.isAdminPreview"
           >

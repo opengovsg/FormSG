@@ -1,3 +1,5 @@
+import { AuthType, IFormSchema } from '../../../types'
+
 export enum JwtName {
   SP = 'jwtSp',
   CP = 'jwtCp',
@@ -42,4 +44,9 @@ export interface ParsedSpcpParams {
   destination: string
   rememberMe: boolean
   cookieDuration: number
+}
+
+export type SpcpForm<T extends IFormSchema> = T & {
+  authType: AuthType.SP | AuthType.CP
+  esrvcId: string
 }

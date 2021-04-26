@@ -1,11 +1,22 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
 
-import { BasicField, MapRouteError, SPCPFieldTitle } from '../../../types'
+import {
+  AuthType,
+  BasicField,
+  IFormSchema,
+  MapRouteError,
+  SPCPFieldTitle,
+} from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { hasProp } from '../../utils/has-prop'
 import { MissingFeatureError } from '../core/core.errors'
+import {
+  AuthTypeMismatchError,
+  FormAuthNoEsrvcIdError,
+} from '../form/form.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
 import {
@@ -16,7 +27,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
-import { CorppassJwtPayload, SingpassJwtPayload } from './spcp.types'
+import { CorppassJwtPayload, SingpassJwtPayload, SpcpForm } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
 const DESTINATION_REGEX = /^\/([\w]+)\/?/
@@ -211,6 +222,32 @@ export const createCorppassParsedResponses = (
 }
 
 /**
+ * Validates that a form is a SPCP form with an e-service ID
+ * @param form Form to validate
+ */
+export const validateSpcpForm = <T extends IFormSchema>(
+  form: T,
+): Result<SpcpForm<T>, FormAuthNoEsrvcIdError | AuthTypeMismatchError> => {
+  // This is an extra check to return the specific error encountered
+  if (!form.esrvcId) {
+    return err(new FormAuthNoEsrvcIdError(form.id))
+  }
+  if (isSpcpForm(form)) {
+    return ok(form)
+  }
+  return err(new AuthTypeMismatchError(AuthType.CP, form.authType))
+}
+
+// Typeguard to ensure that form has eserviceId and correct authType
+const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
+  return (
+    !!form.authType &&
+    [AuthType.SP, AuthType.CP].includes(form.authType) &&
+    !!form.esrvcId
+  )
+}
+
+/**
  * Maps errors to status codes and error messages to return to frontend.
  * @param error
  */
@@ -257,3 +294,16 @@ export const mapRouteError: MapRouteError = (
       }
   }
 }
+
+// Generates the target to redirect to for the given form id
+export const getRedirectTarget = (
+  formId: string,
+  authType: AuthType.SP | AuthType.CP,
+  isPersistentLogin?: boolean,
+): string =>
+  `/${formId},${
+    // Need to cast to boolean because undefined is allowed as a valid value
+    // We are not following corppass's official spec for
+    // the target parameter
+    authType === AuthType.SP ? !!isPersistentLogin : false
+  }`

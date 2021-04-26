@@ -14,10 +14,8 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import {
-  MyInfoAuthTypeError,
   MyInfoCookieAccessError,
   MyInfoMissingAccessTokenError,
-  MyInfoNoESrvcIdError,
 } from 'src/app/modules/myinfo/myinfo.errors'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
 import { JwtPayload } from 'src/app/modules/spcp/spcp.types'
@@ -37,6 +35,8 @@ import { MyInfoFactory } from '../../../myinfo/myinfo.factory'
 import { MissingJwtError } from '../../../spcp/spcp.errors'
 import { SpcpFactory } from '../../../spcp/spcp.factory'
 import {
+  AuthTypeMismatchError,
+  FormAuthNoEsrvcIdError,
   FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
@@ -731,7 +731,7 @@ describe('public-form.controller', () => {
         })
 
         MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
-          errAsync(new MyInfoAuthTypeError()),
+          errAsync(new AuthTypeMismatchError()),
         )
 
         // Act
@@ -758,7 +758,7 @@ describe('public-form.controller', () => {
         })
 
         MockMyInfoFactory.getMyInfoDataForForm.mockReturnValueOnce(
-          errAsync(new MyInfoNoESrvcIdError()),
+          errAsync(new FormAuthNoEsrvcIdError()),
         )
 
         // Act

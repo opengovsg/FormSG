@@ -69,7 +69,7 @@ export type MyInfoParsedRelayState = MyInfoRelayState & {
   cookieDuration: number
 }
 
-export interface IMyInfoForm extends IFormSchema {
+export type MyInfoForm<T extends IFormSchema> = T & {
   authType: AuthType.MyInfo
   esrvcId: string
 }

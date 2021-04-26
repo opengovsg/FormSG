@@ -18,7 +18,6 @@ export const PublicFormsFormRouter = Router()
  * @returns 410 when form is archived
  * @returns 500 when database error occurs
  */
-PublicFormsFormRouter.get(
-  '/:formId([a-fA-F0-9]{24})',
+PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
   PublicFormController.handleGetPublicForm,
 )

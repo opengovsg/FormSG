@@ -20,6 +20,10 @@ import {
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
+import {
+  AuthTypeMismatchError,
+  FormAuthNoEsrvcIdError,
+} from '../form/form.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
@@ -29,7 +33,6 @@ import {
   MYINFO_ROUTER_PREFIX,
 } from './myinfo.constants'
 import {
-  MyInfoAuthTypeError,
   MyInfoCircuitBreakerError,
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
@@ -39,7 +42,6 @@ import {
   MyInfoInvalidAccessTokenError,
   MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
-  MyInfoNoESrvcIdError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
@@ -484,8 +486,8 @@ export class MyInfoService {
    * @returns err(MyInfoMissingAccessTokenError) if no myInfoCookie was found on the request
    * @returns err(MyInfoCookieStateError) if cookie was not successful
    * @returns err(MyInfoCookieAccessError) if the cookie has already been used before
-   * @returns err(MyInfoNoESrvcIdError) if form has no eserviceId
-   * @returns err(MyInfoAuthTypeError) if the client was not authenticated using MyInfo
+   * @returns err(FormAuthNoEsrvcIdError) if form has no eserviceId
+   * @returns err(AuthTypeMismatchError) if the client was not authenticated using MyInfo
    * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
    * @returns err(MyInfoFetchError) if validated but the data could not be retrieved
    * @returns err(MissingFeatureError) if using an outdated version that does not support myInfo
@@ -497,8 +499,8 @@ export class MyInfoService {
     MyInfoData,
     | MyInfoMissingAccessTokenError
     | MyInfoCookieStateError
-    | MyInfoNoESrvcIdError
-    | MyInfoAuthTypeError
+    | FormAuthNoEsrvcIdError
+    | AuthTypeMismatchError
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
     | MissingFeatureError
