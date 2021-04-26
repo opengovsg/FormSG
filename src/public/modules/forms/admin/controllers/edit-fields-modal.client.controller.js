@@ -622,7 +622,13 @@ function EditFieldsModalController(
    * Inform user that field id has been copied to clipboard
    */
 
-  vm.fieldIdCopied = () => {
+  vm.toastSuccessfulFieldIdCopy = () => {
     Toastr.success('Field ID copied to clipboard!')
+  }
+  /**
+   * Inform user that field id was not copied to clipboard
+   */
+  vm.toastFailedFieldIdCopy = () => {
+    Toastr.error('Failed to copy to clipboard')
   }
 }

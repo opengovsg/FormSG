@@ -1134,16 +1134,20 @@
           <div class="col-md-12">
             <input
               type="text"
-              ng-disabled="true"
+              ng-readonly="true"
               class="input-custom input-medium"
               value="{{vm.field._id || 'Field ID will be generated after field is saved'}}"
+              id="prefill-id"
             />
             <i
               class="bx bx-copy bx-md copy-icon-overlay prefill-copy-icon"
               ng-if="vm.field._id"
               ngclipboard
-              ng-click="vm.fieldIdCopied()"
-              data-clipboard-text="{{vm.field._id}}"
+              ng-click=""
+              data-clipboard-action="copy"
+              data-clipboard-target="#prefill-id"
+              ngclipboard-success="vm.toastSuccessfulFieldIdCopy()"
+              ngclipboard-error="vm.toastFailedFieldIdCopy()"
             ></i>
           </div>
           <div class="col-md-12">
