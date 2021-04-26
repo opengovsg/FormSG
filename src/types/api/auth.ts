@@ -1,1 +1,1 @@
-export type RedirectUrlDto = { redirectURL: string }
+export type PublicFormAuthRedirectDto = { redirectURL: string }

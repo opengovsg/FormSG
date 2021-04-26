@@ -10,7 +10,7 @@ import { AuthType } from '../../../../types'
 import {
   ErrorDto,
   PrivateFormErrorDto,
-  RedirectUrlDto,
+  PublicFormAuthRedirectDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
@@ -375,7 +375,7 @@ export const handleGetPublicForm: RequestHandler<
  */
 export const _handleFormAuthRedirect: RequestHandler<
   { formId: string },
-  RedirectUrlDto | ErrorDto,
+  PublicFormAuthRedirectDto | ErrorDto,
   unknown,
   Query & { isPersistentLogin?: boolean }
 > = (req, res) => {
