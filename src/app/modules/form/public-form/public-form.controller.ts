@@ -11,6 +11,7 @@ import {
   ErrorDto,
   PrivateFormErrorDto,
   PublicFormAuthRedirectDto,
+  PublicFormAuthValidateEsrvcIdDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
@@ -31,7 +32,6 @@ import {
 } from '../../myinfo/myinfo.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpFactory } from '../../spcp/spcp.factory'
-import { LoginPageValidationResult } from '../../spcp/spcp.types'
 import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -454,7 +454,8 @@ export const handleFormAuthRedirect = [
 ] as RequestHandler[]
 
 /**
- * Handler for validating the eServiceId of the form
+ * Handler for validating the eServiceId of a given form
+ *
  * @returns 200 with eserviceId validation result
  * @returns 400 when there is an error on the authType of the form
  * @returns 400 when the eServiceId of the form does not exist
@@ -465,7 +466,7 @@ export const handleFormAuthRedirect = [
  */
 export const handleValidateFormEsrvcId: RequestHandler<
   { formId: string },
-  LoginPageValidationResult | ErrorDto
+  PublicFormAuthValidateEsrvcIdDto | ErrorDto
 > = (req, res) => {
   const { formId } = req.params
   return FormService.retrieveFormById(formId)
@@ -489,7 +490,7 @@ export const handleValidateFormEsrvcId: RequestHandler<
       logger.error({
         message: 'Error while validating e-service ID',
         meta: {
-          action: '_handleValidateFormEsrvcId',
+          action: 'handleValidateFormEsrvcId',
           ...createReqMeta(req),
           formId,
         },
