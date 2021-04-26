@@ -21,3 +21,18 @@ export const PublicFormsAuthRouter = Router()
 PublicFormsAuthRouter.route('/:formId([a-fA-F0-9]{24})/auth/redirect').get(
   PublicFormController.handleFormAuthRedirect,
 )
+
+/**
+ * Validates a form's eServiceId through parsing the returned html of the spcp login page
+ * @route /:formId/auth/validate
+ *
+ * @returns 200 when the form has a valid eServiceId
+ * @returns 400 when there is an error on the authType of the form
+ * @returns 400 when the eServiceId of the form does not exist
+ * @returns 404 when form with given ID does not exist
+ * @returns 500 when database error occurs
+ * @returns 500 when the redirect url could not be created
+ */
+PublicFormsAuthRouter.route('/:formId([a-fA-F0-9]{24})/auth/validate').get(
+  PublicFormController.handleValidateFormEsrvcId,
+)
