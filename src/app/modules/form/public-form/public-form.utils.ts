@@ -9,7 +9,11 @@ import {
   MissingFeatureError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
-import { CreateRedirectUrlError } from '../../spcp/spcp.errors'
+import {
+  CreateRedirectUrlError,
+  FetchLoginPageError,
+  LoginPageValidationError,
+} from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -92,6 +96,62 @@ export const mapFormAuthRedirectError: MapRouteError = (
     case DatabaseError:
     case CreateRedirectUrlError:
     case MissingFeatureError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: 'Sorry, something went wrong. Please try again.',
+      }
+  }
+}
+
+/**
+ * Handler to map ApplicationErrors from validating a form's eServiceId to HTTP errors
+ * @param error The error to retrieve the status codes and error messages
+ * @param coreErrorMessage Any error message to return instead of the default core error message, if any
+ */
+export const mapValidateEsrvcIdError: MapRouteError = (
+  error,
+  coreErrorMessage = 'Sorry, something went wrong. Please try again.',
+) => {
+  switch (error.constructor) {
+    case FormErrors.FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'Could not find the form requested. Please refresh and try again.',
+      }
+    case FormErrors.FormAuthNoEsrvcIdError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This form does not have a valid eServiceId. Please refresh and try again.',
+      }
+    case FormErrors.AuthTypeMismatchError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Please ensure that the form has authentication enabled. Please refresh and try again.',
+      }
+    case FetchLoginPageError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
+        errorMessage:
+          'Could not validate the eServiceId of the form at this moment. Please refresh and try again.',
+      }
+    case DatabaseError:
+    case CreateRedirectUrlError:
+    case LoginPageValidationError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
