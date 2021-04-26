@@ -75,7 +75,7 @@ export class AuthTypeMismatchError extends ApplicationError {
 }
 
 /**
- * Error to be returned when the form is lacking an eServiceId
+ * Error to be returned when the form has authentication enabled but is lacking an eServiceId
  */
 
 export class FormAuthNoEsrvcIdError extends ApplicationError {

@@ -292,14 +292,14 @@ export const validateMyInfoForm = <T extends IFormSchema>(
   if (!form.esrvcId) {
     return err(new FormAuthNoEsrvcIdError(form._id))
   }
-  if (isMyInfoForm(form)) {
+  if (isMyInfoFormWithEsrvcId(form)) {
     return ok(form)
   }
   return err(new AuthTypeMismatchError(AuthType.MyInfo, form.authType))
 }
 
 // Typeguard to ensure that form has eserviceId and MyInfo authType
-const isMyInfoForm = <F extends IFormSchema>(
+const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
   form: F,
 ): form is MyInfoForm<F> => {
   return form.authType === AuthType.MyInfo && !!form.esrvcId
