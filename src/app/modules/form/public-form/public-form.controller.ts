@@ -442,6 +442,9 @@ export const _handleFormAuthRedirect: RequestHandler<
  */
 export const handleFormAuthRedirect = [
   celebrate({
+    [Segments.PARAMS]: Joi.object({
+      formId: Joi.string().pattern(/^[a-fA-F0-9]{24}$/),
+    }),
     [Segments.QUERY]: Joi.object({
       isPersistentLogin: Joi.boolean().optional(),
     }),
