@@ -535,7 +535,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormDocument,
     fieldId: string,
     newPosition: number,
-  ) {
+  ): Promise<IFormDocument | null> {
     const existingFieldPosition = this.form_fields.findIndex(
       (f) => String(f._id) === fieldId,
     )
