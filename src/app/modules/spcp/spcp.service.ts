@@ -179,7 +179,7 @@ export class SpcpService {
       // The error page should have text like 'System Code:&nbsp<b>138</b>'
       const errorCode = getSubstringBetween(
         loginHtml.toLowerCase(),
-        'System code:&nbsp;<b>'.toLowerCase(),
+        'system code:&nbsp;<b>',
         '</b>',
       )
       logger.warn({
