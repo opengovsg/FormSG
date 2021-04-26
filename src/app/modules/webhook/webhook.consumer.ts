@@ -37,6 +37,18 @@ export const startWebhookConsumer = (
     }),
   })
 
+  app.on('error', (error, message) => {
+    logger.error({
+      message:
+        'Webhook consumer encountered error while interacting with queue',
+      meta: {
+        action: 'startWebhookConsumer',
+        message,
+      },
+      error,
+    })
+  })
+
   app.start()
 }
 
