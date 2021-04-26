@@ -9,6 +9,7 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
+import { reorder } from '../../shared/util/immutable-array-fns'
 import {
   AuthType,
   BasicField,
@@ -41,7 +42,6 @@ import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
-import { reorder } from '../utils/immutable-array-fns'
 
 import getAgencyModel from './agency.server.model'
 import {
