@@ -115,7 +115,7 @@
           size="invisible"
           on-create="captchaService.setWidget(widgetId)"
           on-success="captchaService.onSuccess(response, submitForm)"
-          on-error="captchaService.onError()"
+          on-error="captchaService.onError(form)"
           on-expire="captchaService.expire()"
           data-badge="inline"
         ></div>

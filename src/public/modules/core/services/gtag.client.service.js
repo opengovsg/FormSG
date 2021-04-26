@@ -500,5 +500,12 @@ function GTag(Auth, $rootScope, $window) {
     })
   }
 
+  /**
+   * Logs client form reCAPTCHA onError.
+   */
+  gtagService.reCaptchaOnError = (form) => {
+    _gtagPublicFormEvents(form, 'reCAPTCHA connection failure')
+  }
+
   return gtagService
 }
