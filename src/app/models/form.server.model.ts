@@ -184,7 +184,25 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         trim: true,
       },
 
-      form_fields: [BaseFieldSchema],
+      form_fields: {
+        type: [BaseFieldSchema],
+        validate: {
+          validator: function (this: IFormSchema) {
+            const myInfoFieldCount = (this.form_fields ?? []).reduce(
+              (acc, field) => acc + (field.myInfo ? 1 : 0),
+              0,
+            )
+            return (
+              myInfoFieldCount === 0 ||
+              (this.authType === AuthType.MyInfo &&
+                this.responseMode === ResponseMode.Email &&
+                myInfoFieldCount <= 30)
+            )
+          },
+          message:
+            'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
+        },
+      },
       form_logics: [LogicSchema],
 
       admin: {
