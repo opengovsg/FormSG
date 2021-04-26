@@ -429,9 +429,13 @@ function submitFormDirective(
           }
         })
       }
+
       // Variable to indicate if there are prefill fields
-      scope.hasPrefill = scope.form.form_fields.some((field) => {
-        return field.allowPrefill
+      // Use scope.$watch to monitor logic changes
+      scope.$watch(() => {
+        scope.hasPrefill = scope.form.form_fields.some((field) => {
+          return field.allowPrefill && field.isVisible
+        })
       })
     },
   }
