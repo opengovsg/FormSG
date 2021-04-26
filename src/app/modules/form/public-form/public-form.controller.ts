@@ -479,14 +479,21 @@ export const handleValidateFormEsrvcId: RequestHandler<
       // NOTE: Because the check is based on parsing the html of the returned webpage,
       // And because MyInfo login is beyond our control, we coerce MyInfo to SP.
       // This is valid because a valid MyInfo eserviceId is also a valid SP eserviceId
-      if (form.authType === AuthType.MyInfo) {
-        return validateMyInfoForm(form).andThen((form) =>
-          SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
-        )
+      switch (form.authType) {
+        case AuthType.MyInfo:
+          return validateMyInfoForm(form).andThen((form) =>
+            SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+          )
+        case AuthType.SP:
+        case AuthType.CP:
+          return validateSpcpForm(form).andThen((form) =>
+            SpcpFactory.createRedirectUrl(form.authType, formId, form.esrvcId),
+          )
+        default:
+          return err<never, AuthTypeMismatchError>(
+            new AuthTypeMismatchError(AuthType.SP, form.authType),
+          )
       }
-      return validateSpcpForm(form).andThen((form) =>
-        SpcpFactory.createRedirectUrl(form.authType, formId, form.esrvcId),
-      )
     })
     .andThen(SpcpFactory.fetchLoginPage)
     .andThen(SpcpFactory.validateLoginPage)
