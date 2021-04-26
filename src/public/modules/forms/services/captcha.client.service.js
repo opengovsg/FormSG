@@ -65,11 +65,15 @@ function captchaService($window, vcRecaptchaService, Toastr, GTag) {
     cb()
   }
 
-  this.onError = function () {
+  /**
+   * Show error toast and log error with Google Analytics
+   * @param {*} form the form this error occurred for
+   */
+  this.onError = function (form) {
     Toastr.error(
       'Error: Cannot connect to reCAPTCHA. Please check your internet connectivity or try submitting on another device.',
     )
-    GTag.reCaptchaOnError()
+    GTag.reCaptchaOnError(form)
   }
 
   /**

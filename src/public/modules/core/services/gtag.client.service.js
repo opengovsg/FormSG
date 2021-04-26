@@ -503,11 +503,8 @@ function GTag(Auth, $rootScope, $window) {
   /**
    * Logs client form reCAPTCHA onError.
    */
-  gtagService.reCaptchaOnError = () => {
-    _gtagEvents('recaptcha', {
-      event_category: 'Client Form reCAPTCHA',
-      event_action: 'reCAPTCHA connection failure',
-    })
+  gtagService.reCaptchaOnError = (form) => {
+    _gtagPublicFormEvents(form, 'reCAPTCHA connection failure')
   }
 
   return gtagService
