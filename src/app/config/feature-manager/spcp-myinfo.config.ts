@@ -24,7 +24,7 @@ const spcpMyInfoFeature: RegisterableFeature<FeatureNames.SpcpMyInfo> = {
     spCookieMaxAge: {
       doc: 'Max SingPass cookie age with remember me unchecked',
       format: 'int',
-      default: 1 * HOUR_IN_MILLIS,
+      default: 3 * HOUR_IN_MILLIS,
       env: 'SP_COOKIE_MAX_AGE',
     },
     spCookieMaxAgePreserved: {
