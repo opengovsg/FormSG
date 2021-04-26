@@ -460,9 +460,10 @@ export const handleFormAuthRedirect = [
  * @returns 400 when there is an error on the authType of the form
  * @returns 400 when the eServiceId of the form does not exist
  * @returns 404 when form with given ID does not exist
+ * @returns 500 when the title of the fetched login page does not exist
  * @returns 500 when database error occurs
- * @returns 503 when the login page for singpass could not be fetched
- * @returns 503 when the login page is not valid
+ * @returns 500 when the url for the login page of the form could not be generated
+ * @returns 502 when the login page for singpass could not be fetched
  */
 export const handleValidateFormEsrvcId: RequestHandler<
   { formId: string },
