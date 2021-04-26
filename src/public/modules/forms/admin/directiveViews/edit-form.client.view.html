@@ -329,7 +329,7 @@
                   <button
                     class="current-field-opt-icon"
                     ng-click="tryDuplicateField($index, isCondition(field) || isHidden(field)); $event.stopPropagation()"
-                    ng-show="field.myInfo && numMyInfoFields < maxMyInfoFields"
+                    ng-show="!field.myInfo || numMyInfoFields < maxMyInfoFields"
                     uib-tooltip="DUPLICATE"
                     tooltip-trigger="'click mouseenter'"
                   >
