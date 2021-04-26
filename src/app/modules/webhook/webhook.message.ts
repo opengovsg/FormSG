@@ -91,4 +91,8 @@ export class WebhookQueueMessage {
         }),
     )
   }
+
+  get submissionId(): string {
+    return this.message.submissionId
+  }
 }
