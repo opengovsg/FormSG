@@ -17,8 +17,11 @@ import {
   MyInfoCookieAccessError,
   MyInfoMissingAccessTokenError,
 } from 'src/app/modules/myinfo/myinfo.errors'
-import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
-import { JwtPayload } from 'src/app/modules/spcp/spcp.types'
+import {
+  MyInfoCookieState,
+  MyInfoForm,
+} from 'src/app/modules/myinfo/myinfo.types'
+import { JwtPayload, SpcpForm } from 'src/app/modules/spcp/spcp.types'
 import {
   AuthType,
   IPopulatedForm,
@@ -1158,7 +1161,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.SP,
         esrvcId: '12345',
-      } as ISpcpForm
+      } as SpcpForm
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1189,7 +1192,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.SP,
         esrvcId: '12345',
-      } as ISpcpForm
+      } as SpcpForm
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1223,7 +1226,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.SP,
         esrvcId: '12345',
-      } as ISpcpForm
+      } as SpcpForm
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1249,7 +1252,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.CP,
         esrvcId: '12345',
-      } as ISpcpForm
+      } as SpcpForm
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1277,7 +1280,7 @@ describe('public-form.controller', () => {
         authType: AuthType.MyInfo,
         esrvcId: '12345',
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown) as IMyInfoForm
+      } as unknown) as MyInfoForm
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1330,7 +1333,7 @@ describe('public-form.controller', () => {
       // Arrange
       const MOCK_FORM = ({
         authType: AuthType.MyInfo,
-      } as unknown) as IMyInfoForm
+      } as unknown) as MyInfoForm
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1356,7 +1359,7 @@ describe('public-form.controller', () => {
       // Arrange
       const MOCK_FORM = ({
         authType: AuthType.SP,
-      } as unknown) as ISpcpForm
+      } as unknown) as SpcpForm
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1382,7 +1385,7 @@ describe('public-form.controller', () => {
       // Arrange
       const MOCK_FORM = ({
         authType: AuthType.CP,
-      } as unknown) as ISpcpForm
+      } as unknown) as SpcpForm
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1431,7 +1434,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = ({
         esrvcId: '234',
         authType: AuthType.CP,
-      } as unknown) as ISpcpForm
+      } as unknown) as SpcpForm
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1461,7 +1464,7 @@ describe('public-form.controller', () => {
         esrvcId: '234',
         authType: AuthType.MyInfo,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown) as ISpcpForm
+      } as unknown) as SpcpForm
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
