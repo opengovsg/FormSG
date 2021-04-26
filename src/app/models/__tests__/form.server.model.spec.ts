@@ -1591,6 +1591,30 @@ describe('Form Model', () => {
         ])
       })
 
+      it('should return updated form with reordered field at end of fields array when newPosition > form_fields.length', async () => {
+        // Act
+        const originalFields =
+          cloneDeep(
+            (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+          ) ?? []
+        const updatedForm = await form.reorderFormFieldById(
+          FIELD_ID_TO_REORDER,
+          // new position is vastly over array length.
+          originalFields.length + 200,
+        )
+
+        // Assert
+        expect(updatedForm).not.toBeNull()
+        expect(
+          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+        ).toEqual([
+          originalFields[0],
+          originalFields[2],
+          // Field to reorder (index 1) should now be at the end.
+          originalFields[1],
+        ])
+      })
+
       it('should return null if given fieldId is invalid', async () => {
         const updatedForm = await form.reorderFormFieldById(
           new ObjectId().toHexString(),
