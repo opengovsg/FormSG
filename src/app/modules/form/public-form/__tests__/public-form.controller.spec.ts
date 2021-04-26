@@ -24,6 +24,7 @@ import {
 import { JwtPayload, SpcpForm } from 'src/app/modules/spcp/spcp.types'
 import {
   AuthType,
+  IFormSchema,
   IPopulatedForm,
   IPopulatedUser,
   MyInfoAttribute,
@@ -1161,7 +1162,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.SP,
         esrvcId: '12345',
-      } as SpcpForm
+      } as SpcpForm<IFormSchema>
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1192,7 +1193,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.SP,
         esrvcId: '12345',
-      } as SpcpForm
+      } as SpcpForm<IFormSchema>
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1226,7 +1227,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.SP,
         esrvcId: '12345',
-      } as SpcpForm
+      } as SpcpForm<IFormSchema>
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
@@ -1252,7 +1253,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = {
         authType: AuthType.CP,
         esrvcId: '12345',
-      } as SpcpForm
+      } as SpcpForm<IFormSchema>
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1280,7 +1281,7 @@ describe('public-form.controller', () => {
         authType: AuthType.MyInfo,
         esrvcId: '12345',
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown) as MyInfoForm
+      } as unknown) as MyInfoForm<IFormSchema>
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1333,7 +1334,7 @@ describe('public-form.controller', () => {
       // Arrange
       const MOCK_FORM = ({
         authType: AuthType.MyInfo,
-      } as unknown) as MyInfoForm
+      } as unknown) as MyInfoForm<IFormSchema>
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1359,7 +1360,7 @@ describe('public-form.controller', () => {
       // Arrange
       const MOCK_FORM = ({
         authType: AuthType.SP,
-      } as unknown) as SpcpForm
+      } as unknown) as SpcpForm<IFormSchema>
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1385,7 +1386,7 @@ describe('public-form.controller', () => {
       // Arrange
       const MOCK_FORM = ({
         authType: AuthType.CP,
-      } as unknown) as SpcpForm
+      } as unknown) as SpcpForm<IFormSchema>
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1434,7 +1435,7 @@ describe('public-form.controller', () => {
       const MOCK_FORM = ({
         esrvcId: '234',
         authType: AuthType.CP,
-      } as unknown) as SpcpForm
+      } as unknown) as SpcpForm<IFormSchema>
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1464,7 +1465,7 @@ describe('public-form.controller', () => {
         esrvcId: '234',
         authType: AuthType.MyInfo,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown) as SpcpForm
+      } as unknown) as SpcpForm<IFormSchema>
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
