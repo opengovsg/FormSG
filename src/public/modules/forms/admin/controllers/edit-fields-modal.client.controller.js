@@ -10,14 +10,11 @@ const {
 } = require('shared/constants')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const { uploadImage } = require('../../../../services/FileHandlerService')
+const {
+  DateSelectedValidation: DateValidationOptions,
+} = require('../../../../../shared/constants')
 
 const CancelToken = axios.CancelToken
-
-const DATE_VALIDATION_OPTIONS = {
-  disallowPast: 'Disallow past dates',
-  disallowFuture: 'Disallow future dates',
-  custom: 'Custom date range',
-}
 
 const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
 
@@ -207,7 +204,7 @@ function EditFieldsModalController(
       customMaxDate,
     } = dateValidation
 
-    if (selectedDateValidation !== DATE_VALIDATION_OPTIONS.custom) {
+    if (selectedDateValidation !== DateValidationOptions.Custom) {
       return false
     }
     return !customMinDate && !customMaxDate
@@ -267,10 +264,10 @@ function EditFieldsModalController(
 
   // Controls for date validation
 
-  vm.dateValidationOptions = values(DATE_VALIDATION_OPTIONS)
+  vm.dateValidationOptionList = values(DateValidationOptions)
 
-  // Make DATE_VALIDATION_OPTIONS accessible to view
-  vm.DATE_VALIDATION_OPTIONS = DATE_VALIDATION_OPTIONS
+  // Make date validation option enum accessible to view
+  vm.DateValidationOptions = DateValidationOptions
 
   vm.clearDateValidation = function () {
     const field = vm.field

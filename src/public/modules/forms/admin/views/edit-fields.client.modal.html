@@ -294,7 +294,7 @@
                     >{{$select.selected}}</ui-select-match
                   >
                   <ui-select-choices
-                    repeat="option in vm.dateValidationOptions | filter: $select.search"
+                    repeat="option in vm.dateValidationOptionList | filter: $select.search"
                   >
                     <span ng-bind="option"></span>
                   </ui-select-choices>
@@ -315,7 +315,7 @@
 
           <div
             class="col-xs-12"
-            ng-if="vm.field.dateValidation.selectedDateValidation === vm.DATE_VALIDATION_OPTIONS.custom"
+            ng-if="vm.field.dateValidation.selectedDateValidation === vm.DateValidationOptions.Custom"
             ng-init="vm.reformatDateRange()"
           >
             <div class="col-sm-6 col-xs-12 min-val-input">
@@ -330,7 +330,7 @@
                 ng-model-options="{timezone: 'utc'}"
                 datepicker-options="{}"
                 ng-model="vm.field.dateValidation.customMinDate"
-                ng-disabled="!vm.field.dateValidation.selectedDateValidation || vm.field.dateValidation.selectedDateValidation !== vm.DATE_VALIDATION_OPTIONS.custom"
+                ng-disabled="!vm.field.dateValidation.selectedDateValidation || vm.field.dateValidation.selectedDateValidation !== vm.DateValidationOptions.Custom"
                 datepicker-template-url="modules/forms/base/directiveViews/datepicker.html"
                 datepicker-popup-template-url="modules/forms/base/directiveViews/datepicker-popup.html"
               />
@@ -347,7 +347,7 @@
                 ng-model-options="{timezone: 'utc'}"
                 datepicker-options="{}"
                 ng-model="vm.field.dateValidation.customMaxDate"
-                ng-disabled="!vm.field.dateValidation.selectedDateValidation || vm.field.dateValidation.selectedDateValidation !== vm.DATE_VALIDATION_OPTIONS.custom"
+                ng-disabled="!vm.field.dateValidation.selectedDateValidation || vm.field.dateValidation.selectedDateValidation !== vm.DateValidationOptions.Custom"
                 datepicker-template-url="modules/forms/base/directiveViews/datepicker.html"
                 datepicker-popup-template-url="modules/forms/base/directiveViews/datepicker-popup.html"
               />
