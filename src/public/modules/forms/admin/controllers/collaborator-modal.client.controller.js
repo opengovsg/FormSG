@@ -1,10 +1,12 @@
 'use strict'
 
 const HttpStatus = require('http-status-codes')
+const AdminFormService = require('../../../../services/AdminFormService')
 
 angular
   .module('forms')
   .controller('CollaboratorModalController', [
+    '$q',
     '$scope',
     '$timeout',
     '$uibModalInstance',
@@ -27,6 +29,7 @@ const ROLES = {
 }
 
 function CollaboratorModalController(
+  $q,
   $scope,
   $timeout,
   $uibModalInstance,
@@ -88,20 +91,25 @@ function CollaboratorModalController(
   }
 
   /**
-   * Calls FormAPI update to update the permission list of a form
+   * Calls AdminFormService to update the permission list (collaborators) of a form
    * @param {Array} permissionList - New permission list for the form
    */
   $scope.updatePermissionList = (permissionList) => {
-    return FormApi.update(
-      { formId: $scope.myform._id },
-      { form: { permissionList } },
-    )
-      .$promise.then((savedForm) => {
-        $scope.myform = savedForm
+    return $q
+      .when(
+        AdminFormService.updateCollaborators($scope.myform._id, {
+          permissionList,
+        }),
+      )
+      .then((updatedCollaborators) => {
+        $scope.myform = {
+          ...$scope.myform,
+          ...updatedCollaborators,
+        }
         externalScope.refreshFormDataFromCollab($scope.myform)
       })
       .catch((err) => {
-        Toastr.error(err.data.message)
+        Toastr.error(err.message)
         return err
       })
   }
