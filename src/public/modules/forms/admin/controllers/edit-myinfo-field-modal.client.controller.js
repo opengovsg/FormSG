@@ -6,6 +6,7 @@ angular
   .module('forms')
   .controller('EditMyInfoFieldController', [
     '$uibModalInstance',
+    'FormFields',
     'externalScope',
     'updateField',
     EditMyInfoFieldController,
@@ -13,6 +14,7 @@ angular
 
 function EditMyInfoFieldController(
   $uibModalInstance,
+  FormFields,
   externalScope,
   updateField,
 ) {
@@ -32,6 +34,10 @@ function EditMyInfoFieldController(
     // No id, creation
     let updateFieldPromise
     const field = externalScope.currField
+
+    // Mutate and remove MyInfo data
+    FormFields.removeMyInfoFieldInfo(field)
+
     // Field creation
     if (!field._id) {
       updateFieldPromise = updateField({
