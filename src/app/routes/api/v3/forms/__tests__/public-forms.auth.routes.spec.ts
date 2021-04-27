@@ -395,7 +395,7 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 500 when the fetched login page has no title', async () => {
+    it('should return 502 when the fetched login page has no title', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
@@ -408,14 +408,14 @@ describe('public-form.auth.routes', () => {
         data: '',
       })
       const expectedResponse = jsonParseStringify({
-        message: 'Sorry, something went wrong. Please try again.',
+        message: 'Error while contacting SingPass. Please try again.',
       })
 
       // Act
       const response = await request.get(`/forms/${form._id}/auth/validate`)
 
       // Assert
-      expect(response.status).toEqual(500)
+      expect(response.status).toEqual(502)
       expect(response.body).toEqual(expectedResponse)
     })
 
@@ -444,7 +444,7 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 502 when the singpass login page could not be fetched', async () => {
+    it('should return 503 when the singpass login page could not be fetched', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
@@ -455,15 +455,14 @@ describe('public-form.auth.routes', () => {
       })
       MockAxios.get.mockRejectedValueOnce(new FetchLoginPageError())
       const expectedResponse = jsonParseStringify({
-        message:
-          'Could not validate the eServiceId of the form at this moment. Please refresh and try again.',
+        message: 'Failed to contact SingPass. Please try again.',
       })
 
       // Act
       const response = await request.get(`/forms/${form._id}/auth/validate`)
 
       // Assert
-      expect(response.status).toEqual(502)
+      expect(response.status).toEqual(503)
       expect(response.body).toEqual(expectedResponse)
     })
   })
