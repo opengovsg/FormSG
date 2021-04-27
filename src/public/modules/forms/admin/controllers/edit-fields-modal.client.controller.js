@@ -32,6 +32,7 @@ angular
     'Betas',
     'Auth',
     '$state',
+    'Toastr',
     EditFieldsModalController,
   ])
 
@@ -47,6 +48,7 @@ function EditFieldsModalController(
   Betas,
   Auth,
   $state,
+  Toastr,
 ) {
   let source
   const vm = this
@@ -630,5 +632,19 @@ function EditFieldsModalController(
     // This is a reference to the ng-model of the upload button, which points to the uploaded file
     // On error, we explicitly clear the files stored in the model, as the library does not always automatically do this
     field.uploadedFile = ''
+  }
+
+  /**
+   * Inform user that field id has been copied to clipboard
+   */
+
+  vm.toastSuccessfulFieldIdCopy = () => {
+    Toastr.success('Field ID copied to clipboard!')
+  }
+  /**
+   * Inform user that field id was not copied to clipboard
+   */
+  vm.toastFailedFieldIdCopy = () => {
+    Toastr.error('Failed to copy to clipboard')
   }
 }

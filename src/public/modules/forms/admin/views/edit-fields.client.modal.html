@@ -1088,6 +1088,87 @@
         </div>
         <!-- End custom validation field -->
 
+        <!-- Short Text -->
+
+        <div
+          ng-show="vm.field.fieldType === 'textfield'"
+          class="edit-fields-line"
+        ></div>
+
+        <div ng-if="vm.field.fieldType === 'textfield'" class="row">
+          <div class="row"><br /></div>
+          <div class="toggle-option">
+            <div class="col-xs-8 label-custom label-medium">
+              Enable pre-fill
+              <i
+                class="glyphicon glyphicon-question-sign"
+                uib-tooltip="Allow this field to be pre-populated via URL"
+                tooltip-trigger="'click mouseenter'"
+              >
+              </i>
+            </div>
+            <div class="col-xs-4 field-input">
+              <label
+                class="toggle-selector pull-right"
+                ng-class="vm.field.allowPrefill ? 'toggle-selector-on' : ''"
+              >
+                <input type="checkbox" ng-model="vm.field.allowPrefill" />
+                <div class="toggle-selector-switch">
+                  <i
+                    ng-class="vm.field.allowPrefill ? 'bx bx-check' : 'bx bx-x' "
+                  ></i>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div
+          ng-if="vm.field.fieldType === 'textfield' && vm.field.allowPrefill"
+          class="row"
+        >
+          <div class="row"><br /></div>
+          <div class="col-md-12 label-custom label-medium label-bottom">
+            Field ID
+          </div>
+          <div class="col-md-12">
+            <input
+              type="text"
+              ng-readonly="true"
+              class="input-custom input-medium prefill-input"
+              value="{{vm.field._id || 'Field ID will be generated after field is saved'}}"
+              id="prefill-id"
+            />
+            <i
+              class="bx bx-copy bx-md copy-icon-overlay prefill-copy-icon"
+              ng-if="vm.field._id"
+              ngclipboard
+              data-clipboard-action="copy"
+              data-clipboard-target="#prefill-id"
+              ngclipboard-success="vm.toastSuccessfulFieldIdCopy()"
+              ngclipboard-error="vm.toastFailedFieldIdCopy()"
+            ></i>
+          </div>
+          <div class="col-md-12">
+            <div>
+              <div class="alert-custom alert-info">
+                <i class="bx bx-info-circle bx-md icon-spacing"></i>
+                <span class="alert-msg"
+                  >Use Field ID to pre-populate this field for your users.
+                  <a
+                    href="https://guide.form.gov.sg/AdvancedGuide.html#prefill"
+                    target="_blank"
+                  >
+                    Learn how to pre-populate via URL.
+                  </a></span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- End Short Text -->
+
         <!-- Decimal -->
         <div ng-if="vm.field.fieldType === 'decimal'">
           <div class="row">
