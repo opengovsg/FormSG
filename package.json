@@ -173,7 +173,7 @@
     "@types/express-request-id": "^1.4.1",
     "@types/express-serve-static-core": "^4.17.19",
     "@types/express-session": "^1.17.0",
-    "@types/has-ansi": "^3.0.0",
+    "@types/has-ansi": "^5.0.0",
     "@types/helmet": "4.0.0",
     "@types/ip": "^1.1.0",
     "@types/jest": "^26.0.23",
