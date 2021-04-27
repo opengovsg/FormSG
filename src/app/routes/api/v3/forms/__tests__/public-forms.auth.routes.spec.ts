@@ -7,6 +7,7 @@ import {
   DatabaseError,
   MissingFeatureError,
 } from 'src/app/modules/core/core.errors'
+import { getRedirectTarget } from 'src/app/modules/spcp/spcp.util'
 import { AuthType, Status } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -53,7 +54,12 @@ describe('public-form.auth.routes', () => {
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
-        redirectURL: expect.any(String),
+        redirectURL: expect.stringContaining(
+          encodeURI(getRedirectTarget(form._id, AuthType.SP, false)),
+        ),
+      })
+      expect(response.body).toMatchObject({
+        redirectURL: expect.stringContaining(form.esrvcId!),
       })
     })
 
@@ -75,7 +81,12 @@ describe('public-form.auth.routes', () => {
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
-        redirectURL: expect.any(String),
+        redirectURL: expect.stringContaining(
+          encodeURI(getRedirectTarget(form._id, AuthType.CP, false)),
+        ),
+      })
+      expect(response.body).toMatchObject({
+        redirectURL: expect.stringContaining(form.esrvcId!),
       })
     })
 
@@ -97,7 +108,10 @@ describe('public-form.auth.routes', () => {
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
-        redirectURL: expect.any(String),
+        redirectURL: expect.stringContaining(form.esrvcId!),
+      })
+      expect(response.body).toMatchObject({
+        redirectURL: expect.stringContaining(String(form._id)),
       })
     })
 
