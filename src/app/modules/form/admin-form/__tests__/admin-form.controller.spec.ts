@@ -7300,6 +7300,328 @@ describe('admin-form.controller', () => {
     })
   })
 
+  describe('_handleReorderFormField', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FIELDS = [
+      generateDefaultField(BasicField.Rating),
+      generateDefaultField(BasicField.Table),
+    ]
+    const MOCK_UPDATED_FIELDS = [MOCK_FIELDS[1], MOCK_FIELDS[0]]
+
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      form_fields: MOCK_FIELDS,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+        fieldId: MOCK_FIELDS[1]._id,
+      },
+      query: { to: 2 },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    beforeEach(() => {
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+
+      MockAdminFormService.reorderFormField.mockReturnValue(
+        okAsync(MOCK_UPDATED_FIELDS),
+      )
+    })
+
+    it('should return 200 with reordered form fields', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_UPDATED_FIELDS)
+      expect(MockAdminFormService.reorderFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.params.fieldId,
+        MOCK_REQ.query.to,
+      )
+    })
+
+    it('should return 403 when current user does not have permissions to reorder a form field', async () => {
+      // Arrange
+      const expectedErrorString = 'no permissions pls'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.reorderFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when form cannot be found', async () => {
+      // Arrange
+      const expectedErrorString = 'no form pls'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.reorderFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when field cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockAdminFormService.reorderFormField.mockReturnValueOnce(
+        errAsync(new FieldNotFoundError()),
+      )
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Field to modify not found',
+      })
+      expect(MockAdminFormService.reorderFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.params.fieldId,
+        MOCK_REQ.query.to,
+      )
+    })
+
+    it('should return 410 when attempting to reorder a form field for an archived form', async () => {
+      // Arrange
+      const expectedErrorString = 'form gone pls'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.reorderFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 413 when reordering a form field causes the form to be too large to be saved in the database', async () => {
+      // Arrange
+      const expectedErrorString = 'payload too large'
+      MockAdminFormService.reorderFormField.mockReturnValueOnce(
+        errAsync(new DatabasePayloadSizeError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(413)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.reorderFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.params.fieldId,
+        MOCK_REQ.query.to,
+      )
+    })
+
+    it('should return 422 when DatabaseValidationError occurs', async () => {
+      // Arrange
+      const expectedErrorString = 'invalid thing'
+      MockAdminFormService.reorderFormField.mockReturnValueOnce(
+        errAsync(new DatabaseValidationError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.reorderFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.params.fieldId,
+        MOCK_REQ.query.to,
+      )
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const expectedErrorString = 'user gone'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.reorderFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when database error occurs whilst retrieving user from database', async () => {
+      // Arrange
+      const expectedErrorString = 'database error'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(MockAdminFormService.reorderFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form from database', async () => {
+      // Arrange
+      const expectedErrorString = 'database error'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: String(MOCK_FORM_ID),
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(MockAdminFormService.reorderFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when database error occurs whilst reordering form field', async () => {
+      // Arrange
+      const expectedErrorString = 'database error'
+      MockAdminFormService.reorderFormField.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController._handleReorderFormField(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.reorderFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_REQ.params.fieldId,
+        MOCK_REQ.query.to,
+      )
+    })
+  })
+
   describe('handleDeleteLogic', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()

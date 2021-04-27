@@ -1,7 +1,7 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Request, RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
+import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -71,7 +71,7 @@ import {
 import { mapRouteError } from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
-const Joi = BaseJoi.extend(JoiDate)
+const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 const logger = createLoggerWithLabel(module)
 
@@ -1586,7 +1586,8 @@ export const _handleCreateFormField: RequestHandler<
       })
   )
 }
-/*
+
+/**
  * Handler for DELETE /forms/:formId/logic/:logicId
  * @security session
  *
@@ -1657,3 +1658,74 @@ export const handleCreateFormField = [
   }),
   _handleCreateFormField,
 ]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/fields/:fieldId/reorder
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with new ordering of form fields
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when given fieldId cannot be found in form
+ * @returns 410 when reordering form fields for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleReorderFormField: RequestHandler<
+  { formId: string; fieldId: string },
+  FormFieldDto[] | ErrorDto,
+  unknown,
+  Query & { to: number }
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const { to } = req.query
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to reorder field
+      .andThen((form) => AdminFormService.reorderFormField(form, fieldId, to))
+      .map((reorderedFormFields) =>
+        res.status(StatusCodes.OK).json(reorderedFormFields),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when reordering form field',
+          meta: {
+            action: '_handleReorderFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+            reqQuery: req.query,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /forms/:formId/fields/:fieldId/reorder
+ */
+export const handleReorderFormField = [
+  celebrate({
+    [Segments.QUERY]: {
+      to: Joi.number().min(0).required(),
+    },
+  }),
+  _handleReorderFormField,
+] as RequestHandler[]

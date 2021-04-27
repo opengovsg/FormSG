@@ -502,6 +502,45 @@ export const createFormField = (
 }
 
 /**
+ * Reorders field with given fieldId to the given newPosition
+ * @param form the form to reorder the field from
+ * @param fieldId the id of the field to reorder
+ * @param newPosition the new position of the field
+ * @returns ok(reordered field)
+ * @returns err(FieldNotFoundError) if field id is invalid
+ * @returns err(PossibleDatabaseError) if any database errors occur
+ */
+export const reorderFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+  newPosition: number,
+): ResultAsync<IFieldSchema[], PossibleDatabaseError | FieldNotFoundError> => {
+  return ResultAsync.fromPromise(
+    form.reorderFormFieldById(fieldId, newPosition),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while reordering form field',
+        meta: {
+          action: 'reorderFormField',
+          formId: form._id,
+          fieldId,
+          newPosition,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FieldNotFoundError())
+    }
+
+    return okAsync(updatedForm.form_fields)
+  })
+}
+
+/**
  * Updates form fields of given form depending on the given editFormFieldParams
  * @param originalForm the original form to update form fields for
  * @param editFormFieldParams the parameters stating the type of updates and the position metadata if update type is edit

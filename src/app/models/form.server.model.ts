@@ -9,6 +9,7 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
+import { reorder } from '../../shared/util/immutable-array-fns'
 import {
   AuthType,
   BasicField,
@@ -545,6 +546,27 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) {
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.reorderFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+    newPosition: number,
+  ): Promise<IFormDocument | null> {
+    const existingFieldPosition = this.form_fields.findIndex(
+      (f) => String(f._id) === fieldId,
+    )
+
+    if (existingFieldPosition === -1) return Promise.resolve(null)
+
+    // Exist, reorder form fields and save.
+    const updatedFormFields = reorder(
+      this.form_fields,
+      existingFieldPosition,
+      newPosition,
+    )
+    this.form_fields = updatedFormFields
     return this.save()
   }
 

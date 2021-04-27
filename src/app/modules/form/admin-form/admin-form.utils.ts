@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import { EditFieldActions } from '../../../../shared/constants'
+import { reorder, replaceAt } from '../../../../shared/util/immutable-array-fns'
 import {
   IFieldSchema,
   IPopulatedForm,
@@ -10,7 +11,6 @@ import {
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
-import { reorder, replaceAt } from '../../../utils/immutable-array-fns'
 import {
   ApplicationError,
   DatabaseConflictError,

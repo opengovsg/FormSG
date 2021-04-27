@@ -141,7 +141,8 @@ function AdminFormController(
       return
     }
     let errorMessage
-    switch (error.status) {
+    const status = get(error, 'response.status') || get(error, 'status')
+    switch (status) {
       case StatusCodes.CONFLICT:
       case StatusCodes.BAD_REQUEST:
         errorMessage =
@@ -155,7 +156,7 @@ function AdminFormController(
         // Validation can fail for many reasons, so return more specific message
         errorMessage = get(
           error,
-          'data.message',
+          'response.data.message',
           'Your changes contain invalid input.',
         )
         break
@@ -190,7 +191,10 @@ function AdminFormController(
           .when(AdminFormService.createSingleFormField($scope.myform._id, body))
           .then((updatedFormField) => {
             // insert created field into form
-            $scope.myform.form_fields.push(updatedFormField)
+            $scope.myform.form_fields = [
+              ...$scope.myform.form_fields,
+              updatedFormField,
+            ]
           })
           .catch(handleUpdateError)
       }
@@ -214,6 +218,22 @@ function AdminFormController(
             } else {
               Toastr.error('An error occurred while saving your changes.')
             }
+          })
+          .catch(handleUpdateError)
+      }
+      case UPDATE_FORM_TYPES.ReorderField: {
+        const { fieldId, newPosition } = update
+
+        return $q
+          .when(
+            AdminFormService.reorderSingleFormField(
+              $scope.myform._id,
+              fieldId,
+              newPosition,
+            ),
+          )
+          .then((updatedFields) => {
+            $scope.myform.form_fields = updatedFields
           })
           .catch(handleUpdateError)
       }

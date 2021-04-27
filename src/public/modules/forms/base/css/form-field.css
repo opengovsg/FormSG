@@ -86,6 +86,10 @@
   color: #484848;
 }
 
+.field-group.text-field .prefill-highlight {
+  background-color: #fef8e3;
+}
+
 /* ====================================================== */
 
 /* Mobile Number */
