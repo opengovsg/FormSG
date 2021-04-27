@@ -95,14 +95,17 @@ export const mapFormAuthError: MapRouteError = (
       }
     case FetchLoginPageError:
       return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage: 'Failed to contact SingPass. Please try again.',
+      }
+    case LoginPageValidationError:
+      return {
         statusCode: StatusCodes.BAD_GATEWAY,
-        errorMessage:
-          'Could not validate the eServiceId of the form at this moment. Please refresh and try again.',
+        errorMessage: 'Error while contacting SingPass. Please try again.',
       }
     case DatabaseError:
     case CreateRedirectUrlError:
     case MissingFeatureError:
-    case LoginPageValidationError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,

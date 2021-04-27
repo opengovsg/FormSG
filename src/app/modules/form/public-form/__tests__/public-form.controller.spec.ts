@@ -1753,7 +1753,7 @@ describe('public-form.controller', () => {
       } as SpcpForm<IFormSchema>
       const mockRes = expressHandler.mockResponse()
       const expectedError = {
-        message: 'Sorry, something went wrong. Please try again.',
+        message: 'Error while contacting SingPass. Please try again.',
       }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
@@ -1772,7 +1772,7 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.status).toBeCalledWith(502)
       expect(mockRes.json).toBeCalledWith(expectedError)
     })
 
@@ -1825,7 +1825,7 @@ describe('public-form.controller', () => {
       expect(mockRes.json).toBeCalledWith(expectedError)
     })
 
-    it('should return 502 when the login page for the form could not be retrieved', async () => {
+    it('should return 503 when the login page for the form could not be retrieved', async () => {
       // Arrange
       const MOCK_FORM = {
         authType: AuthType.SP,
@@ -1833,8 +1833,7 @@ describe('public-form.controller', () => {
       } as SpcpForm<IFormSchema>
       const mockRes = expressHandler.mockResponse()
       const expectedError = {
-        message:
-          'Could not validate the eServiceId of the form at this moment. Please refresh and try again.',
+        message: 'Failed to contact SingPass. Please try again.',
       }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
       MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
@@ -1852,7 +1851,7 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(502)
+      expect(mockRes.status).toBeCalledWith(503)
       expect(mockRes.json).toBeCalledWith(expectedError)
     })
   })
