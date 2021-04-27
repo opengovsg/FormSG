@@ -41,6 +41,7 @@ angular
     '$translate',
     '$uibModal',
     'FormData',
+    'FormFields',
     'Auth',
     'moment',
     'Toastr',
@@ -56,6 +57,7 @@ function AdminFormController(
   $translate,
   $uibModal,
   FormData,
+  FormFields,
   Auth,
   moment,
   Toastr,
@@ -195,6 +197,7 @@ function AdminFormController(
             const updatedFieldClass = FieldFactory.createFieldFromData(
               updatedFormField,
             )
+            FormFields.injectMyInfoFieldInfo(updatedFieldClass)
 
             // insert created field into form
             $scope.myform.form_fields = [
@@ -219,6 +222,7 @@ function AdminFormController(
             const updatedFieldClass = FieldFactory.createFieldFromData(
               updatedFormField,
             )
+            FormFields.injectMyInfoFieldInfo(updatedFieldClass)
 
             // merge back into the form fields
             const updateIndex = $scope.myform.form_fields.findIndex(
@@ -245,9 +249,11 @@ function AdminFormController(
           )
           .then((updatedFields) => {
             // !!! Convert retrieved form field objects into their class counterparts.
-            const updatedFieldClasses = updatedFields.map((f) =>
-              FieldFactory.createFieldFromData(f),
-            )
+            const updatedFieldClasses = updatedFields.map((f) => {
+              const fieldClass = FieldFactory.createFieldFromData(f)
+              FormFields.injectMyInfoFieldInfo(fieldClass)
+              return fieldClass
+            })
             $scope.myform.form_fields = updatedFieldClasses
           })
           .catch(handleUpdateError)
