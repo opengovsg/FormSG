@@ -191,7 +191,10 @@ function AdminFormController(
           .when(AdminFormService.createSingleFormField($scope.myform._id, body))
           .then((updatedFormField) => {
             // insert created field into form
-            $scope.myform.form_fields.push(updatedFormField)
+            $scope.myform.form_fields = [
+              ...$scope.myform.form_fields,
+              updatedFormField,
+            ]
           })
           .catch(handleUpdateError)
       }
