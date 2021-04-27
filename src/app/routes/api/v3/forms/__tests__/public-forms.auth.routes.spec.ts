@@ -35,7 +35,7 @@ describe('public-form.auth.routes', () => {
     jest.restoreAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
-  describe('POST /forms/:formId/auth/redirect', () => {
+  describe('GET /forms/:formId/auth/redirect', () => {
     it('should return 200 with the redirect URL when the form is valid and has authType SP', async () => {
       // Arrange
       const { form } = await dbHandler.insertEncryptForm({
