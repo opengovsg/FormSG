@@ -1410,4 +1410,11 @@ a.modal-cancel-btn:hover {
   top: 10px;
   right: 25px;
   cursor: grab;
+  color: #b8b8b8;
+}
+
+.prefill-input {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  color: #979797;
 }
