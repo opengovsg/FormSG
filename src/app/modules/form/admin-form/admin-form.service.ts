@@ -19,6 +19,7 @@ import {
   IFormSchema,
   IPopulatedForm,
   IUserSchema,
+  Permission,
 } from '../../../../types'
 import {
   FieldCreateDto,
@@ -634,6 +635,35 @@ export const updateForm = (
 
     return transformMongoError(error)
   })
+}
+
+/**
+ * Updates the collaborators of a given form
+ * @param form the form to update collaborators fo
+ * @param updatedCollaborators the new list of collaborators
+ *
+ * @returns ok(collaborators) if form updates successfully
+ * @returns err(PossibleDatabaseError) if any database errors occurs
+ */
+export const updateFormCollaborators = (
+  form: IPopulatedForm,
+  updatedCollaborators: Permission[],
+): ResultAsync<Permission[], PossibleDatabaseError> => {
+  return ResultAsync.fromPromise(
+    form.updateFormCollaborators(updatedCollaborators),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form collaborators',
+        meta: {
+          action: 'updateFormCollaborators',
+          formId: form._id,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen(({ permissionList }) => okAsync(permissionList))
 }
 
 /**

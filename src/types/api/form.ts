@@ -2,7 +2,7 @@ import { LeanDocument } from 'mongoose'
 import { ConditionalPick, Primitive } from 'type-fest'
 
 import { FormField, FormFieldSchema, FormFieldWithId } from '../field'
-import { FormSettings } from '../form'
+import { FormSettings, Permission } from '../form'
 
 export type SettingsUpdateDto = Partial<FormSettings>
 
@@ -17,3 +17,5 @@ export type FormFieldDto = ConditionalPick<
   LeanDocument<FormFieldSchema>,
   Primitive
 >
+
+export type PermissionsUpdateDto = { permissionList: Permission[] }

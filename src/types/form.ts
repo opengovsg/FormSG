@@ -183,6 +183,11 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     newField: FormFieldWithId,
   ): Promise<T | null>
 
+  updateFormCollaborators<T>(
+    this: T,
+    updateFormCollaborators: Permission[],
+  ): Promise<T>
+
   /**
    * Reorders field corresponding to given fieldId to given newPosition
    * @param fieldId the id of the field to reorder
@@ -194,7 +199,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     this: T,
     fieldId: string,
     newPosition: number,
-  ): Promise<T | null>
+  ): Promise<T>
 
   /**
    * Inserts a form field into the form
