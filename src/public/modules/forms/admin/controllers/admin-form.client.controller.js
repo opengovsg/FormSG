@@ -4,6 +4,7 @@ const { StatusCodes } = require('http-status-codes')
 const get = require('lodash/get')
 const { LogicType } = require('../../../../../types')
 const AdminFormService = require('../../../../services/AdminFormService')
+const FieldFactory = require('../../helpers/field-factory')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 // All viewable tabs. readOnly is true if that tab cannot be used to edit form.
@@ -190,10 +191,15 @@ function AdminFormController(
         return $q
           .when(AdminFormService.createSingleFormField($scope.myform._id, body))
           .then((updatedFormField) => {
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClass = FieldFactory.createFieldFromData(
+              updatedFormField,
+            )
+
             // insert created field into form
             $scope.myform.form_fields = [
               ...$scope.myform.form_fields,
-              updatedFormField,
+              updatedFieldClass,
             ]
           })
           .catch(handleUpdateError)
@@ -209,12 +215,17 @@ function AdminFormController(
             ),
           )
           .then((updatedFormField) => {
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClass = FieldFactory.createFieldFromData(
+              updatedFormField,
+            )
+
             // merge back into the form fields
             const updateIndex = $scope.myform.form_fields.findIndex(
               (f) => f._id === fieldId,
             )
             if (updateIndex !== -1) {
-              $scope.myform.form_fields[updateIndex] = updatedFormField
+              $scope.myform.form_fields[updateIndex] = updatedFieldClass
             } else {
               Toastr.error('An error occurred while saving your changes.')
             }
@@ -233,7 +244,11 @@ function AdminFormController(
             ),
           )
           .then((updatedFields) => {
-            $scope.myform.form_fields = updatedFields
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClasses = updatedFields.map((f) =>
+              FieldFactory.createFieldFromData(f),
+            )
+            $scope.myform.form_fields = updatedFieldClasses
           })
           .catch(handleUpdateError)
       }
