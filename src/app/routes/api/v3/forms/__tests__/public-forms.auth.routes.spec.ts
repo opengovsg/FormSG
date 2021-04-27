@@ -54,12 +54,10 @@ describe('public-form.auth.routes', () => {
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
-        redirectURL: expect.stringContaining(
+        redirectURL: expect.toIncludeMultiple([
           encodeURI(getRedirectTarget(form._id, AuthType.SP, false)),
-        ),
-      })
-      expect(response.body).toMatchObject({
-        redirectURL: expect.stringContaining(form.esrvcId!),
+          form.esrvcId!,
+        ]),
       })
     })
 
@@ -81,12 +79,10 @@ describe('public-form.auth.routes', () => {
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
-        redirectURL: expect.stringContaining(
+        redirectURL: expect.toIncludeMultiple([
           encodeURI(getRedirectTarget(form._id, AuthType.CP, false)),
-        ),
-      })
-      expect(response.body).toMatchObject({
-        redirectURL: expect.stringContaining(form.esrvcId!),
+          form.esrvcId!,
+        ]),
       })
     })
 
@@ -108,10 +104,10 @@ describe('public-form.auth.routes', () => {
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
-        redirectURL: expect.stringContaining(form.esrvcId!),
-      })
-      expect(response.body).toMatchObject({
-        redirectURL: expect.stringContaining(String(form._id)),
+        redirectURL: expect.toIncludeMultiple([
+          String(form._id),
+          form.esrvcId!,
+        ]),
       })
     })
 
