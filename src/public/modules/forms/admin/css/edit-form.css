@@ -1418,3 +1418,7 @@ a.modal-cancel-btn:hover {
   border: 1px solid #ccc;
   color: #979797;
 }
+
+.pull-right {
+  cursor: pointer;
+}
