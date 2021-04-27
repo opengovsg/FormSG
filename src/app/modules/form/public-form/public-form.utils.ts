@@ -70,57 +70,7 @@ export const mapRouteError = (
  * @param error The error to retrieve the status codes and error messages
  * @param coreErrorMessage Any error message to return instead of the default core error message, if any
  */
-export const mapFormAuthRedirectError: MapRouteError = (
-  error,
-  coreErrorMessage = 'Sorry, something went wrong. Please try again.',
-) => {
-  switch (error.constructor) {
-    case FormErrors.FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage:
-          'Could not find the form requested. Please refresh and try again.',
-      }
-    case FormErrors.FormAuthNoEsrvcIdError:
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage:
-          'This form does not have a valid eServiceId. Please refresh and try again.',
-      }
-    case FormErrors.AuthTypeMismatchError:
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage:
-          'Please ensure that the form has authentication enabled. Please refresh and try again.',
-      }
-    case DatabaseError:
-    case CreateRedirectUrlError:
-    case MissingFeatureError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-    default:
-      logger.error({
-        message: 'Unknown route error observed',
-        meta: {
-          action: 'mapRouteError',
-        },
-        error,
-      })
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: 'Sorry, something went wrong. Please try again.',
-      }
-  }
-}
-
-/**
- * Handler to map ApplicationErrors from validating a form's eServiceId to HTTP errors
- * @param error The error to retrieve the status codes and error messages
- * @param coreErrorMessage Any error message to return instead of the default core error message, if any
- */
-export const mapValidateEsrvcIdError: MapRouteError = (
+export const mapFormAuthError: MapRouteError = (
   error,
   coreErrorMessage = 'Sorry, something went wrong. Please try again.',
 ) => {
@@ -151,6 +101,7 @@ export const mapValidateEsrvcIdError: MapRouteError = (
       }
     case DatabaseError:
     case CreateRedirectUrlError:
+    case MissingFeatureError:
     case LoginPageValidationError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

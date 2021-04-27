@@ -38,11 +38,7 @@ import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
 import { PublicFormViewDto, RedirectParams } from './public-form.types'
-import {
-  mapFormAuthRedirectError,
-  mapRouteError,
-  mapValidateEsrvcIdError,
-} from './public-form.utils'
+import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -437,7 +433,7 @@ export const _handleFormAuthRedirect: RequestHandler<
         meta: logMeta,
         error,
       })
-      const { statusCode, errorMessage } = mapFormAuthRedirectError(error)
+      const { statusCode, errorMessage } = mapFormAuthError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
@@ -508,7 +504,7 @@ export const handleValidateFormEsrvcId: RequestHandler<
         },
         error,
       })
-      const { statusCode, errorMessage } = mapValidateEsrvcIdError(error)
+      const { statusCode, errorMessage } = mapFormAuthError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
