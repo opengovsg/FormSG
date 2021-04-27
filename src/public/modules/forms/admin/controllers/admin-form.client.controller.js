@@ -141,7 +141,8 @@ function AdminFormController(
       return
     }
     let errorMessage
-    switch (error.status) {
+    const status = get(error, 'response.status') || get(error, 'status')
+    switch (status) {
       case StatusCodes.CONFLICT:
       case StatusCodes.BAD_REQUEST:
         errorMessage =
@@ -155,7 +156,7 @@ function AdminFormController(
         // Validation can fail for many reasons, so return more specific message
         errorMessage = get(
           error,
-          'data.message',
+          'response.data.message',
           'Your changes contain invalid input.',
         )
         break
