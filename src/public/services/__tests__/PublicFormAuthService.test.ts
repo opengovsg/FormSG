@@ -75,21 +75,9 @@ describe('PublicFormAuthService', () => {
     })
   })
 
-  describe('validateESrvcId', () => {
-    it('should return isValid as true when the e-service ID is valid', async () => {
+  describe('validateEsrvcId', () => {
+    it('should call validate endpoint successfully', async () => {
       const mockData = { isValid: true }
-      MockAxios.get.mockResolvedValueOnce({ data: mockData })
-
-      const result = await PublicFormAuthService.validateEsrvcId(MOCK_FORM_ID)
-
-      expect(MockAxios.get).toHaveBeenCalledWith(
-        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/validate`,
-      )
-      expect(result).toEqual(mockData)
-    })
-
-    it('should return isValid as false and an errorcode when the e-service ID is invalid', async () => {
-      const mockData = { isValid: false, errorCode: '123' }
       MockAxios.get.mockResolvedValueOnce({ data: mockData })
 
       const result = await PublicFormAuthService.validateEsrvcId(MOCK_FORM_ID)
