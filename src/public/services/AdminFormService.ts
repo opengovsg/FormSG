@@ -5,6 +5,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  PermissionsUpdateDto,
   SettingsUpdateDto,
 } from '../../types/api'
 
@@ -43,6 +44,18 @@ export const createSingleFormField = async (
     .post<FormFieldDto>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/fields`,
       createFieldBody,
+    )
+    .then(({ data }) => data)
+}
+
+export const updateCollaborators = async (
+  formId: string,
+  collaboratorsToUpdate: PermissionsUpdateDto,
+): Promise<PermissionsUpdateDto> => {
+  return axios
+    .put<PermissionsUpdateDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators`,
+      collaboratorsToUpdate,
     )
     .then(({ data }) => data)
 }
