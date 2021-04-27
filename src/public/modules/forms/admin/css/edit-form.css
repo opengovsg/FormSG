@@ -1409,4 +1409,5 @@ a.modal-cancel-btn:hover {
   position: absolute;
   top: 10px;
   right: 25px;
+  cursor: grab;
 }
