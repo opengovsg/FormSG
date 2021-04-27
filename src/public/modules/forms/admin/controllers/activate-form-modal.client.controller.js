@@ -96,7 +96,7 @@ function ActivateFormController(
       vm.esrvcIdStatus = 1
     })
 
-    if ((authType === 'SP' && esrvcId !== '') || authType === 'MyInfo') {
+    if (authType === 'SP' || authType === 'MyInfo') {
       return $q
         .when(PublicFormAuthService.validateEsrvcId(target))
         .then((response) => {
