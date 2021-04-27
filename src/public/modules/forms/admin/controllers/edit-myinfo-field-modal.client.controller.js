@@ -1,5 +1,6 @@
 'use strict'
 
+const cloneDeep = require('lodash/cloneDeep')
 const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 angular
@@ -33,7 +34,7 @@ function EditMyInfoFieldController(
   vm.saveMyInfoField = function () {
     // No id, creation
     let updateFieldPromise
-    const field = externalScope.currField
+    const field = cloneDeep(externalScope.currField)
 
     // Mutate and remove MyInfo data
     FormFields.removeMyInfoFieldInfo(field)
