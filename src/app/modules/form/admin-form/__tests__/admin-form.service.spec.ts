@@ -64,6 +64,7 @@ import {
   duplicateForm,
   editFormFields,
   getDashboardForms,
+  reorderFormField,
   transferFormOwnership,
   updateForm,
   updateFormField,
@@ -1346,6 +1347,7 @@ describe('admin-form.service', () => {
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
     })
   })
+
   describe('deleteFormLogic', () => {
     const logicId = new ObjectId().toHexString()
     const mockFormLogic = {
@@ -1453,6 +1455,92 @@ describe('admin-form.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new LogicNotFoundError())
       expect(DELETE_SPY).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('reorderFormField', () => {
+    it('should return reordered fields successfully', async () => {
+      // Arrange
+      const mockFormFields = [
+        generateDefaultField(BasicField.YesNo),
+        generateDefaultField(BasicField.Date),
+      ]
+      const mockUpdatedForm = {
+        form_fields: [mockFormFields[1], mockFormFields[0]],
+      }
+      const mockForm = ({
+        form_fields: mockFormFields,
+        reorderFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
+      } as unknown) as IPopulatedForm
+      const fieldToReorder = String(mockFormFields[0]._id)
+      const newPosition = 1
+
+      // Act
+      const actual = await reorderFormField(
+        mockForm,
+        fieldToReorder,
+        newPosition,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(mockUpdatedForm.form_fields)
+      expect(mockForm.reorderFormFieldById).toHaveBeenCalledWith(
+        fieldToReorder,
+        newPosition,
+      )
+    })
+
+    it('should return FieldNotFoundError when null is returned from the model instance method', async () => {
+      // Arrange
+      const mockForm = ({
+        form_fields: [generateDefaultField(BasicField.YesNo)],
+        reorderFormFieldById: jest.fn().mockResolvedValue(null),
+      } as unknown) as IPopulatedForm
+      const fieldToReorder = new ObjectId().toHexString()
+      const newPosition = 2
+
+      // Act
+      const actual = await reorderFormField(
+        mockForm,
+        fieldToReorder,
+        newPosition,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FieldNotFoundError())
+      expect(mockForm.reorderFormFieldById).toHaveBeenCalledWith(
+        fieldToReorder,
+        newPosition,
+      )
+    })
+
+    it('should return database error when error occurs whilst reordering fields', async () => {
+      // Arrange
+      const mockForm = ({
+        form_fields: [generateDefaultField(BasicField.YesNo)],
+        // Rejection
+        reorderFormFieldById: jest
+          .fn()
+          .mockRejectedValue(new Error('some error')),
+      } as unknown) as IPopulatedForm
+      const fieldToReorder = new ObjectId().toHexString()
+      const newPosition = 2
+
+      // Act
+      const actual = await reorderFormField(
+        mockForm,
+        fieldToReorder,
+        newPosition,
+      )
+
+      // Assert
+      const actualError = actual._unsafeUnwrapErr()
+      expect(actualError).toBeInstanceOf(DatabaseError)
+      expect(actualError.message).toEqual(expect.stringContaining('some error'))
+      expect(mockForm.reorderFormFieldById).toHaveBeenCalledWith(
+        fieldToReorder,
+        newPosition,
+      )
     })
   })
 })

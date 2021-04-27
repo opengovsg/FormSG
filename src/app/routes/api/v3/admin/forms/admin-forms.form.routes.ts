@@ -113,6 +113,11 @@ AdminFormsFormRouter.put(
 )
 
 AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reorder',
+  AdminFormController.handleReorderFormField,
+)
+
+AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fields',
   AdminFormController.handleCreateFormField,
 )

@@ -217,6 +217,22 @@ function AdminFormController(
           })
           .catch(handleUpdateError)
       }
+      case UPDATE_FORM_TYPES.ReorderField: {
+        const { fieldId, newPosition } = update
+
+        return $q
+          .when(
+            AdminFormService.reorderSingleFormField(
+              $scope.myform._id,
+              fieldId,
+              newPosition,
+            ),
+          )
+          .then((updatedFields) => {
+            $scope.myform.form_fields = updatedFields
+          })
+          .catch(handleUpdateError)
+      }
       default:
         return FormApi.update({ formId: $scope.myform._id }, { form: update })
           .$promise.then((savedForm) => {

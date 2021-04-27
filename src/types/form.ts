@@ -184,6 +184,19 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   ): Promise<T | null>
 
   /**
+   * Reorders field corresponding to given fieldId to given newPosition
+   * @param fieldId the id of the field to reorder
+   * @param newPosition the new position to move the field to
+   * @returns updated form after the reordering if field reorder is successful
+   * @returns null if field is not found
+   */
+  reorderFormFieldById<T>(
+    this: T,
+    fieldId: string,
+    newPosition: number,
+  ): Promise<T | null>
+
+  /**
    * Inserts a form field into the form
    * @param newField the new field to insert
    * @returns updated form after the insertion if field insertion is successful

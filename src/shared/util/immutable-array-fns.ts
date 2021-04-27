@@ -2,6 +2,8 @@
  * This utility file contains immutable array functions.
  */
 
+import { ExtractTypeFromArray } from '../../types/utils'
+
 /**
  * Pure function to reorders given array from given `fromIndex` to `toIndex`.
  * The new reordered array will be returned.
@@ -19,10 +21,10 @@
  * @returns reordered array
  */
 export const reorder = <T>(
-  array: T[],
+  array: ExtractTypeFromArray<T>[],
   fromIndex: number,
   toIndex: number,
-): T[] => {
+): ExtractTypeFromArray<T>[] => {
   /**
    * Invalid index, return array as is.
    * The index is checked instead of definedness of element at the index as
@@ -67,7 +69,11 @@ export const reorder = <T>(
  *
  * @return new array with replaced value
  */
-export const replaceAt = <T>(array: T[], index: number, newValue: T): T[] => {
+export const replaceAt = <T>(
+  array: ExtractTypeFromArray<T>[],
+  index: number,
+  newValue: ExtractTypeFromArray<T>,
+): ExtractTypeFromArray<T>[] => {
   const ret = array.slice(0)
   ret[index] = newValue
   return ret
