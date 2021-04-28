@@ -65,7 +65,7 @@ function ActivateFormController(
             vm.savingStatus = 1
             const toastMessage = dedent`
               Congrats! Your form is now live.<br/>For high-traffic forms,
-              <a href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-ensure-my-form-responses-will-not-bounce" target="_blank">
+              <a href="https://go.gov.sg/form-prevent-bounce" target="_blank">
                 AutoArchive your mailbox</a> to prevent lost responses.
             `
             return updateFormStatusAndSave(toastMessage, {
