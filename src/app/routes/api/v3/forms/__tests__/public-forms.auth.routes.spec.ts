@@ -335,11 +335,33 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 400 when the form has an invalid AuthType', async () => {
+    it('should return 400 when the form has AuthType.NIL', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: AuthType.NIL,
+          esrvcId: new ObjectId().toHexString(),
+          status: Status.Public,
+        },
+      })
+      const expectedResponse = jsonParseStringify({
+        message:
+          'Please ensure that the form has authentication enabled. Please refresh and try again.',
+      })
+
+      // Act
+      const response = await request.get(`/forms/${form._id}/auth/validate`)
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when the form has AuthType.CP', async () => {
+      // Arrange
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          authType: AuthType.CP,
           esrvcId: new ObjectId().toHexString(),
           status: Status.Public,
         },
