@@ -399,7 +399,8 @@ export const _handleFormAuthRedirect: RequestHandler<
               requestedAttributes: form.getUniqueMyInfoAttrs(),
             }),
           )
-        case AuthType.SP: {
+        case AuthType.SP:
+        case AuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
           return validateSpcpForm(form).andThen((form) => {
