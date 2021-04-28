@@ -1738,7 +1738,7 @@ export const handleReorderFormField = [
  * @security session
  *
  * @returns 200 with updated collaborators and permissions
- * @returns 403 when current user does not have permissions to create a form field
+ * @returns 403 when current user does not have permissions to update the collaborators
  * @returns 404 when form cannot be found
  * @returns 410 when updating collaborators for an archived form
  * @returns 422 when user in session cannot be retrieved from the database
