@@ -1556,71 +1556,12 @@ describe('public-form.controller', () => {
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(expectedResBody)
     })
-
-    it('should return 200 with isValid set to true when a valid CP form authenticates successfully', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: AuthType.CP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedResBody = { isValid: true }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
-        okAsync('this is raw html'),
-      )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
-    })
-
     it('should return 200 with isValid set to false when an invalid MyInfo form authenticates successfully', async () => {
       // Arrange
       const MOCK_FORM = {
         authType: AuthType.MyInfo,
         esrvcId: '12345',
       } as MyInfoForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedResBody = { isValid: false, errorCode: '138' }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpFactory.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpFactory.fetchLoginPage.mockReturnValueOnce(
-        okAsync('this is raw html'),
-      )
-      MockSpcpFactory.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
-    })
-
-    it('should return 200 with isValid set to false when an invalid CP form authenticates successfully', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: AuthType.CP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormSchema>
       const mockRes = expressHandler.mockResponse()
       const expectedResBody = { isValid: false, errorCode: '138' }
       MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
@@ -1677,6 +1618,31 @@ describe('public-form.controller', () => {
       // Arrange
       const MOCK_FORM = {
         authType: AuthType.NIL,
+        esrvcId: '12345',
+      } as IFormSchema
+      const mockRes = expressHandler.mockResponse()
+      const expectedError = {
+        message:
+          'Please ensure that the form has authentication enabled. Please refresh and try again.',
+      }
+      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
+
+      // Act
+      await PublicFormController.handleValidateFormEsrvcId(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(400)
+      expect(mockRes.json).toBeCalledWith(expectedError)
+    })
+
+    it('should return 400 when the form has authType.CP', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        authType: AuthType.CP,
         esrvcId: '12345',
       } as IFormSchema
       const mockRes = expressHandler.mockResponse()

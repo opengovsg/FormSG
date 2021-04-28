@@ -481,7 +481,6 @@ export const handleValidateFormEsrvcId: RequestHandler<
             SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
           )
         case AuthType.SP:
-        case AuthType.CP:
           return validateSpcpForm(form).andThen((form) =>
             SpcpFactory.createRedirectUrl(form.authType, formId, form.esrvcId),
           )
