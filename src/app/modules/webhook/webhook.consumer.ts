@@ -84,7 +84,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
 
   // If not due, requeue
   if (!webhookMessage.isDue()) {
-    const requeueResult = await producer.sendMessage(webhookMessage.serialise())
+    const requeueResult = await producer.sendMessage(webhookMessage)
     if (requeueResult.isErr()) {
       logger.error({
         message: 'Webhook queue message could not be requeued',
@@ -125,9 +125,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
       // Requeue webhook for subsequent retry
       return webhookMessage
         .incrementAttempts()
-        .asyncAndThen((newMessage) =>
-          producer.sendMessage(newMessage.serialise()),
-        )
+        .asyncAndThen((newMessage) => producer.sendMessage(newMessage))
     })
   })
 

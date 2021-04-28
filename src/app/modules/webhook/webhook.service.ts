@@ -195,9 +195,7 @@ export const createInitialWebhookSender = (producer?: WebhookProducer) => (
         // Webhook failed and retries enabled, so create initial message and enqueue
         return WebhookQueueMessage.fromSubmissionId(
           String(submission._id),
-        ).asyncAndThen((queueMessage) =>
-          producer.sendMessage(queueMessage.serialise()),
-        )
+        ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
       }),
   )
 }

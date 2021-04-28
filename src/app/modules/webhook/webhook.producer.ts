@@ -5,6 +5,7 @@ import { Producer } from 'sqs-producer'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import { WebhookPushToQueueError } from './webhook.errors'
+import { WebhookQueueMessage } from './webhook.message'
 
 const logger = createLoggerWithLabel(module)
 
@@ -17,10 +18,12 @@ export class WebhookProducer {
     })
   }
 
-  sendMessage(message: string): ResultAsync<true, WebhookPushToQueueError> {
+  sendMessage(
+    message: WebhookQueueMessage,
+  ): ResultAsync<true, WebhookPushToQueueError> {
     const sendMessageRetry = promiseRetry<true>(async (retry, attemptNum) => {
       try {
-        await this.producer.send(message)
+        await this.producer.send(message.serialise())
         return true
       } catch (error) {
         logger.error({
