@@ -98,6 +98,7 @@ export type EndPage = {
 export type Permission = {
   email: string
   write: boolean
+  _id?: string
 }
 
 export type Webhook = {
@@ -199,7 +200,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     this: T,
     fieldId: string,
     newPosition: number,
-  ): Promise<T>
+  ): Promise<T | null>
 
   /**
    * Inserts a form field into the form
