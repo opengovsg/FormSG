@@ -28,6 +28,7 @@ function editFormDirective() {
     scope: {
       myform: '=',
       updateForm: '&',
+      updateFormEndPage: '&',
     },
     controller: [
       '$scope',
@@ -329,7 +330,7 @@ function editFormController(
       controllerAs: 'vm',
       resolve: {
         myform: () => $scope.myform,
-        updateField: () => updateField,
+        updateEndPage: () => $scope.updateFormEndPage,
       },
     })
   }

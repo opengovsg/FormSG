@@ -7,11 +7,11 @@ angular
   .controller('EditEndPageController', [
     '$uibModalInstance',
     'myform',
-    'updateField',
+    'updateEndPage',
     EditEndPageController,
   ])
 
-function EditEndPageController($uibModalInstance, myform, updateField) {
+function EditEndPageController($uibModalInstance, myform, updateEndPage) {
   const vm = this
 
   vm.logoUrl = getFormLogo(myform)
@@ -53,7 +53,7 @@ function EditEndPageController($uibModalInstance, myform, updateField) {
 
       vm.myform.endPage.buttonLink = inputLink
 
-      updateField({ endPage: vm.myform.endPage }).then((error) => {
+      updateEndPage({ newEndPage: vm.myform.endPage }).then((error) => {
         if (!error) {
           $uibModalInstance.close()
         }
