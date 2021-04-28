@@ -4,11 +4,10 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Consumer } from 'sqs-consumer'
 
-import { transformMongoError } from 'src/app/utils/handle-mongo-error'
-import { SubmissionWebhookInfo } from 'src/types'
-
+import { SubmissionWebhookInfo } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
+import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
