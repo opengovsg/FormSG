@@ -49,6 +49,13 @@ export const startWebhookConsumer = (
   })
 
   app.start()
+
+  logger.info({
+    message: 'Webhook consumer started',
+    meta: {
+      action: 'startWebhookConsumer',
+    },
+  })
 }
 
 const createWebhookQueueHandler = (producer: WebhookProducer) => async (
