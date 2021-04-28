@@ -292,7 +292,7 @@ describe('admin-form.settings.routes', () => {
 
       // Assert
       expect(response.status).toEqual(200)
-      // NOTE: This is not strict equality because mongoose attaches an extra _id parameters, which is not caught by the type system
+      // NOTE: This is not strict equality because mongoose attaches an extra _id parameter
       expect(response.body).toMatchObject(expectedResponse)
     })
 
