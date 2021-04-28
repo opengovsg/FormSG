@@ -12,6 +12,7 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  ApplicationError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
@@ -67,6 +68,7 @@ import {
   reorderFormField,
   transferFormOwnership,
   updateForm,
+  updateFormCollaborators,
   updateFormField,
   updateFormSettings,
 } from '../admin-form.service'
@@ -1541,6 +1543,58 @@ describe('admin-form.service', () => {
         fieldToReorder,
         newPosition,
       )
+    })
+  })
+
+  describe('updateFormCollaborators', () => {
+    it('should return the list of collaborators when update is successful', async () => {
+      // Arrange
+      const newCollaborators = [
+        {
+          email: `fakeuser@gov.sg`,
+          write: false,
+        },
+      ]
+      const mockForm = ({
+        title: 'some mock form',
+        updateFormCollaborators: jest
+          .fn()
+          .mockResolvedValue({ permissionList: newCollaborators }),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await updateFormCollaborators(mockForm, newCollaborators)
+
+      // Assert
+      expect(mockForm.updateFormCollaborators).toHaveBeenCalledWith(
+        newCollaborators,
+      )
+      expect(actual._unsafeUnwrap()).toEqual(newCollaborators)
+    })
+
+    it('should return an application error when updating the form model fails', async () => {
+      // Arrange
+      const newCollaborators = [
+        {
+          email: `fakeuser@gov.sg`,
+          write: false,
+        },
+      ]
+      const mockForm = ({
+        title: 'some mock form',
+        updateFormCollaborators: jest
+          .fn()
+          .mockRejectedValue(new DatabaseError()),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await updateFormCollaborators(mockForm, newCollaborators)
+
+      // Assert
+      expect(mockForm.updateFormCollaborators).toHaveBeenCalledWith(
+        newCollaborators,
+      )
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
     })
   })
 })
