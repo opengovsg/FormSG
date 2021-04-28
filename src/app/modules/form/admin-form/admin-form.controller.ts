@@ -1767,7 +1767,7 @@ export const handleDeleteFormField: RequestHandler<
         logger.error({
           message: 'Error occurred when deleting form field',
           meta: {
-            action: '_handleDeleteFormField',
+            action: 'handleDeleteFormField',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
