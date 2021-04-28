@@ -14,11 +14,13 @@ import {
   FormMetaView,
   FormSettings,
   IForm,
+  IFormDocument,
   IPopulatedForm,
   ResponseMode,
 } from '../../../../types'
 import {
   EncryptSubmissionDto,
+  EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
@@ -1780,3 +1782,71 @@ export const handleDeleteFormField: RequestHandler<
       })
   )
 }
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/end-page
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated end page
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the end page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateEndPage: RequestHandler<
+  { formId: string },
+  IFormDocument['endPage'] | ErrorDto,
+  EndPageUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to allow updating of end page
+      .andThen(() => AdminFormService.updateEndPage(formId, req.body))
+      .map((updatedEndPage) => res.status(StatusCodes.OK).json(updatedEndPage))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating end page',
+          meta: {
+            action: '_handleUpdateEndPage',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            body: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/end-page
+ */
+export const handleUpdateEndPage = [
+  celebrate({
+    [Segments.BODY]: {
+      title: Joi.string().required(),
+      paragraph: Joi.string().allow(''),
+      buttonLink: Joi.string().uri().allow(''),
+      buttonText: Joi.string().allow(''),
+    },
+  }),
+  _handleUpdateEndPage,
+] as RequestHandler[]
