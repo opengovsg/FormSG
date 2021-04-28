@@ -1799,8 +1799,8 @@ export const handleUpdateCollaborators = [
         Joi.object({
           email: Joi.string().email().required(),
           write: Joi.bool().optional(),
-          // There might be other keys sent over with the request but this is not an error.
-        }).unknown(),
+          _id: Joi.string().optional(),
+        }),
       ),
     },
   }),
