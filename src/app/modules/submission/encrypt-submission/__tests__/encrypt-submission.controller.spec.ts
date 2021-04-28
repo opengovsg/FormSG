@@ -30,8 +30,8 @@ import {
 } from '../../submission.errors'
 import {
   getEncryptedResponseUsingQueryParams,
+  getMetadata,
   handleGetEncryptedResponse,
-  handleGetMetadata,
   streamEncryptedResponses,
 } from '../encrypt-submission.controller'
 import * as EncryptSubmissionService from '../encrypt-submission.service'
@@ -633,7 +633,7 @@ describe('encrypt-submission.controller', () => {
     })
   })
 
-  describe('handleGetMetadata', () => {
+  describe('getMetadata', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER_ID = new ObjectId().toHexString()
 
@@ -684,7 +684,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -721,7 +721,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -767,7 +767,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith(expectedMetadataList)
@@ -802,7 +802,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
@@ -837,7 +837,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(403)
@@ -872,7 +872,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(404)
@@ -907,7 +907,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(410)
@@ -941,7 +941,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(422)
@@ -982,7 +982,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -1019,7 +1019,7 @@ describe('encrypt-submission.controller', () => {
       )
 
       // Act
-      await handleGetMetadata(mockReq, mockRes, jest.fn())
+      await getMetadata(mockReq, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith({

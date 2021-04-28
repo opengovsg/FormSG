@@ -1,4 +1,3 @@
-import { AxiosResponse } from 'axios'
 import { Document, Model, QueryCursor } from 'mongoose'
 
 import { MyInfoAttribute } from './field'
@@ -105,9 +104,10 @@ export type IEncryptedSubmissionSchema = IEncryptedSubmission &
 export interface IWebhookResponse {
   webhookUrl: string
   signature: string
-  errorMessage?: string
-  response?: Omit<AxiosResponse<string>, 'config' | 'request' | 'headers'> & {
+  response: {
+    status: number
     headers: string
+    data: string
   }
 }
 

@@ -1,12 +1,21 @@
 import BSON from 'bson-ext'
 import { compact, pick, uniq } from 'lodash'
-import mongoose, { Mongoose, Query, Schema, SchemaOptions } from 'mongoose'
+import mongoose, {
+  Mongoose,
+  Query,
+  Schema,
+  SchemaOptions,
+  Types,
+} from 'mongoose'
 import validator from 'validator'
 
+import { reorder } from '../../shared/util/immutable-array-fns'
 import {
   AuthType,
   BasicField,
   Colors,
+  FormField,
+  FormFieldWithId,
   FormLogoState,
   FormMetaView,
   FormOtpData,
@@ -15,6 +24,7 @@ import {
   IEmailFormSchema,
   IEncryptedFormModel,
   IEncryptedFormSchema,
+  IFieldSchema,
   IFormDocument,
   IFormModel,
   IFormSchema,
@@ -30,7 +40,7 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
-import { transformEmails } from '../modules/form/form.utils'
+import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import getAgencyModel from './agency.server.model'
@@ -175,7 +185,25 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         trim: true,
       },
 
-      form_fields: [BaseFieldSchema],
+      form_fields: {
+        type: [BaseFieldSchema],
+        validate: {
+          validator: function (this: IFormSchema) {
+            const myInfoFieldCount = (this.form_fields ?? []).reduce(
+              (acc, field) => acc + (field.myInfo ? 1 : 0),
+              0,
+            )
+            return (
+              myInfoFieldCount === 0 ||
+              (this.authType === AuthType.MyInfo &&
+                this.responseMode === ResponseMode.Email &&
+                myInfoFieldCount <= 30)
+            )
+          },
+          message:
+            'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
+        },
+      },
       form_logics: [LogicSchema],
 
       admin: {
@@ -342,7 +370,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Add discriminators for the various field types.
   const FormFieldPath = FormSchema.path(
     'form_fields',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
 
   const TableFieldSchema = createTableFieldSchema()
 
@@ -376,7 +404,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormFieldPath.discriminator(BasicField.Table, TableFieldSchema)
   const TableColumnPath = TableFieldSchema.path(
     'columns',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
   TableColumnPath.discriminator(
     BasicField.ShortText,
     createShortTextFieldSchema(),
@@ -389,13 +417,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Discriminator defines all possible values of startPage.logo
   const StartPageLogoPath = FormSchema.path(
     'startPage.logo',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
   StartPageLogoPath.discriminator(FormLogoState.Custom, CustomFormLogoSchema)
 
   // Discriminator defines different logic types
   const FormLogicPath = FormSchema.path(
     'form_logics',
-  ) as Schema.Types.DocumentArrayWithLooseDiscriminator
+  ) as Schema.Types.DocumentArray
 
   FormLogicPath.discriminator(LogicType.ShowFields, ShowFieldsLogicSchema)
   FormLogicPath.discriminator(LogicType.PreventSubmit, PreventSubmitLogicSchema)
@@ -495,6 +523,53 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormDocumentSchema.methods.updateFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+    newField: FormFieldWithId,
+  ) {
+    const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
+    if (!fieldToUpdate) return Promise.resolve(null)
+
+    if (fieldToUpdate.fieldType !== newField.fieldType) {
+      this.invalidate('form_fields', 'Changing form field type is not allowed')
+    } else {
+      fieldToUpdate.set(newField)
+    }
+
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.insertFormField = function (
+    this: IFormDocument,
+    newField: FormField,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(newField)
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.reorderFormFieldById = function (
+    this: IFormDocument,
+    fieldId: string,
+    newPosition: number,
+  ): Promise<IFormDocument | null> {
+    const existingFieldPosition = this.form_fields.findIndex(
+      (f) => String(f._id) === fieldId,
+    )
+
+    if (existingFieldPosition === -1) return Promise.resolve(null)
+
+    // Exist, reorder form fields and save.
+    const updatedFormFields = reorder(
+      this.form_fields,
+      existingFieldPosition,
+      newPosition,
+    )
+    this.form_fields = updatedFormFields
+    return this.save()
+  }
+
   // Statics
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (
@@ -525,8 +600,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.statics.getFullFormById = async function (
     this: IFormModel,
     formId: string,
+    fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null> {
-    return this.findById(formId).populate({
+    return this.findById(formId, fields).populate({
       path: 'admin',
       populate: {
         path: 'agency',
@@ -575,6 +651,24 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         .lean()
         .exec()
     )
+  }
+
+  // Deletes specified form logic.
+  FormSchema.statics.deleteFormLogic = async function (
+    this: IFormModel,
+    formId: string,
+    logicId: string,
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      mongoose.Types.ObjectId(formId),
+      {
+        $pull: { form_logics: { _id: logicId } },
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec()
   }
 
   // Hooks

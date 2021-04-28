@@ -1,4 +1,4 @@
-import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
+import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
@@ -44,7 +44,9 @@ jest.mock('nodemailer', () => ({
 }))
 
 jest.mock('@opengovsg/myinfo-gov-client', () => ({
-  MyInfoGovClient: jest.fn(),
+  MyInfoGovClient: jest.fn().mockReturnValue({
+    extractUinFin: jest.fn(),
+  }),
   MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
   MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
   MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
@@ -52,13 +54,10 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
   MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
     .MyInfoAttribute,
 }))
-const MockMyInfoGovClient = mocked(MyInfoGovClient, true)
-const mockExtractUinFin = jest.fn()
-MockMyInfoGovClient.mockImplementation(
-  () =>
-    (({
-      extractUinFin: mockExtractUinFin,
-    } as unknown) as MyInfoGovClient),
+
+const MockMyInfoGovClient = mocked(
+  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
+  true,
 )
 
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/email'
@@ -616,7 +615,7 @@ describe('email-submission.routes', () => {
 
     describe('MyInfo', () => {
       it('should return 200 when submission is valid', async () => {
-        mockExtractUinFin.mockReturnValueOnce(MOCK_UINFIN)
+        MockMyInfoGovClient.extractUinFin.mockReturnValueOnce(MOCK_UINFIN)
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -704,7 +703,7 @@ describe('email-submission.routes', () => {
 
       it('should return 401 when submission has invalid cookie', async () => {
         // Mock MyInfoGovClient to return error when decoding JWT
-        mockExtractUinFin.mockImplementationOnce(() => {
+        MockMyInfoGovClient.extractUinFin.mockImplementationOnce(() => {
           throw new Error()
         })
         const { form } = await dbHandler.insertEmailForm({

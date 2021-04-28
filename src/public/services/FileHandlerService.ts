@@ -151,7 +151,7 @@ export const uploadImage = async ({
   const fileId = `${formId}-${Date.now()}-${image.name.toLowerCase()}`
 
   return uploadFile({
-    url: `/${formId}/adminform/images`,
+    url: `/api/v3/admin/forms/${formId}/images/presign`,
     file: image,
     fileId,
     cancelToken,
@@ -172,7 +172,7 @@ export const uploadLogo = async ({
   const fileId = `${Date.now()}-${image.name.toLowerCase()}`
 
   return uploadFile({
-    url: `/${formId}/adminform/logos`,
+    url: `/api/v3/admin/forms/${formId}/logos/presign`,
     file: image,
     fileId,
     cancelToken,

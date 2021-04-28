@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
-import { merge, omit, orderBy, pick } from 'lodash'
-import mongoose from 'mongoose'
+import { cloneDeep, merge, omit, orderBy, pick } from 'lodash'
+import mongoose, { Types } from 'mongoose'
 
 import getFormModel, {
   FORM_PUBLIC_FIELDS,
@@ -8,14 +9,19 @@ import getFormModel, {
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  BasicField,
+  FormFieldWithId,
   IEncryptedForm,
+  IFieldSchema,
   IFormSchema,
+  ILogicSchema,
   IPopulatedUser,
   Permission,
   ResponseMode,
   Status,
 } from 'src/types'
 
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Form = getFormModel(mongoose)
@@ -379,7 +385,7 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
 
         // Remove indeterministic id from actual permission list
-        const actualPermissionList = (saved.toObject() as IEncryptedForm).permissionList?.map(
+        const actualPermissionList = ((saved.toObject() as unknown) as IEncryptedForm).permissionList?.map(
           (permission) => omit(permission, '_id'),
         )
         expect(actualPermissionList).toEqual(permissionList)
@@ -1048,6 +1054,103 @@ describe('Form Model', () => {
         expect(actual).toEqual(expected)
       })
     })
+
+    describe('deleteFormLogic', () => {
+      const logicId = new ObjectId().toHexString()
+      const mockFormLogic = {
+        form_logics: [
+          {
+            _id: logicId,
+            id: logicId,
+          } as ILogicSchema,
+        ],
+      }
+
+      it('should return form upon successful delete', async () => {
+        // arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          ...mockFormLogic,
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.deleteFormLogic(form._id, logicId)
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that form logic has been deleted
+        expect(modifiedForm?.form_logics).toBeEmpty()
+      })
+
+      it('should return form with remaining logic upon successful delete of one logic', async () => {
+        // arrange
+
+        const logicId2 = new ObjectId().toHexString()
+        const mockFormLogicMultiple = {
+          form_logics: [
+            {
+              _id: logicId,
+              id: logicId,
+            } as ILogicSchema,
+            {
+              _id: logicId2,
+              id: logicId2,
+            } as ILogicSchema,
+          ],
+        }
+
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          ...mockFormLogicMultiple,
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.deleteFormLogic(form._id, logicId)
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that correct form logic has been deleted
+        expect(modifiedForm?.form_logics).toBeDefined()
+        expect(modifiedForm?.form_logics).toHaveLength(1)
+        const logic = modifiedForm?.form_logics || ['some logic']
+        expect((logic[0] as any)['_id'].toString()).toEqual(logicId2)
+      })
+
+      it('should return null if formId is invalid', async () => {
+        // arrange
+
+        const invalidFormId = new ObjectId().toHexString()
+
+        // act
+        const modifiedForm = await Form.deleteFormLogic(invalidFormId, logicId)
+
+        // assert
+        // should return null
+        expect(modifiedForm).toBeNull()
+      })
+    })
   })
 
   describe('Methods', () => {
@@ -1304,6 +1407,222 @@ describe('Form Model', () => {
             },
           }),
         )
+      })
+    })
+
+    describe('updateFormFieldById', () => {
+      let form: IFormSchema
+
+      beforeEach(async () => {
+        form = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Checkbox),
+            generateDefaultField(BasicField.HomeNo, {
+              title: 'some mock title',
+            }),
+            generateDefaultField(BasicField.Email),
+          ],
+        })
+      })
+
+      it('should return updated form when successfully updating form field', async () => {
+        // Arrange
+        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+
+        const newField = {
+          ...originalFormFields[1],
+          title: 'another mock title',
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        // Current fields should not be touched
+        expect(
+          (actual?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+        ).toEqual([originalFormFields[0], newField, originalFormFields[2]])
+      })
+
+      it('should return null if fieldId does not correspond to any field in the form', async () => {
+        // Arrange
+        const invalidFieldId = new ObjectId().toHexString()
+        const someNewField = {
+          description: 'this does not matter',
+        } as FormFieldWithId
+
+        // Act
+        const actual = await form.updateFormFieldById(
+          invalidFieldId,
+          someNewField,
+        )
+
+        // Assert
+        expect(actual).toBeNull()
+      })
+
+      it('should return validation error if field type of new field does not match the field to update', async () => {
+        // Arrange
+        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+
+        const newField: FormFieldWithId = {
+          ...originalFormFields[1],
+          // Updating field type from HomeNo to Mobile.
+          fieldType: BasicField.Mobile,
+          title: 'another mock title',
+        }
+
+        // Act
+        const actual = await form
+          .updateFormFieldById(newField._id, newField)
+          .catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+        expect(actual.message).toEqual(
+          expect.stringContaining('Changing form field type is not allowed'),
+        )
+      })
+
+      it('should return validation error if model validation fails whilst updating field', async () => {
+        // Arrange
+        const originalFormFields = (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject()
+
+        const newField: FormFieldWithId = {
+          ...originalFormFields[2],
+          title: 'another mock title',
+          // Invalid value for email field.
+          isVerifiable: 'some string, but this should be boolean',
+        }
+
+        // Act
+        const actual = await form
+          .updateFormFieldById(newField._id, newField)
+          .catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+    })
+
+    describe('insertFormField', () => {
+      it('should return updated document with inserted form field', async () => {
+        // Arrange
+        const newField = generateDefaultField(BasicField.Checkbox)
+        expect(validForm.form_fields).toBeEmpty()
+
+        // Act
+        const actual = await validForm.insertFormField(newField)
+
+        // Assert
+        const expectedField = {
+          ...omit(newField, 'getQuestion'),
+          _id: new ObjectId(newField._id),
+        }
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()).toEqual([expectedField])
+      })
+
+      it('should return validation error if model validation fails whilst creating field', async () => {
+        // Arrange
+        const newField = {
+          ...generateDefaultField(BasicField.Email),
+          // Invalid value for email field.
+          isVerifiable: 'some string, but this should be boolean',
+        }
+
+        // Act
+        const actual = await validForm
+          .insertFormField(newField)
+          .catch((err) => err)
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+    })
+
+    describe('reorderFormFieldById', () => {
+      let form: IFormSchema
+      const FIELD_ID_TO_REORDER = new ObjectId().toHexString()
+
+      beforeEach(async () => {
+        form = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: ResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: [
+            generateDefaultField(BasicField.Checkbox),
+            generateDefaultField(BasicField.HomeNo, {
+              title: 'some mock title',
+              _id: FIELD_ID_TO_REORDER,
+            }),
+            generateDefaultField(BasicField.Email),
+          ],
+        })
+      })
+
+      it('should return updated form with reordered fields successfully', async () => {
+        // Act
+        const originalFields =
+          cloneDeep(
+            (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+          ) ?? []
+        const updatedForm = await form.reorderFormFieldById(
+          FIELD_ID_TO_REORDER,
+          0,
+        )
+
+        // Assert
+        expect(updatedForm).not.toBeNull()
+        expect(
+          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+        ).toEqual([
+          // Should be rearranged to the 0th index position, and the previously
+          // 0th index field should be pushed to 1st index.
+          originalFields[1],
+          originalFields[0],
+          originalFields[2],
+        ])
+      })
+
+      it('should return updated form with reordered field at end of fields array when newPosition > form_fields.length', async () => {
+        // Act
+        const originalFields =
+          cloneDeep(
+            (form.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+          ) ?? []
+        const updatedForm = await form.reorderFormFieldById(
+          FIELD_ID_TO_REORDER,
+          // new position is vastly over array length.
+          originalFields.length + 200,
+        )
+
+        // Assert
+        expect(updatedForm).not.toBeNull()
+        expect(
+          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
+        ).toEqual([
+          originalFields[0],
+          originalFields[2],
+          // Field to reorder (index 1) should now be at the end.
+          originalFields[1],
+        ])
+      })
+
+      it('should return null if given fieldId is invalid', async () => {
+        const updatedForm = await form.reorderFormFieldById(
+          new ObjectId().toHexString(),
+          3,
+        )
+
+        // Assert
+        expect(updatedForm).toBeNull()
       })
     })
   })

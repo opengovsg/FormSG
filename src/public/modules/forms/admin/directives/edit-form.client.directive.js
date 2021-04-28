@@ -1,7 +1,9 @@
 'use strict'
 const { EditFieldActions } = require('shared/constants')
 const { groupLogicUnitsByField } = require('shared/util/logic')
+const { reorder } = require('shared/util/immutable-array-fns')
 const FieldFactory = require('../../helpers/field-factory')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 const newFields = new Set() // Adding a fieldTypes will add a "new" label.
 
@@ -73,20 +75,22 @@ function editFormController(
     forceFallback: true,
     ghostClass: 'field-placeholder',
     animation: 0,
-    onEnd({ model, newIndex, oldIndex }) {
+    onUpdate: function (evt) {
+      const { model, models, newIndex, oldIndex } = evt
       // Clear selected after drop
       $scope.resetFieldMore()
-      if (newIndex !== oldIndex) {
-        updateField({
-          editFormField: {
-            action: {
-              name: EditFieldActions.Reorder,
-              position: newIndex,
-            },
-            field: model,
-          },
-        })
-      }
+      updateField({
+        fieldId: model._id,
+        newPosition: newIndex,
+        type: UPDATE_FORM_TYPES.ReorderField,
+      }).then((error) => {
+        // Will be undefined if no error occurs.
+        if (error) {
+          // Rollback changes, reorder list.
+          const oldList = reorder(models, newIndex, oldIndex)
+          $scope.myform.form_fields = oldList
+        }
+      })
     },
   }
 
@@ -133,6 +137,31 @@ function editFormController(
   $scope.isCondition = function (field) {
     return conditionFieldSet.has(field._id)
   }
+
+  /**
+   * Returns the number of myInfo fields in a form
+   * @param {Object} A form object
+   * @returns {Integer} The number of MyInfo fields
+   */
+  $scope.countMyInfoFields = function (form) {
+    let count = 0
+    form.form_fields.forEach(function (field) {
+      if (field.myInfo !== undefined) {
+        count++
+      }
+    })
+    return count
+  }
+
+  // Update myInfo counts when the form field changes
+  $scope.maxMyInfoFields = 30
+  $scope.numMyInfoFields = $scope.countMyInfoFields($scope.myform)
+  $scope.$watch(
+    (scope) => scope.myform.form_fields,
+    function (_newVal, _oldVal) {
+      $scope.numMyInfoFields = $scope.countMyInfoFields($scope.myform)
+    },
+  )
 
   // Default Attachments Total Size
   if ($scope.myform.responseMode === responseModeEnum.ENCRYPT) {
@@ -327,6 +356,7 @@ function editFormController(
   }
 
   $scope.addNewMyInfoField = function (myInfoAttr) {
+    if ($scope.numMyInfoFields >= $scope.maxMyInfoFields) return
     let newField = FormFields.createMyInfoField(myInfoAttr)
     $scope.openMyInfoEditModal(newField)
   }
@@ -442,6 +472,11 @@ function editFormController(
   }
 
   const duplicateField = (fieldToDuplicate) => {
+    if (
+      fieldToDuplicate.myInfo !== undefined &&
+      $scope.numMyInfoFields >= $scope.maxMyInfoFields
+    )
+      return
     let duplicatedField = _.cloneDeep(fieldToDuplicate)
     // Remove unique ids before saving
     delete duplicatedField.globalId

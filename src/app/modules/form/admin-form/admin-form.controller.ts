@@ -1,13 +1,15 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Request, RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
+import { ParamsDictionary, Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
+import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import {
   AuthType,
+  BasicField,
   FieldResponse,
   FormMetaView,
   FormSettings,
@@ -18,6 +20,9 @@ import {
 import {
   EncryptSubmissionDto,
   ErrorDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormFieldDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -36,17 +41,20 @@ import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
 } from '../../spcp/spcp.util'
+import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
   mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
+import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import * as SubmissionService from '../../submission/submission.service'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
+import * as FormService from '../form.service'
 
 import {
   PREVIEW_CORPPASS_UID,
@@ -63,7 +71,7 @@ import {
 import { mapRouteError } from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
-const Joi = BaseJoi.extend(JoiDate)
+const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 const logger = createLoggerWithLabel(module)
 
@@ -136,6 +144,16 @@ const transferFormOwnershipValidator = celebrate({
         multiple: false, // Disallow multiple emails
       })
       .message('Please enter a valid email'),
+  },
+})
+
+const fileUploadValidator = celebrate({
+  [Segments.BODY]: {
+    fileId: Joi.string().required(),
+    fileMd5Hash: Joi.string().base64().required(),
+    fileType: Joi.string()
+      .valid(...VALID_UPLOAD_FILE_TYPES)
+      .required(),
   },
 })
 
@@ -276,7 +294,7 @@ export const handlePreviewAdminForm: RequestHandler<{ formId: string }> = (
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const handleCreatePresignedPostUrlForImages: RequestHandler<
+export const createPresignedPostUrlForImages: RequestHandler<
   { formId: string },
   unknown,
   {
@@ -313,7 +331,7 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
         logger.error({
           message: 'Presigning post data encountered an error',
           meta: {
-            action: 'handleCreatePresignedPostUrlForImages',
+            action: 'createPresignedPostUrlForImages',
             ...createReqMeta(req),
           },
           error,
@@ -324,6 +342,11 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
       })
   )
 }
+
+export const handleCreatePresignedPostUrlForImages = [
+  fileUploadValidator,
+  createPresignedPostUrlForImages,
+] as RequestHandler[]
 
 /**
  * Handler for POST /:formId([a-fA-F0-9]{24})/adminform/logos.
@@ -336,7 +359,7 @@ export const handleCreatePresignedPostUrlForImages: RequestHandler<
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  */
-export const handleCreatePresignedPostUrlForLogos: RequestHandler<
+export const createPresignedPostUrlForLogos: RequestHandler<
   ParamsDictionary,
   unknown,
   {
@@ -373,7 +396,7 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
         logger.error({
           message: 'Presigning post data encountered an error',
           meta: {
-            action: 'handleCreatePresignedPostUrlForLogos',
+            action: 'createPresignedPostUrlForLogos',
             ...createReqMeta(req),
           },
           error,
@@ -384,6 +407,11 @@ export const handleCreatePresignedPostUrlForLogos: RequestHandler<
       })
   )
 }
+
+export const handleCreatePresignedPostUrlForLogos = [
+  fileUploadValidator,
+  createPresignedPostUrlForLogos,
+] as RequestHandler[]
 
 // Validates that the ending date >= starting date
 const validateDateRange = celebrate({
@@ -1075,7 +1103,7 @@ export const handleUpdateForm: RequestHandler<
 }
 
 /**
- * Handler for PATCH /form/:formId/settings.
+ * Handler for PATCH /forms/:formId/settings.
  * @security session
  *
  * @returns 200 with updated form settings
@@ -1130,6 +1158,103 @@ export const handleUpdateSettings: RequestHandler<
 }
 
 /**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/fields/:fieldId
+ * @precondition Must be preceded by request validation
+ */
+export const _handleUpdateFormField: RequestHandler<
+  {
+    formId: string
+    fieldId: string
+  },
+  FormFieldDto | ErrorDto,
+  FieldUpdateDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, update form field of retrieved form.
+      .andThen((form) =>
+        AdminFormService.updateFormField(form, fieldId, req.body),
+      )
+      .map((updatedFormField) =>
+        res.status(StatusCodes.OK).json(updatedFormField),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating form field',
+          meta: {
+            action: 'handleUpdateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+            updateFieldBody: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for GET /form/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with latest form settings on successful update
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetSettings: RequestHandler<
+  { formId: string },
+  FormSettings | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .map((form) => res.status(StatusCodes.OK).json(form.getSettings()))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form settings',
+        meta: {
+          action: 'handleGetSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
  * @security session
  *
@@ -1141,7 +1266,7 @@ export const handleUpdateSettings: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEncryptPreviewSubmission: RequestHandler<
+export const submitEncryptPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId: string } | ErrorDto,
   EncryptSubmissionDto
@@ -1151,7 +1276,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { encryptedContent, responses, version } = req.body
   const logMeta = {
-    action: 'handleEncryptPreviewSubmission',
+    action: 'submitEncryptPreview',
     formId,
   }
 
@@ -1217,6 +1342,11 @@ export const handleEncryptPreviewSubmission: RequestHandler<
     })
 }
 
+export const handleEncryptPreviewSubmission = [
+  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptPreview,
+] as RequestHandler[]
+
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
  * @security session
@@ -1229,7 +1359,7 @@ export const handleEncryptPreviewSubmission: RequestHandler<
  * @returns 422 when user ID in session is not found in database
  * @returns 500 when database error occurs
  */
-export const handleEmailPreviewSubmission: RequestHandler<
+export const submitEmailPreview: RequestHandler<
   { formId: string },
   { message: string; submissionId?: string },
   { responses: FieldResponse[]; isPreview: boolean },
@@ -1240,7 +1370,7 @@ export const handleEmailPreviewSubmission: RequestHandler<
   // No need to process attachments as we don't do anything with them
   const { responses } = req.body
   const logMeta = {
-    action: 'handleEmailPreviewSubmission',
+    action: 'submitEmailPreview',
     formId,
     ...createReqMeta(req as Request),
   }
@@ -1354,3 +1484,248 @@ export const handleEmailPreviewSubmission: RequestHandler<
     submissionId: submission.id,
   })
 }
+
+export const handleEmailPreviewSubmission = [
+  EmailSubmissionMiddleware.receiveEmailSubmission,
+  EmailSubmissionMiddleware.validateResponseParams,
+  submitEmailPreview,
+] as RequestHandler[]
+
+/**
+ * Handler for PUT /forms/:formId/fields/:fieldId
+ * @security session
+ *
+ * @returns 200 with updated form field
+ * @returns 403 when current user does not have permissions to update form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field cannot be found
+ * @returns 410 when updating form field of an archived form
+ * @returns 413 when updating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateFormField = [
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object({
+        // Ensures given field is same as accessed field.
+        _id: Joi.string().valid(Joi.ref('$params.fieldId')).required(),
+        fieldType: Joi.string()
+          .valid(...Object.values(BasicField))
+          .required(),
+        description: Joi.string().allow('').required(),
+        required: Joi.boolean().required(),
+        title: Joi.string().required(),
+        disabled: Joi.boolean().required(),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
+    },
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
+  _handleUpdateFormField,
+]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/fields
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with created form field
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 410 when creating form field for an archived form
+ * @returns 413 when creating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field creation is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleCreateFormField: RequestHandler<
+  { formId: string },
+  FormFieldDto | ErrorDto,
+  FieldCreateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to create form field with provided body.
+      .andThen((form) => AdminFormService.createFormField(form, req.body))
+      .map((createdFormField) =>
+        res.status(StatusCodes.OK).json(createdFormField),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form field',
+          meta: {
+            action: '_handleCreateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            createFieldBody: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for DELETE /forms/:formId/logic/:logicId
+ * @security session
+ *
+ * @returns 200 with success message when successfully deleted
+ * @returns 403 when user does not have permissions to delete logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleDeleteLogic: RequestHandler = (req, res) => {
+  const { formId, logicId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+
+      // Step 3: Delete form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.deleteFormLogic(retrievedForm, logicId),
+      )
+      .map(() => res.sendStatus(StatusCodes.OK))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form logic',
+          meta: {
+            action: 'handleDeleteLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            logicId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /forms/:formId/fields
+ */
+export const handleCreateFormField = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      // Ensures id is not provided.
+      _id: Joi.any().forbidden(),
+      globalId: Joi.any().forbidden(),
+      fieldType: Joi.string()
+        .valid(...Object.values(BasicField))
+        .required(),
+      title: Joi.string().required(),
+      description: Joi.string().allow(''),
+      required: Joi.boolean(),
+      disabled: Joi.boolean(),
+      // Allow other field related key-values to be provided and let the model
+      // layer handle the validation.
+    }).unknown(true),
+  }),
+  _handleCreateFormField,
+]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/fields/:fieldId/reorder
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with new ordering of form fields
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when given fieldId cannot be found in form
+ * @returns 410 when reordering form fields for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleReorderFormField: RequestHandler<
+  { formId: string; fieldId: string },
+  FormFieldDto[] | ErrorDto,
+  unknown,
+  Query & { to: number }
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const { to } = req.query
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to reorder field
+      .andThen((form) => AdminFormService.reorderFormField(form, fieldId, to))
+      .map((reorderedFormFields) =>
+        res.status(StatusCodes.OK).json(reorderedFormFields),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when reordering form field',
+          meta: {
+            action: '_handleReorderFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+            reqQuery: req.query,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /forms/:formId/fields/:fieldId/reorder
+ */
+export const handleReorderFormField = [
+  celebrate({
+    [Segments.QUERY]: {
+      to: Joi.number().min(0).required(),
+    },
+  }),
+  _handleReorderFormField,
+] as RequestHandler[]

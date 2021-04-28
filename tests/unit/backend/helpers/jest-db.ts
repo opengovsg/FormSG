@@ -9,7 +9,9 @@ import {
 import getUserModel from 'src/app/models/user.server.model'
 import {
   IAgencySchema,
+  IEmailForm,
   IEmailFormSchema,
+  IEncryptedForm,
   IEncryptedFormSchema,
   IPopulatedForm,
   IUserSchema,
@@ -141,7 +143,7 @@ const insertEmailForm = async ({
   mailName?: string
   mailDomain?: string
   shortName?: string
-  formOptions?: Partial<IEmailFormSchema>
+  formOptions?: Partial<IEmailForm>
 } = {}): Promise<{
   form: IEmailFormSchema
   user: IUserSchema
@@ -184,7 +186,7 @@ const insertEncryptForm = async ({
   mailName?: string
   mailDomain?: string
   shortName?: string
-  formOptions?: Partial<IEncryptedFormSchema>
+  formOptions?: Partial<IEncryptedForm>
 } = {}): Promise<{
   form: IEncryptedFormSchema
   user: IUserSchema

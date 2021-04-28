@@ -1,4 +1,4 @@
-import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
+import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import axios from 'axios'
 import { ObjectId } from 'bson'
@@ -30,7 +30,10 @@ jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 
 jest.mock('@opengovsg/myinfo-gov-client', () => ({
-  MyInfoGovClient: jest.fn(),
+  MyInfoGovClient: jest.fn().mockReturnValue({
+    createRedirectURL: jest.fn(),
+    getAccessToken: jest.fn(),
+  }),
   MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
   MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
   MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
@@ -38,15 +41,9 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
   MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
     .MyInfoAttribute,
 }))
-const MockMyInfoGovClient = mocked(MyInfoGovClient, true)
-const mockCreateRedirectURL = jest.fn()
-const mockGetAccessToken = jest.fn()
-MockMyInfoGovClient.mockImplementation(
-  () =>
-    (({
-      createRedirectURL: mockCreateRedirectURL,
-      getAccessToken: mockGetAccessToken,
-    } as unknown) as MyInfoGovClient),
+const MockMyInfoGovClient = mocked(
+  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
+  true,
 )
 
 // Import last so that mocks are imported correctly
@@ -68,7 +65,7 @@ describe('myinfo.routes', () => {
     let request: Session
 
     beforeAll(() => {
-      mockCreateRedirectURL.mockReturnValue(MOCK_REDIRECT_URL)
+      MockMyInfoGovClient.createRedirectURL.mockReturnValue(MOCK_REDIRECT_URL)
     })
 
     beforeEach(async () => {
@@ -178,7 +175,7 @@ describe('myinfo.routes', () => {
 
     it('should return 200 with isValid false and errorCode when e-service ID is invalid', async () => {
       MockAxios.get.mockResolvedValueOnce({
-        data: `<title>Error</title>System Code:&nbsp<b>${MOCK_ERROR_CODE}</b>`,
+        data: `<title>Error</title>System Code:&nbsp;<b>${MOCK_ERROR_CODE}</b>`,
       })
       const response = await request.get(ROUTE).query({ formId: MOCK_FORM_ID })
 
@@ -218,7 +215,9 @@ describe('myinfo.routes', () => {
 
     beforeEach(async () => {
       request = session(myInfoApp)
-      mockGetAccessToken.mockResolvedValueOnce(MOCK_ACCESS_TOKEN)
+      MockMyInfoGovClient.getAccessToken.mockResolvedValueOnce(
+        MOCK_ACCESS_TOKEN,
+      )
       await dbHandler.insertEmailForm({
         formId: new ObjectId(MOCK_FORM_ID),
         formOptions: {
@@ -346,8 +345,8 @@ describe('myinfo.routes', () => {
 
     it('should redirect to form with error cookie when access token cannot be retrieved', async () => {
       // Clear default mock implementation from beforeEach
-      mockGetAccessToken.mockReset()
-      mockGetAccessToken.mockRejectedValueOnce('rejected')
+      MockMyInfoGovClient.getAccessToken.mockReset()
+      MockMyInfoGovClient.getAccessToken.mockRejectedValueOnce('rejected')
 
       const response = await request
         .get(ROUTE)

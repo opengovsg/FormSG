@@ -11,7 +11,7 @@
       auth-type="form.authType"
       is-admin-preview="false"
       is-template="form.isTemplate"
-      form-login="formLogin(authType, rememberMe)"
+      form-login="formLogin(isPersistentLogin)"
     >
     </start-page-component>
   </form>
@@ -23,6 +23,21 @@
   >
     <!-- Form Fields View -->
     <div class="form-fields">
+      <!-- Warning label for prefill -->
+      <div class="col-md-12" ng-if="hasPrefill">
+        <div>
+          <div class="alert-custom alert-prefill standard-padding">
+            <i class="bx bx-info-circle bx-md icon-spacing"></i>
+            <span class="alert-msg"
+              >The highlighted fields in this form have been pre-filled
+              according to the link that you clicked. Please check that these
+              values are what you intend to submit, and edit if necessary.
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- End Warning label for prefill -->
+
       <!-- Form fields -->
       <form name="forms.myForm" novalidate class="standard-padding">
         <div
@@ -115,7 +130,7 @@
           size="invisible"
           on-create="captchaService.setWidget(widgetId)"
           on-success="captchaService.onSuccess(response, submitForm)"
-          on-error="captchaService.onError()"
+          on-error="captchaService.onError(form)"
           on-expire="captchaService.expire()"
           data-badge="inline"
         ></div>

@@ -2,7 +2,6 @@ import { Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
 import {
-  AuthType,
   BasicField,
   IFieldSchema,
   IMyInfoSchema,
@@ -20,17 +19,6 @@ export const MyInfoSchema = new Schema<IMyInfoSchema>(
     attr: {
       type: String,
       enum: Object.values(MyInfoAttribute),
-      validate: {
-        validator: function (this: IMyInfoSchema) {
-          const { authType, responseMode } = this.ownerDocument()
-          return (
-            authType === AuthType.MyInfo &&
-            responseMode !== ResponseMode.Encrypt
-          )
-        },
-        message:
-          'MyInfo field is invalid. Check that your form has MyInfo enabled, or is not an encrypted mode form.',
-      },
     },
   },
   {

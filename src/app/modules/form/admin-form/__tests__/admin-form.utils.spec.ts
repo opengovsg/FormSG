@@ -4,6 +4,7 @@ import { cloneDeep, omit, tail } from 'lodash'
 import { EditFieldActions } from 'src/shared/constants'
 import {
   BasicField,
+  IEmailFieldSchema,
   IFieldSchema,
   IPopulatedForm,
   IPopulatedUser,
@@ -440,6 +441,79 @@ describe('admin-form.utils', () => {
       expect(actualResult._unsafeUnwrap()).toEqual([
         fieldToUpdate,
         ...tail(INITIAL_FIELDS),
+      ])
+    })
+
+    it('should return synced email field when updating with desynced email field', async () => {
+      // Arrange
+      const initialField = generateDefaultField(BasicField.Email, {
+        title: 'some old title',
+      })
+      const desyncedEmailField = ({
+        ...initialField,
+        title: 'new title',
+        hasAllowedEmailDomains: true,
+        // true but empty array
+        allowedEmailDomains: [],
+      } as unknown) as IEmailFieldSchema
+
+      const updateFieldParams: EditFormFieldParams = {
+        action: {
+          name: EditFieldActions.Update,
+        },
+        field: desyncedEmailField,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        [initialField],
+        updateFieldParams,
+      )
+
+      // Assert
+      // Email field should be updated but synced
+      expect(actualResult._unsafeUnwrap()).toEqual([
+        // hasAllowedEmailDomains should be false since allowedEmailDomains is empty
+        {
+          ...desyncedEmailField,
+          hasAllowedEmailDomains: false,
+          allowedEmailDomains: [],
+        },
+      ])
+    })
+
+    it('should return synced email field when creating with desynced email field', async () => {
+      // Arrange
+      const desyncedEmailField = ({
+        ...generateDefaultField(BasicField.Email),
+        hasAllowedEmailDomains: false,
+        // False but contains domains.
+        allowedEmailDomains: ['@example.com'],
+      } as unknown) as IEmailFieldSchema
+
+      const createFieldParams: EditFormFieldParams = {
+        action: {
+          name: EditFieldActions.Create,
+        },
+        field: desyncedEmailField,
+      }
+
+      // Act
+      const actualResult = getUpdatedFormFields(
+        INITIAL_FIELDS,
+        createFieldParams,
+      )
+
+      // Assert
+      // Email field should be updated but synced
+      expect(actualResult._unsafeUnwrap()).toEqual([
+        ...INITIAL_FIELDS,
+        // allowedEmailDomains should be empty since hasAllowedEmailDomains is false
+        {
+          ...desyncedEmailField,
+          hasAllowedEmailDomains: false,
+          allowedEmailDomains: [],
+        },
       ])
     })
 

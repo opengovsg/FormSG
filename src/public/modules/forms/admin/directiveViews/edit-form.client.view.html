@@ -37,7 +37,9 @@
       <uib-tab feature-toggle feature-name="spcp-myinfo">
         <uib-tab-heading> MyInfo </uib-tab-heading>
         <!-- Only show fields if form type is not storage form -->
-        <div ng-if="myform.authType==='MyInfo' && !isStorageForm">
+        <div
+          ng-if="myform.authType==='MyInfo' && !isStorageForm && numMyInfoFields < maxMyInfoFields"
+        >
           <div class="row">
             <div class="myinfo-category">PERSONAL</div>
             <div
@@ -127,6 +129,17 @@
           </div>
         </div>
 
+        <!-- MyInfo exceeded maximum field limit screen -->
+        <div
+          id="myinfo-disable-screen"
+          ng-if="myform.authType === 'MyInfo' && !isStorageForm && numMyInfoFields >= maxMyInfoFields"
+        >
+          <i class="bx bx-x-circle myinfo-storage-overlay"></i>
+          <br />
+          You have reached the limit of {{ maxMyInfoFields }} MyInfo fields for
+          your form.
+        </div>
+
         <!-- MyInfo activate prompt overlay, only show if authType is not
         SingPass and form is not a Storage Mode form. -->
         <div
@@ -213,6 +226,18 @@
 
   <!-- Right side: Current fields -->
   <div id="current-fields">
+    <!-- MyInfo warning for Email mode forms -->
+    <div
+      class="alert-custom {{ numMyInfoFields < maxMyInfoFields ? 'alert-info' : 'alert-danger' }}"
+      ng-if="myform.authType === 'MyInfo' && !isStorageForm"
+    >
+      <div class="alert-msg">
+        <i class="bx bx-info-circle bx-md icon-spacing"></i>
+        Only {{ maxMyInfoFields }} MyInfo fields are allowed in Email mode. You
+        currently have {{ numMyInfoFields }} MyInfo field(s).
+        <a href="#">Learn more</a>
+      </div>
+    </div>
     <!-- Webhook warning -->
     <div
       ng-if="myform.webhook.url && myform.status === 'PUBLIC'"
@@ -304,6 +329,7 @@
                   <button
                     class="current-field-opt-icon"
                     ng-click="tryDuplicateField($index, isCondition(field) || isHidden(field)); $event.stopPropagation()"
+                    ng-show="!field.myInfo || numMyInfoFields < maxMyInfoFields"
                     uib-tooltip="DUPLICATE"
                     tooltip-trigger="'click mouseenter'"
                   >

@@ -14,6 +14,7 @@ export const SpcpRouter = Router()
  * Provide a URL that web agents are obliged to redirect users to.
  * Due to cross-origin restrictions in place by SingPass/CorpPass,
  * this endpoint cannot and should not issue a 302 redirect
+ * @deprecated in favour of GET /api/v3/forms/:formId/auth/redirect
  * @route GET /spcp/redirect
  * @group SPCP - SingPass/CorpPass logins for form-fillers
  * @param target.query.required - the destination URL after login

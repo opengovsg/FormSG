@@ -1,11 +1,13 @@
 'use strict'
 
-const { EditFieldActions } = require('shared/constants')
+const cloneDeep = require('lodash/cloneDeep')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 angular
   .module('forms')
   .controller('EditMyInfoFieldController', [
     '$uibModalInstance',
+    'FormFields',
     'externalScope',
     'updateField',
     EditMyInfoFieldController,
@@ -13,6 +15,7 @@ angular
 
 function EditMyInfoFieldController(
   $uibModalInstance,
+  FormFields,
   externalScope,
   updateField,
 ) {
@@ -29,25 +32,29 @@ function EditMyInfoFieldController(
   vm.verifiedForF = externalScope.currField.myInfo.verified.includes('F')
 
   vm.saveMyInfoField = function () {
-    // TODO: Separate code flow for create and update, ideally calling PUT and PATCH endpoints
-    const editFormField =
-      externalScope.currField.globalId === undefined
-        ? // Create a new field
-          {
-            action: {
-              name: EditFieldActions.Create,
-            },
-            field: externalScope.currField,
-          }
-        : // Edit existing field
-          {
-            action: {
-              name: EditFieldActions.Update,
-            },
-            field: externalScope.currField,
-          }
+    // No id, creation
+    let updateFieldPromise
+    const field = cloneDeep(externalScope.currField)
 
-    updateField({ editFormField }).then((error) => {
+    // Mutate and remove MyInfo data
+    FormFields.removeMyInfoFieldInfo(field)
+
+    // Field creation
+    if (!field._id) {
+      updateFieldPromise = updateField({
+        body: field,
+        type: UPDATE_FORM_TYPES.CreateField,
+      })
+    } else {
+      // Update field
+      updateFieldPromise = updateField({
+        fieldId: field._id,
+        body: field,
+        type: UPDATE_FORM_TYPES.UpdateField,
+      })
+    }
+
+    return updateFieldPromise.then((error) => {
       if (!error) {
         $uibModalInstance.close()
         externalScope.closeMobileFields()

@@ -17,3 +17,9 @@ export class EditFieldError extends ApplicationError {
     super(message)
   }
 }
+
+export class FieldNotFoundError extends ApplicationError {
+  constructor(message = 'Field to modify not found') {
+    super(message)
+  }
+}

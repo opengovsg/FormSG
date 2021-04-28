@@ -1,4 +1,3 @@
-import { AuthType } from '../../../types'
 import { ApplicationError } from '../../modules/core/core.errors'
 
 /**
@@ -52,17 +51,6 @@ export class InvalidOOBParamsError extends ApplicationError {
 export class RetrieveAttributesError extends ApplicationError {
   constructor(message = 'Failed to retrieve attributes from SPCP') {
     super(message)
-  }
-}
-
-/**
- * Form auth type did not match attempted auth method.
- */
-export class AuthTypeMismatchError extends ApplicationError {
-  constructor(attemptedAuthType: AuthType, formAuthType?: AuthType) {
-    super(
-      `Attempted authentication type ${attemptedAuthType} did not match form auth type ${formAuthType}`,
-    )
   }
 }
 

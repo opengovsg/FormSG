@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import { EditFieldActions } from '../../../../shared/constants'
+import { reorder, replaceAt } from '../../../../shared/util/immutable-array-fns'
 import {
   IFieldSchema,
   IPopulatedForm,
@@ -9,7 +10,7 @@ import {
   Status,
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { reorder, replaceAt } from '../../../utils/immutable-array-fns'
+import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
 import {
   ApplicationError,
   DatabaseConflictError,
@@ -24,6 +25,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  LogicNotFoundError,
   PrivateFormError,
   TransferOwnershipError,
 } from '../form.errors'
@@ -31,6 +33,7 @@ import {
 import {
   CreatePresignedUrlError,
   EditFieldError,
+  FieldNotFoundError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -55,14 +58,19 @@ export const mapRouteError = (
   coreErrorMessage?: string,
 ): ErrorResponseData => {
   switch (error.constructor) {
-    case EditFieldError:
     case InvalidFileTypeError:
     case CreatePresignedUrlError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
+    case FieldNotFoundError:
     case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case LogicNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
@@ -78,6 +86,7 @@ export const mapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
+    case EditFieldError:
     case DatabaseValidationError:
     case MissingUserError:
       return {
@@ -345,10 +354,24 @@ const reorderField = (
  * @returns err(EditFieldError) if any errors occur whilst updating fields
  */
 export const getUpdatedFormFields = (
-  currentFormFields: IPopulatedForm['form_fields'],
+  currentFormFields: IFieldSchema[],
   editFieldParams: EditFormFieldParams,
 ): EditFormFieldResult => {
   const { field: fieldToUpdate, action } = editFieldParams
+
+  // TODO(#1210): Remove this function when no longer being called.
+  // Sync states for backwards compatibility with old clients send inconsistent
+  // email fields
+  if (isPossibleEmailFieldSchema(fieldToUpdate)) {
+    if (fieldToUpdate.hasAllowedEmailDomains === false) {
+      fieldToUpdate.allowedEmailDomains = []
+    } else {
+      fieldToUpdate.hasAllowedEmailDomains = fieldToUpdate.allowedEmailDomains
+        ?.length
+        ? fieldToUpdate.allowedEmailDomains.length > 0
+        : false
+    }
+  }
 
   switch (action.name) {
     // Duplicate is just an alias of create for the use case.

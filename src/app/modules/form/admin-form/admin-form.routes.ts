@@ -6,12 +6,9 @@ import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Router } from 'express'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import { ResponseMode } from '../../../../types'
 import { withUserAuthentication } from '../../auth/auth.middlewares'
-import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EncryptSubmissionController from '../../submission/encrypt-submission/encrypt-submission.controller'
-import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 
 import * as AdminFormController from './admin-form.controller'
 import { DuplicateFormBody } from './admin-form.types'
@@ -45,16 +42,6 @@ const duplicateFormValidator = celebrate({
         then: Joi.string().required().disallow(''),
       }),
   }),
-})
-
-const fileUploadValidator = celebrate({
-  [Segments.BODY]: {
-    fileId: Joi.string().required(),
-    fileMd5Hash: Joi.string().base64().required(),
-    fileType: Joi.string()
-      .valid(...VALID_UPLOAD_FILE_TYPES)
-      .required(),
-  },
 })
 
 AdminFormsRouter.route('/adminform')
@@ -337,6 +324,7 @@ AdminFormsRouter.get(
  * Retrieve metadata of responses for a form with encrypted storage
  * @route GET /:formId/adminform/submissions/metadata
  * @security session
+ * @deprecated in favour of GET /api/v3/admin/forms/:formId/submissions/metadata
  *
  * @returns 200 with paginated submission metadata when no submissionId is provided
  * @returns 200 with single submission metadata of submissionId when provided
@@ -350,15 +338,6 @@ AdminFormsRouter.get(
 AdminFormsRouter.get(
   '/:formId([a-fA-F0-9]{24})/adminform/submissions/metadata',
   withUserAuthentication,
-  celebrate({
-    [Segments.QUERY]: {
-      submissionId: Joi.string().optional(),
-      page: Joi.number().min(1).when('submissionId', {
-        not: Joi.exist(),
-        then: Joi.required(),
-      }),
-    },
-  }),
   EncryptSubmissionController.handleGetMetadata,
 )
 
@@ -400,7 +379,6 @@ AdminFormsRouter.get(
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/images',
   withUserAuthentication,
-  fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForImages,
 )
 
@@ -421,7 +399,6 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/:formId([a-fA-F0-9]{24})/adminform/logos',
   withUserAuthentication,
-  fileUploadValidator,
   AdminFormController.handleCreatePresignedPostUrlForLogos,
 )
 
@@ -441,7 +418,6 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/v2/submissions/encrypt/preview/:formId([a-fA-F0-9]{24})',
   withUserAuthentication,
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   AdminFormController.handleEncryptPreviewSubmission,
 )
 
@@ -461,7 +437,5 @@ AdminFormsRouter.post(
 AdminFormsRouter.post(
   '/v2/submissions/email/preview/:formId([a-fA-F0-9]{24})',
   withUserAuthentication,
-  EmailSubmissionMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
   AdminFormController.handleEmailPreviewSubmission,
 )
