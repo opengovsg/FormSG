@@ -6,7 +6,7 @@ import { stringifySafe } from '../../../shared/util/stringify-safe'
 import { IWebhookResponse } from '../../../types'
 import { randomUniform } from '../../utils/random-uniform'
 
-import { RETRY_INTERVALS } from './webhook.constants'
+import { MAX_DELAY_SECONDS, RETRY_INTERVALS } from './webhook.constants'
 import { WebhookNoMoreRetriesError } from './webhook.errors'
 
 /**
@@ -49,3 +49,14 @@ export const getNextAttempt = (
 export const isSuccessfulResponse = (
   webhookResponse: IWebhookResponse,
 ): boolean => inRange(webhookResponse.response.status, 200, 300)
+
+/**
+ * Calculates the number of seconds to delay a message sent to
+ * the webhook queue. This is the minimum of (time to next attempt,
+ * max possible delay timeout).
+ * @param nextAttempt Epoch of next attempt
+ */
+export const calculateDelaySeconds = (nextAttempt: number): number => {
+  const secondsToNextAttempt = Math.max(0, (nextAttempt - Date.now()) / 1000)
+  return Math.min(secondsToNextAttempt, MAX_DELAY_SECONDS)
+}

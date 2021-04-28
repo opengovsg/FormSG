@@ -95,4 +95,8 @@ export class WebhookQueueMessage {
   get submissionId(): string {
     return this.message.submissionId
   }
+
+  get nextAttempt(): number {
+    return this.message.nextAttempt
+  }
 }

@@ -24,3 +24,8 @@ export const RETRY_INTERVALS: RetryInterval[] = [
   { base: hours(8), jitter: minutes(30) },
   { base: hours(24), jitter: minutes(30) },
 ]
+
+/**
+ * Max possible delay for a message, as specified by AWS.
+ */
+export const MAX_DELAY_SECONDS = minutes(15)
