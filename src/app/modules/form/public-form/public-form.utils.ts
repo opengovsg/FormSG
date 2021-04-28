@@ -114,7 +114,7 @@ export const mapFormAuthError: MapRouteError = (
       logger.error({
         message: 'Unknown route error observed',
         meta: {
-          action: 'mapRouteError',
+          action: 'mapFormAuthError',
         },
         error,
       })
