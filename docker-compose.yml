@@ -98,7 +98,7 @@ services:
       - '27017:27017'
 
   localstack:
-    image: localstack/localstack:0.11.5
+    image: localstack/localstack:0.12.10
     container_name: formsg-localstack
     environment:
       - SERVICES=s3
