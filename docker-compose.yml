@@ -7,12 +7,12 @@ services:
       dockerfile: Dockerfile.development
     depends_on:
       - database
+      - localstack
     volumes:
       - ./:/opt/formsg
       - /opt/formsg/node_modules
     ports:
       - '5000:5000'
-      - '4566:4566' # localstack ports
       - '5156:5156' # mockpass ports
       - '9229:9229' # Node debugger port
     environment:
@@ -100,8 +100,6 @@ services:
   localstack:
     image: localstack/localstack:0.11.5
     container_name: formsg-localstack
-    depends_on:
-      - formsg
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
@@ -114,7 +112,8 @@ services:
       # This is where we add scripts to initialise AWS resources.
       # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
       - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
-    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
+    ports:
+      - '4566:4566'
 
   maildev:
     image: maildev/maildev
