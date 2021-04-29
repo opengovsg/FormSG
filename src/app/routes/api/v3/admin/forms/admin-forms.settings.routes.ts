@@ -78,6 +78,6 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators').put(
-  AdminFormController.handleUpdateCollaborators,
-)
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators')
+  .put(AdminFormController.handleUpdateCollaborators)
+  .get(AdminFormController.handleGetFormCollaborators)
