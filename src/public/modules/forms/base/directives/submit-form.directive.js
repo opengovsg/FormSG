@@ -417,7 +417,7 @@ function submitFormDirective(
       // Use scope.$watch to monitor logic changes
       scope.$watch(() => {
         scope.hasPrefill = scope.form.form_fields.some((field) => {
-          return field.allowPrefill && field.isVisible
+          return field.allowPrefill && field.isVisible && field.isPrefilled
         })
       })
     },

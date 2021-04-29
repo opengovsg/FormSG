@@ -1,5 +1,5 @@
 const dedent = require('dedent-js')
-const MyInfoService = require('../../../../services/MyInfoService')
+const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
@@ -7,7 +7,6 @@ angular
     '$uibModalInstance',
     '$timeout',
     '$q',
-    'SpcpValidateEsrvcId',
     'externalScope',
     'MailTo',
     ActivateFormController,
@@ -17,7 +16,6 @@ function ActivateFormController(
   $uibModalInstance,
   $timeout,
   $q,
-  SpcpValidateEsrvcId,
   externalScope,
   MailTo,
 ) {
@@ -65,7 +63,7 @@ function ActivateFormController(
             vm.savingStatus = 1
             const toastMessage = dedent`
               Congrats! Your form is now live.<br/>For high-traffic forms,
-              <a href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-ensure-my-form-responses-will-not-bounce" target="_blank">
+              <a href="https://go.gov.sg/form-prevent-bounce" target="_blank">
                 AutoArchive your mailbox</a> to prevent lost responses.
             `
             return updateFormStatusAndSave(toastMessage, {
@@ -98,8 +96,9 @@ function ActivateFormController(
       vm.esrvcIdStatus = 1
     })
 
-    if (authType === 'SP' && esrvcId !== '') {
-      return SpcpValidateEsrvcId(target, authType, esrvcId)
+    if (authType === 'SP' || authType === 'MyInfo') {
+      return $q
+        .when(PublicFormAuthService.validateEsrvcId(target))
         .then((response) => {
           if (response.isValid) {
             updateDisplay(null, { authType, esrvcId })
@@ -119,24 +118,6 @@ function ActivateFormController(
       // CorpPass doesn't return any error page even with the wrong e-service id
       updateDisplay(null, { authType, esrvcId }, 0)
       return Promise.resolve(true)
-    } else if (authType === 'MyInfo') {
-      return $q
-        .when(MyInfoService.validateESrvcId(target))
-        .then((response) => {
-          if (response.isValid) {
-            updateDisplay(null, { authType, esrvcId })
-          } else {
-            updateDisplay(
-              { authType, esrvcId, errorCode: response.errorCode },
-              null,
-            )
-          }
-          return response.isValid
-        })
-        .catch(() => {
-          updateDisplay({ authType, esrvcId }, null)
-          return false
-        })
     }
   }
 

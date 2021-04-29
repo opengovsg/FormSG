@@ -4,12 +4,12 @@ import { Query, RequestHandler } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '../../../types'
+import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
 import { SpcpFactory } from '../spcp/spcp.factory'
-import { LoginPageValidationResult } from '../spcp/spcp.types'
 
 import { MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS } from './myinfo.constants'
 import { MyInfoFactory } from './myinfo.factory'
@@ -99,7 +99,7 @@ const validateEServiceIdCheck = celebrate({
  */
 export const checkMyInfoEServiceId: RequestHandler<
   unknown,
-  LoginPageValidationResult | { message: string },
+  PublicFormAuthValidateEsrvcIdDto | { message: string },
   unknown,
   Query & { formId: string }
 > = async (req, res) => {
