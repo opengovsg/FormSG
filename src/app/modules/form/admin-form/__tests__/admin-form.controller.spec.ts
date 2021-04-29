@@ -7833,7 +7833,7 @@ describe('admin-form.controller', () => {
     } as IPopulatedForm
     const MOCK_COLLABORATORS = [
       {
-        email: `fakeuser@gov.sg`,
+        email: `fakeuser@test.gov.sg`,
         write: false,
       },
     ]
