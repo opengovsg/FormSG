@@ -3,7 +3,6 @@
 const { get } = require('lodash')
 const { StatusCodes } = require('http-status-codes')
 const AdminFormService = require('../../../../services/AdminFormService')
-const { response } = require('express')
 
 angular
   .module('forms')
@@ -125,7 +124,6 @@ function CollaboratorModalController(
       $scope.updatePermissionList(permissionList).catch((err) => {
         // NOTE: Refer to https://axios-http.com/docs/handling_errors
         // Axios errors are wrapped in 2 layers of indirection, which means the actual message on the error has to be extracted manually
-        response
         Toastr.error(
           get(
             err,
@@ -151,7 +149,6 @@ function CollaboratorModalController(
     $scope.updatePermissionList(permissionList).catch((err) => {
       // NOTE: Refer to https://axios-http.com/docs/handling_errors
       // Axios errors are wrapped in 2 layers of indirection, which means the actual message on the error has to be extracted manually
-      response
       Toastr.error(
         get(
           err,
