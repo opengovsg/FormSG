@@ -81,6 +81,19 @@ export const reorderSingleFormField = async (
     .then(({ data }) => data)
 }
 
+/**
+ * Delete a single form field by its id in given form
+ * @param formId the form to delete the field from
+ * @param fieldId the id of the field to delete
+ * @returns void on success
+ */
+export const deleteSingleFormField = async (
+  formId: string,
+  fieldId: string,
+): Promise<void> => {
+  return axios.delete(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`)
+}
+
 export const deleteFormLogic = async (
   formId: string,
   logicId: string,

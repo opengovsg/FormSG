@@ -302,6 +302,16 @@ export interface IFormModel extends Model<IFormSchema> {
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null>
   deleteFormLogic(formId: string, logicId: string): Promise<IFormSchema | null>
+  /**
+   * Deletes specified form field by its id from the form corresponding to given form id.
+   * @param formId the id of the form to delete specific form field for
+   * @param fieldId the id of the form field to delete from the form
+   * @returns updated form after deletion of form field
+   */
+  deleteFormFieldById(
+    formId: string,
+    fieldId: string,
+  ): Promise<IFormSchema | null>
   deactivateById(formId: string): Promise<IFormSchema | null>
   getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],

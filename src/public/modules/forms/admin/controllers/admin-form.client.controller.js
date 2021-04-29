@@ -207,6 +207,21 @@ function AdminFormController(
           })
           .catch(handleUpdateError)
       }
+      case UPDATE_FORM_TYPES.DeleteField: {
+        const { fieldId } = update
+        return $q
+          .when(
+            AdminFormService.deleteSingleFormField($scope.myform._id, fieldId),
+          )
+          .then(() => {
+            // Success, remove deleted form field
+            const updatedFormFields = $scope.myform.form_fields.filter(
+              (f) => String(f._id) !== fieldId,
+            )
+            $scope.myform.form_fields = updatedFormFields
+          })
+          .catch(handleUpdateError)
+      }
       case UPDATE_FORM_TYPES.UpdateField: {
         const { fieldId, body } = update
         return $q
