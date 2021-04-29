@@ -1,6 +1,8 @@
 # This docker-compose file is only for local development purposes.
 version: '3'
 services:
+  # Expose ports via a proxy container so that containers can talk to each other
+  # via localhost
   proxy:
     image: nginx:alpine
     ports:
@@ -28,8 +30,8 @@ services:
       - LOGO_S3_BUCKET=local-logo-bucket
       - FORMSG_SDK_MODE=development
       - BOUNCE_LIFE_SPAN=86400000
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ACCESS_KEY_ID=test # important - Localstack requires this to be 'test'
+      - AWS_SECRET_ACCESS_KEY=test # important - Localstack requires this to be 'test'
       - SESSION_SECRET=thisisasecret
       - AWS_ENDPOINT=http://localhost:4566
       - SUBMISSIONS_RATE_LIMIT=200
