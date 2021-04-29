@@ -47,7 +47,11 @@ import {
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
-import { LogicNotFoundError, TransferOwnershipError } from '../../form.errors'
+import {
+  FormNotFoundError,
+  LogicNotFoundError,
+  TransferOwnershipError,
+} from '../../form.errors'
 import {
   CreatePresignedUrlError,
   EditFieldError,
@@ -60,6 +64,7 @@ import {
   createFormField,
   createPresignedPostUrlForImages,
   createPresignedPostUrlForLogos,
+  deleteFormField,
   deleteFormLogic,
   duplicateForm,
   editFormFields,
@@ -1540,6 +1545,83 @@ describe('admin-form.service', () => {
       expect(mockForm.reorderFormFieldById).toHaveBeenCalledWith(
         fieldToReorder,
         newPosition,
+      )
+    })
+  })
+
+  describe('deleteFormField', () => {
+    let deleteSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      deleteSpy = jest.spyOn(FormModel, 'deleteFormFieldById')
+    })
+    it('should return updated form when field deletion is successful', async () => {
+      // Arrange
+      const fieldToDelete = generateDefaultField(BasicField.Mobile)
+      const initialFields = [
+        fieldToDelete,
+        generateDefaultField(BasicField.Image),
+      ]
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        // Append created field to end of form_fields.
+        form_fields: [initialFields[1]],
+      } as IFormSchema
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: initialFields,
+        _id: new ObjectId(),
+      } as unknown) as IPopulatedForm
+      deleteSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      // Act
+      const actual = await deleteFormField(mockForm, String(fieldToDelete._id))
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(mockUpdatedForm)
+      expect(deleteSpy).toHaveBeenCalledWith(
+        String(mockForm._id),
+        fieldToDelete._id,
+      )
+    })
+
+    it("should return FieldNotFoundError when the fieldId does not exist in the form's fields", async () => {
+      // Arrange
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [generateDefaultField(BasicField.Nric)],
+        _id: new ObjectId(),
+      } as unknown) as IPopulatedForm
+
+      // Act
+      const actual = await deleteFormField(
+        mockForm,
+        new ObjectId().toHexString(),
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FieldNotFoundError())
+      expect(deleteSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return FormNotFoundError when field deletion returns null', async () => {
+      // Arrange
+      const fieldToDelete = generateDefaultField(BasicField.Mobile)
+      const mockForm = ({
+        title: 'some mock form',
+        form_fields: [fieldToDelete],
+        _id: new ObjectId(),
+      } as unknown) as IPopulatedForm
+      deleteSpy.mockResolvedValueOnce(null)
+
+      // Act
+      const actual = await deleteFormField(mockForm, fieldToDelete._id)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+      expect(deleteSpy).toHaveBeenCalledWith(
+        String(mockForm._id),
+        fieldToDelete._id,
       )
     })
   })
