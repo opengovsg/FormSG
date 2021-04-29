@@ -9,6 +9,8 @@ services:
       - '5000:5000'
       - '5156:5156' # Mockpass port
       - '4566:4566' # Localstack port
+    logging:
+      driver: 'none'
 
   formsg:
     build:
@@ -91,6 +93,8 @@ services:
       - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
     network_mode: 'service:proxy'
+    logging:
+      driver: 'none'
 
   database:
     image: 'mongo:4.0'
@@ -102,6 +106,8 @@ services:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     ports:
       - '27017:27017'
+    logging:
+      driver: 'none'
 
   localstack:
     image: localstack/localstack:0.12.10
@@ -119,11 +125,15 @@ services:
       # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
       - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
     network_mode: 'service:proxy'
+    logging:
+      driver: 'none'
 
   maildev:
     image: maildev/maildev
     ports:
       - '1080:80'
+    logging:
+      driver: 'none'
 
 volumes:
   mongodata:
