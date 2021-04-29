@@ -7841,7 +7841,7 @@ describe('admin-form.controller', () => {
       params: {
         formId: MOCK_FORM_ID,
       },
-      body: { permissionList: MOCK_COLLABORATORS },
+      body: MOCK_COLLABORATORS,
       session: {
         user: {
           _id: MOCK_USER_ID,
@@ -7862,7 +7862,6 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_COLLABORATORS),
       )
       const mockRes = expressHandler.mockResponse()
-      const expectedResponse = { permissionList: MOCK_COLLABORATORS }
 
       // Act
       await AdminFormController._handleUpdateCollaborators(
@@ -7873,7 +7872,7 @@ describe('admin-form.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.send).toBeCalledWith(MOCK_COLLABORATORS)
     })
 
     it('should return 403 when the user does not have sufficient permissions to update the form', async () => {

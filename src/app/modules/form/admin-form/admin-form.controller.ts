@@ -1764,12 +1764,10 @@ export const _handleUpdateCollaborators: RequestHandler<
       )
       // Step 2: Update the form collaborators
       .andThen((form) =>
-        AdminFormService.updateFormCollaborators(form, req.body.permissionList),
+        AdminFormService.updateFormCollaborators(form, req.body),
       )
       .map((updatedCollaborators) =>
-        res
-          .status(StatusCodes.OK)
-          .json({ permissionList: updatedCollaborators }),
+        res.status(StatusCodes.OK).send(updatedCollaborators),
       )
       .mapErr((error) => {
         logger.error({
@@ -1794,15 +1792,13 @@ export const _handleUpdateCollaborators: RequestHandler<
  */
 export const handleUpdateCollaborators = [
   celebrate({
-    [Segments.BODY]: {
-      permissionList: Joi.array().items(
-        Joi.object({
-          email: Joi.string().email().required(),
-          write: Joi.bool().optional(),
-          _id: Joi.string().optional(),
-        }),
-      ),
-    },
+    [Segments.BODY]: Joi.array().items(
+      Joi.object({
+        email: Joi.string().email().required(),
+        write: Joi.bool().optional(),
+        _id: Joi.string().optional(),
+      }),
+    ),
   }),
   _handleUpdateCollaborators,
 ] as RequestHandler[]

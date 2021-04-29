@@ -1,5 +1,6 @@
 'use strict'
 
+const { get } = require('lodash')
 const HttpStatus = require('http-status-codes')
 const AdminFormService = require('../../../../services/AdminFormService')
 
@@ -97,19 +98,22 @@ function CollaboratorModalController(
   $scope.updatePermissionList = (permissionList) => {
     return $q
       .when(
-        AdminFormService.updateCollaborators($scope.myform._id, {
-          permissionList,
-        }),
+        AdminFormService.updateCollaborators($scope.myform._id, permissionList),
       )
       .then((updatedCollaborators) => {
-        $scope.myform = {
-          ...$scope.myform,
-          ...updatedCollaborators,
-        }
+        $scope.myform.permissionList = updatedCollaborators
         externalScope.refreshFormDataFromCollab($scope.myform)
       })
       .catch((err) => {
-        Toastr.error(err.message)
+        // NOTE: Refer to https://axios-http.com/docs/handling_errors
+        // Axios errors are wrapped in 2 layers of indirection, which means the actual message on the error has to be extracted manually
+        Toastr.error(
+          get(
+            err,
+            'response.data.message',
+            'Sorry, an error occurred. Please refresh the page and try again later.',
+          ),
+        )
         return err
       })
   }
