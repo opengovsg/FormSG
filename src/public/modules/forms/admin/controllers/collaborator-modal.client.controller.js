@@ -1,8 +1,9 @@
 'use strict'
 
 const { get } = require('lodash')
-const HttpStatus = require('http-status-codes')
+const { StatusCodes } = require('http-status-codes')
 const AdminFormService = require('../../../../services/AdminFormService')
+const { response } = require('express')
 
 angular
   .module('forms')
@@ -104,18 +105,6 @@ function CollaboratorModalController(
         $scope.myform.permissionList = updatedCollaborators
         externalScope.refreshFormDataFromCollab($scope.myform)
       })
-      .catch((err) => {
-        // NOTE: Refer to https://axios-http.com/docs/handling_errors
-        // Axios errors are wrapped in 2 layers of indirection, which means the actual message on the error has to be extracted manually
-        Toastr.error(
-          get(
-            err,
-            'response.data.message',
-            'Sorry, an error occurred. Please refresh the page and try again later.',
-          ),
-        )
-        return err
-      })
   }
 
   /**
@@ -133,7 +122,19 @@ function CollaboratorModalController(
       let { write } = $scope.roleToPermissions(newRole)
       let permissionList = _.cloneDeep($scope.myform.permissionList)
       permissionList[index].write = write
-      $scope.updatePermissionList(permissionList)
+      $scope.updatePermissionList(permissionList).catch((err) => {
+        // NOTE: Refer to https://axios-http.com/docs/handling_errors
+        // Axios errors are wrapped in 2 layers of indirection, which means the actual message on the error has to be extracted manually
+        response
+        Toastr.error(
+          get(
+            err,
+            'response.data.message',
+            'Sorry, an error occurred. Please refresh the page and try again later.',
+          ),
+        )
+        return err
+      })
     }
   }
 
@@ -147,7 +148,19 @@ function CollaboratorModalController(
         (user) => user.email.toLowerCase() !== email.toLowerCase(),
       ),
     )
-    $scope.updatePermissionList(permissionList)
+    $scope.updatePermissionList(permissionList).catch((err) => {
+      // NOTE: Refer to https://axios-http.com/docs/handling_errors
+      // Axios errors are wrapped in 2 layers of indirection, which means the actual message on the error has to be extracted manually
+      response
+      Toastr.error(
+        get(
+          err,
+          'response.data.message',
+          'Sorry, an error occurred. Please refresh the page and try again later.',
+        ),
+      )
+      return err
+    })
   }
 
   /**
@@ -227,12 +240,12 @@ function CollaboratorModalController(
     )
 
     $scope.btnStatus = 2 // pressed; loading
-    $scope.updatePermissionList(permissionList).then((err) => {
+    $scope.updatePermissionList(permissionList).catch((err) => {
       if (err) {
         // Make the alert message correspond to the error code
-        if (err.status === HttpStatus.BAD_REQUEST) {
+        if (err.response.status === StatusCodes.BAD_REQUEST) {
           Toastr.error('Outdated admin page, please refresh.')
-        } else if (err.status === HttpStatus.UNPROCESSABLE_ENTITY) {
+        } else if (err.response.status === StatusCodes.UNPROCESSABLE_ENTITY) {
           Toastr.error(`${email} is not part of a whitelisted agency.`)
         } else {
           Toastr.error('Error adding collaborator.')

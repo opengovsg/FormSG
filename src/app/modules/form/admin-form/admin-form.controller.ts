@@ -1794,7 +1794,10 @@ export const handleUpdateCollaborators = [
   celebrate({
     [Segments.BODY]: Joi.array().items(
       Joi.object({
-        email: Joi.string().email().required(),
+        email: Joi.string()
+          .required()
+          .email()
+          .message('Please enter a valid email'),
         write: Joi.bool().optional(),
         _id: Joi.string().optional(),
       }),
