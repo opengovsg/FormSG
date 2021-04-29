@@ -234,6 +234,17 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
   )
 }
 
+/**
+ * Handler for GET /api/v3/admin/forms/:formId/collaborators
+ * @security session
+ *
+ * @returns 200 with collaborators
+ * @returns 403 when current user does not have read permissions for the form
+ * @returns 404 when form cannot be found
+ * @returns 410 when retrieving collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
 export const handleGetFormCollaborators: RequestHandler<
   { formId: string },
   PermissionsUpdateDto | ErrorDto
