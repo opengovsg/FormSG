@@ -1,6 +1,13 @@
 # This docker-compose file is only for local development purposes.
 version: '3'
 services:
+  proxy:
+    image: nginx:alpine
+    ports:
+      - '5000:5000'
+      - '5156:5156' # Mockpass port
+      - '4566:4566' # Localstack port
+
   formsg:
     build:
       context: .
@@ -11,10 +18,6 @@ services:
     volumes:
       - ./:/opt/formsg
       - /opt/formsg/node_modules
-    ports:
-      - '5000:5000'
-      - '5156:5156' # mockpass ports
-      - '9229:9229' # Node debugger port
     environment:
       - NODE_ENV=development
       - DB_HOST=mongodb://database:27017/formsg
@@ -25,8 +28,8 @@ services:
       - LOGO_S3_BUCKET=local-logo-bucket
       - FORMSG_SDK_MODE=development
       - BOUNCE_LIFE_SPAN=86400000
-      - AWS_ACCESS_KEY_ID=fakeKey
-      - AWS_SECRET_ACCESS_KEY=fakeSecret
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
       - SESSION_SECRET=thisisasecret
       - AWS_ENDPOINT=http://localhost:4566
       - SUBMISSIONS_RATE_LIMIT=200
@@ -71,6 +74,7 @@ services:
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
       - AGGREGATE_COLLECTION
+    network_mode: 'service:proxy'
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
@@ -84,7 +88,7 @@ services:
       - SHOW_LOGIN_PAGE=true
       - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
-    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:5156 to mockpass:5156
+    network_mode: 'service:proxy'
 
   database:
     image: 'mongo:4.0'
@@ -112,8 +116,7 @@ services:
       # This is where we add scripts to initialise AWS resources.
       # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
       - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
-    ports:
-      - '4566:4566'
+    network_mode: 'service:proxy'
 
   maildev:
     image: maildev/maildev
