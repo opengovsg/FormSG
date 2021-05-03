@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { FormSettings } from '../../types'
+import { FormSettings, ILogicSchema } from '../../types'
 import {
   EndPageUpdateDto,
   FieldCreateDto,
@@ -106,5 +106,15 @@ export const deleteFormLogic = async (
 ): Promise<true> => {
   return axios
     .delete(`${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`)
+    .then(() => true)
+}
+
+export const updateFormLogic = async (
+  formId: string,
+  logicId: string,
+  updatedLogic: ILogicSchema,
+): Promise<true> => {
+  return axios
+    .put(`${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`, { updatedLogic })
     .then(() => true)
 }
