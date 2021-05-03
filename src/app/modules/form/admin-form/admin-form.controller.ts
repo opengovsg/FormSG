@@ -1804,7 +1804,16 @@ export const handleUpdateLogic = [
           logicType: Joi.string()
             .valid(...Object.values(LogicType))
             .required(),
-          conditions: Joi.array().required(),
+          conditions: Joi.array()
+            .items(
+              Joi.object({
+                field: Joi.string().required(),
+                state: Joi.string().required(),
+                value: Joi.string().required(),
+                ifValueType: Joi.string(),
+              }).unknown(true),
+            )
+            .required(),
           show: Joi.alternatives().conditional('logicType', {
             is: LogicType.ShowFields,
             then: Joi.array().items(Joi.string()).required(),
