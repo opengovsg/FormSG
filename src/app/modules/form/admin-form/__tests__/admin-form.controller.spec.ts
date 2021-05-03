@@ -8376,7 +8376,7 @@ describe('admin-form.controller', () => {
         },
       },
       body: {
-        updatedLogic: mockUpdatedLogic,
+        ...mockUpdatedLogic,
       },
     })
     const mockRes = expressHandler.mockResponse()

@@ -116,7 +116,7 @@ export const updateFormLogic = async (
 ): Promise<LogicDto> => {
   return axios
     .put<LogicDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/logic/${logicId}`, {
-      updatedLogic,
+      ...updatedLogic,
     })
     .then(({ data }) => data)
 }

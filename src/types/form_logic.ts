@@ -117,7 +117,3 @@ export type LogicCondition =
  * Logic POJO with functions removed
  */
 export type LogicDto = ConditionalPick<LeanDocument<ILogicSchema>, Primitive>
-
-export type LogicUpdateDto = {
-  updatedLogic: LogicDto
-}

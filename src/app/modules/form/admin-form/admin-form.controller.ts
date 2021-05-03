@@ -18,7 +18,6 @@ import {
   IPopulatedForm,
   LogicDto,
   LogicType,
-  LogicUpdateDto,
   ResponseMode,
 } from '../../../../types'
 import {
@@ -1750,10 +1749,10 @@ export const handleReorderFormField = [
 export const _handleUpdateLogic: RequestHandler<
   { formId: string; logicId: string },
   LogicDto | ErrorDto,
-  LogicUpdateDto
+  LogicDto
 > = (req, res) => {
   const { formId, logicId } = req.params
-  const { updatedLogic } = req.body
+  const updatedLogic = { ...req.body }
   const sessionUserId = (req.session as Express.AuthedSession).user._id
 
   // Step 1: Retrieve currently logged in user.
