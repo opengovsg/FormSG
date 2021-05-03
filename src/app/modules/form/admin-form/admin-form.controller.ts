@@ -17,6 +17,7 @@ import {
   IFormDocument,
   ILogicSchema,
   IPopulatedForm,
+  LogicType,
   ResponseMode,
 } from '../../../../types'
 import {
@@ -1720,8 +1721,23 @@ export const _handleReorderFormField: RequestHandler<
       })
   )
 }
-/*
- * Handler for PUT /forms/:formId/logic/:logicId
+
+/**
+ * Handler for POST /forms/:formId/fields/:fieldId/reorder
+ */
+export const handleReorderFormField = [
+  celebrate({
+    [Segments.QUERY]: {
+      to: Joi.number().min(0).required(),
+    },
+  }),
+  _handleReorderFormField,
+] as RequestHandler[]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/logic/:logicId
+ * @precondition Must be preceded by request validation
  * @security session
  *
  * @returns 200 with success message when successfully updated
@@ -1730,7 +1746,7 @@ export const _handleReorderFormField: RequestHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleUpdateLogic: RequestHandler<
+export const _handleUpdateLogic: RequestHandler<
   { formId: string; logicId: string },
   unknown,
   { updatedLogic: ILogicSchema }
@@ -1755,7 +1771,7 @@ export const handleUpdateLogic: RequestHandler<
       .andThen((retrievedForm) =>
         AdminFormService.updateFormLogic(retrievedForm, logicId, updatedLogic),
       )
-      .map(() => res.sendStatus(StatusCodes.OK))
+      .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when updating form logic',
@@ -1776,15 +1792,38 @@ export const handleUpdateLogic: RequestHandler<
 }
 
 /**
- * Handler for POST /forms/:formId/fields/:fieldId/reorder
+ * Handler for PUT /forms/:formId/logic/:logicId
  */
-export const handleReorderFormField = [
-  celebrate({
-    [Segments.QUERY]: {
-      to: Joi.number().min(0).required(),
+export const handleUpdateLogic = [
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object({
+        // Ensures given logic is same as accessed logic
+        updatedLogic: {
+          _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
+          logicType: Joi.string()
+            .valid(...Object.values(LogicType))
+            .required(),
+          conditions: Joi.array().required(),
+          show: Joi.alternatives().conditional('logicType', {
+            is: LogicType.ShowFields,
+            then: Joi.array().items(Joi.string()).required(),
+          }),
+          preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+            is: LogicType.PreventSubmit,
+            then: Joi.string().required(),
+          }),
+        },
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
     },
-  }),
-  _handleReorderFormField,
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
+  _handleUpdateLogic,
 ] as RequestHandler[]
 
 /**

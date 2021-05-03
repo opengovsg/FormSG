@@ -8337,7 +8337,7 @@ describe('admin-form.controller', () => {
     })
   })
 
-  describe('handleUpdateLogic', () => {
+  describe('_handleUpdateLogic', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_USER = {
@@ -8392,7 +8392,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should call all services correctly when request is valid', async () => {
-      await AdminFormController.handleUpdateLogic(mockReq, mockRes, jest.fn())
+      await AdminFormController._handleUpdateLogic(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -8410,7 +8410,8 @@ describe('admin-form.controller', () => {
         mockUpdatedLogic,
       )
 
-      expect(mockRes.sendStatus).toHaveBeenCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_FORM)
     })
 
     it('should return 403 when user does not have permissions to update logic', async () => {
@@ -8420,7 +8421,7 @@ describe('admin-form.controller', () => {
         ),
       )
 
-      await AdminFormController.handleUpdateLogic(mockReq, mockRes, jest.fn())
+      await AdminFormController._handleUpdateLogic(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -8446,7 +8447,7 @@ describe('admin-form.controller', () => {
         errAsync(new LogicNotFoundError()),
       )
 
-      await AdminFormController.handleUpdateLogic(mockReq, mockRes, jest.fn())
+      await AdminFormController._handleUpdateLogic(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -8477,7 +8478,7 @@ describe('admin-form.controller', () => {
         errAsync(new FormNotFoundError()),
       )
 
-      await AdminFormController.handleUpdateLogic(mockReq, mockRes, jest.fn())
+      await AdminFormController._handleUpdateLogic(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -8503,7 +8504,7 @@ describe('admin-form.controller', () => {
         errAsync(new MissingUserError()),
       )
 
-      await AdminFormController.handleUpdateLogic(mockReq, mockRes, jest.fn())
+      await AdminFormController._handleUpdateLogic(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
@@ -8526,7 +8527,7 @@ describe('admin-form.controller', () => {
         errAsync(new DatabaseError()),
       )
 
-      await AdminFormController.handleUpdateLogic(mockReq, mockRes, jest.fn())
+      await AdminFormController._handleUpdateLogic(mockReq, mockRes, jest.fn())
 
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
