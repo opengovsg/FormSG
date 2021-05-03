@@ -281,14 +281,12 @@ describe('admin-form.settings.routes', () => {
       // Arrange
       const { form, user } = await dbHandler.insertEmailForm()
       const session = await createAuthedSession(user.email, request)
-      const expectedResponse = jsonParseStringify({
-        permissionList: MOCK_COLLABORATORS,
-      })
+      const expectedResponse = jsonParseStringify(MOCK_COLLABORATORS)
 
       // Act
       const response = await session
         .put(`/admin/forms/${form._id}/collaborators`)
-        .send({ permissionList: MOCK_COLLABORATORS })
+        .send(MOCK_COLLABORATORS)
 
       // Assert
       expect(response.status).toEqual(200)
@@ -311,7 +309,7 @@ describe('admin-form.settings.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${form._id}/collaborators`)
-        .send({ permissionList: MOCK_COLLABORATORS })
+        .send(MOCK_COLLABORATORS)
 
       // Assert
       expect(response.status).toEqual(403)
@@ -329,7 +327,7 @@ describe('admin-form.settings.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${new ObjectId().toHexString()}/collaborators`)
-        .send({ permissionList: MOCK_COLLABORATORS })
+        .send(MOCK_COLLABORATORS)
 
       // Assert
       expect(response.status).toEqual(404)
@@ -351,7 +349,7 @@ describe('admin-form.settings.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${form._id}/collaborators`)
-        .send({ permissionList: MOCK_COLLABORATORS })
+        .send(MOCK_COLLABORATORS)
 
       // Assert
       expect(response.status).toEqual(410)
@@ -370,7 +368,7 @@ describe('admin-form.settings.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${form._id}/collaborators`)
-        .send({ permissionList: MOCK_COLLABORATORS })
+        .send(MOCK_COLLABORATORS)
 
       // Assert
       expect(response.status).toEqual(422)
@@ -391,7 +389,7 @@ describe('admin-form.settings.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${form._id}/collaborators`)
-        .send({ permissionList: MOCK_COLLABORATORS })
+        .send(MOCK_COLLABORATORS)
 
       // Assert
       expect(response.status).toEqual(500)
