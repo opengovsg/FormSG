@@ -1798,30 +1798,28 @@ export const handleUpdateLogic = [
     {
       [Segments.BODY]: Joi.object({
         // Ensures given logic is same as accessed logic
-        updatedLogic: {
-          _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
-          logicType: Joi.string()
-            .valid(...Object.values(LogicType))
-            .required(),
-          conditions: Joi.array()
-            .items(
-              Joi.object({
-                field: Joi.string().required(),
-                state: Joi.string().required(),
-                value: Joi.string().required(),
-                ifValueType: Joi.string(),
-              }).unknown(true),
-            )
-            .required(),
-          show: Joi.alternatives().conditional('logicType', {
-            is: LogicType.ShowFields,
-            then: Joi.array().items(Joi.string()).required(),
-          }),
-          preventSubmitMessage: Joi.alternatives().conditional('logicType', {
-            is: LogicType.PreventSubmit,
-            then: Joi.string().required(),
-          }),
-        },
+        _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
+        logicType: Joi.string()
+          .valid(...Object.values(LogicType))
+          .required(),
+        conditions: Joi.array()
+          .items(
+            Joi.object({
+              field: Joi.string().required(),
+              state: Joi.string().required(),
+              value: Joi.string().required(),
+              ifValueType: Joi.string(),
+            }).unknown(true),
+          )
+          .required(),
+        show: Joi.alternatives().conditional('logicType', {
+          is: LogicType.ShowFields,
+          then: Joi.array().items(Joi.string()).required(),
+        }),
+        preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+          is: LogicType.PreventSubmit,
+          then: Joi.string().required(),
+        }),
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
       }).unknown(true),
