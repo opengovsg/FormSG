@@ -751,7 +751,7 @@ export const updateFormLogic = (
   updatedLogic: LogicDto,
 ): ResultAsync<ILogicSchema, DatabaseError | LogicNotFoundError> => {
   // First check if specified logic exists
-  if (!form.form_logics.some((logic) => logic.id === logicId)) {
+  if (!form.form_logics.some((logic) => logic._id.toHexString() === logicId)) {
     logger.error({
       message: 'Error occurred - logicId to be updated does not exist',
       meta: {
@@ -785,7 +785,7 @@ export const updateFormLogic = (
       return errAsync(new FormNotFoundError())
     }
     const updatedLogic = updatedForm.form_logics?.filter(
-      (logic) => logic.id === logicId,
+      (logic) => logic._id.toHexString() === logicId,
     )[0]
     if (!updatedLogic) return errAsync(new DatabaseError())
 

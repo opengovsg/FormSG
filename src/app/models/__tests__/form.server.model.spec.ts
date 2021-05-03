@@ -1288,12 +1288,10 @@ describe('Form Model', () => {
         form_logics: [
           {
             _id: logicId1,
-            id: logicId1,
             logicType: LogicType.ShowFields,
           } as ILogicSchema,
           {
             _id: logicId2,
-            id: logicId2,
             logicType: LogicType.ShowFields,
           } as ILogicSchema,
         ],
@@ -1301,7 +1299,6 @@ describe('Form Model', () => {
 
       const mockUpdatedFormLogic = {
         _id: logicId1,
-        id: logicId1,
         logicType: LogicType.PreventSubmit,
       } as ILogicSchema
 
@@ -1311,7 +1308,6 @@ describe('Form Model', () => {
           form_logics: [
             {
               _id: logicId1,
-              id: logicId1,
               logicType: LogicType.ShowFields,
             } as ILogicSchema,
           ],
