@@ -275,11 +275,7 @@ function EditLogicModalController(
       })
       // Not new, and logic index is provided
     } else if (logicIndex !== -1) {
-      vm.updateExistingLogic(logicIndex, vm.logic).then((error) => {
-        if (!error) {
-          $uibModalInstance.close()
-        }
-      })
+      vm.updateExistingLogic(logicIndex, vm.logic)
     }
   }
 
@@ -298,6 +294,7 @@ function EditLogicModalController(
     )
       .then(() => {
         vm.formLogics[logicIndex] = updatedLogic
+        $uibModalInstance.close()
       })
       .catch((logicUpdateError) => {
         console.error(logicUpdateError)
