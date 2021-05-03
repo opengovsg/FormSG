@@ -764,7 +764,7 @@ export const updateFormLogic = (
 
   // Update specified logic
   return ResultAsync.fromPromise(
-    FormModel.updateFormLogic(form._id, logicId, updatedLogic),
+    FormModel.updateFormLogic(String(form._id), logicId, updatedLogic),
     (error) => {
       logger.error({
         message: 'Error occurred when updating form logic',
