@@ -1399,6 +1399,51 @@ describe('Form Model', () => {
         // should return null
         expect(modifiedForm).toBeNull()
       })
+
+      it('should return unmodified form if logicId is invalid', async () => {
+        // arrange
+        const invalidLogicId = new ObjectId().toHexString()
+        const mockExistingFormLogicSingle = {
+          form_logics: [
+            {
+              _id: invalidLogicId,
+              logicType: LogicType.ShowFields,
+            } as ILogicSchema,
+          ],
+        }
+
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          status: Status.Public,
+          responseMode: ResponseMode.Email,
+          ...mockExistingFormLogicSingle,
+        })
+        const form = await Form.create(formParams)
+
+        // act
+        const modifiedForm = await Form.updateFormLogic(
+          form._id,
+          logicId1,
+          mockUpdatedFormLogic,
+        )
+
+        // assert
+        // Form should be returned
+        expect(modifiedForm).not.toBeNull()
+
+        // Form should have correct status, responsemode
+        expect(modifiedForm?.responseMode).not.toBeNull()
+        expect(modifiedForm?.responseMode).toEqual(ResponseMode.Email)
+        expect(modifiedForm?.status).not.toBeNull()
+        expect(modifiedForm?.status).toEqual(Status.Public)
+
+        // Check that form logic has not been updated and there are no new form logics introduced
+        expect(modifiedForm?.form_logics).toBeDefined()
+        expect(modifiedForm?.form_logics).toHaveLength(1)
+        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+          LogicType.ShowFields,
+        )
+      })
     })
   })
 

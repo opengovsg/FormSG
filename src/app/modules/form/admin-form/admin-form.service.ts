@@ -787,7 +787,7 @@ export const updateFormLogic = (
     const updatedLogic = updatedForm.form_logics?.filter(
       (logic) => logic._id.toHexString() === logicId,
     )[0]
-    if (!updatedLogic) return errAsync(new DatabaseError())
+    if (!updatedLogic) return errAsync(new LogicNotFoundError()) // Possible race condition if logic gets deleted after the initial logicId check but before the db update
 
     return okAsync(updatedLogic)
   })
