@@ -39,6 +39,10 @@ export interface ILogic {
 
 export interface ILogicSchema extends ILogic, Document {}
 
+export type ILogicWithId = ILogic & {
+  _id: string
+}
+
 export interface IShowFieldsLogic extends ILogic {
   show: IFieldSchema['_id'][]
 }

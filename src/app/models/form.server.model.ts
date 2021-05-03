@@ -29,7 +29,7 @@ import {
   IFormDocument,
   IFormModel,
   IFormSchema,
-  ILogicSchema,
+  ILogicWithId,
   IPopulatedForm,
   LogicType,
   Permission,
@@ -690,7 +690,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     this: IFormModel,
     formId: string,
     logicId: string,
-    updatedLogic: ILogicSchema,
+    updatedLogic: ILogicWithId,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
       formId,
