@@ -293,8 +293,10 @@ function EditLogicModalController(
       ),
     )
       .then((updatedLogic) => {
-        vm.formLogics[logicIndex] = updatedLogic
-        externalScope.myform.form_logics[logicIndex] = updatedLogic // update global myform
+        const updatedFormLogics = [...vm.formLogics]
+        updatedFormLogics[logicIndex] = updatedLogic
+        vm.formLogics = updatedFormLogics
+        externalScope.myform.form_logics = updatedFormLogics // update global myform
         $uibModalInstance.close()
       })
       .catch((logicUpdateError) => {
