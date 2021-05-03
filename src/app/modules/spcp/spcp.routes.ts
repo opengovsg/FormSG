@@ -34,6 +34,7 @@ SpcpRouter.get(
 /**
  * Gets the spcp redirect URL and parses the returned page to check for error codes
  * @route GET /spcp/validate
+ * @deprecated in favour of POST /api/v3/forms/:formId/auth/validate
  * @group SPCP - SingPass/CorpPass logins for form-fillers
  * @param {string} target.query.required - the destination URL after login
  * @param {string} authType.query.required - `SP` for SingPass or `CP` for CorpPass

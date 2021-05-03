@@ -9,7 +9,11 @@ import {
   MissingFeatureError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
-import { CreateRedirectUrlError } from '../../spcp/spcp.errors'
+import {
+  CreateRedirectUrlError,
+  FetchLoginPageError,
+  LoginPageValidationError,
+} from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -66,7 +70,7 @@ export const mapRouteError = (
  * @param error The error to retrieve the status codes and error messages
  * @param coreErrorMessage Any error message to return instead of the default core error message, if any
  */
-export const mapFormAuthRedirectError: MapRouteError = (
+export const mapFormAuthError: MapRouteError = (
   error,
   coreErrorMessage = 'Sorry, something went wrong. Please try again.',
 ) => {
@@ -89,6 +93,16 @@ export const mapFormAuthRedirectError: MapRouteError = (
         errorMessage:
           'Please ensure that the form has authentication enabled. Please refresh and try again.',
       }
+    case FetchLoginPageError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage: 'Failed to contact SingPass. Please try again.',
+      }
+    case LoginPageValidationError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
+        errorMessage: 'Error while contacting SingPass. Please try again.',
+      }
     case DatabaseError:
     case CreateRedirectUrlError:
     case MissingFeatureError:
@@ -100,7 +114,7 @@ export const mapFormAuthRedirectError: MapRouteError = (
       logger.error({
         message: 'Unknown route error observed',
         meta: {
-          action: 'mapRouteError',
+          action: 'mapFormAuthError',
         },
         error,
       })

@@ -18,4 +18,4 @@ export type FormFieldDto = ConditionalPick<
   Primitive
 >
 
-export type PermissionsUpdateDto = { permissionList: Permission[] }
+export type PermissionsUpdateDto = Permission[]

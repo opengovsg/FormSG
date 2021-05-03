@@ -1151,6 +1151,57 @@ describe('Form Model', () => {
         expect(modifiedForm).toBeNull()
       })
     })
+
+    describe('deleteFormFieldById', () => {
+      it('should return form with deleted field', async () => {
+        // Arrange
+        const fieldToDelete = generateDefaultField(BasicField.Decimal)
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          form_fields: [fieldToDelete, generateDefaultField(BasicField.Mobile)],
+        })
+        const form = await Form.create(formParams)
+
+        // Act
+        const actual = await Form.deleteFormFieldById(
+          form._id,
+          fieldToDelete._id,
+        )
+
+        // Assert
+        // Only non-deleted form field remains
+        const expectedFormFields = [form.toObject().form_fields![1]]
+        const retrievedForm = await Form.findById(form._id).lean()
+        // Check return shape.
+        expect(actual?.toObject().form_fields).toEqual(expectedFormFields)
+        // Check db state
+        expect(retrievedForm).not.toBeNull()
+        expect(retrievedForm?.form_fields).toEqual(expectedFormFields)
+      })
+
+      it('should return form unchanged when field id is invalid', async () => {
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          form_fields: [
+            generateDefaultField(BasicField.Date),
+            generateDefaultField(BasicField.Mobile),
+          ],
+        })
+        const form = await Form.create(formParams)
+
+        // Act
+        const actual = await Form.deleteFormFieldById(
+          form._id,
+          new ObjectId().toHexString(),
+        )
+
+        // Assert
+        expect(actual?.toObject()).toEqual({
+          ...form.toObject(),
+          lastModified: expect.any(Date),
+        })
+      })
+    })
   })
 
   describe('Methods', () => {
@@ -1657,12 +1708,12 @@ describe('Form Model', () => {
         ]
 
         // Act
-        const actual = await validForm
-          .updateFormCollaborators(newCollaborators)
-          .catch((error) => error)
+        const actual = validForm.updateFormCollaborators(newCollaborators)
 
         // Assert
-        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+        await expect(actual).rejects.toBeInstanceOf(
+          mongoose.Error.ValidationError,
+        )
       })
     })
   })

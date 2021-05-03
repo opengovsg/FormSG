@@ -3,6 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '../../../types'
+import { PublicFormAuthValidateEsrvcIdDto } from '../../../types/api'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
@@ -10,7 +11,7 @@ import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
 
 import { SpcpFactory } from './spcp.factory'
-import { JwtName, LoginPageValidationResult } from './spcp.types'
+import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
@@ -60,7 +61,7 @@ export const handleRedirect: RequestHandler<
  */
 export const handleValidate: RequestHandler<
   ParamsDictionary,
-  LoginPageValidationResult | { message: string },
+  PublicFormAuthValidateEsrvcIdDto | { message: string },
   unknown,
   {
     authType: AuthType.SP | AuthType.CP
