@@ -1,4 +1,5 @@
-import { Document } from 'mongoose'
+import { Document, LeanDocument } from 'mongoose'
+import { ConditionalPick, Primitive } from 'type-fest'
 
 import { IFieldSchema } from './field/baseField'
 import { BasicField } from './field/fieldTypes'
@@ -111,3 +112,12 @@ export type LogicCondition =
   | CategoricalLogicCondition
   | BinaryLogicCondition
   | NumericalLogicCondition
+
+/**
+ * Logic POJO with functions removed
+ */
+export type LogicDto = ConditionalPick<LeanDocument<ILogicSchema>, Primitive>
+
+export type LogicUpdateDto = {
+  updatedLogic: LogicDto
+}

@@ -20,6 +20,7 @@ import {
   ILogicSchema,
   IPopulatedForm,
   IUserSchema,
+  LogicDto,
 } from '../../../../types'
 import {
   EndPageUpdateDto,
@@ -740,15 +741,15 @@ export const deleteFormLogic = (
  * @param form The original form to update logic in
  * @param logicId the logicId to update
  * @param updatedLogic Object containing the updated logic
- * @returns ok(form object) on success
+ * @returns ok(updated logic dto) on success
  * @returns err(database errors) if db error is thrown during logic update
  * @returns err(LogicNotFoundError) if logicId does not exist on form
  */
 export const updateFormLogic = (
   form: IPopulatedForm,
   logicId: string,
-  updatedLogic: ILogicSchema,
-): ResultAsync<IFormSchema, DatabaseError | LogicNotFoundError> => {
+  updatedLogic: LogicDto,
+): ResultAsync<ILogicSchema, DatabaseError | LogicNotFoundError> => {
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic.id === logicId)) {
     logger.error({
@@ -778,12 +779,17 @@ export const updateFormLogic = (
       })
       return transformMongoError(error)
     },
-    // On success, return form
+    // On success, return updated form logic
   ).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
-    return okAsync(updatedForm)
+    const updatedLogic = updatedForm.form_logics?.filter(
+      (logic) => logic.id === logicId,
+    )[0]
+    if (!updatedLogic) return errAsync(new DatabaseError())
+
+    return okAsync(updatedLogic)
   })
 }
 

@@ -15,9 +15,10 @@ import {
   FormSettings,
   IForm,
   IFormDocument,
-  ILogicSchema,
   IPopulatedForm,
+  LogicDto,
   LogicType,
+  LogicUpdateDto,
   ResponseMode,
 } from '../../../../types'
 import {
@@ -1740,7 +1741,7 @@ export const handleReorderFormField = [
  * @precondition Must be preceded by request validation
  * @security session
  *
- * @returns 200 with success message when successfully updated
+ * @returns 200 with success message and updated logic object when successfully updated
  * @returns 403 when user does not have permissions to update logic
  * @returns 404 when form cannot be found
  * @returns 422 when user in session cannot be retrieved from the database
@@ -1748,8 +1749,8 @@ export const handleReorderFormField = [
  */
 export const _handleUpdateLogic: RequestHandler<
   { formId: string; logicId: string },
-  unknown,
-  { updatedLogic: ILogicSchema }
+  LogicDto | ErrorDto,
+  LogicUpdateDto
 > = (req, res) => {
   const { formId, logicId } = req.params
   const { updatedLogic } = req.body
@@ -1766,12 +1767,11 @@ export const _handleUpdateLogic: RequestHandler<
           level: PermissionLevel.Write,
         }),
       )
-
       // Step 3: Update form logic
       .andThen((retrievedForm) =>
         AdminFormService.updateFormLogic(retrievedForm, logicId, updatedLogic),
       )
-      .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
+      .map((updatedLogic) => res.status(StatusCodes.OK).json(updatedLogic))
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when updating form logic',
