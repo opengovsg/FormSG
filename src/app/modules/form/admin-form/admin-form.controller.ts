@@ -1767,7 +1767,7 @@ export const _handleUpdateCollaborators: RequestHandler<
         AdminFormService.updateFormCollaborators(form, req.body),
       )
       .map((updatedCollaborators) =>
-        res.status(StatusCodes.OK).send(updatedCollaborators),
+        res.status(StatusCodes.OK).json(updatedCollaborators),
       )
       .mapErr((error) => {
         logger.error({
@@ -1777,7 +1777,7 @@ export const _handleUpdateCollaborators: RequestHandler<
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
-            formCollaborators: req.query,
+            formCollaborators: req.body,
           },
           error,
         })

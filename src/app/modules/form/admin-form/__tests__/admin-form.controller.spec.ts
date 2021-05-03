@@ -8091,7 +8091,7 @@ describe('admin-form.controller', () => {
 
       // Assert
       expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
-      expect(mockRes.send).toBeCalledWith(MOCK_COLLABORATORS)
+      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS)
     })
 
     it('should return 403 when the user does not have sufficient permissions to update the form', async () => {
