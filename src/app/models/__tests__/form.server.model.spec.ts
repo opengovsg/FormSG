@@ -1708,12 +1708,12 @@ describe('Form Model', () => {
         ]
 
         // Act
-        const actual = await validForm
-          .updateFormCollaborators(newCollaborators)
-          .catch((error) => error)
+        const actual = validForm.updateFormCollaborators(newCollaborators)
 
         // Assert
-        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+        await expect(actual).rejects.toBeInstanceOf(
+          mongoose.Error.ValidationError,
+        )
       })
     })
   })
