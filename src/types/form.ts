@@ -321,6 +321,11 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     newEndPage: EndPage,
   ): Promise<IFormDocument | null>
+  updateFormLogic(
+    formId: string,
+    logicId: string,
+    updatedLogic: ILogicSchema,
+  ): Promise<IFormSchema | null>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
