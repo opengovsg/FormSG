@@ -1731,7 +1731,7 @@ export const _handleReorderFormField: RequestHandler<
  * @returns 500 when database error occurs
  */
 export const handleUpdateLogic: RequestHandler<
-  ParamsDictionary,
+  { formId: string; logicId: string },
   unknown,
   { updatedLogic: ILogicSchema }
 > = (req, res) => {
