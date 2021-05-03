@@ -693,7 +693,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     updatedLogic: ILogicSchema,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
-      mongoose.Types.ObjectId(formId),
+      formId,
       {
         $set: { 'form_logics.$[object]': updatedLogic },
       },

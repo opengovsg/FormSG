@@ -1713,13 +1713,13 @@ describe('admin-form.service', () => {
 
     beforeEach(() => {
       mockEmailForm = ({
-        _id: new ObjectId(),
+        _id: new ObjectId().toHexString(),
         status: Status.Public,
         responseMode: ResponseMode.Email,
         ...mockFormLogicOld,
       } as unknown) as IPopulatedForm
       mockEncryptForm = ({
-        _id: new ObjectId(),
+        _id: new ObjectId().toHexString(),
         status: Status.Public,
         responseMode: ResponseMode.Encrypt,
         ...mockFormLogicOld,
