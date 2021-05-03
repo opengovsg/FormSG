@@ -15,6 +15,7 @@ import {
   FormSettings,
   IForm,
   IFormDocument,
+  ILogicSchema,
   IPopulatedForm,
   ResponseMode,
 } from '../../../../types'
@@ -1711,6 +1712,60 @@ export const _handleReorderFormField: RequestHandler<
             formId,
             fieldId,
             reqQuery: req.query,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+/*
+ * Handler for PUT /forms/:formId/logic/:logicId
+ * @security session
+ *
+ * @returns 200 with success message when successfully updated
+ * @returns 403 when user does not have permissions to update logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateLogic: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  { updatedLogic: ILogicSchema }
+> = (req, res) => {
+  const { formId, logicId } = req.params
+  const { updatedLogic } = req.body
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+
+      // Step 3: Update form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.updateFormLogic(retrievedForm, logicId, updatedLogic),
+      )
+      .map(() => res.sendStatus(StatusCodes.OK))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating form logic',
+          meta: {
+            action: 'handleUpdateLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            logicId,
+            updatedLogic,
           },
           error,
         })

@@ -17,6 +17,7 @@ import {
   IForm,
   IFormDocument,
   IFormSchema,
+  ILogicSchema,
   IPopulatedForm,
   IUserSchema,
 } from '../../../../types'
@@ -726,6 +727,58 @@ export const deleteFormLogic = (
       return transformMongoError(error)
     },
     // On success, return true
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm)
+  })
+}
+
+/**
+ * Updates form logic.
+ * @param form The original form to update logic in
+ * @param logicId the logicId to update
+ * @param updatedLogic Object containing the updated logic
+ * @returns ok(form object) on success
+ * @returns err(database errors) if db error is thrown during logic update
+ * @returns err(LogicNotFoundError) if logicId does not exist on form
+ */
+export const updateFormLogic = (
+  form: IPopulatedForm,
+  logicId: string,
+  updatedLogic: ILogicSchema,
+): ResultAsync<IFormSchema, DatabaseError | LogicNotFoundError> => {
+  // First check if specified logic exists
+  if (!form.form_logics.some((logic) => logic.id === logicId)) {
+    logger.error({
+      message: 'Error occurred - logicId to be updated does not exist',
+      meta: {
+        action: 'updateFormLogic',
+        formId: form._id,
+        logicId,
+      },
+    })
+    return errAsync(new LogicNotFoundError())
+  }
+
+  // Update specified logic
+  return ResultAsync.fromPromise(
+    FormModel.updateFormLogic(form._id, logicId, updatedLogic),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form logic',
+        meta: {
+          action: 'updateFormLogic',
+          formId: form._id,
+          logicId,
+          updatedLogic,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+    // On success, return form
   ).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())

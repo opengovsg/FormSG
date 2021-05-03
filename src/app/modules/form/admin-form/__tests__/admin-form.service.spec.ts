@@ -75,6 +75,7 @@ import {
   updateEndPage,
   updateForm,
   updateFormField,
+  updateFormLogic,
   updateFormSettings,
 } from '../admin-form.service'
 import {
@@ -1678,6 +1679,146 @@ describe('admin-form.service', () => {
         expectedErrorMsg,
         'Please refresh and try again.',
       ])
+    })
+  })
+
+  describe('updateFormLogic', () => {
+    const logicId1 = new ObjectId().toHexString()
+    const logicId2 = new ObjectId().toHexString()
+
+    const mockFormLogicOld = {
+      form_logics: [
+        {
+          _id: logicId1,
+          id: logicId1,
+          logicType: 'showFields',
+        } as ILogicSchema,
+        {
+          _id: logicId2,
+          id: logicId2,
+          logicType: 'showFields',
+        } as ILogicSchema,
+      ],
+    }
+
+    const updatedLogic = {
+      _id: logicId1,
+      id: logicId1,
+      logicType: 'preventSubmit',
+    } as ILogicSchema
+
+    const UPDATE_SPY = jest.spyOn(FormModel, 'updateFormLogic')
+
+    let mockEmailForm: IPopulatedForm, mockEncryptForm: IPopulatedForm
+
+    beforeEach(() => {
+      mockEmailForm = ({
+        _id: new ObjectId(),
+        status: Status.Public,
+        responseMode: ResponseMode.Email,
+        ...mockFormLogicOld,
+      } as unknown) as IPopulatedForm
+      mockEncryptForm = ({
+        _id: new ObjectId(),
+        status: Status.Public,
+        responseMode: ResponseMode.Encrypt,
+        ...mockFormLogicOld,
+      } as unknown) as IPopulatedForm
+    })
+
+    it('should return ok(form) on successful form logic update for email mode form', async () => {
+      // Arrange
+      const STATIC_UPDATE_SPY = jest
+        .spyOn(FormModel, 'findByIdAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockEmailForm),
+        })
+
+      // Act
+      const actualResult = await updateFormLogic(
+        mockEmailForm,
+        logicId1,
+        updatedLogic,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockEmailForm)
+
+      expect(STATIC_UPDATE_SPY).toHaveBeenCalledWith(
+        mockEmailForm._id,
+        {
+          $set: { 'form_logics.$[object]': updatedLogic },
+        },
+        {
+          arrayFilters: [{ 'object._id': logicId1 }],
+          new: true,
+          runValidators: true,
+        },
+      )
+
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        mockEmailForm._id,
+        logicId1,
+        updatedLogic,
+      )
+    })
+
+    it('should return ok(form) on successful form logic update for encrypt mode form', async () => {
+      // Arrange
+      const STATIC_UPDATE_SPY = jest
+        .spyOn(FormModel, 'findByIdAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockEncryptForm),
+        })
+
+      // Act
+      const actualResult = await updateFormLogic(
+        mockEncryptForm,
+        logicId1,
+        updatedLogic,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockEncryptForm)
+
+      expect(STATIC_UPDATE_SPY).toHaveBeenCalledWith(
+        mockEncryptForm._id,
+        {
+          $set: { 'form_logics.$[object]': updatedLogic },
+        },
+        {
+          arrayFilters: [{ 'object._id': logicId1 }],
+          new: true,
+          runValidators: true,
+        },
+      )
+
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        mockEncryptForm._id,
+        logicId1,
+        updatedLogic,
+      )
+    })
+
+    it('should return LogicNotFoundError if logic does not exist on form', async () => {
+      // Act
+      const wrongLogicId = new ObjectId().toHexString()
+      const actualResult = await updateFormLogic(
+        mockEmailForm,
+        wrongLogicId,
+        updatedLogic,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new LogicNotFoundError())
+      expect(UPDATE_SPY).not.toHaveBeenCalled()
     })
   })
 })
