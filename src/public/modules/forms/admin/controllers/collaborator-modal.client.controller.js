@@ -241,7 +241,9 @@ function CollaboratorModalController(
       if (err) {
         // Make the alert message correspond to the error code
         if (err.response.status === StatusCodes.BAD_REQUEST) {
-          Toastr.error('Outdated admin page, please refresh.')
+          Toastr.error(
+            'Please ensure that the email entered is a valid government email. If the error still persists, refresh and try again later.',
+          )
         } else if (err.response.status === StatusCodes.UNPROCESSABLE_ENTITY) {
           Toastr.error(`${email} is not part of a whitelisted agency.`)
         } else {
