@@ -51,7 +51,7 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById } from '../form.utils'
+import { getFormFieldById, getLogicById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -784,12 +784,10 @@ export const updateFormLogic = (
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
-    const updatedLogic = updatedForm.form_logics?.filter(
-      (logic) => logic._id.toHexString() === logicId,
-    )[0]
-    if (!updatedLogic) return errAsync(new LogicNotFoundError()) // Possible race condition if logic gets deleted after the initial logicId check but before the db update
-
-    return okAsync(updatedLogic)
+    const updatedLogic = getLogicById(updatedForm.form_logics, logicId)
+    return updatedLogic
+      ? okAsync(updatedLogic)
+      : errAsync(new LogicNotFoundError()) // Possible race condition if logic gets deleted after the initial logicId check but before the db update
   })
 }
 
