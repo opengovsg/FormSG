@@ -76,7 +76,9 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
         sqsMessage,
       },
     })
-    return Promise.reject()
+    // Resolve Promise so that malformed message is deleted from queue
+    // and not consumed repeatedly
+    return Promise.resolve()
   }
 
   // Parse message
@@ -90,7 +92,9 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
       },
       error: webhookMessageResult.error,
     })
-    return Promise.reject()
+    // Resolve Promise so that malformed message is deleted from queue
+    // and not consumed repeatedly
+    return Promise.resolve()
   }
   const webhookMessage = webhookMessageResult.value
 
@@ -106,6 +110,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
         },
         error: requeueResult.error,
       })
+      // Reject so requeue can be re-attempted
       return Promise.reject()
     }
     return Promise.resolve()
@@ -149,6 +154,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
       },
       error: retryResult.error,
     })
+    // Reject so retry can be reattempted
     return Promise.reject()
   }
   return Promise.resolve()
