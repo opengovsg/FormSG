@@ -14,7 +14,7 @@ module.exports = {
     '@storybook/preset-create-react-app',
   ],
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup
-  // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js 
+  // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js
   webpackFinal: async (storybookConfig) => {
     return {
       ...storybookConfig,

@@ -38,7 +38,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public"
+    "build-storybook": "build-storybook -s public",
+    "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
+    "lint:fix": "eslint ./ --ignore-path .gitignore --fix && npm run prettier . -c --write"
   },
   "husky": {
     "hooks": {
