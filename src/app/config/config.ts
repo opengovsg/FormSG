@@ -214,6 +214,7 @@ const config: Config = {
   bounceLifeSpan: basicVars.mail.bounceLifeSpan,
   chromiumBin: basicVars.mail.chromiumBin,
   port: basicVars.core.port,
+  corsWhiteList: basicVars.corsWhitelist,
   sessionSecret: basicVars.core.sessionSecret,
   otpLifeSpan: basicVars.core.otpLifeSpan,
   submissionsTopUp: basicVars.core.submissionsTopUp,

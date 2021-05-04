@@ -17,6 +17,7 @@ services:
       - '9229:9229' # Node debugger port
     environment:
       - NODE_ENV=development
+      - CORS_WHITELIST=http://localhost:3000
       - DB_HOST=mongodb://database:27017/formsg
       - APP_NAME=FormSG
       - APP_URL=http://localhost:5000

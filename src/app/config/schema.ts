@@ -286,6 +286,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
   },
+  corsWhitelist: {
+    doc: 'Comma separated domain strings to enable CORS for',
+    format: 'string[]',
+    default: [],
+    env: 'CORS_WHITELIST',
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {

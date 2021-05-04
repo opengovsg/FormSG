@@ -62,6 +62,7 @@ export type Config = {
   isDev: boolean
   nodeEnv: Environment
   port: number
+  corsWhiteList: string[]
   sessionSecret: string
   chromiumBin: string
   otpLifeSpan: number
@@ -132,6 +133,7 @@ export interface IOptionalVarsSchema {
     submissions: number
     sendAuthOtp: number
   }
+  corsWhitelist: string[]
 }
 
 export interface IBucketUrlSchema {
