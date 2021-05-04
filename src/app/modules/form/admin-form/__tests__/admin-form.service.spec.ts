@@ -1751,13 +1751,7 @@ describe('admin-form.service', () => {
 
     it('should return ok(updated logic) on successful form logic update for email mode form', async () => {
       // Arrange
-      const STATIC_UPDATE_SPY = jest
-        .spyOn(FormModel, 'findByIdAndUpdate')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        .mockReturnValue({
-          exec: jest.fn().mockResolvedValue(mockEmailFormUpdated),
-        })
+      UPDATE_SPY.mockResolvedValue(mockEmailFormUpdated)
 
       // Act
       const actualResult = await updateFormLogic(
@@ -1770,18 +1764,6 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(updatedLogic)
 
-      expect(STATIC_UPDATE_SPY).toHaveBeenCalledWith(
-        mockEmailFormId.toHexString(),
-        {
-          $set: { 'form_logics.$[object]': updatedLogic },
-        },
-        {
-          arrayFilters: [{ 'object._id': logicId1.toHexString() }],
-          new: true,
-          runValidators: true,
-        },
-      )
-
       expect(UPDATE_SPY).toHaveBeenCalledWith(
         mockEmailForm._id.toHexString(),
         logicId1.toHexString(),
@@ -1791,13 +1773,7 @@ describe('admin-form.service', () => {
 
     it('should return ok(updated logic) on successful form logic update for encrypt mode form', async () => {
       // Arrange
-      const STATIC_UPDATE_SPY = jest
-        .spyOn(FormModel, 'findByIdAndUpdate')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        .mockReturnValue({
-          exec: jest.fn().mockResolvedValue(mockEncryptFormUpdated),
-        })
+      UPDATE_SPY.mockResolvedValue(mockEncryptFormUpdated)
 
       // Act
       const actualResult = await updateFormLogic(
@@ -1809,18 +1785,6 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(updatedLogic)
-
-      expect(STATIC_UPDATE_SPY).toHaveBeenCalledWith(
-        mockEncryptFormId.toHexString(),
-        {
-          $set: { 'form_logics.$[object]': updatedLogic },
-        },
-        {
-          arrayFilters: [{ 'object._id': logicId1.toHexString() }],
-          new: true,
-          runValidators: true,
-        },
-      )
 
       expect(UPDATE_SPY).toHaveBeenCalledWith(
         mockEncryptFormId.toHexString(),
