@@ -224,7 +224,7 @@ describe('admin-form.logic.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
-        .send({ ...updatedLogic })
+        .send(updatedLogic)
 
       // Assert
       expect(response.status).toEqual(200)
@@ -256,7 +256,7 @@ describe('admin-form.logic.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
-        .send({ ...updatedLogic })
+        .send(updatedLogic)
 
       // Assert
       expect(response.status).toEqual(200)
@@ -292,7 +292,7 @@ describe('admin-form.logic.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
-        .send({ ...updatedLogic })
+        .send(updatedLogic)
 
       // Assert
       expect(response.status).toEqual(403)
@@ -329,7 +329,7 @@ describe('admin-form.logic.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/logic/${wrongLogicId}`)
-        .send({ ...updatedLogic })
+        .send(updatedLogic)
 
       // Assert
       const expectedResponse = {
@@ -365,7 +365,7 @@ describe('admin-form.logic.routes', () => {
       const wrongFormId = new ObjectId()
       const response = await session
         .put(`/admin/forms/${wrongFormId}/logic/${formLogicId}`)
-        .send({ ...updatedLogic })
+        .send(updatedLogic)
 
       // Assert
       const expectedResponse = {
@@ -403,7 +403,7 @@ describe('admin-form.logic.routes', () => {
       // Act
       const response = await session
         .put(`/admin/forms/${formToUpdate._id}/logic/${formLogicId}`)
-        .send({ ...updatedLogic })
+        .send(updatedLogic)
 
       // Assert
       const expectedResponse = {
