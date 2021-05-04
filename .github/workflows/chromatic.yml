@@ -4,7 +4,13 @@
 name: 'Chromatic'
 
 # Event for the workflow
-on: push
+on:
+  push:
+    # Sequence of patterns matched against refs/heads
+    branches:
+      # Push events to branches matching refs/heads/form-v2
+      - 'form-v2'
+      - 'form-v2/**'
 
 # List of jobs
 jobs:
