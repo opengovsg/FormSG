@@ -23,6 +23,15 @@ export const updateFormSettings = async (
     .then(({ data }) => data)
 }
 
+export const getSingleFormField = async (
+  formId: string,
+  fieldId: string,
+): Promise<FormFieldDto> => {
+  return axios
+    .get<FormFieldDto>(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`)
+    .then(({ data }) => data)
+}
+
 export const updateSingleFormField = async (
   formId: string,
   fieldId: string,
