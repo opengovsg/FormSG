@@ -1751,7 +1751,7 @@ describe('admin-form.service', () => {
 
     it('should return ok(updated logic) on successful form logic update for email mode form', async () => {
       // Arrange
-      UPDATE_SPY.mockResolvedValue(mockEmailFormUpdated)
+      UPDATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormSchema)
 
       // Act
       const actualResult = await updateFormLogic(
@@ -1773,7 +1773,7 @@ describe('admin-form.service', () => {
 
     it('should return ok(updated logic) on successful form logic update for encrypt mode form', async () => {
       // Arrange
-      UPDATE_SPY.mockResolvedValue(mockEncryptFormUpdated)
+      UPDATE_SPY.mockResolvedValue(mockEncryptFormUpdated as IFormSchema)
 
       // Act
       const actualResult = await updateFormLogic(
