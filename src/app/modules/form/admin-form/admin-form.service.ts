@@ -21,6 +21,7 @@ import {
   IUserSchema,
 } from '../../../../types'
 import {
+  EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
   SettingsUpdateDto,
@@ -777,5 +778,42 @@ export const deleteFormField = <T extends IFormSchema>(
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm)
+  })
+}
+
+/**
+ * Update the end page of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newEndPage the new end page object to replace the current one
+ * @returns ok(updated end page object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if endpage update fails
+ */
+export const updateEndPage = (
+  formId: string,
+  newEndPage: EndPageUpdateDto,
+): ResultAsync<
+  IFormDocument['endPage'],
+  PossibleDatabaseError | FormNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    FormModel.updateEndPageById(formId, newEndPage),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form end page',
+        meta: {
+          action: 'updateEndPage',
+          formId,
+          newEndPage,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.endPage)
   })
 }

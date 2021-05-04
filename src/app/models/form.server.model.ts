@@ -14,6 +14,7 @@ import {
   AuthType,
   BasicField,
   Colors,
+  EndPage,
   FormField,
   FormFieldWithId,
   FormLogoState,
@@ -680,6 +681,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { $pull: { form_fields: { _id: fieldId } } },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updateEndPageById = async function (
+    this: IFormModel,
+    formId: string,
+    newEndPage: EndPage,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { endPage: newEndPage },
       { new: true, runValidators: true },
     ).exec()
   }

@@ -311,6 +311,16 @@ export interface IFormModel extends Model<IFormSchema> {
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<FormMetaView[]>
+  /**
+   * Update the end page of form with given endpage object.
+   * @param formId the id of the form to update
+   * @param newEndPage the new EndPage object to replace with
+   * @returns the updated form document if form exists, null otherwise
+   */
+  updateEndPageById(
+    formId: string,
+    newEndPage: EndPage,
+  ): Promise<IFormDocument | null>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

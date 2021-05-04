@@ -10,6 +10,7 @@ import getFormModel, {
 } from 'src/app/models/form.server.model'
 import {
   BasicField,
+  EndPage,
   FormFieldWithId,
   IEncryptedForm,
   IFieldSchema,
@@ -1200,6 +1201,81 @@ describe('Form Model', () => {
           ...form.toObject(),
           lastModified: expect.any(Date),
         })
+      })
+    })
+
+    describe('updateEndPageById', () => {
+      it('should update end page and return updated form when successful', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          endPage: {
+            title: 'old title',
+          },
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const updatedEndPage: EndPage = {
+          title: 'some new title',
+          paragraph: 'some description paragraph',
+          buttonText: 'custom button text',
+        }
+
+        // Act
+        const actual = await Form.updateEndPageById(form._id, updatedEndPage)
+
+        // Assert
+        // Should have defaults populated but also replace the endpage with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          endPage: { ...updatedEndPage },
+        })
+      })
+
+      it('should update end page with defaults when optional values are not provided', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const updatedEndPage: EndPage = {
+          paragraph: 'some description paragraph',
+        }
+
+        // Act
+        const actual = await Form.updateEndPageById(form._id, updatedEndPage)
+
+        // Assert
+        // Should have defaults populated but also replace the endpage with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          endPage: {
+            ...updatedEndPage,
+            // Defaults should be populated and returned
+            buttonText: 'Submit another form',
+            title: 'Thank you for filling out the form.',
+          },
+        })
+      })
+
+      it('should return null when formId given is not in the database', async () => {
+        // Arrange
+        await expect(Form.countDocuments()).resolves.toEqual(0)
+        const updatedEndPage: EndPage = {
+          title: 'some new title',
+          paragraph: 'does not really matter',
+        }
+
+        // Act
+        const actual = await Form.updateEndPageById(
+          new ObjectId().toHexString(),
+          updatedEndPage,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+        await expect(Form.countDocuments()).resolves.toEqual(0)
       })
     })
   })

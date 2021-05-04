@@ -24,6 +24,7 @@ import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
 import {
   AuthType,
   BasicField,
+  EndPage,
   FormLogoState,
   FormMetaView,
   FormSettings,
@@ -71,6 +72,7 @@ import {
   getDashboardForms,
   reorderFormField,
   transferFormOwnership,
+  updateEndPage,
   updateForm,
   updateFormField,
   updateFormSettings,
@@ -1623,6 +1625,59 @@ describe('admin-form.service', () => {
         String(mockForm._id),
         fieldToDelete._id,
       )
+    })
+  })
+
+  describe('updateEndPage', () => {
+    const updateSpy = jest.spyOn(FormModel, 'updateEndPageById')
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_NEW_END_PAGE: EndPage = {
+      title: 'expected end page title',
+      buttonLink: 'https://some-button-link.example.com',
+      buttonText: 'expected button text',
+      paragraph: 'some paragraph',
+    }
+
+    it('should return updated end page when update is successful', async () => {
+      // Arrange
+      const mockUpdatedForm = {
+        endPage: MOCK_NEW_END_PAGE,
+      } as IFormDocument
+      updateSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      // Act
+      const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_NEW_END_PAGE)
+    })
+
+    it('should return FormNotFoundError when form cannot be found', async () => {
+      // Arrange
+      updateSpy.mockResolvedValueOnce(null)
+
+      // Act
+      const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+    })
+
+    it('should return DatabaseError when database model update throws an error', async () => {
+      // Arrange
+      const expectedErrorMsg = 'some error'
+      updateSpy.mockRejectedValueOnce(new Error(expectedErrorMsg))
+
+      // Act
+      const actual = await updateEndPage(MOCK_FORM_ID, MOCK_NEW_END_PAGE)
+
+      // Assert
+      const actualError = actual._unsafeUnwrapErr()
+      expect(actualError).toBeInstanceOf(DatabaseError)
+      expect(actualError.message).toIncludeMultiple([
+        expectedErrorMsg,
+        'Please refresh and try again.',
+      ])
     })
   })
 })
