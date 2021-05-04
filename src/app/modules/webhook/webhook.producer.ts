@@ -24,6 +24,14 @@ export class WebhookProducer {
   ): ResultAsync<true, WebhookPushToQueueError> {
     const sendMessageRetry = promiseRetry<true>(async (retry, attemptNum) => {
       try {
+        logger.info({
+          message: `Attempting to push webhook to queue`,
+          meta: {
+            action: 'sendMessage',
+            queueMessage,
+            attemptNum,
+          },
+        })
         await this.producer.send({
           body: queueMessage.serialise(),
           id: queueMessage.submissionId, // only needs to be unique within request

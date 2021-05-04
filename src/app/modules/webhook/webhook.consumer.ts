@@ -61,6 +61,12 @@ export const startWebhookConsumer = (
 const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   sqsMessage: aws.SQS.Message,
 ): Promise<void> => {
+  logger.info({
+    message: 'Consumed message from webhook queue',
+    meta: {
+      action: 'createWebhookQueueHandler',
+    },
+  })
   const { Body } = sqsMessage
   if (!Body) {
     logger.error({
