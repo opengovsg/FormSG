@@ -1842,7 +1842,7 @@ export const _handleUpdateEndPage: RequestHandler<
 export const handleUpdateEndPage = [
   celebrate({
     [Segments.BODY]: {
-      title: Joi.string().required(),
+      title: Joi.string(),
       paragraph: Joi.string().allow(''),
       buttonLink: Joi.string().uri().allow(''),
       buttonText: Joi.string().allow(''),
