@@ -13,5 +13,7 @@ export const corsMiddleware = () => {
         callback(null, corsWhiteList.indexOf(origin) !== -1)
       }
     },
+    // Allows for setting of cookies over CORS
+    credentials: true,
   })
 }
