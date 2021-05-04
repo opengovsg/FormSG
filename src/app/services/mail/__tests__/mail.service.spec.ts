@@ -738,7 +738,7 @@ describe('mail.service', () => {
 
       defaultExpectedArg = {
         to: MOCK_AUTOREPLY_PARAMS.autoReplyMailDatas[0].email,
-        from: `${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName} <${MOCK_SENDER_EMAIL}>`,
+        from: `"${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}" <${MOCK_SENDER_EMAIL}>`,
         subject: `Thank you for submitting ${MOCK_AUTOREPLY_PARAMS.form.title}`,
         html: defaultHtml,
         headers: {
@@ -877,7 +877,7 @@ describe('mail.service', () => {
 
       const expectedArg = {
         ...defaultExpectedArg,
-        from: `${customSender} <${MOCK_SENDER_EMAIL}>`,
+        from: `"${customSender}" <${MOCK_SENDER_EMAIL}>`,
       }
       const expectedResponse = await Promise.allSettled([ok(true)])
 
