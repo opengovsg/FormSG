@@ -1,8 +1,10 @@
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
+import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { Status } from 'src/types'
 import { SettingsUpdateDto } from 'src/types/api'
 
@@ -11,6 +13,8 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { jsonParseStringify } from '../../../../../../../../tests/unit/backend/helpers/serialize-data'
+import * as UserService from '../../../../../../modules/user/user.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 const UserModel = getUserModel(mongoose)
@@ -34,7 +38,7 @@ describe('admin-form.settings.routes', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('PATCH /admin/forms/:formId/settings', () => {
+  describe('PUT /admin/forms/:formId/settings', () => {
     it('should return 200 with latest form settings on successful update for email mode forms', async () => {
       // Arrange
       const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
@@ -263,6 +267,133 @@ describe('admin-form.settings.routes', () => {
       expect(response.body).toEqual({
         message: expect.any(String),
       })
+    })
+  })
+
+  describe('PUT /admin/forms/:formId/collaborators', () => {
+    const MOCK_COLLABORATORS = [
+      {
+        email: `fakeuser@test.gov.sg`,
+        write: false,
+      },
+    ]
+    it('should return 200 when the collaborators are updated successfully', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify(MOCK_COLLABORATORS)
+
+      // Act
+      const response = await session
+        .put(`/admin/forms/${form._id}/collaborators`)
+        .send(MOCK_COLLABORATORS)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // NOTE: This is not strict equality because mongoose attaches an extra _id parameter
+      expect(response.body).toMatchObject(expectedResponse)
+    })
+
+    it('should return 403 when the current session user does not have sufficient permissions to update the collaborators', async () => {
+      // Arrange
+      const { form } = await dbHandler.insertEmailForm()
+      const fakeUser = await dbHandler.insertUser({
+        mailName: 'fakeUser',
+        agencyId: new ObjectId(),
+      })
+      const session = await createAuthedSession(fakeUser.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: `User ${fakeUser.email} not authorized to perform write operation on Form ${form._id} with title: ${form.title}.`,
+      })
+
+      // Act
+      const response = await session
+        .put(`/admin/forms/${form._id}/collaborators`)
+        .send(MOCK_COLLABORATORS)
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 404 when the form could not be found', async () => {
+      // Arrange
+      const { user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'Form not found',
+      })
+
+      // Act
+      const response = await session
+        .put(`/admin/forms/${new ObjectId().toHexString()}/collaborators`)
+        .send(MOCK_COLLABORATORS)
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 410 when the form has been archived', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm({
+        formOptions: {
+          status: Status.Archived,
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'Form has been archived',
+      })
+
+      // Act
+      const response = await session
+        .put(`/admin/forms/${form._id}/collaborators`)
+        .send(MOCK_COLLABORATORS)
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the current session user cannot be retrieved', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'User not found',
+      })
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await session
+        .put(`/admin/forms/${form._id}/collaborators`)
+        .send(MOCK_COLLABORATORS)
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'Something went wrong. Please try again.',
+      })
+      jest
+        .spyOn(UserService, 'getPopulatedUserById')
+        .mockReturnValueOnce(errAsync(new DatabaseError()))
+
+      // Act
+      const response = await session
+        .put(`/admin/forms/${form._id}/collaborators`)
+        .send(MOCK_COLLABORATORS)
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual(expectedResponse)
     })
   })
 })
