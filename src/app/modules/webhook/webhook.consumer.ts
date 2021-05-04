@@ -11,7 +11,10 @@ import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
-import { WebhookMissingUrlError } from './webhook.errors'
+import {
+  WebhookMissingUrlError,
+  WebhookNoMoreRetriesError,
+} from './webhook.errors'
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'
@@ -153,6 +156,17 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   })
 
   if (retryResult.isErr()) {
+    // If max retries exceeded, allow message to be deleted from queue
+    if (retryResult.error instanceof WebhookNoMoreRetriesError) {
+      logger.warn({
+        message: 'Maximum retries exceeded for webhook',
+        meta: {
+          action: 'createWebhookQueueHandler',
+          webhookMessage,
+        },
+      })
+      return Promise.resolve()
+    }
     logger.error({
       message: 'Error while attempting to retry webhook',
       meta: {

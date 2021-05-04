@@ -89,11 +89,15 @@ export class WebhookQueueMessage {
   }
 
   incrementAttempts(): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
-    return getNextAttempt(this.message.previousAttempts).map(
+    const updatedPreviousAttempts = [
+      ...this.message.previousAttempts,
+      Date.now(),
+    ]
+    return getNextAttempt(updatedPreviousAttempts).map(
       (nextAttempt) =>
         new WebhookQueueMessage({
           submissionId: this.message.submissionId,
-          previousAttempts: [...this.message.previousAttempts, Date.now()],
+          previousAttempts: updatedPreviousAttempts,
           nextAttempt,
           _v: QUEUE_MESSAGE_VERSION,
         }),
