@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import { FormSettings } from '../../types'
 import {
+  EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
@@ -70,7 +71,7 @@ export const reorderSingleFormField = async (
 
 /**
  * Delete a single form field by its id in given form
- * @param formId the form to delete the field from
+ * @param formId the id of the form to delete the field from
  * @param fieldId the id of the field to delete
  * @returns void on success
  */
@@ -79,6 +80,24 @@ export const deleteSingleFormField = async (
   fieldId: string,
 ): Promise<void> => {
   return axios.delete(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`)
+}
+
+/**
+ * Updates the end page for the given form referenced by its id
+ * @param formId the id of the form to update end page for
+ * @param newEndPage the new endpage to replace with
+ * @returns the updated end page on success
+ */
+export const updateFormEndPage = async (
+  formId: string,
+  newEndPage: EndPageUpdateDto,
+): Promise<EndPageUpdateDto> => {
+  return axios
+    .put<EndPageUpdateDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/end-page`,
+      newEndPage,
+    )
+    .then(({ data }) => data)
 }
 
 export const deleteFormLogic = async (

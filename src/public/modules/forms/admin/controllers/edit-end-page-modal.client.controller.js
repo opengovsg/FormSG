@@ -7,11 +7,11 @@ angular
   .controller('EditEndPageController', [
     '$uibModalInstance',
     'myform',
-    'updateField',
+    'updateEndPage',
     EditEndPageController,
   ])
 
-function EditEndPageController($uibModalInstance, myform, updateField) {
+function EditEndPageController($uibModalInstance, myform, updateEndPage) {
   const vm = this
 
   vm.logoUrl = getFormLogo(myform)
@@ -29,33 +29,6 @@ function EditEndPageController($uibModalInstance, myform, updateField) {
 
   if (!vm.myform.endPage.buttonText) {
     vm.myform.endPage.buttonText = ''
-  }
-
-  vm.showButtons = false
-  vm.lastButtonID = 0
-
-  // add new Button to the endPage
-  vm.addButton = function () {
-    let newButton = {}
-    newButton.bgColor = '#ddd'
-    newButton.color = '#ffffff'
-    newButton.text = 'Button'
-    newButton._id = Math.floor(100000 * Math.random())
-
-    vm.myform.endPage.buttons.push(newButton)
-  }
-
-  // delete particular Button from endPage
-  vm.deleteButton = function (button) {
-    let currID
-    for (let i = 0; i < vm.myform.endPage.buttons.length; i++) {
-      currID = vm.myform.endPage.buttons[i]._id
-
-      if (currID === button._id) {
-        vm.myform.endPage.buttons.splice(i, 1)
-        break
-      }
-    }
   }
 
   vm.saveEndPage = function (isValid) {
@@ -80,7 +53,7 @@ function EditEndPageController($uibModalInstance, myform, updateField) {
 
       vm.myform.endPage.buttonLink = inputLink
 
-      updateField({ endPage: vm.myform.endPage }).then((error) => {
+      updateEndPage({ newEndPage: vm.myform.endPage }).then((error) => {
         if (!error) {
           $uibModalInstance.close()
         }
