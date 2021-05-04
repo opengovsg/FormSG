@@ -1,0 +1,9 @@
+{
+  "extends": ["plugin:@typescript-eslint/recommended", "react-app", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "import"],
+  "ignorePatterns": ["build/**/*"],
+  "env": {
+    "node": true
+  }
+}
