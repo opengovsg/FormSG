@@ -253,7 +253,8 @@ export class MailService {
     return generateAutoreplyHtml(templateData).andThen((mailHtml) => {
       const mail: MailOptions = {
         to: autoReplyMailData.email,
-        from: `${emailSender} <${this.#senderMail}>`,
+        // Quotes necessary to allow for special characters in emailSender, e.g. comma
+        from: `"${emailSender}" <${this.#senderMail}>`,
         subject: emailSubject,
         // Only send attachments if the admin has the box checked for email
         // fields.
