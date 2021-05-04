@@ -31,6 +31,7 @@ import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
+import { corsMiddleware } from './cors'
 import errorHandlerMiddlewares from './error-handler'
 import helmetMiddlewares from './helmet'
 import appLocals from './locals'
@@ -107,6 +108,8 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(parserMiddlewares())
 
   app.use(helmetMiddlewares())
+
+  app.use(corsMiddleware())
 
   // !!!!! DO NOT CHANGE THE ORDER OF THE NEXT 3 LINES !!!!!
   // The first line redirects requests to /public/fonts to
