@@ -1217,6 +1217,7 @@ describe('Form Model', () => {
         const updatedEndPage: EndPage = {
           title: 'some new title',
           paragraph: 'some description paragraph',
+          buttonText: 'custom button text',
         }
 
         // Act
@@ -1227,7 +1228,34 @@ describe('Form Model', () => {
         expect(actual?.toObject()).toEqual({
           ...form,
           lastModified: expect.any(Date),
-          endPage: { ...updatedEndPage, buttonText: 'Submit another form' },
+          endPage: { ...updatedEndPage },
+        })
+      })
+
+      it('should update end page with defaults when optional values are not provided', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+        })
+        const form = (await Form.create(formParams)).toObject()
+        const updatedEndPage: EndPage = {
+          paragraph: 'some description paragraph',
+        }
+
+        // Act
+        const actual = await Form.updateEndPageById(form._id, updatedEndPage)
+
+        // Assert
+        // Should have defaults populated but also replace the endpage with the new params
+        expect(actual?.toObject()).toEqual({
+          ...form,
+          lastModified: expect.any(Date),
+          endPage: {
+            ...updatedEndPage,
+            // Defaults should be populated and returned
+            buttonText: 'Submit another form',
+            title: 'Thank you for filling out the form.',
+          },
         })
       })
 
