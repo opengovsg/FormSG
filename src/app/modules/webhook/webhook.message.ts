@@ -1,8 +1,12 @@
+import { differenceInSeconds } from 'date-fns'
 import { Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { QUEUE_MESSAGE_VERSION } from './webhook.constants'
+import {
+  DUE_TIME_TOLERANCE_SECONDS,
+  QUEUE_MESSAGE_VERSION,
+} from './webhook.constants'
 import {
   WebhookNoMoreRetriesError,
   WebhookQueueMessageParsingError,
@@ -77,7 +81,11 @@ export class WebhookQueueMessage {
   }
 
   isDue(): boolean {
-    return this.message.nextAttempt < Date.now()
+    // Allow tolerance for clock drift
+    return (
+      Math.abs(differenceInSeconds(Date.now(), this.message.nextAttempt)) <=
+      DUE_TIME_TOLERANCE_SECONDS
+    )
   }
 
   incrementAttempts(): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
