@@ -1,0 +1,125 @@
+# This docker-compose file is only for local development purposes.
+version: '3'
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.development
+    depends_on:
+      - database
+    volumes:
+      - ./backend:/backend
+      - /backend/node_modules
+    ports:
+      - '5000:5000'
+      - '4566:4566' # localstack ports
+      - '5156:5156' # mockpass ports
+      - '9229:9229' # Node debugger port
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mongodb://database:27017/formsg
+      - APP_NAME=FormSG
+      - APP_URL=http://localhost:5000
+      - ATTACHMENT_S3_BUCKET=local-attachment-bucket
+      - IMAGE_S3_BUCKET=local-image-bucket
+      - LOGO_S3_BUCKET=local-logo-bucket
+      - FORMSG_SDK_MODE=development
+      - BOUNCE_LIFE_SPAN=86400000
+      - AWS_ACCESS_KEY_ID=fakeKey
+      - AWS_SECRET_ACCESS_KEY=fakeSecret
+      - SESSION_SECRET=thisisasecret
+      - AWS_ENDPOINT=http://localhost:4566
+      - SUBMISSIONS_RATE_LIMIT=200
+      - SEND_AUTH_OTP_RATE_LIMIT=60
+      - SES_PORT=25
+      - SES_HOST=maildev
+      - MYINFO_CLIENT_CONFIG=dev
+      - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+      - MYINFO_CLIENT_ID=mockClientId
+      - MYINFO_CLIENT_SECRET=mockClientSecret
+      - GA_TRACKING_ID
+      - SENTRY_CONFIG_URL
+      - TWILIO_ACCOUNT_SID
+      - TWILIO_API_KEY
+      - TWILIO_API_SECRET
+      - TWILIO_MESSAGING_SERVICE_SID
+      - SES_PASS
+      - SES_USER
+      - OTP_LIFE_SPAN
+      - AWS_REGION
+      - GOOGLE_CAPTCHA
+      - GOOGLE_CAPTCHA_PUBLIC
+      - SIGNING_SECRET_KEY
+      - VERIFICATION_SECRET_KEY
+      - SP_FORMSG_KEY_PATH
+      - SP_FORMSG_CERT_PATH
+      - SP_IDP_CERT_PATH
+      - SINGPASS_IDP_LOGIN_URL
+      - SINGPASS_IDP_ENDPOINT
+      - SINGPASS_ESRVC_ID
+      - SINGPASS_PARTNER_ENTITY_ID
+      - SINGPASS_IDP_ID
+      - CP_FORMSG_KEY_PATH
+      - CP_FORMSG_CERT_PATH
+      - CP_IDP_CERT_PATH
+      - CORPPASS_IDP_LOGIN_URL
+      - CORPPASS_IDP_ENDPOINT
+      - CORPPASS_PARTNER_ENTITY_ID
+      - CORPPASS_ESRVC_ID
+      - CORPPASS_IDP_ID
+      - IS_SP_MAINTENANCE
+      - IS_CP_MAINTENANCE
+      - AGGREGATE_COLLECTION
+
+  mockpass:
+    build: https://github.com/opengovsg/mockpass.git
+    depends_on:
+      - backend
+    environment:
+      - CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
+      - SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
+      - MOCKPASS_NRIC=S6005038D
+      - MOCKPASS_UEN=123456789A
+      - SHOW_LOGIN_PAGE=true
+      - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
+      - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
+    network_mode: 'service:backend' # reuse formsg service's network stack so that it can resolve localhost:5156 to mockpass:5156
+
+  database:
+    image: 'mongo:4.0'
+    container_name: 'formsg-db'
+    environment:
+      - MONGO_INITDB_DATABASE=formsg
+    volumes:
+      - mongodata:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    ports:
+      - '27017:27017'
+
+  localstack:
+    image: localstack/localstack:0.11.5
+    container_name: formsg-localstack
+    depends_on:
+      - backend
+    environment:
+      - SERVICES=s3
+      - DATA_DIR=/tmp/localstack/data
+      - ATTACHMENT_S3_BUCKET=local-attachment-bucket
+      - IMAGE_S3_BUCKET=local-image-bucket
+      - LOGO_S3_BUCKET=local-logo-bucket
+    volumes:
+      - './.localstack:/tmp/localstack'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      # This is where we add scripts to initialise AWS resources.
+      # Docs: https://github.com/localstack/localstack#initializing-a-fresh-instance
+      - './docker-entrypoint-initaws.d:/docker-entrypoint-initaws.d'
+    network_mode: 'service:backend' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - '1080:80'
+
+volumes:
+  mongodata:

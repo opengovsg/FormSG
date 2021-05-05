@@ -1,0 +1,17 @@
+.git
+*Dockerfile*
+*docker-compose*
+node_modules
+
+**/*.pem
+**/.aws
+**/.ssh
+**/.ebextensions
+**/.elasticbeanstalk
+**/node_modules
+**/public/lib
+**/.env
+.eslintrc
+.prettierrc
+.travis.yml
+

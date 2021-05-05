@@ -13,6 +13,7 @@
   },
   "scripts": {
     "version": "auto-changelog -p && git add CHANGELOG.md",
+    "dev": "docker-compose up --build",
     "prepare": "husky install"
   },
   "devDependencies": {
