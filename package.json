@@ -198,7 +198,7 @@
     "babel-loader": "^8.2.2",
     "concurrently": "^6.0.2",
     "copy-webpack-plugin": "^6.0.2",
-    "core-js": "^3.11.2",
+    "core-js": "^3.11.3",
     "coveralls": "^3.1.0",
     "css-loader": "^2.1.1",
     "csv-parse": "^4.15.4",
