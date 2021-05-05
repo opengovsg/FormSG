@@ -8543,4 +8543,185 @@ describe('admin-form.controller', () => {
       })
     })
   })
+
+  describe('handleGetFormField', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FIELDS = [
+      generateDefaultField(BasicField.Rating),
+      generateDefaultField(BasicField.Table),
+    ]
+    const MOCK_FIELD_ID = String(MOCK_FIELDS[1]._id)
+
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      form_fields: MOCK_FIELDS,
+      title: 'mock title',
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+        fieldId: MOCK_FIELD_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    beforeEach(() => {
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+    })
+
+    it('should return 200 when deletion is successful', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockAdminFormService.getFormField.mockReturnValueOnce(ok(MOCK_FIELDS[1]))
+
+      // Act
+      await AdminFormController.handleGetFormField(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_FIELDS[1])
+      expect(MockAdminFormService.getFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_FIELD_ID,
+      )
+    })
+
+    it('should return 403 when current user does not have permissions to retrieve form fields', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetFormField(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.deleteFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 when field to retrieve cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockAdminFormService.getFormField.mockReturnValueOnce(
+        err(new FieldNotFoundError('Field to retrieve not found')),
+      )
+
+      // Act
+      await AdminFormController.handleGetFormField(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Field to retrieve not found',
+      })
+      expect(MockAdminFormService.getFormField).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_FIELD_ID,
+      )
+    })
+
+    it('should return 404 when form to retrieve form field for cannot be found', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'nope'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetFormField(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 410 when form to retrieve form field for is already archived', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'already deleted'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetFormField(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(410)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'user not in session??!!'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetFormField(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(
+        MockAuthService.getFormAfterPermissionChecks,
+      ).not.toHaveBeenCalled()
+      expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+
+    it('should return 500 when generic database error occurs during form field retrieval', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedErrorString = 'some database error bam'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleGetFormField(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+  })
 })
