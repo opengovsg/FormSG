@@ -5,13 +5,15 @@ import { app, corsWhitelist } from '../../config/config'
 export const corsMiddleware = () => {
   return cors({
     origin: function (origin, callback) {
-      // If no origin or from self, disable CORS
-      if (!origin || app.appUrl === origin) {
-        callback(null, false)
-      } else {
-        // Enable CORS only if whitelisted
-        callback(null, corsWhitelist.includes(origin))
-      }
+      const isOriginAllowed =
+        // Allow server-to-server requests.
+        !origin ||
+        // Allow requests from own origin.
+        app.appUrl === origin ||
+        // Allow requests from whitelisted domains.
+        corsWhitelist.includes(origin)
+
+      callback(null, isOriginAllowed)
     },
     // Allows for setting of cookies over CORS
     credentials: true,
