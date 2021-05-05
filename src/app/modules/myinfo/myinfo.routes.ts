@@ -12,6 +12,7 @@ export const MyInfoRouter = Router()
 /**
  * Serves requests to supply a redirect URL to log in to
  * MyInfo.
+ * @deprecated in favour of GET /api/v3/forms/:formId/auth/redirect
  */
 MyInfoRouter.get('/redirect', handleRedirectURLRequest)
 

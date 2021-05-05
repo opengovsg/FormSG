@@ -105,7 +105,7 @@ export const handleLoginSendOtp: RequestHandler<
 }
 
 /**
- *  Handler for POST /auth/verifyotp endpoint.
+ * Handler for POST /auth/verifyotp endpoint.
  * @returns 200 when user has successfully logged in, with session cookie set
  * @returns 401 when the email domain is invalid
  * @returns 422 when the OTP is invalid

@@ -1,8 +1,11 @@
 'use strict'
 
 const { StatusCodes } = require('http-status-codes')
+const get = require('lodash/get')
 const { LogicType } = require('../../../../../types')
 const AdminFormService = require('../../../../services/AdminFormService')
+const FieldFactory = require('../../helpers/field-factory')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 
 // All viewable tabs. readOnly is true if that tab cannot be used to edit form.
 const VIEW_TABS = [
@@ -38,6 +41,7 @@ angular
     '$translate',
     '$uibModal',
     'FormData',
+    'FormFields',
     'Auth',
     'moment',
     'Toastr',
@@ -53,6 +57,7 @@ function AdminFormController(
   $translate,
   $uibModal,
   FormData,
+  FormFields,
   Auth,
   moment,
   Toastr,
@@ -139,7 +144,8 @@ function AdminFormController(
       return
     }
     let errorMessage
-    switch (error.status) {
+    const status = get(error, 'response.status') || get(error, 'status')
+    switch (status) {
       case StatusCodes.CONFLICT:
       case StatusCodes.BAD_REQUEST:
         errorMessage =
@@ -151,9 +157,9 @@ function AdminFormController(
         break
       case StatusCodes.UNPROCESSABLE_ENTITY:
         // Validation can fail for many reasons, so return more specific message
-        errorMessage = _.get(
+        errorMessage = get(
           error,
-          'data.message',
+          'response.data.message',
           'Your changes contain invalid input.',
         )
         break
@@ -179,13 +185,88 @@ function AdminFormController(
    * @returns Promise
    */
   $scope.updateForm = (update) => {
-    return FormApi.update({ formId: $scope.myform._id }, { form: update })
-      .$promise.then((savedForm) => {
-        // Updating this form updates lastModified
-        // and also updates myform if a formToUse is passed in
-        $scope.myform = savedForm
-      })
-      .catch(handleUpdateError)
+    const updateType = get(update, 'type')
+
+    switch (updateType) {
+      case UPDATE_FORM_TYPES.CreateField: {
+        const { body } = update
+        return $q
+          .when(AdminFormService.createSingleFormField($scope.myform._id, body))
+          .then((updatedFormField) => {
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClass = FieldFactory.createFieldFromData(
+              updatedFormField,
+            )
+            FormFields.injectMyInfoFieldInfo(updatedFieldClass)
+
+            // insert created field into form
+            $scope.myform.form_fields = [
+              ...$scope.myform.form_fields,
+              updatedFieldClass,
+            ]
+          })
+          .catch(handleUpdateError)
+      }
+      case UPDATE_FORM_TYPES.UpdateField: {
+        const { fieldId, body } = update
+        return $q
+          .when(
+            AdminFormService.updateSingleFormField(
+              $scope.myform._id,
+              fieldId,
+              body,
+            ),
+          )
+          .then((updatedFormField) => {
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClass = FieldFactory.createFieldFromData(
+              updatedFormField,
+            )
+            FormFields.injectMyInfoFieldInfo(updatedFieldClass)
+
+            // merge back into the form fields
+            const updateIndex = $scope.myform.form_fields.findIndex(
+              (f) => f._id === fieldId,
+            )
+            if (updateIndex !== -1) {
+              $scope.myform.form_fields[updateIndex] = updatedFieldClass
+            } else {
+              Toastr.error('An error occurred while saving your changes.')
+            }
+          })
+          .catch(handleUpdateError)
+      }
+      case UPDATE_FORM_TYPES.ReorderField: {
+        const { fieldId, newPosition } = update
+
+        return $q
+          .when(
+            AdminFormService.reorderSingleFormField(
+              $scope.myform._id,
+              fieldId,
+              newPosition,
+            ),
+          )
+          .then((updatedFields) => {
+            // !!! Convert retrieved form field objects into their class counterparts.
+            const updatedFieldClasses = updatedFields.map((f) => {
+              const fieldClass = FieldFactory.createFieldFromData(f)
+              FormFields.injectMyInfoFieldInfo(fieldClass)
+              return fieldClass
+            })
+            $scope.myform.form_fields = updatedFieldClasses
+          })
+          .catch(handleUpdateError)
+      }
+      default:
+        return FormApi.update({ formId: $scope.myform._id }, { form: update })
+          .$promise.then((savedForm) => {
+            // Updating this form updates lastModified
+            // and also updates myform if a formToUse is passed in
+            $scope.myform = savedForm
+          })
+          .catch(handleUpdateError)
+    }
   }
 
   /**

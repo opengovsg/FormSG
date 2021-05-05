@@ -1,10 +1,11 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, omit } from 'lodash'
+import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
+  EditFieldActions,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../shared/constants'
@@ -19,7 +20,11 @@ import {
   IPopulatedForm,
   IUserSchema,
 } from '../../../../types'
-import { SettingsUpdateDto } from '../../../../types/api'
+import {
+  FieldCreateDto,
+  FieldUpdateDto,
+  SettingsUpdateDto,
+} from '../../../../types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
@@ -33,16 +38,23 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  PossibleDatabaseError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
-import { FormNotFoundError, TransferOwnershipError } from '../form.errors'
+import {
+  FormNotFoundError,
+  LogicNotFoundError,
+  TransferOwnershipError,
+} from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
+import { getFormFieldById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   CreatePresignedUrlError,
   EditFieldError,
+  FieldNotFoundError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -412,6 +424,123 @@ export const duplicateForm = (
 }
 
 /**
+ * Updates the targeted form field with the new field provided
+ * @param form the form the field to update belongs to
+ * @param fieldId the id of the field to update
+ * @param newField the new field to replace with
+ * @returns ok(updatedField)
+ * @returns err(FieldNotFoundError) if fieldId does not correspond to any field in the form
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const updateFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+  newField: FieldUpdateDto,
+): ResultAsync<IFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
+  return ResultAsync.fromPromise(
+    form.updateFormFieldById(fieldId, newField),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form field',
+        meta: {
+          action: 'updateFormField',
+          formId: form._id,
+          fieldId,
+          newField,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen<IFieldSchema, FieldNotFoundError>((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FieldNotFoundError())
+    }
+    const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
+    return updatedFormField
+      ? okAsync(updatedFormField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
+ * Inserts a new form field into given form's fields with the field provided
+ * @param form the form to insert the new field into
+ * @param newField the new field to insert
+ * @returns ok(created form field)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const createFormField = (
+  form: IPopulatedForm,
+  newField: FieldCreateDto,
+): ResultAsync<
+  IFieldSchema,
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  return ResultAsync.fromPromise(form.insertFormField(newField), (error) => {
+    logger.error({
+      message: 'Error encountered while inserting new form field',
+      meta: {
+        action: 'createFormField',
+        formId: form._id,
+        newField,
+      },
+      error,
+    })
+
+    return transformMongoError(error)
+  }).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedField = last(updatedForm.form_fields)
+    return updatedField
+      ? okAsync(updatedField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
+ * Reorders field with given fieldId to the given newPosition
+ * @param form the form to reorder the field from
+ * @param fieldId the id of the field to reorder
+ * @param newPosition the new position of the field
+ * @returns ok(reordered field)
+ * @returns err(FieldNotFoundError) if field id is invalid
+ * @returns err(PossibleDatabaseError) if any database errors occur
+ */
+export const reorderFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+  newPosition: number,
+): ResultAsync<IFieldSchema[], PossibleDatabaseError | FieldNotFoundError> => {
+  return ResultAsync.fromPromise(
+    form.reorderFormFieldById(fieldId, newPosition),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while reordering form field',
+        meta: {
+          action: 'reorderFormField',
+          formId: form._id,
+          fieldId,
+          newPosition,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FieldNotFoundError())
+    }
+
+    return okAsync(updatedForm.form_fields)
+  })
+}
+
+/**
  * Updates form fields of given form depending on the given editFormFieldParams
  * @param originalForm the original form to update form fields for
  * @param editFormFieldParams the parameters stating the type of updates and the position metadata if update type is edit
@@ -427,6 +556,22 @@ export const editFormFields = (
   IPopulatedForm,
   EditFieldError | ReturnType<typeof transformMongoError>
 > => {
+  // TODO(#1210): Remove this function when no longer being called.
+  if (
+    [EditFieldActions.Create, EditFieldActions.Update].includes(
+      editFormFieldParams.action.name,
+    )
+  ) {
+    logger.info({
+      message: 'deprecated editFormFields functions are still being used',
+      meta: {
+        action: 'editFormFields',
+        fieldAction: editFormFieldParams.action.name,
+        field: editFormFieldParams.field,
+      },
+    })
+  }
+
   // TODO(#815): Split out this function into their own separate service functions depending on the update type.
   return getUpdatedFormFields(
     originalForm.form_fields,
@@ -536,5 +681,54 @@ export const updateFormSettings = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm.getSettings())
+  })
+}
+
+/**
+ * Deletes form logic.
+ * @param form The original form to delete logic in
+ * @param logicId the logicId to delete
+ * @returns ok(true) on success
+ * @returns err(database errors) if db error is thrown during logic delete
+ * @returns err(LogicNotFoundError) if logicId does not exist on form
+ */
+export const deleteFormLogic = (
+  form: IPopulatedForm,
+  logicId: string,
+): ResultAsync<IFormSchema, DatabaseError | LogicNotFoundError> => {
+  // First check if specified logic exists
+  if (!form.form_logics.some((logic) => logic.id === logicId)) {
+    logger.error({
+      message: 'Error occurred - logicId to be deleted does not exist',
+      meta: {
+        action: 'deleteFormLogic',
+        formId: form._id,
+        logicId,
+      },
+    })
+    return errAsync(new LogicNotFoundError())
+  }
+
+  // Remove specified logic and then update form logic
+  return ResultAsync.fromPromise(
+    FormModel.deleteFormLogic(String(form._id), logicId),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when deleting form logic',
+        meta: {
+          action: 'deleteFormLogic',
+          formId: form._id,
+          logicId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+    // On success, return true
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm)
   })
 }

@@ -12,7 +12,6 @@ import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
-import { hasProp } from '../../utils/has-prop'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
@@ -159,14 +158,9 @@ export const sendWebhook = (
 
       // Webhook was posted but failed
       if (error instanceof WebhookFailedWithUnknownError) {
-        const originalError = error.meta.originalError
-        const errorMessage = hasProp(originalError, 'message')
-          ? originalError.message
-          : ''
         return okAsync({
           signature,
           webhookUrl,
-          errorMessage,
           // Not Axios error so no guarantee of having response.
           // Hence allow formatting function to return default shape.
           response: formatWebhookResponse(),
@@ -177,7 +171,6 @@ export const sendWebhook = (
       return okAsync({
         signature,
         webhookUrl,
-        errorMessage: axiosError.message,
         response: formatWebhookResponse(axiosError.response),
       })
     })

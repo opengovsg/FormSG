@@ -12,13 +12,16 @@ import {
   IFormSchema,
   IHashes,
   IMyInfo,
-  IPopulatedForm,
   MapRouteError,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { hasProp } from '../../utils/has-prop'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
-import { FormNotFoundError } from '../form/form.errors'
+import {
+  AuthTypeMismatchError,
+  FormAuthNoEsrvcIdError,
+  FormNotFoundError,
+} from '../form/form.errors'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
@@ -28,21 +31,19 @@ import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MYINFO_COOKIE_NAME } from './myinfo.constants'
 import {
-  MyInfoAuthTypeError,
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
-  MyInfoNoESrvcIdError,
 } from './myinfo.errors'
 import {
-  IMyInfoForm,
   IPossiblyPrefilledField,
   MyInfoComparePromises,
   MyInfoCookiePayload,
   MyInfoCookieState,
+  MyInfoForm,
   MyInfoHashPromises,
   MyInfoRelayState,
   MyInfoSuccessfulCookiePayload,
@@ -176,7 +177,7 @@ export const mapRedirectURLError: MapRouteError = (
         errorMessage:
           'Could not find the form requested. Please refresh and try again.',
       }
-    case MyInfoAuthTypeError:
+    case AuthTypeMismatchError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
@@ -219,13 +220,13 @@ export const mapEServiceIdCheckError: MapRouteError = (
         errorMessage:
           'Could not find the form requested. Please refresh and try again.',
       }
-    case MyInfoAuthTypeError:
+    case AuthTypeMismatchError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'This form does not have MyInfo enabled. Please refresh and try again.',
       }
-    case MyInfoNoESrvcIdError:
+    case FormAuthNoEsrvcIdError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage:
@@ -285,16 +286,23 @@ export const createRelayState = (formId: string): string =>
  * Validates that a form is a MyInfo form with an e-service ID
  * @param form Form to validate
  */
-export const validateMyInfoForm = (
-  form: IFormSchema | IPopulatedForm,
-): Result<IMyInfoForm, MyInfoNoESrvcIdError | MyInfoAuthTypeError> => {
+export const validateMyInfoForm = <T extends IFormSchema>(
+  form: T,
+): Result<MyInfoForm<T>, FormAuthNoEsrvcIdError | AuthTypeMismatchError> => {
   if (!form.esrvcId) {
-    return err(new MyInfoNoESrvcIdError())
+    return err(new FormAuthNoEsrvcIdError(form._id))
   }
-  if (form.authType !== AuthType.MyInfo) {
-    return err(new MyInfoAuthTypeError())
+  if (isMyInfoFormWithEsrvcId(form)) {
+    return ok(form)
   }
-  return ok(form as IMyInfoForm)
+  return err(new AuthTypeMismatchError(AuthType.MyInfo, form.authType))
+}
+
+// Typeguard to ensure that form has eserviceId and MyInfo authType
+const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
+  form: F,
+): form is MyInfoForm<F> => {
+  return form.authType === AuthType.MyInfo && !!form.esrvcId
 }
 
 /**

@@ -3,6 +3,7 @@ import { times } from 'lodash'
 import mongoose from 'mongoose'
 
 import getSubmissionModel, {
+  getEmailSubmissionModel,
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
 
@@ -17,6 +18,7 @@ import {
 
 const Submission = getSubmissionModel(mongoose)
 const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
+const EmailSubmission = getEmailSubmissionModel(mongoose)
 
 // TODO: Add more tests for the rest of the submission schema.
 describe('Submission Model', () => {
@@ -107,7 +109,7 @@ describe('Submission Model', () => {
         // Arrange
         const formId = new ObjectID()
 
-        const submission = await Submission.create({
+        const submission = await EncryptedSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -136,7 +138,7 @@ describe('Submission Model', () => {
       it('should return null view with non-encryptSubmission type', async () => {
         // Arrange
         const formId = new ObjectID()
-        const submission = await Submission.create({
+        const submission = await EmailSubmission.create({
           submissionType: SubmissionType.Email,
           form: formId,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -182,7 +184,6 @@ describe('Submission Model', () => {
           response: {
             data: '{"result":"test-result"}',
             status: 200,
-            statusText: 'success',
             headers: '{}',
           },
         }) as IWebhookResponse
@@ -223,6 +224,11 @@ describe('Submission Model', () => {
           created: submission.created,
           signature: 'some signature',
           webhookUrl: 'https://form.gov.sg/endpoint',
+          response: {
+            status: 200,
+            headers: '',
+            data: '',
+          },
         } as IWebhookResponse
 
         const invalidSubmissionId = new ObjectID().toHexString()

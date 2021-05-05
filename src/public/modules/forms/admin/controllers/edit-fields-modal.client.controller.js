@@ -2,21 +2,19 @@
 
 const axios = require('axios').default
 const values = require('lodash/values')
+const cloneDeep = require('lodash/cloneDeep')
 
 const {
-  EditFieldActions,
   VALID_UPLOAD_FILE_TYPES,
   MAX_UPLOAD_FILE_SIZE,
 } = require('shared/constants')
+const { UPDATE_FORM_TYPES } = require('../constants/update-form-types')
 const { uploadImage } = require('../../../../services/FileHandlerService')
+const {
+  DateSelectedValidation: DateValidationOptions,
+} = require('../../../../../shared/constants')
 
 const CancelToken = axios.CancelToken
-
-const DATE_VALIDATION_OPTIONS = {
-  disallowPast: 'Disallow past dates',
-  disallowFuture: 'Disallow future dates',
-  custom: 'Custom date range',
-}
 
 const EMAIL_MODE_ALLOWED_SIZES = ['1', '2', '3', '7']
 
@@ -34,6 +32,7 @@ angular
     'Betas',
     'Auth',
     '$state',
+    'Toastr',
     EditFieldsModalController,
   ])
 
@@ -49,6 +48,7 @@ function EditFieldsModalController(
   Betas,
   Auth,
   $state,
+  Toastr,
 ) {
   let source
   const vm = this
@@ -73,13 +73,23 @@ function EditFieldsModalController(
   vm.user = Auth.getUser() || $state.go('signin')
   if (vm.field.fieldType === 'email') {
     const userEmailDomain = '@' + vm.user.email.split('@').pop()
+
+    // Backwards compatibility and inconsistency fix.
+    // Set allowedEmailDomains array to empty if allow domains toggle is off.
+    if (vm.field.hasAllowedEmailDomains === false) {
+      vm.field.allowedEmailDomains = []
+    } else {
+      // hasAllowedEmailDomains is true, set "true" state based on length of allowedEmailDomains.
+      vm.field.hasAllowedEmailDomains = vm.field.allowedEmailDomains.length > 0
+    }
+
     vm.field.allowedEmailDomainsPlaceholder = `${userEmailDomain}\n@agency.gov.sg`
-    if (vm.field.allowedEmailDomains.length > 0) {
+    if (vm.field.hasAllowedEmailDomains) {
       vm.field.allowedEmailDomainsFromText = vm.field.allowedEmailDomains.join(
         '\n',
       )
     }
-    $scope.$watch('vm.field.allowedEmailDomainsFromText', (newValue) => {
+    $scope.$watch('vm.field.isVerifiable', (newValue) => {
       if (newValue) {
         vm.tooltipHtml = 'e.g. @mom.gov.sg, @moe.gov.sg'
       } else {
@@ -144,6 +154,14 @@ function EditFieldsModalController(
     }
   }
 
+  vm.handleRestrictEmailDomainsToggle = function () {
+    const field = vm.field
+    if (field.hasAllowedEmailDomains === false) {
+      // Reset email domains.
+      field.allowedEmailDomainsFromText = ''
+    }
+  }
+
   vm.ratingSteps = Rating.steps
   vm.ratingShapes = Rating.shapes
 
@@ -188,7 +206,7 @@ function EditFieldsModalController(
       customMaxDate,
     } = dateValidation
 
-    if (selectedDateValidation !== DATE_VALIDATION_OPTIONS.custom) {
+    if (selectedDateValidation !== DateValidationOptions.Custom) {
       return false
     }
     return !customMinDate && !customMaxDate
@@ -248,10 +266,10 @@ function EditFieldsModalController(
 
   // Controls for date validation
 
-  vm.dateValidationOptions = values(DATE_VALIDATION_OPTIONS)
+  vm.dateValidationOptionList = values(DateValidationOptions)
 
-  // Make DATE_VALIDATION_OPTIONS accessible to view
-  vm.DATE_VALIDATION_OPTIONS = DATE_VALIDATION_OPTIONS
+  // Make date validation option enum accessible to view
+  vm.DateValidationOptions = DateValidationOptions
 
   vm.clearDateValidation = function () {
     const field = vm.field
@@ -456,9 +474,10 @@ function EditFieldsModalController(
       return
     }
 
-    const field = vm.field
+    const field = cloneDeep(vm.field)
     if (field.fieldOptionsFromText) {
       field.fieldOptions = field.fieldOptionsFromText.split('\n')
+      delete field.fieldOptionsFromText
     } else {
       field.fieldOptions = field.manualOptions
     }
@@ -473,6 +492,9 @@ function EditFieldsModalController(
           .map((s) => s.trim())
           .filter((s) => s)
       }
+      field.hasAllowedEmailDomains = field.allowedEmailDomains.length > 0
+      delete field.allowedEmailDomainsFromText
+      delete field.allowedEmailDomainsPlaceholder
     }
 
     // set total attachment size left
@@ -483,27 +505,24 @@ function EditFieldsModalController(
         previousAttachmentSize
     }
 
-    // TODO: Separate code flow for create and update, ideally calling PUT and PATCH endpoints
-    const editFormField =
-      vm.field.globalId === undefined
-        ? // Create a new field
-          {
-            action: {
-              name: EditFieldActions.Create,
-            },
-            field: vm.field,
-          }
-        : // Edit existing field
-          {
-            action: {
-              name: EditFieldActions.Update,
-            },
-            field: vm.field,
-          }
-
     vm.saveInProgress = true
-    externalScope
-      .updateField({ editFormField })
+    // No id, creation
+    let updateFieldPromise
+    if (!field._id) {
+      updateFieldPromise = externalScope.updateField({
+        body: field,
+        type: UPDATE_FORM_TYPES.CreateField,
+      })
+    } else {
+      // Update field
+      updateFieldPromise = externalScope.updateField({
+        fieldId: field._id,
+        body: field,
+        type: UPDATE_FORM_TYPES.UpdateField,
+      })
+    }
+
+    return updateFieldPromise
       .then((error) => {
         if (!error) {
           $uibModalInstance.close()
@@ -613,5 +632,19 @@ function EditFieldsModalController(
     // This is a reference to the ng-model of the upload button, which points to the uploaded file
     // On error, we explicitly clear the files stored in the model, as the library does not always automatically do this
     field.uploadedFile = ''
+  }
+
+  /**
+   * Inform user that field id has been copied to clipboard
+   */
+
+  vm.toastSuccessfulFieldIdCopy = () => {
+    Toastr.success('Field ID copied to clipboard!')
+  }
+  /**
+   * Inform user that field id was not copied to clipboard
+   */
+  vm.toastFailedFieldIdCopy = () => {
+    Toastr.error('Failed to copy to clipboard')
   }
 }

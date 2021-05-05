@@ -29,6 +29,7 @@
       ng-required="vm.field.required"
       ng-disabled="vm.field.disabled"
       ng-pattern="vm.pattern"
+      ng-class="vm.field.allowPrefill && vm.field.isPrefilled && 'prefill-highlight'"
       ng-maxlength="{{vm.field.ValidationOptions ? vm.field.ValidationOptions.customMax : ''}}"
       ng-minlength="{{vm.field.ValidationOptions ? vm.field.ValidationOptions.customMin : ''}}"
       ng-model-options="{ allowInvalid: true }"

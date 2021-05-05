@@ -1,11 +1,13 @@
 import {
   IEncryptedFormSchema,
+  IFieldSchema,
   IFormSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
   Permission,
   ResponseMode,
 } from '../../../types'
+import { isMongooseDocumentArray } from '../../utils/mongoose'
 
 // Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
 export const transformEmailString = (v: string): string[] => {
@@ -75,4 +77,25 @@ export const isEmailModeForm = (
   form: IPopulatedForm,
 ): form is IPopulatedEmailForm => {
   return form.responseMode === ResponseMode.Email
+}
+
+/**
+ * Finds and returns form field in given form by its id
+ * @param formFields the form fields to search from
+ * @param fieldId the id of the field to retrieve
+ * @returns the form field if found, `null` otherwise
+ */
+export const getFormFieldById = (
+  formFields: IFormSchema['form_fields'],
+  fieldId: IFieldSchema['_id'],
+): IFieldSchema | null => {
+  if (!formFields) {
+    return null
+  }
+
+  if (isMongooseDocumentArray(formFields)) {
+    return formFields.id(fieldId)
+  }
+
+  return formFields.find((f) => fieldId === String(f._id)) ?? null
 }
