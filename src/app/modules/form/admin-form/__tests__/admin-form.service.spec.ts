@@ -75,6 +75,7 @@ import {
   updateEndPage,
   updateForm,
   updateFormField,
+  updateFormLogic,
   updateFormSettings,
 } from '../admin-form.service'
 import {
@@ -1678,6 +1679,133 @@ describe('admin-form.service', () => {
         expectedErrorMsg,
         'Please refresh and try again.',
       ])
+    })
+  })
+
+  describe('updateFormLogic', () => {
+    const logicId1 = new ObjectId()
+    const logicId2 = new ObjectId()
+    const mockEmailFormId = new ObjectId()
+    const mockEncryptFormId = new ObjectId()
+
+    const mockFormLogicOld = {
+      form_logics: [
+        {
+          _id: logicId1,
+          logicType: 'showFields',
+        } as ILogicSchema,
+        {
+          _id: logicId2,
+          logicType: 'showFields',
+        } as ILogicSchema,
+      ],
+    }
+
+    const updatedLogic = {
+      _id: logicId1,
+      logicType: 'preventSubmit',
+    } as ILogicSchema
+
+    const mockFormLogicUpdated = {
+      form_logics: [
+        {
+          _id: logicId1,
+          logicType: 'preventSubmit',
+        } as ILogicSchema,
+        {
+          _id: logicId2,
+          logicType: 'showFields',
+        } as ILogicSchema,
+      ],
+    }
+
+    const UPDATE_SPY = jest.spyOn(FormModel, 'updateFormLogic')
+
+    let mockEmailForm: IPopulatedForm,
+      mockEncryptForm: IPopulatedForm,
+      mockEmailFormUpdated: IPopulatedForm,
+      mockEncryptFormUpdated: IPopulatedForm
+
+    beforeEach(() => {
+      mockEmailForm = ({
+        _id: mockEmailFormId,
+        status: Status.Public,
+        responseMode: ResponseMode.Email,
+        ...mockFormLogicOld,
+      } as unknown) as IPopulatedForm
+      mockEncryptForm = ({
+        _id: mockEncryptFormId,
+        status: Status.Public,
+        responseMode: ResponseMode.Encrypt,
+        ...mockFormLogicOld,
+      } as unknown) as IPopulatedForm
+      mockEmailFormUpdated = ({
+        ...mockEmailForm,
+        ...mockFormLogicUpdated,
+      } as unknown) as IPopulatedForm
+      mockEncryptFormUpdated = ({
+        ...mockEncryptForm,
+        ...mockFormLogicUpdated,
+      } as unknown) as IPopulatedForm
+    })
+
+    it('should return ok(updated logic) on successful form logic update for email mode form', async () => {
+      // Arrange
+      UPDATE_SPY.mockResolvedValue(mockEmailFormUpdated as IFormSchema)
+
+      // Act
+      const actualResult = await updateFormLogic(
+        mockEmailForm,
+        logicId1.toHexString(),
+        updatedLogic,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(updatedLogic)
+
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        mockEmailForm._id.toHexString(),
+        logicId1.toHexString(),
+        updatedLogic,
+      )
+    })
+
+    it('should return ok(updated logic) on successful form logic update for encrypt mode form', async () => {
+      // Arrange
+      UPDATE_SPY.mockResolvedValue(mockEncryptFormUpdated as IFormSchema)
+
+      // Act
+      const actualResult = await updateFormLogic(
+        mockEncryptForm,
+        logicId1.toHexString(),
+        updatedLogic,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(updatedLogic)
+
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        mockEncryptFormId.toHexString(),
+        logicId1.toHexString(),
+        updatedLogic,
+      )
+    })
+
+    it('should return LogicNotFoundError if logic does not exist on form', async () => {
+      // Act
+      const wrongLogicId = new ObjectId().toHexString()
+      const actualResult = await updateFormLogic(
+        mockEmailForm,
+        wrongLogicId,
+        updatedLogic,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new LogicNotFoundError())
+      expect(UPDATE_SPY).not.toHaveBeenCalled()
     })
   })
 })

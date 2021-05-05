@@ -10,7 +10,7 @@ import {
   IFieldSchema,
   MyInfoAttribute,
 } from './field'
-import { ILogicSchema } from './form_logic'
+import { ILogicSchema, LogicDto } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
@@ -321,6 +321,11 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     newEndPage: EndPage,
   ): Promise<IFormDocument | null>
+  updateFormLogic(
+    formId: string,
+    logicId: string,
+    updatedLogic: LogicDto,
+  ): Promise<IFormSchema | null>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

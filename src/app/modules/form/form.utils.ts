@@ -2,6 +2,7 @@ import {
   IEncryptedFormSchema,
   IFieldSchema,
   IFormSchema,
+  ILogicSchema,
   IPopulatedEmailForm,
   IPopulatedForm,
   Permission,
@@ -98,4 +99,25 @@ export const getFormFieldById = (
   }
 
   return formFields.find((f) => fieldId === String(f._id)) ?? null
+}
+
+/**
+ * Finds and returns form logic in given form by its id
+ * @param form_logics the logics to search from
+ * @param logicId the id of the logic to retrieve
+ * @returns the logic if found, `null` otherwise
+ */
+export const getLogicById = (
+  form_logics: IFormSchema['form_logics'],
+  logicId: ILogicSchema['_id'],
+): ILogicSchema | null => {
+  if (!form_logics) {
+    return null
+  }
+
+  if (isMongooseDocumentArray(form_logics)) {
+    return form_logics.id(logicId)
+  }
+
+  return form_logics.find((logic) => logicId === String(logic._id)) ?? null
 }

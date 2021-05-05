@@ -17,8 +17,10 @@ import {
   IForm,
   IFormDocument,
   IFormSchema,
+  ILogicSchema,
   IPopulatedForm,
   IUserSchema,
+  LogicDto,
 } from '../../../../types'
 import {
   EndPageUpdateDto,
@@ -49,7 +51,7 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById } from '../form.utils'
+import { getFormFieldById, getLogicById } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -696,7 +698,10 @@ export const updateFormSettings = (
 export const deleteFormLogic = (
   form: IPopulatedForm,
   logicId: string,
-): ResultAsync<IFormSchema, DatabaseError | LogicNotFoundError> => {
+): ResultAsync<
+  IFormSchema,
+  DatabaseError | LogicNotFoundError | FormNotFoundError
+> => {
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic.id === logicId)) {
     logger.error({
@@ -731,6 +736,64 @@ export const deleteFormLogic = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm)
+  })
+}
+
+/**
+ * Updates form logic.
+ * @param form The original form to update logic in
+ * @param logicId the logicId to update
+ * @param updatedLogic Object containing the updated logic
+ * @returns ok(updated logic dto) on success
+ * @returns err(database errors) if db error is thrown during logic update
+ * @returns err(LogicNotFoundError) if logicId does not exist on form
+ */
+export const updateFormLogic = (
+  form: IPopulatedForm,
+  logicId: string,
+  updatedLogic: LogicDto,
+): ResultAsync<
+  ILogicSchema,
+  DatabaseError | LogicNotFoundError | FormNotFoundError
+> => {
+  // First check if specified logic exists
+  if (!form.form_logics.some((logic) => logic._id.toHexString() === logicId)) {
+    logger.error({
+      message: 'Error occurred - logicId to be updated does not exist',
+      meta: {
+        action: 'updateFormLogic',
+        formId: form._id,
+        logicId,
+      },
+    })
+    return errAsync(new LogicNotFoundError())
+  }
+
+  // Update specified logic
+  return ResultAsync.fromPromise(
+    FormModel.updateFormLogic(form._id.toHexString(), logicId, updatedLogic),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form logic',
+        meta: {
+          action: 'updateFormLogic',
+          formId: form._id,
+          logicId,
+          updatedLogic,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+    // On success, return updated form logic
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedLogic = getLogicById(updatedForm.form_logics, logicId)
+    return updatedLogic
+      ? okAsync(updatedLogic)
+      : errAsync(new LogicNotFoundError()) // Possible race condition if logic gets deleted after the initial logicId check but before the db update
   })
 }
 

@@ -29,6 +29,7 @@ import {
   IFormDocument,
   IFormModel,
   IFormSchema,
+  ILogicWithId,
   IPopulatedForm,
   LogicType,
   Permission,
@@ -682,6 +683,25 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       formId,
       { $pull: { form_fields: { _id: fieldId } } },
       { new: true, runValidators: true },
+    ).exec()
+  }
+  // Updates specified form logic.
+  FormSchema.statics.updateFormLogic = async function (
+    this: IFormModel,
+    formId: string,
+    logicId: string,
+    updatedLogic: ILogicWithId,
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      formId,
+      {
+        $set: { 'form_logics.$[object]': updatedLogic },
+      },
+      {
+        arrayFilters: [{ 'object._id': logicId }],
+        new: true,
+        runValidators: true,
+      },
     ).exec()
   }
 

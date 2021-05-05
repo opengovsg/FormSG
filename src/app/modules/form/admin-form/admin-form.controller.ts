@@ -16,6 +16,8 @@ import {
   IForm,
   IFormDocument,
   IPopulatedForm,
+  LogicDto,
+  LogicType,
   ResponseMode,
 } from '../../../../types'
 import {
@@ -1730,6 +1732,104 @@ export const handleReorderFormField = [
     },
   }),
   _handleReorderFormField,
+] as RequestHandler[]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/logic/:logicId
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with success message and updated logic object when successfully updated
+ * @returns 403 when user does not have permissions to update logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateLogic: RequestHandler<
+  { formId: string; logicId: string },
+  LogicDto | ErrorDto,
+  LogicDto
+> = (req, res) => {
+  const { formId, logicId } = req.params
+  const updatedLogic = { ...req.body }
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Update form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.updateFormLogic(retrievedForm, logicId, updatedLogic),
+      )
+      .map((updatedLogic) => res.status(StatusCodes.OK).json(updatedLogic))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating form logic',
+          meta: {
+            action: 'handleUpdateLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            logicId,
+            updatedLogic,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/logic/:logicId
+ */
+export const handleUpdateLogic = [
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object({
+        // Ensures given logic is same as accessed logic
+        _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
+        logicType: Joi.string()
+          .valid(...Object.values(LogicType))
+          .required(),
+        conditions: Joi.array()
+          .items(
+            Joi.object({
+              field: Joi.string().required(),
+              state: Joi.string().required(),
+              value: Joi.string().required(),
+              ifValueType: Joi.string(),
+            }).unknown(true),
+          )
+          .required(),
+        show: Joi.alternatives().conditional('logicType', {
+          is: LogicType.ShowFields,
+          then: Joi.array().items(Joi.string()).required(),
+        }),
+        preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+          is: LogicType.PreventSubmit,
+          then: Joi.string().required(),
+        }),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
+    },
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
+  _handleUpdateLogic,
 ] as RequestHandler[]
 
 /**
