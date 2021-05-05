@@ -90,6 +90,11 @@ const isShowFieldsLogic = (
   return formLogic.logicType === LogicType.ShowFields
 }
 
+// The below functions are basically a clone of
+// client/src/modules/forms/helpers/logic.js with types, as the shared utility
+// was unable to receive types from the backend.
+// !!! Keep in sync with client/src/modules/forms/helpers/logic.js
+
 /**
  * Parse logic into a map of fields that are shown/hidden depending on the
  * values of other fields.

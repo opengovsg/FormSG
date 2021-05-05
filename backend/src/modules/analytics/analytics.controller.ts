@@ -4,7 +4,7 @@ import * as F from 'fp-ts/lib/function'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { StatusCodes } from 'http-status-codes'
 
-import { AnalyticStatsDto } from '@root/types/analytics'
+import { AnalyticStatsDto } from '@shared/types/api'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
