@@ -151,6 +151,7 @@ function AdminFormController(
         errorMessage =
           'This page seems outdated, and your changes could not be saved. Please refresh.'
         break
+      case StatusCodes.FORBIDDEN:
       case StatusCodes.UNAUTHORIZED:
         errorMessage =
           'Your changes could not be saved as your account lacks the requisite privileges.'
@@ -282,6 +283,15 @@ function AdminFormController(
           })
           .catch(handleUpdateError)
     }
+  }
+
+  $scope.updateFormEndPage = (newEndPage) => {
+    return $q
+      .when(AdminFormService.updateFormEndPage($scope.myform._id, newEndPage))
+      .then((updatedEndPage) => {
+        $scope.myform.endPage = updatedEndPage
+      })
+      .catch(handleUpdateError)
   }
 
   /**

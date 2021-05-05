@@ -10,7 +10,7 @@ import {
   IFieldSchema,
   MyInfoAttribute,
 } from './field'
-import { ILogicSchema } from './form_logic'
+import { ILogicSchema, LogicDto } from './form_logic'
 import { FormLogoState, IFormLogo } from './form_logo'
 import { IPopulatedUser, IUserSchema, PublicUser } from './user'
 
@@ -317,6 +317,21 @@ export interface IFormModel extends Model<IFormSchema> {
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<FormMetaView[]>
+  /**
+   * Update the end page of form with given endpage object.
+   * @param formId the id of the form to update
+   * @param newEndPage the new EndPage object to replace with
+   * @returns the updated form document if form exists, null otherwise
+   */
+  updateEndPageById(
+    formId: string,
+    newEndPage: EndPage,
+  ): Promise<IFormDocument | null>
+  updateFormLogic(
+    formId: string,
+    logicId: string,
+    updatedLogic: LogicDto,
+  ): Promise<IFormSchema | null>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

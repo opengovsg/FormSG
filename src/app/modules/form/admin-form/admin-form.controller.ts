@@ -14,11 +14,15 @@ import {
   FormMetaView,
   FormSettings,
   IForm,
+  IFormDocument,
   IPopulatedForm,
+  LogicDto,
+  LogicType,
   ResponseMode,
 } from '../../../../types'
 import {
   EncryptSubmissionDto,
+  EndPageUpdateDto,
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
@@ -1781,6 +1785,223 @@ export const handleReorderFormField = [
 
 /**
  * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/logic/:logicId
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with success message and updated logic object when successfully updated
+ * @returns 403 when user does not have permissions to update logic
+ * @returns 404 when form cannot be found
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateLogic: RequestHandler<
+  { formId: string; logicId: string },
+  LogicDto | ErrorDto,
+  LogicDto
+> = (req, res) => {
+  const { formId, logicId } = req.params
+  const updatedLogic = { ...req.body }
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Update form logic
+      .andThen((retrievedForm) =>
+        AdminFormService.updateFormLogic(retrievedForm, logicId, updatedLogic),
+      )
+      .map((updatedLogic) => res.status(StatusCodes.OK).json(updatedLogic))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating form logic',
+          meta: {
+            action: 'handleUpdateLogic',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            logicId,
+            updatedLogic,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/logic/:logicId
+ */
+export const handleUpdateLogic = [
+  celebrate(
+    {
+      [Segments.BODY]: Joi.object({
+        // Ensures given logic is same as accessed logic
+        _id: Joi.string().valid(Joi.ref('$params.logicId')).required(),
+        logicType: Joi.string()
+          .valid(...Object.values(LogicType))
+          .required(),
+        conditions: Joi.array()
+          .items(
+            Joi.object({
+              field: Joi.string().required(),
+              state: Joi.string().required(),
+              value: Joi.string().required(),
+              ifValueType: Joi.string(),
+            }).unknown(true),
+          )
+          .required(),
+        show: Joi.alternatives().conditional('logicType', {
+          is: LogicType.ShowFields,
+          then: Joi.array().items(Joi.string()).required(),
+        }),
+        preventSubmitMessage: Joi.alternatives().conditional('logicType', {
+          is: LogicType.PreventSubmit,
+          then: Joi.string().required(),
+        }),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      }).unknown(true),
+    },
+    undefined,
+    // Required so req.body can be validated against values in req.params.
+    // See https://github.com/arb/celebrate#celebrateschema-joioptions-opts.
+    { reqContext: true },
+  ),
+  _handleUpdateLogic,
+] as RequestHandler[]
+
+/**
+ * Handler for DELETE /forms/:formId/fields/:fieldId
+ * @security session
+ *
+ * @returns 204 when deletion is successful
+ * @returns 403 when current user does not have permissions to delete form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field to delete cannot be found
+ * @returns 410 when deleting form field of an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs during deletion
+ */
+export const handleDeleteFormField: RequestHandler<
+  { formId: string; fieldId: string },
+  ErrorDto | void
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Delete form field.
+      .andThen((form) => AdminFormService.deleteFormField(form, fieldId))
+      .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form field',
+          meta: {
+            action: 'handleDeleteFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/end-page
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated end page
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the end page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateEndPage: RequestHandler<
+  { formId: string },
+  IFormDocument['endPage'] | ErrorDto,
+  EndPageUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to allow updating of end page
+      .andThen(() => AdminFormService.updateEndPage(formId, req.body))
+      .map((updatedEndPage) => res.status(StatusCodes.OK).json(updatedEndPage))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating end page',
+          meta: {
+            action: '_handleUpdateEndPage',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            body: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/end-page
+ */
+export const handleUpdateEndPage = [
+  celebrate({
+    [Segments.BODY]: {
+      title: Joi.string(),
+      paragraph: Joi.string().allow(''),
+      buttonLink: Joi.string().uri().allow(''),
+      buttonText: Joi.string().allow(''),
+    },
+  }),
+  _handleUpdateEndPage,
+] as RequestHandler[]
+
+/**
+ * NOTE: Exported for testing.
  * Private handler for PUT /api/v3/admin/forms/:formId/collaborators
  * @precondition Must be preceded by request validation
  * @security session
@@ -1826,57 +2047,6 @@ export const _handleUpdateCollaborators: RequestHandler<
             userId: sessionUserId,
             formId,
             formCollaborators: req.body,
-          },
-          error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
-  )
-}
-
-/**
- * Handler for DELETE /forms/:formId/fields/:fieldId
- * @security session
- *
- * @returns 204 when deletion is successful
- * @returns 403 when current user does not have permissions to delete form field
- * @returns 404 when form cannot be found
- * @returns 404 when form field to delete cannot be found
- * @returns 410 when deleting form field of an archived form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs during deletion
- */
-export const handleDeleteFormField: RequestHandler<
-  { formId: string; fieldId: string },
-  ErrorDto | void
-> = (req, res) => {
-  const { formId, fieldId } = req.params
-  const sessionUserId = (req.session as Express.AuthedSession).user._id
-
-  return (
-    // Step 1: Retrieve currently logged in user.
-    UserService.getPopulatedUserById(sessionUserId)
-      .andThen((user) =>
-        // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Write,
-        }),
-      )
-      // Step 3: Delete form field.
-      .andThen((form) => AdminFormService.deleteFormField(form, fieldId))
-      .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error occurred when deleting form field',
-          meta: {
-            action: 'handleDeleteFormField',
-            ...createReqMeta(req),
-            userId: sessionUserId,
-            formId,
-            fieldId,
           },
           error,
         })

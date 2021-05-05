@@ -64,7 +64,7 @@ npm run dev
 After the Docker image has finished building, the application can be accessed at [localhost:5000](localhost:5000).
 
 If there have been no dependency changes in `package.json` or changes in the
-`src/server.ts` file, you can run
+`src/app/server.ts` file, you can run
 
 ```bash
 docker-compose up
