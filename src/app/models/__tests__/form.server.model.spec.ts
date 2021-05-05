@@ -1279,7 +1279,7 @@ describe('Form Model', () => {
         await expect(Form.countDocuments()).resolves.toEqual(0)
       })
     })
-  })
+
     describe('updateFormLogic', () => {
       const logicId1 = new ObjectId().toHexString()
       const logicId2 = new ObjectId().toHexString()
