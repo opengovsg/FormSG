@@ -14,6 +14,8 @@ import { SubmissionNotFoundError } from '../submission/submission.errors'
 import {
   WebhookMissingUrlError,
   WebhookNoMoreRetriesError,
+  WebhookPushToQueueError,
+  WebhookValidationError,
 } from './webhook.errors'
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
@@ -79,9 +81,9 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
         sqsMessage,
       },
     })
-    // Resolve Promise so that malformed message is deleted from queue
-    // and not consumed repeatedly
-    return Promise.resolve()
+    // Malformed message will be retried until redrive policy is exceeded,
+    // upon which it will be moved to dead-letter queue
+    return Promise.reject()
   }
 
   // Parse message
@@ -95,9 +97,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
       },
       error: webhookMessageResult.error,
     })
-    // Resolve Promise so that malformed message is deleted from queue
-    // and not consumed repeatedly
-    return Promise.resolve()
+    return Promise.reject()
   }
   const webhookMessage = webhookMessageResult.value
 
@@ -122,6 +122,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
       // Reject so requeue can be re-attempted
       return Promise.reject()
     }
+    // Delete existing message from queue
     return Promise.resolve()
   }
 
@@ -129,7 +130,13 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   // First, retrieve webhook view and URL from database
   const retryResult = await retrieveWebhookInfo(
     webhookMessage.submissionId,
-  ).andThen((webhookInfo) => {
+  ).andThen<
+    true,
+    | WebhookMissingUrlError
+    | WebhookValidationError
+    | WebhookNoMoreRetriesError
+    | WebhookPushToQueueError
+  >((webhookInfo) => {
     const { webhookUrl } = webhookInfo
     // Webhook URL was deleted
     if (!webhookUrl) return errAsync(new WebhookMissingUrlError())
@@ -155,30 +162,30 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
     })
   })
 
-  if (retryResult.isErr()) {
-    // If max retries exceeded, allow message to be deleted from queue
-    if (retryResult.error instanceof WebhookNoMoreRetriesError) {
-      logger.warn({
-        message: 'Maximum retries exceeded for webhook',
-        meta: {
-          action: 'createWebhookQueueHandler',
-          webhookMessage,
-        },
-      })
-      return Promise.resolve()
-    }
-    logger.error({
-      message: 'Error while attempting to retry webhook',
+  if (retryResult.isOk()) return Promise.resolve()
+  // Error cases
+  // Special handling for max retries exceeded, for logging purposes
+  if (retryResult.error instanceof WebhookNoMoreRetriesError) {
+    logger.warn({
+      message: 'Maximum retries exceeded for webhook',
       meta: {
         action: 'createWebhookQueueHandler',
         webhookMessage,
       },
-      error: retryResult.error,
     })
-    // Reject so retry can be reattempted
     return Promise.reject()
   }
-  return Promise.resolve()
+  logger.error({
+    message: 'Error while attempting to retry webhook',
+    meta: {
+      action: 'createWebhookQueueHandler',
+      webhookMessage,
+    },
+    error: retryResult.error,
+  })
+  // Reject so retry can be reattempted or moved to dead-letter queue
+  // if redrive policy is exceeded
+  return Promise.reject()
 }
 
 const retrieveWebhookInfo = (
