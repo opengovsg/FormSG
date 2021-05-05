@@ -180,7 +180,8 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
 
   if (retryResult.isOk()) return Promise.resolve()
   // Error cases
-  // Special handling for max retries exceeded, for logging purposes
+  // Special handling for max retries exceeded - log a separate message
+  // and resolve Promise so that message is removed from queue
   if (retryResult.error instanceof WebhookNoMoreRetriesError) {
     logger.warn({
       message: 'Maximum retries exceeded for webhook',
@@ -189,7 +190,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
         webhookMessage: webhookMessage.getRetriesFailedState(),
       },
     })
-    return Promise.reject()
+    return Promise.resolve()
   }
   logger.error({
     message: 'Error while attempting to retry webhook',
