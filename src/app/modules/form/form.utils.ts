@@ -104,7 +104,7 @@ export const getFormFieldById = (
 /**
  * Finds and returns form logic in given form by its id
  * @param form_logics the logics to search from
- * @param fieldId the id of the logic to retrieve
+ * @param logicId the id of the logic to retrieve
  * @returns the logic if found, `null` otherwise
  */
 export const getLogicById = (

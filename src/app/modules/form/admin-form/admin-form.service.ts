@@ -698,7 +698,10 @@ export const updateFormSettings = (
 export const deleteFormLogic = (
   form: IPopulatedForm,
   logicId: string,
-): ResultAsync<IFormSchema, DatabaseError | LogicNotFoundError> => {
+): ResultAsync<
+  IFormSchema,
+  DatabaseError | LogicNotFoundError | FormNotFoundError
+> => {
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic.id === logicId)) {
     logger.error({
@@ -749,7 +752,10 @@ export const updateFormLogic = (
   form: IPopulatedForm,
   logicId: string,
   updatedLogic: LogicDto,
-): ResultAsync<ILogicSchema, DatabaseError | LogicNotFoundError> => {
+): ResultAsync<
+  ILogicSchema,
+  DatabaseError | LogicNotFoundError | FormNotFoundError
+> => {
   // First check if specified logic exists
   if (!form.form_logics.some((logic) => logic._id.toHexString() === logicId)) {
     logger.error({
