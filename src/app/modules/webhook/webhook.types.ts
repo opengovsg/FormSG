@@ -30,6 +30,12 @@ export const webhookMessageSchema = z.object({
 
 export type WebhookQueueMessageObject = z.infer<typeof webhookMessageSchema>
 
+// Same as a regular queue message, except no next attempt
+export type WebhookFailedQueueMessage = Omit<
+  WebhookQueueMessageObject,
+  'nextAttempt'
+>
+
 export type RetryInterval = {
   base: number
   jitter: number

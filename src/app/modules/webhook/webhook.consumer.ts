@@ -170,7 +170,7 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
       message: 'Maximum retries exceeded for webhook',
       meta: {
         action: 'createWebhookQueueHandler',
-        webhookMessage,
+        webhookMessage: webhookMessage.getRetriesFailedState(),
       },
     })
     return Promise.reject()

@@ -12,6 +12,7 @@ import {
   WebhookQueueMessageParsingError,
 } from './webhook.errors'
 import {
+  WebhookFailedQueueMessage,
   webhookMessageSchema,
   WebhookQueueMessageObject,
 } from './webhook.types'
@@ -102,6 +103,14 @@ export class WebhookQueueMessage {
           _v: QUEUE_MESSAGE_VERSION,
         }),
     )
+  }
+
+  getRetriesFailedState(): WebhookFailedQueueMessage {
+    return {
+      submissionId: this.submissionId,
+      previousAttempts: [...this.message.previousAttempts, this.nextAttempt],
+      _v: this.message._v,
+    }
   }
 
   get submissionId(): string {
