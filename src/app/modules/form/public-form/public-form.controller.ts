@@ -11,6 +11,7 @@ import {
   ErrorDto,
   PrivateFormErrorDto,
   PublicFormAuthRedirectDto,
+  PublicFormAuthValidateEsrvcIdDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
@@ -37,7 +38,7 @@ import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
 import { PublicFormViewDto, RedirectParams } from './public-form.types'
-import { mapFormAuthRedirectError, mapRouteError } from './public-form.utils'
+import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -432,7 +433,7 @@ export const _handleFormAuthRedirect: RequestHandler<
         meta: logMeta,
         error,
       })
-      const { statusCode, errorMessage } = mapFormAuthRedirectError(error)
+      const { statusCode, errorMessage } = mapFormAuthError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
@@ -451,3 +452,58 @@ export const handleFormAuthRedirect = [
   }),
   _handleFormAuthRedirect,
 ] as RequestHandler[]
+
+/**
+ * Handler for validating the eServiceId of a given form
+ *
+ * @returns 200 with eserviceId validation result
+ * @returns 400 when there is an error on the authType of the form
+ * @returns 400 when the eServiceId of the form does not exist
+ * @returns 404 when form with given ID does not exist
+ * @returns 500 when the title of the fetched login page does not exist
+ * @returns 500 when database error occurs
+ * @returns 500 when the url for the login page of the form could not be generated
+ * @returns 502 when the login page for singpass could not be fetched
+ */
+export const handleValidateFormEsrvcId: RequestHandler<
+  { formId: string },
+  PublicFormAuthValidateEsrvcIdDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  return FormService.retrieveFormById(formId)
+    .andThen((form) => {
+      // NOTE: Because the check is based on parsing the html of the returned webpage,
+      // And because MyInfo login is beyond our control, we coerce MyInfo to SP.
+      // This is valid because a valid MyInfo eserviceId is also a valid SP eserviceId
+      switch (form.authType) {
+        case AuthType.MyInfo:
+          return validateMyInfoForm(form).andThen((form) =>
+            SpcpFactory.createRedirectUrl(AuthType.SP, formId, form.esrvcId),
+          )
+        case AuthType.SP:
+          return validateSpcpForm(form).andThen((form) =>
+            SpcpFactory.createRedirectUrl(form.authType, formId, form.esrvcId),
+          )
+        default:
+          return err<never, AuthTypeMismatchError>(
+            new AuthTypeMismatchError(AuthType.SP, form.authType),
+          )
+      }
+    })
+    .andThen(SpcpFactory.fetchLoginPage)
+    .andThen(SpcpFactory.validateLoginPage)
+    .map((result) => res.status(StatusCodes.OK).json(result))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while validating e-service ID',
+        meta: {
+          action: 'handleValidateFormEsrvcId',
+          ...createReqMeta(req),
+          formId,
+        },
+        error,
+      })
+      const { statusCode, errorMessage } = mapFormAuthError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
