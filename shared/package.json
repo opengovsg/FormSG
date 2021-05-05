@@ -1,0 +1,20 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "Shared typings and utilities between client and server",
+  "dependencies": {
+    "json-stringify-safe": "^5.0.1",
+    "jszip": "^3.6.0",
+    "libphonenumber-js": "^1.9.17",
+    "lodash": "^4.17.21",
+    "path": "^0.12.7",
+    "type-fest": "^1.0.2",
+    "validator": "^13.6.0"
+  },
+  "devDependencies": {
+    "@types/json-stringify-safe": "^5.0.0",
+    "@types/lodash": "^4.14.168",
+    "@types/node": "^15.0.2",
+    "@types/validator": "^13.1.3"
+  }
+}

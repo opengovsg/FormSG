@@ -16,6 +16,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
+    "eslint": "^7.25.0",
     "husky": "^6.0.0"
   }
 }
