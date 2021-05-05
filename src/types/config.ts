@@ -62,7 +62,7 @@ export type Config = {
   isDev: boolean
   nodeEnv: Environment
   port: number
-  corsWhiteList: string[]
+  corsWhitelist: string[]
   sessionSecret: string
   chromiumBin: string
   otpLifeSpan: number

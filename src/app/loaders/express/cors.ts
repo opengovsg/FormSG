@@ -1,6 +1,6 @@
 import cors from 'cors'
 
-import { app, corsWhiteList } from '../../config/config'
+import { app, corsWhitelist } from '../../config/config'
 
 export const corsMiddleware = () => {
   return cors({
@@ -10,7 +10,7 @@ export const corsMiddleware = () => {
         callback(null, false)
       } else {
         // Enable CORS only if whitelisted
-        callback(null, corsWhiteList.indexOf(origin) !== -1)
+        callback(null, corsWhitelist.includes(origin))
       }
     },
     // Allows for setting of cookies over CORS
