@@ -92,25 +92,42 @@ AdminFormsFormRouter.post(
 )
 
 /**
- * Update form field according to given new body.
- * @route PUT /admin/forms/:formId/fields/:fieldId
- *
- * @param body the new field to override current field
- * @returns 200 with updated form field
- * @returns 400 when given body fails Joi validation
- * @returns 401 when current user is not logged in
- * @returns 403 when current user does not have permissions to update form field
- * @returns 404 when form cannot be found
- * @returns 404 when field cannot be found
- * @returns 410 when updating form field for archived form
- * @returns 422 when an invalid form field update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
+ * Specific form field REST APIs
  */
-AdminFormsFormRouter.put(
+AdminFormsFormRouter.route(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})',
-  AdminFormController.handleUpdateFormField,
 )
+  /**
+   * Update form field according to given new body.
+   * @route PUT /admin/forms/:formId/fields/:fieldId
+   *
+   * @param body the new field to override current field
+   * @returns 200 with updated form field
+   * @returns 400 when given body fails Joi validation
+   * @returns 401 when current user is not logged in
+   * @returns 403 when current user does not have permissions to update form field
+   * @returns 404 when form cannot be found
+   * @returns 404 when field cannot be found
+   * @returns 410 when updating form field for archived form
+   * @returns 422 when an invalid form field update is attempted on the form
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs
+   */
+  .put(AdminFormController.handleUpdateFormField)
+  /**
+   * Delete form field by fieldId of form corresponding to formId.
+   * @route DELETE /admin/forms/:formId/fields/:fieldId
+   * @security session
+   *
+   * @returns 204 when deletion is successful
+   * @returns 403 when current user does not have permissions to delete form field
+   * @returns 404 when form cannot be found
+   * @returns 404 when form field to delete cannot be found
+   * @returns 410 when deleting form field of an archived form
+   * @returns 422 when user in session cannot be retrieved from the database
+   * @returns 500 when database error occurs during deletion
+   */
+  .delete(AdminFormController.handleDeleteFormField)
 
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reorder',

@@ -381,13 +381,10 @@ function editFormController(
     if (field.fieldType === 'attachment') {
       Attachment.attachmentsTotal += parseInt(field.attachmentSize)
     }
+
     return updateField({
-      editFormField: {
-        action: {
-          name: EditFieldActions.Delete,
-        },
-        field: field,
-      },
+      fieldId: field._id,
+      type: UPDATE_FORM_TYPES.DeleteField,
     })
   }
 
