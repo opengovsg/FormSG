@@ -4,17 +4,11 @@ import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
-import getFormModel from 'src/app/models/form.server.model'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
-import {
-  IEncryptedSubmissionSchema,
-  IWebhookResponse,
-  ResponseMode,
-  WebhookView,
-} from 'src/types'
+import { IWebhookResponse, WebhookView } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -28,9 +22,12 @@ const MockAxios = mocked(axios, true)
 jest.mock('src/app/modules/webhook/webhook.validation')
 const MockWebhookValidationModule = mocked(WebhookValidationModule, true)
 
-// define test constants
-const FormModel = getFormModel(mongoose)
+jest.mock('src/app/config/formsg-sdk')
+const MockFormSgSdk = mocked(formsgSdk, true)
+
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+
+// define test constants
 
 const MOCK_WEBHOOK_URL = 'https://form.gov.sg/endpoint'
 const DEFAULT_ERROR_MSG = 'a generic error has occurred'
@@ -80,6 +77,20 @@ const MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE: Pick<
 }
 
 describe('webhook.service', () => {
+  const MOCK_FORM_ID = new ObjectId().toHexString()
+  const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
+  const MOCK_WEBHOOK_VIEW: WebhookView = {
+    data: {
+      created: new Date(),
+      encryptedContent: 'mockEncryptedContent',
+      formId: MOCK_FORM_ID,
+      submissionId: MOCK_SUBMISSION_ID,
+      verifiedContent: 'mockVerifiedContent',
+      version: 1,
+    },
+  }
+  const MOCK_SIGNATURE = 'mockSignature'
+
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => {
     await dbHandler.clearDatabase()
@@ -87,55 +98,23 @@ describe('webhook.service', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   // test variables
-  let testEncryptedSubmission: IEncryptedSubmissionSchema
   let testConfig: AxiosRequestConfig
-  let testSubmissionWebhookView: WebhookView | null
-  let testSignature: string
 
   beforeEach(async () => {
     jest.restoreAllMocks()
 
-    // prepare for form creation workflow
-    const MOCK_ADMIN_OBJ_ID = new ObjectId()
     const MOCK_EPOCH = 1487076708000
-    const preloaded = await dbHandler.insertFormCollectionReqs({
-      userId: MOCK_ADMIN_OBJ_ID,
-    })
-
     jest.spyOn(Date, 'now').mockImplementation(() => MOCK_EPOCH)
 
-    // instantiate new form and save
-    const testEncryptedForm = await FormModel.create({
-      title: 'Test Form',
-      admin: preloaded.user._id,
-      responseMode: ResponseMode.Encrypt,
-      publicKey: 'fake-public-key',
-    })
-
-    // initialise encrypted submussion
-    testEncryptedSubmission = await EncryptSubmissionModel.create({
-      form: testEncryptedForm._id,
-      authType: testEncryptedForm.authType,
-      myInfoFields: [],
-      encryptedContent: 'encrypted-content',
-      verifiedContent: 'verified-content',
-      version: 1,
-      webhookResponses: [],
-    })
-
-    // initialise webhook related variables
-    testSubmissionWebhookView = testEncryptedSubmission.getWebhookView()
-
-    testSignature = formsgSdk.webhooks.generateSignature({
-      uri: MOCK_WEBHOOK_URL,
-      submissionId: testEncryptedSubmission._id,
-      formId: testEncryptedForm._id,
-      epoch: MOCK_EPOCH,
-    })
+    MockFormSgSdk.webhooks.generateSignature.mockReturnValueOnce(MOCK_SIGNATURE)
+    const mockWebhookHeader = `t=${MOCK_EPOCH},s=${MOCK_SUBMISSION_ID},f=${MOCK_FORM_ID},v1=${MOCK_SIGNATURE}`
+    MockFormSgSdk.webhooks.constructHeader.mockReturnValueOnce(
+      mockWebhookHeader,
+    )
 
     testConfig = {
       headers: {
-        'X-FormSG-Signature': `t=${MOCK_EPOCH},s=${testEncryptedSubmission._id},f=${testEncryptedForm._id},v1=${testSignature}`,
+        'X-FormSG-Signature': mockWebhookHeader,
       },
       maxRedirects: 0,
       timeout: 10000,
@@ -147,7 +126,7 @@ describe('webhook.service', () => {
       // Arrange
       const mockWebhookResponse = {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
-        signature: testSignature,
+        signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
       } as IWebhookResponse
 
@@ -159,7 +138,7 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await saveWebhookRecord(
-        testEncryptedSubmission._id,
+        MOCK_SUBMISSION_ID,
         mockWebhookResponse,
       )
 
@@ -167,7 +146,7 @@ describe('webhook.service', () => {
       const expectedError = transformMongoError(mockDBError)
 
       expect(addWebhookResponseSpy).toHaveBeenCalledWith(
-        testEncryptedSubmission._id,
+        MOCK_SUBMISSION_ID,
         mockWebhookResponse,
       )
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
@@ -177,7 +156,7 @@ describe('webhook.service', () => {
       // Arrange
       const mockWebhookResponse = {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
-        signature: testSignature,
+        signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
       } as IWebhookResponse
 
@@ -198,15 +177,15 @@ describe('webhook.service', () => {
     it('should return updated submission with new webhook response if the record is successfully saved', async () => {
       // Arrange
       const mockWebhookResponse = {
-        _id: testEncryptedSubmission._id,
-        created: testEncryptedSubmission.created,
+        _id: MOCK_SUBMISSION_ID,
+        created: new Date(),
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
-        signature: testSignature,
+        signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
       } as IWebhookResponse
 
       const expectedSubmission = new EncryptSubmissionModel({
-        ...testEncryptedSubmission,
+        _id: MOCK_SUBMISSION_ID,
       })
       expectedSubmission.webhookResponses = [mockWebhookResponse]
 
@@ -216,13 +195,13 @@ describe('webhook.service', () => {
 
       // Act
       const actual = await saveWebhookRecord(
-        testEncryptedSubmission._id,
+        MOCK_SUBMISSION_ID,
         mockWebhookResponse,
       )
 
       // Assert
       expect(addWebhookResponseSpy).toHaveBeenCalledWith(
-        testEncryptedSubmission._id,
+        MOCK_SUBMISSION_ID,
         mockWebhookResponse,
       )
       expect(actual._unsafeUnwrap()).toEqual(expectedSubmission)
@@ -237,10 +216,7 @@ describe('webhook.service', () => {
       )
 
       // Act
-      const actual = await sendWebhook(
-        testEncryptedSubmission.getWebhookView(),
-        MOCK_WEBHOOK_URL,
-      )
+      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
 
       // Assert
       const expectedError = new WebhookValidationError(DEFAULT_ERROR_MSG)
@@ -258,10 +234,7 @@ describe('webhook.service', () => {
       )
 
       // Act
-      const actual = await sendWebhook(
-        testEncryptedSubmission.getWebhookView(),
-        MOCK_WEBHOOK_URL,
-      )
+      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
 
       // Assert
       const expectedError = new WebhookValidationError(
@@ -288,28 +261,25 @@ describe('webhook.service', () => {
         toJSON: () => jest.fn(),
       }
 
-      expect(
-        MockWebhookValidationModule.validateWebhookUrl,
-      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       MockAxios.post.mockRejectedValue(MOCK_AXIOS_ERROR)
       MockAxios.isAxiosError.mockReturnValue(true)
 
       // Act
-      const actual = await sendWebhook(
-        testEncryptedSubmission.getWebhookView(),
-        MOCK_WEBHOOK_URL,
-      )
+      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
 
       // Assert
       const expectedResult = {
         ...MOCK_WEBHOOK_FAILURE_RESPONSE,
-        signature: testSignature,
+        signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
+      expect(
+        MockWebhookValidationModule.validateWebhookUrl,
+      ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
-        testSubmissionWebhookView,
+        MOCK_WEBHOOK_VIEW,
         testConfig,
       )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
@@ -323,15 +293,12 @@ describe('webhook.service', () => {
       MockAxios.isAxiosError.mockReturnValue(false)
 
       // Act
-      const actual = await sendWebhook(
-        testEncryptedSubmission.getWebhookView(),
-        MOCK_WEBHOOK_URL,
-      )
+      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
 
       // Assert
       const expectedResult = {
         ...MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE,
-        signature: testSignature,
+        signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
@@ -340,7 +307,7 @@ describe('webhook.service', () => {
       ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
-        testSubmissionWebhookView,
+        MOCK_WEBHOOK_VIEW,
         testConfig,
       )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
@@ -356,15 +323,12 @@ describe('webhook.service', () => {
       MockAxios.isAxiosError.mockReturnValue(false)
 
       // Act
-      const actual = await sendWebhook(
-        testEncryptedSubmission.getWebhookView(),
-        MOCK_WEBHOOK_URL,
-      )
+      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
 
       // Assert
       const expectedResult = {
         ...MOCK_WEBHOOK_DEFAULT_FORMAT_RESPONSE,
-        signature: testSignature,
+        signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
@@ -373,7 +337,7 @@ describe('webhook.service', () => {
       ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
-        testSubmissionWebhookView,
+        MOCK_WEBHOOK_VIEW,
         testConfig,
       )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
@@ -386,15 +350,12 @@ describe('webhook.service', () => {
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
 
       // Act
-      const actual = await sendWebhook(
-        testEncryptedSubmission.getWebhookView(),
-        MOCK_WEBHOOK_URL,
-      )
+      const actual = await sendWebhook(MOCK_WEBHOOK_VIEW, MOCK_WEBHOOK_URL)
 
       // Assert
       const expectedResult = {
         ...MOCK_WEBHOOK_SUCCESS_RESPONSE,
-        signature: testSignature,
+        signature: MOCK_SIGNATURE,
         webhookUrl: MOCK_WEBHOOK_URL,
       }
 
@@ -403,7 +364,7 @@ describe('webhook.service', () => {
       ).toHaveBeenCalledWith(MOCK_WEBHOOK_URL)
       expect(MockAxios.post).toHaveBeenCalledWith(
         MOCK_WEBHOOK_URL,
-        testSubmissionWebhookView,
+        MOCK_WEBHOOK_VIEW,
         testConfig,
       )
       expect(actual._unsafeUnwrap()).toEqual(expectedResult)
