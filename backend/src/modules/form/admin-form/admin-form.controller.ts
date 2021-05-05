@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../../shared/constants'
+import { VALID_UPLOAD_FILE_TYPES } from '@shared/constants'
 import {
   AuthType,
   BasicField,
@@ -28,7 +28,7 @@ import {
   FieldUpdateDto,
   FormFieldDto,
   SettingsUpdateDto,
-} from '../../../../../shared/types/api'
+} from '@shared/types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'

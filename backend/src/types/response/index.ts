@@ -1,1 +1,1 @@
-export * from '../../../../shared/types/form/response'
+export * from '@shared/types/form/response'

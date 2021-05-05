@@ -8,7 +8,7 @@ import {
   EditFieldActions,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../../shared/constants'
+} from '@shared/constants'
 import {
   FormLogoState,
   FormMetaView,
@@ -27,7 +27,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   SettingsUpdateDto,
-} from '../../../../../shared/types/api'
+} from '@shared/types/api'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'

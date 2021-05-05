@@ -1,9 +1,9 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import { SALT_ROUNDS } from '../../../../shared/util/verification'
+import { SALT_ROUNDS } from '@shared/util/verification'
 import { PublicTransaction } from '@root/types'
-import { ErrorDto } from '../../../../shared/types/api'
+import { ErrorDto } from '@shared/types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '@root/utils/otp'
 import { createReqMeta } from '@root/utils/request'

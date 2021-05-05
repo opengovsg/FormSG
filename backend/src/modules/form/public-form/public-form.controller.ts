@@ -12,7 +12,7 @@ import {
   PrivateFormErrorDto,
   PublicFormAuthRedirectDto,
   PublicFormAuthValidateEsrvcIdDto,
-} from '../../../../../shared/types/api'
+} from '@shared/types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '@root/utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '@root/utils/request'

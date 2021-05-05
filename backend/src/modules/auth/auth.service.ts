@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { LINKS } from '../../../../shared/constants'
+import { LINKS } from '@shared/constants'
 import {
   IAgencySchema,
   IPopulatedForm,

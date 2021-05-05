@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios'
 
-import { stringifySafe } from '../../../../shared/util/stringify-safe'
+import { stringifySafe } from '@shared/util/stringify-safe'
 import { IWebhookResponse } from '@root/types'
 
 /**

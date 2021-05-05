@@ -1,6 +1,6 @@
 import { keyBy } from 'lodash'
 
-import { FIELDS_TO_REJECT } from '../../../../shared/resources/basic'
+import { FIELDS_TO_REJECT } from '@shared/resources/basic'
 import {
   BasicField,
   FieldIdSet,

@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose'
 
-import { LoginStatistic } from '../../../shared/types/billing'
+import { LoginStatistic } from '@shared/types/billing'
 import { IAgencySchema } from './agency'
 import { AuthType, IFormSchema, IPopulatedForm } from './form'
 import { IUserSchema } from './user'

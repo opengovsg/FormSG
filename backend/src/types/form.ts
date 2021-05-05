@@ -2,7 +2,18 @@ import { Document, LeanDocument, Model, ToObjectOptions, Types } from 'mongoose'
 import { Merge, SetRequired } from 'type-fest'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 
-import { AuthType, Colors, ResponseMode, Status, StartPage, EndPage, Permission, Webhook, Logo, IForm as ISharedForm } from '../../../shared/types/form'
+import {
+  AuthType,
+  Colors,
+  ResponseMode,
+  Status,
+  StartPage,
+  EndPage,
+  Permission,
+  Webhook,
+  Logo,
+  IForm as ISharedForm,
+} from '@shared/types/form'
 import { PublicView } from './database'
 import {
   FormField,
@@ -74,8 +85,7 @@ export type PickDuplicateForm = Pick<
   | 'inactiveMessage'
   | 'submissionLimit'
   | 'responseMode'
-  >
-
+>
 
 export interface IForm extends ISharedForm {
   title: string

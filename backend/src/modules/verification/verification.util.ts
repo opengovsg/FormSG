@@ -4,7 +4,7 @@ import {
   HASH_EXPIRE_AFTER_SECONDS,
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
-} from '../../../../shared/util/verification'
+} from '@shared/util/verification'
 import { IFieldSchema, IVerificationSchema, MapRouteError } from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { MailSendError } from '../../services/mail/mail.errors'

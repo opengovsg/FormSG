@@ -3,7 +3,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
-import { LINKS } from '../../../../shared/constants'
+import { LINKS } from '@shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '@root/utils/request'

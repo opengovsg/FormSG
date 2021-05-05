@@ -6,7 +6,7 @@ import { ProcessedSingleAnswerResponse } from '@root/modules/submission/submissi
 import { IDateField } from '@root/types/field'
 import { ResponseValidator } from '@root/types/field/utils/validation'
 
-import { DateSelectedValidation } from '../../../../../shared/constants'
+import { DateSelectedValidation } from '@shared/constants'
 
 import { notEmptySingleAnswerResponse } from './common'
 

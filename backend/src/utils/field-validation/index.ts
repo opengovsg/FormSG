@@ -8,7 +8,7 @@ import {
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '@root/modules/submission/submission.types'
-import { FIELDS_TO_REJECT } from '../../../../shared/resources/basic'
+import { FIELDS_TO_REJECT } from '@shared/resources/basic'
 import { IFieldSchema, ITableFieldSchema } from '@root/types/field'
 import { isTableField } from '@root/types/field/utils/guards'
 import { ResponseValidator } from '@root/types/field/utils/validation'

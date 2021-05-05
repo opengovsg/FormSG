@@ -1,5 +1,4 @@
-
-import { FormLogoState, IFormLogo } from '../../../shared/types/form'
+import { FormLogoState, IFormLogo } from '@shared/types/form'
 import { Document } from 'mongoose'
 
 export { FormLogoState }

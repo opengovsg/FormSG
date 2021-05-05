@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { NUM_OTP_RETRIES } from '../../../../shared/util/verification'
+import { NUM_OTP_RETRIES } from '@shared/util/verification'
 import {
   BasicField,
   IVerificationFieldSchema,

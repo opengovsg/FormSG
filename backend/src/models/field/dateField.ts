@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { DateSelectedValidation } from '../../../../shared/constants'
+import { DateSelectedValidation } from '@shared/constants'
 import { IDateFieldSchema } from '@root/types'
 
 import { MyInfoSchema } from './baseField'

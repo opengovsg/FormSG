@@ -14,9 +14,9 @@ import {
   LogicWithId,
   ICondition as ISharedCondition,
   ILogic as ISharedLogic,
-} from '../../../shared/types/form/logic'
+} from '@shared/types/form/logic'
 
-export { LogicDto } from '../../../shared/types/api/logic'
+export { LogicDto } from '@shared/types/api/logic'
 
 export {
   LogicConditionState,

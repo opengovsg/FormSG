@@ -4,7 +4,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
-import { isPhoneNumber } from '../../../../shared/util/phone-num-validation'
+import { isPhoneNumber } from '@shared/util/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '@root/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'

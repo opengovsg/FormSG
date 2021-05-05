@@ -1,5 +1,5 @@
 import { IPopulatedEncryptedForm } from '@root/types'
-import { EncryptedAttachmentsDto } from '../../../../../shared/types/api'
+import { EncryptedAttachmentsDto } from '@shared/types/api'
 import { ProcessedFieldResponse } from '../submission.types'
 
 export type EncryptSubmissionBodyAfterProcess = {

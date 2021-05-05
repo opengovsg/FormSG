@@ -1,7 +1,7 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../../shared/util/verification'
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '@shared/util/verification'
 import {
   IFormSchema,
   IVerificationFieldSchema,

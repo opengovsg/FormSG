@@ -1,11 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
-import { EditFieldActions } from '../../../../../shared/constants'
-import {
-  reorder,
-  replaceAt,
-} from '../../../../../shared/util/immutable-array-fns'
+import { EditFieldActions } from '@shared/constants'
+import { reorder, replaceAt } from '@shared/util/immutable-array-fns'
 import { IFieldSchema, IPopulatedForm, ResponseMode, Status } from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isPossibleEmailFieldSchema } from '@root/utils/field-validation/field-validation.guards'

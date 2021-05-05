@@ -4,7 +4,7 @@ import { Query, RequestHandler } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '@root/types'
-import { PublicFormAuthValidateEsrvcIdDto } from '../../../../shared/types/api'
+import { PublicFormAuthValidateEsrvcIdDto } from '@shared/types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '@root/utils/request'
 import { BillingFactory } from '../billing/billing.factory'

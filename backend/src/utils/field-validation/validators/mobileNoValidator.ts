@@ -8,7 +8,7 @@ import { ResponseValidator } from '@root/types/field/utils/validation'
 import {
   isMobilePhoneNumber,
   startsWithSgPrefix,
-} from '../../../../../shared/util/phone-num-validation'
+} from '@shared/util/phone-num-validation'
 
 import { makeSignatureValidator, notEmptySingleAnswerResponse } from './common'
 

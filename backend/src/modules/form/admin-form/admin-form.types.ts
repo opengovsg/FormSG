@@ -1,6 +1,6 @@
 import { Result } from 'neverthrow'
 
-import { EditFieldActions } from '../../../../../shared/constants'
+import { EditFieldActions } from '@shared/constants'
 import {
   IFieldSchema,
   IForm,

@@ -12,7 +12,7 @@ import {
   EncryptedSubmissionDto,
   SubmissionMetadataList,
 } from '@root/types'
-import { EncryptSubmissionDto, ErrorDto } from '../../../../../shared/types/api'
+import { EncryptSubmissionDto, ErrorDto } from '@shared/types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'

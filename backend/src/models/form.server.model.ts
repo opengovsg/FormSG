@@ -9,7 +9,7 @@ import mongoose, {
 } from 'mongoose'
 import validator from 'validator'
 
-import { reorder } from '../../../shared/util/immutable-array-fns'
+import { reorder } from '@shared/util/immutable-array-fns'
 import {
   AuthType,
   BasicField,

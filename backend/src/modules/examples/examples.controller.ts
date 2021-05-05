@@ -7,7 +7,7 @@ import {
   ExampleFormsQueryDto,
   ExampleFormsResult,
   ExampleSingleFormResult,
-} from '../../../../shared/types/api'
+} from '@shared/types/api'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 
