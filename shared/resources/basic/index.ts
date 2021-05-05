@@ -1,4 +1,4 @@
-import { BasicField } from '@root/types'
+import { BasicField } from '../../types/form'
 
 interface IBasicFieldType {
   name: BasicField
