@@ -1,1 +1,0 @@
-print('Hello! I am a file with a file extension which is invalid for FormSG attachments. I am for testing purposes.')
