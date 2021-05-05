@@ -27,6 +27,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   FormFieldDto,
+  PermissionsUpdateDto,
   SettingsUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -226,6 +227,54 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
           message: 'Error retrieving single form',
           meta: {
             action: 'handleGetSingleForm',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for GET /api/v3/admin/forms/:formId/collaborators
+ * @security session
+ *
+ * @returns 200 with collaborators
+ * @returns 403 when current user does not have read permissions for the form
+ * @returns 404 when form cannot be found
+ * @returns 410 when retrieving collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetFormCollaborators: RequestHandler<
+  { formId: string },
+  PermissionsUpdateDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has read permissions to form
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      .map(({ permissionList }) =>
+        res.status(StatusCodes.OK).send(permissionList),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error retrieving form collaborators',
+          meta: {
+            action: 'handleGetFormCollaborators',
             ...createReqMeta(req),
           },
           error,
@@ -1949,4 +1998,79 @@ export const handleUpdateEndPage = [
     },
   }),
   _handleUpdateEndPage,
+] as RequestHandler[]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /api/v3/admin/forms/:formId/collaborators
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated collaborators and permissions
+ * @returns 403 when current user does not havße permissions to update the collaborators
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateCollaborators: RequestHandler<
+  { formId: string },
+  PermissionsUpdateDto | ErrorDto,
+  PermissionsUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+  // Step 1: Get the form after permission checks
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 2: Update the form collaborators
+      .andThen((form) =>
+        AdminFormService.updateFormCollaborators(form, req.body),
+      )
+      .map((updatedCollaborators) =>
+        res.status(StatusCodes.OK).json(updatedCollaborators),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating collaborators',
+          meta: {
+            action: '_handleUpdateCollaborators',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            formCollaborators: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /api/v3/admin/forms/:formId/collaborators
+ */
+export const handleUpdateCollaborators = [
+  celebrate({
+    [Segments.BODY]: Joi.array().items(
+      Joi.object({
+        email: Joi.string()
+          .required()
+          .email()
+          .message('Please enter a valid email'),
+        write: Joi.bool().optional(),
+        _id: Joi.string().optional(),
+      }),
+    ),
+  }),
+  _handleUpdateCollaborators,
 ] as RequestHandler[]

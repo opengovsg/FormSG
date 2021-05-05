@@ -525,6 +525,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormDocumentSchema.methods.updateFormCollaborators = async function (
+    this: IFormDocument,
+    updatedPermissions: Permission[],
+  ) {
+    this.permissionList = updatedPermissions
+    return this.save()
+  }
+
   FormDocumentSchema.methods.updateFormFieldById = function (
     this: IFormDocument,
     fieldId: string,

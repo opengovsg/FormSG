@@ -98,6 +98,7 @@ export type EndPage = {
 export type Permission = {
   email: string
   write: boolean
+  _id?: string
 }
 
 export type Webhook = {
@@ -182,6 +183,11 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     fieldId: string,
     newField: FormFieldWithId,
   ): Promise<T | null>
+
+  updateFormCollaborators<T>(
+    this: T,
+    updateFormCollaborators: Permission[],
+  ): Promise<T>
 
   /**
    * Reorders field corresponding to given fieldId to given newPosition
