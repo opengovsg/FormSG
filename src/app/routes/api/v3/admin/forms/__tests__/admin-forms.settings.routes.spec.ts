@@ -14,7 +14,6 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
-import { jsonParseStringify } from '../../../../../../../../tests/unit/backend/helpers/serialize-data'
 import * as UserService from '../../../../../../modules/user/user.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
