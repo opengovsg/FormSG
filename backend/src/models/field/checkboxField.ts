@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { ICheckboxFieldSchema } from 'src/types'
+import { ICheckboxFieldSchema } from '@root/types'
 
 const createCheckboxFieldSchema = () => {
   return new Schema<ICheckboxFieldSchema>({

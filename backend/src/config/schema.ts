@@ -12,7 +12,7 @@ import {
   ICompulsoryVarsSchema,
   IOptionalVarsSchema,
   IProdOnlyVarsSchema,
-} from 'src/types'
+} from '@root/types'
 
 convict.addFormat(url)
 convict.addFormat(email)

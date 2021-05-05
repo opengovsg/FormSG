@@ -9,7 +9,7 @@ import { MailSendError } from 'services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from 'services/sms/sms.errors'
 import { HashingError } from 'utils/hash'
 import * as OtpUtils from 'utils/otp'
-import { IVerificationSchema } from 'src/types'
+import { IVerificationSchema } from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

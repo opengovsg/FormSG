@@ -3,7 +3,7 @@ import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
-import { IFormFeedbackSchema } from 'src/types'
+import { IFormFeedbackSchema } from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'

@@ -1,5 +1,5 @@
-import { getModeFilter } from 'src/modules/submission/submission.utils'
-import { BasicField, ResponseMode } from 'src/types'
+import { getModeFilter } from '@root/modules/submission/submission.utils'
+import { BasicField, ResponseMode } from '@root/types'
 
 describe('submission.utils', () => {
   describe('getModeFilter', () => {

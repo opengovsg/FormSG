@@ -20,7 +20,7 @@ import {
   MOCK_SECTION_RESPONSE,
   MOCK_TEXT_FIELD,
   MOCK_TEXTFIELD_RESPONSE,
-} from 'src/modules/submission/email-submission/__tests__/email-submission.test.constants'
+} from '@root/modules/submission/email-submission/__tests__/email-submission.test.constants'
 import {
   BasicField,
   IFieldSchema,
@@ -28,8 +28,8 @@ import {
   IUserSchema,
   ResponseMode,
   Status,
-} from 'src/types'
-import { EncryptSubmissionDto } from 'src/types/api'
+} from '@root/types'
+import { EncryptSubmissionDto } from '@root/types/api'
 
 import {
   createAuthedSession,

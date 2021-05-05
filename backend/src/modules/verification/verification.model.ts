@@ -9,7 +9,7 @@ import {
   IVerificationSchema,
   PublicTransaction,
   UpdateFieldData,
-} from 'src/types'
+} from '@root/types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
 import { extractTransactionFields, getExpiryDate } from './verification.util'

@@ -7,7 +7,7 @@ import {
   IFormSchema,
   IUserSchema,
   Permission,
-} from 'src/types'
+} from '@root/types'
 
 export enum SmsType {
   Verification = 'VERIFICATION',

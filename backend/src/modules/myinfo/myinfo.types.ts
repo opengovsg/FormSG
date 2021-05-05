@@ -7,7 +7,7 @@ import {
   IFormSchema,
   IMyInfo,
   MyInfoAttribute,
-} from 'src/types'
+} from '@root/types'
 import { ISpcpMyInfo } from '../../config/feature-manager'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 

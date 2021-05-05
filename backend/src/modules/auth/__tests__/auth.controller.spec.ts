@@ -3,7 +3,7 @@ import { mocked } from 'ts-jest/utils'
 
 import MailService from 'services/mail/mail.service'
 import { HashingError } from 'utils/hash'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { IAgencySchema, IUserSchema } from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 

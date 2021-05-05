@@ -15,11 +15,22 @@
     "test": "env-cmd -f tests/.test-full-env jest --coverage --maxWorkers=4",
     "test:watch": "env-cmd -f tests/.test-full-env jest --watch",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/backend/app/server.js",
+    "start": "node dist/backend/src/server.js",
     "lint": "eslint src/ --quiet --fix"
   },
   "lint-staged": {
     "*.ts": "eslint --fix"
+  },
+  "_moduleAliases": {
+    "@root": "dist/backend/src",
+    "@config": "dist/backend/src/config",
+    "@models": "dist/backend/src/modules",
+    "@modules": "dist/backend/src/modules",
+    "@routes": "dist/backend/src/routes",
+    "@services": "dist/backend/src/services",
+    "@utils": "dist/backend/src/utils",
+    "@views": "dist/backend/src/views",
+    "@shared": "dist/shared"
   },
   "dependencies": {
     "@joi/date": "^2.1.0",
@@ -54,8 +65,11 @@
     "has-ansi": "^4.0.1",
     "helmet": "^4.6.0",
     "http-status-codes": "^2.1.4",
+    "json-stringify-safe": "^5.0.1",
+    "jszip": "^3.6.0",
     "libphonenumber-js": "^1.9.17",
     "lodash": "^4.17.21",
+    "module-alias": "^2.2.2",
     "moment-timezone": "0.5.33",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^5.12.5",
@@ -64,6 +78,7 @@
     "node-cache": "^5.1.2",
     "nodemailer": "^6.6.0",
     "opossum": "^6.0.1",
+    "path": "^0.12.7",
     "promise-retry": "^2.0.1",
     "puppeteer-core": "^5.3.1",
     "spark-md5": "^3.0.1",

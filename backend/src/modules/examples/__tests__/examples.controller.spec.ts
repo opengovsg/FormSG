@@ -1,7 +1,7 @@
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { Colors } from 'src/types'
+import { Colors } from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 

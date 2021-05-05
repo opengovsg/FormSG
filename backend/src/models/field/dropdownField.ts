@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { IDropdownFieldSchema } from 'src/types'
+import { IDropdownFieldSchema } from '@root/types'
 
 import { MyInfoSchema } from './baseField'
 

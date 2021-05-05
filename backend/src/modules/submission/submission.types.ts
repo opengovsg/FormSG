@@ -3,9 +3,9 @@ import {
   ICheckboxResponse,
   ISingleAnswerResponse,
   ITableResponse,
-} from 'src/types/response'
+} from '@root/types/response'
 
-import { BasicField } from 'src/types/field'
+import { BasicField } from '@root/types/field'
 
 export type ProcessedResponse = {
   question: string

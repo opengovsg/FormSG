@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { IDecimalFieldSchema } from 'src/types'
+import { IDecimalFieldSchema } from '@root/types'
 
 const createDecimalFieldSchema = () => {
   return new Schema<IDecimalFieldSchema>({

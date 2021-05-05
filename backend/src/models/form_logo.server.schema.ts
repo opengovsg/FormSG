@@ -4,7 +4,7 @@ import {
   FormLogoState,
   ICustomFormLogoSchema,
   IFormLogoSchema,
-} from 'src/types'
+} from '@root/types'
 
 export const FormLogoSchema = new Schema<IFormLogoSchema>(
   {

@@ -1,4 +1,3 @@
-import { AuthType } from '../form'
 import { LoginStatistic } from '../billing'
 
 // yr: The year to get the billing information for

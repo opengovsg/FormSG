@@ -1,8 +1,8 @@
 import formsgSdk from 'config/formsg-sdk'
-import { ValidateFieldError } from 'src/modules/submission/submission.errors'
+import { ValidateFieldError } from '@root/modules/submission/submission.errors'
 import { validateField } from 'utils/field-validation'
-import { IFieldSchema } from 'src/types'
-import { BasicField } from 'src/types/field/fieldTypes'
+import { IFieldSchema } from '@root/types'
+import { BasicField } from '@root/types/field/fieldTypes'
 
 import {
   generateDefaultField,

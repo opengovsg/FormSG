@@ -2,17 +2,17 @@ import { ObjectId } from 'bson-ext'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import * as AuthService from 'src/modules/auth/auth.service'
-import { DatabaseError } from 'src/modules/core/core.errors'
-import { CreatePresignedUrlError } from 'src/modules/form/admin-form/admin-form.errors'
-import { PermissionLevel } from 'src/modules/form/admin-form/admin-form.types'
+import * as AuthService from '@root/modules/auth/auth.service'
+import { DatabaseError } from '@root/modules/core/core.errors'
+import { CreatePresignedUrlError } from '@root/modules/form/admin-form/admin-form.errors'
+import { PermissionLevel } from '@root/modules/form/admin-form/admin-form.types'
 import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
-} from 'src/modules/form/form.errors'
-import { MissingUserError } from 'src/modules/user/user.errors'
-import * as UserService from 'src/modules/user/user.service'
+} from '@root/modules/form/form.errors'
+import { MissingUserError } from '@root/modules/user/user.errors'
+import * as UserService from '@root/modules/user/user.service'
 import {
   IPopulatedEncryptedForm,
   IPopulatedForm,
@@ -20,7 +20,7 @@ import {
   ResponseMode,
   SubmissionData,
   SubmissionMetadata,
-} from 'src/types'
+} from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -37,8 +37,8 @@ import {
 import * as EncryptSubmissionService from '../encrypt-submission.service'
 
 jest.mock('../encrypt-submission.service')
-jest.mock('src/modules/user/user.service')
-jest.mock('src/modules/auth/auth.service')
+jest.mock('@root/modules/user/user.service')
+jest.mock('@root/modules/auth/auth.service')
 const MockEncryptSubService = mocked(EncryptSubmissionService)
 const MockUserService = mocked(UserService)
 const MockAuthService = mocked(AuthService)

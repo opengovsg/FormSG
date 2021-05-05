@@ -38,9 +38,9 @@ import {
   PublicFormValues,
   ResponseMode,
   Status,
-} from 'src/types'
+} from '@root/types'
 
-import { IPopulatedUser, IUserSchema } from 'src/types/user'
+import { IPopulatedUser, IUserSchema } from '@root/types/user'
 import { MB } from '../constants/filesize'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'

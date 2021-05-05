@@ -7,7 +7,7 @@ import {
   IPopulatedForm,
   IUserSchema,
   ResponseMode,
-} from 'src/types'
+} from '@root/types'
 import { ForbiddenFormError } from '../form.errors'
 
 import { EditFieldError } from './admin-form.errors'

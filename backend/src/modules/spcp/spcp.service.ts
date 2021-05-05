@@ -4,7 +4,7 @@ import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 import { PublicFormAuthValidateEsrvcIdDto } from '../../../../shared/types/api'
 import { ISpcpMyInfo } from '../../config/feature-manager'
 import { createLoggerWithLabel } from '../../config/logger'

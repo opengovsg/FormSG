@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, omit, tail } from 'lodash'
 
-import { EditFieldActions } from 'src/shared/constants'
+import { EditFieldActions } from '@root/shared/constants'
 import {
   BasicField,
   IEmailFieldSchema,
@@ -11,7 +11,7 @@ import {
   Permission,
   ResponseMode,
   Status,
-} from 'src/types'
+} from '@root/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 

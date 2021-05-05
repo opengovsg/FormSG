@@ -1,6 +1,6 @@
 import { left } from 'fp-ts/lib/Either'
 
-import { IField } from 'src/types/field/fieldTypes'
+import { IField } from '@root/types/field/fieldTypes'
 import {
   isAttachmentField,
   isCheckboxField,
@@ -19,8 +19,8 @@ import {
   isShortTextField,
   isTableField,
   isYesNoField,
-} from 'src/types/field/utils/guards'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+} from '@root/types/field/utils/guards'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,

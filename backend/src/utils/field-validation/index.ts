@@ -7,11 +7,11 @@ import {
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
-} from 'src/modules/submission/submission.types'
+} from '@root/modules/submission/submission.types'
 import { FIELDS_TO_REJECT } from '../../../../shared/resources/basic'
-import { IFieldSchema, ITableFieldSchema } from 'src/types/field'
-import { isTableField } from 'src/types/field/utils/guards'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { IFieldSchema, ITableFieldSchema } from '@root/types/field'
+import { isTableField } from '@root/types/field/utils/guards'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ValidateFieldError } from '../../modules/submission/submission.errors'
 

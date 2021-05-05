@@ -1,4 +1,4 @@
-import { BasicField } from "src/types"
+import { BasicField } from './field'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
@@ -90,8 +90,7 @@ type NumericalLogicStates =
 type NumericalLogicCondition = LogicAssociation<
   NumericalLogicField,
   NumericalLogicStates
-  >
-
+>
 
 export type LogicCondition =
   | CategoricalLogicCondition

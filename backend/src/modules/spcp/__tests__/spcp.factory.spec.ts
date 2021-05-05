@@ -1,7 +1,7 @@
 import { mocked } from 'ts-jest/utils'
 
 import { FeatureNames, ISpcpMyInfo } from 'config/feature-manager'
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 
 import { MissingFeatureError } from '../../core/core.errors'
 import { createSpcpFactory } from '../spcp.factory'

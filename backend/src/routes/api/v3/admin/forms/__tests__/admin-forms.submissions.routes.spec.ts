@@ -14,8 +14,8 @@ import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'models/submission.server.model'
 import getUserModel from 'models/user.server.model'
-import { saveSubmissionMetadata } from 'src/modules/submission/email-submission/email-submission.service'
-import { SubmissionHash } from 'src/modules/submission/email-submission/email-submission.types'
+import { saveSubmissionMetadata } from '@root/modules/submission/email-submission/email-submission.service'
+import { SubmissionHash } from '@root/modules/submission/email-submission/email-submission.types'
 import {
   IFormDocument,
   IPopulatedEmailForm,
@@ -24,7 +24,7 @@ import {
   Status,
   SubmissionCursorData,
   SubmissionType,
-} from 'src/types'
+} from '@root/types'
 
 import {
   createAuthedSession,

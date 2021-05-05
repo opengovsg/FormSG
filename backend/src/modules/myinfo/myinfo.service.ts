@@ -17,7 +17,7 @@ import {
   IMyInfoHashSchema,
   IPopulatedForm,
   MyInfoAttribute,
-} from 'src/types'
+} from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import {

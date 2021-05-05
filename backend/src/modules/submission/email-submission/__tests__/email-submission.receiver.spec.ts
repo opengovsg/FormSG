@@ -6,7 +6,7 @@ import { pick } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
 import { MB } from 'constants/filesize'
-import { BasicField } from 'src/types'
+import { BasicField } from '@root/types'
 
 import {
   generateNewAttachmentResponse,

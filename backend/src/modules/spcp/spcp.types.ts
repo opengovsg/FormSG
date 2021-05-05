@@ -1,4 +1,4 @@
-import { AuthType, IFormSchema } from 'src/types'
+import { AuthType, IFormSchema } from '@root/types'
 
 export enum JwtName {
   SP = 'jwtSp',

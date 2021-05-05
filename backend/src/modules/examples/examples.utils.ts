@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { MapRouteError } from 'src/types/routing'
+import { MapRouteError } from '@root/types/routing'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
 

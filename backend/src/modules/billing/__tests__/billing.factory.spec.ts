@@ -11,7 +11,7 @@ import {
   ILoginSchema,
   IPopulatedForm,
   LoginStatistic,
-} from 'src/types'
+} from '@root/types'
 
 import { MissingFeatureError } from '../../core/core.errors'
 import { createBillingFactory } from '../billing.factory'

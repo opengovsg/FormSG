@@ -4,17 +4,17 @@ import { errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'models/form.server.model'
-import { handleSns } from 'src/modules/bounce/bounce.controller'
-import getBounceModel from 'src/modules/bounce/bounce.model'
-import * as BounceService from 'src/modules/bounce/bounce.service'
-import * as FormService from 'src/modules/form/form.service'
+import { handleSns } from '@root/modules/bounce/bounce.controller'
+import getBounceModel from '@root/modules/bounce/bounce.model'
+import * as BounceService from '@root/modules/bounce/bounce.service'
+import * as FormService from '@root/modules/form/form.service'
 import { EmailType } from 'services/mail/mail.constants'
 import {
   IBounceSchema,
   IEmailNotification,
   IPopulatedForm,
   ISnsNotification,
-} from 'src/types'
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
@@ -25,8 +25,8 @@ import { InvalidNotificationError } from '../bounce.errors'
 const Bounce = getBounceModel(mongoose)
 const FormModel = getFormModel(mongoose)
 
-jest.mock('src/modules/bounce/bounce.service')
-jest.mock('src/modules/form/form.service')
+jest.mock('@root/modules/bounce/bounce.service')
+jest.mock('@root/modules/form/form.service')
 const MockBounceService = mocked(BounceService, true)
 const MockFormService = mocked(FormService, true)
 

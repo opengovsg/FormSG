@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose'
 import validator from 'validator'
 
-import { IImageFieldSchema } from 'src/types'
+import { IImageFieldSchema } from '@root/types'
 import { isDev } from '../../config/config'
 
 const createImageFieldSchema = () => {

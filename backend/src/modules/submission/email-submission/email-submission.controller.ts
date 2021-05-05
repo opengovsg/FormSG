@@ -1,7 +1,7 @@
 import { Request, RequestHandler } from 'express'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
-import { AuthType, FieldResponse, IPopulatedEmailForm } from 'src/types'
+import { AuthType, FieldResponse, IPopulatedEmailForm } from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
 import MailService from '../../../services/mail/mail.service'

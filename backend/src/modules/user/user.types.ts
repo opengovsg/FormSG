@@ -1,5 +1,5 @@
 import { SetRequired } from 'type-fest'
 
-import { UserContactView } from 'src/types'
+import { UserContactView } from '@root/types'
 
 export type UserWithContactNumber = SetRequired<UserContactView, 'contact'>

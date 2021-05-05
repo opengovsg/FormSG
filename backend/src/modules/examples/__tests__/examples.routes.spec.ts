@@ -4,7 +4,7 @@ import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { IAgencySchema, IUserSchema } from '@root/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'

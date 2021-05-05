@@ -6,7 +6,7 @@ import { err } from 'neverthrow'
 import querystring from 'querystring'
 import { UnreachableCaseError } from 'ts-essentials'
 
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 import {
   ErrorDto,
   PrivateFormErrorDto,
@@ -14,8 +14,8 @@ import {
   PublicFormAuthValidateEsrvcIdDto,
 } from '../../../../../shared/types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { isMongoError } from 'src/utils/handle-mongo-error'
-import { createReqMeta, getRequestIp } from 'src/utils/request'
+import { isMongoError } from '@root/utils/handle-mongo-error'
+import { createReqMeta, getRequestIp } from '@root/utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import {
   MYINFO_COOKIE_NAME,

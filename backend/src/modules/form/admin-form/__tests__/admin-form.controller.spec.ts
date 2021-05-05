@@ -6,22 +6,22 @@ import { PassThrough } from 'stream'
 import { MockedObject } from 'ts-jest/dist/utils/testing'
 import { mocked } from 'ts-jest/utils'
 
-import * as AuthService from 'src/modules/auth/auth.service'
+import * as AuthService from '@root/modules/auth/auth.service'
 import {
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-} from 'src/modules/core/core.errors'
-import * as FeedbackService from 'src/modules/feedback/feedback.service'
-import { FeedbackResponse } from 'src/modules/feedback/feedback.types'
+} from '@root/modules/core/core.errors'
+import * as FeedbackService from '@root/modules/feedback/feedback.service'
+import { FeedbackResponse } from '@root/modules/feedback/feedback.types'
 import {
   AttachmentTooLargeError,
   InvalidFileExtensionError,
-} from 'src/modules/submission/email-submission/email-submission.errors'
-import * as EmailSubmissionService from 'src/modules/submission/email-submission/email-submission.service'
-import * as EmailSubmissionUtil from 'src/modules/submission/email-submission/email-submission.util'
-import * as EncryptSubmissionService from 'src/modules/submission/encrypt-submission/encrypt-submission.service'
+} from '@root/modules/submission/email-submission/email-submission.errors'
+import * as EmailSubmissionService from '@root/modules/submission/email-submission/email-submission.service'
+import * as EmailSubmissionUtil from '@root/modules/submission/email-submission/email-submission.util'
+import * as EncryptSubmissionService from '@root/modules/submission/encrypt-submission/encrypt-submission.service'
 import {
   ConflictError,
   InvalidEncodingError,
@@ -29,13 +29,13 @@ import {
   ResponseModeError,
   SendEmailConfirmationError,
   ValidateFieldError,
-} from 'src/modules/submission/submission.errors'
-import * as SubmissionService from 'src/modules/submission/submission.service'
-import { MissingUserError } from 'src/modules/user/user.errors'
+} from '@root/modules/submission/submission.errors'
+import * as SubmissionService from '@root/modules/submission/submission.service'
+import { MissingUserError } from '@root/modules/user/user.errors'
 import { MailGenerationError, MailSendError } from 'services/mail/mail.errors'
 import MailService from 'services/mail/mail.service'
 import * as EncryptionUtils from 'utils/encryption'
-import { EditFieldActions } from 'src/shared/constants'
+import { EditFieldActions } from '@root/shared/constants'
 import {
   AuthType,
   BasicField,
@@ -56,12 +56,12 @@ import {
   PublicForm,
   ResponseMode,
   Status,
-} from 'src/types'
+} from '@root/types'
 import {
   EncryptSubmissionDto,
   FieldCreateDto,
   FieldUpdateDto,
-} from 'src/types/api'
+} from '@root/types/api'
 
 import {
   generateDefaultField,
@@ -94,17 +94,17 @@ import {
   PermissionLevel,
 } from '../admin-form.types'
 
-jest.mock('src/modules/auth/auth.service')
+jest.mock('@root/modules/auth/auth.service')
 const MockAuthService = mocked(AuthService)
-jest.mock('src/modules/feedback/feedback.service')
+jest.mock('@root/modules/feedback/feedback.service')
 const MockFeedbackService = mocked(FeedbackService)
-jest.mock('src/modules/submission/submission.service')
+jest.mock('@root/modules/submission/submission.service')
 const MockSubmissionService = mocked(SubmissionService)
 jest.mock(
-  'src/modules/submission/encrypt-submission/encrypt-submission.service',
+  '@root/modules/submission/encrypt-submission/encrypt-submission.service',
 )
 const MockEncryptSubmissionService = mocked(EncryptSubmissionService)
-jest.mock('src/modules/submission/email-submission/email-submission.service')
+jest.mock('@root/modules/submission/email-submission/email-submission.service')
 const MockEmailSubmissionService = mocked(EmailSubmissionService)
 jest.mock('utils/encryption')
 const MockEncryptionUtils = mocked(EncryptionUtils)

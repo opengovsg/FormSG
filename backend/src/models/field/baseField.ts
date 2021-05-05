@@ -8,7 +8,7 @@ import {
   ITableFieldSchema,
   MyInfoAttribute,
   ResponseMode,
-} from 'src/types'
+} from '@root/types'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)
 

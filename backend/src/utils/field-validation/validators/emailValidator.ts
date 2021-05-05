@@ -2,9 +2,9 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isEmail from 'validator/lib/isEmail'
 
-import { ProcessedSingleAnswerResponse } from 'src/modules/submission/submission.types'
-import { IEmailFieldSchema } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '@root/modules/submission/submission.types'
+import { IEmailFieldSchema } from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 import { makeSignatureValidator, notEmptySingleAnswerResponse } from './common'
 

@@ -1,13 +1,13 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedSingleAnswerResponse } from 'src/modules/submission/submission.types'
+import { ProcessedSingleAnswerResponse } from '@modules/submission/submission.types'
 import {
   ILongTextField,
   IShortTextField,
   TextSelectedValidation,
-} from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+} from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 import { notEmptySingleAnswerResponse } from './common'
 

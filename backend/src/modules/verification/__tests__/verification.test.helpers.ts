@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson'
 import { merge } from 'lodash'
 
-import { IVerificationField } from 'src/types'
+import { IVerificationField } from '@root/types'
 
 export const MOCK_SIGNED_DATA = 'mockSignedData'
 export const MOCK_HASHED_OTP = 'mockHashedOtp'

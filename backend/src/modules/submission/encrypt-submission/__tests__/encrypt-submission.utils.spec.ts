@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson-ext'
 import moment from 'moment-timezone'
 
-import { SubmissionData } from 'src/types'
+import { SubmissionData } from '@root/types'
 
 import { createEncryptedSubmissionDto } from '../encrypt-submission.utils'
 

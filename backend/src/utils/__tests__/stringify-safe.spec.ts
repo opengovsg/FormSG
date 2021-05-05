@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash'
 
-import { stringifySafe } from 'src/shared/util/stringify-safe'
+import { stringifySafe } from '@root/shared/util/stringify-safe'
 
 // Tests that the stringifySafe function works as expected, i.e. correctly
 // deals with circular references and BigInt.

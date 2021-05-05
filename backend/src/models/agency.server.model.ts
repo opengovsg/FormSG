@@ -1,7 +1,7 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import { IAgencyModel, IAgencySchema, PublicAgency } from 'src/types'
+import { IAgencyModel, IAgencySchema, PublicAgency } from '@root/types'
 
 export const AGENCY_SCHEMA_ID = 'Agency'
 

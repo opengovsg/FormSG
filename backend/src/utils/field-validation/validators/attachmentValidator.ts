@@ -1,9 +1,9 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedAttachmentResponse } from 'src/modules/submission/submission.types'
-import { IAttachmentField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ProcessedAttachmentResponse } from '@root/modules/submission/submission.types'
+import { IAttachmentField } from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 const MILLION = 1000000
 

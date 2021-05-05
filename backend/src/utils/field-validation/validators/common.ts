@@ -1,8 +1,8 @@
 import { left, right } from 'fp-ts/lib/Either'
 
-import { ProcessedSingleAnswerResponse } from 'src/modules/submission/submission.types'
-import { IEmailFieldSchema, IMobileFieldSchema } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '@root/modules/submission/submission.types'
+import { IEmailFieldSchema, IMobileFieldSchema } from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 import formsgSdk from '../../../config/formsg-sdk'
 

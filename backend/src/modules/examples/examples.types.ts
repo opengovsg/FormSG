@@ -6,7 +6,7 @@ import {
   IFormStatisticsTotalModel,
   ISubmissionModel,
   StartPage,
-} from 'src/types'
+} from '@root/types'
 
 export enum RetrievalType {
   Stats = 'statistics',

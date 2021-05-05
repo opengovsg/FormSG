@@ -2,7 +2,7 @@ import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import { AuthType, Status } from 'src/types'
+import { AuthType, Status } from '@root/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'

@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import { Mongoose, Schema } from 'mongoose'
 
-import { IHashes, IMyInfoHashModel, IMyInfoHashSchema } from 'src/types'
+import { IHashes, IMyInfoHashModel, IMyInfoHashSchema } from '@root/types'
 import { sessionSecret } from '../../config/config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 

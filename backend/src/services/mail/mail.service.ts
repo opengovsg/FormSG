@@ -11,7 +11,7 @@ import {
   EmailAdminDataField,
   IEmailFormSchema,
   ISubmissionSchema,
-} from 'src/types'
+} from '@root/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 

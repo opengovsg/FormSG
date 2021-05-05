@@ -1,7 +1,7 @@
-import { ValidateFieldError } from 'src/modules/submission/submission.errors'
+import { ValidateFieldError } from '@root/modules/submission/submission.errors'
 import { validateField } from 'utils/field-validation'
-import { BasicField } from 'src/types'
-import { RatingShape } from 'src/types/field/ratingField'
+import { BasicField } from '@root/types'
+import { RatingShape } from '@root/types/field/ratingField'
 
 import {
   generateDefaultField,

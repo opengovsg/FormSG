@@ -12,7 +12,7 @@ jest.mock('config/config')
 const MockConfig = mocked(config, true)
 
 // eslint-disable-next-line import/first
-import getMyInfoHashModel from 'src/modules/myinfo/myinfo_hash.model'
+import getMyInfoHashModel from '@root/modules/myinfo/myinfo_hash.model'
 
 const MyInfoHash = getMyInfoHashModel(mongoose)
 

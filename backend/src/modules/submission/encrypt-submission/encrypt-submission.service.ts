@@ -14,7 +14,7 @@ import {
   SubmissionData,
   SubmissionMetadata,
   SubmissionMetadataList,
-} from 'src/types'
+} from '@root/types'
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'

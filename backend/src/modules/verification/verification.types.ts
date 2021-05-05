@@ -1,4 +1,4 @@
-import { IVerificationSchema } from 'src/types'
+import { IVerificationSchema } from '@root/types'
 
 export type Transaction =
   | {

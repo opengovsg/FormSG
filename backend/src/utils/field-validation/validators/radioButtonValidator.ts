@@ -1,9 +1,9 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedSingleAnswerResponse } from 'src/modules/submission/submission.types'
-import { IRadioField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '@root/modules/submission/submission.types'
+import { IRadioField } from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 import { notEmptySingleAnswerResponse } from './common'
 import { isOneOfOptions, isOtherOption } from './options'

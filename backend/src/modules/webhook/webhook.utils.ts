@@ -1,7 +1,7 @@
 import { AxiosResponse } from 'axios'
 
 import { stringifySafe } from '../../../../shared/util/stringify-safe'
-import { IWebhookResponse } from 'src/types'
+import { IWebhookResponse } from '@root/types'
 
 /**
  * Formats a response object for update in the Submissions collection

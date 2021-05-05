@@ -7,7 +7,7 @@ import {
   IFormSchema,
   IPopulatedForm,
   ISubmissionSchema,
-} from 'src/types'
+} from '@root/types'
 
 export type SendMailOptions = {
   mailId?: string

@@ -3,9 +3,9 @@ import { flow } from 'fp-ts/lib/function'
 import isFloat from 'validator/lib/isFloat'
 import isInt from 'validator/lib/isInt'
 
-import { ProcessedSingleAnswerResponse } from 'src/modules/submission/submission.types'
-import { IDecimalField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '@root/modules/submission/submission.types'
+import { IDecimalField } from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 import { notEmptySingleAnswerResponse } from './common'
 

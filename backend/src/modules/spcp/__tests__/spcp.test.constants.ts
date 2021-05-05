@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import _ from 'lodash'
 
 import { ISpcpMyInfo } from 'config/feature-manager'
-import { ILoginSchema, IPopulatedForm } from 'src/types'
+import { ILoginSchema, IPopulatedForm } from '@root/types'
 
 import { JwtName } from '../spcp.types'
 

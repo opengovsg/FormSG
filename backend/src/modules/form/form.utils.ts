@@ -7,8 +7,8 @@ import {
   IPopulatedForm,
   Permission,
   ResponseMode,
-} from 'src/types'
-import { isMongooseDocumentArray } from 'src/utils/mongoose'
+} from '@root/types'
+import { isMongooseDocumentArray } from '@root/utils/mongoose'
 
 // Converts 'test@hotmail.com, test@gmail.com' to ['test@hotmail.com', 'test@gmail.com']
 export const transformEmailString = (v: string): string[] => {

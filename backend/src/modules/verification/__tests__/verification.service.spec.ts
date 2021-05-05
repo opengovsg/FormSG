@@ -5,7 +5,7 @@ import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import formsgSdk from 'config/formsg-sdk'
-import * as FormService from 'src/modules/form/form.service'
+import * as FormService from '@root/modules/form/form.service'
 import { MailSendError } from 'services/mail/mail.errors'
 import MailService from 'services/mail/mail.service'
 import { SmsSendError } from 'services/sms/sms.errors'
@@ -17,7 +17,7 @@ import {
   IVerificationSchema,
   PublicTransaction,
   UpdateFieldData,
-} from 'src/types'
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -53,7 +53,7 @@ jest.mock('services/sms/sms.factory')
 const MockSmsFactory = mocked(SmsFactory, true)
 jest.mock('services/mail/mail.service')
 const MockMailService = mocked(MailService, true)
-jest.mock('src/modules/form/form.service')
+jest.mock('@root/modules/form/form.service')
 const MockFormService = mocked(FormService, true)
 jest.mock('utils/hash')
 const MockHashUtils = mocked(HashUtils, true)

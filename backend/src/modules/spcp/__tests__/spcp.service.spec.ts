@@ -5,8 +5,8 @@ import { omit } from 'lodash'
 import { mocked } from 'ts-jest/utils'
 
 import { ISpcpMyInfo } from 'config/feature-manager'
-import { MOCK_COOKIE_AGE } from 'src/modules/myinfo/__tests__/myinfo.test.constants'
-import { AuthType } from 'src/types'
+import { MOCK_COOKIE_AGE } from '@root/modules/myinfo/__tests__/myinfo.test.constants'
+import { AuthType } from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

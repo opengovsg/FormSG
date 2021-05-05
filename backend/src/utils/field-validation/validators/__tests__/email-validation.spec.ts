@@ -1,10 +1,10 @@
 import formsgSdk from 'config/formsg-sdk'
-import { ValidateFieldError } from 'src/modules/submission/submission.errors'
-import { ProcessedFieldResponse } from 'src/modules/submission/submission.types'
+import { ValidateFieldError } from '@root/modules/submission/submission.errors'
+import { ProcessedFieldResponse } from '@root/modules/submission/submission.types'
 import { validateField } from 'utils/field-validation'
-import { IFieldSchema } from 'src/types'
-import { BasicField } from 'src/types/field/fieldTypes'
-import { ISingleAnswerResponse } from 'src/types/response'
+import { IFieldSchema } from '@root/types'
+import { BasicField } from '@root/types/field/fieldTypes'
+import { ISingleAnswerResponse } from '@root/types/response'
 
 type VerificationMock = {
   authenticate: () => boolean

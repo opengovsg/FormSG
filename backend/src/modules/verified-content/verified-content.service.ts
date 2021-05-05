@@ -1,6 +1,6 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 

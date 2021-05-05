@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 
 import * as SpcpController from './spcp.controller'
 import {

@@ -2,9 +2,9 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
-import { ProcessedSingleAnswerResponse } from 'src/modules/submission/submission.types'
-import { IDateField } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '@root/modules/submission/submission.types'
+import { IDateField } from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 import { DateSelectedValidation } from '../../../../../shared/constants'
 

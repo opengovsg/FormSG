@@ -1,7 +1,7 @@
 import { get } from 'lodash'
 
 import { types as basicTypes } from '../../../../shared/resources/basic'
-import { BasicField, IEmailFieldSchema, ITableRow } from 'src/types'
+import { BasicField, IEmailFieldSchema, ITableRow } from '@root/types'
 import {
   ColumnResponse,
   ProcessedAttachmentResponse,

@@ -1,4 +1,4 @@
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 
 import { ApplicationError } from '../core/core.errors'
 

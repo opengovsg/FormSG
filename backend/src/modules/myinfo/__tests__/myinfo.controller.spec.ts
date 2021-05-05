@@ -2,7 +2,12 @@ import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { AuthType, IFormSchema, ILoginSchema, IPopulatedForm } from 'src/types'
+import {
+  AuthType,
+  IFormSchema,
+  ILoginSchema,
+  IPopulatedForm,
+} from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 

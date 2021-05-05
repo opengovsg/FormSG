@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { IMobileFieldSchema } from 'src/types'
+import { IMobileFieldSchema } from '@root/types'
 
 import { MyInfoSchema } from './baseField'
 

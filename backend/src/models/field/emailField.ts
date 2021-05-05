@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose'
 
 import { validateEmailDomains } from '../../../../shared/util/email-domain-validation'
-import { IEmailFieldSchema, ResponseMode } from 'src/types'
+import { IEmailFieldSchema, ResponseMode } from '@root/types'
 
 const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
   const EmailFieldSchema = new Schema<IEmailFieldSchema>({

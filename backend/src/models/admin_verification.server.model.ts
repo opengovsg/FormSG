@@ -5,7 +5,7 @@ import {
   IAdminVerificationSchema,
   UpsertOtpParams,
   IUserSchema,
-} from 'src/types'
+} from '@root/types'
 
 import { USER_SCHEMA_ID } from './user.server.model'
 

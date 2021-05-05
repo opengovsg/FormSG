@@ -1,7 +1,7 @@
 import { mocked } from 'ts-jest/utils'
 
 import { FeatureNames } from 'config/feature-manager'
-import { MissingFeatureError } from 'src/modules/core/core.errors'
+import { MissingFeatureError } from '@root/modules/core/core.errors'
 
 import { createVerificationFactory } from '../verification.factory'
 import * as VerificationService from '../verification.service'

@@ -2,7 +2,7 @@ import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
-import { IAttachmentInfo } from 'src/types'
+import { IAttachmentInfo } from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MB } from '../../../constants/filesize'
 

@@ -3,7 +3,7 @@ import { ObjectId } from 'bson-ext'
 import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
-} from 'src/shared/util/logic'
+} from '@root/shared/util/logic'
 import {
   BasicField,
   FieldResponse,
@@ -16,7 +16,7 @@ import {
   LogicConditionState,
   LogicIfValue,
   LogicType,
-} from 'src/types'
+} from '@root/types'
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */

@@ -5,8 +5,8 @@ import { PartialDeep } from 'type-fest'
 
 import getFormModel from 'models/form.server.model'
 import getFormFeedbackModel from 'models/form_feedback.server.model'
-import { DatabaseError } from 'src/modules/core/core.errors'
-import { IFormSchema } from 'src/types'
+import { DatabaseError } from '@root/modules/core/core.errors'
+import { IFormSchema } from '@root/types'
 
 import { FormNotFoundError } from '../../form.errors'
 import * as PublicFormService from '../public-form.service'

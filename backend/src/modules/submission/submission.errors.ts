@@ -1,4 +1,4 @@
-import { ResponseMode } from 'src/types'
+import { ResponseMode } from '@root/types'
 import { ApplicationError } from '../core/core.errors'
 
 /**

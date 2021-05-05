@@ -19,7 +19,7 @@ import {
   SubmissionType,
   WebhookData,
   WebhookView,
-} from 'src/types'
+} from '@root/types'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'

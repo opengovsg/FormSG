@@ -11,14 +11,17 @@ import getFormFeedbackModel from 'models/form_feedback.server.model'
 import {
   DatabaseError,
   MissingFeatureError,
-} from 'src/modules/core/core.errors'
-import { MyInfoData } from 'src/modules/myinfo/myinfo.adapter'
+} from '@root/modules/core/core.errors'
+import { MyInfoData } from '@root/modules/myinfo/myinfo.adapter'
 import {
   MyInfoCookieAccessError,
   MyInfoMissingAccessTokenError,
-} from 'src/modules/myinfo/myinfo.errors'
-import { MyInfoCookieState, MyInfoForm } from 'src/modules/myinfo/myinfo.types'
-import { JwtPayload, SpcpForm } from 'src/modules/spcp/spcp.types'
+} from '@root/modules/myinfo/myinfo.errors'
+import {
+  MyInfoCookieState,
+  MyInfoForm,
+} from '@root/modules/myinfo/myinfo.types'
+import { JwtPayload, SpcpForm } from '@root/modules/spcp/spcp.types'
 import {
   AuthType,
   IFormSchema,
@@ -26,7 +29,7 @@ import {
   IPopulatedUser,
   MyInfoAttribute,
   PublicForm,
-} from 'src/types'
+} from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 

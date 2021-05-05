@@ -2,8 +2,8 @@ import { promises as dns } from 'dns'
 import { mocked } from 'ts-jest/utils'
 
 import config from 'config/config'
-import { WebhookValidationError } from 'src/modules/webhook/webhook.errors'
-import { validateWebhookUrl } from 'src/modules/webhook/webhook.validation'
+import { WebhookValidationError } from '@root/modules/webhook/webhook.errors'
+import { validateWebhookUrl } from '@root/modules/webhook/webhook.validation'
 
 jest.mock('dns', () => ({
   promises: {

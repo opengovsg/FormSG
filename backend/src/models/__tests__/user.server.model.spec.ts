@@ -2,7 +2,7 @@ import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 
 import getUserModel from 'models/user.server.model'
-import { IAgencySchema, IUser, IUserSchema } from 'src/types'
+import { IAgencySchema, IUser, IUserSchema } from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

@@ -6,11 +6,11 @@ import { errAsync, okAsync } from 'neverthrow'
 
 import getAdminVerificationModel from 'models/admin_verification.server.model'
 import getUserModel from 'models/user.server.model'
-import { InvalidDomainError } from 'src/modules/auth/auth.errors'
-import * as UserService from 'src/modules/user/user.service'
+import { InvalidDomainError } from '@root/modules/auth/auth.errors'
+import * as UserService from '@root/modules/user/user.service'
 import * as HashUtils from 'utils/hash'
 import * as OtpUtils from 'utils/otp'
-import { IAgencySchema, IPopulatedUser, IUserSchema } from 'src/types'
+import { IAgencySchema, IPopulatedUser, IUserSchema } from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

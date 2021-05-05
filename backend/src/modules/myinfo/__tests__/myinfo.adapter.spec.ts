@@ -5,7 +5,7 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import { SetRequired } from 'type-fest'
 
-import { MyInfoAttribute } from 'src/types'
+import { MyInfoAttribute } from '@root/types'
 
 import { MyInfoData } from '../myinfo.adapter'
 

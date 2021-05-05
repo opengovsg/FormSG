@@ -16,7 +16,7 @@ import {
   IAttachmentResponse,
   MapRouteError,
   SPCPFieldTitle,
-} from 'src/types'
+} from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CaptchaConnectionError,
@@ -30,7 +30,7 @@ import {
 import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
-} from 'src/utils/field-validation/field-validation.guards'
+} from '@root/utils/field-validation/field-validation.guards'
 import {
   DatabaseConflictError,
   DatabaseError,

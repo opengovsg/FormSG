@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { UserContactView } from 'src/types'
+import { UserContactView } from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as SmsErrors from '../../services/sms/sms.errors'
 import { HashingError } from '../../utils/hash'

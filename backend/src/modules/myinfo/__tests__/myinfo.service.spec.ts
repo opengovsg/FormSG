@@ -4,16 +4,16 @@ import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
-import { MyInfoService } from 'src/modules/myinfo/myinfo.service'
-import getMyInfoHashModel from 'src/modules/myinfo/myinfo_hash.model'
-import { ProcessedFieldResponse } from 'src/modules/submission/submission.types'
+import { MyInfoService } from '@root/modules/myinfo/myinfo.service'
+import getMyInfoHashModel from '@root/modules/myinfo/myinfo_hash.model'
+import { ProcessedFieldResponse } from '@root/modules/submission/submission.types'
 import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
   MyInfoAttribute,
-} from 'src/types'
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

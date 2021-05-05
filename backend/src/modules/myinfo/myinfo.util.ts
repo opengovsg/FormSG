@@ -13,9 +13,9 @@ import {
   IHashes,
   IMyInfo,
   MapRouteError,
-} from 'src/types'
+} from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { hasProp } from 'src/utils/has-prop'
+import { hasProp } from '@root/utils/has-prop'
 import { DatabaseError, MissingFeatureError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,

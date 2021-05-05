@@ -1,4 +1,4 @@
-import { IPopulatedEncryptedForm } from 'src/types'
+import { IPopulatedEncryptedForm } from '@root/types'
 import { EncryptedAttachmentsDto } from '../../../../../shared/types/api'
 import { ProcessedFieldResponse } from '../submission.types'
 

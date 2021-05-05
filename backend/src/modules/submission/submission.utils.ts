@@ -15,8 +15,8 @@ import {
   LogicConditionState,
   LogicType,
   IShowFieldsLogicSchema,
-} from 'src/types'
-import { isEmailField } from 'src/types/field/utils/guards'
+} from '@root/types'
+import { isEmailField } from '@root/types/field/utils/guards'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { ProcessedFieldResponse } from './submission.types'

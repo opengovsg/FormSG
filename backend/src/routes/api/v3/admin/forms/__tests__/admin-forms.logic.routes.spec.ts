@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'models/user.server.model'
-import { ILogicSchema, LogicType } from 'src/types'
+import { ILogicSchema, LogicType } from '@root/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'

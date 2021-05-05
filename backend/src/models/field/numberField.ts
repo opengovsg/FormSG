@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { INumberFieldSchema, NumberSelectedValidation } from 'src/types'
+import { INumberFieldSchema, NumberSelectedValidation } from '@root/types'
 
 import { MyInfoSchema } from './baseField'
 

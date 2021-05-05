@@ -19,7 +19,7 @@ import {
   LogicDto,
   LogicType,
   ResponseMode,
-} from 'src/types'
+} from '@root/types'
 import {
   EncryptSubmissionDto,
   EndPageUpdateDto,

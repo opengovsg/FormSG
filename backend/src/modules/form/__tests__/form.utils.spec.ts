@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson-ext'
 import { Types } from 'mongoose'
 
-import { BasicField, IFieldSchema, Permission } from 'src/types'
+import { BasicField, IFieldSchema, Permission } from '@root/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 

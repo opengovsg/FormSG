@@ -6,7 +6,7 @@ import validator from 'validator'
 import MailService from 'services/mail/mail.service'
 import { HashingError } from 'utils/hash'
 import * as OtpUtils from 'utils/otp'
-import { IAgencySchema } from 'src/types'
+import { IAgencySchema } from '@root/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'

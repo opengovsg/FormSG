@@ -1,6 +1,6 @@
 import { Mongoose, Schema } from 'mongoose'
 
-import { IToken, ITokenModel, ITokenSchema } from 'src/types'
+import { IToken, ITokenModel, ITokenSchema } from '@root/types'
 
 export const TOKEN_SCHEMA_ID = 'Token'
 

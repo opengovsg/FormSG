@@ -1,5 +1,5 @@
-import { IField } from "src/types"
-import { ILogic } from "./logic"
+import { IField } from './field'
+import { ILogic } from './logic'
 
 export interface IForm {
   title: string

@@ -8,9 +8,9 @@ import { mocked } from 'ts-jest/utils'
 import {
   DatabaseError,
   MissingFeatureError,
-} from 'src/modules/core/core.errors'
-import { getRedirectTarget } from 'src/modules/spcp/spcp.util'
-import { AuthType, Status } from 'src/types'
+} from '@root/modules/core/core.errors'
+import { getRedirectTarget } from '@root/modules/spcp/spcp.util'
+import { AuthType, Status } from '@root/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'

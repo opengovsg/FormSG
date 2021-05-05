@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-import { Status } from 'src/types'
+import { Status } from '@root/types'
 
 /**
  * Precondition: Must be called as the **first** step in the aggregation

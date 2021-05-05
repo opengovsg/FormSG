@@ -5,7 +5,7 @@ import {
   IAttachmentFieldSchema,
   ICheckboxFieldSchema,
   IField,
-} from 'src/types'
+} from '@root/types'
 
 import {
   generateAttachmentResponse,

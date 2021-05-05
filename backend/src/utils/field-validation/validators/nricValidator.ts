@@ -1,8 +1,8 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ProcessedSingleAnswerResponse } from 'src/modules/submission/submission.types'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { ProcessedSingleAnswerResponse } from '@root/modules/submission/submission.types'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 
 import { isNricValid } from '../../../../../shared/util/nric-validation'
 

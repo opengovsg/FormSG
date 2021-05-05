@@ -1,6 +1,6 @@
 import { Mongoose, Schema } from 'mongoose'
 
-import { IFormFeedbackModel, IFormFeedbackSchema } from 'src/types'
+import { IFormFeedbackModel, IFormFeedbackSchema } from '@root/types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 

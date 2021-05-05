@@ -12,7 +12,7 @@ import {
   IPopulatedForm,
   ResponseMode,
   SubmissionType,
-} from 'src/types'
+} from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import { DatabaseError } from '../../core/core.errors'

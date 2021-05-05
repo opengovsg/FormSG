@@ -7,12 +7,12 @@ import getSubmissionModel from 'models/submission.server.model'
 import {
   DatabaseError,
   MalformedParametersError,
-} from 'src/modules/core/core.errors'
-import * as SubmissionService from 'src/modules/submission/submission.service'
-import { ProcessedFieldResponse } from 'src/modules/submission/submission.types'
+} from '@root/modules/core/core.errors'
+import * as SubmissionService from '@root/modules/submission/submission.service'
+import { ProcessedFieldResponse } from '@root/modules/submission/submission.types'
 import MailService from 'services/mail/mail.service'
 import { createQueryWithDateParam } from 'utils/date'
-import * as LogicUtil from 'src/shared/util/logic'
+import * as LogicUtil from '@root/shared/util/logic'
 import {
   AutoReplyOptions,
   BasicField,
@@ -27,7 +27,7 @@ import {
   LogicType,
   ResponseMode,
   SubmissionType,
-} from 'src/types'
+} from '@root/types'
 
 import {
   generateDefaultField,

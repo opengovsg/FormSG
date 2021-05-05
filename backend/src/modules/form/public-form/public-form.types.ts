@@ -1,8 +1,8 @@
 import { ParamsDictionary } from 'express-serve-static-core'
 
-import { IFieldSchema, PublicForm } from 'src/types'
+import { IFieldSchema, PublicForm } from '@root/types'
 
-import { SpcpSession } from 'src/types/spcp'
+import { SpcpSession } from '@root/types/spcp'
 import { IPossiblyPrefilledField } from '../../myinfo/myinfo.types'
 
 export type Metatags = {

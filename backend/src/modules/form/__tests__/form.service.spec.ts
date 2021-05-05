@@ -11,7 +11,7 @@ import {
   ResponseMode,
   Status,
   SubmissionType,
-} from 'src/types'
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

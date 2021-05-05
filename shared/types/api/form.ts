@@ -1,5 +1,5 @@
 import { SetRequired, Merge } from 'type-fest'
-import { FormField } from 'src/types'
+import { FormField } from '../form'
 
 // import { FormField, FormFieldSchema, FormFieldWithId } from '../field'
 // import { EndPage, FormSettings } from '../form'

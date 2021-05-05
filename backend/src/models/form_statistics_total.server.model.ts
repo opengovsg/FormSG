@@ -4,7 +4,7 @@ import {
   AggregateFormCountResult,
   IFormStatisticsTotalModel,
   IFormStatisticsTotalSchema,
-} from 'src/types'
+} from '@root/types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 

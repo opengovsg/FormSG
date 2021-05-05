@@ -2,7 +2,7 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { IPopulatedUser } from 'src/types'
+import { IPopulatedUser } from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { getRequestIp } from '../../utils/request'

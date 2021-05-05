@@ -17,11 +17,11 @@ import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'models/submission.server.model'
 import getUserModel from 'models/user.server.model'
-import * as AuthService from 'src/modules/auth/auth.service'
+import * as AuthService from '@root/modules/auth/auth.service'
 import {
   DatabaseError,
   DatabasePayloadSizeError,
-} from 'src/modules/core/core.errors'
+} from '@root/modules/core/core.errors'
 import {
   MOCK_ATTACHMENT_FIELD,
   MOCK_ATTACHMENT_RESPONSE,
@@ -33,10 +33,13 @@ import {
   MOCK_SECTION_RESPONSE,
   MOCK_TEXT_FIELD,
   MOCK_TEXTFIELD_RESPONSE,
-} from 'src/modules/submission/email-submission/__tests__/email-submission.test.constants'
-import { saveSubmissionMetadata } from 'src/modules/submission/email-submission/email-submission.service'
-import { SubmissionHash } from 'src/modules/submission/email-submission/email-submission.types'
-import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
+} from '@root/modules/submission/email-submission/__tests__/email-submission.test.constants'
+import { saveSubmissionMetadata } from '@root/modules/submission/email-submission/email-submission.service'
+import { SubmissionHash } from '@root/modules/submission/email-submission/email-submission.types'
+import {
+  EditFieldActions,
+  VALID_UPLOAD_FILE_TYPES,
+} from '@root/shared/constants'
 import {
   BasicField,
   IFieldSchema,
@@ -49,8 +52,8 @@ import {
   Status,
   SubmissionCursorData,
   SubmissionType,
-} from 'src/types'
-import { EncryptSubmissionDto } from 'src/types/api'
+} from '@root/types'
+import { EncryptSubmissionDto } from '@root/types/api'
 
 import {
   createAuthedSession,

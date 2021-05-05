@@ -5,7 +5,7 @@ import {
   IAttachmentField,
   IFormSchema,
   ResponseMode,
-} from 'src/types'
+} from '@root/types'
 
 // Manual override since mongoose types don't have generics yet.
 interface IAttachmentFieldSchema extends IAttachmentField, Document {

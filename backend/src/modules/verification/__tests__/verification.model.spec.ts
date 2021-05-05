@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import { BasicField, UpdateFieldData } from 'src/types'
+import { BasicField, UpdateFieldData } from '@root/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'

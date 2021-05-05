@@ -2,9 +2,14 @@ import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'models/form.server.model'
-import { MalformedParametersError } from 'src/modules/core/core.errors'
-import { VfnErrors } from 'src/shared/util/verification'
-import { FormOtpData, IFormSchema, IUserSchema, ResponseMode } from 'src/types'
+import { MalformedParametersError } from '@root/modules/core/core.errors'
+import { VfnErrors } from '@root/shared/util/verification'
+import {
+  FormOtpData,
+  IFormSchema,
+  IUserSchema,
+  ResponseMode,
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

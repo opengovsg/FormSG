@@ -11,7 +11,7 @@ import {
   IPopulatedForm,
   ISubmissionSchema,
   ResponseMode,
-} from 'src/types'
+} from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'

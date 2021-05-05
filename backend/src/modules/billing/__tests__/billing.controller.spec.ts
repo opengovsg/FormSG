@@ -3,7 +3,7 @@ import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import { AuthType, LoginStatistic } from 'src/types'
+import { AuthType, LoginStatistic } from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 

@@ -1,8 +1,8 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { BasicField, ITableFieldSchema } from 'src/types/field'
-import { ResponseValidator } from 'src/types/field/utils/validation'
+import { BasicField, ITableFieldSchema } from '@root/types/field'
+import { ResponseValidator } from '@root/types/field/utils/validation'
 import {
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,

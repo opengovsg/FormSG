@@ -1,4 +1,4 @@
-import * as HomeController from 'src/modules/home/home.controller'
+import * as HomeController from '@root/modules/home/home.controller'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 

@@ -4,7 +4,7 @@ import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import getTokenModel from 'models/token.server.model'
-import { IAgencySchema, IPopulatedForm, IPopulatedUser } from 'src/types'
+import { IAgencySchema, IPopulatedForm, IPopulatedUser } from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

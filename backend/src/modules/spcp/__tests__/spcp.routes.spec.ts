@@ -6,7 +6,7 @@ import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
 import getLoginModel from 'models/login.server.model'
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'

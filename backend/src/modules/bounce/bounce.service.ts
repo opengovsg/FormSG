@@ -16,7 +16,7 @@ import {
   IEmailNotification,
   IPopulatedForm,
   ISnsNotification,
-} from 'src/types'
+} from '@root/types'
 import {
   createCloudWatchLogger,
   createLoggerWithLabel,

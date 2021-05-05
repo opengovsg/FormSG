@@ -1,3 +1,5 @@
+require('module-alias/register')
+
 import config from './config/config'
 import { createLoggerWithLabel } from './config/logger'
 import loadApp from './loaders'

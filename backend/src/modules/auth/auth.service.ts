@@ -8,7 +8,7 @@ import {
   IPopulatedForm,
   ITokenSchema,
   IUserSchema,
-} from 'src/types'
+} from '@root/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getAgencyModel from '../../models/agency.server.model'

@@ -8,7 +8,7 @@ import {
   IEmailNotification,
   ISingleBounce,
   UserContactView,
-} from 'src/types'
+} from '@root/types'
 import { bounceLifeSpan } from '../../config/config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 

@@ -6,7 +6,7 @@ import supertest, { Session } from 'supertest-session'
 import { getEncryptedFormModel } from 'models/form.server.model'
 import getFormFeedbackModel from 'models/form_feedback.server.model'
 import getUserModel from 'models/user.server.model'
-import { IFormDocument, IUserSchema, ResponseMode, Status } from 'src/types'
+import { IFormDocument, IUserSchema, ResponseMode, Status } from '@root/types'
 
 import {
   createAuthedSession,

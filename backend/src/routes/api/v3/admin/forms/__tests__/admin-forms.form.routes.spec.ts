@@ -12,8 +12,8 @@ import getUserModel from 'models/user.server.model'
 import {
   DatabaseError,
   DatabasePayloadSizeError,
-} from 'src/modules/core/core.errors'
-import { IUserSchema, ResponseMode, Status } from 'src/types'
+} from '@root/modules/core/core.errors'
+import { IUserSchema, ResponseMode, Status } from '@root/types'
 
 import {
   createAuthedSession,

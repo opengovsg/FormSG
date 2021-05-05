@@ -12,7 +12,7 @@ import {
   ILoginSchema,
   IPopulatedForm,
   LoginStatistic,
-} from 'src/types'
+} from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getLoginModel from '../../models/login.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'

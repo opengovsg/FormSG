@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { IShortTextFieldSchema, TextSelectedValidation } from 'src/types'
+import { IShortTextFieldSchema, TextSelectedValidation } from '@root/types'
 
 import { MyInfoSchema } from './baseField'
 

@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { MapRouteError } from 'src/types'
+import { MapRouteError } from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { MissingFeatureError } from '../../modules/core/core.errors'
 

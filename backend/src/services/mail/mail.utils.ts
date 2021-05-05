@@ -5,7 +5,7 @@ import { ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
 import validator from 'validator'
 
-import { BounceType } from 'src/types'
+import { BounceType } from '@root/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 

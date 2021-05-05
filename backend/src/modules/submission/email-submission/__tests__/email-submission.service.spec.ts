@@ -5,7 +5,7 @@ import { omit } from 'lodash'
 import mongoose from 'mongoose'
 
 import { getEmailSubmissionModel } from 'models/submission.server.model'
-import { DatabaseError } from 'src/modules/core/core.errors'
+import { DatabaseError } from '@root/modules/core/core.errors'
 import {
   AuthType,
   BasicField,
@@ -13,7 +13,7 @@ import {
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
   SubmissionType,
-} from 'src/types'
+} from '@root/types'
 
 import { generateSingleAnswerFormData } from 'tests/unit/backend/helpers/generate-email-data'
 import {

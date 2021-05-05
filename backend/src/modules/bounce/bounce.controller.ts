@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
-import { ISnsNotification } from 'src/types'
+import { ISnsNotification } from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { EmailType } from '../../services/mail/mail.constants'
 import { DatabaseConflictError } from '../core/core.errors'

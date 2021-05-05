@@ -2,7 +2,7 @@ import { mocked } from 'ts-jest/utils'
 
 import config from 'config/config'
 import { ISpcpMyInfo } from 'config/feature-manager'
-import { Environment, IPopulatedForm } from 'src/types'
+import { Environment, IPopulatedForm } from '@root/types'
 
 import { MyInfoData } from '../myinfo.adapter'
 import { createMyInfoFactory } from '../myinfo.factory'

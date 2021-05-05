@@ -7,7 +7,7 @@ import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
   IWebhookResponse,
-} from 'src/types'
+} from '@root/types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'

@@ -21,7 +21,7 @@ import {
   IPopulatedForm,
   IUserSchema,
   LogicDto,
-} from 'src/types'
+} from '@root/types'
 import {
   EndPageUpdateDto,
   FieldCreateDto,

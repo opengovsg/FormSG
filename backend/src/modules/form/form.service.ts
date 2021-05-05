@@ -9,7 +9,7 @@ import {
   IPopulatedForm,
   ResponseMode,
   Status,
-} from 'src/types'
+} from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel, {
   getEmailFormModel,

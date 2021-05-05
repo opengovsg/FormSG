@@ -6,7 +6,7 @@ import {
   ILoginSchema,
   IPopulatedForm,
   LoginStatistic,
-} from 'src/types'
+} from '@root/types'
 
 import { AGENCY_SCHEMA_ID } from './agency.server.model'
 import { FORM_SCHEMA_ID } from './form.server.model'

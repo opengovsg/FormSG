@@ -8,10 +8,10 @@ import { mocked } from 'ts-jest/utils'
 import {
   MOCK_COOKIE_AGE,
   MOCK_UINFIN,
-} from 'src/modules/myinfo/__tests__/myinfo.test.constants'
-import { MyInfoCookieState } from 'src/modules/myinfo/myinfo.types'
-import getMyInfoHashModel from 'src/modules/myinfo/myinfo_hash.model'
-import { AuthType, IFieldSchema, Status } from 'src/types'
+} from '@root/modules/myinfo/__tests__/myinfo.test.constants'
+import { MyInfoCookieState } from '@root/modules/myinfo/myinfo.types'
+import getMyInfoHashModel from '@root/modules/myinfo/myinfo_hash.model'
+import { AuthType, IFieldSchema, Status } from '@root/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'

@@ -5,7 +5,7 @@ import NodeCache from 'node-cache'
 import Twilio from 'twilio'
 
 import { isPhoneNumber } from '../../../../shared/util/phone-num-validation'
-import { AdminContactOtpData, FormOtpData } from 'src/types'
+import { AdminContactOtpData, FormOtpData } from '@root/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
@@ -13,7 +13,7 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from '../../modules/core/core.errors'
-import { getMongoErrorMessage } from 'src/utils/handle-mongo-error'
+import { getMongoErrorMessage } from '@root/utils/handle-mongo-error'
 
 import { InvalidNumberError, SmsSendError } from './sms.errors'
 import {

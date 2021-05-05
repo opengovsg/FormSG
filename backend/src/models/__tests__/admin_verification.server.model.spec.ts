@@ -2,7 +2,10 @@ import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
 import getAdminVerificationModel from 'models/admin_verification.server.model'
-import { IAdminVerification, UpsertOtpParams } from 'src/types/admin_verification'
+import {
+  IAdminVerification,
+  UpsertOtpParams,
+} from '@root/types/admin_verification'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

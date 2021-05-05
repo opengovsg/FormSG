@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { ApplicationError } from 'src/modules/core/core.errors'
+import { ApplicationError } from '@root/modules/core/core.errors'
 
 type ErrorResponseData = {
   statusCode: StatusCodes

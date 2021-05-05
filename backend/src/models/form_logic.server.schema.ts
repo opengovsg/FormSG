@@ -8,7 +8,7 @@ import {
   LogicConditionState,
   LogicIfValue,
   LogicType,
-} from 'src/types'
+} from '@root/types'
 
 const LogicConditionSchema = new Schema<IConditionSchema>({
   _id: String,

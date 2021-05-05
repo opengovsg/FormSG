@@ -5,7 +5,7 @@ import supertest, { Session } from 'supertest-session'
 
 import getFormModel from 'models/form.server.model'
 import getLoginModel from 'models/login.server.model'
-import { AuthType, IUserSchema, ResponseMode } from 'src/types'
+import { AuthType, IUserSchema, ResponseMode } from '@root/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'

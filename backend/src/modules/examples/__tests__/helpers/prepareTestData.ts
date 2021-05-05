@@ -13,7 +13,7 @@ import {
   ResponseMode,
   Status,
   SubmissionType,
-} from 'src/types'
+} from '@root/types'
 
 import { FormInfo } from '../../examples.types'
 

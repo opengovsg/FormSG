@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
 
-import { BasicField, IColumnSchema, ITableFieldSchema } from 'src/types'
+import { BasicField, IColumnSchema, ITableFieldSchema } from '@root/types'
 
 const createColumnSchema = () => {
   const ColumnSchema = new Schema<IColumnSchema>(

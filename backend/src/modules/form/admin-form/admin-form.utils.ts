@@ -6,9 +6,9 @@ import {
   reorder,
   replaceAt,
 } from '../../../../../shared/util/immutable-array-fns'
-import { IFieldSchema, IPopulatedForm, ResponseMode, Status } from 'src/types'
+import { IFieldSchema, IPopulatedForm, ResponseMode, Status } from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { isPossibleEmailFieldSchema } from 'src/utils/field-validation/field-validation.guards'
+import { isPossibleEmailFieldSchema } from '@root/utils/field-validation/field-validation.guards'
 import {
   ApplicationError,
   DatabaseConflictError,

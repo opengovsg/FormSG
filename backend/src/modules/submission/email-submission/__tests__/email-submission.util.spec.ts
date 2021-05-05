@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
-import { types as basicTypes } from 'src/shared/resources/basic'
+import { types as basicTypes } from '@root/shared/resources/basic'
 import {
   AuthType,
   BasicField,
@@ -11,7 +11,7 @@ import {
   ISingleAnswerResponse,
   MyInfoAttribute,
   SPCPFieldTitle,
-} from 'src/types'
+} from '@root/types'
 
 import {
   generateSingleAnswerAutoreply,

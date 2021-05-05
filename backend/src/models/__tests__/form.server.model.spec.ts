@@ -21,7 +21,7 @@ import {
   Permission,
   ResponseMode,
   Status,
-} from 'src/types'
+} from '@root/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'

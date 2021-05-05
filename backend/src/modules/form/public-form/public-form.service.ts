@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { IFormFeedbackSchema } from 'src/types'
+import { IFormFeedbackSchema } from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import getFormFeedbackModel from '../../../models/form_feedback.server.model'

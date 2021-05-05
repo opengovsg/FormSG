@@ -10,7 +10,7 @@ import {
   IDeliveryNotification,
   IEmailNotification,
   ISnsNotification,
-} from 'src/types'
+} from '@root/types'
 
 export const MOCK_SNS_BODY: ISnsNotification = {
   Type: 'type',

@@ -16,11 +16,14 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
-} from 'src/modules/core/core.errors'
-import { MissingUserError } from 'src/modules/user/user.errors'
-import * as UserService from 'src/modules/user/user.service'
+} from '@root/modules/core/core.errors'
+import { MissingUserError } from '@root/modules/user/user.errors'
+import * as UserService from '@root/modules/user/user.service'
 import { formatErrorRecoveryMessage } from 'utils/handle-mongo-error'
-import { EditFieldActions, VALID_UPLOAD_FILE_TYPES } from 'src/shared/constants'
+import {
+  EditFieldActions,
+  VALID_UPLOAD_FILE_TYPES,
+} from '@root/shared/constants'
 import {
   AuthType,
   BasicField,
@@ -39,12 +42,12 @@ import {
   PickDuplicateForm,
   ResponseMode,
   Status,
-} from 'src/types'
+} from '@root/types'
 import {
   FieldCreateDto,
   FieldUpdateDto,
   SettingsUpdateDto,
-} from 'src/types/api'
+} from '@root/types/api'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
@@ -89,7 +92,7 @@ const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 
-jest.mock('src/modules/user/user.service')
+jest.mock('@root/modules/user/user.service')
 const MockUserService = mocked(UserService)
 
 describe('admin-form.service', () => {

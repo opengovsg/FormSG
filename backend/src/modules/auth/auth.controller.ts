@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash'
 import { LINKS } from '../../../../shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
-import { createReqMeta, getRequestIp } from 'src/utils/request'
+import { createReqMeta, getRequestIp } from '@root/utils/request'
 import * as UserService from '../user/user.service'
 
 import * as AuthService from './auth.service'

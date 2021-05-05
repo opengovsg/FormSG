@@ -11,13 +11,13 @@ import {
   AuthType,
   EncryptedSubmissionDto,
   SubmissionMetadataList,
-} from 'src/types'
+} from '@root/types'
 import { EncryptSubmissionDto, ErrorDto } from '../../../../../shared/types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { CaptchaFactory } from '../../../services/captcha/captcha.factory'
-import { checkIsEncryptedEncoding } from 'src/utils/encryption'
-import { createReqMeta, getRequestIp } from 'src/utils/request'
+import { checkIsEncryptedEncoding } from '@root/utils/encryption'
+import { createReqMeta, getRequestIp } from '@root/utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import {
   MalformedParametersError,

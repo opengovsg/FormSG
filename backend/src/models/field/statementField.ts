@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { IStatementFieldSchema } from 'src/types'
+import { IStatementFieldSchema } from '@root/types'
 
 const createStatementFieldSchema = () => new Schema<IStatementFieldSchema>()
 

@@ -1,6 +1,6 @@
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { ILoginSchema, IPopulatedForm } from 'src/types'
+import { ILoginSchema, IPopulatedForm } from '@root/types'
 import FeatureManager, {
   FeatureNames,
   RegisteredFeature,

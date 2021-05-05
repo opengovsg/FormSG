@@ -6,7 +6,13 @@ import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import SMTPPool from 'nodemailer/lib/smtp-pool'
 
-import { AwsConfig, Config, DbConfig, Environment, MailConfig } from 'src/types'
+import {
+  AwsConfig,
+  Config,
+  DbConfig,
+  Environment,
+  MailConfig,
+} from '@root/types'
 
 import {
   compulsoryVarsSchema,

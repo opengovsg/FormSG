@@ -1,4 +1,4 @@
-import { BasicField, MyInfoAttribute } from 'src/types'
+import { BasicField, MyInfoAttribute } from '@root/types'
 
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'

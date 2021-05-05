@@ -8,7 +8,12 @@ import { ObjectId } from 'bson'
 import { merge, omit, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from '../../../config/feature-manager'
-import { AuthType, Environment, IFormSchema, MyInfoAttribute } from 'src/types'
+import {
+  AuthType,
+  Environment,
+  IFormSchema,
+  MyInfoAttribute,
+} from '@root/types'
 
 import {
   IMyInfoServiceConfig,

@@ -9,7 +9,7 @@ import {
   IUserModel,
   IUserSchema,
   PublicUser,
-} from 'src/types'
+} from '@root/types'
 
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 

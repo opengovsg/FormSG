@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { IRadioFieldSchema } from 'src/types'
+import { IRadioFieldSchema } from '@root/types'
 
 const createRadioFieldSchema = () => {
   return new Schema<IRadioFieldSchema>({

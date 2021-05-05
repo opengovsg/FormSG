@@ -1,5 +1,5 @@
 import formsgSdk from 'config/formsg-sdk'
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 
 import {
   EncryptVerifiedContentError,

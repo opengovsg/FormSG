@@ -6,15 +6,15 @@ import { mocked } from 'ts-jest/utils'
 import formsgSdk from 'config/formsg-sdk'
 import getFormModel from 'models/form.server.model'
 import { getEncryptSubmissionModel } from 'models/submission.server.model'
-import { WebhookValidationError } from 'src/modules/webhook/webhook.errors'
-import * as WebhookValidationModule from 'src/modules/webhook/webhook.validation'
+import { WebhookValidationError } from '@root/modules/webhook/webhook.errors'
+import * as WebhookValidationModule from '@root/modules/webhook/webhook.validation'
 import { transformMongoError } from 'utils/handle-mongo-error'
 import {
   IEncryptedSubmissionSchema,
   IWebhookResponse,
   ResponseMode,
   WebhookView,
-} from 'src/types'
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -25,7 +25,7 @@ import { saveWebhookRecord, sendWebhook } from '../webhook.service'
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
-jest.mock('src/modules/webhook/webhook.validation')
+jest.mock('@root/modules/webhook/webhook.validation')
 const MockWebhookValidationModule = mocked(WebhookValidationModule, true)
 
 // define test constants

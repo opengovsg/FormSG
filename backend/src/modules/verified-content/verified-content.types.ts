@@ -1,7 +1,7 @@
 import { Result } from 'neverthrow'
 
 import { VerifiedKeys } from '../../../../shared/util/verified-content'
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 import { MissingFeatureError } from '../core/core.errors'
 
 import { MalformedVerifiedContentError } from './verified-content.errors'

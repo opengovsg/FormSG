@@ -2,11 +2,11 @@ import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
-import { AuthType } from 'src/types'
+import { AuthType } from '@root/types'
 import { PublicFormAuthValidateEsrvcIdDto } from '../../../../shared/types/api'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { createReqMeta } from 'src/utils/request'
+import { createReqMeta } from '@root/utils/request'
 import { BillingFactory } from '../billing/billing.factory'
 import * as FormService from '../form/form.service'
 

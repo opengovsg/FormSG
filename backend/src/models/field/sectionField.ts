@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { ISectionFieldSchema } from 'src/types'
+import { ISectionFieldSchema } from '@root/types'
 
 const createSectionFieldSchema = () => new Schema<ISectionFieldSchema>()
 

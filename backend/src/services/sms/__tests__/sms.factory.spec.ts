@@ -4,7 +4,7 @@ import { mocked } from 'ts-jest/utils'
 import Twilio from 'twilio'
 
 import { FeatureNames, ISms, RegisteredFeature } from 'config/feature-manager'
-import { MissingFeatureError } from 'src/modules/core/core.errors'
+import { MissingFeatureError } from '@root/modules/core/core.errors'
 
 import { createSmsFactory } from '../sms.factory'
 import * as SmsService from '../sms.service'

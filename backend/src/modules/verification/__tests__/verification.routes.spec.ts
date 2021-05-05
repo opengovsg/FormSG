@@ -4,7 +4,7 @@ import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
-import { BasicField, IVerificationSchema } from 'src/types'
+import { BasicField, IVerificationSchema } from '@root/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'

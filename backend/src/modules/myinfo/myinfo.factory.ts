@@ -6,7 +6,7 @@ import {
   IHashes,
   IMyInfoHashSchema,
   IPopulatedForm,
-} from 'src/types'
+} from '@root/types'
 import config from '../../config/config'
 import FeatureManager, {
   FeatureNames,

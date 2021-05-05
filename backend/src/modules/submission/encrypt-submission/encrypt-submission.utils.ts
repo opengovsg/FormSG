@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { EncryptedSubmissionDto, SubmissionData } from 'src/types'
-import { MapRouteError } from 'src/types/routing'
+import { EncryptedSubmissionDto, SubmissionData } from '@root/types'
+import { MapRouteError } from '@root/types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
 import {

@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
-import { ValidateFieldError } from 'src/modules/submission/submission.errors'
+import { ValidateFieldError } from '@root/modules/submission/submission.errors'
 import { validateField } from 'utils/field-validation/'
-import { AttachmentSize, BasicField } from 'src/types'
+import { AttachmentSize, BasicField } from '@root/types'
 
 import {
   generateDefaultField,

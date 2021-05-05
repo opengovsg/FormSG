@@ -1,11 +1,11 @@
 import fs from 'fs'
 
-import { FilePlatforms } from 'src/shared/constants'
+import { FilePlatforms } from '@root/shared/constants'
 import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
   isInvalidFileExtension,
-} from 'src/shared/util/file-validation'
+} from '@root/shared/util/file-validation'
 
 describe('File validation utils', () => {
   describe('getFileExtension', () => {

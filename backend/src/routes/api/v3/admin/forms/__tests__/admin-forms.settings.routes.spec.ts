@@ -3,8 +3,8 @@ import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'models/user.server.model'
-import { Status } from 'src/types'
-import { SettingsUpdateDto } from 'src/types/api'
+import { Status } from '@root/types'
+import { SettingsUpdateDto } from '@root/types/api'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'

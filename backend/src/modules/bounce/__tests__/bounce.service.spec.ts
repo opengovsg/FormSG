@@ -10,7 +10,7 @@ import { mocked } from 'ts-jest/utils'
 
 import * as LoggerModule from 'config/logger'
 import getFormModel from 'models/form.server.model'
-import * as UserService from 'src/modules/user/user.service'
+import * as UserService from '@root/modules/user/user.service'
 import { EMAIL_HEADERS, EmailType } from 'services/mail/mail.constants'
 import MailService from 'services/mail/mail.service'
 import { SmsFactory } from 'services/sms/sms.factory'
@@ -19,7 +19,7 @@ import {
   IPopulatedForm,
   ISnsNotification,
   IUserSchema,
-} from 'src/types'
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
@@ -42,7 +42,7 @@ jest.mock('services/sms/sms.factory', () => ({
   },
 }))
 const MockSmsFactory = mocked(SmsFactory, true)
-jest.mock('src/modules/user/user.service')
+jest.mock('@root/modules/user/user.service')
 const MockUserService = mocked(UserService, true)
 
 const mockShortTermLogger = getMockLogger()
@@ -51,8 +51,8 @@ MockLoggerModule.createCloudWatchLogger.mockReturnValue(mockShortTermLogger)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 // Import modules which depend on config last so that mocks get imported correctly
-import getBounceModel from 'src/modules/bounce/bounce.model'
-import * as BounceService from 'src/modules/bounce/bounce.service'
+import getBounceModel from '@root/modules/bounce/bounce.model'
+import * as BounceService from '@root/modules/bounce/bounce.service'
 import { InvalidNumberError, SmsSendError } from 'services/sms/sms.errors'
 
 import {

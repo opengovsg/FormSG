@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { MapRouteError } from 'src/types/routing'
+import { MapRouteError } from '@root/types/routing'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'

@@ -2,7 +2,10 @@ import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 
 import getFormStatisticsTotalModel from 'models/form_statistics_total.server.model'
-import { AggregateFormCountResult, IFormStatisticsTotalSchema } from 'src/types'
+import {
+  AggregateFormCountResult,
+  IFormStatisticsTotalSchema,
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

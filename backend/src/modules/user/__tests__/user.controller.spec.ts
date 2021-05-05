@@ -1,19 +1,22 @@
 import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
-import * as UserController from 'src/modules/user/user.controller'
-import { InvalidOtpError, MissingUserError } from 'src/modules/user/user.errors'
-import * as UserService from 'src/modules/user/user.service'
+import * as UserController from '@root/modules/user/user.controller'
+import {
+  InvalidOtpError,
+  MissingUserError,
+} from '@root/modules/user/user.errors'
+import * as UserService from '@root/modules/user/user.service'
 import { SmsSendError } from 'services/sms/sms.errors'
 import { SmsFactory } from 'services/sms/sms.factory'
 import { HashingError } from 'utils/hash'
-import { IPopulatedUser, IUser, IUserSchema } from 'src/types'
+import { IPopulatedUser, IUser, IUserSchema } from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
 
-jest.mock('src/modules/user/user.service')
+jest.mock('@root/modules/user/user.service')
 jest.mock('services/sms/sms.factory')
 const MockUserService = mocked(UserService)
 const MockSmsFactory = mocked(SmsFactory)

@@ -11,7 +11,7 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'services/mail/mail.types'
 import * as MailUtils from 'services/mail/mail.utils'
-import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
+import { BounceType, IPopulatedForm, ISubmissionSchema } from '@root/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'

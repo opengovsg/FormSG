@@ -3,7 +3,7 @@ import {
   FieldResponse,
   IBaseResponse,
   IPopulatedEmailForm,
-} from 'src/types'
+} from '@root/types'
 import { ProcessedFieldResponse, ProcessedResponse } from '../submission.types'
 
 // When a response has been formatted for email, all answerArray

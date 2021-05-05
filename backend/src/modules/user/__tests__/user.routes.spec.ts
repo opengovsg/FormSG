@@ -8,7 +8,7 @@ import getUserModel from 'models/user.server.model'
 import { SmsSendError } from 'services/sms/sms.errors'
 import * as SmsService from 'services/sms/sms.service'
 import * as OtpUtils from 'utils/otp'
-import { IAgencySchema, IUserSchema } from 'src/types'
+import { IAgencySchema, IUserSchema } from '@root/types'
 
 import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'

@@ -2,8 +2,8 @@ import { ObjectId } from 'bson'
 import { omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import getBounceModel from 'src/modules/bounce/bounce.model'
-import { BounceType } from 'src/types'
+import getBounceModel from '@root/modules/bounce/bounce.model'
+import { BounceType } from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

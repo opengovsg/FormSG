@@ -2,9 +2,9 @@ import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import config from 'config/config'
-import * as FormService from 'src/modules/form/form.service'
-import { MOCK_COOKIE_AGE } from 'src/modules/myinfo/__tests__/myinfo.test.constants'
-import { AuthType } from 'src/types'
+import * as FormService from '@root/modules/form/form.service'
+import { MOCK_COOKIE_AGE } from '@root/modules/myinfo/__tests__/myinfo.test.constants'
+import { AuthType } from '@root/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -46,7 +46,7 @@ jest.mock('../spcp.factory')
 const MockSpcpFactory = mocked(SpcpFactory, true)
 jest.mock('../../billing/billing.factory')
 const MockBillingFactory = mocked(BillingFactory, true)
-jest.mock('src/modules/form/form.service')
+jest.mock('@root/modules/form/form.service')
 const MockFormService = mocked(FormService, true)
 jest.mock('config/config')
 const MockConfig = mocked(config, true)

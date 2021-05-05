@@ -2,7 +2,7 @@ import { celebrate, Joi } from 'celebrate'
 import { RequestHandler } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 
-import { BasicField, FieldResponse } from 'src/types'
+import { BasicField, FieldResponse } from '@root/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 

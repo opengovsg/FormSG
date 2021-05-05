@@ -3,7 +3,7 @@ import {
   IFormSchema,
   ISubmissionSchema,
   WebhookView,
-} from 'src/types'
+} from '@root/types'
 
 export interface WebhookParams {
   webhookUrl: string

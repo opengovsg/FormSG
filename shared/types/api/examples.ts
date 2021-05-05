@@ -1,4 +1,4 @@
-import { Colors, IField } from 'src/types'
+import { Colors, IField } from '../form'
 
 // These types should sync with backend/src/modules/examples/examples.types.ts
 

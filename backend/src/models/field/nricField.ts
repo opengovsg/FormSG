@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { INricFieldSchema } from 'src/types'
+import { INricFieldSchema } from '@root/types'
 
 const createNricFieldSchema = () => new Schema<INricFieldSchema>()
 

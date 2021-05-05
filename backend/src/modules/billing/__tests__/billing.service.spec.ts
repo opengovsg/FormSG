@@ -7,7 +7,7 @@ import {
   ILoginSchema,
   IPopulatedForm,
   LoginStatistic,
-} from 'src/types'
+} from '@root/types'
 
 import { DatabaseError } from '../../core/core.errors'
 import { FormHasNoAuthError } from '../billing.errors'

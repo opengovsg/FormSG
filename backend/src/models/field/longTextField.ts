@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
 
-import { ILongTextFieldSchema, TextSelectedValidation } from 'src/types'
+import { ILongTextFieldSchema, TextSelectedValidation } from '@root/types'
 
 const createLongTextFieldSchema = () => {
   return new Schema<ILongTextFieldSchema>({

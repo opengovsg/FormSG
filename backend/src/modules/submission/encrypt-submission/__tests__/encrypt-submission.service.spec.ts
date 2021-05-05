@@ -9,15 +9,15 @@ import { getEncryptSubmissionModel } from 'models/submission.server.model'
 import {
   DatabaseError,
   MalformedParametersError,
-} from 'src/modules/core/core.errors'
-import { CreatePresignedUrlError } from 'src/modules/form/admin-form/admin-form.errors'
+} from '@root/modules/core/core.errors'
+import { CreatePresignedUrlError } from '@root/modules/form/admin-form/admin-form.errors'
 import { formatErrorRecoveryMessage } from 'utils/handle-mongo-error'
 import {
   IPopulatedEncryptedForm,
   SubmissionCursorData,
   SubmissionData,
   SubmissionMetadata,
-} from 'src/types'
+} from '@root/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 

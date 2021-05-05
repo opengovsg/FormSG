@@ -1,4 +1,4 @@
-import { BasicField, IColumnSchema } from 'src/types'
+import { BasicField, IColumnSchema } from '@root/types'
 
 /**
  * Return type of createAnswerFieldFromColumn().

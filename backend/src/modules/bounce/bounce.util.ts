@@ -2,7 +2,7 @@ import {
   IBounceNotification,
   IDeliveryNotification,
   IEmailNotification,
-} from 'src/types'
+} from '@root/types'
 import { UserWithContactNumber } from '../user/user.types'
 
 import { SendBounceSmsNotificationError } from './bounce.errors'

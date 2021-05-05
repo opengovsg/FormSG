@@ -5,11 +5,11 @@ import {
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
 } from '../../../../shared/util/verification'
-import { IFieldSchema, IVerificationSchema, MapRouteError } from 'src/types'
+import { IFieldSchema, IVerificationSchema, MapRouteError } from '@root/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
-import { HashingError } from 'src/utils/hash'
+import { HashingError } from '@root/utils/hash'
 import {
   DatabaseConflictError,
   DatabaseError,

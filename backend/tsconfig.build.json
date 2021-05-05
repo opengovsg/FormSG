@@ -3,9 +3,11 @@
   "extends": "./tsconfig.json",
   "exclude": [
     "./dist",
-    "**/*.spec.ts",
     "**/*.test.ts",
     "**/__tests__/",
-    "**/__mocks__/"
+    "**/__mocks__/",
+    "../shared/**/__tests__",
+    "../shared/**/*.spec.ts",
+    "../shared/**/*.test.ts"
   ]
 }
