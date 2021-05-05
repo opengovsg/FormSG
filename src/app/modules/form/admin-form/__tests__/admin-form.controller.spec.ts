@@ -8052,7 +8052,7 @@ describe('admin-form.controller', () => {
     } as IPopulatedForm
     const MOCK_COLLABORATORS = [
       {
-        email: `fakeuser@gov.sg`,
+        email: `fakeuser@test.gov.sg`,
         write: false,
       },
     ]
@@ -8212,6 +8212,164 @@ describe('admin-form.controller', () => {
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleGetFormCollaborators', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: MOCK_USER,
+      },
+    })
+
+    const MOCK_COLLABORATORS = [
+      {
+        email: `fakeuser@gov.sg`,
+        write: false,
+      },
+    ]
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      permissionList: MOCK_COLLABORATORS,
+    } as IPopulatedForm
+
+    beforeEach(() => {
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(MOCK_FORM),
+      )
+    })
+
+    it('should return 200 with the collaborators when the request is successful', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleGetFormCollaborators(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
+      expect(mockRes.send).toBeCalledWith(MOCK_COLLABORATORS)
+    })
+
+    it('should return 403 when the user does not have sufficient permissions to retrieve collaborators', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleGetFormCollaborators(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+    })
+
+    it('should return 404 when the form could not be found', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormNotFoundError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleGetFormCollaborators(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+    })
+
+    it('should return 410 when the form has been archived', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new FormDeletedError(ERROR_MESSAGE)),
+      )
+      const mockRes = expressHandler.mockResponse()
+      const expectedResponse = { message: ERROR_MESSAGE }
+
+      // Act
+      await AdminFormController.handleGetFormCollaborators(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+    })
+
+    it('should return 422 when the current user could not be retrieved from the database', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleGetFormCollaborators(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const ERROR_MESSAGE = 'all your base are belong to us'
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(ERROR_MESSAGE)),
+      )
+      const expectedResponse = { message: ERROR_MESSAGE }
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await AdminFormController.handleGetFormCollaborators(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
+      expect(mockRes.json).toBeCalledWith(expectedResponse)
     })
   })
 })

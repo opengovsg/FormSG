@@ -235,6 +235,54 @@ export const handleGetAdminForm: RequestHandler<{ formId: string }> = (
 }
 
 /**
+ * Handler for GET /api/v3/admin/forms/:formId/collaborators
+ * @security session
+ *
+ * @returns 200 with collaborators
+ * @returns 403 when current user does not have read permissions for the form
+ * @returns 404 when form cannot be found
+ * @returns 410 when retrieving collaborators for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetFormCollaborators: RequestHandler<
+  { formId: string },
+  PermissionsUpdateDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Check whether user has read permissions to form
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      .map(({ permissionList }) =>
+        res.status(StatusCodes.OK).send(permissionList),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error retrieving form collaborators',
+          meta: {
+            action: 'handleGetFormCollaborators',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
  * Handler for GET /:formId/adminform/preview.
  * @security session
  *

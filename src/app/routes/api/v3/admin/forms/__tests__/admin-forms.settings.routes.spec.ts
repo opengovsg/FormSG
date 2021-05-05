@@ -12,6 +12,7 @@ import { createAuthedSession } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { jsonParseStringify } from '../../../../../../../../tests/unit/backend/helpers/serialize-data'
 import * as UserService from '../../../../../../modules/user/user.service'
@@ -390,6 +391,141 @@ describe('admin-form.settings.routes', () => {
       const response = await session
         .put(`/admin/forms/${form._id}/collaborators`)
         .send(MOCK_COLLABORATORS)
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual(expectedResponse)
+    })
+  })
+
+  describe('GET /admin/forms/:formId/collaborators', () => {
+    const MOCK_COLLABORATORS = [
+      {
+        email: `fakeuser@test.gov.sg`,
+        write: false,
+      },
+    ]
+    it('should return the list of collaborators on a valid request', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm({
+        formOptions: {
+          permissionList: MOCK_COLLABORATORS,
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const response = await session.get(
+        `/admin/forms/${form._id}/collaborators`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(
+        jsonParseStringify(MOCK_COLLABORATORS),
+      )
+    })
+
+    it('should return 403 when the current user does not have read permissions for the specified form', async () => {
+      // Arrange
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: {
+          permissionList: MOCK_COLLABORATORS,
+        },
+      })
+      const fakeUser = await dbHandler.insertUser({
+        mailName: 'fakeUser',
+        agencyId: new ObjectId(),
+      })
+      const session = await createAuthedSession(fakeUser.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: `User ${fakeUser.email} not authorized to perform read operation on Form ${form._id} with title: ${form.title}.`,
+      })
+
+      // Act
+      const response = await session.get(
+        `/admin/forms/${form._id}/collaborators`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toMatchObject(jsonParseStringify(expectedResponse))
+    })
+
+    it('should return 404 when the form could not be found', async () => {
+      // Arrange
+      const { user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'Form not found',
+      })
+
+      // Act
+      const response = await session.get(
+        `/admin/forms/${new ObjectId().toHexString()}/collaborators`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 410 when the form has been archived', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm({
+        formOptions: {
+          status: Status.Archived,
+        },
+      })
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'Form has been archived',
+      })
+
+      // Act
+      const response = await session.get(
+        `/admin/forms/${form._id}/collaborators`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 422 when the current session user cannot be retrieved', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'User not found',
+      })
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await session.get(
+        `/admin/forms/${form._id}/collaborators`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 500 when a database error occurs', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      const expectedResponse = jsonParseStringify({
+        message: 'Something went wrong. Please try again.',
+      })
+      jest
+        .spyOn(UserService, 'getPopulatedUserById')
+        .mockReturnValueOnce(errAsync(new DatabaseError()))
+
+      // Act
+      const response = await session.get(
+        `/admin/forms/${form._id}/collaborators`,
+      )
 
       // Assert
       expect(response.status).toEqual(500)
