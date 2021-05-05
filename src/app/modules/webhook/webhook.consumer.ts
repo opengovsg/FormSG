@@ -25,6 +25,11 @@ import { isSuccessfulResponse } from './webhook.utils'
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
+/**
+ * Starts polling a queue for webhook messages.
+ * @param queueUrl URL of queue from which to consume messages
+ * @param producer Producer which can be used to enqueue messages
+ */
 export const startWebhookConsumer = (
   queueUrl: string,
   producer: WebhookProducer,
@@ -63,6 +68,17 @@ export const startWebhookConsumer = (
   })
 }
 
+/**
+ * Creates a handler to consume messages from webhook queue.
+ * This handler does the following:
+ * 1) Parses the message
+ * 2) If the webhook is not due, requeues the message
+ * 3) If the webhook is due, attempts the webhook
+ * 4) Records the webhook attempt in the database
+ * 5) If the webhook failed again, requeues the message
+ * @param producer Producer which can write messages to queue
+ * @returns Handler for consumption of queue messages
+ */
 const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   sqsMessage: aws.SQS.Message,
 ): Promise<void> => {
@@ -188,6 +204,12 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
   return Promise.reject()
 }
 
+/**
+ * Retrieves all relevant information to send webhook for a given submission.
+ * @param submissionId
+ * @returns ok(webhook information) if database retrieval succeeds
+ * @returns err if submission ID does not exist or database retrieval errors
+ */
 const retrieveWebhookInfo = (
   submissionId: string,
 ): ResultAsync<

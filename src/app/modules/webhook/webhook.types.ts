@@ -1,11 +1,6 @@
 import * as z from 'zod'
 
-import {
-  IEncryptedSubmissionSchema,
-  IFormSchema,
-  ISubmissionSchema,
-  WebhookView,
-} from '../../../types'
+import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
 
 export interface WebhookParams {
   webhookUrl: string
@@ -16,11 +11,9 @@ export interface WebhookParams {
   signature: string
 }
 
-export interface WebhookRequestLocals {
-  form: IFormSchema
-  submission: IEncryptedSubmissionSchema
-}
-
+/**
+ * Schema for webhook queue message, which allows an object to be validated.
+ */
 export const webhookMessageSchema = z.object({
   submissionId: z.string(),
   previousAttempts: z.array(z.number()),
@@ -28,14 +21,22 @@ export const webhookMessageSchema = z.object({
   _v: z.number(),
 })
 
+/**
+ * Shape of webhook queue message object.
+ */
 export type WebhookQueueMessageObject = z.infer<typeof webhookMessageSchema>
 
-// Same as a regular queue message, except no next attempt
+/**
+ * Same as a regular queue message, except no next attempt
+ */
 export type WebhookFailedQueueMessage = Omit<
   WebhookQueueMessageObject,
   'nextAttempt'
 >
 
+/**
+ * Specification of when a webhook should be retried.
+ */
 export type RetryInterval = {
   base: number
   jitter: number

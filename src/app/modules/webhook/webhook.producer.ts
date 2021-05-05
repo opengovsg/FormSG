@@ -10,6 +10,10 @@ import { calculateDelaySeconds } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Encapsulates a producer which can write webhook retry messages
+ * to a message queue.
+ */
 export class WebhookProducer {
   producer: Producer
 
@@ -19,6 +23,12 @@ export class WebhookProducer {
     })
   }
 
+  /**
+   * Enqueues a message.
+   * @param queueMessage Message to send
+   * @returns ok(true) if sending message suceeds
+   * @returns err if sending message fails
+   */
   sendMessage(
     queueMessage: WebhookQueueMessage,
   ): ResultAsync<true, WebhookPushToQueueError> {
