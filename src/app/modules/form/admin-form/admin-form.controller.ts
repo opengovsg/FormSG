@@ -1955,7 +1955,7 @@ export const handleUpdateEndPage = [
  * Handler for GET /admin/forms/:formId/fields/:fieldId
  * @security session
  *
- * @returns 200 with form field
+ * @returns 200 with form field when retrieval is successful
  * @returns 403 when current user does not have permissions to retrieve form field
  * @returns 404 when form cannot be found
  * @returns 404 when form field cannot be found
