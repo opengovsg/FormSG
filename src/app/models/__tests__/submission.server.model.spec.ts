@@ -50,6 +50,7 @@ describe('Submission Model', () => {
           formOptions: {
             webhook: {
               url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: true,
             },
           },
         })
@@ -65,6 +66,7 @@ describe('Submission Model', () => {
 
         expect(result).toEqual({
           webhookUrl: MOCK_WEBHOOK_URL,
+          isRetryEnabled: true,
           webhookView: {
             data: {
               formId: String(form._id),
@@ -84,6 +86,7 @@ describe('Submission Model', () => {
           formOptions: {
             webhook: {
               url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: true,
             },
           },
         })
@@ -115,6 +118,43 @@ describe('Submission Model', () => {
 
         expect(result).toEqual({
           webhookUrl: '',
+          isRetryEnabled: false,
+          webhookView: {
+            data: {
+              formId: String(form._id),
+              submissionId: String(submission._id),
+              encryptedContent: MOCK_ENCRYPTED_CONTENT,
+              verifiedContent: undefined,
+              version: 0,
+              created: submission.created,
+              attachmentMetadata: new Map(),
+            },
+          },
+        })
+      })
+
+      it('should return false for isRetryEnabled when the form does not have retries enabled', async () => {
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: false,
+            },
+          },
+        })
+        const submission = await EncryptedSubmission.create({
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 0,
+        })
+
+        const result = await EncryptedSubmission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result).toEqual({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          isRetryEnabled: false,
           webhookView: {
             data: {
               formId: String(form._id),

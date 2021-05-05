@@ -103,6 +103,7 @@ export type Permission = {
 
 export type Webhook = {
   url: string
+  isRetryEnabled: boolean
 }
 
 /**

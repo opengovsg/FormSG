@@ -76,10 +76,24 @@ export class WebhookPushToQueueError extends ApplicationError {
 }
 
 /**
- * Cannot send webhook because form has no webhook URL.
+ * Cannot send webhook retry because form has no webhook URL or does not have
+ * retries enabled.
  */
-export class WebhookMissingUrlError extends ApplicationError {
-  constructor(message = 'Unable to send webhook as form has no webhook URL') {
+export class WebhookRetriesNotEnabledError extends ApplicationError {
+  meta: {
+    webhookUrl: string
+    isRetryEnabled: boolean
+  }
+
+  constructor(
+    webhookUrl: string,
+    isRetryEnabled: boolean,
+    message = 'Unable to send webhook as form has no webhook URL',
+  ) {
     super(message)
+    this.meta = {
+      webhookUrl,
+      isRetryEnabled,
+    }
   }
 }

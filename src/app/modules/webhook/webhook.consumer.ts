@@ -12,9 +12,9 @@ import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import {
-  WebhookMissingUrlError,
   WebhookNoMoreRetriesError,
   WebhookPushToQueueError,
+  WebhookRetriesNotEnabledError,
   WebhookValidationError,
 } from './webhook.errors'
 import { WebhookQueueMessage } from './webhook.message'
@@ -148,14 +148,17 @@ const createWebhookQueueHandler = (producer: WebhookProducer) => async (
     webhookMessage.submissionId,
   ).andThen<
     true,
-    | WebhookMissingUrlError
+    | WebhookRetriesNotEnabledError
     | WebhookValidationError
     | WebhookNoMoreRetriesError
     | WebhookPushToQueueError
   >((webhookInfo) => {
-    const { webhookUrl } = webhookInfo
-    // Webhook URL was deleted
-    if (!webhookUrl) return errAsync(new WebhookMissingUrlError())
+    const { webhookUrl, isRetryEnabled } = webhookInfo
+    // Webhook URL was deleted or retries disabled
+    if (!webhookUrl || !isRetryEnabled)
+      return errAsync(
+        new WebhookRetriesNotEnabledError(webhookUrl, isRetryEnabled),
+      )
 
     // Attempt webhook
     return WebhookService.sendWebhook(

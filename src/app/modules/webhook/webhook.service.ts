@@ -180,6 +180,7 @@ export const sendWebhook = (
 export const createInitialWebhookSender = (producer?: WebhookProducer) => (
   submission: IEncryptedSubmissionSchema,
   webhookUrl: string,
+  isRetryEnabled: boolean,
 ): ResultAsync<
   true,
   | WebhookValidationError
@@ -193,7 +194,11 @@ export const createInitialWebhookSender = (producer?: WebhookProducer) => (
       // Save record of sending to database
       saveWebhookRecord(submission._id, webhookResponse).andThen(() => {
         // If webhook successful or retries not enabled, no further action
-        if (isSuccessfulResponse(webhookResponse) || !producer)
+        if (
+          isSuccessfulResponse(webhookResponse) ||
+          !producer ||
+          !isRetryEnabled
+        )
           return okAsync(true)
         // Webhook failed and retries enabled, so create initial message and enqueue
         return WebhookQueueMessage.fromSubmissionId(

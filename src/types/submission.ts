@@ -58,7 +58,8 @@ export interface WebhookView {
 }
 
 export type SubmissionWebhookInfo = {
-  webhookUrl?: string | null
+  webhookUrl: string
+  isRetryEnabled: boolean
   webhookView: WebhookView
 }
 

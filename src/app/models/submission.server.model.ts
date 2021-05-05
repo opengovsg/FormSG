@@ -218,12 +218,13 @@ EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
   submissionId: string,
 ): Promise<SubmissionWebhookInfo | null> {
   return (this.findById(submissionId)
-    .populate('form', 'webhook.url')
+    .populate('form', 'webhook')
     .exec() as Promise<IPopulatedWebhookSubmission | null>).then(
     (populatedSubmission) => {
       if (!populatedSubmission) return null
       return {
-        webhookUrl: populatedSubmission.form.webhook?.url,
+        webhookUrl: populatedSubmission.form.webhook?.url ?? '',
+        isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
         webhookView: populatedSubmission.getWebhookView(),
       }
     },
