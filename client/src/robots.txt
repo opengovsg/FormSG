@@ -1,0 +1,7 @@
+# robotstxt.org/
+
+User-agent: NLB_archive_bot
+
+Allow: /
+Allow: /public/
+Disallow: *

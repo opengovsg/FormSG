@@ -1,0 +1,29 @@
+<div class="row" feature-toggle feature-name="verified-fields">
+  <div class="toggle-option">
+    <div class="col-xs-8 label-custom label-medium label-bottom">
+      OTP verification
+      <i
+        class="glyphicon glyphicon-question-sign"
+        uib-tooltip="When enabled, respondents must verify by entering a code sent to their mobile number"
+        tooltip-trigger="'click mouseenter'"
+      ></i>
+    </div>
+    <div class="col-xs-4 field-input">
+      <label
+        class="toggle-selector pull-right"
+        ng-class="field.isVerifiable? 'toggle-selector-on' : ''"
+        onclick=""
+      >
+        <input
+          type="checkbox"
+          ng-model="field.isVerifiable"
+          ng-click="openVerifiedSMSModal()"
+        />
+        <div class="toggle-selector-switch">
+          <i ng-class="field.isVerifiable ? 'bx bx-check' : 'bx bx-x' "></i>
+        </div>
+      </label>
+    </div>
+  </div>
+  <br />
+</div>
