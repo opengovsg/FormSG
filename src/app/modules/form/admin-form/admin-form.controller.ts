@@ -16,7 +16,9 @@ import {
   IForm,
   IFormDocument,
   IPopulatedForm,
+  LogicConditionState,
   LogicDto,
+  LogicIfValue,
   LogicType,
   ResponseMode,
 } from '../../../../types'
@@ -1806,9 +1808,11 @@ export const handleUpdateLogic = [
           .items(
             Joi.object({
               field: Joi.string().required(),
-              state: Joi.string().required(),
-              value: Joi.string().required(),
-              ifValueType: Joi.string(),
+              state: Joi.string()
+                .valid(...Object.values(LogicConditionState))
+                .required(),
+              value: Joi.any().required(),
+              ifValueType: Joi.valid(...Object.values(LogicIfValue)),
             }).unknown(true),
           )
           .required(),
@@ -1818,7 +1822,7 @@ export const handleUpdateLogic = [
         }),
         preventSubmitMessage: Joi.alternatives().conditional('logicType', {
           is: LogicType.PreventSubmit,
-          then: Joi.string().required(),
+          then: Joi.string(),
         }),
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
