@@ -111,4 +111,4 @@ export type LogicCondition =
 /**
  * Logic POJO with functions removed
  */
-export type LogicDto = ILogic & { _id?: IFieldSchema['_id'][] }
+export type LogicDto = ILogic & { _id?: Document['_id'] }
