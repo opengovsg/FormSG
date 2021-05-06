@@ -18,8 +18,6 @@
     "eslint-config-prettier": "^8.1.0",
     "focus-visible": "^5.2.0",
     "framer-motion": "^4.0.0",
-    "husky": "^4.3.8",
-    "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -39,11 +37,6 @@
     "build-storybook": "build-storybook -s public",
     "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
     "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "browserslist": {
     "production": [

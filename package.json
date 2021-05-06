@@ -46,11 +46,15 @@
     "prepare": "husky install"
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
-    "*.css": "stylelint --fix",
-    "*.html": [
+    "{src,tests}/**/*.{js,ts}": "eslint --fix",
+    "{src,tests}/**/*.css": "stylelint --fix",
+    "{src,tests}/**/*.html": [
       "htmlhint",
       "prettier --write"
+    ],
+    "frontend/**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
     ]
   },
   "dependencies": {
