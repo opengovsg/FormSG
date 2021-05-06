@@ -1,6 +1,19 @@
+const {
+  LogicType,
+  LogicConditionState,
+} = require('../../../../../shared/types/form/logic')
+
 // Basically a clone of backend/src/modules/submission/submission.utils.ts without
 // types, as the shared utility was unable to receive types from the backend.
 // !!! Keep in sync with backend/src/modules/submission/submission.utils.ts
+
+function isShowFieldsLogic(formLogic) {
+  return formLogic.logicType === LogicType.ShowFields
+}
+
+function isPreventSubmitLogic(formLogic) {
+  return formLogic.logicType === LogicType.PreventSubmit
+}
 
 function allConditionsExist(conditions, formFieldIds) {
   return conditions.every((condition) =>
