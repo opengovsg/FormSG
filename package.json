@@ -16,13 +16,13 @@
     "npm": "~6.4.0"
   },
   "scripts": {
-    "test-backend": "env-cmd -f tests/.test-full-env jest --coverage --maxWorkers=4",
-    "test-backend:watch": "env-cmd -f tests/.test-full-env jest --watch",
-    "build-backend": "tsc -p tsconfig.build.json",
     "start": "node dist/backend/app/server.js",
     "dev": "docker-compose up --build",
     "docker-dev": "tsnd --respawn --transpile-only --inspect=0.0.0.0 --exit-child -- src/app/server.ts",
-    "test": "npm run test-backend && npm run test-frontend",
+    "build-backend": "tsc -p tsconfig.build.json",
+    "test": "npm run test-backend",
+    "test-backend": "env-cmd -f tests/.test-full-env jest --coverage --maxWorkers=4",
+    "test-backend:watch": "env-cmd -f tests/.test-full-env jest --watch",
     "lint": "eslint src/ --quiet --fix",
     "lint-ci": "eslint src/ --quiet",
     "version": "auto-changelog -p && git add CHANGELOG.md",
@@ -89,6 +89,7 @@
     "winston-cloudwatch": "^2.5.2"
   },
   "devDependencies": {
+    "@opengovsg/mockpass": "^2.6.9",
     "@types/bcrypt": "^3.0.1",
     "@types/bluebird": "^3.5.34",
     "@types/busboy": "^0.2.3",
