@@ -297,11 +297,14 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
+
   getFullFormById(
     formId: string,
     fields?: (keyof IPopulatedForm)[],
   ): Promise<IPopulatedForm | null>
+
   deleteFormLogic(formId: string, logicId: string): Promise<IFormSchema | null>
+
   /**
    * Deletes specified form field by its id from the form corresponding to given form id.
    * @param formId the id of the form to delete specific form field for
@@ -312,11 +315,14 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     fieldId: string,
   ): Promise<IFormSchema | null>
+
   deactivateById(formId: string): Promise<IFormSchema | null>
+
   getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
   ): Promise<FormMetaView[]>
+
   /**
    * Update the end page of form with given endpage object.
    * @param formId the id of the form to update
@@ -325,8 +331,20 @@ export interface IFormModel extends Model<IFormSchema> {
    */
   updateEndPageById(
     formId: string,
-    newEndPage: EndPage,
+    newEndPage: StartPage,
   ): Promise<IFormDocument | null>
+
+  /**
+   * Update the start page of form with given startpage object.
+   * @param formId the id of the form to update
+   * @param newStartPage the new StartPage object to replace with
+   * @returns the updated form document if form exists, null otherwise
+   */
+  updateStartPageById(
+    formId: string,
+    newStartPage: EndPage,
+  ): Promise<IFormDocument | null>
+
   updateFormLogic(
     formId: string,
     logicId: string,
