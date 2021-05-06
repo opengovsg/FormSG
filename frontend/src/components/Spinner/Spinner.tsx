@@ -1,5 +1,5 @@
 import { usePrefersReducedMotion } from '@chakra-ui/media-query'
-import { keyframes, chakra } from '@chakra-ui/system'
+import { chakra, keyframes } from '@chakra-ui/system'
 import VisuallyHidden from '@chakra-ui/visually-hidden'
 import { FC, useMemo } from 'react'
 import { BiLoader } from 'react-icons/bi'

@@ -1,9 +1,10 @@
 import 'focus-visible/dist/focus-visible'
+import './index.css'
+
 import * as React from 'react'
 import ReactDOM from 'react-dom'
 
 import { App } from './app/App'
-import './index.css'
 import reportWebVitals from './reportWebVitals'
 import * as serviceWorker from './serviceWorker'
 

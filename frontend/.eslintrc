@@ -1,9 +1,54 @@
 {
-  "extends": ["plugin:@typescript-eslint/recommended", "react-app", "prettier"],
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "import"],
-  "ignorePatterns": ["build/**/*"],
-  "env": {
-    "node": true
+  "plugins": ["import", "simple-import-sort"],
+  "overrides": [
+    {
+      "files": ["*.test.ts"],
+      "extends": ["react-app/jest"]
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "extends": [
+        "react-app",
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
+      ],
+      "parser": "@typescript-eslint/parser"
+    },
+    {
+      "files": ["*.stories.*"],
+      "rules": {
+        "@typescript-eslint/explicit-module-boundary-types": "off"
+      }
+    }
+  ],
+  "ignorePatterns": ["build/**/*", "!.storybook"],
+  "env": { "es6": true },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    // Rules for auto sort of imports
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          // Side effect imports.
+          ["^\\u0000"],
+          // Packages.
+          // Things that start with a letter (or digit or underscore), or
+          // `@` followed by a letter.
+          ["^@?\\w"],
+          // Parent imports. Put `..` last.
+          ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+          // Other relative imports. Put same-folder imports and `.` last.
+          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"]
+        ]
+      }
+    ],
+    "simple-import-sort/exports": "error",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error"
   }
 }

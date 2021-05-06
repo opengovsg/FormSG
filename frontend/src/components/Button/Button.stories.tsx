@@ -1,7 +1,7 @@
 import { ButtonGroup } from '@chakra-ui/button'
 import { Stack } from '@chakra-ui/layout'
 import { Meta, Story } from '@storybook/react'
-import { BiUpload, BiRightArrowAlt } from 'react-icons/bi'
+import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 
 import { Button } from './Button'
 
