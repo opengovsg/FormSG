@@ -1,7 +1,0 @@
-{
-  "globals": {
-    "fixture": true,
-    "test": true,
-    "window": true
-  }
-}

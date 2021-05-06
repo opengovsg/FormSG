@@ -1,7 +1,6 @@
 {
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
-    "source.fixAll.stylelint": true
   },
   "eslint.validate": ["javascript", "typescript"],
   "editor.formatOnSave": true,
@@ -10,11 +9,5 @@
   },
   "[typescript]": {
     "editor.formatOnSave": false
-  },
-  "[html]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": false
-    },
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
