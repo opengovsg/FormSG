@@ -12,8 +12,32 @@ module.exports = {
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
+    '@storybook/addon-a11y',
+    'storybook-addon-performance/register',
+    'storybook-addon-pseudo-states',
     '@storybook/preset-create-react-app',
   ],
+  typescript: {
+    reactDocgen: 'react-docgen-typescript',
+    reactDocgenTypescriptOptions: {
+      // Allows typed string unions to be generated properly.
+      shouldExtractLiteralValuesFromEnum: true,
+      compilerOptions: {
+        allowSyntheticDefaultImports: false,
+        esModuleInterop: false,
+      },
+      // Prevents extraneous props from showing up in controls.
+      // See https://github.com/chakra-ui/chakra-ui/issues/2009#issuecomment-765538309.
+      propFilter: (prop) =>
+        prop.parent !== undefined &&
+        (!prop.parent.fileName.includes('node_modules') ||
+          (prop.parent.fileName.includes('node_modules') &&
+            prop.parent.fileName.includes('node_modules/@chakra-ui/') &&
+            !prop.parent.fileName.includes(
+              'node_modules/@chakra-ui/styled-system',
+            ))),
+    },
+  },
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup
   // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js
   webpackFinal: async (storybookConfig) => {

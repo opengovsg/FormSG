@@ -1,4 +1,6 @@
-import { ComponentStyleConfig } from '@chakra-ui/react'
+import { ComponentStyleConfig, SystemStyleObject, ThemingPropsThunk } from '@chakra-ui/react'
+
+export type ThemeButtonVariants = "primary" | "danger" | "success" | "reverse" | "outline" | "clear"
 
 export const Button: ComponentStyleConfig = {
   baseStyle: {
@@ -124,7 +126,7 @@ export const Button: ComponentStyleConfig = {
         },
       },
     },
-  },
+  } as Record<ThemeButtonVariants, ThemingPropsThunk<SystemStyleObject>>,
   defaultProps: {
     variant: 'primary',
   },

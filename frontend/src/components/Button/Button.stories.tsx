@@ -1,81 +1,78 @@
 import { ButtonGroup } from '@chakra-ui/button'
-import { Stack } from '@chakra-ui/layout'
 import { Meta, Story } from '@storybook/react'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 
-import { Button } from './Button'
+import { centerDecorator } from '../../utils/storybook'
 
-//👇 We create a “template” of how args map to rendering
-const Template: Story = (args) => (
-  <Stack spacing="8">
-    <ButtonGroup spacing="8">
-      <Button {...args}>Primary</Button>
-      <Button {...args} leftIcon={<BiUpload fontSize="24px" />}>
-        Primary
-      </Button>
-      <Button {...args} rightIcon={<BiRightArrowAlt fontSize="24px" />}>
-        Primary
-      </Button>
-    </ButtonGroup>
-    <ButtonGroup spacing="8">
-      <Button {...args} isDisabled>
-        Disabled
-      </Button>
-      <Button {...args} isDisabled leftIcon={<BiUpload fontSize="24px" />}>
-        Disabled
-      </Button>
-      <Button
-        {...args}
-        isDisabled
-        rightIcon={<BiRightArrowAlt fontSize="24px" />}
-      >
-        Disabled
-      </Button>
-    </ButtonGroup>
-    <ButtonGroup spacing="8">
-      <Button {...args} isLoading />
-      <Button {...args} isLoading loadingText="With Loading Text" />
-    </ButtonGroup>
-  </Stack>
-)
+import { Button, ButtonProps } from './Button'
 
 export default {
   title: 'Components/Button',
   component: Button,
+  decorators: [centerDecorator],
 } as Meta
 
-export const Primary = Template.bind({})
-Primary.args = {
+const Template: Story<ButtonProps> = (args) => <Button {...args} />
+export const Default = Template.bind({})
+Default.args = {
   variant: 'primary',
   children: 'Button',
 }
 
-export const Danger = Template.bind({})
-Danger.args = {
-  variant: 'danger',
-  children: 'Button',
-}
+export const Variants = () => (
+  <ButtonGroup>
+    <Button>Primary</Button>
+    <Button variant="success">Success</Button>
+    <Button variant="danger">Danger</Button>
+    <Button variant="reverse">Reverse</Button>
+    <Button variant="outline">Outline</Button>
+    <Button variant="clear">Clear</Button>
+  </ButtonGroup>
+)
 
-export const Success = Template.bind({})
-Success.args = {
-  variant: 'success',
-  children: 'Button',
-}
+export const Disable = () => (
+  <ButtonGroup>
+    <Button isDisabled>Primary</Button>
+    <Button isDisabled variant="success">
+      Success
+    </Button>
+    <Button isDisabled variant="danger">
+      Danger
+    </Button>
+    <Button isDisabled variant="reverse">
+      Reverse
+    </Button>
+    <Button isDisabled variant="outline">
+      Outline
+    </Button>
+    <Button isDisabled variant="clear">
+      Clear
+    </Button>
+  </ButtonGroup>
+)
 
-export const Reverse = Template.bind({})
-Reverse.args = {
-  variant: 'reverse',
-  children: 'Button',
-}
+export const WithIcon = () => (
+  <ButtonGroup>
+    <Button leftIcon={<BiUpload fontSize="24px" />}>Leading</Button>
+    <Button rightIcon={<BiRightArrowAlt fontSize="24px" />}>Trailing</Button>
+  </ButtonGroup>
+)
 
-export const Outline = Template.bind({})
-Outline.args = {
-  variant: 'outline',
-  children: 'Button',
-}
+export const Loading = () => (
+  <ButtonGroup>
+    <Button isLoading minW="84px" />
+    <Button isLoading loadingText="With Text" />
+  </ButtonGroup>
+)
 
-export const Clear = Template.bind({})
-Clear.args = {
-  variant: 'clear',
+export const FocusTab = Template.bind({})
+FocusTab.args = {
   children: 'Button',
 }
+FocusTab.parameters = { pseudo: { focus: true } }
+
+export const Hover = Template.bind({})
+Hover.args = {
+  children: 'Button',
+}
+Hover.parameters = { pseudo: { hover: true } }
