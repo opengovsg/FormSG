@@ -29,6 +29,7 @@ import {
   FormFieldDto,
   PermissionsUpdateDto,
   SettingsUpdateDto,
+  StartPageUpdateDto,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
@@ -1939,7 +1940,7 @@ export const handleDeleteFormField: RequestHandler<
  * @security session
  *
  * @returns 200 with updated end page
- * @returns 403 when current user does not have permissions to create a form field
+ * @returns 403 when current user does not have permissions to update the end page
  * @returns 404 when form cannot be found
  * @returns 410 when updating the end page for an archived form
  * @returns 422 when user in session cannot be retrieved from the database
@@ -2073,4 +2074,74 @@ export const handleUpdateCollaborators = [
     ),
   }),
   _handleUpdateCollaborators,
+] as RequestHandler[]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/start-page
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated start page
+ * @returns 403 when current user does not have permissions to update the start page
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the start page for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdateStartPage: RequestHandler<
+  { formId: string },
+  IFormDocument['startPage'] | ErrorDto,
+  StartPageUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to allow updating of start page
+      .andThen(() => AdminFormService.updateStartPage(formId, req.body))
+      .map((updatedStartPage) =>
+        res.status(StatusCodes.OK).json(updatedStartPage),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating start page',
+          meta: {
+            action: '_handleUpdateStartPage',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            body: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/start-page
+ */
+export const handleUpdateStartPage = [
+  celebrate({
+    [Segments.BODY]: {
+      title: Joi.string(),
+      paragraph: Joi.string().allow(''),
+      buttonLink: Joi.string().uri().allow(''),
+      buttonText: Joi.string().allow(''),
+    },
+  }),
+  _handleUpdateStartPage,
 ] as RequestHandler[]
