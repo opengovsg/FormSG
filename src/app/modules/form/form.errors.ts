@@ -81,7 +81,7 @@ export class AuthTypeMismatchError extends ApplicationError {
 export class FormAuthNoEsrvcIdError extends ApplicationError {
   constructor(formId: string) {
     super(
-      `Attempted to validate form ${formId} whhich did not have an eServiceId`,
+      `Attempted to validate form ${formId} which did not have an eServiceId`,
     )
   }
 }

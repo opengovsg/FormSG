@@ -1,7 +1,7 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, last, omit } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Except, Merge } from 'type-fest'
 
 import {
@@ -909,4 +909,25 @@ export const updateEndPage = (
     }
     return okAsync(updatedForm.endPage)
   })
+}
+
+/**
+ * Retrieves a form field from the given form.
+ * @param form The form to retrieve the specified form field for
+ * @param fieldId the id of the form field
+ * @returns ok(form field) on success
+ * @returns err(FieldNotFoundError) if the fieldId does not exist in form's fields
+ */
+export const getFormField = (
+  form: IPopulatedForm,
+  fieldId: string,
+): Result<IFieldSchema, FieldNotFoundError> => {
+  const formField = getFormFieldById(form.form_fields, fieldId)
+  if (!formField)
+    return err(
+      new FieldNotFoundError(
+        `Attempted to retrieve field ${fieldId} from ${form._id} but field was not present`,
+      ),
+    )
+  return ok(formField)
 }

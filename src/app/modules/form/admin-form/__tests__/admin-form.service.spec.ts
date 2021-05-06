@@ -71,6 +71,7 @@ import {
   duplicateForm,
   editFormFields,
   getDashboardForms,
+  getFormField,
   reorderFormField,
   transferFormOwnership,
   updateEndPage,
@@ -1859,6 +1860,45 @@ describe('admin-form.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(new LogicNotFoundError())
       expect(UPDATE_SPY).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getFormField', () => {
+    it('should return the form field when retrieval is successful', async () => {
+      // Arrange
+      const MOCK_FIELD = generateDefaultField(BasicField.Image)
+      const MOCK_FORM = {
+        title: 'some mock form',
+        // Append created field to end of form_fields.
+        form_fields: [MOCK_FIELD],
+        _id: new ObjectId(),
+      } as IFormSchema
+
+      // Act
+      const actual = await getFormField(MOCK_FORM, String(MOCK_FIELD._id))
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(MOCK_FIELD)
+    })
+
+    it("should return FieldNotFoundError when the fieldId does not exist in the form's fields", async () => {
+      // Arrange
+      const MOCK_ID = new ObjectId().toHexString()
+      const MOCK_FORM = ({
+        title: 'some mock form',
+        // Append created field to end of form_fields.
+        form_fields: [],
+        _id: new ObjectId(),
+      } as unknown) as IFormSchema
+      const expectedError = new FieldNotFoundError(
+        `Attempted to retrieve field ${MOCK_ID} from ${MOCK_FORM._id} but field was not present`,
+      )
+
+      // Act
+      const actual = await getFormField(MOCK_FORM, MOCK_ID)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
     })
   })
 })
