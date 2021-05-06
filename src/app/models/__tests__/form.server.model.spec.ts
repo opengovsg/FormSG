@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
-import { cloneDeep, merge, omit, orderBy, pick } from 'lodash'
+import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 
 import getFormModel, {
@@ -1917,6 +1917,46 @@ describe('Form Model', () => {
 
         // Assert
         expect(updatedForm).toBeNull()
+      })
+    })
+
+    describe('updateFormCollaborators', () => {
+      it('should return the form with an updated list of collaborators', async () => {
+        // Arrange
+        const newCollaborators = [
+          {
+            email: `fakeuser@${MOCK_ADMIN_DOMAIN}`,
+            write: false,
+          },
+        ]
+
+        // Act
+        const actual = await validForm.updateFormCollaborators(newCollaborators)
+
+        // Assert
+        const actualPermissionsWithoutId = map(
+          actual.permissionList,
+          (collaborator) => pick(collaborator, ['email', 'write']),
+        )
+        expect(actualPermissionsWithoutId).toEqual(newCollaborators)
+      })
+
+      it('should return an error if validation fails', async () => {
+        // Arrange
+        const newCollaborators = [
+          {
+            email: `fakeuser@fakeemail.com`,
+            write: false,
+          },
+        ]
+
+        // Act
+        const actual = validForm.updateFormCollaborators(newCollaborators)
+
+        // Assert
+        await expect(actual).rejects.toBeInstanceOf(
+          mongoose.Error.ValidationError,
+        )
       })
     })
   })
