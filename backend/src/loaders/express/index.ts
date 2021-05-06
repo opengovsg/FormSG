@@ -39,6 +39,8 @@ import parserMiddlewares from './parser'
 import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
 
+const ANGULARJS_APP_PATH = path.resolve('../client/dist')
+
 const loadExpressApp = async (connection: Connection) => {
   // Initialize express app.
   let app = express()
@@ -102,7 +104,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Set views path and view engine
   app.set('view engine', 'server.view.html')
-  app.set('views', './views')
+  app.set('views', './src/views')
 
   app.use(parserMiddlewares())
 
@@ -110,14 +112,14 @@ const loadExpressApp = async (connection: Connection) => {
 
   // !!!!! DO NOT CHANGE THE ORDER OF THE NEXT 3 LINES !!!!!
   // The first line redirects requests to /public/fonts to
-  // ./dist/frontend/fonts. After that, nocache() ensures that
+  // the built app at CLIENT_PATH. After that, nocache() ensures that
   // cache headers are not set on requests for fonts, which ensures that
   // fonts are shown correctly on IE11.
-  // The last line redirects requests to /public to ./dist/frontend,
+  // The last line redirects requests to /public to CLIENT_PATH,
   // with cache headers set normally.
   app.use(
     '/public/fonts',
-    express.static(path.resolve('./dist/frontend/fonts')),
+    express.static(path.resolve(`${ANGULARJS_APP_PATH}/fonts`)),
   )
 
   app.use(nocache()) // Add headers to prevent browser caching front-end code
@@ -126,12 +128,12 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(addRequestId())
 
   // Setting the app static folder
-  app.use('/public', express.static(path.resolve('./dist/frontend')))
+  app.use('/public', express.static(path.resolve(ANGULARJS_APP_PATH)))
 
   // Point crawlers to our robots.txt
   app.use(
     '/robots.txt',
-    express.static(path.resolve('./dist/frontend/robots.txt')),
+    express.static(path.resolve(`${ANGULARJS_APP_PATH}/robots.txt`)),
   )
 
   app.use(sessionMiddlewares(connection))

@@ -12,11 +12,19 @@
     "url": "https://github.com/datagovsg/formsg.git"
   },
   "scripts": {
+    "postinstall": "npm run postinstall:shared && npm run postinstall:backend && npm run postinstall:client",
+    "postinstall:client": "cd client && npm install",
+    "postinstall:backend": "cd backend && npm install",
+    "postinstall:shared": "cd shared && npm install",
+    "docker-dev": "concurrently -k -p \"[{name}]\" -n \"Backend,Frontend\" -c \"yellow.bold,white.bold\" \"npm run dev:backend\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "dev": "docker-compose up --build",
     "prepare": "husky install"
   },
   "devDependencies": {
+    "concurrently": "^6.0.2",
     "eslint": "^7.25.0",
     "husky": "^6.0.0"
   }
