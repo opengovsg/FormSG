@@ -1,9 +1,7 @@
 import { Box, Text } from '@chakra-ui/layout'
 import { FC } from 'react'
 
-export interface WelcomeProps {}
-
-export const Welcome: FC<WelcomeProps> = ({}) => {
+export const Welcome: FC = () => {
   return (
     <Box>
       <Text>Form Design System</Text>

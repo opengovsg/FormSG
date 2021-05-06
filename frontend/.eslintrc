@@ -1,5 +1,6 @@
 {
-  "plugins": ["import", "simple-import-sort"],
+  "root": true,
+  "plugins": ["import", "simple-import-sort", "prettier"],
   "overrides": [
     {
       "files": ["*.test.ts"],
@@ -7,11 +8,7 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": [
-        "react-app",
-        "plugin:@typescript-eslint/recommended",
-        "prettier"
-      ],
+      "extends": ["react-app", "plugin:@typescript-eslint/recommended"],
       "parser": "@typescript-eslint/parser"
     },
     {
