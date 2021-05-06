@@ -1,6 +1,7 @@
 {
   "env": {
-    "es6": true
+    "es6": true,
+    "node": true
   },
   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
   "parserOptions": {
@@ -8,7 +9,7 @@
   },
   "overrides": [
     {
-      "files": ["*.ts", "*.tsx"],
+      "files": ["*.ts"],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {
         "sourceType": "module",
