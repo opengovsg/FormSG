@@ -1,5 +1,4 @@
-import { Document, LeanDocument } from 'mongoose'
-import { ConditionalPick, Primitive } from 'type-fest'
+import { Document } from 'mongoose'
 
 import { IFieldSchema } from './field/baseField'
 import { BasicField } from './field/fieldTypes'
@@ -39,10 +38,6 @@ export interface ILogic {
 }
 
 export interface ILogicSchema extends ILogic, Document {}
-
-export type ILogicWithId = ILogic & {
-  _id: string
-}
 
 export interface IShowFieldsLogic extends ILogic {
   show: IFieldSchema['_id'][]
@@ -116,4 +111,4 @@ export type LogicCondition =
 /**
  * Logic POJO with functions removed
  */
-export type LogicDto = ConditionalPick<LeanDocument<ILogicSchema>, Primitive>
+export type LogicDto = ILogic & { _id?: IFieldSchema['_id'][] }
