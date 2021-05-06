@@ -5,7 +5,7 @@ name: 'Chromatic'
 
 defaults:
   run:
-    working-directory: ./src/frontend
+    working-directory: ./frontend
 
 # Event for the workflow
 on:
@@ -34,4 +34,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          workingDir: ./src/frontend
+          workingDir: ./frontend
