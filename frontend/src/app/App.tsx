@@ -1,3 +1,7 @@
-import { FC } from 'react'
+import Button from '../components/Button'
 
-export const App: FC = () => <div>Hello world</div>
+export const App = (): JSX.Element => (
+  <div>
+    Hello world <Button>aaaa</Button>
+  </div>
+)

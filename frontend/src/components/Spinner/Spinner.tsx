@@ -1,10 +1,11 @@
+import { Box } from '@chakra-ui/layout'
 import { usePrefersReducedMotion } from '@chakra-ui/media-query'
-import { chakra, keyframes } from '@chakra-ui/system'
+import { keyframes } from '@chakra-ui/system'
 import VisuallyHidden from '@chakra-ui/visually-hidden'
-import { FC, useMemo } from 'react'
+import { useMemo } from 'react'
 import { BiLoader } from 'react-icons/bi'
 
-export interface SpinnerProps {
+interface SpinnerProps {
   /**
    * The color of the spinner
    */
@@ -38,12 +39,12 @@ const spin = keyframes({
   },
 })
 
-export const Spinner: FC<SpinnerProps> = ({
+export const Spinner = ({
   speed = '2.5s',
   color = 'inherit',
   label = 'Loading...',
   fontSize = '1rem',
-}) => {
+}: SpinnerProps): JSX.Element => {
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const animation = useMemo(
@@ -53,9 +54,9 @@ export const Spinner: FC<SpinnerProps> = ({
   )
 
   return (
-    <chakra.div animation={animation} color={color}>
+    <Box animation={animation} color={color}>
       {label && <VisuallyHidden>{label}</VisuallyHidden>}
       <BiLoader fontSize={fontSize} />
-    </chakra.div>
+    </Box>
   )
 }
