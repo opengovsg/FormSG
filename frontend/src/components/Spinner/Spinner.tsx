@@ -1,9 +1,9 @@
+import { useMemo } from 'react'
+import { BiLoader } from 'react-icons/bi'
 import { Box } from '@chakra-ui/layout'
 import { usePrefersReducedMotion } from '@chakra-ui/media-query'
 import { keyframes } from '@chakra-ui/system'
 import VisuallyHidden from '@chakra-ui/visually-hidden'
-import { useMemo } from 'react'
-import { BiLoader } from 'react-icons/bi'
 
 interface SpinnerProps {
   /**

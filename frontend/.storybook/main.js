@@ -1,3 +1,5 @@
+// Required to sync aliases between storybook and overriden configs
+const config = require('../config-overrides')
 const path = require('path')
 
 const toPath = (_path) => path.join(process.cwd(), _path)
@@ -40,14 +42,16 @@ module.exports = {
   // webpackFinal setup retrieved from ChakraUI's own Storybook setup
   // https://github.com/chakra-ui/chakra-ui/blob/main/.storybook/main.js
   webpackFinal: async (storybookConfig) => {
+    // Required to sync aliases between storybook and overriden configs
+    const customConfig = config(storybookConfig)
     return {
       ...storybookConfig,
       resolve: {
         ...storybookConfig.resolve,
-        // Required so storybook knows where the npm package is to render ChakraUI components
-        // as this is not directly installed in package.json.
         alias: {
-          ...storybookConfig.resolve.alias,
+          ...customConfig.resolve.alias,
+          // Required so storybook knows where the npm package is to render ChakraUI components
+          // as this is not directly installed in package.json.
           '@emotion/core': toPath('node_modules/@emotion/react'),
           'emotion-theming': toPath('node_modules/@emotion/react'),
         },

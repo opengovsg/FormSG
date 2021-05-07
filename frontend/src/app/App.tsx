@@ -1,7 +1,10 @@
-import Button from '../components/Button'
+import { ChakraProvider } from '@chakra-ui/react'
+
+import { theme } from '~theme/index'
+import Button from '~components/Button'
 
 export const App = (): JSX.Element => (
-  <div>
+  <ChakraProvider theme={theme}>
     Hello world <Button>aaaa</Button>
-  </div>
+  </ChakraProvider>
 )

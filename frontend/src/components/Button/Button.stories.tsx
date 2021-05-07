@@ -1,8 +1,8 @@
+import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import { ButtonGroup } from '@chakra-ui/button'
 import { Meta, Story } from '@storybook/react'
-import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 
-import { centerDecorator } from '../../utils/storybook'
+import { centerDecorator } from '~utils/storybook'
 
 import { Button, ButtonProps } from './Button'
 

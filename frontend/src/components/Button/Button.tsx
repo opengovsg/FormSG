@@ -3,7 +3,8 @@ import {
   ButtonProps as ChakraButtonProps,
 } from '@chakra-ui/react'
 
-import { ThemeButtonVariants } from '../../theme/components/Button'
+import { ThemeButtonVariants } from '~theme/components/Button'
+
 import Spinner from '../Spinner'
 
 export interface ButtonProps extends ChakraButtonProps {

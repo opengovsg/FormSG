@@ -29,9 +29,9 @@
     "web-vitals": "^0.2.2"
   },
   "scripts": {
-    "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-scripts start",
-    "build": "cross-env SKIP_PREFLIGHT_CHECK=true react-scripts build",
-    "test": "cross-env SKIP_PREFLIGHT_CHECK=true react-scripts test",
+    "start": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
+    "build": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
+    "test": "cross-env SKIP_PREFLIGHT_CHECK=true react-app-rewired test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public",
@@ -66,6 +66,8 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "lint-staged": "^10.5.4",
+    "react-app-rewire-alias": "^1.0.3",
+    "react-app-rewired": "^2.1.8",
     "storybook-addon-pseudo-states": "^1.0.0"
   }
 }
