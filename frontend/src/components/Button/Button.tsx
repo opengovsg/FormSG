@@ -16,7 +16,7 @@ export interface ButtonProps extends ChakraButtonProps {
 
 export const Button = ({ children, ...props }: ButtonProps): JSX.Element => {
   return (
-    <ChakraButton spinner={<Spinner fontSize="24px" />} {...props}>
+    <ChakraButton minW="160px" spinner={<Spinner fontSize="24px" />} {...props}>
       {children}
     </ChakraButton>
   )
