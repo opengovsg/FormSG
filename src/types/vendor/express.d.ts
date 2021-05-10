@@ -7,11 +7,11 @@ declare global {
     }
 
     export interface Session {
-      user?: IUserSchema
+      user?: IUserSchema['_id']
     }
 
     export interface AuthedSession extends Session {
-      user: IUserSchema
+      user: IUserSchema['_id']
     }
   }
 }
