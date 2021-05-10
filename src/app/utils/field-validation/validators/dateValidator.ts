@@ -71,19 +71,18 @@ const futureOnlyValidator: DateValidator = (response) => {
  * Returns a validator to check if date is within the
  * specified custom date range.
  */
-const makeCustomDateValidator: DateValidatorConstructor = (dateField) => (
-  response,
-) => {
-  const { answer } = response
-  const answerDate = createMomentFromDateString(answer)
+const makeCustomDateValidator: DateValidatorConstructor =
+  (dateField) => (response) => {
+    const { answer } = response
+    const answerDate = createMomentFromDateString(answer)
 
-  const { customMinDate, customMaxDate } = dateField.dateValidation || {}
+    const { customMinDate, customMaxDate } = dateField.dateValidation || {}
 
-  return (customMinDate && answerDate.isBefore(customMinDate)) ||
-    (customMaxDate && answerDate.isAfter(customMaxDate))
-    ? left(`DateValidator:\t answer does not pass date logic validation`)
-    : right(response)
-}
+    return (customMinDate && answerDate.isBefore(customMinDate)) ||
+      (customMaxDate && answerDate.isAfter(customMaxDate))
+      ? left(`DateValidator:\t answer does not pass date logic validation`)
+      : right(response)
+  }
 
 /**
  * Returns the appropriate validator

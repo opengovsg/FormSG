@@ -31,9 +31,8 @@ export const receiveEmailSubmission: RequestHandler<
   }
   return EmailSubmissionReceiver.createMultipartReceiver(req.headers)
     .asyncAndThen((receiver) => {
-      const result = EmailSubmissionReceiver.configureMultipartReceiver(
-        receiver,
-      )
+      const result =
+        EmailSubmissionReceiver.configureMultipartReceiver(receiver)
       req.pipe(receiver)
       return result
     })

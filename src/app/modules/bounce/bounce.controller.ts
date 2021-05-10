@@ -18,106 +18,104 @@ const logger = createLoggerWithLabel(module)
  * @param req Express request object
  * @param res - Express response object
  */
-export const handleSns: RequestHandler<
-  unknown,
-  never,
-  ISnsNotification
-> = async (req, res) => {
-  const notificationResult = await BounceService.validateSnsRequest(
-    req.body,
-  ).andThen(() => BounceService.safeParseNotification(req.body.Message))
-  if (notificationResult.isErr()) {
-    logger.warn({
-      message: 'Unable to parse email notification request',
-      meta: {
-        action: 'handleSns',
-      },
-      error: notificationResult.error,
-    })
-    return res.sendStatus(StatusCodes.UNAUTHORIZED)
-  }
-  const notification = notificationResult.value
+export const handleSns: RequestHandler<unknown, never, ISnsNotification> =
+  async (req, res) => {
+    const notificationResult = await BounceService.validateSnsRequest(
+      req.body,
+    ).andThen(() => BounceService.safeParseNotification(req.body.Message))
+    if (notificationResult.isErr()) {
+      logger.warn({
+        message: 'Unable to parse email notification request',
+        meta: {
+          action: 'handleSns',
+        },
+        error: notificationResult.error,
+      })
+      return res.sendStatus(StatusCodes.UNAUTHORIZED)
+    }
+    const notification = notificationResult.value
 
-  BounceService.logEmailNotification(notification)
-  // If not admin response, no more action to be taken
-  if (
-    BounceService.extractEmailType(notification) !== EmailType.AdminResponse
-  ) {
-    return res.sendStatus(StatusCodes.OK)
-  }
-
-  const bounceDocResult = await BounceService.getUpdatedBounceDoc(notification)
-  if (bounceDocResult.isErr()) {
-    logger.warn({
-      message: 'Error while retrieving or creating new bounce doc',
-      meta: {
-        action: 'handleSns',
-      },
-      error: bounceDocResult.error,
-    })
-    return res.sendStatus(StatusCodes.OK)
-  }
-  const bounceDoc = bounceDocResult.value
-
-  const formResult = await FormService.retrieveFullFormById(bounceDoc.formId)
-  if (formResult.isErr()) {
-    // Either database error occurred or the formId saved in the bounce collection
-    // doesn't exist, so something went wrong.
-    logger.error({
-      message: 'Failed to retrieve form corresponding to bounced formId',
-      meta: {
-        action: 'handleSns',
-        formId: bounceDoc.formId,
-      },
-    })
-    return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
-  }
-  const form = formResult.value
-
-  if (bounceDoc.isCriticalBounce()) {
-    // Send notifications and deactivate form on best-effort basis, ignore errors
-    const possibleSmsRecipients = await BounceService.getEditorsWithContactNumbers(
-      form,
-    ).unwrapOr([])
-    const emailRecipients = await BounceService.sendEmailBounceNotification(
-      bounceDoc,
-      form,
-    ).unwrapOr([])
-    const smsRecipients = await BounceService.sendSmsBounceNotification(
-      bounceDoc,
-      form,
-      possibleSmsRecipients,
-    ).unwrapOr([])
-    bounceDoc.setNotificationState(emailRecipients, smsRecipients)
-
-    const shouldDeactivate = bounceDoc.areAllPermanentBounces()
-    if (shouldDeactivate) {
-      await FormService.deactivateForm(bounceDoc.formId)
-      await BounceService.notifyAdminsOfDeactivation(
-        form,
-        possibleSmsRecipients,
-      )
+    BounceService.logEmailNotification(notification)
+    // If not admin response, no more action to be taken
+    if (
+      BounceService.extractEmailType(notification) !== EmailType.AdminResponse
+    ) {
+      return res.sendStatus(StatusCodes.OK)
     }
 
-    // Important log message for user follow-ups
-    BounceService.logCriticalBounce({
-      bounceDoc,
+    const bounceDocResult = await BounceService.getUpdatedBounceDoc(
       notification,
-      autoEmailRecipients: emailRecipients,
-      autoSmsRecipients: smsRecipients,
-      hasDeactivated: shouldDeactivate,
-    })
-  }
+    )
+    if (bounceDocResult.isErr()) {
+      logger.warn({
+        message: 'Error while retrieving or creating new bounce doc',
+        meta: {
+          action: 'handleSns',
+        },
+        error: bounceDocResult.error,
+      })
+      return res.sendStatus(StatusCodes.OK)
+    }
+    const bounceDoc = bounceDocResult.value
 
-  return BounceService.saveBounceDoc(bounceDoc)
-    .map(() => res.sendStatus(StatusCodes.OK))
-    .mapErr((error) => {
-      // Accept the risk that there might be concurrency problems
-      // when multiple server instances try to access the same
-      // document, due to notifications arriving asynchronously.
-      if (error instanceof DatabaseConflictError)
-        return res.sendStatus(StatusCodes.OK)
-      // Otherwise internal database error
+    const formResult = await FormService.retrieveFullFormById(bounceDoc.formId)
+    if (formResult.isErr()) {
+      // Either database error occurred or the formId saved in the bounce collection
+      // doesn't exist, so something went wrong.
+      logger.error({
+        message: 'Failed to retrieve form corresponding to bounced formId',
+        meta: {
+          action: 'handleSns',
+          formId: bounceDoc.formId,
+        },
+      })
       return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
-    })
-}
+    }
+    const form = formResult.value
+
+    if (bounceDoc.isCriticalBounce()) {
+      // Send notifications and deactivate form on best-effort basis, ignore errors
+      const possibleSmsRecipients =
+        await BounceService.getEditorsWithContactNumbers(form).unwrapOr([])
+      const emailRecipients = await BounceService.sendEmailBounceNotification(
+        bounceDoc,
+        form,
+      ).unwrapOr([])
+      const smsRecipients = await BounceService.sendSmsBounceNotification(
+        bounceDoc,
+        form,
+        possibleSmsRecipients,
+      ).unwrapOr([])
+      bounceDoc.setNotificationState(emailRecipients, smsRecipients)
+
+      const shouldDeactivate = bounceDoc.areAllPermanentBounces()
+      if (shouldDeactivate) {
+        await FormService.deactivateForm(bounceDoc.formId)
+        await BounceService.notifyAdminsOfDeactivation(
+          form,
+          possibleSmsRecipients,
+        )
+      }
+
+      // Important log message for user follow-ups
+      BounceService.logCriticalBounce({
+        bounceDoc,
+        notification,
+        autoEmailRecipients: emailRecipients,
+        autoSmsRecipients: smsRecipients,
+        hasDeactivated: shouldDeactivate,
+      })
+    }
+
+    return BounceService.saveBounceDoc(bounceDoc)
+      .map(() => res.sendStatus(StatusCodes.OK))
+      .mapErr((error) => {
+        // Accept the risk that there might be concurrency problems
+        // when multiple server instances try to access the same
+        // document, due to notifications arriving asynchronously.
+        if (error instanceof DatabaseConflictError)
+          return res.sendStatus(StatusCodes.OK)
+        // Otherwise internal database error
+        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+      })
+  }

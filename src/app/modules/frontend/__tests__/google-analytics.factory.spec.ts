@@ -22,9 +22,10 @@ describe('google-analytics.factory', () => {
   const mockRes = expressHandler.mockResponse()
 
   it('should call res correctly if google-analytics feature is disabled', () => {
-    const MOCK_DISABLED_GA_FEATURE: RegisteredFeature<FeatureNames.GoogleAnalytics> = {
-      isEnabled: false,
-    }
+    const MOCK_DISABLED_GA_FEATURE: RegisteredFeature<FeatureNames.GoogleAnalytics> =
+      {
+        isEnabled: false,
+      }
 
     const GoogleAnalyticsFactory = createGoogleAnalyticsFactory(
       MOCK_DISABLED_GA_FEATURE,
@@ -38,9 +39,10 @@ describe('google-analytics.factory', () => {
   })
 
   it('should call res correctly if google-analytics feature is enabled', () => {
-    const MOCK_ENABLED_GA_FEATURE: RegisteredFeature<FeatureNames.GoogleAnalytics> = {
-      isEnabled: true,
-    }
+    const MOCK_ENABLED_GA_FEATURE: RegisteredFeature<FeatureNames.GoogleAnalytics> =
+      {
+        isEnabled: true,
+      }
 
     const GoogleAnalyticsFactory = createGoogleAnalyticsFactory(
       MOCK_ENABLED_GA_FEATURE,

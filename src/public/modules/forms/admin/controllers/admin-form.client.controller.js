@@ -195,9 +195,8 @@ function AdminFormController(
           .when(AdminFormService.createSingleFormField($scope.myform._id, body))
           .then((updatedFormField) => {
             // !!! Convert retrieved form field objects into their class counterparts.
-            const updatedFieldClass = FieldFactory.createFieldFromData(
-              updatedFormField,
-            )
+            const updatedFieldClass =
+              FieldFactory.createFieldFromData(updatedFormField)
             FormFields.injectMyInfoFieldInfo(updatedFieldClass)
 
             // insert created field into form
@@ -235,9 +234,8 @@ function AdminFormController(
           )
           .then((updatedFormField) => {
             // !!! Convert retrieved form field objects into their class counterparts.
-            const updatedFieldClass = FieldFactory.createFieldFromData(
-              updatedFormField,
-            )
+            const updatedFieldClass =
+              FieldFactory.createFieldFromData(updatedFormField)
             FormFields.injectMyInfoFieldInfo(updatedFieldClass)
 
             // merge back into the form fields

@@ -256,9 +256,8 @@ const submitEmailModeForm: RequestHandler<
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         return MailService.sendSubmissionToAdmin({
-          replyToEmails: EmailSubmissionService.extractEmailAnswers(
-            parsedResponses,
-          ),
+          replyToEmails:
+            EmailSubmissionService.extractEmailAnswers(parsedResponses),
           form,
           submission,
           attachments,

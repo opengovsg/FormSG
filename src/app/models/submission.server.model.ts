@@ -319,33 +319,31 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   )
 }
 
-const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorByFormId'] = function (
-  this: IEncryptSubmissionModel,
-  formId,
-  dateRange = {},
-) {
-  const streamQuery = {
-    form: formId,
-    ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
+const getSubmissionCursorByFormId: IEncryptSubmissionModel['getSubmissionCursorByFormId'] =
+  function (this: IEncryptSubmissionModel, formId, dateRange = {}) {
+    const streamQuery = {
+      form: formId,
+      ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
+    }
+    return (
+      this.find(streamQuery)
+        .select({
+          encryptedContent: 1,
+          verifiedContent: 1,
+          attachmentMetadata: 1,
+          created: 1,
+          id: 1,
+        })
+        .batchSize(2000)
+        .read('secondary')
+        .lean()
+        // Override typing as Map is converted to Object once passed through `lean()`.
+        .cursor() as QueryCursor<SubmissionCursorData>
+    )
   }
-  return (
-    this.find(streamQuery)
-      .select({
-        encryptedContent: 1,
-        verifiedContent: 1,
-        attachmentMetadata: 1,
-        created: 1,
-        id: 1,
-      })
-      .batchSize(2000)
-      .read('secondary')
-      .lean()
-      // Override typing as Map is converted to Object once passed through `lean()`.
-      .cursor() as QueryCursor<SubmissionCursorData>
-  )
-}
 
-EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = getSubmissionCursorByFormId
+EncryptSubmissionSchema.statics.getSubmissionCursorByFormId =
+  getSubmissionCursorByFormId
 
 EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
   this: IEncryptSubmissionModel,

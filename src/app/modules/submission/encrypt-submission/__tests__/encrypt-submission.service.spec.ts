@@ -43,13 +43,13 @@ describe('encrypt-submission.service', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('createEncryptSubmissionWithoutSave', () => {
-    const MOCK_FORM = ({
+    const MOCK_FORM = {
       admin: new ObjectId(),
       _id: new ObjectId(),
       title: 'mock title',
       getUniqueMyInfoAttrs: () => [],
       authType: 'NIL',
-    } as unknown) as IPopulatedEncryptedForm
+    } as unknown as IPopulatedEncryptedForm
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_VERIFIED_CONTENT = 'mockVerifiedContent'
     const MOCK_VERSION = 1
@@ -81,7 +81,7 @@ describe('encrypt-submission.service', () => {
   describe('getSubmissionCursor', () => {
     it('should return cursor successfully when date range is not provided', async () => {
       // Arrange
-      const mockCursor = (jest.fn() as unknown) as mongoose.QueryCursor<any>
+      const mockCursor = jest.fn() as unknown as mongoose.QueryCursor<any>
       const getSubmissionSpy = jest
         .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
         .mockReturnValueOnce(mockCursor)
@@ -99,7 +99,7 @@ describe('encrypt-submission.service', () => {
 
     it('should return cursor successfully when date range is provided', async () => {
       // Arrange
-      const mockCursor = (jest.fn() as unknown) as mongoose.QueryCursor<any>
+      const mockCursor = jest.fn() as unknown as mongoose.QueryCursor<any>
       const getSubmissionSpy = jest
         .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
         .mockReturnValueOnce(mockCursor)

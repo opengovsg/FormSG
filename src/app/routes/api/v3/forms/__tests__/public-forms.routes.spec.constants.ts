@@ -20,9 +20,8 @@ export const MOCK_NO_RESPONSES_BODY = {
 }
 
 export const MOCK_TEXT_FIELD = generateDefaultField(BasicField.ShortText)
-export const MOCK_TEXTFIELD_RESPONSE = generateSingleAnswerResponse(
-  MOCK_TEXT_FIELD,
-)
+export const MOCK_TEXTFIELD_RESPONSE =
+  generateSingleAnswerResponse(MOCK_TEXT_FIELD)
 
 export const MOCK_ATTACHMENT_FIELD = generateDefaultField(BasicField.Attachment)
 export const MOCK_ATTACHMENT_RESPONSE = generateAttachmentResponse(
@@ -32,9 +31,8 @@ export const MOCK_ATTACHMENT_RESPONSE = generateAttachmentResponse(
 )
 
 export const MOCK_SECTION_FIELD = generateDefaultField(BasicField.Section)
-export const MOCK_SECTION_RESPONSE = generateSingleAnswerResponse(
-  MOCK_SECTION_FIELD,
-)
+export const MOCK_SECTION_RESPONSE =
+  generateSingleAnswerResponse(MOCK_SECTION_FIELD)
 
 export const MOCK_CHECKBOX_FIELD = generateDefaultField(BasicField.Checkbox)
 export const MOCK_CHECKBOX_RESPONSE = generateCheckboxResponse(

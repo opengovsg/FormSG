@@ -39,12 +39,14 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema>(
  * @param formId the form id to return the submissions cursor for
  * @returns a cursor to the feedback retrieved
  */
-const getFeedbackCursorByFormId: IFormFeedbackModel['getFeedbackCursorByFormId'] = function (
-  this: IFormFeedbackModel,
-  formId,
-) {
-  return this.find({ formId }).batchSize(2000).read('secondary').lean().cursor()
-}
+const getFeedbackCursorByFormId: IFormFeedbackModel['getFeedbackCursorByFormId'] =
+  function (this: IFormFeedbackModel, formId) {
+    return this.find({ formId })
+      .batchSize(2000)
+      .read('secondary')
+      .lean()
+      .cursor()
+  }
 
 FormFeedbackSchema.statics.getFeedbackCursorByFormId = getFeedbackCursorByFormId
 
