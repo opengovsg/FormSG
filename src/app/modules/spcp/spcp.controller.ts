@@ -1,5 +1,4 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '../../../types'
@@ -22,7 +21,7 @@ const logger = createLoggerWithLabel(module)
  * @param res - Express response object
  */
 export const handleRedirect: RequestHandler<
-  ParamsDictionary,
+  unknown,
   { redirectURL: string } | { message: string },
   unknown,
   {
@@ -60,7 +59,7 @@ export const handleRedirect: RequestHandler<
  * @param res - Express response object
  */
 export const handleValidate: RequestHandler<
-  ParamsDictionary,
+  unknown,
   PublicFormAuthValidateEsrvcIdDto | { message: string },
   unknown,
   {
@@ -99,7 +98,7 @@ export const handleValidate: RequestHandler<
 export const handleLogin: (
   authType: AuthType.SP | AuthType.CP,
 ) => RequestHandler<
-  ParamsDictionary,
+  unknown,
   unknown,
   unknown,
   { SAMLart: string; RelayState: string }
