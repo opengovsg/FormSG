@@ -1,5 +1,4 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import FeatureManager, {
@@ -10,10 +9,7 @@ import FeatureManager, {
 import * as FrontendServerController from './frontend.controller'
 
 interface IGoogleAnalyticsFactory {
-  addGoogleAnalyticsData: RequestHandler<
-    ParamsDictionary,
-    string | { message: string }
-  >
+  addGoogleAnalyticsData: RequestHandler<unknown, string | { message: string }>
 }
 
 const googleAnalyticsFeature = FeatureManager.get(FeatureNames.GoogleAnalytics)
