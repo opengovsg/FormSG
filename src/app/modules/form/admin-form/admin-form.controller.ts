@@ -1,7 +1,7 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Request, RequestHandler } from 'express'
-import { ParamsDictionary, Query } from 'express-serve-static-core'
+import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -415,7 +415,7 @@ export const handleCreatePresignedPostUrlForImages = [
  * @returns 422 when user in session cannot be retrieved from the database
  */
 export const createPresignedPostUrlForLogos: RequestHandler<
-  ParamsDictionary,
+  { formId: string },
   unknown,
   {
     fileId: string
@@ -1050,7 +1050,7 @@ export const handleTransferFormOwnership = [
  * @returns 500 when database error occurs
  */
 export const createForm: RequestHandler<
-  ParamsDictionary,
+  unknown,
   unknown,
   { form: Omit<IForm, 'admin'> }
 > = async (req, res) => {
