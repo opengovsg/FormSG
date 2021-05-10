@@ -1,6 +1,14 @@
 import { Request } from 'express'
 
-export const getRequestIp = (req: Request) => {
+type ReqMeta = {
+  ip: ReturnType<typeof getRequestIp>
+  trace: ReturnType<typeof getTrace>
+  url: string
+  urlWithQueryParams: string
+  headers: Request['headers']
+}
+
+export const getRequestIp = <R extends Request<unknown>>(req: R): string => {
   // Define our own token for client ip
   // req.headers['cf-connecting-ip'] : Cloudflare
   // req.ip : Contains the remote IP address of the request.
@@ -13,11 +21,13 @@ export const getRequestIp = (req: Request) => {
   return req.get('cf-connecting-ip') ?? req.ip
 }
 
-export const getTrace = (req: Request) => {
+export const getTrace = <R extends Request<unknown>>(
+  req: R,
+): string | undefined => {
   return req.get('cf-ray') ?? req.id // trace using cloudflare cf-ray header, with x-request-id header as backup
 }
 
-export const createReqMeta = (req: Request) => {
+export const createReqMeta = <R extends Request<unknown>>(req: R): ReqMeta => {
   return {
     ip: getRequestIp(req),
     trace: getTrace(req), // trace using cloudflare cf-ray header, with x-request-id header as backup
