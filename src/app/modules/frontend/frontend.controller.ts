@@ -1,6 +1,5 @@
 import ejs from 'ejs'
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import featureManager from '../../config/feature-manager'
@@ -13,10 +12,10 @@ const logger = createLoggerWithLabel(module)
  * Handler for GET /frontend/datalayer endpoint.
  * @param req - Express request object
  * @param res - Express response object
- * @returns {String} Templated Javascript code for the frontend to initialise Google Tag Manager
+ * @returns Templated Javascript code for the frontend to initialise Google Tag Manager
  */
 export const addGoogleAnalyticsData: RequestHandler<
-  ParamsDictionary,
+  unknown,
   string | { message: string }
 > = (req, res) => {
   const js = `
@@ -51,12 +50,12 @@ export const addGoogleAnalyticsData: RequestHandler<
  * Handler for GET /frontend/environment endpoint.
  * @param req - Express request object
  * @param res - Express response object
- * @returns {String} Templated Javascript code with environment variables for the frontend
+ * @returns Templated Javascript code with environment variables for the frontend
  */
-export const addEnvVarData: RequestHandler<
-  ParamsDictionary,
-  { message: string }
-> = (req, res) => {
+export const addEnvVarData: RequestHandler<unknown, { message: string }> = (
+  req,
+  res,
+) => {
   try {
     return res
       .type('text/javascript')
@@ -81,10 +80,10 @@ export const addEnvVarData: RequestHandler<
  * Handler for GET /frontend/redirect endpoint.
  * @param req - Express request object
  * @param res - Express response object
- * @returns {String} Templated Javascript code for the frontend that redirects to specific form url
+ * @returns Templated Javascript code for the frontend that redirects to specific form url
  */
 export const generateRedirectUrl: RequestHandler<
-  ParamsDictionary,
+  unknown,
   string | { message: string }
 > = (req, res) => {
   const js = `
@@ -119,7 +118,7 @@ export const generateRedirectUrl: RequestHandler<
  * Handler for GET /frontend/features endpoint.
  * @param req - Express request object
  * @param res - Express response object
- * @returns {String} Current featureManager states
+ * @returns Current featureManager states
  */
 export const showFeaturesStates: RequestHandler<
   unknown,
