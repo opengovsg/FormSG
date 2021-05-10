@@ -16,7 +16,9 @@ import {
   IForm,
   IFormDocument,
   IPopulatedForm,
+  LogicConditionState,
   LogicDto,
+  LogicIfValue,
   LogicType,
   ResponseMode,
 } from '../../../../types'
@@ -1855,9 +1857,20 @@ export const handleUpdateLogic = [
           .items(
             Joi.object({
               field: Joi.string().required(),
-              state: Joi.string().required(),
-              value: Joi.string().required(),
-              ifValueType: Joi.string(),
+              state: Joi.string()
+                .valid(...Object.values(LogicConditionState))
+                .required(),
+              value: Joi.alternatives()
+                .try(
+                  Joi.number(),
+                  Joi.string(),
+                  Joi.array().items(Joi.string()),
+                  Joi.array().items(Joi.number()),
+                )
+                .required(),
+              ifValueType: Joi.string()
+                .valid(...Object.values(LogicIfValue))
+                .required(),
             }).unknown(true),
           )
           .required(),
