@@ -78,7 +78,7 @@ describe('Verification controller', () => {
     await dbHandler.closeDatabase()
   })
 
-  describe('handleCreateTransaction', () => {
+  describe('_handleCreateTransaction', () => {
     const MOCK_REQ = expressHandler.mockRequest<
       never,
       { formId: string },
@@ -92,7 +92,7 @@ describe('Verification controller', () => {
         okAsync(mockTransaction),
       )
 
-      await VerificationController.handleCreateTransaction(
+      await VerificationController._handleCreateTransaction(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -112,7 +112,7 @@ describe('Verification controller', () => {
       MockVerificationFactory.createTransaction.mockReturnValueOnce(
         okAsync(null),
       )
-      await VerificationController.handleCreateTransaction(
+      await VerificationController._handleCreateTransaction(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -129,7 +129,7 @@ describe('Verification controller', () => {
         errAsync(new FormNotFoundError()),
       )
 
-      await VerificationController.handleCreateTransaction(
+      await VerificationController._handleCreateTransaction(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -149,7 +149,7 @@ describe('Verification controller', () => {
         errAsync(new DatabaseError()),
       )
 
-      await VerificationController.handleCreateTransaction(
+      await VerificationController._handleCreateTransaction(
         MOCK_REQ,
         mockRes,
         jest.fn(),

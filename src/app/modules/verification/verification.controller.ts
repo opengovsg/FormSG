@@ -1,3 +1,4 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
@@ -14,7 +15,10 @@ import { mapRouteError } from './verification.util'
 
 const logger = createLoggerWithLabel(module)
 
+const formatOfId = Joi.string().length(24).hex().required()
+
 /**
+ * NOTE: Private handler for POST /transaction
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
  * @param req
@@ -52,6 +56,54 @@ export const handleCreateTransaction: RequestHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * NOTE: Private handler for POST /forms/:formId/fieldverifications
+ * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
+ * If no fields are verifiable, then it did not create a transaction and returns an empty object.
+ * @param req
+ * @param res
+ * @returns 201 - transaction is created
+ * @returns 200 - transaction was not created as no fields were verifiable for the form
+ */
+export const _handleCreateTransactionWithFieldId: RequestHandler<
+  { formId: string },
+  Transaction | ErrorDto
+> = async (req, res) => {
+  const { formId } = req.params
+  const logMeta = {
+    action: '_handleCreateTransactionWithFieldId',
+    formId,
+    ...createReqMeta(req),
+  }
+  return VerificationFactory.createTransaction(formId)
+    .map((transaction) => {
+      return transaction
+        ? res.status(StatusCodes.CREATED).json({
+            expireAt: transaction.expireAt,
+            transactionId: transaction._id,
+          })
+        : res.status(StatusCodes.OK).json({})
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error creating transaction',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleCreateTransactionWithFieldId = [
+  celebrate({
+    [Segments.PARAMS]: Joi.object({
+      transactionId: formatOfId,
+    }),
+  }),
+  _handleCreateTransactionWithFieldId,
+] as RequestHandler[]
 
 /**
  * Returns a transaction's id and expiry time if it exists

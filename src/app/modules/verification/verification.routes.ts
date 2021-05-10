@@ -7,6 +7,11 @@ export const VfnRouter = Router()
 
 const formatOfId = Joi.string().length(24).hex().required()
 
+/**
+ * Route for POST /transaction
+ * @body {formId: string}: The form to create the transaction for
+ * @deprecated in favour of POST /forms/:formId/fieldverifications
+ */
 VfnRouter.post(
   '/',
   celebrate({
