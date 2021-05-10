@@ -6,10 +6,10 @@
   "eslint.validate": ["javascript", "typescript"],
   "editor.formatOnSave": true,
   "[javascript]": {
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "[typescript]": {
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "[html]": {
     "editor.codeActionsOnSave": {
