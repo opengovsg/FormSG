@@ -1,5 +1,4 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { IPopulatedUser } from '../../../types'
@@ -28,7 +27,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 500 if database errors occurs
  */
 export const handleContactSendOtp: RequestHandler<
-  ParamsDictionary,
+  unknown,
   string,
   { contact: string; userId: string }
 > = async (req, res) => {
@@ -102,7 +101,7 @@ export const handleContactSendOtp: RequestHandler<
  * @returns 500 when OTP is malformed or for unknown errors
  */
 export const handleContactVerifyOtp: RequestHandler<
-  ParamsDictionary,
+  unknown,
   string | IPopulatedUser,
   {
     userId: string
