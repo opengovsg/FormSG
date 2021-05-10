@@ -31,24 +31,6 @@ function EditStartPageController($uibModalInstance, $q, myform, updateField) {
 
   vm.logoUrl = getFormLogo(myform)
 
-  // // Make a copy so nothing is changed in the original.
-  // vm.myform = angular.copy(myform)
-  // vm.colorThemes = ColorThemes.colors
-  // vm.hasClickedSave = false
-
-  // vm.saveStartPage = function (isValid) {
-  //   vm.hasClickedSave = true
-
-  //   if (isValid) {
-  //     updateField({ startPage: vm.myform.startPage }).then((error) => {
-  //       if (!error) {
-  //         vm.hasClickedSave = false
-  //         $uibModalInstance.close()
-  //       }
-  //     })
-  //   }
-  // }
-
   // Make a copy so nothing is changed in the original.
   vm.myform = angular.copy(myform)
   vm.colorThemes = Object.values(Colors)
