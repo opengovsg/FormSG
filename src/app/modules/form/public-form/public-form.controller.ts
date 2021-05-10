@@ -1,6 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { RequestHandler } from 'express'
-import { Query } from 'express-serve-static-core'
+import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err } from 'neverthrow'
 import querystring from 'querystring'
@@ -378,7 +377,7 @@ export const _handleFormAuthRedirect: RequestHandler<
   { formId: string },
   PublicFormAuthRedirectDto | ErrorDto,
   unknown,
-  Query & { isPersistentLogin?: boolean }
+  Request['query'] & { isPersistentLogin?: boolean }
 > = (req, res) => {
   const { formId } = req.params
   const { isPersistentLogin } = req.query

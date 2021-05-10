@@ -1,6 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { Request } from 'express'
-import { Query, RequestHandler } from 'express-serve-static-core'
+import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { AuthType } from '../../../types'
@@ -44,7 +43,7 @@ export const respondWithRedirectURL: RequestHandler<
   unknown,
   { redirectURL: string } | { message: string },
   unknown,
-  Query & { formId: string }
+  { formId: string }
 > = async (req, res) => {
   const { formId } = req.query
   return FormService.retrieveFormById(formId)
@@ -101,7 +100,7 @@ export const checkMyInfoEServiceId: RequestHandler<
   unknown,
   PublicFormAuthValidateEsrvcIdDto | { message: string },
   unknown,
-  Query & { formId: string }
+  { formId: string }
 > = async (req, res) => {
   const { formId } = req.query
   return FormService.retrieveFormById(formId)

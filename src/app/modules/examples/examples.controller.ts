@@ -1,5 +1,4 @@
-import { RequestHandler } from 'express'
-import { Query } from 'express-serve-static-core'
+import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import {
@@ -28,7 +27,7 @@ export const handleGetExamples: RequestHandler<
   unknown,
   ErrorDto | ExampleFormsResult,
   unknown,
-  Query & ExampleFormsQueryDto
+  Request['query'] & ExampleFormsQueryDto
 > = (req, res) => {
   return ExamplesFactory.getExampleForms(req.query)
     .map((result) => res.status(StatusCodes.OK).json(result))

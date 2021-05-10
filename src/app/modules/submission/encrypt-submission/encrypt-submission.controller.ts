@@ -1,7 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import { RequestHandler } from 'express'
-import { Query } from 'express-serve-static-core'
+import { Request, RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
@@ -409,7 +408,11 @@ export const streamEncryptedResponses: RequestHandler<
   { formId: string },
   unknown,
   unknown,
-  Query & { startDate?: string; endDate?: string; downloadAttachments: boolean }
+  Request['query'] & {
+    startDate?: string
+    endDate?: string
+    downloadAttachments: boolean
+  }
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId } = req.params
@@ -628,8 +631,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
 export const handleGetEncryptedResponse: RequestHandler<
   { formId: string; submissionId: string },
   EncryptedSubmissionDto | ErrorDto,
-  unknown,
-  Query
+  unknown
 > = async (req, res) => {
   const sessionUserId = (req.session as Express.AuthedSession).user._id
   const { formId, submissionId } = req.params
@@ -698,7 +700,7 @@ export const getMetadata: RequestHandler<
   { formId: string },
   SubmissionMetadataList | ErrorDto,
   unknown,
-  Query &
+  Request['query'] &
     RequireAtLeastOne<
       { page?: number; submissionId?: string },
       'page' | 'submissionId'
