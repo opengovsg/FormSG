@@ -10,7 +10,9 @@ import { VALID_UPLOAD_FILE_TYPES } from '../../../../shared/constants'
 import {
   AuthType,
   BasicField,
+  Colors,
   FieldResponse,
+  FormLogoState,
   FormMetaView,
   FormSettings,
   IForm,
@@ -2137,10 +2139,14 @@ export const _handleUpdateStartPage: RequestHandler<
 export const handleUpdateStartPage = [
   celebrate({
     [Segments.BODY]: {
-      title: Joi.string(),
-      paragraph: Joi.string().allow(''),
-      buttonLink: Joi.string().uri().allow(''),
-      buttonText: Joi.string().allow(''),
+      paragraph: Joi.string().allow('').optional(),
+      estTimeTaken: Joi.number().min(1).max(1000).required(),
+      colorTheme: Joi.string()
+        .valid(...Object.values(Colors))
+        .required(),
+      logo: Joi.object({
+        state: Joi.string().valid(...Object.values(FormLogoState)),
+      }).required(),
     },
   }),
   _handleUpdateStartPage,
