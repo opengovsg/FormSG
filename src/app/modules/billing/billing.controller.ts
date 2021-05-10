@@ -1,5 +1,4 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
@@ -20,7 +19,7 @@ const logger = createLoggerWithLabel(module)
  * @return 500 when error occurs whilst querying database
  */
 export const handleGetBillInfo: RequestHandler<
-  ParamsDictionary,
+  unknown,
   ErrorDto | BillingInfoDto,
   unknown,
   BillingQueryDto
