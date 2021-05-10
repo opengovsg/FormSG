@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary, Query } from 'express-serve-static-core'
+import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import {
@@ -25,7 +25,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 500 when error occurs whilst querying the database
  */
 export const handleGetExamples: RequestHandler<
-  ParamsDictionary,
+  unknown,
   ErrorDto | ExampleFormsResult,
   unknown,
   Query & ExampleFormsQueryDto
