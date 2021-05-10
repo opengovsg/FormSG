@@ -15,6 +15,8 @@ import {
 } from 'src/app/modules/core/core.errors'
 import {
   BasicField,
+  Colors,
+  FormLogoState,
   IUserSchema,
   ResponseMode,
   StartPage,
@@ -1443,6 +1445,11 @@ describe('admin-form.form.routes', () => {
 
     const MOCK_UPDATED_START_PAGE: StartPage = {
       paragraph: 'new mock start page title',
+      colorTheme: Colors.Blue,
+      logo: {
+        state: FormLogoState.None,
+      },
+      estTimeTaken: 10,
     }
 
     it('should return 200 when the request is successful', async () => {
