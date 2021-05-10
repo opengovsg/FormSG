@@ -294,6 +294,17 @@ function AdminFormController(
       .catch(handleUpdateError)
   }
 
+  $scope.updateFormStartPage = (newStartPage) => {
+    return $q
+      .when(
+        AdminFormService.updateFormStartPage($scope.myform._id, newStartPage),
+      )
+      .then((updatedStartPage) => {
+        $scope.myform.startPage = updatedStartPage
+      })
+      .catch(handleUpdateError)
+  }
+
   /**
    * Calls the update form settings API
    * @param {Object} settingsToUpdate the object with new values for settings.

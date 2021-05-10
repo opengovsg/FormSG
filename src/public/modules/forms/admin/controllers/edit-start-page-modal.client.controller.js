@@ -18,7 +18,7 @@ angular
     'ColorThemes',
     '$q',
     'myform',
-    'updateField',
+    'updateStartPage',
     EditStartPageController,
   ])
 
@@ -27,7 +27,7 @@ function EditStartPageController(
   ColorThemes,
   $q,
   myform,
-  updateField,
+  updateStartPage,
 ) {
   let source
   const vm = this
@@ -47,12 +47,14 @@ function EditStartPageController(
     vm.hasClickedSave = true
 
     if (isValid) {
-      updateField({ startPage: vm.myform.startPage }).then((error) => {
-        if (!error) {
-          vm.hasClickedSave = false
-          $uibModalInstance.close()
-        }
-      })
+      $q.when(updateStartPage({ newStartPage: vm.myform.startPage })).then(
+        (error) => {
+          if (!error) {
+            vm.hasClickedSave = false
+            $uibModalInstance.close()
+          }
+        },
+      )
     }
   }
 
