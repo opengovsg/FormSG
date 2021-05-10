@@ -1,7 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { Request, RequestHandler } from 'express'
-import { Query } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -1732,7 +1731,7 @@ export const _handleReorderFormField: RequestHandler<
   { formId: string; fieldId: string },
   FormFieldDto[] | ErrorDto,
   unknown,
-  Query & { to: number }
+  Request['query'] & { to: number }
 > = (req, res) => {
   const { formId, fieldId } = req.params
   const { to } = req.query
