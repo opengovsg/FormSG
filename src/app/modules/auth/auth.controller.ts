@@ -1,5 +1,4 @@
 import { RequestHandler } from 'express'
-import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
@@ -22,7 +21,7 @@ const logger = createLoggerWithLabel(module)
  * @returns 200 if domain of body.email is valid
  */
 export const handleCheckUser: RequestHandler<
-  ParamsDictionary,
+  unknown,
   string,
   { email: string }
 > = async (req, res) => {
@@ -53,7 +52,7 @@ export const handleCheckUser: RequestHandler<
  * @return 500 when unknown errors occurs during generate OTP, or create/send the email that delivers the OTP to the user's email address
  */
 export const handleLoginSendOtp: RequestHandler<
-  ParamsDictionary,
+  unknown,
   { message: string } | string,
   { email: string }
 > = async (req, res) => {
@@ -112,7 +111,7 @@ export const handleLoginSendOtp: RequestHandler<
  * @returns 500 when error occurred whilst verifying the OTP
  */
 export const handleLoginVerifyOtp: RequestHandler<
-  ParamsDictionary,
+  unknown,
   string | SessionUser,
   { email: string; otp: string }
 > = async (req, res) => {
