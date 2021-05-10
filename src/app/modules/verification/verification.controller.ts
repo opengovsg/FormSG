@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { RequestHandler } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
@@ -14,8 +13,6 @@ import { Transaction } from './verification.types'
 import { mapRouteError } from './verification.util'
 
 const logger = createLoggerWithLabel(module)
-
-const formatOfId = Joi.string().length(24).hex().required()
 
 /**
  * NOTE: Private handler for POST /transaction
@@ -66,13 +63,13 @@ export const handleCreateTransaction: RequestHandler<
  * @returns 201 - transaction is created
  * @returns 200 - transaction was not created as no fields were verifiable for the form
  */
-export const _handleCreateTransactionWithFieldId: RequestHandler<
+export const handleCreateTransactionWithFieldId: RequestHandler<
   { formId: string },
   Transaction | ErrorDto
 > = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
-    action: '_handleCreateTransactionWithFieldId',
+    action: 'handleCreateTransactionWithFieldId',
     formId,
     ...createReqMeta(req),
   }
@@ -95,15 +92,6 @@ export const _handleCreateTransactionWithFieldId: RequestHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
-
-export const handleCreateTransactionWithFieldId = [
-  celebrate({
-    [Segments.PARAMS]: Joi.object({
-      transactionId: formatOfId,
-    }),
-  }),
-  _handleCreateTransactionWithFieldId,
-] as RequestHandler[]
 
 /**
  * Returns a transaction's id and expiry time if it exists
