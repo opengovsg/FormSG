@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
-import { errAsync } from 'neverthrow'
+import { err, errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import getFormModel, {
@@ -13,7 +13,13 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
-import { IUserSchema, ResponseMode, StartPage, Status } from 'src/types'
+import {
+  BasicField,
+  IUserSchema,
+  ResponseMode,
+  StartPage,
+  Status,
+} from 'src/types'
 
 import {
   createAuthedSession,
@@ -21,6 +27,7 @@ import {
 } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
+import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
@@ -1272,6 +1279,160 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(response.status).toEqual(422)
       expect(response.body).toEqual({ message: 'User not found' })
+    })
+  })
+
+  describe('GET /admin/forms/:formId/fields/', () => {
+    it('should return 200 with success message when form field is successfully retrieved', async () => {
+      // Arrange
+      const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+      const MOCK_FORM = await EmailFormModel.create({
+        title: 'Form to retrieve',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [MOCK_FIELD],
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${MOCK_FORM._id}/fields/${MOCK_FIELD._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(jsonParseStringify(MOCK_FIELD))
+    })
+
+    it('should return 403 when user does not have permissions to retrieve form field', async () => {
+      // Arrange
+      // Create separate user
+      const collabUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'collab-user',
+          shortName: 'collabUser',
+        })
+      ).user
+      const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+      const MOCK_FORM = await EncryptFormModel.create({
+        title: 'form that user has no read access to',
+        admin: collabUser._id,
+        publicKey: 'some random key',
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${MOCK_FORM._id}/fields/${MOCK_FIELD._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: `User ${defaultUser.email} not authorized to perform read operation on Form ${MOCK_FORM._id} with title: ${MOCK_FORM.title}.`,
+      })
+    })
+
+    it('should return 404 when form to retrieve cannot be found', async () => {
+      // Arrange
+      const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+      const invalidFormId = new ObjectId().toHexString()
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${invalidFormId}/fields/${MOCK_FIELD._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ message: 'Form not found' })
+    })
+
+    it('should return 404 when form field to retrieve cannot be found', async () => {
+      // Arrange
+      const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+      const MOCK_FORM = await EmailFormModel.create({
+        title: 'Form to retrieve',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [],
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${MOCK_FORM._id}/fields/${MOCK_FIELD._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: `Attempted to retrieve field ${MOCK_FIELD._id} from ${MOCK_FORM._id} but field was not present`,
+      })
+    })
+
+    it('should return 410 when form is already archived', async () => {
+      // Arrange
+      const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+      const archivedForm = await EmailFormModel.create({
+        title: 'Form already archived',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        status: Status.Archived,
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${archivedForm._id}/fields/${MOCK_FIELD._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({ message: 'Form has been archived' })
+    })
+
+    it('should return 422 when user in session cannot be found in the database', async () => {
+      // Arrange
+      const MOCK_FORM = await EmailFormModel.create({
+        title: 'Form to retrieve',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+      const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${MOCK_FORM._id}/fields/${MOCK_FIELD._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs whilst archiving form', async () => {
+      // Arrange
+      const MOCK_FORM = await EmailFormModel.create({
+        title: 'Form to retrieve',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+      const MOCK_FIELD = generateDefaultField(BasicField.Rating)
+      // Mock database error during retrieval.
+      jest
+        .spyOn(AdminFormService, 'getFormField')
+        .mockReturnValueOnce(err(new DatabaseError()))
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${MOCK_FORM._id}/fields/${MOCK_FIELD._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
     })
   })
 

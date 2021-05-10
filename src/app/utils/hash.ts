@@ -26,7 +26,7 @@ export class HashingError extends ApplicationError {
  * @returns err(ApplicationError) if hashing error occurs
  */
 export const hashData = (
-  dataToHash: unknown,
+  dataToHash: string | Buffer,
   logMeta: Record<string, unknown> = {},
   saltRounds?: number,
 ): ResultAsync<string, HashingError> => {
@@ -56,7 +56,7 @@ export const hashData = (
  * @returns err(ApplicationError) if error occurs whilst comparing hashes
  */
 export const compareHash = (
-  data: unknown,
+  data: string | Buffer,
   encrypted: string,
   logMeta: Record<string, unknown> = {},
 ): ResultAsync<boolean, HashingError> => {

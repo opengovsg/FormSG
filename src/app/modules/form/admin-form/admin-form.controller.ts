@@ -18,7 +18,9 @@ import {
   IForm,
   IFormDocument,
   IPopulatedForm,
+  LogicConditionState,
   LogicDto,
+  LogicIfValue,
   LogicType,
   ResponseMode,
 } from '../../../../types'
@@ -1858,9 +1860,20 @@ export const handleUpdateLogic = [
           .items(
             Joi.object({
               field: Joi.string().required(),
-              state: Joi.string().required(),
-              value: Joi.string().required(),
-              ifValueType: Joi.string(),
+              state: Joi.string()
+                .valid(...Object.values(LogicConditionState))
+                .required(),
+              value: Joi.alternatives()
+                .try(
+                  Joi.number(),
+                  Joi.string(),
+                  Joi.array().items(Joi.string()),
+                  Joi.array().items(Joi.number()),
+                )
+                .required(),
+              ifValueType: Joi.string()
+                .valid(...Object.values(LogicIfValue))
+                .required(),
             }).unknown(true),
           )
           .required(),
@@ -2002,6 +2015,59 @@ export const handleUpdateEndPage = [
   }),
   _handleUpdateEndPage,
 ] as RequestHandler[]
+
+/**
+ * Handler for GET /admin/forms/:formId/fields/:fieldId
+ * @security session
+ *
+ * @returns 200 with form field when retrieval is successful
+ * @returns 403 when current user does not have permissions to retrieve form field
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field cannot be found
+ * @returns 410 when retrieving form field of an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetFormField: RequestHandler<
+  {
+    formId: string
+    fieldId: string
+  },
+  ErrorDto | FormFieldDto
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const sessionUserId = (req.session as Express.AuthedSession).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with read permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      .andThen((form) => AdminFormService.getFormField(form, fieldId))
+      .map((formField) => res.status(StatusCodes.OK).json(formField))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when retrieving form field',
+          meta: {
+            action: 'handleGetFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
 
 /**
  * NOTE: Exported for testing.
