@@ -168,7 +168,7 @@ export const getProcessedResponses = (
 
 export class ParsedResponsesObject {
   public ndiResponses: ProcessedFieldResponse[] = []
-  constructor(public responses: FieldResponse[]) {}
+  constructor(public responses: ProcessedFieldResponse[]) {}
 
   addNdiResponses(ndiResponses: ProcessedFieldResponse[]) {
     this.ndiResponses = ndiResponses
