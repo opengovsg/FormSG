@@ -249,7 +249,6 @@ function CollaboratorModalController(
         }, 1000)
       })
       .catch((err) => {
-        console.log('ERR', err)
         if (err) {
           // Make the alert message correspond to the error code
           if (err.response.status === StatusCodes.BAD_REQUEST) {
