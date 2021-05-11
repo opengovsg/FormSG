@@ -721,6 +721,8 @@ app.run([
 ])
 
 /* Constants */
+
+const Colors = require('../types/form')
 angular
   .module('forms')
   .constant('emoji', {
@@ -736,3 +738,4 @@ angular
     },
   })
   .constant('responseModeEnum', { ENCRYPT: 'encrypt', EMAIL: 'email' })
+  .constant('colorEnum', Colors)

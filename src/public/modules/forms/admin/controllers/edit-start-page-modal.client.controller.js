@@ -15,7 +15,7 @@ angular
   .module('forms')
   .controller('EditStartPageController', [
     '$uibModalInstance',
-    'ColorThemes',
+    'colorEnum',
     '$q',
     'myform',
     'updateField',
@@ -24,7 +24,7 @@ angular
 
 function EditStartPageController(
   $uibModalInstance,
-  ColorThemes,
+  colorEnum,
   $q,
   myform,
   updateField,
@@ -40,7 +40,7 @@ function EditStartPageController(
 
   // Make a copy so nothing is changed in the original.
   vm.myform = angular.copy(myform)
-  vm.colorThemes = ColorThemes.colors
+  vm.colorThemes = colorEnum.Colors
   vm.hasClickedSave = false
 
   vm.saveStartPage = function (isValid) {
