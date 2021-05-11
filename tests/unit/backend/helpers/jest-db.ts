@@ -39,6 +39,8 @@ const connect = async (): Promise<typeof mongoose> => {
  * Disconnect all mongoose connections.
  */
 const closeDatabase = async (): Promise<void> => {
+  await mongoose.connection.dropDatabase()
+  await mongoose.connection.close()
   await mongoose.disconnect()
   await MemoryDatabaseServer.stop()
 }
